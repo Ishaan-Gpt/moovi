@@ -13,31 +13,47 @@ export function makeClip(url) {
   clip.ready = new Promise(res => {
     const done = ok => { clip.ok = ok && v.videoWidth > 0; clip.dur = v.duration || 0; clip.w = v.videoWidth; clip.h = v.videoHeight; res(clip.ok); };
     // a recorded WebM has no duration in its header (Infinity): seeking far past the end makes the browser find it
-    v.addEventListener('loadeddata', () => { if (Number.isFinite(v.duration)) return done(true); const fix = () => { if (!Number.isFinite(v.duration)) return; v.removeEventListener('timeupdate', fix); v.currentTime = 0; done(true); }; v.addEventListener('timeupdate', fix); v.currentTime = 1e7; }, { once: true });
+    v.addEventListener('loadedmetadata', () => { if (Number.isFinite(v.duration)) return done(true); const fix = () => { if (!Number.isFinite(v.duration)) return; v.removeEventListener('timeupdate', fix); v.currentTime = 0; done(true); }; v.addEventListener('timeupdate', fix); v.currentTime = 1e7; }, { once: true });
     v.addEventListener('error', () => done(false), { once: true });
-    setTimeout(() => done(false), 20000);
+    // metadata is enough to use a clip (the first seek loads the picture); a loaded machine can take a long while to get even that
+    setTimeout(() => done(false), 90000);
   });
   document.body.appendChild(v); v.src = url;
   return clip;
 }
 
-/** put the video on the picture for media time t (looped); resolves when that picture can be drawn */
+/**
+ * Put the video on the picture for media time t (looped); resolves when that picture can be drawn.
+ * A seek is only believed when the seek has finished AND the browser has presented the frame that was asked for: the frame with
+ * the greatest time at or just before the target (a frame presented before the seek lands, or the next one, is not it). On a
+ * loaded machine a seek can be slow or land late, so one that does not confirm is repeated (moving away and back, which makes
+ * it a fresh seek) up to four times; if it still cannot be confirmed the clip is marked stale and the audit says so.
+ */
 export async function seekClip(clip, t) {
   if (!clip.ok || !(clip.dur > 0)) return;
   const mt = ((t % clip.dur) + clip.dur) % clip.dur, v = clip.v;
-  if (Math.abs(v.currentTime - mt) < 1 / 240 && clip.at === mt) return;
-  clip.at = mt;
-  // the picture is ready when the seek has finished AND the browser has presented the new frame (after 'seeked' alone, drawImage
-  // can still return the one before): register for the next presented frame first, then seek
-  await new Promise(res => {
-    let seeked = false, framed = !v.requestVideoFrameCallback;
-    const fin = () => { if (seeked && framed) res(); };
-    v.addEventListener('seeked', () => { seeked = true; fin(); }, { once: true });
-    // the presented frame must be the one asked for (its media time, within two frames): a frame presented before the seek lands is not
-    let tries = 0; const arm = () => v.requestVideoFrameCallback((_, md) => { if (Math.abs(md.mediaTime - mt) <= 0.07 || ++tries > 10) { framed = true; fin(); } else arm(); });
-    if (v.requestVideoFrameCallback) arm();
-    v.currentTime = Math.min(mt, Math.max(0, clip.dur - 0.001));
-    setTimeout(res, 1500);
+  if (clip.at === mt && Math.abs(v.currentTime - mt) < 1 / 240) return;
+  const target = Math.min(mt, Math.max(0, clip.dur - 0.001));
+  for (let attempt = 0; attempt < 4; attempt++) {
+    if (await seekOnce(v, target, attempt)) { clip.at = mt; return; }
+    await seekOnce(v, Math.max(0, target - 0.25 - attempt * 0.2), 0, true);
+  }
+  clip.at = -1; clip.stale = (clip.stale ?? 0) + 1;
+}
+
+function seekOnce(v, target, attempt, loose = false) {
+  return new Promise(res => {
+    let seeked = false, framed = loose || !v.requestVideoFrameCallback, done = false;
+    const finish = ok => { if (done) return; done = true; clearTimeout(timer); res(ok); };
+    const check = () => { if (seeked && framed) finish(true); };
+    const timer = setTimeout(() => finish(false), 1500 + attempt * 2500);
+    v.addEventListener('seeked', () => { seeked = true; check(); }, { once: true });
+    if (!framed) {
+      let tries = 0;
+      const arm = () => v.requestVideoFrameCallback((_, md) => { const d = target - md.mediaTime; if ((d >= -0.002 && d <= 0.09) || target < 0.1) { framed = true; check(); } else if (++tries < 12) arm(); else finish(false); });
+      arm();
+    }
+    v.currentTime = target;
   });
 }
 

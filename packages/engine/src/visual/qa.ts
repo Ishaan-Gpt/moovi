@@ -91,6 +91,7 @@ export async function auditFilm(sess: Pick<Session, 'thumb' | 'boxes'> & Partial
     if (!(sc.transition && t0 - sc.start < 0.6)) issues.push(...coverIssues(await sess.boxes(Math.round(t0 * fps)), plan, t0, i));
   }
   // footage the browser could not decode shows as an empty panel: say so (an image without H.264 support, a broken file)
+  for (const c of (await sess.clips?.()) ?? []) if (c.ok && c.stale) issues.push({ kind: 'footage', detail: `a ${c.art} clip could not be confirmed on the frame asked for ${c.stale} time${c.stale > 1 ? 's' : ''} (the machine was too loaded): those frames may show a neighbouring picture` });
   for (const c of (await sess.clips?.()) ?? []) if (!c.ok) issues.push({ kind: 'footage', detail: `a ${c.art} clip could not be decoded by the browser (check the file and the browser's H.264 support): its panel shows no picture` });
   const m = motionReport(pairs, singles);
   return { issues: [...issues, ...m.issues], perSecond: m.perSecond, framesRendered: frames };

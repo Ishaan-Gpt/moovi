@@ -2,6 +2,24 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, what is asked of Tab.)
 
+## 2026-10-16 05:22 IST · vignesh/visual-system · CLOSING ENTRY: merge the branch head (the code is at e81a87d; the commits after it only touch docs/agents/CLAUDE.md and AI_USAGE.md)
+
+**Shipped on `vignesh/visual-system`** (everything is additive, nothing in the studio UI or on main is touched; the default renderer is unchanged, `MOOVI_RENDERER=visual` turns the new one on):
+- b94b1ac note · f6def58 library, layouts, planner · cb0b06c compositor · 6d145c2 QA audits and determinism · b42f5be artifact library in FalkorDB · e004c0b crew path, `makeFilm`, docs/VISUAL.md · 4b1496c real footage · 5c6f364 frame critic · 4671cec poster panels · a435f71 footage backdrops · 8b43d22 mp4 with no ffmpeg · 01fabe5 and 4a4bd2d regex fixes · 8064aa4 safer Cypher · 142ca0d brand logo and the crew assemble test · e81a87d strict footage frames under load (the fix for the failing test you reported).
+- Tab's quality bar: real footage (panels, windows, phone and browser screens, full-bleed backdrops), motion in every second (checked by the audit), depth and 3D (z layers, parallax, ten real three.js objects), several elements per scene (ten layouts), rich artifacts (57 in FalkorDB), clean output (caption band, empty frames, length within 2 s).
+- Your three priorities: 1 visual system done; 2 frame critic done (scores per scene, artifact and layout in FalkorDB, the art director prefers high scorers, only weak scenes are cast and rendered again); 3 render speed: pages and chunks follow cores and free memory; the 26.6 s sample film captures in about 10 s without footage and 47 s with footage on four screens (docs/VISUAL.md has the table).
+
+**The footage test you reported:** reproduced with ten busy processes on an 8-core machine (the clips never became ready inside the old 20 s limit, and a seek could present a neighbouring frame). Now a seek is believed only when the frame at or just before the asked time is presented, is retried, and clips count as usable from their metadata with a patient timeout. The visual suite passes (36 pass, 1 skipped for FalkorDB) twice under that load and once quiet; the render file alone passes three times in a row under it.
+
+**Tests:** typecheck is clean across the monorepo. In packages/engine the only failures here are the two that need ffmpeg (music bed, voice.test.ts), the same with my changes stashed.
+
+**Open work and next steps (what I could not do on this machine):**
+1. Run `MOOVI_RENDERER=visual` end to end with models, ffmpeg and FalkorDB. Never run here: `visualBuild`, `visualRender`, `visualReview` and the board's `stage` pick (typed, their pieces tested; `visualAssemble` has a test with a fake context). Watch the first Lens round (it re-opens `assemble`, the chunks that show weak scenes, `sound`, `mux`, `review`; `MOOVI_VISUAL_REDO=0` keeps the scoring and turns the recast off).
+2. Run the FalkorDB tests (test/visual-graph.test.ts, the 3D, maps and memory ones) and `scripts/memory-bench.ts` where FalkorDB exists. The Cypher is written to the plain subset (no RETURN after DELETE, one row per node per UNWIND).
+3. Sound: the mix is the Editor's and needs ffmpeg; the no-ffmpeg mp4 is picture only.
+4. Footage cost is the thing to watch: each footage element is a seek and a presented-frame wait on every frame (about 4x the cost of a frame without footage). If a 30 s film with footage takes much more than a minute of capture on your server, lower `MOOVI_VISUAL_SCALE` (0.667 default) or have fewer footage elements per scene.
+5. Ideas not done: the board model could name artifacts by need only (it now also sees the whole library list in its prompt); a second critic round; a per-style palette for the visual system (it uses the brand tokens only); GPU rendering when a GPU exists (`MOOVI_3D_GPU=1` is read by the 3D objects, the 2D path does not need it).
+
 ## 2026-10-16 04:46 IST · vignesh/visual-system · 31cdb17: footage, critic, no-ffmpeg mp4 (merge again)
 
 Since e004c0b, all on this branch (typecheck clean; 33 visual tests pass, 1 skipped for FalkorDB; the engine suite fails only the two ffmpeg tests, same as before):
@@ -28,7 +46,7 @@ Since e004c0b, all on this branch (typecheck clean; 33 visual tests pass, 1 skip
 2. When your footage fetch lands, tell me the paths: a clip can go on the phone or browser screen (`Content.clip`), but the page plays images only so far. Say if you want video first.
 3. tasks/director.ts has additive edits from vignesh/3d, vignesh/maps and this branch near the board schema (look3d, places, stage): expect a small conflict to resolve by keeping all three.
 
-## 2026-10-15 20:55 IST · vignesh/visual-system · from agent-main e11d5b9
+## about 01:30 IST (the shell clock printed 2026-10-15 20:55; the real time was about 01:30) · vignesh/visual-system · from agent-main e11d5b9
 
 **Starting the visual system.** Read TAB.md: your split is clear (I own motion, depth, 3D, multi-element layouts and the artifact library; you own clips, recordings, voice, tests, merges, the speed table). No asks of me yet. I stay out of clips, recordings, voice and tests; I only read clip/image paths as inputs.
 
