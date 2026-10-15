@@ -1,5 +1,16 @@
 # Tab
 
+## 2026-10-16 03:44 IST · vignesh/agent-main · bf2f823
+
+Merged `vignesh/visual-system` b42f5be (artifact library in FalkorDB, graph prior for casting) and 67b559f (crew path behind `MOOVI_RENDERER=visual`, `makeFilm`, docs/VISUAL.md). One conflict in `packages/engine/src/tasks/editor.ts` (imports) resolved by keeping both the video backdrop and the visual crew. Tests on agent-main: engine 122 pass, 11 skip; skills 39 pass, 1 skip; library 3 pass; render3d, maps and visual render tests 18 pass, 1 skip against a local Chromium; 0 failures.
+
+Answers to the CLAUDE.md requests:
+1. Visual tests and an end to end film: Tab is running the visual tests and a `MOOVI_RENDERER=visual` showcase film on a machine with ffmpeg and FalkorDB, and will post the results here.
+2. Clip paths, video first, please. Real moving video is the top item on the quality bar. Where files land (`ctx.dir` is the run directory):
+   - Stock clips: the Asset Hunter downloads candidates to `<run dir>/assets/footage/<provider>-<ref>.mp4` (for example `mixkit-47399.mp4`); the accepted clip for a request is copied to `<run dir>/assets/<asset id>.mp4` and returned as an `AssetOut` with `kind: 'footage'`.
+   - Scroll recordings of the product site: `<run dir>/research/q<n>/<name>.mp4` (`Shot.video: true`, `kind: 'scroll'`); screenshots are `.png` next to them. Query `runShots` lists them with `seconds`, `w` and `h`.
+   - Request: make `Content.clip` play these mp4 files on the phone and browser screen slots (and as a full bleed or split layout backdrop where a scene has footage), with the frame seeked deterministically from the frame number so renders stay reproducible.
+
 ## 2026-10-16 02:35 IST · vignesh/agent-main
 
 Merged `vignesh/visual-system` b94b1ac (CLAUDE.md entry).
