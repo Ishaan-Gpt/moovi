@@ -1,4 +1,5 @@
-import { project as P, run as runQ, SYS, sys as S, user as U } from '@moovi/graph';
+import { join } from 'node:path';
+import { media as M, project as P, run as runQ, SYS, sys as S, user as U } from '@moovi/graph';
 import type { Features, Role } from '@moovi/skills';
 import { z } from 'zod';
 import { writeJson } from '../bench';
@@ -8,6 +9,7 @@ import { publish } from '../bus';
 import { newId } from '../ids';
 import { ask, tool, type Tool } from '../runtime';
 import { agentRun, knowledge, systemFor } from './agent';
+import { canon, fetchRead, pickSentences, Reader, wikiSearch, type Shot } from '../research/capture';
 
 /**
  * Moovi plans: the brief becomes a typed plan (title, a NEW angle and hook form, audience, length, the ask, the
@@ -31,7 +33,8 @@ export const plan: Handler = async ctx => {
   const know = await knowledge(ctx, 'moovi', style);
   const used = await ctx.uq<{ angle: string | null; hook: string | null; title: string }>(U.anglesUsed, { style: null, n: 12 });
   const prev = await ctx.q<{ title: string; style: string | null; brief: string | null }>(P.videos);
-  const canResearch = f.urls.length > 0 || !!config.searchKeys.tavily || !!config.searchKeys.serper;
+  // research works keyless too: the browser reads the brief's links, and with no search key it searches Wikipedia
+  const canResearch = f.urls.length > 0 || !!config.searchKeys.tavily || !!config.searchKeys.serper || config.research.keyless;
   const fmt = f.format === 'landscape' ? 'landscape' : 'vertical';
   const def = style === 's1' ? 30 : f.footage === 'edit' ? (f.seconds ?? 30) : 30;
 
@@ -45,7 +48,7 @@ export const plan: Handler = async ctx => {
       `ANGLES AND HOOKS THIS USER'S VIDEOS ALREADY TOOK: ${used.map(u => `"${u.angle}" (${u.hook})`).join(' · ') || 'none yet'}`,
       `EARLIER VIDEOS IN THIS PROJECT: ${prev.map(p => p.title).join(' · ') || 'none'}`,
       `FACTS: list only claims the user's own brief states (product name, what it does, prices, numbers). Never add your own.`,
-      canResearch ? `QUESTIONS: up to 3 things research should confirm${f.urls.length ? ' from these links' : ' with a web search'} (e.g. what the product does, its real features).` : 'QUESTIONS: none (no links to read).',
+      canResearch ? `QUESTIONS: up to 3 things research should confirm${f.urls.length ? ' from these links' : config.searchKeys.tavily ? ' with a web search' : ' from Wikipedia (the researcher searches it)'} (e.g. what the product does, its real features).` : 'QUESTIONS: none (no links to read).',
       `LENGTH: ${f.seconds ? `${f.seconds} s as asked` : `about ${def} s`}. FORMAT: ${fmt}.`,
     ].join('\n\n'),
     schema: {
@@ -88,50 +91,74 @@ export const plan: Handler = async ctx => {
 
 /* ───────── the Researcher ───────── */
 
-const strip = (html: string) => html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>|<noscript[\s\S]*?<\/noscript>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&#39;|&rsquo;/g, "'").replace(/&quot;|&ldquo;|&rdquo;/g, '"').replace(/\s+/g, ' ').trim();
-const canon = (s: string) => s.toLowerCase().replace(/[’']/g, "'").replace(/[^\p{L}\p{N}' ]+/gu, ' ').replace(/\s+/g, ' ').trim();
 
 export const research: Handler = async ctx => {
   const q = ctx.input<{ question: string; url: string | null; urls: string[] }>();
   const m = (await ctx.out<{ style: string }>('match'))!;
+  const B = await ctx.out<Brief>('plan');
   const know = await knowledge(ctx, 'researcher' as Role, m.style);
-  const pages = new Map<string, string>();
-  let facts = 0;
+  // the browser reads pages the way a person sees them and shoots them for the film (src/research/capture.ts)
+  const reader = new Reader(join(ctx.dir, 'research', `q${ctx.task.scope ?? '0'}`.replace(/[^a-z0-9]+/gi, '')), B?.format === 'landscape' ? 'landscape' : 'vertical');
+  const pages = new Map<string, { text: string; id: string }>();
+  const shots: Shot[] = [];
+  let facts = 0, proofs = 0;
+  const pageId = (u: string) => `page:${ctx.run.id}:${u.replace(/^https?:\/\//, '').replace(/\/$/, '')}`.slice(0, 240);
   const tools: Tool[] = [
-    tool({ name: 'fetch_page', description: 'Read a web page (text only, up to 12,000 characters).', input: { url: z.string().min(4) },
+    tool({ name: 'read_page', description: 'Open a web page in the browser and read it (its rendered text, up to 12,000 characters). The page is also screenshotted and scroll-captured for the film.', input: { url: z.string().min(4) },
       async run({ url }) {
-        const u = /^https?:\/\//.test(url) ? url : `https://${url}`;
-        const r = await fetch(u, { signal: AbortSignal.timeout(15_000), headers: { 'user-agent': 'Mozilla/5.0 (Moovi research)' } });
-        if (!r.ok) return { error: `HTTP ${r.status}` };
-        const html = (await r.text()).slice(0, 2_000_000);
-        const title = html.match(/<title[^>]*>([^<]*)/i)?.[1]?.trim() ?? '';
-        const desc = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)/i)?.[1] ?? '';
-        const text = strip(html);
-        pages.set(u, `${title} ${desc} ${text}`);
-        return { text: `TITLE: ${title}\nDESCRIPTION: ${desc}\n\n${text.slice(0, 12000)}` };
+        const first = pages.size === 0;
+        let p = await reader.read(url, { scroll: first || shots.filter(s => s.kind === 'scroll').length < 2 }).catch(async e => { await ctx.activity('note', `browser could not open ${url} (${(e as Error).message.slice(0, 80)}); reading it as plain HTML`); return fetchRead(url); });
+        if (!p.text && p.via === 'browser') p = await fetchRead(url).catch(() => p);
+        if (p.wall) return { error: `${new URL(p.final || p.url).hostname} shows a bot check to anything that is not a person's browser. Try another page.` };
+        if (p.status >= 400) return { error: `HTTP ${p.status}` };
+        const id = pageId(p.final || p.url);
+        for (const k of new Set([p.url, p.final])) pages.set(k, { text: `${p.title} ${p.description} ${p.text}`, id });
+        await ctx.q(M.writePage, { run: ctx.run.id, id, url: p.url, final: p.final, title: p.title.slice(0, 200), description: p.description.slice(0, 400), status: p.status, words: p.text.split(' ').length, wall: p.wall, via: p.via, at: Date.now() });
+        if (p.shots.length) { await ctx.q(M.writeShots, { page: id, at: Date.now(), rows: p.shots.map(shotRow) }); shots.push(...p.shots); }
+        return { text: `TITLE: ${p.title}\nDESCRIPTION: ${p.description}\n(${p.shots.length} shot${p.shots.length === 1 ? '' : 's'} kept${p.shots.some(s => s.video) ? ', with a scroll capture' : ''})\n\n${p.text.slice(0, 12000)}` };
       } }),
-    ...(config.searchKeys.tavily ? [tool({ name: 'search', description: 'Search the web. Returns titles, URLs and snippets.', input: { query: z.string().min(3) },
+    tool({ name: 'search', description: config.searchKeys.tavily ? 'Search the web. Returns titles, URLs and snippets.' : 'Search Wikipedia (no web search key is set). Returns titles, URLs and snippets.', input: { query: z.string().min(3) },
       async run({ query }) {
-        const r = await fetch('https://api.tavily.com/search', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ api_key: config.searchKeys.tavily, query, max_results: 5 }), signal: AbortSignal.timeout(20_000) });
-        const j = await r.json() as { results?: { title: string; url: string; content: string }[] };
-        return { json: (j.results ?? []).map(x => ({ title: x.title, url: x.url, snippet: x.content.slice(0, 300) })) };
-      } })] : []),
-    tool({ name: 'add_fact', description: 'Keep a fact. `quote` must be copied exactly from a page you fetched; the fact is checked against it.', input: { text: z.string().min(5).max(220), url: z.string(), quote: z.string().min(8).max(400) },
+        if (config.searchKeys.tavily) {
+          const r = await fetch('https://api.tavily.com/search', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ api_key: config.searchKeys.tavily, query, max_results: 5 }), signal: AbortSignal.timeout(20_000) });
+          const j = await r.json() as { results?: { title: string; url: string; content: string }[] };
+          return { json: (j.results ?? []).map(x => ({ title: x.title, url: x.url, snippet: x.content.slice(0, 300) })) };
+        }
+        return { json: await wikiSearch(query) };
+      } }),
+    tool({ name: 'add_fact', description: 'Keep a fact. `quote` must be copied exactly from a page you read; the fact is checked against it, and the quote is found and highlighted on the page as its proof shot.', input: { text: z.string().min(5).max(220), url: z.string(), quote: z.string().min(8).max(400) },
       async run({ text, url, quote }) {
         const key = [...pages.keys()].find(k => k === url || k.replace(/\/$/, '') === url.replace(/\/$/, '') || k.includes(url.replace(/^https?:\/\//, '')));
-        if (!key) return { error: 'Fetch that page first.' };
-        if (!canon(pages.get(key)!).includes(canon(quote))) return { error: 'That quote is not on the page. Copy it exactly (a short sentence is enough).' };
-        const sid = `src:${ctx.run.id}:${facts}`;
+        if (!key) return { error: 'Read that page first.' };
+        if (!canon(pages.get(key)!.text).includes(canon(quote))) return { error: 'That quote is not on the page. Copy it exactly (a short sentence is enough).' };
+        const sid = `src:${ctx.run.id}:${ctx.task.scope}:${facts}`;
+        const fid = `fact:${ctx.run.id}:r${ctx.task.scope}:${facts}`;
         await ctx.q(P.writeSources, { rows: [{ id: sid, kind: 'page', ref: key, title: quote.slice(0, 80) }], at: Date.now() });
-        await ctx.q(P.writeFacts, { run: ctx.run.id, at: Date.now(), rows: [{ id: `fact:${ctx.run.id}:r${ctx.task.scope}:${facts}`, text, status: 'verified', source: sid }] });
+        await ctx.q(P.writeFacts, { run: ctx.run.id, at: Date.now(), rows: [{ id: fid, text, status: 'verified', source: sid }] });
+        const proof = await reader.proof(key, quote).catch(() => null);
+        if (proof) { await ctx.q(M.writeShots, { page: pages.get(key)!.id, at: Date.now(), rows: [shotRow(proof)] }); shots.push(proof); proofs++; }
+        await ctx.q(M.factOnPage, { fact: fid, page: pages.get(key)!.id, shot: proof?.id ?? null });
         facts++;
-        return { text: `Kept (${facts}).` };
+        return { text: `Kept (${facts})${proof ? ', with a proof shot' : ''}.` };
       } }),
     tool({ name: 'finish', description: 'Done researching this question.', input: { summary: z.string().max(400) }, ends: true,
-      async run({ summary }) { return facts || /^NONE:/i.test(summary) ? { text: 'ok' } : { error: 'You kept no facts. Fetch a page and keep at least one quoted fact, or say none exist by finishing with a summary that starts with "NONE:".' }; } }),
+      async run({ summary }) { return facts || /^NONE:/i.test(summary) ? { text: 'ok' } : { error: 'You kept no facts. Read a page and keep at least one quoted fact, or say none exist by finishing with a summary that starts with "NONE:".' }; } }),
   ];
-  const r = await agentRun(ctx, { role: 'researcher', tier: 'crew', maxTurns: 16, deadlineMs: 4 * 60_000, tools,
-    system: systemFor('researcher', 'Answer the question with facts quoted from real pages. Keep 1–5 facts. Never keep a fact you could not quote.', know.text),
-    prompt: `QUESTION: ${q.question}\nSTART WITH: ${q.url ?? q.urls.join(', ') ?? '(search)'}` });
-  return { output: { facts, stopped: r.stopped }, note: `${facts} fact${facts === 1 ? '' : 's'}` };
+  try {
+    const r = await agentRun(ctx, { role: 'researcher', tier: 'crew', maxTurns: 16, deadlineMs: 5 * 60_000, tools,
+      system: systemFor('researcher', 'Answer the question with facts quoted from real pages. Keep 1–5 facts. Never keep a fact you could not quote.', know.text),
+      prompt: `QUESTION: ${q.question}\nSTART WITH: ${q.url ?? (q.urls.length ? q.urls.join(', ') : '(search)')}` });
+    // a weak model that never opened a page still leaves the film the brief's own site, shot and scroll-captured
+    const noop = { signal: ctx.signal, note: () => undefined };
+    if (!pages.size && (q.url || q.urls[0])) await tools[0]!.run({ url: q.url ?? q.urls[0]! } as never, noop).catch(() => undefined);
+    // and one that read pages but kept nothing gets the sentences that answer the question best, quoted and proven
+    if (!facts) for (const [url, pg] of [...new Map([...pages].map(([u, v]) => [v.id, [u, v] as const])).values()]) {
+      for (const s of pickSentences(pg.text, q.question, 2 - facts)) await tools[2]!.run({ text: s.slice(0, 220), url, quote: s } as never, noop).catch(() => undefined);
+      if (facts >= 2) break;
+    }
+    const caps = shots.map(s => ({ id: s.id, kind: s.kind, path: s.path, video: s.video, seconds: s.seconds ?? null }));
+    return { output: { facts, proofs, pages: [...new Set([...pages.values()].map(v => v.id))].length, shots: caps, stopped: r.stopped }, note: `${facts} fact${facts === 1 ? '' : 's'}, ${shots.length} shot${shots.length === 1 ? '' : 's'}` };
+  } finally { await reader.close(); }
 };
+
+const shotRow = (s: Shot) => ({ id: s.id, kind: s.kind, path: s.path, y: s.y, w: s.w, h: s.h, seconds: s.seconds ?? null, sha: s.sha, video: s.video });
