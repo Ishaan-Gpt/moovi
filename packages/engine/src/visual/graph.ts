@@ -44,3 +44,29 @@ export async function storePicks(rows: Rows, run: string, plan: VPlan, at = Date
   }
   return n;
 }
+
+/* ───────── the frame critic's memory ───────── */
+import type { SceneScore } from './critic';
+
+/**
+ * Store a film's scores: on each Scene in the project graph, and as running means per artifact and per layout in the
+ * craft graph (what the art director reads the next time).
+ */
+export async function storeScores(project: Rows, craft: Rows, run: string, plan: VPlan, scores: SceneScore[], at = Date.now()): Promise<void> {
+  const art: { id: string; score: number }[] = [], lay: { id: string; score: number }[] = [];
+  for (const sc of scores) {
+    const s = plan.scenes[sc.scene]!;
+    await project(P.scoreScene, { scene: `${run}:scene:${sc.scene}`, score: sc.score, footage: sc.parts.footage, motion: sc.parts.motion, depth: sc.parts.depth, layers: sc.parts.layers, richness: sc.parts.richness, clean: sc.parts.clean, at });
+    for (const id of new Set([...s.elements.map(e => e.art), ...s.ambient])) art.push({ id, score: sc.score });
+    lay.push({ id: s.layout, score: sc.score });
+  }
+  if (art.length) await craft(C.rateArtifacts, { rows: art });
+  if (lay.length) await craft(C.rateLayouts, { rows: lay });
+}
+
+/** What earlier films' scores say, as the planner wants it. */
+export async function loadRatings(rows: Rows = craftRows): Promise<NonNullable<import('./plan').PlanOptions['ratings']>> {
+  const [a, l] = await Promise.all([rows<{ id: string; mean: number; n: number }>(C.artifactRatings), rows<{ id: string; mean: number; n: number }>(C.layoutRatings)]);
+  const to = (r: { id: string; mean: number; n: number }[]) => Object.fromEntries(r.map(x => [x.id, { mean: x.mean, n: x.n }]));
+  return { artifacts: to(a), layouts: to(l) };
+}

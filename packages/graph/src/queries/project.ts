@@ -373,6 +373,21 @@ MERGE (s)-[u:USES_ARTIFACT {slot: $slot}]->(a)
 SET u.layout = $layout, u.at = $at
 RETURN a.id AS id`),
 
+  clearArtifacts: q('clearArtifacts', false, 'A scene is cast again: its old USES_ARTIFACT edges go before the new picks are stored.', `
+MATCH (:Scene {id: $scene})-[u:USES_ARTIFACT]->(:Artifact)
+DELETE u
+RETURN count(u) AS cleared`),
+
+  scoreScene: q('scoreScene', false, 'The frame critic’s verdict on a scene: its score and the parts it is made of (footage, motion, depth, layers, richness, clean).', `
+MATCH (s:Scene {id: $scene})
+SET s.score = $score, s.footage = $footage, s.motion = $motion, s.depth = $depth, s.layers = $layers, s.richness = $richness, s.clean = $clean, s.scoredAt = $at
+RETURN s.id AS id`),
+
+  weakScenes: q('weakScenes', true, 'The scenes of a run the critic scored below the bar, worst first (they are cast and rendered again, the rest are left alone).', `
+MATCH (:Run {id: $run})-[:HAS_SCENE]->(s:Scene)
+WHERE s.score IS NOT NULL AND s.score < $below
+RETURN s.i AS i, s.score AS score ORDER BY score`),
+
   artifactUsage: q('artifactUsage', true, 'How often this project’s films used each artifact (the art director varies; a worn-out one is penalised).', `
 MATCH (:Scene)-[u:USES_ARTIFACT]->(a:Artifact)
 RETURN a.id AS id, a.kind AS kind, count(u) AS n

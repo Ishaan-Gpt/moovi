@@ -24,6 +24,8 @@ export interface PlanOptions {
   used?: Record<string, number>;
   /** the art director's own picks per beat (layout and artifact ids), honoured when valid */
   picks?: ({ layout?: string | null; artifacts?: string[] | null } | null)[];
+  /** what earlier films' critic scores say (0-10 running means from FalkorDB): the art director prefers what has scored well */
+  ratings?: { artifacts: Record<string, { mean: number; n: number }>; layouts: Record<string, { mean: number; n: number }> };
   /** per beat: artifact id → how many of the beat's needs the graph says it serves (the craft graph's SERVES edges); without it the planner counts the same overlap itself */
   prior?: (Record<string, number> | null)[];
 }
@@ -97,7 +99,7 @@ export function typeLines(b: BeatIn, seed: number, i: number): TypeLine[] {
 
 /* ───────── casting ───────── */
 
-interface Ctx { clipsLeft: number; prior: Record<string, number> | null; needs: Set<Need>; nums: number[]; hasImage: boolean; hasBrand: boolean; seed: number; i: number; prev: Set<string>; used: Record<string, number>; chosen: Set<string> }
+interface Ctx { rating: Record<string, { mean: number; n: number }> | null; clipsLeft: number; prior: Record<string, number> | null; needs: Set<Need>; nums: number[]; hasImage: boolean; hasBrand: boolean; seed: number; i: number; prev: Set<string>; used: Record<string, number>; chosen: Set<string> }
 
 function score(a: Artifact, c: Ctx, role: string): number {
   if (a.wants === 'image' && !c.hasImage) return -99;
@@ -116,6 +118,8 @@ function score(a: Artifact, c: Ctx, role: string): number {
   if (c.chosen.has(a.id)) s -= 99;
   s -= (a.cost - 1) * 0.3;
   if (a.wants === 'clip') s += 7;
+  // an artifact that has scored well in earlier films is preferred, one that scored badly is not (shrunk to 7 when little is known)
+  const rt = c.rating?.[a.id]; if (rt) s += (rt.mean - 7) * 0.45 * (rt.n / (rt.n + 3));
   return s + jit(c.seed, `${c.i}:${a.id}`) * 1.6;
 }
 
@@ -125,7 +129,7 @@ const best = (pool: readonly Artifact[], c: Ctx, role: string, kindsNot: string[
   return top;
 };
 
-function layoutFor(needs: Set<Need>, seed: number, i: number, recent: LayoutId[]): LayoutId {
+function layoutFor(needs: Set<Need>, seed: number, i: number, recent: LayoutId[], ratings?: Record<string, { mean: number; n: number }>): LayoutId {
   const has = (...n: Need[]) => n.some(x => needs.has(x));
   let pool: LayoutId[];
   if (has('compare', 'contrast', 'before-after', 'choice')) pool = ['split-side', 'split-stack'];
@@ -135,7 +139,11 @@ function layoutFor(needs: Set<Need>, seed: number, i: number, recent: LayoutId[]
   else if (has('number', 'growth', 'proof', 'percent', 'money')) pool = ['callouts', 'hero', 'pip'];
   else pool = ['hero', 'cascade', 'pip', 'callouts', 'orbit', 'wall', 'split-stack'];
   const fresh = pool.filter(l => !recent.includes(l));
-  return pick(fresh.length ? fresh : pool, seed, `layout:${i}`);
+  const from = fresh.length ? fresh : pool;
+  if (!ratings) return pick(from, seed, `layout:${i}`);
+  // the layouts that scored best come first (shrunk to 7 when little is known), the seed breaks ties
+  const rank = (l: LayoutId) => { const r = ratings[l]; return (r ? (r.mean - 7) * (r.n / (r.n + 3)) : 0) + jit(seed, `layout:${i}:${l}`) * 0.8; };
+  return [...from].sort((a, b) => rank(b) - rank(a))[0]!;
 }
 
 function contentFor(a: Artifact, text: string, nums: number[], c: { image?: string | null; brand?: string | null }, role: 'main' | 'other', variant: number, clip: { path: string; kind: 'footage' | 'scroll' | 'recording'; at: number } | null): Content {
@@ -175,9 +183,9 @@ export function castScene(b: BeatIn, i: number, count: number, o: PlanOptions, p
   const seed = o.seed ?? 7;
   const needs = new Set<Need>(needsFor(b, i, count));
   const nums = numbersOf(b.text);
-  const c: Ctx = { clipsLeft: pool.list.length, prior: o.prior?.[i] ?? null, needs, nums, hasImage: !!o.image, hasBrand: !!o.brand, seed, i, prev: new Set(prev ? [...prev.elements.map(e => e.art), ...prev.ambient] : []), used: usedHere, chosen: new Set() };
+  const c: Ctx = { rating: o.ratings?.artifacts ?? null, clipsLeft: pool.list.length, prior: o.prior?.[i] ?? null, needs, nums, hasImage: !!o.image, hasBrand: !!o.brand, seed, i, prev: new Set(prev ? [...prev.elements.map(e => e.art), ...prev.ambient] : []), used: usedHere, chosen: new Set() };
   const given = o.picks?.[i] ?? null;
-  const layout: LayoutId = given?.layout && (LAYOUT_IDS as readonly string[]).includes(given.layout) ? (given.layout as LayoutId) : layoutFor(needs, seed, i, recentLayouts);
+  const layout: LayoutId = given?.layout && (LAYOUT_IDS as readonly string[]).includes(given.layout) ? (given.layout as LayoutId) : layoutFor(needs, seed, i, recentLayouts, o.ratings?.layouts);
   const slots = slotsOf(layout, o.format);
   const elements: VElement[] = [];
   const main = ARTIFACTS.filter(a => a.kind !== 'particles' && a.kind !== 'glow' && a.kind !== 'bg' && a.kind !== 'icon');

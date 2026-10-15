@@ -66,6 +66,50 @@ ORDER BY hits DESC, a.cost ASC, a.id
 LIMIT $n
 ```
 
+### `rateArtifacts` (write)
+
+The frame critic scored scenes: each artifact in them gets the score folded into its running mean (rating, films).
+
+```cypher
+UNWIND $rows AS r
+MATCH (a:Artifact {id: r.id})
+WITH a, r, coalesce(a.films, 0) AS f, coalesce(a.ratingSum, 0.0) AS sm
+SET a.films = f + 1, a.ratingSum = sm + r.score, a.rating = (sm + r.score) / (f + 1)
+RETURN count(a) AS rated
+```
+
+### `rateLayouts` (write)
+
+The same for the layouts: a (Layout) node per layout id with its running mean score.
+
+```cypher
+UNWIND $rows AS r
+MERGE (l:Layout {id: r.id})
+WITH l, r, coalesce(l.films, 0) AS f, coalesce(l.ratingSum, 0.0) AS sm
+SET l.films = f + 1, l.ratingSum = sm + r.score, l.rating = (sm + r.score) / (f + 1)
+RETURN count(l) AS rated
+```
+
+### `artifactRatings` (read-only)
+
+What the critic has scored so far, per artifact: mean 0-10 and how many scenes (the art director prefers the high ones).
+
+```cypher
+MATCH (a:Artifact) WHERE a.films > 0
+RETURN a.id AS id, a.rating AS mean, a.films AS n
+ORDER BY mean DESC
+```
+
+### `layoutRatings` (read-only)
+
+The same per layout.
+
+```cypher
+MATCH (l:Layout) WHERE l.films > 0
+RETURN l.id AS id, l.rating AS mean, l.films AS n
+ORDER BY mean DESC
+```
+
 ### `artifactNeeds` (read-only)
 
 The needs one artifact serves (why the art director may pick it).
@@ -1514,6 +1558,36 @@ MERGE (a:Artifact {id: $art})
 MERGE (s)-[u:USES_ARTIFACT {slot: $slot}]->(a)
 SET u.layout = $layout, u.at = $at
 RETURN a.id AS id
+```
+
+### `clearArtifacts` (write)
+
+A scene is cast again: its old USES_ARTIFACT edges go before the new picks are stored.
+
+```cypher
+MATCH (:Scene {id: $scene})-[u:USES_ARTIFACT]->(:Artifact)
+DELETE u
+RETURN count(u) AS cleared
+```
+
+### `scoreScene` (write)
+
+The frame critic’s verdict on a scene: its score and the parts it is made of (footage, motion, depth, layers, richness, clean).
+
+```cypher
+MATCH (s:Scene {id: $scene})
+SET s.score = $score, s.footage = $footage, s.motion = $motion, s.depth = $depth, s.layers = $layers, s.richness = $richness, s.clean = $clean, s.scoredAt = $at
+RETURN s.id AS id
+```
+
+### `weakScenes` (read-only)
+
+The scenes of a run the critic scored below the bar, worst first (they are cast and rendered again, the rest are left alone).
+
+```cypher
+MATCH (:Run {id: $run})-[:HAS_SCENE]->(s:Scene)
+WHERE s.score IS NOT NULL AND s.score < $below
+RETURN s.i AS i, s.score AS score ORDER BY score
 ```
 
 ### `artifactUsage` (read-only)

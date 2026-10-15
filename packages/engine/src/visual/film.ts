@@ -1,7 +1,8 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { kit, type Ev, type Word } from '@moovi/skills';
-import { renderFilm, openFilm, type FilmStats, type RenderOpts } from './capture';
+import { renderFilm, openFilm, encodeFrames, type FilmStats, type RenderOpts } from './capture';
+import { failing, replanScenes, scoreScenes, FAIL_BELOW, type SceneScore } from './critic';
 import { auditFilm, checkPlan, type Audit, type Issue } from './qa';
 import { planFilm, type PlanOptions } from './plan';
 import type { BeatIn, VPlan } from './types';
@@ -49,17 +50,44 @@ export interface FilmInput extends PlanOptions {
   render?: RenderOpts;
   /** also run the frame audit (about 4 s) */
   audit?: boolean;
+  /**
+   * The frame critic: score every scene on the sampled frames, cast the scenes below the bar again and render only those.
+   * `store` writes the scores to FalkorDB (per scene, per artifact, per layout) for the next film's art director.
+   */
+  critic?: { attempts?: number; below?: number; store?: (plan: VPlan, scores: SceneScore[]) => Promise<void> };
 }
-export interface FilmResult { plan: VPlan; issues: Issue[]; audit: Audit | null; stats: FilmStats | null }
+export interface FilmResult { plan: VPlan; issues: Issue[]; audit: Audit | null; stats: FilmStats | null; scores: SceneScore[] | null; /** scenes cast again, per attempt */ recast: number[][]; encode: { out: string | null; encodeMs: number; encodeError: string | null } | null }
 
-/** Plan, check, render. `skipRender` stops after the plan and its checks. */
+/** Plan, check, render; with a critic: audit, score, recast and re-render only the weak scenes, then encode. */
 export async function makeFilm(i: FilmInput, o: { skipRender?: boolean } = {}): Promise<FilmResult> {
-  const plan = planFilm(i.beats, i);
+  let plan = planFilm(i.beats, i);
   mkdirSync(i.dir, { recursive: true });
-  writeFileSync(join(i.dir, 'plan.json'), JSON.stringify(plan, null, 1));
   const issues = checkPlan(plan, i.askedSeconds);
-  let audit: Audit | null = null;
-  if (i.audit && !o.skipRender) { const s = await openFilm(plan, { scale: 0.5 }); try { audit = await auditFilm(s, plan); } finally { await s.close(); } issues.push(...audit.issues); }
-  const stats = o.skipRender ? null : await renderFilm(plan, i.dir, { ...i.render, out: i.out, audio: i.audio });
-  return { plan, issues, audit, stats };
+  let audit: Audit | null = null, stats: FilmStats | null = null, scores: SceneScore[] | null = null, encode: FilmResult['encode'] = null;
+  const recast: number[][] = [];
+  const audited = async () => { const s = await openFilm(plan, { scale: 0.5 }); try { return await auditFilm(s, plan); } finally { await s.close(); } };
+  if (!o.skipRender) {
+    // frames stay on disk until the film is final: a re-render writes over only the frames of the scenes it recast
+    stats = await renderFilm(plan, i.dir, { ...i.render, keepFrames: true });
+    if (i.audit || i.critic) audit = await audited();
+    if (i.critic && audit) {
+      const below = i.critic.below ?? FAIL_BELOW, clips = !!i.clips?.length;
+      scores = scoreScenes(plan, audit, { clipsAvailable: clips });
+      for (let attempt = 1; attempt <= (i.critic.attempts ?? 1); attempt++) {
+        const bad = failing(scores, below); if (!bad.length) break;
+        recast.push(bad);
+        const pool = { list: i.clips ?? [], handed: (i.clips ?? []).map(() => 0) };
+        const re = replanScenes(plan, i.beats, bad, i, attempt, pool);
+        plan = re.plan;
+        await renderFilm(plan, i.dir, { ...i.render, ranges: re.ranges, keepFrames: true });
+        audit = await audited();
+        scores = scoreScenes(plan, audit, { clipsAvailable: clips });
+      }
+      await i.critic.store?.(plan, scores);
+    }
+    if (audit) issues.push(...audit.issues);
+    if (i.out) encode = await encodeFrames(plan, join(i.dir, 'frames'), i.out, { audio: i.audio, format: i.render?.format, keepFrames: false });
+  }
+  writeFileSync(join(i.dir, 'plan.json'), JSON.stringify(plan, null, 1));
+  return { plan, issues, audit, stats, scores, recast, encode };
 }
