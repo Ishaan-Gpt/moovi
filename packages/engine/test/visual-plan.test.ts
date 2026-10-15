@@ -103,3 +103,25 @@ test('kinetic type: words land on the voice, pages of at most three lines, an ac
   assert.deepEqual(titleOf('The quick brown fox jumps over', 3), 'quick brown fox');
   assert.ok(itemsOf('speed, safety and style').length >= 2);
 });
+
+test('the graph prior and the planner’s own count rank identically (the graph is the source, the code a fallback)', async () => {
+  const { detectNeeds } = await import('../src/styles/kit/needs');
+  const bs = beats();
+  // what the SERVES edges give for each beat: artifacts by how many of the beat's needs they share
+  const prior = bs.map((b, i) => { const needs = new Set(detectNeeds(b.text, { index: i, count: bs.length })); return Object.fromEntries(ARTIFACTS.map(a => [a.id, a.needs.filter(n => needs.has(n)).length]).filter(([, n]) => (n as number) > 0)); });
+  const a = planFilm(bs, { format: 'vertical', seed: 3, image: '/data/site.png' }), b = planFilm(bs, { format: 'vertical', seed: 3, image: '/data/site.png', prior });
+  assert.deepEqual(b, a);
+  // and a prior that says something else changes the film
+  const flipped = prior.map(() => ({ 'card:stat': 9, 'chart:line': 9 }));
+  assert.notDeepEqual(planFilm(bs, { format: 'vertical', seed: 3, image: '/data/site.png', prior: flipped }), a);
+});
+
+test('an artifact built around one number is never cast when the beat says none; elements in a scene do not repeat the same words', () => {
+  const p = planFilm(beats(), { format: 'vertical', seed: 8 });
+  for (const s of p.scenes) {
+    const nums = numbersOf(SCRIPT[s.i]!);
+    for (const e of s.elements) if (['chart:counter', 'card:stat', 'card:price', 'chart:donut', 'chart:ring', 'chart:versus'].includes(e.art)) assert.ok(nums.length > 0, `${e.art} in scene ${s.i} has no number to show`);
+    const titles = s.elements.map(e => e.content.title).filter(Boolean);
+    assert.equal(new Set(titles).size, titles.length, `scene ${s.i} repeats a title: ${titles}`);
+  }
+});

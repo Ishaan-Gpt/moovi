@@ -6,6 +6,40 @@ import { q } from './q';
  * matching a brief to a style), presets, concept decks and each style's default stage.
  */
 export const craft = {
+  /* ───── the artifact library: icons, cards, devices, charts, 3D objects, particles, light, backdrops ───── */
+  seedArtifacts: q('seedArtifacts', false, 'Idempotent seed of the artifact library: each artifact and the needs it SERVES (the art director picks by need).', `
+UNWIND $rows AS r
+MERGE (a:Artifact {id: r.id})
+SET a.kind = r.kind, a.name = r.name, a.roles = r.roles, a.wants = r.wants, a.cost = r.cost, a.glyph = r.glyph
+WITH a, r
+UNWIND r.needs AS nid
+MERGE (n:Need {id: nid})
+MERGE (a)-[:SERVES]->(n)
+RETURN count(DISTINCT a) AS artifacts`),
+
+  artifactCount: q('artifactCount', true, 'How many artifacts the library holds (the seed runs when it is short).', `
+MATCH (a:Artifact) RETURN count(a) AS n`),
+
+  artifactsServing: q('artifactsServing', true, 'Artifacts that serve a scene’s needs, best first: more shared needs wins, cheaper to render breaks ties (kind filter optional).', `
+UNWIND $needs AS nid
+MATCH (a:Artifact)-[:SERVES]->(:Need {id: nid})
+WHERE $kinds IS NULL OR a.kind IN $kinds
+WITH a, count(*) AS hits
+RETURN a.id AS id, a.kind AS kind, a.wants AS wants, a.cost AS cost, hits
+ORDER BY hits DESC, a.cost ASC, a.id
+LIMIT $n`),
+
+  artifactNeeds: q('artifactNeeds', true, 'The needs one artifact serves (why the art director may pick it).', `
+MATCH (:Artifact {id: $id})-[:SERVES]->(n:Need)
+RETURN n.id AS need ORDER BY need`),
+
+  needsCoverage: q('needsCoverage', true, 'Needs no artifact serves yet (gaps in the library), and needs served by only one.', `
+MATCH (n:Need)
+OPTIONAL MATCH (a:Artifact)-[:SERVES]->(n)
+WITH n, count(a) AS served
+WHERE served < 2
+RETURN n.id AS need, served ORDER BY served, need`),
+
   /* ───── seeds ───── */
   seedComponents: q('seedComponents', false, 'Idempotent seed: components and the slots they can fill.', `
 UNWIND $rows AS r

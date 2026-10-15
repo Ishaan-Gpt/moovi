@@ -29,6 +29,64 @@ The ones the product stands on:
 
 ## craft (style knowledge, shared)
 
+### `seedArtifacts` (write)
+
+Idempotent seed of the artifact library: each artifact and the needs it SERVES (the art director picks by need).
+
+```cypher
+UNWIND $rows AS r
+MERGE (a:Artifact {id: r.id})
+SET a.kind = r.kind, a.name = r.name, a.roles = r.roles, a.wants = r.wants, a.cost = r.cost, a.glyph = r.glyph
+WITH a, r
+UNWIND r.needs AS nid
+MERGE (n:Need {id: nid})
+MERGE (a)-[:SERVES]->(n)
+RETURN count(DISTINCT a) AS artifacts
+```
+
+### `artifactCount` (read-only)
+
+How many artifacts the library holds (the seed runs when it is short).
+
+```cypher
+MATCH (a:Artifact) RETURN count(a) AS n
+```
+
+### `artifactsServing` (read-only)
+
+Artifacts that serve a scene’s needs, best first: more shared needs wins, cheaper to render breaks ties (kind filter optional).
+
+```cypher
+UNWIND $needs AS nid
+MATCH (a:Artifact)-[:SERVES]->(:Need {id: nid})
+WHERE $kinds IS NULL OR a.kind IN $kinds
+WITH a, count(*) AS hits
+RETURN a.id AS id, a.kind AS kind, a.wants AS wants, a.cost AS cost, hits
+ORDER BY hits DESC, a.cost ASC, a.id
+LIMIT $n
+```
+
+### `artifactNeeds` (read-only)
+
+The needs one artifact serves (why the art director may pick it).
+
+```cypher
+MATCH (:Artifact {id: $id})-[:SERVES]->(n:Need)
+RETURN n.id AS need ORDER BY need
+```
+
+### `needsCoverage` (read-only)
+
+Needs no artifact serves yet (gaps in the library), and needs served by only one.
+
+```cypher
+MATCH (n:Need)
+OPTIONAL MATCH (a:Artifact)-[:SERVES]->(n)
+WITH n, count(a) AS served
+WHERE served < 2
+RETURN n.id AS need, served ORDER BY served, need
+```
+
 ### `seedComponents` (write)
 
 Idempotent seed: components and the slots they can fill.
@@ -1440,6 +1498,43 @@ MATCH (s:Scene)-[:SHOWS]->(p:Place)
 RETURN p.name AS name, p.cc AS cc, count(DISTINCT s) AS scenes
 ORDER BY scenes DESC
 LIMIT $n
+```
+
+### `useArtifact` (write)
+
+The art director puts an artifact in a scene’s slot: (Scene)-[:USES_ARTIFACT {slot}]->(Artifact), with the layout it sits in.
+
+```cypher
+MATCH (r:Run {id: $run})
+MERGE (s:Scene {id: $scene})
+  ON CREATE SET s.i = $i
+MERGE (r)-[:HAS_SCENE]->(s)
+MERGE (a:Artifact {id: $art})
+  ON CREATE SET a.kind = $kind, a.name = $name
+MERGE (s)-[u:USES_ARTIFACT {slot: $slot}]->(a)
+SET u.layout = $layout, u.at = $at
+RETURN a.id AS id
+```
+
+### `artifactUsage` (read-only)
+
+How often this project’s films used each artifact (the art director varies; a worn-out one is penalised).
+
+```cypher
+MATCH (:Scene)-[u:USES_ARTIFACT]->(a:Artifact)
+RETURN a.id AS id, a.kind AS kind, count(u) AS n
+ORDER BY n DESC
+LIMIT $limit
+```
+
+### `artifactsInRun` (read-only)
+
+The artifacts of each scene of a run, by scene and slot (what the renderer is told to draw).
+
+```cypher
+MATCH (:Run {id: $run})-[:HAS_SCENE]->(s:Scene)-[u:USES_ARTIFACT]->(a:Artifact)
+RETURN s.i AS i, u.slot AS slot, u.layout AS layout, a.id AS id, a.kind AS kind
+ORDER BY s.i, u.slot
 ```
 
 ### `scenes` (read-only)
