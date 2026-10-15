@@ -48,7 +48,7 @@ window.__load = async (id, p) => {
   renderer.setPixelRatio(1); renderer.setSize(p.width, p.height, false);
   document.body.appendChild(renderer.domElement);
   fps = p.fps; dur = p.seconds;
-  if (p.texture) { p.textureObj = await loadTexture(p.texture); if (p.textureObj) p.textureAspect = p.textureObj.image.naturalWidth / p.textureObj.image.naturalHeight; }
+  if (p.texture) { p.textureObj = await loadTexture(p.texture, id === 'orbit' ? p.accent : null); if (p.textureObj) p.textureAspect = (p.textureObj.image.naturalWidth || p.textureObj.image.width) / (p.textureObj.image.naturalHeight || p.textureObj.image.height); }
   look = build(id, p);
   const gl = renderer.getContext(), dbg = gl.getExtension('WEBGL_debug_renderer_info');
   return { renderer: dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : 'unknown' };
