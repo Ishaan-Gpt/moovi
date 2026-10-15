@@ -8,7 +8,8 @@ import { s1kit } from '../src';
 const { Kit, runPlan, polish, pyRound, pyRoundN, pySplit } = s1kit;
 const here = dirname(fileURLToPath(import.meta.url));
 const worktree = resolve(here, '../../..');
-const ME = process.env.MOTIONEASY_ROOT ?? 'C:/Ishaan GPT/hackthons/MotionEasy';
+// an optional parity check against the original Python kit: set MOTIONEASY_ROOT to a MotionEasy checkout to run it
+const ME = process.env.MOTIONEASY_ROOT ?? '';
 const readJson = (p: string): any => JSON.parse(readFileSync(p, 'utf8'));
 const brandOf = (name: string) => readJson(join(ME, 'styles/style-1/brands', `${name}.json`));
 
