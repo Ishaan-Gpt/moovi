@@ -157,3 +157,20 @@ test('footage can fill the whole frame behind a scene: the words go white over i
     await s.close();
   } finally { await closeVisual(); }
 });
+
+test('a film is written as a real mp4 with no ffmpeg: H.264 encoded in the browser, muxed here, and it plays back', async t => {
+  if (!(await canRenderVisual())) { t.skip('no Chrome to drive'); return; }
+  const { renderFilmMp4, probeVideo } = await import('../src/visual/capture');
+  const { config } = await import('../src/config');
+  const plan = planFilm(beats(3, 2), { format: 'square', seed: 4, fps: 24 });
+  const out = join(config.data, 'visual-test', 'nofmpeg.mp4');
+  try {
+    const stats = await renderFilmMp4(plan, join(config.data, 'visual-test', 'mp4run'), out, { scale: 0.3, workers: 2 }).catch(e => { if (/cannot encode H.264/.test(String(e))) return null; throw e; });
+    if (!stats) { t.skip('this browser has no WebCodecs H.264 encoder'); return; }
+    const info = await probeVideo(out, 2.5);
+    assert.ok(info.decoded, 'the browser plays the file');
+    assert.ok(Math.abs(info.duration - plan.seconds) < 0.3, `the length is the film's (${info.duration} s for ${plan.seconds} s)`);
+    assert.equal(info.width, Math.round(1080 * 0.3 / 2) * 2);
+    assert.ok(info.spread > 3, 'a frame of it is a picture, not a flat colour');
+  } finally { await closeVisual(); }
+});

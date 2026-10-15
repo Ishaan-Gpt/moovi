@@ -28,6 +28,10 @@ The hook, the closing line and any very short line are set as **big type** (the 
 
 After a render every scene is scored 0-10 on what the sampled frames and the plan show: footage (when there is some), motion (the audit's energy over the scene's seconds), depth (ambient layers, slots at different z, a real 3D object), layers (several elements at once), richness (different kinds together) and a clean frame (no cover, no frozen or empty frame). The scores are stored on the Scene, and as running means per artifact and per layout in the craft graph (`rateArtifacts`, `rateLayouts`, read back by `artifactRatings`, `layoutRatings`). The planner prefers what scored well and avoids what scored badly (shrunk toward 7 when little is known). Scenes below 7 are cast again with a different seed and the artifacts that scored badly marked worn out; only their frames, plus the half second of the next transition that still shows them, are rendered again over the frames on disk (`renderFilm({ ranges })`). In `makeFilm` that is `critic: { attempts, below, store }`; in the crew, Lens does it after the audit and re-opens only the chunks that show those scenes, the sound events and the join (one round; `MOOVI_VISUAL_REDO=0` turns the recast off and keeps the scoring).
 
+## Without ffmpeg
+
+A film can be written with no ffmpeg at all: `renderFilmMp4` has each page render and encode its range to H.264 in the browser (WebCodecs, a keyframe every two seconds, no B-frames), and `mp4.ts` joins the samples into a progressive mp4 (ftyp, moov, mdat). Picture only (the sound mix needs ffmpeg), at the render size. `makeFilm` and `scripts/visual.ts make` use it automatically when ffmpeg is missing; a test writes a film this way and plays it back in the browser (right length, a real picture).
+
 ## Clean output (`qa.ts`)
 
 - `checkPlan` (pure): the length is within 2 s of the ask, scenes tile the timeline, every scene has elements, words, ambient depth and a transition, and no element's slot reaches into the caption band.

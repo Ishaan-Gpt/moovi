@@ -1,5 +1,5 @@
-import { spawn } from 'node:child_process';
-import { createReadStream, existsSync, mkdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { spawn, spawnSync } from 'node:child_process';
+import { createReadStream, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import { createRequire } from 'node:module';
 import { cpus, freemem } from 'node:os';
@@ -9,6 +9,7 @@ import { chromium, type Browser, type Page } from 'playwright-core';
 import { config } from '../config';
 import { ARTIFACTS } from './artifacts';
 import { FORMATS, bands, slotsOf, type Rect } from './layouts';
+import { muxMp4, type Sample } from './mp4';
 import { paletteOf } from './theme';
 import type { VPlan } from './types';
 
@@ -32,10 +33,11 @@ function listen(): Promise<number> {
       const url = decodeURIComponent((req.url ?? '/').split('?')[0]!);
       if (req.method === 'POST' && url.startsWith('/__frame/')) {
         const dir = sinks.get(url.slice(9)), name = new URL(req.url ?? '', 'http://x').searchParams.get('name') ?? '';
-        if (!dir || !/^f\d{5}\.(jpg|png)$/.test(name)) { res.writeHead(403).end(); return; }
+        if (!dir || !/^(f\d{5}\.(jpg|png)|r\d{5}\.bin)$/.test(name)) { res.writeHead(403).end(); return; }
         const chunks: Buffer[] = []; req.on('data', d => chunks.push(d as Buffer));
         req.on('end', () => { writeFileSync(join(dir, name), Buffer.concat(chunks)); res.writeHead(200).end('ok'); }); return;
       }
+      if (url === '/blank.html') { res.writeHead(200, { 'content-type': 'text/html' }); res.end('<!doctype html><title>blank</title>'); return; }
       if (url === '/page.html') { res.writeHead(200, { 'content-type': 'text/html' }); res.end(PAGE_HTML); return; }
       for (const [prefix, root] of roots()) {
         if (!url.startsWith(prefix)) continue;
@@ -81,7 +83,7 @@ export interface RenderOpts {
   ranges?: [number, number][];
   format?: 'jpeg' | 'png';
 }
-export interface Session { clips(): Promise<{ art: string; ok: boolean; dur: number; w: number; h: number }[]>; range(from: number, to: number, dir: string): Promise<number>; info: { renderer: string; rw: number; rh: number }; frame(n: number): Promise<Buffer>; thumb(n: number): Promise<{ w: number; h: number; px: number[] }>; boxes(n: number): Promise<{ art: string; job: string; x0: number; y0: number; x1: number; y1: number }[]>; prof(): Promise<Record<string, number> & { sections?: Record<string, { ms: number; n: number }> }>; close(): Promise<void> }
+export interface Session { encodeRange(from: number, to: number, dir: string, bitrate: number): Promise<number>; clips(): Promise<{ art: string; ok: boolean; dur: number; w: number; h: number }[]>; range(from: number, to: number, dir: string): Promise<number>; info: { renderer: string; rw: number; rh: number }; frame(n: number): Promise<Buffer>; thumb(n: number): Promise<{ w: number; h: number; px: number[] }>; boxes(n: number): Promise<{ art: string; job: string; x0: number; y0: number; x1: number; y1: number }[]>; prof(): Promise<Record<string, number> & { sections?: Record<string, { ms: number; n: number }> }>; close(): Promise<void> }
 
 /** The plan as the page needs it: slots per scene, image urls, palette, the caption band. */
 export function payload(plan: VPlan, o: { scale?: number } = {}) {
@@ -109,6 +111,7 @@ export async function openFilm(plan: VPlan, o: RenderOpts = {}): Promise<Session
   const fmt = o.format ?? 'jpeg';
   type W = { __frame: (n: number, f: string) => string; __thumb: (n: number) => { w: number; h: number; px: number[] }; __boxes: (n: number) => { art: string; job: string; x0: number; y0: number; x1: number; y1: number }[] };
   return {
+    async encodeRange(from, to, dir, bitrate) { const token = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`; sinks.set(token, dir); mkdirSync(dir, { recursive: true }); try { return await page.evaluate(([a, b, o]) => (window as unknown as { __encodeRange: (a: number, b: number, o: unknown) => Promise<number> }).__encodeRange(a as number, b as number, o), [from, to, { bitrate, sink: `http://127.0.0.1:${port}/__frame/${token}` }] as const); } finally { sinks.delete(token); } },
     clips: () => page.evaluate(() => (window as unknown as { __clips: () => { art: string; ok: boolean; dur: number; w: number; h: number }[] }).__clips()),
     async range(from, to, dir) { const token = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`; sinks.set(token, dir); mkdirSync(dir, { recursive: true }); try { return await page.evaluate(([a, b, f, s]) => (window as unknown as { __range: (a: number, b: number, f: string, s: string) => Promise<number> }).__range(a as number, b as number, f as string, s as string), [from, to, fmt, `http://127.0.0.1:${port}/__frame/${token}`] as const); } finally { sinks.delete(token); } }, info: { renderer: info.renderer, rw, rh },
     async frame(n) { return Buffer.from(await page.evaluate(([k, f]) => (window as unknown as W).__frame(k as number, f as string), [n, fmt] as const), 'base64'); },
@@ -224,4 +227,47 @@ export async function encodeFrames(plan: VPlan, framesDir: string, out: string, 
     if (!o.keepFrames) rmSync(framesDir, { recursive: true, force: true });
     return { out, encodeMs: performance.now() - t1, encodeError: null };
   } catch (e) { if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e; return { out: null, encodeMs: 0, encodeError: 'ffmpeg is not installed: the frames are in framesDir' }; }
+}
+
+/** Is ffmpeg there? (one cheap call) */
+export function hasFfmpeg(): boolean { return spawnSync(config.ffmpeg, ['-version'], { stdio: 'ignore' }).status === 0; }
+
+/**
+ * A film as an mp4 without ffmpeg: parallel pages render and encode H.264 in the browser (WebCodecs), each its own range, and the
+ * ranges are joined by the muxer in mp4.ts. Picture only (no audio), at the render size (scale 1 renders the format's own size).
+ */
+export async function renderFilmMp4(plan: VPlan, dir: string, out: string, o: RenderOpts & { bitrate?: number } = {}): Promise<FilmStats> {
+  const total = Math.max(1, Math.round(plan.seconds * plan.fps)), n = Math.max(1, Math.min(o.workers ?? defaultWorkers(), Math.floor(total / 60) || 1));
+  const rangesDir = join(dir, 'ranges'); rmSync(rangesDir, { recursive: true, force: true }); mkdirSync(rangesDir, { recursive: true });
+  const t0 = performance.now(), { rw, rh } = payload(plan, o), bitrate = o.bitrate ?? Math.round(rw * rh * plan.fps * 0.12);
+  const sessions = await Promise.all(Array.from({ length: n }, () => openFilm(plan, o)));
+  try { await Promise.all(sessions.map((s, w) => s.encodeRange(Math.floor((w * total) / n), Math.floor(((w + 1) * total) / n), rangesDir, bitrate))); }
+  finally { await Promise.all(sessions.map(s => s.close())); }
+  const captureMs = performance.now() - t0, samples: Sample[] = []; let desc: Uint8Array | null = null;
+  for (const f of readdirSync(rangesDir).filter(x => x.endsWith('.bin')).sort()) {
+    const buf = readFileSync(join(rangesDir, f)), hl = buf.readUInt32BE(0), head = JSON.parse(buf.subarray(4, 4 + hl).toString('utf8')) as { desc: number[]; samples: { key: boolean; ts: number; dur: number; len: number }[] };
+    desc ??= Uint8Array.from(head.desc);
+    let at = 4 + hl; for (const s of head.samples) { samples.push({ data: buf.subarray(at, at + s.len), ts: s.ts, dur: s.dur, key: s.key }); at += s.len; }
+  }
+  if (!desc || !desc.length) throw new Error('The browser gave no H.264 decoder configuration');
+  mkdirSync(dirname(out), { recursive: true }); writeFileSync(out, muxMp4(samples, desc, rw, rh)); rmSync(rangesDir, { recursive: true, force: true });
+  const totalMs = performance.now() - t0;
+  return { frames: total, seconds: plan.seconds, workers: n, captureMs, encodeMs: 0, totalMs, secPerSec: totalMs / 1000 / Math.max(0.001, plan.seconds), msPerFrame: captureMs / total, renderer: 'canvas2d + WebCodecs H.264', out, framesDir: '', encodeError: null };
+}
+
+/** Open a video file in the browser and report what it is and whether it decodes (used to check the mp4 the muxer writes). */
+export async function probeVideo(path: string, at = 1): Promise<{ duration: number; width: number; height: number; decoded: boolean; spread: number }> {
+  const [b, port] = await Promise.all([launch(), listen()]), ctx = await b.newContext(), page = await ctx.newPage();
+  try {
+    await page.goto(`http://127.0.0.1:${port}/blank.html`);
+    const code = `(async () => {
+      const v = document.createElement('video'); v.muted = true; v.src = '${dataUrl(path)}'; document.body.appendChild(v);
+      await new Promise((res, rej) => { v.onloadeddata = res; v.onerror = () => rej(new Error('the browser cannot play this file')); setTimeout(() => rej(new Error('timed out')), 15000); });
+      await new Promise(res => { v.onseeked = res; v.currentTime = Math.min(${at}, v.duration - 0.05); setTimeout(res, 4000); });
+      const c = document.createElement('canvas'); c.width = 48; c.height = 48; const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(v, 0, 0, 48, 48);
+      const d = g.getImageData(0, 0, 48, 48).data; let m = 0, s = 0; const n = d.length / 4; for (let i = 0; i < d.length; i += 4) m += d[i] + d[i + 1] + d[i + 2]; m /= n * 3; for (let i = 0; i < d.length; i += 4) s += ((d[i] + d[i + 1] + d[i + 2]) / 3 - m) ** 2;
+      return { duration: v.duration, width: v.videoWidth, height: v.videoHeight, decoded: v.videoWidth > 0, spread: Math.sqrt(s / n) };
+    })()`;
+    return (await page.evaluate(code)) as { duration: number; width: number; height: number; decoded: boolean; spread: number };
+  } finally { await ctx.close().catch(() => undefined); }
 }

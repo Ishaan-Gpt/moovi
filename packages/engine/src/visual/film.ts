@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { kit, type Ev, type Word } from '@moovi/skills';
-import { renderFilm, openFilm, encodeFrames, type FilmStats, type RenderOpts } from './capture';
+import { renderFilm, renderFilmMp4, hasFfmpeg, openFilm, encodeFrames, type FilmStats, type RenderOpts } from './capture';
 import { failing, replanScenes, scoreScenes, FAIL_BELOW, type SceneScore } from './critic';
 import { auditFilm, checkPlan, type Audit, type Issue } from './qa';
 import { planFilm, type PlanOptions } from './plan';
@@ -67,6 +67,12 @@ export async function makeFilm(i: FilmInput, o: { skipRender?: boolean } = {}): 
   const recast: number[][] = [];
   const audited = async () => { const s = await openFilm(plan, { scale: 0.5 }); try { return await auditFilm(s, plan); } finally { await s.close(); } };
   if (!o.skipRender) {
+    // no ffmpeg and nothing that needs the frames on disk: the browser encodes H.264 itself and the muxer writes the mp4 (picture only)
+    if (i.out && !hasFfmpeg() && !i.critic && !i.audit) {
+      stats = await renderFilmMp4(plan, i.dir, i.out, i.render);
+      writeFileSync(join(i.dir, 'plan.json'), JSON.stringify(plan, null, 1));
+      return { plan, issues, audit, stats, scores, recast, encode: { out: i.out, encodeMs: 0, encodeError: i.audio ? 'no ffmpeg: the mp4 has no sound (the audio was not mixed in)' : null } };
+    }
     // frames stay on disk until the film is final: a re-render writes over only the frames of the scenes it recast
     stats = await renderFilm(plan, i.dir, { ...i.render, keepFrames: true });
     if (i.audit || i.critic) audit = await audited();
@@ -86,7 +92,10 @@ export async function makeFilm(i: FilmInput, o: { skipRender?: boolean } = {}): 
       await i.critic.store?.(plan, scores);
     }
     if (audit) issues.push(...audit.issues);
-    if (i.out) encode = await encodeFrames(plan, join(i.dir, 'frames'), i.out, { audio: i.audio, format: i.render?.format, keepFrames: false });
+    if (i.out) {
+      if (hasFfmpeg()) encode = await encodeFrames(plan, join(i.dir, 'frames'), i.out, { audio: i.audio, format: i.render?.format, keepFrames: false });
+      else { const s2 = await renderFilmMp4(plan, i.dir, i.out, i.render); stats = { ...s2, totalMs: (stats?.totalMs ?? 0) + s2.totalMs }; encode = { out: i.out, encodeMs: 0, encodeError: i.audio ? 'no ffmpeg: the mp4 has no sound (the audio was not mixed in)' : null }; }
+    }
   }
   writeFileSync(join(i.dir, 'plan.json'), JSON.stringify(plan, null, 1));
   return { plan, issues, audit, stats, scores, recast, encode };
