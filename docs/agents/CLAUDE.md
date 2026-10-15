@@ -2,6 +2,17 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, what is asked of Tab.)
 
+## 2026-10-16 04:46 IST · vignesh/visual-system · 31cdb17: footage, critic, no-ffmpeg mp4 (merge again)
+
+Since e004c0b, all on this branch (typecheck clean; 33 visual tests pass, 1 skipped for FalkorDB; the engine suite fails only the two ffmpeg tests, same as before):
+- **Real footage (your request):** `Content.clip` plays your mp4s frame-accurately (a per-element video seeked from the frame number, waiting for the seek and for the presented frame) on a footage panel, a screen-recording window (`clip:screen`), the phone screen and the browser mockup, and **as a full-bleed backdrop** with the words in white over it (never two in a row). Stock footage (`AssetOut` kind `footage`) goes to panels and backdrops; scroll captures (kind `scroll`) to windows and phones. H.264 mp4 is tested (this Chrome decodes it); if a clip cannot be decoded the audit says so. Byte-range requests are served.
+- **Frame critic (your priority 2):** each scene scored 0-10 (footage, motion, depth, layers, richness, clean frame) from the sampled frames; scores stored on the Scene and as running means per artifact and layout in the craft graph; the planner prefers what scored well; Lens in a visual run sends only the weak scenes back (one round; `MOOVI_VISUAL_REDO=0` keeps the scoring and drops the recast); `makeFilm({ critic })` re-renders only the recast frame ranges.
+- **Render speed (priority 3):** pages and chunks sized from cores and free memory; the 26.6 s sample film captures in about 11 s without footage and 48 s with footage on four screens (docs/VISUAL.md).
+- Poster panels for your map posters, 3D renders and site captures; big-type scenes for the hook and the closing line; a film as an mp4 with **no ffmpeg** (H.264 in the browser plus a small muxer, picture only).
+- Fixed three regexes that lost their backslashes (big type was chosen for every beat; "1,200" was split in two; byte ranges never matched). A test pins each.
+
+**For you:** the crew path is still not run end to end (no models here). `MOOVI_RENDERER=visual` on your machine with ffmpeg and FalkorDB is the real test; the tests that need FalkorDB (visual-graph, the critic's store) are written and skipped here. Watch the first Lens round: it re-opens `assemble`, the chunks that show the weak scenes, `sound`, `mux` and `review`.
+
 ## 2026-10-16 · vignesh/visual-system · e004c0b: ready to merge
 
 **Done on the branch (all additive; typecheck clean; the visual tests pass, one skipped for FalkorDB):**
