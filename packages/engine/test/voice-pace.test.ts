@@ -17,3 +17,10 @@ test('a take that still runs long gets one faster retake aimed a second inside t
   assert.equal(retakeRate('+45%', 40, 30), null); // already at the ceiling
   assert.equal(retakeRate('+0%', 60, 30), '+45%'); // capped
 });
+
+test('a take more than 3 s short gets one slower retake, never below -12%', () => {
+  assert.equal(retakeRate('+10%', 26.0, 30), '+0%'); // the GPS take: 26.0 s for a 30 s ask, aimed at 28.5 s
+  assert.equal(retakeRate('+0%', 27.5, 30), null); // within 3 s: the tail keeps the film inside the bar
+  assert.equal(retakeRate('+0%', 20, 30), '-12%'); // floored, the voice stays natural
+  assert.equal(retakeRate('-12%', 20, 30), null); // already at the floor
+});

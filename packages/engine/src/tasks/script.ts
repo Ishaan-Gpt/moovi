@@ -173,12 +173,12 @@ export const voice: Handler = async ctx => {
   await ctx.activity('note', `Voice: ${cast.voice.name} (${cast.voice.id}, ${cast.rate}). ${cast.reason}`);
   ctx.note(`speaking as ${cast.voice.name}`);
   let v = await speakLines(dir, S.beats.map(b => b.say), { voice: cast.voice.id, rate: cast.rate, signal: ctx.signal });
-  // one faster take when the first runs past the asked length (Edge's rate is not linear in time)
-  const faster = retakeRate(cast.rate, v.seconds, (await ctx.out<Brief>('plan'))?.seconds);
-  if (faster) {
-    await ctx.activity('note', `Voice ran ${v.seconds.toFixed(1)} s; a second take at ${faster}`);
-    v = await speakLines(dir, S.beats.map(b => b.say), { voice: cast.voice.id, rate: faster, signal: ctx.signal });
-    cast.rate = faster;
+  // one retake when the first take misses the asked length (Edge's rate is not linear in time)
+  const retake = retakeRate(cast.rate, v.seconds, (await ctx.out<Brief>('plan'))?.seconds);
+  if (retake) {
+    await ctx.activity('note', `Voice ran ${v.seconds.toFixed(1)} s; a second take at ${retake}`);
+    v = await speakLines(dir, S.beats.map(b => b.say), { voice: cast.voice.id, rate: retake, signal: ctx.signal });
+    cast.rate = retake;
   }
   await recordSpoken(ctx, cast, v.stats, v.seconds);
   // room for the payoff: a short breath after the hook and before the ask
