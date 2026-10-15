@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { freemem } from 'node:os';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { CRAFT, project as P, run as runQ } from '@moovi/graph';
@@ -75,7 +76,7 @@ export const visualAssemble: Handler = async ctx => {
   const existing = await ctx.q<{ id: string }>(P.tasksOf, { run: ctx.run.id, kinds: ['render'] });
   let spawn: TaskSpec[] = [];
   if (!existing.length) {
-    const n = Math.max(1, Math.min(config.slots.render, Math.floor(frames / 120))), cuts = plan.scenes.map(s => Math.round(s.start * plan.fps)).filter(f => f > 0), bounds = [0];
+    const n = Math.max(1, Math.min(config.slots.render, Math.floor(frames / 120), Math.floor(freemem() / 2 ** 30 / 0.9))), cuts = plan.scenes.map(s => Math.round(s.start * plan.fps)).filter(f => f > 0), bounds = [0];
     for (let j = 1; j < n; j++) { const ideal = Math.round((frames * j) / n), near = cuts.reduce((b, c) => (Math.abs(c - ideal) < Math.abs(b - ideal) ? c : b), ideal); bounds.push(Math.abs(near - ideal) < frames / (n * 3) ? near : ideal); }
     bounds.push(frames);
     spawn = bounds.slice(0, -1).map((from, j) => ({ key: `render:${from}-${bounds[j + 1]}`, kind: 'render', agent: 'editor', resource: 'render' as const, title: `Render frames ${from}–${bounds[j + 1]}`, scope: `frames:${from}-${bounds[j + 1]}`, input: { from, to: bounds[j + 1], visual: true }, deps: ['assemble'], max: 2 }));
