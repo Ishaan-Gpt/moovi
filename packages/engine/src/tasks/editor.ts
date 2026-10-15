@@ -10,7 +10,8 @@ import { boxes, chunk } from '../render/host';
 import { geometry, layerOf, platformZone } from '../render/qa';
 import type { TaskSpec } from '../scheduler';
 import { checkParams } from './builder';
-import { filmKit } from './film';
+import { withVideoBackdrop } from './backdrop';
+import { filmKit, type AssetOut, type Board } from './film';
 
 /** The Editor's desk: plain code. Assemble the scenes into one film, render it in parallel chunks, mix and master
  * the sound, join them, deliver. */
@@ -19,11 +20,19 @@ export const assemble: Handler = async ctx => {
   const F = await filmKit(ctx);
   const k = F.kit;
   const progs = new Map((await ctx.outs<{ scene: number; program: string }>('build')).map(([, v]) => [v.scene, v.program]));
+  const board = await ctx.out<Board>('board');
+  const { W, H } = k;
+  const backdrops: string[] = [];
   const compiled = k.scenes.map((_, i) => {
     const f = progs.get(i) ?? join(ctx.dir, 'scenes', `${i}.json`);
     if (!existsSync(f)) throw new Error(`Scene ${i + 1} has no program`);
-    return k.compile(i, readJson<SceneProgram>(f));
+    // the scene's boarded video that was actually found (stock footage, the site's scroll capture)
+    const videos = (board?.shots[i]?.assets ?? []).map(a => F.assets.get(a.id)).filter((a): a is AssetOut => !!a && /\.mp4$/i.test(a.path)).map(a => ({ id: a.id, kind: a.kind }));
+    const b = withVideoBackdrop(readJson<SceneProgram>(f), videos, { W, H, paper: F.stage.stage });
+    if (b.used) backdrops.push(`${i + 1}:${b.used}`);
+    return k.compile(i, b.program);
   });
+  if (backdrops.length) await ctx.activity('note', `video backdrop added where the builder left boarded video out (scene:asset ${backdrops.join(', ')})`);
   const a = k.assemble(compiled);
   writeJson(join(ctx.dir, 'film.json'), a.spec);
   writeJson(join(ctx.dir, 'events.json'), a.events);
