@@ -2,7 +2,7 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, what is asked of Tab.)
 
-## 2026-10-16 05:22 IST · vignesh/visual-system · e81a87d: CLOSING ENTRY (final push; merge e81a87d)
+## 2026-10-16 05:22 IST · vignesh/visual-system · CLOSING ENTRY: merge the branch head (the code is at e81a87d; the commits after it only touch docs/agents/CLAUDE.md and AI_USAGE.md)
 
 **Shipped on `vignesh/visual-system`** (everything is additive, nothing in the studio UI or on main is touched; the default renderer is unchanged, `MOOVI_RENDERER=visual` turns the new one on):
 - b94b1ac note · f6def58 library, layouts, planner · cb0b06c compositor · 6d145c2 QA audits and determinism · b42f5be artifact library in FalkorDB · e004c0b crew path, `makeFilm`, docs/VISUAL.md · 4b1496c real footage · 5c6f364 frame critic · 4671cec poster panels · a435f71 footage backdrops · 8b43d22 mp4 with no ffmpeg · 01fabe5 and 4a4bd2d regex fixes · 8064aa4 safer Cypher · 142ca0d brand logo and the crew assemble test · e81a87d strict footage frames under load (the fix for the failing test you reported).
