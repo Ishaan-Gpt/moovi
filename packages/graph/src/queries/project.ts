@@ -361,6 +361,29 @@ RETURN p.name AS name, p.cc AS cc, count(DISTINCT s) AS scenes
 ORDER BY scenes DESC
 LIMIT $n`),
 
+  /* ───── the visual system: which artifacts a scene uses ───── */
+  useArtifact: q('useArtifact', false, 'The art director puts an artifact in a scene’s slot: (Scene)-[:USES_ARTIFACT {slot}]->(Artifact), with the layout it sits in.', `
+MATCH (r:Run {id: $run})
+MERGE (s:Scene {id: $scene})
+  ON CREATE SET s.i = $i
+MERGE (r)-[:HAS_SCENE]->(s)
+MERGE (a:Artifact {id: $art})
+  ON CREATE SET a.kind = $kind, a.name = $name
+MERGE (s)-[u:USES_ARTIFACT {slot: $slot}]->(a)
+SET u.layout = $layout, u.at = $at
+RETURN a.id AS id`),
+
+  artifactUsage: q('artifactUsage', true, 'How often this project’s films used each artifact (the art director varies; a worn-out one is penalised).', `
+MATCH (:Scene)-[u:USES_ARTIFACT]->(a:Artifact)
+RETURN a.id AS id, a.kind AS kind, count(u) AS n
+ORDER BY n DESC
+LIMIT $limit`),
+
+  artifactsInRun: q('artifactsInRun', true, 'The artifacts of each scene of a run, by scene and slot (what the renderer is told to draw).', `
+MATCH (:Run {id: $run})-[:HAS_SCENE]->(s:Scene)-[u:USES_ARTIFACT]->(a:Artifact)
+RETURN s.i AS i, u.slot AS slot, u.layout AS layout, a.id AS id, a.kind AS kind
+ORDER BY s.i, u.slot`),
+
   scenes: q('scenes', true, 'A run’s scene programs in order.', `
 MATCH (:Run {id: $run})-[:HAS_SCENE]->(s:Scene)
 RETURN s.id AS id, s.i AS i, s.program AS program, s.version AS version, s.qa AS qa

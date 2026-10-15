@@ -23,6 +23,8 @@ export interface PlanOptions {
   used?: Record<string, number>;
   /** the art director's own picks per beat (layout and artifact ids), honoured when valid */
   picks?: ({ layout?: string | null; artifacts?: string[] | null } | null)[];
+  /** per beat: artifact id → how many of the beat's needs the graph says it serves (the craft graph's SERVES edges); without it the planner counts the same overlap itself */
+  prior?: (Record<string, number> | null)[];
 }
 
 const h32 = (s: string) => parseInt(createHash('sha1').update(s).digest('hex').slice(0, 8), 16);
@@ -34,6 +36,8 @@ const pick = <T>(list: readonly T[], seed: number, key: string, avoid: T[] = [])
   return from[h32(`${seed}:${key}`) % from.length]!;
 };
 
+/** number-led artifacts that still read as a picture when the beat says no number */
+const SHAPE_OK = new Set(['chart:bars', 'chart:line', 'obj:tower']);
 const STOP = new Set('a an the and or but of to in on at for with is are was were be been it its this that these those you your we our they their i me my as by from so if not no do does did can will just more most very than then there here what which who how why when where'.split(' '));
 const words = (t: string) => t.replace(/[^\p{L}\p{N}%$€£.,'’\- ]/gu, ' ').split(/\s+/).filter(Boolean);
 
@@ -92,12 +96,13 @@ export function typeLines(b: BeatIn, seed: number, i: number): TypeLine[] {
 
 /* ───────── casting ───────── */
 
-interface Ctx { needs: Set<Need>; nums: number[]; hasImage: boolean; hasBrand: boolean; seed: number; i: number; prev: Set<string>; used: Record<string, number>; chosen: Set<string> }
+interface Ctx { prior: Record<string, number> | null; needs: Set<Need>; nums: number[]; hasImage: boolean; hasBrand: boolean; seed: number; i: number; prev: Set<string>; used: Record<string, number>; chosen: Set<string> }
 
 function score(a: Artifact, c: Ctx, role: string): number {
   if (a.wants === 'image' && !c.hasImage) return -99;
-  if (a.wants === 'numbers' && !c.nums.length && !c.needs.has('growth') && !c.needs.has('number') && !c.needs.has('percent') && !c.needs.has('money') && !c.needs.has('compare') && !c.needs.has('data')) return -50;
-  const overlap = a.needs.filter(n => c.needs.has(n)).length;
+  // an artifact built around a number needs the beat to say one; bars, a line and the tower may be shapes
+  if (a.wants === 'numbers' && !c.nums.length && !SHAPE_OK.has(a.id)) return -50;
+  const overlap = c.prior ? (c.prior[a.id] ?? 0) : a.needs.filter(n => c.needs.has(n)).length;
   // light and particles only where the beat asks for them; two number-led artifacts in one scene say the same thing twice
   if (role === 'ambient' && overlap === 0 && a.kind !== 'bg') return -3 + jit(c.seed, `${c.i}:${a.id}`) * 1.6;
   if (a.wants === 'numbers' && c.chosen.size && [...c.chosen].some(id => byId(id)?.wants === 'numbers')) return -6;
@@ -129,14 +134,19 @@ function layoutFor(needs: Set<Need>, seed: number, i: number, recent: LayoutId[]
   return pick(fresh.length ? fresh : pool, seed, `layout:${i}`);
 }
 
-function contentFor(a: Artifact, text: string, nums: number[], c: { image?: string | null; clip?: string | null; brand?: string | null }, role: 'main' | 'other', _variant: number): Content {
-  const title = titleOf(text, 4);
+function contentFor(a: Artifact, text: string, nums: number[], c: { image?: string | null; clip?: string | null; brand?: string | null }, role: 'main' | 'other', variant: number): Content {
+  // a scene's elements do not all say the same words: the main one takes the headline phrase, the others a clause or the key words each
+  const clauses = text.split(/[,;:.!?]|s[-–—]s/).map(s => s.trim()).filter(s => s.length > 2);
+  const pieces = [titleOf(text, 4), ...clauses.map(x => titleOf(x, 3)), titleOf(text.split(/s+/).slice(2).join(' '), 3)].filter((x, i, all) => x && all.indexOf(x) === i);
+  const title = pieces[variant % pieces.length] ?? titleOf(text, 4);
+  const items = itemsOf(text);
+  const rot = items.length > 2 ? [...items.slice(variant % items.length), ...items.slice(0, variant % items.length)] : items;
   switch (a.kind) {
-    case 'chart': return { title, numbers: nums.length ? nums : undefined, label: nums.length ? undefined : 'growth' };
-    case 'device': return { title, items: itemsOf(text), image: a.wants === 'image' ? c.image ?? undefined : role === 'main' ? c.image ?? undefined : undefined, clip: a.id === 'device:phone' || a.id === 'device:browser' ? c.clip ?? undefined : undefined, numbers: nums.length ? nums : undefined };
-    case 'card': return { title, items: itemsOf(text).slice(0, 4), numbers: nums.length ? nums : undefined };
+    case 'chart': return { title, numbers: nums.length ? nums : undefined };
+    case 'device': return { title, items: rot, image: a.wants === 'image' ? c.image ?? undefined : role === 'main' ? c.image ?? undefined : undefined, clip: a.id === 'device:phone' || a.id === 'device:browser' ? c.clip ?? undefined : undefined, numbers: nums.length ? nums : undefined };
+    case 'card': return { title, items: rot.slice(0, 4), numbers: nums.length ? nums : undefined };
     case 'object3d': return { title: c.brand ?? title, image: a.wants === 'image' ? c.image ?? undefined : undefined, numbers: nums.length ? nums : undefined };
-    case 'icon': return { label: titleOf(text, 2) };
+    case 'icon': return { label: pieces[(variant + 1) % pieces.length] ? titleOf(pieces[(variant + 1) % pieces.length]!, 2) : titleOf(text, 2) };
     default: return {};
   }
 }
@@ -146,7 +156,7 @@ export function castScene(b: BeatIn, i: number, count: number, o: PlanOptions, p
   const seed = o.seed ?? 7;
   const needs = new Set<Need>([...detectNeeds(b.text, { index: i, count }), ...(b.needs ?? []).filter(isNeed)]);
   const nums = numbersOf(b.text);
-  const c: Ctx = { needs, nums, hasImage: !!o.image, hasBrand: !!o.brand, seed, i, prev: new Set(prev ? [...prev.elements.map(e => e.art), ...prev.ambient] : []), used: usedHere, chosen: new Set() };
+  const c: Ctx = { prior: o.prior?.[i] ?? null, needs, nums, hasImage: !!o.image, hasBrand: !!o.brand, seed, i, prev: new Set(prev ? [...prev.elements.map(e => e.art), ...prev.ambient] : []), used: usedHere, chosen: new Set() };
   const given = o.picks?.[i] ?? null;
   const layout: LayoutId = given?.layout && (LAYOUT_IDS as readonly string[]).includes(given.layout) ? (given.layout as LayoutId) : layoutFor(needs, seed, i, recentLayouts);
   const slots = slotsOf(layout, o.format);

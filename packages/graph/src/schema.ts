@@ -6,11 +6,11 @@ import { write } from './client';
  */
 const LABELS = {
   craft: ['Component', 'Slot', 'Recipe', 'Transition', 'Track', 'Beat', 'Style', 'Law', 'Check', 'Skill', 'SkillSection',
-    'StyleSignature', 'Stage', 'Deck', 'Card', 'Film', 'Preset'],
+    'StyleSignature', 'Stage', 'Deck', 'Card', 'Film', 'Preset', 'Artifact', 'Need'],
   sys: ['User', 'Project', 'Place'],
   user: ['User', 'Lesson', 'Preference', 'AssetUse', 'VideoRef', 'PresetRef', 'Feedback', 'Film', 'Scene', 'Run'],
   project: ['Project', 'Agent', 'Chat', 'Message', 'Upload', 'Video', 'Run', 'Task', 'Source', 'Fact', 'Claim', 'Scene',
-    'Asset', 'Lattice', 'Decision', 'Issue', 'Clip', 'Page', 'Screenshot', 'Feedback', 'Place'],
+    'Asset', 'Lattice', 'Decision', 'Issue', 'Clip', 'Page', 'Screenshot', 'Feedback', 'Place', 'Look3D', 'Artifact'],
 } as const;
 
 async function index(graph: string, label: string, prop = 'id') {
