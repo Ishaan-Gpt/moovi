@@ -1,7 +1,8 @@
-# Everything Moovi needs on one machine: FalkorDB (memory), the studio (web) and the engine worker (makes the films).
-#   cp .env.example .env   # set CE_SECRET (and optionally a server model key)
+# Everything Moovi needs on one machine: FalkorDB (memory), the studio (web), the engine worker (makes the films)
+# and Caddy (HTTPS in front of the studio).
+#   cp .env.example .env   # set CE_SECRET (and SITE_ADDRESS on a server)
 #   docker compose up -d --build
-#   open http://localhost:3100/studio
+#   open http://localhost:3100/studio   (or https://<SITE_ADDRESS>/studio on a server)
 services:
   falkordb:
     image: falkordb/falkordb:6.0.2
@@ -12,9 +13,11 @@ services:
 
   studio:
     build: .
+    image: moovi:latest
     restart: unless-stopped
     depends_on: [falkordb]
-    ports: ["3100:3100"]
+    # local only: the public reaches the studio through Caddy
+    ports: ["127.0.0.1:3100:3100"]
     env_file: [.env]
     environment:
       FALKORDB_URL: falkor://falkordb:6379
@@ -22,16 +25,32 @@ services:
     volumes: [data:/data]
 
   worker:
-    build: .
+    image: moovi:latest
+    pull_policy: never
     restart: unless-stopped
-    depends_on: [falkordb]
+    depends_on: [falkordb, studio]
     command: ["pnpm", "--filter", "@contenteasy/engine", "exec", "tsx", "scripts/worker.ts"]
     env_file: [.env]
     environment:
       FALKORDB_URL: falkor://falkordb:6379
       CE_DATA_DIR: /data
+    # Chromium needs more shared memory than Docker's 64 MB default
+    shm_size: 1gb
     volumes: [data:/data]
+
+  caddy:
+    image: caddy:2.8
+    restart: unless-stopped
+    depends_on: [studio]
+    ports: ["80:80", "443:443"]
+    environment:
+      # a domain (or <ip>.sslip.io) gets a free HTTPS certificate; ":80" serves plain HTTP
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy:/data
 
 volumes:
   falkordb:
   data:
+  caddy:

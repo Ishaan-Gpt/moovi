@@ -1,0 +1,6 @@
+# HTTPS in front of the studio. SITE_ADDRESS is a domain (a certificate is fetched automatically) or ":80".
+{$SITE_ADDRESS} {
+	encode zstd gzip
+	redir / /studio 302
+	reverse_proxy studio:3100
+}
