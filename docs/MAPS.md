@@ -18,3 +18,5 @@ Scenes that name real places get a real map, captured frame by frame in the engi
 A still frame costs about 0.6 s (software rasteriser); frames mid-flight cost 1.5-3 s when new tiles must be fetched. Measure with `pnpm --filter @moovi/engine exec tsx scripts/map3.ts bench Paris Tokyo Sydney`. If a film is short on time, use `mode: 'globe'`.
 
 What is not done yet: compositing the rendered frames into the final film's scene program (the frames and `renderMap` are ready; the builder does not pull them in yet).
+
+![Real tiles on top, the globe fallback below: Paris, Tokyo, Sydney](img/maps-gallery.jpg)
