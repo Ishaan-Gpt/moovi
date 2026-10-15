@@ -316,6 +316,28 @@ SET s.i = $i, s.program = $program, s.version = coalesce(s.version, 0) + 1, s.by
 MERGE (r)-[:HAS_SCENE]->(s)
 RETURN s.version AS version`),
 
+  /* ───── 3D looks: the art director's pick per scene ───── */
+  useLook3d: q('useLook3d', false, 'The art director gives a scene a 3D look: (Scene)-[:USES_3D]->(Look3D), with his reason on the edge.', `
+MATCH (r:Run {id: $run})
+MERGE (s:Scene {id: $scene})
+  ON CREATE SET s.i = $i
+MERGE (r)-[:HAS_SCENE]->(s)
+MERGE (l:Look3D {id: $look})
+  ON CREATE SET l.name = $name
+MERGE (s)-[u:USES_3D]->(l)
+SET u.why = $why, u.at = $at
+RETURN l.id AS look`),
+
+  looksInRun: q('looksInRun', true, 'Which 3D look each scene of a run uses, in order.', `
+MATCH (:Run {id: $run})-[:HAS_SCENE]->(s:Scene)-[u:USES_3D]->(l:Look3D)
+RETURN s.i AS i, l.id AS look, u.why AS why
+ORDER BY s.i`),
+
+  look3dUsage: q('look3dUsage', true, 'How often each 3D look has been used in this project’s films (the art director varies them).', `
+MATCH (s:Scene)-[:USES_3D]->(l:Look3D)
+RETURN l.id AS look, count(DISTINCT s) AS scenes
+ORDER BY scenes DESC`),
+
   scenes: q('scenes', true, 'A run’s scene programs in order.', `
 MATCH (:Run {id: $run})-[:HAS_SCENE]->(s:Scene)
 RETURN s.id AS id, s.i AS i, s.program AS program, s.version AS version, s.qa AS qa

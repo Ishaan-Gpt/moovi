@@ -40,6 +40,8 @@ Moovi is built with AI coding assistance, disclosed here as the hackathon rules 
 
 | 2026-10-16 | Claude Code (Sonnet) | **Graph memory loop (Task 1, branch vignesh/graph-memory).** Feedback nodes in the user and project graphs (linked to Film, Run, Scene), 10 named queries (rejected styles, preferred voice, rewritten lines, rejected shots, caption notes, style taste, feedback trail), `engine/src/memory.ts` (record from chat edits, script diffs and studio controls; load; steer the style matcher and voice; memory blocks for the planner, art director and scribe), and a test that film 2 differs from film 1 because of the feedback. The FalkorDB part of the test was not run on the author machine (no Docker), so no before/after load timings are logged yet. | Set the task and rules; reviews the result |
 
+| 2026-10-16 | Claude Code (Sonnet) | **3D looks (Task 2, branch vignesh/3d).** Five deterministic three.js looks (particle field, product turntable with the site screenshot as texture, data tower chart, wireframe city, logo orbit) captured frame by frame in the engine's headless Chrome on SwiftShader; the art director picks a look per scene and it is stored as (Scene)-[:USES_3D]->(Look3D); tests prove frames are identical across pages and orders; render time measured per second of film (docs/3D.md). | Set the task and rules; reviews the result |
+
 The owner reviews and understands every part that ships. Architecture decisions are recorded in `docs/`.
 
 ## Vignesh B S (AI/ML engineer): the voice library
