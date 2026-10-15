@@ -1,0 +1,105 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { ARTIFACTS, GLYPHS, KINDS, byId } from '../src/visual/artifacts';
+import { LAYOUTS, LAYOUT_IDS, bands, slotsOf, FORMATS, type FormatId } from '../src/visual/layouts';
+import { isNeed } from '../src/styles/kit/needs';
+import { itemsOf, numbersOf, planFilm, titleOf, typeLines } from '../src/visual/plan';
+import type { BeatIn } from '../src/visual/types';
+
+const SCRIPT = [
+  'Most small teams lose hours every week to messy spreadsheets.',
+  'Meet Bluetoki: one place for orders, stock and customers.',
+  'We grew 40% in 6 months, with 1,200 happy customers.',
+  'It connects your shop, your phone and your team, everywhere.',
+  'Set it up in minutes, track every order, and never miss a sale.',
+  'Try Bluetoki free today.',
+];
+const beats = (): BeatIn[] => SCRIPT.map((text, i) => ({ text, start: i * 4, end: i * 4 + 4 }));
+
+test('the artifact library is complete and every tag is a real need', () => {
+  assert.equal(new Set(ARTIFACTS.map(a => a.id)).size, ARTIFACTS.length, 'ids are unique');
+  for (const k of KINDS) assert.ok(ARTIFACTS.some(a => a.kind === k), `no artifact of kind ${k}`);
+  assert.ok(ARTIFACTS.length >= 50, `${ARTIFACTS.length} artifacts`);
+  for (const a of ARTIFACTS) for (const n of a.needs) assert.ok(isNeed(n), `${a.id}: "${n}" is not a need`);
+  for (const g of GLYPHS) assert.ok(byId(`icon:${g}`), `no icon for ${g}`);
+  assert.equal(ARTIFACTS.filter(a => a.kind === 'icon').length, GLYPHS.length);
+});
+
+test('layouts: slots stay out of the caption band in every format', () => {
+  for (const f of Object.keys(FORMATS) as FormatId[]) {
+    const { caption, area } = bands(f), { W, H } = FORMATS[f];
+    assert.ok(area.y + area.h <= caption.y + 1e-6 || f === 'landscape' && area.y + area.h <= caption.y + 1e-6, `${f}: the area ends above the band`);
+    assert.ok(area.x >= 0 && area.x + area.w <= W && caption.y + caption.h <= H);
+    for (const l of LAYOUT_IDS) {
+      const slots = slotsOf(l, f);
+      assert.equal(slots.length, LAYOUTS.find(x => x.id === l)!.slots, `${l} slot count`);
+      for (const s of slots) {
+        assert.ok(s.rect.y >= area.y - 1 && s.rect.y + s.rect.h <= area.y + area.h + 1, `${f}/${l}/${s.id} leaves the visual area`);
+        assert.ok(s.rect.x >= area.x - 1 && s.rect.x + s.rect.w <= area.x + area.w + 1, `${f}/${l}/${s.id} leaves the width`);
+      }
+    }
+  }
+});
+
+test('planning is deterministic and every scene is well formed', () => {
+  const a = planFilm(beats(), { format: 'vertical', seed: 3, image: '/data/site.png', brand: 'Bluetoki' });
+  const b = planFilm(beats(), { format: 'vertical', seed: 3, image: '/data/site.png', brand: 'Bluetoki' });
+  assert.deepEqual(a, b);
+  assert.notDeepEqual(a, planFilm(beats(), { format: 'vertical', seed: 4, image: '/data/site.png', brand: 'Bluetoki' }));
+  assert.equal(a.scenes.length, SCRIPT.length);
+  assert.equal(a.seconds, 24);
+  for (const s of a.scenes) {
+    assert.equal(s.elements.length, slotsOf(s.layout, 'vertical').length, `scene ${s.i}: one element per slot`);
+    assert.equal(new Set(s.elements.map(e => e.art)).size, s.elements.length, `scene ${s.i}: no artifact twice`);
+    assert.ok(s.elements.every(e => byId(e.art)), 'every pick is in the library');
+    assert.ok(s.ambient.some(id => byId(id)!.kind === 'bg'), `scene ${s.i}: a backdrop`);
+    assert.ok(s.type.length > 0 && s.type.every(l => l.at.length === l.text.split(' ').length), 'a time per word');
+    assert.equal(s.end, a.scenes[s.i + 1]?.start ?? a.seconds, 'scenes tile the timeline');
+  }
+  assert.equal(a.scenes[0]!.transition, null);
+  for (let i = 1; i < a.scenes.length; i++) {
+    assert.ok(a.scenes[i]!.transition);
+    assert.notEqual(a.scenes[i]!.transition, a.scenes[i - 1]!.transition, 'no transition twice running');
+    assert.notEqual(a.scenes[i]!.camera, a.scenes[i - 1]!.camera, 'no camera move twice running');
+  }
+  const layouts = a.scenes.map(s => s.layout);
+  assert.ok(new Set(layouts).size >= 3, `layouts vary: ${layouts}`);
+  for (let i = 2; i < layouts.length; i++) assert.ok(!(layouts[i] === layouts[i - 1] && layouts[i] === layouts[i - 2]), 'no layout three times running');
+});
+
+test('an artifact that needs an image is never cast without one; the spoken numbers reach the charts', () => {
+  const none = planFilm(beats(), { format: 'vertical', seed: 5 });
+  for (const s of none.scenes) for (const e of s.elements) assert.notEqual(byId(e.art)!.wants, 'image', `${e.art} needs an image`);
+  const withImg = planFilm(beats(), { format: 'landscape', seed: 5, image: '/data/site.png', brand: 'Bluetoki' });
+  const num = withImg.scenes[2]!;
+  const numeric = num.elements.filter(e => e.content.numbers);
+  assert.ok(numeric.length > 0, 'the numbers scene shows its numbers');
+  assert.deepEqual(numeric[0]!.content.numbers, [40, 6, 1200]);
+  assert.deepEqual(numbersOf('We grew 40% in 6 months, with 1,200 happy customers.'), [40, 6, 1200]);
+  assert.deepEqual(numbersOf('no figures'), []);
+});
+
+test('the art director’s own picks are honoured, and the project’s habits are avoided', () => {
+  const picked = planFilm(beats(), { format: 'vertical', seed: 1, picks: [{ layout: 'split-side', artifacts: ['chart:versus', 'card:stat'] }] });
+  assert.equal(picked.scenes[0]!.layout, 'split-side');
+  assert.deepEqual(picked.scenes[0]!.elements.map(e => e.art), ['chart:versus', 'card:stat']);
+  const base = planFilm(beats(), { format: 'vertical', seed: 9 });
+  const heavy: Record<string, number> = {};
+  for (const e of base.scenes.flatMap(s => s.elements)) heavy[e.art] = 6;
+  const varied = planFilm(beats(), { format: 'vertical', seed: 9, used: heavy });
+  const overlap = (x: typeof base, y: typeof base) => x.scenes.flatMap(s => s.elements.map(e => e.art)).filter(id => y.scenes.flatMap(s => s.elements.map(e => e.art)).includes(id)).length;
+  assert.ok(overlap(varied, base) < base.scenes.flatMap(s => s.elements).length, 'the film changes when the library is used up');
+});
+
+test('kinetic type: words land on the voice, pages of at most three lines, an accent per line', () => {
+  const lines = typeLines({ text: 'We grew 40% in 6 months with 1,200 happy customers', start: 10, end: 14, words: 'We grew 40% in 6 months with 1,200 happy customers'.split(' ').map((w, k) => ({ w, start: 10 + k * 0.3, end: 10.25 + k * 0.3 })) }, 1, 0);
+  assert.ok(lines.length >= 3);
+  const all = lines.flatMap(l => l.at);
+  for (let k = 1; k < all.length; k++) assert.ok(all[k]! >= all[k - 1]!, 'times never go back');
+  assert.equal(all[0], 0);
+  assert.ok(Math.abs(all[2]! - 0.6) < 0.01, 'the third word is on the voice');
+  for (const l of lines) { assert.ok(l.text.length <= 20); if (l.em !== null) assert.ok(l.em < l.text.split(' ').length); }
+  for (let p = 0; p <= lines.at(-1)!.page; p++) assert.ok(lines.filter(l => l.page === p).length <= 3);
+  assert.deepEqual(titleOf('The quick brown fox jumps over', 3), 'quick brown fox');
+  assert.ok(itemsOf('speed, safety and style').length >= 2);
+});
