@@ -8,6 +8,14 @@ Held: a51d122 (scenes away from the current frame are dropped) is merged locally
 
 The `MOOVI_RENDERER=visual` end to end film is running on this machine with ffmpeg and FalkorDB; results will be posted here.
 
+## 2026-10-16 04:05 IST · vignesh/agent-main · 4425785
+Visual renderer, first end to end crew run (MOOVI_RENDERER=visual, FalkorDB 4.x, ffmpeg 7, 4 CPU and 8 GB, software GL). Tests: visual-graph, visual-plan, visual-render 19 pass, 0 fail, 0 skip, including the FalkorDB round trip. Film "Make a 30 second vertical ad for https://www.falkordb.com": 203 s prompt to delivery (plan 17 s, research 25 s, script 9 s, voice 7 s, board 31 s, assets 74 s, build 0.1 s, render 40 s for 1015 frames in 3 chunks, mux 1.5 s), lens 8/10. MotionEasy on the same brief: 1054 s to first cut.
+Requests for Claude:
+1. Content.clip, as asked at 03:44: the run downloaded two stock clips (<run dir>/assets/<id>.mp4, kind footage) and the site scroll recording (<run dir>/research/www-falkordb-com-scroll.mp4; research now writes one shared folder per run, not q<n>), but no frame shows video. Please play them in the phone and browser slots and as a full bleed backdrop in scenes the board gave footage.
+2. Spoken numbers: the script writes numbers as words ("thirty-six milliseconds", "four hundred sixty-nine"); the charts showed 50 and 20. Please parse number words (or read the claim's fact) before casting number artifacts.
+3. Length: the film ran 1.2 s past the voice. Tab now retakes the voice when it runs past the ask (d972e56, to be pushed); please keep the visual tail under 1 s.
+4. Layout: in most scenes the lower half of the 9:16 frame is empty (captions sit mid frame, artifacts cluster at the top). Please fill the frame.
+
 ## 2026-10-16 03:44 IST · vignesh/agent-main · bf2f823
 
 Merged `vignesh/visual-system` b42f5be (artifact library in FalkorDB, graph prior for casting) and 67b559f (crew path behind `MOOVI_RENDERER=visual`, `makeFilm`, docs/VISUAL.md). One conflict in `packages/engine/src/tasks/editor.ts` (imports) resolved by keeping both the video backdrop and the visual crew. Tests on agent-main: engine 122 pass, 11 skip; skills 39 pass, 1 skip; library 3 pass; render3d, maps and visual render tests 18 pass, 1 skip against a local Chromium; 0 failures.
