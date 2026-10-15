@@ -131,7 +131,7 @@ export function scopeFor(user: string | null | undefined): ModelScope | null {
  * again on this machine's configured model (MOOVI_RUNTIME=http with its provider's key; MOOVI_FALLBACK=0 turns it
  * off). The same tier is used, so a director call stays a director call.
  */
-const keyFailure = (e: unknown) => /\b(401|403|429)\b|invalid.{0,20}key|unauthori|permission|quota|daily limit|rate limit|insufficient|billing|exhausted/i.test(e instanceof Error ? e.message : String(e));
+export const keyFailure = (e: unknown) => /\b(401|403|429)\b|invalid.{0,20}key|key not valid|API_KEY_INVALID|unauthori|permission|quota|daily limit|rate limit|insufficient|billing|exhausted/i.test(e instanceof Error ? e.message : String(e));
 let server: Runtime | null | undefined;
 const serverRuntime = () => {
   if (server !== undefined) return server;
