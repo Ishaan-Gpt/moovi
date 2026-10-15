@@ -34,6 +34,17 @@ export const config = {
   assets: resolve(env('MOOVI_ASSETS_DIR') ?? join(REPO, 'packages', 'engine', 'assets')),
   ffmpeg: env('FFMPEG') ?? 'ffmpeg',
   ffprobe: env('FFPROBE') ?? 'ffprobe',
+  /**
+   * The voice (src/audio/lines.ts): Microsoft Edge's free voices by default. MOOVI_VOICE_ENGINE=elevenlabs uses
+   * ElevenLabs when ELEVENLABS_API_KEY is set (Edge speaks whenever it can't). Lines are cached by hash in `cache`.
+   */
+  voice: {
+    engine: (env('MOOVI_VOICE_ENGINE') === 'elevenlabs' ? 'elevenlabs' : 'edge') as 'edge' | 'elevenlabs',
+    elevenKey: env('ELEVENLABS_API_KEY'),
+    elevenVoice: env('ELEVENLABS_VOICE_ID'),
+    cache: resolve(env('MOOVI_VOICE_CACHE') ?? join(env('MOOVI_DATA_DIR') ?? join(REPO, 'data'), 'cache', 'voice')),
+    concurrency: num('MOOVI_VOICE_CONCURRENCY', 8),
+  },
   /** the browser the render pool drives (system Chrome by default, like MotionEasy's CLI) */
   chrome: { channel: env('MOOVI_CHROME_CHANNEL') ?? 'chrome', path: env('MOOVI_CHROME_PATH') },
   runtime: RUNTIME,
