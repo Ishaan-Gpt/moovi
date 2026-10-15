@@ -22,6 +22,7 @@ The ones the product stands on:
 | What a style leans on | `overUsed` | `algo.pageRank` over `(:Setup)-[:NEXT_TO]->(:Setup)` |
 | The library grows | `growSetup`, `grownSetups` | kept improvisations as `(:Setup {generated: true})` |
 | Why this film | `filmStory` | each beat's set-up, arc and site |
+| Memory of edits and rejections | `recordFeedback`, `rejectedStyles`, `preferredVoice`, `rewrittenLines`, `rejectedShots`, `styleTaste` | `(:Feedback)-[:ON_FILM]->(:Film)`, `-[:ON_SCENE]->(:Scene)`, `-[:IN_RUN]->(:Run)`, read before the next film |
 | What the matcher scores | `signatures` | style signatures |
 
 ## craft (style knowledge, shared)
@@ -666,6 +667,136 @@ WHERE v.bed IS NOT NULL
 RETURN v.bed AS bed
 ORDER BY v.at DESC
 LIMIT $n
+```
+
+### `recordFeedback` (write)
+
+A user edit or rejection becomes a Feedback node on its Film and Run (film, run and style are kept as refs so the next film can read them).
+
+```cypher
+MERGE (f:Film {id: $film})
+  ON CREATE SET f.project = $project, f.style = $style, f.title = $title, f.at = $at
+MERGE (r:Run {id: $run})
+  ON CREATE SET r.n = $runN, r.at = $at
+MERGE (r)-[:OF_FILM]->(f)
+MERGE (fb:Feedback {id: $id})
+  ON CREATE SET fb.kind = $kind, fb.rejected = $rejected, fb.before = $before, fb.after = $after, fb.value = $value,
+                fb.why = $why, fb.source = $source, fb.style = $style, fb.scene = $scene, fb.at = $at
+MERGE (fb)-[:ON_FILM]->(f)
+MERGE (fb)-[:IN_RUN]->(r)
+RETURN fb.id AS id
+```
+
+### `linkFeedbackScene` (write)
+
+A shot or line note also points at the Scene it was about (the scene sits in the film).
+
+```cypher
+MATCH (fb:Feedback {id: $id})-[:ON_FILM]->(f:Film)
+MERGE (s:Scene {id: $scene})
+  ON CREATE SET s.i = $i
+MERGE (fb)-[:ON_SCENE]->(s)
+MERGE (s)-[:IN_FILM]->(f)
+```
+
+### `rejectedStyles` (read-only)
+
+Styles this user turned down, most often first, with their reasons (the matcher and the planner steer away).
+
+```cypher
+MATCH (fb:Feedback {kind: 'style', rejected: true})
+WHERE fb.value IS NOT NULL
+RETURN fb.value AS style, count(fb) AS n, max(fb.at) AS last, collect(fb.why) AS reasons
+ORDER BY n DESC, last DESC
+LIMIT $n
+```
+
+### `preferredVoice` (read-only)
+
+The voice this user keeps choosing: picks minus rejections per voice, best first.
+
+```cypher
+MATCH (fb:Feedback {kind: 'voice'})
+WHERE fb.value IS NOT NULL
+WITH fb.value AS voice, sum(CASE WHEN fb.rejected THEN -1 ELSE 1 END) AS score, count(fb) AS n, max(fb.at) AS last
+WHERE score > 0
+RETURN voice, score, n, last
+ORDER BY score DESC, last DESC
+LIMIT $n
+```
+
+### `rejectedVoices` (read-only)
+
+Voices this user turned down more than they chose (the voice step never picks them).
+
+```cypher
+MATCH (fb:Feedback {kind: 'voice'})
+WHERE fb.value IS NOT NULL
+WITH fb.value AS voice, sum(CASE WHEN fb.rejected THEN -1 ELSE 1 END) AS score, max(fb.at) AS last
+WHERE score < 0
+RETURN voice, score, last
+ORDER BY last DESC
+LIMIT $n
+```
+
+### `rewrittenLines` (read-only)
+
+Script lines the user rewrote or sent back: what was said, what it became, why, in which film (the planner and Scribe write like the after).
+
+```cypher
+MATCH (fb:Feedback {kind: 'script_line'})-[:ON_FILM]->(f:Film)
+WHERE fb.before IS NOT NULL AND fb.after IS NOT NULL
+RETURN fb.before AS before, fb.after AS after, fb.why AS why, f.title AS film, fb.at AS at
+ORDER BY fb.at DESC
+LIMIT $n
+```
+
+### `rejectedShots` (read-only)
+
+Shots the user sent back: the scene, what it was, why and the style of its film (the Art Director designs another).
+
+```cypher
+MATCH (fb:Feedback {kind: 'shot', rejected: true})-[:ON_FILM]->(f:Film)
+OPTIONAL MATCH (fb)-[:ON_SCENE]->(s:Scene)
+RETURN s.i AS scene, fb.before AS shot, fb.why AS why, f.style AS style, f.title AS film, fb.at AS at
+ORDER BY fb.at DESC
+LIMIT $n
+```
+
+### `captionNotes` (read-only)
+
+What the user said about captions and sound (size, place, level), newest first.
+
+```cypher
+MATCH (fb:Feedback)-[:ON_FILM]->(f:Film)
+WHERE fb.kind IN ['caption', 'sound']
+RETURN fb.kind AS kind, fb.why AS why, fb.value AS value, f.style AS style, fb.at AS at
+ORDER BY fb.at DESC
+LIMIT $n
+```
+
+### `styleTaste` (read-only)
+
+Per style: how many of this user’s films got notes and how many notes were rejections (two hops: Feedback → Film).
+
+```cypher
+MATCH (fb:Feedback)-[:ON_FILM]->(f:Film)
+WHERE f.style IS NOT NULL
+RETURN f.style AS style, count(DISTINCT f) AS films, count(fb) AS notes, sum(CASE WHEN fb.rejected THEN 1 ELSE 0 END) AS rejected
+ORDER BY rejected DESC
+```
+
+### `feedbackTrail` (read-only)
+
+Why a film changed: every note on it with its scene and run, in order.
+
+```cypher
+MATCH (fb:Feedback)-[:ON_FILM]->(f:Film {id: $film})
+OPTIONAL MATCH (fb)-[:ON_SCENE]->(s:Scene)
+OPTIONAL MATCH (fb)-[:IN_RUN]->(r:Run)
+RETURN fb.id AS id, fb.kind AS kind, fb.rejected AS rejected, fb.before AS before, fb.after AS after, fb.value AS value,
+       fb.why AS why, s.i AS scene, r.id AS run, fb.at AS at
+ORDER BY fb.at
 ```
 
 ## proj_<pid> (one per project)
@@ -1370,6 +1501,41 @@ MATCH (:Agent {id: $agent})-[:MADE]->(d:Decision)
 RETURN d.id AS id, d.kind AS kind, d.why AS why, d.target AS target, d.at AS at
 ORDER BY d.at DESC
 LIMIT $n
+```
+
+### `noteFeedback` (write)
+
+A user edit or rejection is kept on the real Run and Video (the film) it was about, so “why” can show it.
+
+```cypher
+MATCH (r:Run {id: $run})<-[:BUILT_BY]-(v:Video)
+MERGE (fb:Feedback {id: $id})
+  ON CREATE SET fb.kind = $kind, fb.rejected = $rejected, fb.before = $before, fb.after = $after, fb.value = $value,
+                fb.why = $why, fb.source = $source, fb.scene = $scene, fb.at = $at
+MERGE (fb)-[:IN_RUN]->(r)
+MERGE (fb)-[:ON_FILM]->(v)
+RETURN fb.id AS id
+```
+
+### `noteFeedbackScene` (write)
+
+The note also points at the real Scene it was about.
+
+```cypher
+MATCH (fb:Feedback {id: $id}), (s:Scene {id: $scene})
+MERGE (fb)-[:ON_SCENE]->(s)
+```
+
+### `feedbackOnRun` (read-only)
+
+The notes the user gave on a run, with the scene each was about.
+
+```cypher
+MATCH (fb:Feedback)-[:IN_RUN]->(:Run {id: $run})
+OPTIONAL MATCH (fb)-[:ON_SCENE]->(s:Scene)
+RETURN fb.id AS id, fb.kind AS kind, fb.rejected AS rejected, fb.before AS before, fb.after AS after, fb.value AS value,
+       fb.why AS why, s.i AS scene
+ORDER BY fb.at
 ```
 
 ## styles (what every reel style remembers)

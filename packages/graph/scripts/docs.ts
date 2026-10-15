@@ -34,6 +34,7 @@ The ones the product stands on:
 | What a style leans on | \`overUsed\` | \`algo.pageRank\` over \`(:Setup)-[:NEXT_TO]->(:Setup)\` |
 | The library grows | \`growSetup\`, \`grownSetups\` | kept improvisations as \`(:Setup {generated: true})\` |
 | Why this film | \`filmStory\` | each beat's set-up, arc and site |
+| Memory of edits and rejections | \`recordFeedback\`, \`rejectedStyles\`, \`preferredVoice\`, \`rewrittenLines\`, \`rejectedShots\`, \`styleTaste\` | \`(:Feedback)-[:ON_FILM]->(:Film)\`, \`-[:ON_SCENE]->(:Scene)\`, \`-[:IN_RUN]->(:Run)\`, read before the next film |
 | What the matcher scores | \`signatures\` | style signatures |
 
 ${section('craft (style knowledge, shared)', groups[0]!)}
