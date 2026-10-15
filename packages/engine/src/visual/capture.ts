@@ -44,7 +44,7 @@ function listen(): Promise<number> {
         const full = normalize(join(root, url.slice(prefix.length)));
         if (!full.startsWith(normalize(root) + sep) || !existsSync(full) || !statSync(full).isFile()) break;
         // byte ranges: a <video> cannot seek in a file the server will only send whole
-        const size = statSync(full).size, type = MIME[extname(full).toLowerCase()] ?? 'application/octet-stream', range = req.headers.range?.match(/bytes=(d*)-(d*)/);
+        const size = statSync(full).size, type = MIME[extname(full).toLowerCase()] ?? 'application/octet-stream', range = req.headers.range?.match(/bytes=(\d*)-(\d*)/);
         if (range) { const start = range[1] ? Number(range[1]) : 0, end = range[2] ? Math.min(Number(range[2]), size - 1) : size - 1; res.writeHead(206, { 'content-type': type, 'content-length': end - start + 1, 'content-range': `bytes ${start}-${end}/${size}`, 'accept-ranges': 'bytes' }); createReadStream(full, { start, end }).pipe(res); return; }
         res.writeHead(200, { 'content-type': type, 'content-length': size, 'accept-ranges': 'bytes', 'cache-control': 'no-store' });
         createReadStream(full).pipe(res); return;
@@ -123,6 +123,9 @@ export async function openFilm(plan: VPlan, o: RenderOpts = {}): Promise<Session
 }
 
 /** pages rendering at once: half the cores, at most 4, and only as many as the free memory carries (a page is about 0.7 GB with footage) */
+/** The local file server's address (it starts on first use). */
+export async function serverBase(): Promise<string> { return `http://127.0.0.1:${await listen()}`; }
+
 export const defaultWorkers = (freeBytes = freemem(), cores = cpus().length) => Math.max(1, Math.min(4, Math.floor(cores / 2), Math.floor(freeBytes / 2 ** 30 / 0.9)));
 
 export interface FilmStats { frames: number; seconds: number; workers: number; captureMs: number; encodeMs: number; totalMs: number; /** wall seconds per second of film */ secPerSec: number; msPerFrame: number; renderer: string; out: string | null; framesDir: string; encodeError: string | null }

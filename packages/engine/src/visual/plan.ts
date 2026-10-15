@@ -60,7 +60,11 @@ export function titleOf(text: string, max = 4): string {
 }
 
 /** short phrases for a list-like element: the beat's own list, else its clauses, else its words in threes */
+/** "1,200" is one number, not two clauses */
+const noThousands = (t: string) => t.replace(/(\d),(?=\d{3}\b)/g, '$1');
+
 export function itemsOf(text: string): string[] {
+  text = noThousands(text);
   const li = listItems(text);
   if (li.length >= 2) return li;
   const clauses = text.split(/[,;:.!?]|\s[-–—]\s/).map(s => s.trim()).filter(s => s.split(/\s+/).length >= 1 && s.length > 1);
@@ -155,6 +159,7 @@ function layoutFor(needs: Set<Need>, seed: number, i: number, recent: LayoutId[]
 
 function contentFor(a: Artifact, text: string, nums: number[], c: { image?: string | null; brand?: string | null }, role: 'main' | 'other', variant: number, clip: { path: string; kind: 'footage' | 'scroll' | 'recording'; at: number } | null, photo: string | null = null): Content {
   // a scene's elements do not all say the same words: the main one takes the headline phrase, the others a clause or the key words each
+  text = noThousands(text);
   const clauses = text.split(/[,;:.!?]|\s[-–—]\s/).map(s => s.trim()).filter(s => s.length > 2);
   const pieces = [titleOf(text, 4), ...clauses.map(x => titleOf(x, 3)), titleOf(text.split(/\s+/).slice(2).join(' '), 3)].filter((x, i, all) => x && all.indexOf(x) === i);
   const title = pieces[variant % pieces.length] ?? titleOf(text, 4);

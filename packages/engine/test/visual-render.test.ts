@@ -174,3 +174,24 @@ test('a film is written as a real mp4 with no ffmpeg: H.264 encoded in the brows
     assert.ok(info.spread > 3, 'a frame of it is a picture, not a flat colour');
   } finally { await closeVisual(); }
 });
+
+test('the local server answers byte ranges (a video cannot seek in a file that is only sent whole)', async () => {
+  const { config } = await import('../src/config');
+  const { mkdirSync, writeFileSync } = await import('node:fs');
+  const { serverBase } = await import('../src/visual/capture');
+  const dir = join(config.data, 'visual-test'); mkdirSync(dir, { recursive: true });
+  const bytes = Buffer.from(Array.from({ length: 1000 }, (_, k) => k % 251)); writeFileSync(join(dir, 'range.bin'), bytes);
+  try {
+    const base = await serverBase();
+    const part = await fetch(base + '/data/visual-test/range.bin', { headers: { range: 'bytes=100-199' } });
+    assert.equal(part.status, 206);
+    assert.equal(part.headers.get('content-range'), 'bytes 100-199/1000');
+    assert.deepEqual(Buffer.from(await part.arrayBuffer()), bytes.subarray(100, 200));
+    const tail = await fetch(base + '/data/visual-test/range.bin', { headers: { range: 'bytes=900-' } });
+    assert.equal(tail.status, 206);
+    assert.equal((await tail.arrayBuffer()).byteLength, 100);
+    const whole = await fetch(base + '/data/visual-test/range.bin');
+    assert.equal(whole.status, 200);
+    assert.equal(whole.headers.get('accept-ranges'), 'bytes');
+  } finally { await closeVisual(); }
+});

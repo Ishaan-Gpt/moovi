@@ -168,3 +168,9 @@ test('big type is for the hook, the closing line and very short lines, not for e
   assert.ok(p.scenes.filter(s => s.layout === 'type').length <= 3, 'never two in a row, and not most of the film');
   for (let i = 1; i < p.scenes.length; i++) assert.ok(!(p.scenes[i]!.layout === 'type' && p.scenes[i - 1]!.layout === 'type'));
 });
+
+test('a number with a thousands comma is one number, not two clauses', () => {
+  assert.deepEqual(itemsOf('We have 1,200 happy customers, 40 countries and one goal').filter(x => /^\d$/.test(x)), [], 'no stray "1"');
+  const p = planFilm([{ text: 'We grew 40% in 6 months, with 1,200 happy customers across the world.', start: 0, end: 4 }, { text: 'Meet Bluetoki today.', start: 4, end: 8 }, { text: 'Try it.', start: 8, end: 12 }], { format: 'vertical', seed: 11, picks: [{ layout: 'callouts' }] });
+  for (const e of p.scenes[0]!.elements) for (const v of [e.content.title, e.content.label, ...(e.content.items ?? [])]) if (v !== undefined) assert.ok(!/^\d{1,2}$/.test(v.trim()) || e.art.startsWith('chart:'), `"${v}" in ${e.art} is a stray fragment`);
+});
