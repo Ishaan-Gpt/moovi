@@ -17,7 +17,8 @@ export interface PlanOptions {
   seed?: number;
   /** a capture of the brand's site or a clip frame (a path in the data dir): browser mockups and brand tiles use it */
   image?: string | null;
-  clip?: string | null;
+  /** real footage the footage agent and the researcher brought: stock clips, scroll captures, screen recordings (paths in the data dir) */
+  clips?: { path: string; kind: 'footage' | 'scroll' | 'recording'; seconds?: number }[];
   brand?: string | null;
   /** artifact id → times used in this project's earlier films (from the graph): the art director varies */
   used?: Record<string, number>;
@@ -96,10 +97,12 @@ export function typeLines(b: BeatIn, seed: number, i: number): TypeLine[] {
 
 /* ───────── casting ───────── */
 
-interface Ctx { prior: Record<string, number> | null; needs: Set<Need>; nums: number[]; hasImage: boolean; hasBrand: boolean; seed: number; i: number; prev: Set<string>; used: Record<string, number>; chosen: Set<string> }
+interface Ctx { clipsLeft: number; prior: Record<string, number> | null; needs: Set<Need>; nums: number[]; hasImage: boolean; hasBrand: boolean; seed: number; i: number; prev: Set<string>; used: Record<string, number>; chosen: Set<string> }
 
 function score(a: Artifact, c: Ctx, role: string): number {
   if (a.wants === 'image' && !c.hasImage) return -99;
+  // footage only when there is some; and when there is, it gets the main slot often (real moving pictures are the bar)
+  if (a.wants === 'clip') { if (!c.clipsLeft) return -99; }
   // an artifact built around a number needs the beat to say one; bars, a line and the tower may be shapes
   if (a.wants === 'numbers' && !c.nums.length && !SHAPE_OK.has(a.id)) return -50;
   const overlap = c.prior ? (c.prior[a.id] ?? 0) : a.needs.filter(n => c.needs.has(n)).length;
@@ -112,6 +115,7 @@ function score(a: Artifact, c: Ctx, role: string): number {
   s -= (c.used[a.id] ?? 0) * 0.7;
   if (c.chosen.has(a.id)) s -= 99;
   s -= (a.cost - 1) * 0.3;
+  if (a.wants === 'clip') s += 7;
   return s + jit(c.seed, `${c.i}:${a.id}`) * 1.6;
 }
 
@@ -134,7 +138,7 @@ function layoutFor(needs: Set<Need>, seed: number, i: number, recent: LayoutId[]
   return pick(fresh.length ? fresh : pool, seed, `layout:${i}`);
 }
 
-function contentFor(a: Artifact, text: string, nums: number[], c: { image?: string | null; clip?: string | null; brand?: string | null }, role: 'main' | 'other', variant: number): Content {
+function contentFor(a: Artifact, text: string, nums: number[], c: { image?: string | null; brand?: string | null }, role: 'main' | 'other', variant: number, clip: { path: string; kind: 'footage' | 'scroll' | 'recording'; at: number } | null): Content {
   // a scene's elements do not all say the same words: the main one takes the headline phrase, the others a clause or the key words each
   const clauses = text.split(/[,;:.!?]|s[-–—]s/).map(s => s.trim()).filter(s => s.length > 2);
   const pieces = [titleOf(text, 4), ...clauses.map(x => titleOf(x, 3)), titleOf(text.split(/s+/).slice(2).join(' '), 3)].filter((x, i, all) => x && all.indexOf(x) === i);
@@ -142,8 +146,9 @@ function contentFor(a: Artifact, text: string, nums: number[], c: { image?: stri
   const items = itemsOf(text);
   const rot = items.length > 2 ? [...items.slice(variant % items.length), ...items.slice(0, variant % items.length)] : items;
   switch (a.kind) {
+    case 'clip': return clip ? { title, clip: clip.path, clipKind: clip.kind, clipAt: clip.at } : { title };
     case 'chart': return { title, numbers: nums.length ? nums : undefined };
-    case 'device': return { title, items: rot, image: a.wants === 'image' ? c.image ?? undefined : role === 'main' ? c.image ?? undefined : undefined, clip: a.id === 'device:phone' || a.id === 'device:browser' ? c.clip ?? undefined : undefined, numbers: nums.length ? nums : undefined };
+    case 'device': return { title, items: rot, image: a.wants === 'image' ? c.image ?? undefined : role === 'main' ? c.image ?? undefined : undefined, ...(clip && (a.id === 'device:phone' || a.id === 'device:browser') ? { clip: clip.path, clipKind: clip.kind, clipAt: clip.at } : {}), numbers: nums.length ? nums : undefined };
     case 'card': return { title, items: rot.slice(0, 4), numbers: nums.length ? nums : undefined };
     case 'object3d': return { title: c.brand ?? title, image: a.wants === 'image' ? c.image ?? undefined : undefined, numbers: nums.length ? nums : undefined };
     case 'icon': return { label: pieces[(variant + 1) % pieces.length] ? titleOf(pieces[(variant + 1) % pieces.length]!, 2) : titleOf(text, 2) };
@@ -155,11 +160,22 @@ function contentFor(a: Artifact, text: string, nums: number[], c: { image?: stri
 export const needsFor = (b: BeatIn, i: number, n: number): Need[] => [...new Set<Need>([...detectNeeds(b.text, { index: i, count: n }), ...(b.needs ?? []).filter(isNeed)])];
 
 /** One scene from one beat. */
-export function castScene(b: BeatIn, i: number, count: number, o: PlanOptions, prev: VScene | null, recentLayouts: LayoutId[], usedHere: Record<string, number>): VScene {
+/** The footage pool of a film: clips are handed out round-robin, each time from a different moment of the clip. */
+export interface ClipPool { list: NonNullable<PlanOptions['clips']>; handed: number[] }
+const nextClip = (pool: ClipPool, art: string): { path: string; kind: 'footage' | 'scroll' | 'recording'; at: number } | null => {
+  if (!pool.list.length) return null;
+  // a screen recording belongs in a window, stock footage in a panel: take the least used clip of the fitting kind, else the least used
+  const want = art === 'clip:screen' || art === 'device:browser' ? ['scroll', 'recording'] : ['footage'];
+  const order = pool.list.map((c, k) => k).sort((x, y) => (want.includes(pool.list[x]!.kind) ? 0 : 1) - (want.includes(pool.list[y]!.kind) ? 0 : 1) || pool.handed[x]! - pool.handed[y]! || x - y);
+  const k = order[0]!, c = pool.list[k]!, n = pool.handed[k]!++;
+  return { path: c.path, kind: c.kind, at: +((c.seconds ?? 8) / 3 * n % Math.max(1, c.seconds ?? 8)).toFixed(2) };
+};
+
+export function castScene(b: BeatIn, i: number, count: number, o: PlanOptions, prev: VScene | null, recentLayouts: LayoutId[], usedHere: Record<string, number>, pool: ClipPool = { list: [], handed: [] }): VScene {
   const seed = o.seed ?? 7;
   const needs = new Set<Need>(needsFor(b, i, count));
   const nums = numbersOf(b.text);
-  const c: Ctx = { prior: o.prior?.[i] ?? null, needs, nums, hasImage: !!o.image, hasBrand: !!o.brand, seed, i, prev: new Set(prev ? [...prev.elements.map(e => e.art), ...prev.ambient] : []), used: usedHere, chosen: new Set() };
+  const c: Ctx = { clipsLeft: pool.list.length, prior: o.prior?.[i] ?? null, needs, nums, hasImage: !!o.image, hasBrand: !!o.brand, seed, i, prev: new Set(prev ? [...prev.elements.map(e => e.art), ...prev.ambient] : []), used: usedHere, chosen: new Set() };
   const given = o.picks?.[i] ?? null;
   const layout: LayoutId = given?.layout && (LAYOUT_IDS as readonly string[]).includes(given.layout) ? (given.layout as LayoutId) : layoutFor(needs, seed, i, recentLayouts);
   const slots = slotsOf(layout, o.format);
@@ -180,7 +196,7 @@ export function castScene(b: BeatIn, i: number, count: number, o: PlanOptions, p
     c.chosen.add(a.id); kinds.push(a.kind);
     const enter: Enter = pick(ENTERS, seed, `enter:${i}:${k}`, elements.map(e => e.enter));
     const idle: Idle = pick(IDLES, seed, `idle:${i}:${k}`, elements.map(e => e.idle));
-    elements.push({ slot: s.id, art: a.id, content: contentFor(a, b.text, nums, o, s.job === 'main' ? 'main' : 'other', k), enter, idle, at: +(0.08 + k * 0.16).toFixed(2) });
+    elements.push({ slot: s.id, art: a.id, content: contentFor(a, b.text, nums, o, s.job === 'main' ? 'main' : 'other', k, a.wants === 'clip' || ((a.id === 'device:phone' || a.id === 'device:browser') && s.job === 'main') ? nextClip(pool, a.id) : null), enter, idle, at: +(0.08 + k * 0.16).toFixed(2) });
     usedHere[a.id] = (usedHere[a.id] ?? 0) + 1;
   }
   // ambient depth: a backdrop, then particles or light, then (sometimes) a second light
@@ -197,9 +213,9 @@ export function castScene(b: BeatIn, i: number, count: number, o: PlanOptions, p
 export function planFilm(beats: BeatIn[], o: PlanOptions): VPlan {
   const scenes: VScene[] = [];
   const used: Record<string, number> = { ...(o.used ?? {}) };
-  const recent: LayoutId[] = [];
+  const recent: LayoutId[] = [], pool: ClipPool = { list: o.clips ?? [], handed: (o.clips ?? []).map(() => 0) };
   for (const [i, b] of beats.entries()) {
-    const s = castScene(b, i, beats.length, o, scenes[i - 1] ?? null, recent.slice(-2), used);
+    const s = castScene(b, i, beats.length, o, scenes[i - 1] ?? null, recent.slice(-2), used, pool);
     recent.push(s.layout); scenes.push(s);
   }
   // scenes tile the timeline: a gap between spoken beats goes to the earlier scene

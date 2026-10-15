@@ -87,3 +87,28 @@ test('renderFilm writes every frame once, in parallel pages, and says what it co
     assert.ok(r.secPerSec > 0 && r.msPerFrame > 0);
   } finally { await closeVisual(); }
 });
+
+test('real footage plays on a panel, a phone and a browser window: frame-accurate, looped, and the same pixels whenever it is asked for', async t => {
+  if (!(await canRenderVisual())) { t.skip('no Chrome to drive'); return; }
+  const { recordTestClip } = await import('../src/visual/capture');
+  const { config } = await import('../src/config');
+  const clip = await recordTestClip(join(config.data, 'visual-test', 'clip.webm'), 2);
+  try {
+    const plan = planFilm(beats(3, 3), { format: 'vertical', seed: 9, clips: [{ path: clip, kind: 'footage', seconds: 2 }, { path: clip, kind: 'scroll', seconds: 2 }] });
+    const withClip = plan.scenes.filter(s => s.elements.some(e => e.content.clip));
+    assert.ok(withClip.length >= 2, `footage is cast in at least two scenes, got ${withClip.length}`);
+    for (const s of withClip) assert.ok(s.elements.some(e => e.content.clip && (e.art.startsWith('clip:') || e.art.startsWith('device:'))));
+    const sc = withClip[0]!, el = sc.elements.find(e => e.content.clip)!;
+    const a = await openFilm(plan, { scale: 0.3 });
+    const n0 = Math.round((sc.start + el.at + 0.9) * plan.fps), n1 = n0 + 15; // half a second later: the footage has moved
+    const h0 = sha(await a.frame(n0)), h1 = sha(await a.frame(n1)), h0b = sha(await a.frame(n0));
+    const opened = await a.clips();
+    assert.ok(opened.length > 0 && opened.every(c => c.ok && c.dur > 1 && c.w > 100), `every clip decoded: ${JSON.stringify(opened)}`);
+    assert.notEqual(h0, h1, 'the footage moves');
+    assert.equal(h0, h0b, 'the same frame, the same pixels');
+    await a.close();
+    const b = await openFilm(plan, { scale: 0.3 });
+    assert.equal(sha(await b.frame(n1)), h1, 'a fresh page agrees');
+    await b.close();
+  } finally { await closeVisual(); }
+});

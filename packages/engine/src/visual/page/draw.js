@@ -2,6 +2,7 @@
 // page uses as textures. Every function is `draw(g, w, h, t, content, palette)`: `t` is seconds since the element
 // arrived (drives counting, drawing, staggers); the canvas is already scaled so w and h are format pixels.
 import { FONT, clamp01, ease, fmt, fitText, mix, rgba, roundRect, wrap, lerp } from './util.js';
+import { drawClip } from './clips.js';
 
 /* ───────── glyphs: 24×24 line icons ───────── */
 const G = {
@@ -276,6 +277,7 @@ export function callout(g, w, h, t, c, P, name) {
 
 /* ───────── device screens ───────── */
 export function appScreen(g, w, h, t, c, P, kind = 'phone') {
+  if (c._vid?.ok && (c.clipKind === 'scroll' || c.clipKind === 'recording')) { g.fillStyle = P.bg; g.fillRect(0, 0, w, h); drawClip(g, c._vid, 0, 0, w, h, { top: true }); return; }
   g.fillStyle = P.dark ? mix(P.bg, '#000', 0.2) : P.bg; g.fillRect(0, 0, w, h);
   // header
   const hh = h * (kind === 'phone' ? 0.1 : 0.12);
@@ -284,7 +286,8 @@ export function appScreen(g, w, h, t, c, P, kind = 'phone') {
   // hero card with an image or a gradient that drifts
   const hy = hh + h * 0.03, hhgt = h * (kind === 'phone' ? 0.3 : 0.34);
   g.save(); roundRect(g, w * 0.05, hy, w * 0.9, hhgt, 22); g.clip();
-  if (c._img) { const iw = c._img.naturalWidth || c._img.width, ih = c._img.naturalHeight || c._img.height, sc = Math.max(w * 0.9 / iw, hhgt / ih) * 1.15, ox = Math.sin(t * 0.7) * 24, oy = Math.cos(t * 0.5) * 12; g.drawImage(c._img, w * 0.05 + (w * 0.9 - iw * sc) / 2 + ox, hy + (hhgt - ih * sc) / 2 + oy, iw * sc, ih * sc); }
+  if (c._vid?.ok) drawClip(g, c._vid, w * 0.05, hy, w * 0.9, hhgt, { zoom: 1.1, pan: Math.sin(t * 0.5) * 0.5 });
+  else if (c._img) { const iw = c._img.naturalWidth || c._img.width, ih = c._img.naturalHeight || c._img.height, sc = Math.max(w * 0.9 / iw, hhgt / ih) * 1.15, ox = Math.sin(t * 0.7) * 24, oy = Math.cos(t * 0.5) * 12; g.drawImage(c._img, w * 0.05 + (w * 0.9 - iw * sc) / 2 + ox, hy + (hhgt - ih * sc) / 2 + oy, iw * sc, ih * sc); }
   else { const gr = g.createLinearGradient(w * (0.05 + 0.3 * Math.sin(t)), hy, w * 0.95, hy + hhgt); gr.addColorStop(0, P.accent2); gr.addColorStop(1, P.accent); g.fillStyle = gr; g.fillRect(w * 0.05, hy, w * 0.9, hhgt); g.fillStyle = 'rgba(255,255,255,.22)'; g.beginPath(); g.arc(w * (0.3 + 0.1 * Math.sin(t * 1.3)), hy + hhgt * 0.5, hhgt * 0.4, 0, Math.PI * 2); g.fill(); }
   g.restore();
   // rows
@@ -326,7 +329,8 @@ export function browserChrome(g, w, h, t, c, P) {
   roundRect(g, w * 0.18, bar * 0.2, w * 0.64, bar * 0.6, bar * 0.3); g.fillStyle = P.card; g.fill();
   glyph(g, 'lock', w * 0.21, bar / 2, bar * 0.3, P.muted, 1.8); g.fillStyle = P.muted; g.font = `600 ${bar * 0.3}px ${FONT.ui}`; g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillText((c.title ?? 'your-site.com').toLowerCase().replace(/\s+/g, '').slice(0, 26), w * 0.25, bar / 2 + 1);
   const ph = h - bar; g.save(); g.beginPath(); g.rect(0, bar, w, ph); g.clip();
-  if (c._img) {
+  if (c._vid?.ok) drawClip(g, c._vid, 0, bar, w, ph, { top: true, zoom: 1 });
+  else if (c._img) {
     const iw = c._img.naturalWidth || c._img.width, ih = c._img.naturalHeight || c._img.height, sc = w / iw, travel = Math.max(0, ih * sc - ph);
     // the page scrolls, slowly and always: ping-pong so it never stops
     const ph2 = (t * 0.12) % 2, s = ph2 < 1 ? ph2 : 2 - ph2, oy = -travel * ease.inOut3(s) * 0.7;

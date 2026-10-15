@@ -8,15 +8,16 @@ import type { Need } from '../styles/kit/needs';
  *
  * kinds:  icon       a line glyph on a badge          device    a phone, laptop, browser or tablet with a screen
  *         card       a UI card (stat, list, chat…)    chart     a chart that draws itself
- *         object3d   a three.js object                particles a field of moving points
+ *         clip       real moving footage in a panel   object3d  a three.js object
+ *         particles  a field of moving points
  *         glow       light that moves                 bg        the moving backdrop
  */
-export const KINDS = ['icon', 'card', 'device', 'chart', 'object3d', 'particles', 'glow', 'bg'] as const;
+export const KINDS = ['icon', 'card', 'device', 'chart', 'object3d', 'particles', 'glow', 'bg', 'clip'] as const;
 export type Kind = (typeof KINDS)[number];
 /** hero = fills the main slot; support = a second or third element; accent = small, beside the rest; ambient = behind everything */
 export type Role = 'hero' | 'support' | 'accent' | 'ambient';
 /** what the artifact needs from the scene to look right: nothing, an image (a site capture or a clip frame), numbers, a short list, or a title */
-export type Wants = 'none' | 'image' | 'numbers' | 'list' | 'title';
+export type Wants = 'none' | 'image' | 'clip' | 'numbers' | 'list' | 'title';
 
 export interface Artifact { id: string; kind: Kind; name: string; needs: Need[]; role: Role[]; wants: Wants; /** 1 cheap · 3 heavy to render */ cost: 1 | 2 | 3; glyph?: string }
 
@@ -36,6 +37,10 @@ export const ARTIFACTS: readonly Artifact[] = [
   icon('bell', ['warning', 'voices', 'hook']), icon('search', ['question', 'learn', 'hidden']), icon('link', ['connect', 'network', 'flow']),
   icon('leaf', ['nature', 'calm', 'health']), icon('bulb', ['idea', 'learn', 'reveal']), icon('target', ['focus', 'claim', 'payoff']),
   icon('cloud', ['data', 'network', 'tool']), icon('trophy', ['success', 'ranking', 'payoff']), icon('phone', ['ui', 'product', 'tool']), icon('layers', ['layers', 'hierarchy', 'process']),
+
+  // real footage: stock clips and screen recordings the footage agent and the researcher bring (an artifact only when a clip exists)
+  { id: 'clip:panel', kind: 'clip', name: 'footage panel', needs: ['people', 'nature', 'home', 'travel', 'food', 'health', 'calm', 'emotion', 'hook', 'benefit', 'success', 'product'], role: ['hero', 'support'], wants: 'clip', cost: 1 },
+  { id: 'clip:screen', kind: 'clip', name: 'screen recording in a window', needs: ['ui', 'product', 'tool', 'reveal', 'process', 'steps', 'build', 'cta'], role: ['hero', 'support'], wants: 'clip', cost: 1 },
 
   // UI cards
   { id: 'card:stat', kind: 'card', name: 'big-number stat card', needs: ['number', 'percent', 'growth', 'money', 'proof', 'claim'], role: ['hero', 'support'], wants: 'numbers', cost: 1 },

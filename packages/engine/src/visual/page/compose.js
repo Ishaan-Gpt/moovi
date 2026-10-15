@@ -11,6 +11,7 @@ import * as THREE from '/three/three.module.js';
 import { CARDS, CHARTS, browserChrome, callout, iconBadge, laptopBody, phoneBody, tabletBody } from './draw.js';
 import { ambientOf } from './ambient.js';
 import { objectOf } from './objects.js';
+import { footagePanel, makeClip, seekClip } from './clips.js';
 import { TRANSITION_S, cameraFx, enterFx, idleFx, transitionFx } from './motion.js';
 import { FONT, clamp, clamp01, col, ease, hash, lerp, rgba, roundRect } from './util.js';
 
@@ -87,12 +88,16 @@ function shadowSprite(w, h, r) {
 function makeElement(el, slot, A) {
   const P = S.P, art = A[el.art] ?? { kind: 'card' }, c = { ...el.content };
   if (c.image) c._img = S.images[c.image] ?? null;
+  if (c.clip) c._vid = makeClip(c.clip);
   const seed = hash(`${el.art}:${el.slot}:${slot.id}`), name = el.art.split(':')[1];
   let size, draw = null, radius = 28, three = null, shadow = true;
   const kind = art.kind;
   if (kind === 'icon') {
     if (slot.job === 'label') { size = fit(slot.rect, 3.4); draw = (g, w, h, t) => callout(g, w, h, t, c, P, art.glyph); }
     else { const s = Math.min(slot.rect.w, slot.rect.h); size = { w: s, h: s }; draw = (g, w, h, t) => iconBadge(g, w, h, t, c, P, art.glyph); shadow = false; }
+  } else if (kind === 'clip') {
+    if (name === 'screen') { size = fit(slot.rect, 1.45); draw = (g, w, h, t) => { g.save(); roundRect(g, 0, 0, w, h, 22); g.clip(); browserChrome(g, w, h, t, { ...c, clipKind: c.clipKind ?? 'recording' }, P); g.restore(); g.lineWidth = 3; g.strokeStyle = P.hair; roundRect(g, 0, 0, w, h, 22); g.stroke(); }; }
+    else { size = fit(slot.rect, Math.max(0.6, Math.min(1.8, slot.rect.w / slot.rect.h))); draw = (g, w, h, t) => footagePanel(g, w, h, t, c, P); radius = 30; }
   } else if (kind === 'card') { size = fit(slot.rect, ASPECT[el.art] ?? 1.2); draw = (g, w, h, t) => CARDS[name](g, w, h, t, c, P); shadow = !['notif', 'chat', 'chips'].includes(name); }
   else if (kind === 'chart') { size = fit(slot.rect, ASPECT[el.art] ?? 1.2); draw = (g, w, h, t) => CHARTS[name](g, w, h, t, c, P); shadow = !['counter', 'ring'].includes(name); }
   else if (kind === 'device') {
@@ -115,7 +120,7 @@ function makeElement(el, slot, A) {
   let cv = null;
   if (draw) { const ts = Math.max(0.5, Math.min(1.6, S.k * 1.3)); cv = cpu(size.w * ts, size.h * ts); cv.ts = ts; }
   const base = { x: slot.rect.x + slot.rect.w / 2 - S.W / 2, y: S.H / 2 - (slot.rect.y + slot.rect.h / 2), z: slot.z };
-  return { el, slot, art, size, draw, cv, three, radius, shadow, base, lean: clamp(-(base.x / S.W) * 0.55, -0.24, 0.24), ph: (seed % 628) / 100, seed, cur: null };
+  return { el, slot, art, size, draw, cv, three, radius, shadow, base, vid: c._vid ?? null, lean: clamp(-(base.x / S.W) * 0.55, -0.24, 0.24), ph: (seed % 628) / 100, seed, cur: null };
 }
 
 function buildScene(i) {
@@ -265,14 +270,26 @@ function compose(n) {
   } else { paintScene(S.main, cur, t); }
 }
 
-window.__frame = (n, fmt) => {
+/** before a frame is painted: build the scenes it shows, wait for their footage, put every video on the right picture */
+async function prepare(n) {
+  const t = n / S.plan.fps, scenes = S.plan.scenes; let cur = 0; for (let i = 0; i < scenes.length; i++) if (t >= scenes[i].start - 1e-6) cur = i;
+  const live = [cur]; if (cur > 0 && scenes[cur].transition && (t - scenes[cur].start) / TRANSITION_S < 1) live.push(cur - 1);
+  for (const i of live) {
+    const sc = buildScene(i);
+    for (const e of sc.els) if (e.vid) { await e.vid.ready; await seekClip(e.vid, (e.el.content.clipAt ?? 0) + Math.max(0, t - sc.vs.start - e.el.at)); }
+  }
+}
+
+window.__frame = async (n, fmt) => {
+  await prepare(n);
   const a = now(); compose(n); if (S.cfg.prof) S.main.g.getImageData(0, 0, 1, 1); const b = now();
   const out = fmt === 'png' ? S.main.c.toDataURL('image/png').slice(22) : S.main.c.toDataURL('image/jpeg', 0.92).slice(23);
   PROF.paint += b - a; PROF.enc += now() - b; PROF.n++; return out;
 };
 
 /** a tiny grayscale picture of frame n (for the audits: motion, emptiness) */
-window.__thumb = n => {
+window.__thumb = async n => {
+  await prepare(n);
   compose(n);
   const w = 24, h = Math.max(12, Math.round(24 * S.rh / S.rw)); S.thumb.c.width = w; S.thumb.c.height = h;
   const g = S.thumb.g; g.drawImage(S.main.c, 0, 0, w, h);
@@ -298,6 +315,7 @@ window.__range = async (from, to, fmt, sink) => {
   const pending = new Set(), type = fmt === 'png' ? 'image/png' : 'image/jpeg', ext = fmt === 'png' ? 'png' : 'jpg';
   let failed = null;
   for (let n = from; n < to; n++) {
+    await prepare(n);
     const a = now(); compose(n); PROF.paint += now() - a; PROF.n++;
     const name = 'f' + String(n).padStart(5, '0') + '.' + ext;
     const job = new Promise(res => S.main.c.toBlob(b => res(b), type, 0.92)).then(b => fetch(sink + '?name=' + name, { method: 'POST', body: b })).then(r => { if (!r.ok) failed = 'could not store ' + name; }).catch(e => { failed = String(e); }).finally(() => pending.delete(job));
@@ -309,3 +327,6 @@ window.__range = async (from, to, fmt, sink) => {
   if (failed) throw new Error(failed);
   return to - from;
 };
+
+/** the footage this page has opened: did it decode, how long is it, how wide (for the tests and the crew's diagnostics) */
+window.__clips = () => [...S.built.values()].flatMap(sc => sc.els.filter(e => e.vid).map(e => ({ art: e.el.art, ok: e.vid.ok, dur: +e.vid.dur.toFixed(2), w: e.vid.w, h: e.vid.h })));
