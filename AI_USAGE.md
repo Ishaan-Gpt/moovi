@@ -42,6 +42,8 @@ Moovi is built with AI coding assistance, disclosed here as the hackathon rules 
 
 | 2026-10-16 | Claude Code (Sonnet) | **3D looks (Task 2, branch vignesh/3d).** Five deterministic three.js looks (particle field, product turntable with the site screenshot as texture, data tower chart, wireframe city, logo orbit) captured frame by frame in the engine's headless Chrome on SwiftShader; the art director picks a look per scene and it is stored as (Scene)-[:USES_3D]->(Look3D); tests prove frames are identical across pages and orders; render time measured per second of film (docs/3D.md). | Set the task and rules; reviews the result |
 
+| 2026-10-16 | Claude Code (Sonnet) | **Map shots (Task 3, branch vignesh/maps).** Nominatim geocoding with a one-request-a-second gate, a Moovi User-Agent and a (:Place) cache in the graph; a MapLibre GL JS capture on OpenFreeMap tiles with attribution, a per-frame camera that is a pure function of time (fly-to, pulsing pin, highlighted country from Natural Earth), waiting for every tile before each frame, and a three.js globe fallback when tiles fail; (Scene)-[:SHOWS]->(Place) from the art director's board. Measured seconds per second of film (docs/MAPS.md). | Set the task and rules; reviews the result |
+
 The owner reviews and understands every part that ships. Architecture decisions are recorded in `docs/`.
 
 ## Vignesh B S (AI/ML engineer): the voice library

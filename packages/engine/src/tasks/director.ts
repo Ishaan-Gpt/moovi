@@ -10,6 +10,7 @@ import type { TaskSpec } from '../scheduler';
 import type { Brief } from './plan';
 import type { Script } from './script';
 import { LOOK_IDS, LOOKS, isLook } from '../render3d/looks';
+import { geocodeAll } from '../maps/geocode';
 import { feedbackMemory, knowledge, systemFor } from './agent';
 import type { Board } from './film';
 
@@ -135,6 +136,7 @@ export const board: Handler = async ctx => {
   const used = await ctx.uq<{ title: string; angle: string | null }>(U.anglesUsed, { style: null, n: 6 });
   const shots = await ctx.q<{ kind: string; video: boolean }>(M.runShots, { run: ctx.run.id }).catch(() => [] as { kind: string; video: boolean }[]);
   const look3dUsed = await ctx.q<{ look: string; scenes: number }>(P.look3dUsage, {}).catch(() => [] as { look: string; scenes: number }[]);
+  const placeUsed = await ctx.q<{ name: string }>(P.placeUsage, { n: 8 }).catch(() => [] as { name: string }[]);
   const tools: Tool[] = [
     tool({ name: 'suggest_sequence', description: 'The cheapest preset orders for the beats (graph: algo.SPpaths over the preset lattice, with this user’s over-use from PageRank). A starting point, not an order.', input: {},
       async run() { return isS1 ? { json: await suggest(ctx, 's1', S.beats.map(b => (b.role === 'end' ? 'cta' : b.role))) } : { text: 'Unique style: no presets are ranked; design each shot from the card.' }; } }),
@@ -146,6 +148,7 @@ export const board: Handler = async ctx => {
     props: z.array(z.string()).max(4).describe('kit props it uses (ids from the catalogue)'),
     camera: z.enum(['push', 'dive', 'pull-out', 'pan', 'roll', 'drift']),
     look3d: z.enum(LOOK_IDS).nullable().optional().describe('a 3D look for this shot, or null when the shot is better flat'),
+    places: z.array(z.string().min(2).max(80)).max(3).optional().describe('real places this scene names (cities, countries), in the order the map should fly through them; empty when it names none'),
     assets: z.array(z.object({ id: z.string().regex(/^[a-z0-9-]{2,24}$/), kind: z.enum(['capture', 'logo', 'icon', 'upload', 'photo', 'footage', 'scroll']), what: z.string().min(3).max(200), url: z.string().nullable() })).max(3),
   });
   const r = await ask({
@@ -157,6 +160,7 @@ export const board: Handler = async ctx => {
       cardOut ? `THE STYLE CARD: ${JSON.stringify(cardOut)}` : '',
       isS1 ? `PRESETS (kit): ${S1_PRESETS.map(p => `${p.id} (${p.about})`).join(' · ')}` : '',
       `3D LOOKS (three.js, rendered headless; give a shot one when it suits, never the same twice running, vary across the film): ${LOOKS.map(l => `${l.id} (${l.about})`).join(' · ')}${look3dUsed.length ? `. ALREADY USED IN THIS PROJECT: ${look3dUsed.map(u => `${u.look} ×${u.scenes}`).join(', ')}` : ''}`,
+      `MAP SHOTS: when the script names a real place, put it in that shot's places list (up to 3, in flight order): a real map flies there with a pulsing pin and the country highlighted. Only places the script itself names. ${placeUsed.length ? `ALREADY SHOWN IN THIS PROJECT: ${placeUsed.map(p => p.name).join(', ')}` : ''}`,
       `PROPS (drawn in code, low-key 3D): ${PROPS.map(p => p.id).join(', ')}`,
       `THE USER'S UPLOADS YOU CAN USE: ${uploads.map(u => `upload:${u.id} (${u.name})`).join(', ') || 'none'}`,
       `REAL VIDEO: an asset of kind "footage" is real stock video of a concrete subject (free sources, licence kept; say the subject in plain words, e.g. "rocket lifting off the pad"); kind "scroll" is the research's smooth scroll capture of a page it read${shots.length ? ` (it took ${shots.filter(s => s.video).length} scroll capture${shots.filter(s => s.video).length === 1 ? '' : 's'} and ${shots.filter(s => !s.video).length} screenshot${shots.filter(s => !s.video).length === 1 ? '' : 's'}${shots.some(s => s.kind === 'proof') ? ', with proof shots of the quoted facts' : ''})` : ' (none taken for this video)'}. Use footage where a line talks about a real-world thing the kit cannot draw well.`,
@@ -194,6 +198,12 @@ export const board: Handler = async ctx => {
   writeJson(join(ctx.dir, 'board.json'), BD);
   // the 3D look of each scene is kept in the graph: (Scene)-[:USES_3D]->(Look3D)
   for (const s of BD.shots) if (s.look3d && isLook(s.look3d)) await ctx.q(P.useLook3d, { run: ctx.run.id, scene: `${ctx.run.id}:scene:${s.scene}`, i: s.scene, look: s.look3d, name: LOOKS.find(l => l.id === s.look3d)!.name, why: s.idea.slice(0, 200), at: Date.now() });
+  // scenes that name places: geocode them (cached, one request a second) and link (Scene)-[:SHOWS]->(Place)
+  for (const s of BD.shots) if (s.places?.length) {
+    const found = await geocodeAll(s.places).catch(e => { void ctx.activity('note', `places not found for scene ${s.scene + 1}: ${String(e).slice(0, 100)}`); return []; });
+    for (const [n, p] of found.entries()) await ctx.q(P.showPlace, { run: ctx.run.id, scene: `${ctx.run.id}:scene:${s.scene}`, i: s.scene, key: p.key, name: p.name, lat: p.lat, lon: p.lon, cc: p.cc, country: p.country, n });
+    if (found.length) await ctx.activity('tool', `maps · scene ${s.scene + 1} shows ${found.map(p => p.name).join(' → ')}`);
+  }
   for (const s of BD.shots) await ctx.q(P.decide, { agent: 'director', target: ctx.run.id, id: newId('d'), kind: 'board', why: `Scene ${s.scene + 1}: ${s.idea} (move: ${s.move})`, at: Date.now(), lessons: know.lessons.map(l => l.id), laws: [], because: [] });
   await ctx.say(`Boarded ${BD.shots.length} shots. ${BD.shots.map((s, i) => `${i + 1}. ${s.move}`).slice(0, 4).join(' · ')}${BD.shots.length > 4 ? ' …' : ''}`);
 

@@ -1,5 +1,6 @@
 import { createReadStream, existsSync, mkdirSync, statSync, writeFileSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
+import { cpus } from 'node:os';
 import { createRequire } from 'node:module';
 import { dirname, extname, join, normalize, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -32,7 +33,7 @@ const PAGE_HTML = `<!doctype html><html><head><meta charset="utf-8"><link rel="s
 <style>html,body{margin:0;background:#F7FAFD;overflow:hidden}#view{position:relative}
 #attr{position:fixed;left:10px;bottom:8px;font:600 12px/1 system-ui,sans-serif;color:#0E1A2B;background:rgba(247,250,253,.82);padding:5px 8px;border-radius:6px}
 #name{position:fixed;left:0;right:0;top:9%;text-align:center;font:700 54px/1.1 system-ui,sans-serif;color:#0E1A2B;text-shadow:0 0 14px #F7FAFD,0 0 4px #F7FAFD;opacity:0}</style></head><body>
-<div id="view"></div><div id="name"></div><div id="attr"></div>
+<div id="view"></div>
 <script src="/maplibre/maplibre-gl.js"></script>
 <script type="module">import '/maps/maps.js';</script></body></html>`;
 
@@ -69,6 +70,12 @@ export interface MapOptions {
   /** auto: tiles, and the globe if they fail; tiles: tiles or an error; globe: the globe only */
   mode?: 'auto' | 'tiles' | 'globe';
   tileTimeoutMs?: number; styleUrl?: string;
+  /** frame files: jpeg (q 0.94, the default: ffmpeg re-encodes anyway and it reads back faster) or lossless png */
+  format?: 'jpeg' | 'png';
+  /** pages rendering frames at the same time (default: half the cores, at most 4) */
+  workers?: number;
+  /** places: only place, water and country names stay on the map (faster, cleaner); all: every label of the style */
+  labels?: 'places' | 'all';
 }
 export interface MapSession { mode: 'tiles' | 'globe'; fellBack: string | null; frames: number; fps: number; seconds: number; stops: Stop[]; camera(n: number): Cam; frame(n: number): Promise<Buffer>; close(): Promise<void> }
 
@@ -84,7 +91,7 @@ export async function openMap(o: MapOptions): Promise<MapSession> {
   const width = Math.round(o.width ?? 1080), height = Math.round(o.height ?? 1920), fps = o.fps ?? 30, seconds = o.seconds ?? 4;
   const stops = toStops(o.places), frames = Math.max(1, Math.round(seconds * fps));
   const cfg = {
-    stops, width, height, fps, seconds, styleUrl: o.styleUrl ?? STYLE_URL, countriesUrl: COUNTRIES_PAGE_URL, attribution: ATTRIBUTION,
+    stops, width, height, fps, seconds, labels: o.labels ?? 'places', styleUrl: o.styleUrl ?? STYLE_URL, countriesUrl: COUNTRIES_PAGE_URL, attribution: ATTRIBUTION,
     loadTimeoutMs: 25_000, tileTimeoutMs: o.tileTimeoutMs ?? 20_000, globeHeight: globeHeight(0),
     colors: { ice: color.ice, deepIce: color.deepIce, white: color.surface, iceWhite: color.iceWhite, inkMuted: color.inkMuted },
   };
@@ -106,10 +113,12 @@ export async function openMap(o: MapOptions): Promise<MapSession> {
   return {
     get mode() { return mode; }, fellBack, frames, fps, seconds, stops, camera,
     async frame(n) {
-      const cam = camera(n);
+      const cam = camera(n), t0 = performance.now();
       const r = await page.evaluate(([c, h, m]) => (window as unknown as { __frame: (x: unknown) => Promise<{ ok: boolean }> }).__frame({ ...(c as object), globeH: h, mode: m }), [cam, globeHeight(cam.zoom), mode] as const);
       if (!r.ok) throw new TilesFailed(`frame ${n} still had tiles loading after ${cfg.tileTimeoutMs} ms`);
-      return page.screenshot({ type: 'png' });
+      const t1 = performance.now(), shot = await Buffer.from(await page.evaluate(f => (window as unknown as { __shot: (f: string) => string }).__shot(f), o.format ?? 'jpeg'), 'base64');
+      if (process.env.MOOVI_MAP_PROF) console.log(`frame ${n}: settle ${(t1 - t0).toFixed(0)} ms, screenshot ${(performance.now() - t1).toFixed(0)} ms`);
+      return shot;
     },
     async close() { await page.close().catch(() => undefined); },
   } as MapSession;
@@ -118,14 +127,30 @@ export async function openMap(o: MapOptions): Promise<MapSession> {
 export interface MapStats { frames: number; seconds: number; mode: 'tiles' | 'globe'; fellBack: string | null; totalMs: number; secPerSec: number }
 
 /** Render the whole flight to PNG frames (the tiles mode retried as a globe if a frame cannot be completed). */
+export const defaultWorkers = () => Math.max(1, Math.min(4, Math.floor(cpus().length / 2)));
+
+/**
+ * Render the whole flight to frame files. Several pages render different frames at once (they share Chrome's tile
+ * cache, so a tile one page fetched is free for the others); if a frame cannot be completed the whole flight is redone
+ * as a globe, so one film never mixes the two looks.
+ */
 export async function renderMap(o: MapOptions, framesDir: string): Promise<MapStats> {
   mkdirSync(framesDir, { recursive: true });
-  const t0 = performance.now();
+  const ext = (o.format ?? 'jpeg') === 'png' ? 'png' : 'jpg', t0 = performance.now();
   const run = async (m: MapOptions) => {
-    const s = await openMap(m);
-    try { for (let n = 0; n < s.frames; n++) writeFileSync(join(framesDir, `f${String(n).padStart(5, '0')}.png`), await s.frame(n)); }
-    finally { await s.close(); }
-    return s;
+    const first = await openMap(m);
+    const n = Math.max(1, Math.min(m.workers ?? defaultWorkers(), first.frames));
+    // the first page settles the mode (tiles or globe); the others open the same one
+    const rest = await Promise.all(Array.from({ length: n - 1 }, () => openMap({ ...m, mode: first.mode })));
+    const sessions = [first, ...rest];
+    try {
+      // contiguous runs per page: the camera moves a little between neighbours, so tiles are already there
+      await Promise.all(sessions.map(async (s, w) => {
+        const from = Math.floor((w * s.frames) / n), to = Math.floor(((w + 1) * s.frames) / n);
+        for (let f = from; f < to; f++) writeFileSync(join(framesDir, `f${String(f).padStart(5, '0')}.${ext}`), await s.frame(f));
+      }));
+    } finally { await Promise.all(sessions.map(s => s.close())); }
+    return first;
   };
   let s: MapSession, fell: string | null = null;
   try { s = await run(o); fell = s.fellBack; }

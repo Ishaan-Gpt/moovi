@@ -25,6 +25,6 @@ if (cmd === 'stills') {
   for (const [i, n] of [0, 0.34, 0.67, 0.99].entries()) writeFileSync(join(dir, `${s.mode}-${i}.png`), await s.frame(Math.floor(n * s.frames)));
   await s.close();
 } else {
-  for (const mode of ['tiles', 'globe'] as const) { const r = await renderMap({ ...base, mode, seconds: 3 }, join(dir, `bench-${mode}`)); console.log(mode, `${r.frames} frames, ${r.secPerSec.toFixed(2)} s per second of film`, r.fellBack ?? ''); }
+  for (const mode of ['tiles', 'globe'] as const) { for (const workers of [1, 4]) { const r = await renderMap({ ...base, mode, seconds: 3, workers }, join(dir, `bench-${mode}`)); console.log(mode, `${r.frames} frames, ${r.secPerSec.toFixed(2)} s per second of film`, r.fellBack ?? '', `(${workers} page${workers > 1 ? 's' : ''})`); } }
 }
 await closeMaps(); await closeMemory().catch(() => {});
