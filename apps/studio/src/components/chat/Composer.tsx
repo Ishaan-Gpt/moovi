@@ -1,7 +1,7 @@
 'use client';
 import { forwardRef, useEffect, useId, useImperativeHandle, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import { CrewBlob, type CrewId } from '@contenteasy/ui';
-import { AGENT_NAMES, MENTIONABLE, type AgentId } from '@contenteasy/engine/events';
+import { CrewBlob, type CrewId } from '@moovi/ui';
+import { AGENT_NAMES, MENTIONABLE, type AgentId } from '@moovi/engine/events';
 
 export interface ComposerHandle { focusWith: (prefix: string) => void }
 

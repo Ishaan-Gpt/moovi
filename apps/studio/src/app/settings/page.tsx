@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { byokMode, modelInfo, PROVIDER_CHOICES } from '@contenteasy/engine';
+import { byokMode, modelInfo, PROVIDER_CHOICES } from '@moovi/engine';
 import { requireUser } from '@/lib/session';
 import { Sidebar } from '@/components/dash/Sidebar';
 import { ModelForm } from '@/components/settings/ModelForm';

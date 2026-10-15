@@ -12,7 +12,7 @@ export const FPS = 30; // SKILL §1: 30 fps
 
 export const FRAME = {
   vertical: { w: 1080, h: 1920, aspect: '9x16' },
-  landscape: { w: 1920, h: 1080, aspect: '16x9' }, // ContentEasy port: positions scale to the frame, sizes to the short edge
+  landscape: { w: 1920, h: 1080, aspect: '16x9' }, // Moovi port: positions scale to the frame, sizes to the short edge
 } as const;
 export type FrameName = keyof typeof FRAME;
 

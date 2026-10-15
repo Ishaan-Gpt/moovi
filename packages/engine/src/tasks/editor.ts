@@ -1,7 +1,7 @@
 import { existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { CRAFT, craft as C, project as P, run as runQ, SYS, sys as S, user as U } from '@contenteasy/graph';
-import type { EngineSpec, Ev, SceneProgram } from '@contenteasy/skills';
+import { CRAFT, craft as C, project as P, run as runQ, SYS, sys as S, user as U } from '@moovi/graph';
+import type { EngineSpec, Ev, SceneProgram } from '@moovi/skills';
 import { artifacts, bed, benchStatus, concat, ensureDir, libraryTrack, loudness, mixMaster, mux as benchMux, ownerBed, poster, probe, readJson, sfxStem, writeJson } from '../bench';
 import { config } from '../config';
 import type { Handler } from '../ctx';

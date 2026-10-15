@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Bricolage_Grotesque, Instrument_Serif, DM_Mono } from 'next/font/google';
-import '@contenteasy/brand/tokens.css';
+import '@moovi/brand/tokens.css';
 import '@/styles/base.css';
 import '@/styles/auth.css';
 import '@/styles/dash.css';
@@ -14,7 +14,7 @@ const serif = Instrument_Serif({ subsets: ['latin'], weight: '400', style: ['nor
 const mono = DM_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-mono', display: 'swap' });
 
 export const metadata: Metadata = {
-  title: { default: 'ContentEasy Studio', template: '%s · ContentEasy' },
+  title: { default: 'Moovi Studio', template: '%s · Moovi' },
   description: 'Hire Moovi: a director and his crew make your video while you watch them work.',
   icons: { icon: '/studio/icon.svg' },
 };

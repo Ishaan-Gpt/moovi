@@ -1,5 +1,5 @@
 'use client';
-import { defaultScene, HALO_R, HALO_TILT, type WorldScene } from '@contenteasy/character';
+import { defaultScene, HALO_R, HALO_TILT, type WorldScene } from '@moovi/character';
 import { merge, xs, type SceneDiff } from './world';
 
 /**

@@ -6,7 +6,7 @@
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { closeMemory, ensureStylesSchema, run, STYLES, styles as G } from '@contenteasy/graph';
+import { closeMemory, ensureStylesSchema, run, STYLES, styles as G } from '@moovi/graph';
 import { config } from '../src/config';
 
 const [cmd = 'stats', arg] = process.argv.slice(2);

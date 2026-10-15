@@ -1,4 +1,4 @@
-// pnpm --filter @contenteasy/graph seed [--reset]
+// pnpm --filter @moovi/graph seed [--reset]
 // Seeds the craft graph only. The full reset (drop every brand-era graph, seed craft, seed the style packages,
 // verify the brand scrub) is `pnpm graph:reset`, in packages/engine/scripts/reset.ts.
 import { seedCraft, closeMemory, health } from '../src/index';

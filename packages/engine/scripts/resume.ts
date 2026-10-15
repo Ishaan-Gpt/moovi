@@ -1,6 +1,6 @@
 // tsx scripts/resume.ts <project> <run>: re-open a failed or cancelled run's unfinished tasks; a worker picks them up.
 // Everything already done is kept (the graph is the run's state), so only what was left runs.
-import { closeMemory, project as P } from '@contenteasy/graph';
+import { closeMemory, project as P } from '@moovi/graph';
 import { markActive, publish, redis } from '../src/bus';
 import { pq } from '../src/live';
 import { promote } from '../src/scheduler';

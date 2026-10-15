@@ -29,7 +29,7 @@ export const withModel = <T>(s: ModelScope, fn: () => T): T => scoped.run(s, fn)
 export const modelScope = () => scoped.getStore() ?? null;
 
 let current: Runtime | null = null;
-/** The runtime for this job: its user's own model, else this machine's (CE_RUNTIME: Claude Code login or any API). */
+/** The runtime for this job: its user's own model, else this machine's (MOOVI_RUNTIME: Claude Code login or any API). */
 export function runtime(): Runtime {
   const s = scoped.getStore(); if (s) return s.runtime;
   if (!current) current = config.runtime === 'http' ? httpRuntime() : claudeCodeRuntime();
@@ -131,7 +131,7 @@ async function askJson<S extends z.ZodRawShape>(rt: Runtime, o: Parameters<typeo
       if (!bad) return r;
       error = bad;
     } else error = r.error;
-    if (process.env.CE_DEBUG_HTTP) console.warn(`[ask] ${o.agent} repair turn ${attempt + 1}: ${error.slice(0, 300)}`);
+    if (process.env.MOOVI_DEBUG_HTTP) console.warn(`[ask] ${o.agent} repair turn ${attempt + 1}: ${error.slice(0, 300)}`);
     history.push({ role: 'assistant', text: text.slice(0, 6000) }, { role: 'user', text: `That answer has problems: ${error}\nReply with the corrected JSON object only.` });
   }
   return { ok: false, error };

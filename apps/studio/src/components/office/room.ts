@@ -1,4 +1,4 @@
-import type { AgentId } from '@contenteasy/engine/events';
+import type { AgentId } from '@moovi/engine/events';
 
 /**
  * The set, in its own 1060 × 770 frame (scaled to fit the area beside the chat). Three rows recede toward the back

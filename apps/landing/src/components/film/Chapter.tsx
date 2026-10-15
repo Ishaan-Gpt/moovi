@@ -4,7 +4,7 @@ import { gsap, ScrollTrigger } from '@/lib/gsap';
 import { chapterTimeline, stageTimeline, addReel, onWorld, animateScene } from '@/lib/world';
 import { getScript, scriptVersion, subscribeScript } from '@/lib/scriptStore';
 import type { Script } from '@/lib/script';
-import type { MooviWorld } from '@contenteasy/character';
+import type { MooviWorld } from '@moovi/character';
 
 /**
  * Scrubbed tweens only apply their start state once the scroll reaches them, so text meant to appear later would

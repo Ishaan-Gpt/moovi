@@ -310,7 +310,7 @@ export function personOf(sentence: string): string | null {
   const m = [...sentence.matchAll(/\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/g)].map(x => x[1]!).filter(n => !/^(The|In|By|But|When|Today|We|It|This|A|An)\b/.test(n));
   return m[0] ?? null;
 }
-const UA = { 'user-agent': 'ContentEasy-s4/0.1 (hackathon reel builder)' };
+const UA = { 'user-agent': 'Moovi-s4/0.1 (hackathon reel builder)' };
 type PageInfo = { title: string; index: number; imageinfo?: { thumburl: string; thumbwidth: number; thumbheight: number; mime: string; descriptionurl: string; extmetadata?: Record<string, { value: string }> }[] };
 /** One public-domain / CC photo from Wikimedia Commons for a name, within `ms`; licence and source kept. */
 async function commonsPhoto(q: string, ms = 10_000): Promise<{ data: Buffer; w: number; h: number; meta: Record<string, string> } | null> {

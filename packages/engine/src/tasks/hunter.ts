@@ -1,8 +1,8 @@
 import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
-import { project as P, user as U } from '@contenteasy/graph';
-import { kit } from '@contenteasy/skills';
+import { project as P, user as U } from '@moovi/graph';
+import { kit } from '@moovi/skills';
 import { z } from 'zod';
 import { ensureDir, probe, sh } from '../bench';
 import { config } from '../config';

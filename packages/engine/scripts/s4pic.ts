@@ -1,4 +1,4 @@
-// pnpm --filter @contenteasy/engine exec tsx scripts/s4pic.ts "<sentence>" ["<sentence>" ...] : draw Style 4 pictures alone (stage test).
+// pnpm --filter @moovi/engine exec tsx scripts/s4pic.ts "<sentence>" ["<sentence>" ...] : draw Style 4 pictures alone (stage test).
 import { join } from 'node:path';
 import { config } from '../src/config';
 import { closePictures, drawPicture } from '../src/s4/picture';

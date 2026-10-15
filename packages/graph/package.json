@@ -1,5 +1,5 @@
 {
-  "name": "@contenteasy/graph",
+  "name": "@moovi/graph",
   "version": "0.1.0",
   "private": true,
   "description": "Moovi's memory: the FalkorDB client, schema, seeds and the Cypher query library the crew depends on.",

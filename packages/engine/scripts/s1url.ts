@@ -1,4 +1,4 @@
-// pnpm --filter @contenteasy/engine s1url <https://site> [--freeform] : a Style 1 reel for ANY brand from its website,
+// pnpm --filter @moovi/engine s1url <https://site> [--freeform] : a Style 1 reel for ANY brand from its website,
 // no human step. A thin wrapper over src/styles/s1.ts, the same code the studio's style-reel job runs.
 import { runStyle, table } from '../src/styles/run';
 

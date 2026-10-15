@@ -3,8 +3,8 @@
  * does, one improvised set-up) against the configured runtime and prints validity, time and what the script doctor
  * had to fix. Same site, any model: compare runs side by side.
  *
- *   CE_RUNTIME=http CE_PROVIDER=ollama pnpm exec tsx scripts/model-check.ts https://cal.com
- *   CE_RUNTIME=http CE_PROVIDER=groq GROQ_API_KEY=… pnpm exec tsx scripts/model-check.ts https://cal.com
+ *   MOOVI_RUNTIME=http MOOVI_PROVIDER=ollama pnpm exec tsx scripts/model-check.ts https://cal.com
+ *   MOOVI_RUNTIME=http MOOVI_PROVIDER=groq GROQ_API_KEY=… pnpm exec tsx scripts/model-check.ts https://cal.com
  *   (no env: this machine's Claude Code login)
  */
 import { writeFileSync, mkdirSync } from 'node:fs';

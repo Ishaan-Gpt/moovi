@@ -1,13 +1,13 @@
 'use client';
 import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import dynamic from 'next/dynamic';
-import { CrewBlob, crewIcons, type CrewId } from '@contenteasy/ui';
-import { AGENT_NAMES, type AgentId } from '@contenteasy/engine/events';
-import type { MooviState } from '@contenteasy/character';
+import { CrewBlob, crewIcons, type CrewId } from '@moovi/ui';
+import { AGENT_NAMES, type AgentId } from '@moovi/engine/events';
+import type { MooviState } from '@moovi/character';
 import { DESKS, HORIZON, SET, deskOf, headOf, monitorOf, monitorsOf, type Desk } from './room';
 import type { Flight, Status } from './useChat';
 
-const Moovi = dynamic(() => import('@contenteasy/character/react').then(m => m.Moovi), { ssr: false });
+const Moovi = dynamic(() => import('@moovi/character/react').then(m => m.Moovi), { ssr: false });
 
 /**
  * The set: every member of the crew at their own station, working for real. Above each head only a name and one

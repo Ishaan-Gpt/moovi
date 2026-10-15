@@ -1,4 +1,4 @@
-import { project as P, user as U, userGraph, run as runQ } from '@contenteasy/graph';
+import { project as P, user as U, userGraph, run as runQ } from '@moovi/graph';
 import { z } from 'zod';
 import type { Command } from './commands';
 import { AGENT_NAMES, MENTIONABLE, type AgentId } from './events';

@@ -1,9 +1,9 @@
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { byokMode, modelInfo, owns, sessionUser } from '@contenteasy/engine';
+import { byokMode, modelInfo, owns, sessionUser } from '@moovi/engine';
 
 /** The signed-in user (or null), from the httpOnly session cookie, checked against the `sys` graph. */
-export const COOKIE = 'ce_session';
+export const COOKIE = 'moovi_session';
 
 export async function currentUser() {
   const token = (await cookies()).get(COOKIE)?.value;
@@ -49,7 +49,7 @@ export async function apiProject(req: Request, pid: string, opts: { write?: bool
 async function sameOrigin(req: Request) {
   const origin = req.headers.get('origin');
   if (!origin) return true; // same-origin fetches from older browsers; SameSite=Lax still guards the cookie
-  const allowed = (process.env.CE_ORIGINS ?? '').split(',').map(s => s.trim()).filter(Boolean);
+  const allowed = (process.env.MOOVI_ORIGINS ?? '').split(',').map(s => s.trim()).filter(Boolean);
   const h = await headers();
   // behind the landing's zone rewrite the page's own host arrives as x-forwarded-host (a cross-site page can't send
   // that header without a CORS preflight, which this app never grants)

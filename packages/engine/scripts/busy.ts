@@ -1,5 +1,5 @@
 // tsx scripts/busy.ts [project ...]: the tasks running, ready or parked in each project (nothing = safe to restart the worker)
-import { closeMemory, projectGraph, run } from '@contenteasy/graph';
+import { closeMemory, projectGraph, run } from '@moovi/graph';
 
 let total = 0;
 for (const pid of process.argv.slice(2)) {

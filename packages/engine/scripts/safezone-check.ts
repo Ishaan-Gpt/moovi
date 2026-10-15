@@ -1,4 +1,4 @@
-// pnpm --filter @contenteasy/engine exec tsx --env-file-if-exists=../../.env.local scripts/safezone-check.ts [--films-only|--presets-only]
+// pnpm --filter @moovi/engine exec tsx --env-file-if-exists=../../.env.local scripts/safezone-check.ts [--films-only|--presets-only]
 // Where does text sit in a vertical frame? Renders every Style 1 preset (short and longest-allowed lines) and every
 // delivered film through the renderer's QA hook, keeps the boxes that carry words (lines; ui layers with type: pills,
 // comment and search fields, progress pills, comment sheets; props that are words, kit.TYPE_PROPS) and writes them to
@@ -6,7 +6,7 @@
 // this evidence (docs/STUDIO.md, Quality gates); the script exits 1 if any preset breaks them.
 import { readFileSync, readdirSync, existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { Kit, kit, STYLE1, type EngineSpec, type SceneProgram, type Timeline } from '@contenteasy/skills';
+import { Kit, kit, STYLE1, type EngineSpec, type SceneProgram, type Timeline } from '@moovi/skills';
 import { ensureDir } from '../src/bench';
 import { config } from '../src/config';
 import { boxes, closeRender, mediaUrl, type Box } from '../src/render/host';

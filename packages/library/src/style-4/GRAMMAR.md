@@ -2,7 +2,7 @@
 
 Source: MotionEasy `.claude/skills/style-4*`, `styles/style-4/breakdowns/creative-inflation.md` and the three
 @rit2raj_das references (`styles/style-4/references/Instagram-*`). The MotionEasy renderer is the Remotion
-composition `S4Film` (`launch-remotion/src/style4/`). It is **not** in the vendored canvas bundle, so ContentEasy
+composition `S4Film` (`launch-remotion/src/style4/`). It is **not** in the vendored canvas bundle, so Moovi
 plays Style 4 on its own small player (`packages/engine/src/s4/player.ts`).
 
 ## The ten laws
@@ -48,7 +48,7 @@ plays Style 4 on its own small player (`packages/engine/src/s4/player.ts`).
   keeps circling. Use it 3-5 times a film, only on lines about turning or cycles.
 - **Arrow, circle, beam, binary.** At most once each.
 
-## What ContentEasy does differently (fast mode)
+## What Moovi does differently (fast mode)
 
 - Every picture is drawn in code: one model call per sentence writes a layered greyscale SVG.
 - A fixed filter stack adds paper grain, relief light from the top left, an irregular cut edge, a white cut

@@ -1,4 +1,4 @@
-import { createChat } from '@contenteasy/engine';
+import { createChat } from '@moovi/engine';
 import { apiProject } from '@/lib/session';
 import { chats } from '@/lib/project';
 

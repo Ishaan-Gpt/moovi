@@ -1,4 +1,4 @@
-// pnpm --filter @contenteasy/engine exec tsx scripts/s1stills.ts <dir> [id] : one still per scene (at 70% of it) → <dir>/review/fill.png
+// pnpm --filter @moovi/engine exec tsx scripts/s1stills.ts <dir> [id] : one still per scene (at 70% of it) → <dir>/review/fill.png
 import { readdirSync, readFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { closeRender } from '../src/render/host';

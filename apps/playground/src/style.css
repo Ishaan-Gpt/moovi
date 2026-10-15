@@ -1,4 +1,4 @@
-@import '@contenteasy/brand/tokens.css';
+@import '@moovi/brand/tokens.css';
 
 html, body { margin: 0; height: 100%; background: var(--ce-ice-white); color: var(--ce-ink); font: 14px/1.4 ui-sans-serif, system-ui, sans-serif; }
 body { display: grid; grid-template-rows: auto 1fr auto; }

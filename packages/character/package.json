@@ -1,8 +1,8 @@
 {
-  "name": "@contenteasy/character",
+  "name": "@moovi/character",
   "version": "0.1.0",
   "private": true,
-  "description": "Moovi, the ContentEasy director: a code-generated jelly character (SDF raymarch, WebGL2).",
+  "description": "Moovi, the director: a code-generated jelly character (SDF raymarch, WebGL2).",
   "type": "module",
   "sideEffects": false,
   "exports": {

@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { AuthError, hit, signIn } from '@contenteasy/engine';
+import { AuthError, hit, signIn } from '@moovi/engine';
 import { COOKIE, cookieOptions, fail } from '@/lib/session';
 
 export const runtime = 'nodejs';

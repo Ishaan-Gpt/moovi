@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { styleOf } from '@contenteasy/engine/styles';
+import { styleOf } from '@moovi/engine/styles';
 import { mediaUrl, previewUrl } from '@/lib/client';
 
 interface Ref { style: string; duration: number; timings: Record<string, number> }

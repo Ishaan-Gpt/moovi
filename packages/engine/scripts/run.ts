@@ -3,7 +3,7 @@
 import { copyFileSync, statSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { basename, extname, join } from 'node:path';
-import { closeMemory, health, project as P, projectGraph, run as runQ, SYS, sys as S } from '@contenteasy/graph';
+import { closeMemory, health, project as P, projectGraph, run as runQ, SYS, sys as S } from '@moovi/graph';
 import { blocking, follow, history } from '../src/bus';
 import { createChat, createProject, signIn, signUp } from '../src/accounts';
 import { handleCommand } from '../src/chat';
@@ -22,7 +22,7 @@ const ratio = (args[args.indexOf('--ratio') + 1] ?? 'auto') as 'auto';
 if (!(await health()).ok) { console.error('FalkorDB is down'); process.exit(1); }
 
 // a local CLI account (created once), a fresh project and chat
-const email = 'cli@contenteasy.local', password = 'cli-local-only-password';
+const email = 'cli@moovi.local', password = 'cli-local-only-password';
 const me = await signIn({ email, password }).catch(() => signUp({ email, password, name: 'CLI' }));
 const proj = await createProject(me.id, 'Untitled project');
 const chat = await createChat(proj.id);

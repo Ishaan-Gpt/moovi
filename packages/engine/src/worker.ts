@@ -1,7 +1,7 @@
 import { hostname } from 'node:os';
 import { byokMode, NeedsModelKey, scopeFor } from './keys';
 import { withModel } from './runtime';
-import { project as P, projectGraph, read } from '@contenteasy/graph';
+import { project as P, projectGraph, read } from '@moovi/graph';
 import { group, head } from './heads';
 import { activeProjects, blocking, consumeCommands, dequeue, enqueue, markActive, publish, type Ready } from './bus';
 import type { Command } from './commands';
@@ -112,7 +112,7 @@ export class Worker {
       const handler = this.o.handlers[t.kind];
       if (!handler) throw new Error(`No handler for task kind "${t.kind}"`);
       if (run.status === 'planned') await pq(pid, P.setRun, { id: runId, status: 'running', at: Date.now(), brief: null, skill: null, card: null, match: null, error: null });
-      // the task thinks on its owner's own model (bring your own key); CE_BYOK=optional lets a keyless user use this machine's
+      // the task thinks on its owner's own model (bring your own key); MOOVI_BYOK=optional lets a keyless user use this machine's
       const ms = scopeFor(user);
       if (!ms && byokMode() === 'required') throw new NeedsModelKey();
       const go = () => inScope({ project: pid, chat: run.chat, agent, task: id }, () => handler(ctx));

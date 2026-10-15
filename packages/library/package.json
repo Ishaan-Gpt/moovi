@@ -1,5 +1,5 @@
 {
-  "name": "@contenteasy/library",
+  "name": "@moovi/library",
   "version": "0.1.0",
   "private": true,
   "description": "Style libraries as editable code: every Style 1 asset (sfx, music beds, backgrounds, past videos) catalogued, plus its text looks, effects, transitions, UI components and scene recipes. Heavy media is synced into data/library, never committed.",

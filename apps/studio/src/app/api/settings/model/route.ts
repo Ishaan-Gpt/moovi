@@ -1,4 +1,4 @@
-import { byokMode, clearModel, hit, modelInfo, PROVIDER_CHOICES, setModel } from '@contenteasy/engine';
+import { byokMode, clearModel, hit, modelInfo, PROVIDER_CHOICES, setModel } from '@moovi/engine';
 import { apiUser, fail } from '@/lib/session';
 
 export const runtime = 'nodejs';

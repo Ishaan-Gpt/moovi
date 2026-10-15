@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { HaloMark } from '@contenteasy/ui';
+import { HaloMark } from '@moovi/ui';
 import { post } from '@/lib/client';
 
 /** The dashboard's left rail: the mark, Projects and Your model at the top, the profile at the bottom (with sign out). */
@@ -9,7 +9,7 @@ export function Sidebar({ user, current = 'projects' }: { user: { name: string; 
   const out = async () => { await post('/auth/signout', {}).catch(() => undefined); window.location.href = '/studio/auth?mode=signin'; };
   return (
     <aside className="rail">
-      <a className="rail__mark" href="/" aria-label="ContentEasy home"><HaloMark size={30} base="/studio" /><span>ContentEasy</span></a>
+      <a className="rail__mark" href="/" aria-label="Moovi home"><HaloMark size={30} base="/studio" /><span>Moovi</span></a>
       <nav className="rail__nav" aria-label="Studio">
         <a className="rail__item" aria-current={current === 'projects' ? 'page' : undefined} href="/studio">
           <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><rect x="3" y="3.5" width="6" height="6" rx="1.8" fill="none" stroke="currentColor" strokeWidth="1.5" /><rect x="11" y="3.5" width="6" height="6" rx="1.8" fill="none" stroke="currentColor" strokeWidth="1.5" /><rect x="3" y="11.5" width="6" height="5" rx="1.8" fill="none" stroke="currentColor" strokeWidth="1.5" /><rect x="11" y="11.5" width="6" height="5" rx="1.8" fill="currentColor" opacity=".25" /></svg>

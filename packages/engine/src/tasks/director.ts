@@ -1,6 +1,6 @@
 import { join } from 'node:path';
-import { CRAFT, craft as C, project as P, run as runQ, user as U } from '@contenteasy/graph';
-import { FONTS, PROPS, S1_PRESETS, StyleCard, fallbackCard, kitDocs, type Features } from '@contenteasy/skills';
+import { CRAFT, craft as C, project as P, run as runQ, user as U } from '@moovi/graph';
+import { FONTS, PROPS, S1_PRESETS, StyleCard, fallbackCard, kitDocs, type Features } from '@moovi/skills';
 import { z } from 'zod';
 import { cutRate, frames as grabFrames, probe, writeJson } from '../bench';
 import type { Handler, TaskCtx } from '../ctx';

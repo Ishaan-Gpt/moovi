@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { listProjects } from '@contenteasy/engine';
+import { listProjects } from '@moovi/engine';
 import { requireUser } from '@/lib/session';
 import { Sidebar } from '@/components/dash/Sidebar';
 import { ProjectGrid } from '@/components/dash/ProjectGrid';

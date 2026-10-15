@@ -38,7 +38,7 @@ export async function run(o: RunInput, h: Hooks = {}): Promise<RunResult> {
     words = JSON.parse(readFileSync(wf, 'utf8'));
     ff(['-i', refVideo!, '-vn', '-ar', '44100', '-ac', '2', join(dir, 'master.wav')]);
     colors = { paper: '#FFFFFF', ink: '#111111', accent: '#2DC71B', grey: '#8A8F98' }; // the reference's world (clone tests only)
-    name = 'ContentEasy'; line = 'Style 5 clone test'; facts = false; arc = 'clone';
+    name = 'Moovi'; line = 'Style 5 clone test'; facts = false; arc = 'clone';
     lines = words.map(w => w.word).join(' ').split(/(?<=[.!?])\s+/);
     tagsP = tagLines(lines, { signal: o.signal, log });
     lap('transcript(ref)', s);
@@ -60,7 +60,7 @@ export async function run(o: RunInput, h: Hooks = {}): Promise<RunResult> {
     } else {
       C.begin('brief');
       lines = o.script!.split(/\r?\n/).map(l => l.trim()).filter(l => l && !l.startsWith('#'));
-      name = o.brand ?? (lines.join(' ').match(/\bMeet ([A-Z][\w.]*(?: [A-Z][\w.]*)?)/)?.[1] ?? 'ContentEasy');
+      name = o.brand ?? (lines.join(' ').match(/\bMeet ([A-Z][\w.]*(?: [A-Z][\w.]*)?)/)?.[1] ?? 'Moovi');
       line = o.brand ?? name;
       const th = buildTheme({ name, primary: o.color ?? '#2B67C6' });
       colors = { paper: th.stage, ink: th.ink, accent: th.accent, grey: '#8A8F98' };

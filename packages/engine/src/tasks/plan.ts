@@ -1,5 +1,5 @@
-import { project as P, run as runQ, SYS, sys as S, user as U } from '@contenteasy/graph';
-import type { Features, Role } from '@contenteasy/skills';
+import { project as P, run as runQ, SYS, sys as S, user as U } from '@moovi/graph';
+import type { Features, Role } from '@moovi/skills';
 import { z } from 'zod';
 import { writeJson } from '../bench';
 import { config } from '../config';
@@ -101,7 +101,7 @@ export const research: Handler = async ctx => {
     tool({ name: 'fetch_page', description: 'Read a web page (text only, up to 12,000 characters).', input: { url: z.string().min(4) },
       async run({ url }) {
         const u = /^https?:\/\//.test(url) ? url : `https://${url}`;
-        const r = await fetch(u, { signal: AbortSignal.timeout(15_000), headers: { 'user-agent': 'Mozilla/5.0 (ContentEasy research)' } });
+        const r = await fetch(u, { signal: AbortSignal.timeout(15_000), headers: { 'user-agent': 'Mozilla/5.0 (Moovi research)' } });
         if (!r.ok) return { error: `HTTP ${r.status}` };
         const html = (await r.text()).slice(0, 2_000_000);
         const title = html.match(/<title[^>]*>([^<]*)/i)?.[1]?.trim() ?? '';

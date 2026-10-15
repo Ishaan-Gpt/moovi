@@ -54,11 +54,11 @@ export function httpRuntime(opts: { provider?: Provider; key?: string; baseUrl?:
   const key = opts.key ?? keyOf(provider);
   const base = (opts.baseUrl ?? config.baseUrl ?? preset.base).replace(/\/$/, '');
   const f = opts.fetch ?? fetch;
-  if (!key && preset.keys.length && provider !== 'compatible' && !opts.fetch) throw new Error(`No API key for ${provider}: set ${preset.keys.join(' or ')} (or CE_RUNTIME=claude-code to use this machine's Claude Code login).`);
-  if (!base) throw new Error('CE_BASE_URL is needed for a compatible endpoint.');
+  if (!key && preset.keys.length && provider !== 'compatible' && !opts.fetch) throw new Error(`No API key for ${provider}: set ${preset.keys.join(' or ')} (or MOOVI_RUNTIME=claude-code to use this machine's Claude Code login).`);
+  if (!base) throw new Error('MOOVI_BASE_URL is needed for a compatible endpoint.');
   const wire: Wire = preset.wire;
   const adapter: Adapter = wire === 'anthropic' ? anthropic(f, base, key ?? '') : wire === 'gemini' ? gemini(f, base, key ?? '') : wire === 'ollama' ? ollama(f, base) : openai(f, base, key ?? '', provider);
-  const gate = semaphore(Number(process.env.CE_MAX_CONCURRENCY) || preset.concurrency);
+  const gate = semaphore(Number(process.env.MOOVI_MAX_CONCURRENCY) || preset.concurrency);
   const capOf = (model: string) => { const k = `${provider}:${model}`; if (!caps.has(k)) caps.set(k, { tools: preset.tools, json: preset.json }); return caps.get(k)!; };
   let autoModel: Promise<string> | null = null;
   const resolveModel = async (m: string) => {
@@ -200,7 +200,7 @@ async function retry<T>(fn: () => Promise<T>, signal: AbortSignal): Promise<T> {
       const transient = e instanceof ApiError ? e.status === 429 || e.status >= 500 : /\b(429|5\d\d)\b|ECONNRESET|ETIMEDOUT|ECONNREFUSED|fetch failed|overloaded|socket/i.test(m);
       if (signal.aborted || !transient) throw e;
       const wait = Math.min(60_000, e instanceof ApiError && e.retryAfter != null ? e.retryAfter + 250 : 1500 * 2 ** i);
-      if (process.env.CE_DEBUG_HTTP) console.warn(`[http] retry ${i + 1} in ${(wait / 1000).toFixed(1)} s after: ${m.slice(0, 200)}`);
+      if (process.env.MOOVI_DEBUG_HTTP) console.warn(`[http] retry ${i + 1} in ${(wait / 1000).toFixed(1)} s after: ${m.slice(0, 200)}`);
       await new Promise<void>((res, rej) => { const t = setTimeout(res, wait); signal.addEventListener('abort', () => { clearTimeout(t); rej(new Error('aborted')); }, { once: true }); });
     }
   }
@@ -325,7 +325,7 @@ function openai(f: typeof fetch, base: string, key: string, provider: Provider):
   return {
     async send(model, system, msgs, o) {
       const headers: Record<string, string> = key ? { authorization: `Bearer ${key}` } : {};
-      if (provider === 'openrouter') Object.assign(headers, { 'x-title': 'ContentEasy' });
+      if (provider === 'openrouter') Object.assign(headers, { 'x-title': 'Moovi' });
       const rf = o.json?.mode === 'schema' && o.json.schema ? { response_format: { type: 'json_schema', json_schema: { name: 'answer', schema: o.json.schema, strict: false } } } : o.json ? { response_format: { type: 'json_object' } } : {};
       const sys = o.json ? `${system}\n\nReply with a JSON object only.` : system; // JSON mode wants the word "JSON" in the prompt
       const j = await post(f, `${base}/chat/completions`, headers, { model, messages: openaiMessages(sys, msgs), ...(o.tools ? { tools: o.tools.map(t => ({ type: 'function', function: { name: t.name, description: t.description, parameters: jsonSchema(t) } })), tool_choice: 'auto' } : {}), ...rf, ...(/gpt-oss/i.test(model) ? { reasoning_effort: 'low' } : {}) }, o.signal);
@@ -378,7 +378,7 @@ function ollama(f: typeof fetch, base: string): Adapter {
         messages.push({ role: m.role, content: text, ...(images.length ? { images } : {}) });
       }
       const format = o.json?.mode === 'schema' && o.json.schema ? o.json.schema : o.json ? 'json' : undefined;
-      const j = await post(f, `${base}/api/chat`, {}, { model, messages, stream: false, ...(format ? { format } : {}), options: { num_ctx: Number(process.env.CE_OLLAMA_CTX) || 16384, temperature: 0.4, num_predict: 4096 } }, o.signal);
+      const j = await post(f, `${base}/api/chat`, {}, { model, messages, stream: false, ...(format ? { format } : {}), options: { num_ctx: Number(process.env.MOOVI_OLLAMA_CTX) || 16384, temperature: 0.4, num_predict: 4096 } }, o.signal);
       const msg = (j.message as { content?: string }) ?? {};
       return { text: msg.content ?? '', calls: [] };
     },

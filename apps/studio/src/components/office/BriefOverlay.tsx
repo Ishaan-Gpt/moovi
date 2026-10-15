@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useId, useRef, useState, type DragEvent, type FormEvent, type KeyboardEvent } from 'react';
-import { STYLES, styleOf, type StyleId } from '@contenteasy/engine/styles';
+import { STYLES, styleOf, type StyleId } from '@moovi/engine/styles';
 
 /** A pick from the style strip: one of the live-preview styles, from a site link or (some styles) a script. */
 export interface StylePick { id: StyleId; url?: string; script?: string; brand?: string }

@@ -2,7 +2,7 @@ import type { NextConfig } from 'next';
 
 const config: NextConfig = {
   // workspace packages ship TypeScript source
-  transpilePackages: ['@contenteasy/brand', '@contenteasy/character', '@contenteasy/ui'],
+  transpilePackages: ['@moovi/brand', '@moovi/character', '@moovi/ui'],
   reactStrictMode: true,
   // a second dev server (e.g. a preview alongside another session's) needs its own build folder and lock
   distDir: process.env.NEXT_DIST_DIR || '.next',

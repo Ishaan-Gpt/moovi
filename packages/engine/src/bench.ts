@@ -1,7 +1,7 @@
 import { execFile } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
-import type { Ev, Word } from '@contenteasy/skills';
+import type { Ev, Word } from '@moovi/skills';
 import { config } from './config';
 import { assetsReady, bedFile, bedFrom, bedInfo, sfxStem as mixSfx, type Ev as MixEv } from './audio/mix';
 import { transcribeWords } from './audio/stt';

@@ -48,7 +48,7 @@ export function WorldStage() {
     let stop: (() => void) | undefined;
     // the world (and the keyframe script) load lazily: chapters wait in onWorld() until setWorld() runs
     afterFirstPaint()
-      .then(() => Promise.all([import('@contenteasy/character'), import('@/lib/script')]))
+      .then(() => Promise.all([import('@moovi/character'), import('@/lib/script')]))
       .then(([{ MooviWorld }, { buildScript }]) => {
         if (cancelled) return;
         if (!MooviWorld.isSupported()) { setOk(false); document.documentElement.dataset.nowebgl = ''; return; }

@@ -20,11 +20,11 @@ export const SEED = join(REPO, 'packages', 'library', 'src', 'style-4', 'picture
 const CACHE = () => join(config.data, 's4', 'cache');
 
 /**
- * Does the thinking model draw pictures well enough to draw every one? CE_S4_DRAW=model|library forces it; else
+ * Does the thinking model draw pictures well enough to draw every one? MOOVI_S4_DRAW=model|library forces it; else
  * Claude (this machine's login or an Anthropic key) draws, and every other model goes library-first.
  */
 export function drawsWell(): boolean {
-  const f = process.env.CE_S4_DRAW?.trim().toLowerCase();
+  const f = process.env.MOOVI_S4_DRAW?.trim().toLowerCase();
   if (f === 'model') return true;
   if (f === 'library') return false;
   return modelDrawsWell();

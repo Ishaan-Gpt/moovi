@@ -4,7 +4,7 @@ import { BRANDS, FONT, GOLD_GRADIENT, PROP_COLORS, STAGE_COLORS, TIMING, TYPE, t
 
 /**
  * Text looks as parameterised factories: `ink('Hello', { top: 420 })` -> `{ look, layer, effects, sfx }`.
- * `layer` is a MotionEasy `style1-timeline` line layer (also what the ContentEasy kit compiles to); word frames are 0 until
+ * `layer` is a MotionEasy `style1-timeline` line layer (also what the Moovi kit compiles to); word frames are 0 until
  * the kit aligns them to the voice. Defaults are exposed as constants (INK_LINE, ACCENT_LINE ...): edit one, every factory follows.
  */
 

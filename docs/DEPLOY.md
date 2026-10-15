@@ -21,11 +21,11 @@ The simplest setup that runs everything, and the one the repo is built for (`Doc
    DigitalOcean 4 GB or Lightsail 4 GB (roughly $5–24 a month).
 2. Install Docker, clone the repo, then:
    ```bash
-   cp .env.example .env    # set CE_SECRET to a long random string
+   cp .env.example .env    # set MOOVI_SECRET to a long random string
    docker compose up -d --build
    ```
 3. Put HTTPS in front with Caddy (one line: `your-domain.com { reverse_proxy localhost:3100 }`), and set
-   `CE_ORIGINS=https://your-domain.com` in `.env`.
+   `MOOVI_ORIGINS=https://your-domain.com` in `.env`.
 4. Open `https://your-domain.com/studio`, sign up, and paste a model key (Gemini or Groq are free).
 
 FalkorDB's volume and the data volume persist across restarts and redeploys. Back up both.
@@ -53,9 +53,9 @@ the type (`aws ec2 modify-instance-attribute --instance-id <id> --instance-type 
    judging: it stops after a day idle and is deleted after a week.
 2. **App:** one Railway service from this repo's `Dockerfile`, with a volume mounted at `/data`. Run the studio
    and the worker in that **one** service so they share `/data`: set the start command to
-   `sh -c "pnpm --filter @contenteasy/engine exec tsx scripts/worker.ts & pnpm --filter @contenteasy/studio start"`.
-3. Variables: `FALKORDB_URL` (from the template, `falkor://…`), `CE_SECRET`, `CE_DATA_DIR=/data`,
-   `CE_ORIGINS=https://<your app domain>`, `CE_BYOK=required`.
+   `sh -c "pnpm --filter @moovi/engine exec tsx scripts/worker.ts & pnpm --filter @moovi/studio start"`.
+3. Variables: `FALKORDB_URL` (from the template, `falkor://…`), `MOOVI_SECRET`, `MOOVI_DATA_DIR=/data`,
+   `MOOVI_ORIGINS=https://<your app domain>`, `MOOVI_BYOK=required`.
 4. Size: at least 2 GB RAM.
 
 ## The landing page on Vercel
@@ -68,11 +68,11 @@ studio. The studio itself does **not** belong on Vercel: it needs the shared dis
 
 | Variable | Why |
 |---|---|
-| `CE_SECRET` | encrypts every user's stored model key. Set it once and keep it: changing it makes saved keys unreadable. |
-| `CE_BYOK` | `required` (default): every user brings their own key. `optional`: keyless users run on the server's model (`CE_RUNTIME`, `CE_PROVIDER` and a key). |
-| `CE_ORIGINS` | your public origin(s), comma-separated: the studio refuses cross-site writes from anything else. |
+| `MOOVI_SECRET` | encrypts every user's stored model key. Set it once and keep it: changing it makes saved keys unreadable. |
+| `MOOVI_BYOK` | `required` (default): every user brings their own key. `optional`: keyless users run on the server's model (`MOOVI_RUNTIME`, `MOOVI_PROVIDER` and a key). |
+| `MOOVI_ORIGINS` | your public origin(s), comma-separated: the studio refuses cross-site writes from anything else. |
 | `FALKORDB_URL` | FalkorDB's address. Use a password in production (`falkor://default:<password>@host:6379`). |
-| `CE_CHROME_PATH` | `/usr/bin/chromium` in the Docker image (already set there). |
+| `MOOVI_CHROME_PATH` | `/usr/bin/chromium` in the Docker image (already set there). |
 
 ## What runs where, per film
 

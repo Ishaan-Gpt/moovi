@@ -1,5 +1,5 @@
-import { project as P, projectGraph, run } from '@contenteasy/graph';
-import type { ChatMessage } from '@contenteasy/engine';
+import { project as P, projectGraph, run } from '@moovi/graph';
+import type { ChatMessage } from '@moovi/engine';
 
 /** Reading a project for pages and APIs (the engine writes; the studio reads and sends commands). */
 export interface ChatRow { id: string; title: string; status: string; at: number; updated: number; video: string; videoStatus: string; poster: string | null; duration: number | null; version: number }

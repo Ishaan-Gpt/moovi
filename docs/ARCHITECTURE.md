@@ -1,4 +1,4 @@
-# ContentEasy: architecture (draft v1, 2026-10-12)
+# Moovi: architecture (draft v1, 2026-10-12)
 
 ## Product in one line
 
@@ -16,7 +16,7 @@ You hire **the Director**, a 3D AI video employee. He briefs his crew of sub-age
 | Hosting | Vercel | Vercel (UI and API) + Railway (FalkorDB) |
 
 ```
-contenteasy/
+moovi/
 ├─ apps/
 │  ├─ landing/     marketing site (built first)
 │  └─ studio/      the app: brief → crew → video (studio)

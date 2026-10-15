@@ -1,6 +1,6 @@
 import { join } from 'node:path';
-import { project as P, user as U } from '@contenteasy/graph';
-import { kit, readingPace, type Word } from '@contenteasy/skills';
+import { project as P, user as U } from '@moovi/graph';
+import { kit, readingPace, type Word } from '@moovi/skills';
 import { z } from 'zod';
 import { benchStatus, gaps, readJson, transcribe as benchTranscribe, tts, writeJson } from '../bench';
 import type { Handler, TaskCtx } from '../ctx';

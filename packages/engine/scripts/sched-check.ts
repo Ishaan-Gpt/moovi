@@ -3,7 +3,7 @@
 //   tsx --env-file-if-exists=../../.env.local scripts/sched-check.ts
 import { spawn as spawnProc } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { closeMemory, createProjectGraph, dropGraph, project as P, projectGraph } from '@contenteasy/graph';
+import { closeMemory, createProjectGraph, dropGraph, project as P, projectGraph } from '@moovi/graph';
 import { redis } from '../src/bus';
 import type { Handler } from '../src/ctx';
 import { pq } from '../src/live';
@@ -42,7 +42,7 @@ if (mode === 'main') {
       { key: 'f', kind: 'f', agent: 'keeper', resource: 'llm', title: 'f', deps: ['e'] },
     ],
   });
-  const env = { ...process.env, CE_LEASE_MS: '4000', CE_SLOTS_LLM: '4' };
+  const env = { ...process.env, MOOVI_LEASE_MS: '4000', MOOVI_SLOTS_LLM: '4' };
   const self = fileURLToPath(import.meta.url);
   const start = (name: string) => spawnProc(process.execPath, ['--import', 'tsx', self, 'worker', PID], { env, stdio: ['ignore', 'inherit', 'inherit'] });
   const A = start('A');

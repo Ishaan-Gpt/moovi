@@ -1,5 +1,5 @@
 {
-  "name": "@contenteasy/studio",
+  "name": "@moovi/studio",
   "version": "0.2.0",
   "private": true,
   "type": "module",
@@ -10,14 +10,14 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@contenteasy/brand": "workspace:*",
-    "@contenteasy/character": "workspace:*",
-    "@contenteasy/engine": "workspace:*",
-    "@contenteasy/ui": "workspace:*",
+    "@moovi/brand": "workspace:*",
+    "@moovi/character": "workspace:*",
+    "@moovi/engine": "workspace:*",
+    "@moovi/ui": "workspace:*",
     "next": "16.2.9",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "@contenteasy/graph": "workspace:*"
+    "@moovi/graph": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "22.15.0",

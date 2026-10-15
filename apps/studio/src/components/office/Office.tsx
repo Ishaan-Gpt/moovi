@@ -1,8 +1,8 @@
 'use client';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { MooviState } from '@contenteasy/character';
-import { MENTIONABLE, type AgentId, type ChatMessage } from '@contenteasy/engine/events';
+import type { MooviState } from '@moovi/character';
+import { MENTIONABLE, type AgentId, type ChatMessage } from '@moovi/engine/events';
 import { post, upload } from '@/lib/client';
 import { ChatPanel, type ChatSummary } from '../chat/ChatPanel';
 import type { ComposerHandle } from '../chat/Composer';

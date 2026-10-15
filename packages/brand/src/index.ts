@@ -1,5 +1,5 @@
 /**
- * ContentEasy brand tokens: the single source for colour across the site, the studio and Moovi.
+ * Moovi brand tokens: the single source for colour across the site, the studio and Moovi.
  * Two majors (icy white + ice blue); everything else is minor. Mirrors docs/BRAND.md and tokens.css.
  */
 export const color = {

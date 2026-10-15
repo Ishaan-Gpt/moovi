@@ -2,7 +2,7 @@
  * Every model API the crew can think on, as data. A preset says where the API is, which key it reads, which models
  * play the three tiers when none are set, how it speaks (wire), and how far it can be trusted: native tool calls or
  * emulated ones, schema-constrained JSON or plain JSON mode, how many calls at once before it rate-limits.
- * Setting one key is enough: `CE_RUNTIME=http CE_PROVIDER=groq GROQ_API_KEY=…` (or leave CE_PROVIDER unset and the
+ * Setting one key is enough: `MOOVI_RUNTIME=http MOOVI_PROVIDER=groq GROQ_API_KEY=…` (or leave MOOVI_PROVIDER unset and the
  * first provider with a key is used).
  */
 export type Provider = 'anthropic' | 'openai' | 'gemini' | 'groq' | 'openrouter' | 'ollama' | 'deepseek' | 'mistral' | 'together' | 'xai' | 'cerebras' | 'compatible';
@@ -33,7 +33,7 @@ export const PRESETS: Record<Provider, Preset> = {
   together: { keys: ['TOGETHER_API_KEY'], base: 'https://api.together.xyz/v1', wire: 'openai', models: { director: 'meta-llama/Llama-3.3-70B-Instruct-Turbo', crew: 'meta-llama/Llama-3.3-70B-Instruct-Turbo', fast: 'meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo' }, tools: 'native', json: 'object', concurrency: 4 },
   xai: { keys: ['XAI_API_KEY'], base: 'https://api.x.ai/v1', wire: 'openai', models: { director: 'grok-4', crew: 'grok-4', fast: 'grok-3-mini' }, tools: 'native', json: 'schema', concurrency: 4 },
   cerebras: { keys: ['CEREBRAS_API_KEY'], base: 'https://api.cerebras.ai/v1', wire: 'openai', models: { director: 'llama-3.3-70b', crew: 'llama-3.3-70b', fast: 'llama3.1-8b' }, tools: 'native', json: 'object', concurrency: 3 },
-  compatible: { keys: ['CE_API_KEY'], base: '', wire: 'openai', models: { director: 'default', crew: 'default', fast: 'default' }, tools: 'native', json: 'object', concurrency: 4 },
+  compatible: { keys: ['MOOVI_API_KEY'], base: '', wire: 'openai', models: { director: 'default', crew: 'default', fast: 'default' }, tools: 'native', json: 'object', concurrency: 4 },
 };
 export const PROVIDERS = Object.keys(PRESETS) as Provider[];
 
@@ -59,19 +59,19 @@ export function pickModel(models: { id: string; context?: number }[], tier: 'dir
   return tier === 'fast' ? ([...sorted].reverse().find(m => s(m) >= 7) ?? sorted.at(-1)!).id : sorted[0]!.id;
 }
 
-/** The provider to use: CE_PROVIDER, else the first one with a key set (ollama last: it needs no key). */
+/** The provider to use: MOOVI_PROVIDER, else the first one with a key set (ollama last: it needs no key). */
 export function pickProvider(): Provider {
-  const asked = env('CE_PROVIDER')?.toLowerCase();
+  const asked = env('MOOVI_PROVIDER')?.toLowerCase();
   if (asked && (PROVIDERS as string[]).includes(asked)) return asked as Provider;
-  return PROVIDERS.find(p => p !== 'ollama' && p !== 'compatible' && keyOf(p)) ?? (env('CE_BASE_URL') ? 'compatible' : 'ollama');
+  return PROVIDERS.find(p => p !== 'ollama' && p !== 'compatible' && keyOf(p)) ?? (env('MOOVI_BASE_URL') ? 'compatible' : 'ollama');
 }
 
 /**
- * The model for a tier: CE_MODEL_<TIER> when it suits this provider, else the preset's. A Claude model id left in
+ * The model for a tier: MOOVI_MODEL_<TIER> when it suits this provider, else the preset's. A Claude model id left in
  * the env from the Claude Code days is ignored on a provider that cannot serve it, so switching provider is one line.
  */
 export function modelFor(p: Provider, tier: 'director' | 'crew' | 'fast'): string {
-  const set = env(`CE_MODEL_${tier.toUpperCase()}`);
+  const set = env(`MOOVI_MODEL_${tier.toUpperCase()}`);
   const foreign = set && /^claude-/i.test(set) && p !== 'anthropic';
   return set && !foreign ? set : PRESETS[p].models[tier];
 }

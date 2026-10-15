@@ -3,11 +3,11 @@
  * or a local Ollama): they enter it once in the studio, it is checked against the provider's live model list, the
  * three tiers are chosen from the models that key can actually use, and every job of theirs runs inside that model's
  * scope (runtime/index.ts withModel). The key is stored encrypted (AES-256-GCM) under data/users/<id>/, with a server
- * secret (CE_SECRET, else a random one created once in data/.secret, never committed). It never leaves the server:
+ * secret (MOOVI_SECRET, else a random one created once in data/.secret, never committed). It never leaves the server:
  * the studio only ever sees the provider and the key's last four characters.
  *
- * CE_BYOK=required (default): a user without a key is asked for one before the crew starts.
- * CE_BYOK=optional: such a user runs on this machine's configured model (CE_RUNTIME) instead.
+ * MOOVI_BYOK=required (default): a user without a key is asked for one before the crew starts.
+ * MOOVI_BYOK=optional: such a user runs on this machine's configured model (MOOVI_RUNTIME) instead.
  */
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -37,12 +37,12 @@ export const PROVIDER_CHOICES: { id: Provider; label: string; keyUrl?: string; h
 ];
 const labelOf = (p: Provider) => PROVIDER_CHOICES.find(c => c.id === p)?.label ?? p;
 
-export const byokMode = (): 'required' | 'optional' => (process.env.CE_BYOK?.trim().toLowerCase() === 'optional' ? 'optional' : 'required');
+export const byokMode = (): 'required' | 'optional' => (process.env.MOOVI_BYOK?.trim().toLowerCase() === 'optional' ? 'optional' : 'required');
 
 /* ───────── the server secret and the sealed file ───────── */
 
 function secret(): Buffer {
-  const env = process.env.CE_SECRET?.trim();
+  const env = process.env.MOOVI_SECRET?.trim();
   if (env) return createHash('sha256').update(env).digest();
   const f = join(config.data, '.secret');
   if (!existsSync(f)) { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, randomBytes(32).toString('base64'), { mode: 0o600 }); }
@@ -105,7 +105,7 @@ export async function setModel(user: string, o: { provider: string; key?: string
 const cache = new Map<string, { sig: string; scope: ModelScope }>();
 /**
  * The model scope for a user's job: their own key's runtime (one per user, kept, so its pacing is per user), or null
- * when they have none (the caller asks for a key, or under CE_BYOK=optional uses the machine's runtime).
+ * when they have none (the caller asks for a key, or under MOOVI_BYOK=optional uses the machine's runtime).
  */
 export function scopeFor(user: string | null | undefined): ModelScope | null {
   if (!user) return null;
@@ -123,5 +123,5 @@ export function scopeFor(user: string | null | undefined): ModelScope | null {
   return scope;
 }
 
-/** Thrown when a user without a model starts work under CE_BYOK=required: the chat shows this and links Settings. */
+/** Thrown when a user without a model starts work under MOOVI_BYOK=required: the chat shows this and links Settings. */
 export class NeedsModelKey extends Error { constructor() { super('Add your model API key first (Settings → Your model). Any of Gemini, Groq, OpenAI, Claude, OpenRouter and more works.'); this.name = 'NeedsModelKey'; } }

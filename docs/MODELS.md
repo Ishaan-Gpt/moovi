@@ -4,12 +4,12 @@ The crew thinks on whatever model you give it. By default it uses this machine's
 `.env.local` switches it to any model API, and nothing else in the engine changes.
 
 ```bash
-CE_RUNTIME=http
+MOOVI_RUNTIME=http
 GROQ_API_KEY=...        # or GEMINI_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY, OPENROUTER_API_KEY, ...
 ```
 
-The provider is the first one whose key is set. `CE_PROVIDER` picks one explicitly. Each provider has its own models
-for the three tiers (director, crew and fast). `CE_MODEL_DIRECTOR`, `CE_MODEL_CREW` and `CE_MODEL_FAST` override them.
+The provider is the first one whose key is set. `MOOVI_PROVIDER` picks one explicitly. Each provider has its own models
+for the three tiers (director, crew and fast). `MOOVI_MODEL_DIRECTOR`, `MOOVI_MODEL_CREW` and `MOOVI_MODEL_FAST` override them.
 A Claude model id left over from the Claude Code setup is ignored on providers that cannot serve it.
 
 | Provider | Key | Default models (director / crew / fast) | Notes |
@@ -18,10 +18,10 @@ A Claude model id left over from the Claude Code setup is ignored on providers t
 | openai | `OPENAI_API_KEY` | gpt-5 / gpt-5-mini / gpt-5-nano | JSON Schema-constrained answers |
 | gemini | `GEMINI_API_KEY` | gemini-2.5-pro / gemini-2.5-flash / gemini-2.5-flash-lite | responseSchema-constrained answers |
 | groq | `GROQ_API_KEY` | llama-3.3-70b-versatile / same / llama-3.1-8b-instant | JSON mode; broken tool calls are recovered |
-| openrouter | `OPENROUTER_API_KEY` | google/gemini-2.5-pro / -flash / -flash-lite | any OpenRouter model via `CE_MODEL_*` |
+| openrouter | `OPENROUTER_API_KEY` | google/gemini-2.5-pro / -flash / -flash-lite | any OpenRouter model via `MOOVI_MODEL_*` |
 | ollama | none | the largest local model (`auto`) | emulated tools, schema-constrained, deadlines ×4 |
 | deepseek, mistral, together, xai, cerebras | `<NAME>_API_KEY` | see `runtime/providers.ts` | |
-| compatible | `CE_API_KEY` + `CE_BASE_URL` | `CE_MODEL_*` | any OpenAI-compatible server |
+| compatible | `MOOVI_API_KEY` + `MOOVI_BASE_URL` | `MOOVI_MODEL_*` | any OpenAI-compatible server |
 
 ## Why a weak model still makes a good film
 
@@ -54,7 +54,7 @@ only for what any model does well, and does the rest itself:
 
 ```bash
 cd packages/engine
-CE_RUNTIME=http CE_PROVIDER=groq pnpm exec tsx --env-file-if-exists=../../.env.local scripts/model-check.ts https://cal.com
+MOOVI_RUNTIME=http MOOVI_PROVIDER=groq pnpm exec tsx --env-file-if-exists=../../.env.local scripts/model-check.ts https://cal.com
 ```
 
 This runs the real calls a style makes (the arc brief, needs tagging, one improvised set-up) and prints validity,
@@ -72,7 +72,7 @@ last four characters.
 
 Every job runs inside its owner's model scope (`withModel`, an `AsyncLocalStorage`). One worker serves many users at
 once, and no job ever uses another user's key. A user without a key who sends a brief gets a plain message asking
-for one. `CE_BYOK=optional` lets such users run on the server's own model instead.
+for one. `MOOVI_BYOK=optional` lets such users run on the server's own model instead.
 
 ## Pictures on models that don't draw well
 
@@ -86,4 +86,4 @@ still shows. On anything but Claude, Editorial is **library-first** (`packages/e
 
 The library ships in the repo (`packages/library/src/style-4/pictures.json`: 258 Claude-drawn pictures that passed
 the checker, rebuilt with `scripts/s4-seed.ts`). It grows with every good drawing made on the machine. Drawings by a
-weaker model are never added to it. `CE_S4_DRAW=model|library` forces either mode.
+weaker model are never added to it. `MOOVI_S4_DRAW=model|library` forces either mode.

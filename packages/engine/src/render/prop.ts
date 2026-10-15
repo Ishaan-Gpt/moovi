@@ -1,5 +1,5 @@
 import { writeFileSync } from 'node:fs';
-import { spec, type Timeline } from '@contenteasy/skills';
+import { spec, type Timeline } from '@moovi/skills';
 import { matte } from './host';
 
 /**

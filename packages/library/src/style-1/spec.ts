@@ -1,7 +1,7 @@
 /**
  * Small shared shapes for the Style 1 visual library (tokens, text, effects, transitions, camera, ui, scenes).
  * Plain data: every default lives in a constant next to the thing it tunes. Layer-shaped outputs use the same keys as
- * the MotionEasy `style1-timeline` layers (and @contenteasy/skills' LayerP), so they drop into a scene program.
+ * the MotionEasy `style1-timeline` layers (and @moovi/skills' LayerP), so they drop into a scene program.
  */
 
 /** CSS cubic-bezier control points (x1, y1, x2, y2). */

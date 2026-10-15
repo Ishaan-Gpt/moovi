@@ -2,9 +2,9 @@
 // Resets FalkorDB to the state the product needs: the shared `craft` graph holds style and craft knowledge only
 // (no brand, no client, no film of the owner's), every brand-era graph is gone, and the `sys` graph exists.
 // --all also drops every user_* and proj_* graph (development only: it deletes every account's work).
-import { CRAFT, SYS, closeMemory, craft, dropGraph, ensureSys, health, listGraphs, run, seedCraft, seedSignatures, seedStylePackage } from '@contenteasy/graph';
-import { PACKAGES, SIGNATURES, type StylePackage } from '@contenteasy/skills';
-import { S1_PRESETS, S1_PRESET_FLOWS } from '@contenteasy/skills';
+import { CRAFT, SYS, closeMemory, craft, dropGraph, ensureSys, health, listGraphs, run, seedCraft, seedSignatures, seedStylePackage } from '@moovi/graph';
+import { PACKAGES, SIGNATURES, type StylePackage } from '@moovi/skills';
+import { S1_PRESETS, S1_PRESET_FLOWS } from '@moovi/skills';
 
 /** Brand and client-film names that must never be in craft (the owner's MotionEasy brands and films). */
 const BRAND = /captions ?easy|eegnite|\boped\b|\bce[0-9]?-[0-9]{2}\b|eg-avatar|\bnb-01\b|\beg-01\b|insiderforce/i;

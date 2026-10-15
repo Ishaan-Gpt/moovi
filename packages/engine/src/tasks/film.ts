@@ -1,5 +1,5 @@
-import { CRAFT, craft as C, project as P, run as runQ, user as U } from '@contenteasy/graph';
-import { Kit, kit, stageFromCard, StyleCard, type Format, type Word } from '@contenteasy/skills';
+import { CRAFT, craft as C, project as P, run as runQ, user as U } from '@moovi/graph';
+import { Kit, kit, stageFromCard, StyleCard, type Format, type Word } from '@moovi/skills';
 import { readJson } from '../bench';
 import type { TaskCtx } from '../ctx';
 import { mediaUrl } from '../render/host';

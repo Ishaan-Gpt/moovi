@@ -18,7 +18,7 @@ const dirArg = args.find((a, i) => !a.startsWith('--') && !['--n', '--chunks', '
 if (!dirArg) { console.error('usage: s1make <dir> [--n 4] [--chunks N] [--quality high|balanced] [--no-verify]'); process.exit(1); }
 const N = Number(opt('n', '4')), CHUNKS = Number(opt('chunks', String(N))), QUALITY = (opt('quality', 'high') as 'high' | 'balanced');
 const DRAFT = flag('draft'), INTRA = !flag('no-intra'), FPS = DRAFT ? 15 : Number(opt('fps', '0')), SCALE = DRAFT ? 0.5 : Number(opt('scale', '1'));
-process.env.CE_SLOTS_RENDER = String(N); process.env.CE_SLOTS_CHROME = String(N); // the pool must hold N pages
+process.env.MOOVI_SLOTS_RENDER = String(N); process.env.MOOVI_SLOTS_CHROME = String(N); // the pool must hold N pages
 
 const { config } = await import('../src/config');
 const { sh, loudness, ensureDir, probe } = await import('../src/bench');

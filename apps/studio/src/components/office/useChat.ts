@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useReducer, useRef } from 'react';
-import type { AgentId, AgentState, ChatMessage, Stamped } from '@contenteasy/engine/events';
+import type { AgentId, AgentState, ChatMessage, Stamped } from '@moovi/engine/events';
 import { api } from '@/lib/client';
 
 /**

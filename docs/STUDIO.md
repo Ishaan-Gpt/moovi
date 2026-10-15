@@ -1,6 +1,6 @@
 # The studio and the engine (v2, 2026-10-14)
 
-ContentEasy is a video employee you hire. You give Moovi a brief (words, footage, a reference, or all three), and a crew
+Moovi is a video employee you hire. You give Moovi a brief (words, footage, a reference, or all three), and a crew
 of real agents makes the video while you watch them work. Edits happen by talking to them. This document describes
 what runs today; the approved design is the Engine Blueprint (`https://claude.ai/artifact/WZTtR6Jfqqrju3JU8Z6hM1`).
 
@@ -14,7 +14,7 @@ what runs today; the approved design is the Engine Blueprint (`https://claude.ai
 4. **The office** (`/studio/p/<project>/c/<chat>`): full screen. Every agent sits at its own desk with only its name
    and a few-word line above its head ("planning", "building scene 3", "building scenes ×4"). A monitor lights up while
    its owner works, and a bead of light travels between desks as work is handed on. Moovi is the real character
-   (`@contenteasy/character`). On a phone the desks become a 3×3 grid seen from above.
+   (`@moovi/character`). On a phone the desks become a 3×3 grid seen from above.
 5. **The chat** (left, glass, minimisable): your messages, the crew's replies, and the crew's work folded into one
    quiet row per stretch (open it for every step). `@` mentions Moovi, any agent, or `@video`. A question from Moovi
    comes with buttons.
@@ -241,7 +241,7 @@ pnpm --dir apps/studio dev     # the studio on :3100 (also reachable through the
 ```
 
 The engine needs FalkorDB and refuses to start without it. Claude runs through this machine's Claude Code login
-(`CE_RUNTIME=claude-code`, the default). `CE_RUNTIME=http` plus one API key runs the same crew on any model API
+(`MOOVI_RUNTIME=claude-code`, the default). `MOOVI_RUNTIME=http` plus one API key runs the same crew on any model API
 (Anthropic, OpenAI, Gemini, Groq, OpenRouter, a local Ollama and more): see [MODELS.md](MODELS.md). The scripts in `packages/engine/scripts` run a brief from the CLI (`engine:run`), follow a chat
 (`follow.ts`), resume a failed run (`resume.ts`), drive the studio's API (`brief.ts`) and screenshot studio pages
 (`shoot-studio.ts`).

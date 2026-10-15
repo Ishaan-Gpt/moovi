@@ -1,1 +1,1 @@
-export * from '@contenteasy/ui';
+export * from '@moovi/ui';

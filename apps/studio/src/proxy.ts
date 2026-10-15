@@ -8,7 +8,7 @@ export function proxy(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
   // the door, the API (each route checks the session itself), and public files (the mark, the icon)
   if (pathname.startsWith('/auth') || pathname.startsWith('/api') || pathname.startsWith('/_next') || pathname.startsWith('/brand/') || pathname === '/icon.svg') return NextResponse.next();
-  if (!req.cookies.get('ce_session')) {
+  if (!req.cookies.get('moovi_session')) {
     const url = req.nextUrl.clone();
     url.pathname = '/auth';
     url.search = `?next=${encodeURIComponent(`/studio${pathname === '/' ? '' : pathname}${search}`)}`;

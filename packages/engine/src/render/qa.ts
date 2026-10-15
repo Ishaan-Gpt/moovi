@@ -1,4 +1,4 @@
-import { kit, type Format } from '@contenteasy/skills';
+import { kit, type Format } from '@moovi/skills';
 import type { Box } from './host';
 
 /**

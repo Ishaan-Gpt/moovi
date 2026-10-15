@@ -1,4 +1,4 @@
-import { blocking, follow, history } from '@contenteasy/engine';
+import { blocking, follow, history } from '@moovi/engine';
 import { apiProject } from '@/lib/session';
 
 export const runtime = 'nodejs';

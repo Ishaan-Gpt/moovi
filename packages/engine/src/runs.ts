@@ -1,4 +1,4 @@
-import { project as P } from '@contenteasy/graph';
+import { project as P } from '@moovi/graph';
 import { markActive, publish } from './bus';
 import { newId } from './ids';
 import { pq } from './live';

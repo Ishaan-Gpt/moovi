@@ -1,4 +1,4 @@
-import { createChat, createProject, listProjects } from '@contenteasy/engine';
+import { createChat, createProject, listProjects } from '@moovi/engine';
 import { apiUser } from '@/lib/session';
 
 export const runtime = 'nodejs';

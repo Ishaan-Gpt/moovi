@@ -2,7 +2,7 @@
 // prints every ✓-on-a-problem-line issue and which templates the repair would cross out.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { loadTemplates } from '@contenteasy/library/style-1/templates';
+import { loadTemplates } from '@moovi/library/style-1/templates';
 import { crossTicks, lintPicks, PROBLEM, ticks } from '../src/s1fast/fill';
 
 const dir = process.argv[2]!, fill = JSON.parse(readFileSync(join(dir, 'fill.json'), 'utf8')), W = JSON.parse(readFileSync(join(dir, 'words.json'), 'utf8'));

@@ -1,5 +1,5 @@
-import { CRAFT, craft as C, run as runQ, user as U } from '@contenteasy/graph';
-import type { Role } from '@contenteasy/skills';
+import { CRAFT, craft as C, run as runQ, user as U } from '@moovi/graph';
+import type { Role } from '@moovi/skills';
 import type { TaskCtx } from '../ctx';
 import { AGENT_NAMES, type AgentId } from '../events';
 import { model, runWithFallback, type Tier, type Tool } from '../runtime';
@@ -37,7 +37,7 @@ export const ROLE_LINE: Record<Role, string> = {
 
 export function systemFor(role: Role, job: string, know: string) {
   const name = AGENT_NAMES[role as AgentId];
-  return `You are ${name}, ${ROLE_LINE[role]}, in Moovi's crew at ContentEasy (a video studio run by AI agents).
+  return `You are ${name}, ${ROLE_LINE[role]}, in Moovi's crew (a video studio run by AI agents).
 ${job}
 Work only through your tools. Never invent facts, numbers, URLs or asset ids. Be decisive; don't ask the user questions (Moovi does that).
 

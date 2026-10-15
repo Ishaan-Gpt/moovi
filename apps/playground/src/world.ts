@@ -1,4 +1,4 @@
-import { MooviWorld } from '@contenteasy/character';
+import { MooviWorld } from '@moovi/character';
 
 /** Bench for the world renderer: one slider per effect, plus labels that follow the crew via project(). */
 const canvas = document.getElementById('c') as HTMLCanvasElement;

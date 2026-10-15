@@ -4,12 +4,12 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-process.env.CE_DATA_DIR = mkdtempSync(join(tmpdir(), 'ce-audio-'));
+process.env.MOOVI_DATA_DIR = mkdtempSync(join(tmpdir(), 'ce-audio-'));
 const { readWav, writeWav } = await import('../src/audio/wav');
 const { sfxMap, sfxStem, bedStem, SR } = await import('../src/audio/mix');
 const { secMsGec } = await import('../src/audio/tts');
 
-const dir = process.env.CE_DATA_DIR!;
+const dir = process.env.MOOVI_DATA_DIR!;
 const peak = (x: Float32Array) => x.reduce((m, v) => Math.max(m, Math.abs(v)), 0);
 
 test('wav: 16-bit round trip keeps the signal', () => {

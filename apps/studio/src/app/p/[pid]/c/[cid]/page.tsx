@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { projectDir } from '@contenteasy/engine';
+import { projectDir } from '@moovi/engine';
 import { requireProject } from '@/lib/session';
 import { chat, chats, messages, projectName } from '@/lib/project';
 import { Office } from '@/components/office/Office';

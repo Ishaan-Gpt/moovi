@@ -1,16 +1,16 @@
-# @contenteasy/character
+# @moovi/character
 
-**Moovi**, the ContentEasy director. He's a jelly creature generated entirely in code: a signed-distance field, raymarched in a WebGL2 fragment shader. There's no model file, no rig and no textures, and the shader is about 15 KB.
+**Moovi**, the Moovi director. He's a jelly creature generated entirely in code: a signed-distance field, raymarched in a WebGL2 fragment shader. There's no model file, no rig and no textures, and the shader is about 15 KB.
 
 ```ts
 // vanilla
-import { MooviRenderer } from '@contenteasy/character';
+import { MooviRenderer } from '@moovi/character';
 const moovi = new MooviRenderer(canvas, { quality: 'auto' });
 moovi.setState('think');            // idle · greet · listen · think · direct · frame · review · celebrate · play
 moovi.lookAt([0.6, -0.2]);          // look at something (-1..1 in his box); null to follow the pointer
 
 // React (Next.js: add the package to transpilePackages)
-import { Moovi } from '@contenteasy/character/react';
+import { Moovi } from '@moovi/character/react';
 <Moovi state="direct" lookAt={[1, 0]} className="h-[420px] w-[420px]" />
 ```
 

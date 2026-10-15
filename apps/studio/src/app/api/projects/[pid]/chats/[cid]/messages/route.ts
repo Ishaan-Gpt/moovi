@@ -1,5 +1,5 @@
-import { MENTIONABLE, newId, sendCommand, userSay } from '@contenteasy/engine';
-import { styleOf } from '@contenteasy/engine/styles';
+import { MENTIONABLE, newId, sendCommand, userSay } from '@moovi/engine';
+import { styleOf } from '@moovi/engine/styles';
 import { apiProject, fail } from '@/lib/session';
 import { chat } from '@/lib/project';
 

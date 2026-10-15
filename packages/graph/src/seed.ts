@@ -70,7 +70,7 @@ export interface SignatureSeed { style: string; formats: string[]; min: number; 
 export async function seedStylePackage(pkg: StylePackageSeed) {
   const g = CRAFT, s = pkg.style;
   const skillText = pkg.skill.sections.map(x => `## ${x.title}\n${x.text}`).join('\n\n');
-  await run(g, craft.seedStyles, { rows: [{ ...s, formats: s.formats, renders: 'engine', engine: 'ContentEasy engine (MotionEasy canvas, headless)', skill: skillText, source: pkg.skill.source }] });
+  await run(g, craft.seedStyles, { rows: [{ ...s, formats: s.formats, renders: 'engine', engine: 'Moovi engine (MotionEasy canvas, headless)', skill: skillText, source: pkg.skill.source }] });
   await run(g, craft.seedLaws, { rows: pkg.laws.map(l => ({ style: s.id, id: `${s.id}:law:${l.n}`, n: l.n, title: l.title, text: l.text, src: l.src })) });
   const checks = pkg.laws.flatMap(l => l.checks.map(c => ({ law: `${s.id}:law:${l.n}`, id: `${s.id}:check:${c.id}`, kind: c.kind, about: c.about, params: JSON.stringify(c.params), blocking: c.blocking })));
   if (checks.length) await run(g, craft.seedChecks, { rows: checks });

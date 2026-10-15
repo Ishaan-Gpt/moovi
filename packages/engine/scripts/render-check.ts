@@ -1,8 +1,8 @@
-// pnpm --filter @contenteasy/engine exec tsx --env-file-if-exists=../../.env.local scripts/render-check.ts
+// pnpm --filter @moovi/engine exec tsx --env-file-if-exists=../../.env.local scripts/render-check.ts
 // M0 check: the kit's timeline renders in the pool; a frame-range chunk matches the same frames of a full render.
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { Kit, kit, type SceneProgram } from '@contenteasy/skills';
+import { Kit, kit, type SceneProgram } from '@moovi/skills';
 import { ensureDir, sh, probe } from '../src/bench';
 import { config } from '../src/config';
 import { boxes, chunk, closeRender, still } from '../src/render/host';

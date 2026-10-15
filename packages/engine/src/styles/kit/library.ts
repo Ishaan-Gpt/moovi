@@ -9,7 +9,7 @@
  * ids it would pick); a hint is a bonus, never a requirement, so a weak model can only help.
  */
 import { createHash } from 'node:crypto';
-import { ensureStylesSchema, run, STYLES, styles as G } from '@contenteasy/graph';
+import { ensureStylesSchema, run, STYLES, styles as G } from '@moovi/graph';
 import type { Need } from './needs';
 
 export type Role = 'open' | 'middle' | 'close';

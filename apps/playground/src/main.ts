@@ -1,5 +1,5 @@
 import './style.css';
-import { MOOVI_STATES, MooviRenderer, QUALITY, type MooviState, type QualityName } from '@contenteasy/character';
+import { MOOVI_STATES, MooviRenderer, QUALITY, type MooviState, type QualityName } from '@moovi/character';
 
 const canvas = document.getElementById('moovi') as HTMLCanvasElement;
 const stats = document.getElementById('stats')!;

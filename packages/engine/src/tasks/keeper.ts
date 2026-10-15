@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { CRAFT, craft as C, run as runQ, user as U, userGraph } from '@contenteasy/graph';
-import { ROLES, type SceneProgram } from '@contenteasy/skills';
+import { CRAFT, craft as C, run as runQ, user as U, userGraph } from '@moovi/graph';
+import { ROLES, type SceneProgram } from '@moovi/skills';
 import { z } from 'zod';
 import { readJson } from '../bench';
 import type { Handler } from '../ctx';

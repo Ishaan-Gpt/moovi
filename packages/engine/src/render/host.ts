@@ -129,7 +129,7 @@ let pages = 0;
 
 async function newPage(): Promise<Page> {
   const p = await startServer();
-  if (!browser) browser = chromium.launch({ headless: true, ...(config.chrome.path ? { executablePath: config.chrome.path } : { channel: config.chrome.channel }), args: ['--autoplay-policy=no-user-gesture-required', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', ...(process.env.CE_CHROME_ARGS ?? '').split(' ').filter(Boolean)] });
+  if (!browser) browser = chromium.launch({ headless: true, ...(config.chrome.path ? { executablePath: config.chrome.path } : { channel: config.chrome.channel }), args: ['--autoplay-policy=no-user-gesture-required', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', ...(process.env.MOOVI_CHROME_ARGS ?? '').split(' ').filter(Boolean)] });
   const b = await browser;
   const page = await b.newPage({ viewport: { width: 1200, height: 900 } });
   page.setDefaultTimeout(0);

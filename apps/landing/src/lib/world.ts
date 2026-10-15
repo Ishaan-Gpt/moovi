@@ -1,5 +1,5 @@
 'use client';
-import type { MooviWorld, WorldScene } from '@contenteasy/character';
+import type { MooviWorld, WorldScene } from '@moovi/character';
 import { gsap, type ScrollTrigger } from './gsap';
 
 /**

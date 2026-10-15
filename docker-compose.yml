@@ -1,6 +1,6 @@
 # Everything Moovi needs on one machine: FalkorDB (memory), the studio (web), the engine worker (makes the films)
 # and Caddy (HTTPS in front of the studio).
-#   cp .env.example .env   # set CE_SECRET (and SITE_ADDRESS on a server)
+#   cp .env.example .env   # set MOOVI_SECRET (and SITE_ADDRESS on a server)
 #   docker compose up -d --build
 #   open http://localhost:3100/studio   (or https://<SITE_ADDRESS>/studio on a server)
 services:
@@ -21,7 +21,7 @@ services:
     env_file: [.env]
     environment:
       FALKORDB_URL: falkor://falkordb:6379
-      CE_DATA_DIR: /data
+      MOOVI_DATA_DIR: /data
     volumes: [data:/data]
 
   worker:
@@ -29,11 +29,11 @@ services:
     pull_policy: never
     restart: unless-stopped
     depends_on: [falkordb, studio]
-    command: ["pnpm", "--filter", "@contenteasy/engine", "exec", "tsx", "scripts/worker.ts"]
+    command: ["pnpm", "--filter", "@moovi/engine", "exec", "tsx", "scripts/worker.ts"]
     env_file: [.env]
     environment:
       FALKORDB_URL: falkor://falkordb:6379
-      CE_DATA_DIR: /data
+      MOOVI_DATA_DIR: /data
     # Chromium needs more shared memory than Docker's 64 MB default
     shm_size: 1gb
     volumes: [data:/data]

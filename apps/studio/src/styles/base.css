@@ -1,8 +1,8 @@
-/* ═════════════ ContentEasy studio: the set ═════════════
+/* ═════════════ Moovi studio: the set ═════════════
  * Two majors from the brand: icy white (the stage, the paper) and ice blue (light, glass, selection). One accent with
  * a reason: deep ice, the colour of a lit monitor on set — actions, the active thing, focus. Everything else is a minor.
  * Type: Bricolage Grotesque for everything, Instrument Serif italic for the one turn in a heading, DM Mono for the crew's
- * short status lines (they read like a slate). Colours come only from @contenteasy/brand tokens. */
+ * short status lines (they read like a slate). Colours come only from @moovi/brand tokens. */
 
 :root {
   --bg: var(--ce-ice-white);

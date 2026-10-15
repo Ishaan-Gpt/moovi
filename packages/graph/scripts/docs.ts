@@ -1,4 +1,4 @@
-// pnpm --filter @contenteasy/graph docs
+// pnpm --filter @moovi/graph docs
 // Writes docs/QUERIES.md from the query library itself, so the docs never drift from the code.
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -12,7 +12,7 @@ const groups = [craft, sys, user, project, styles].map(g => Object.values(g));
 
 const md = `# Every Cypher query the engine runs
 
-Generated from \`packages/graph/src/queries/\` by \`pnpm --filter @contenteasy/graph docs\`. Agents never write Cypher of
+Generated from \`packages/graph/src/queries/\` by \`pnpm --filter @moovi/graph docs\`. Agents never write Cypher of
 their own: they call these by name with parameters. Read-only queries run as \`GRAPH.RO_QUERY\` (the server refuses
 writes), every query has a timeout, and every one is timed and attributed to the agent that ran it.
 

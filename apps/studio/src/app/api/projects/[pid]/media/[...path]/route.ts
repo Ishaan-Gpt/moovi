@@ -1,7 +1,7 @@
 import { createReadStream, existsSync, statSync } from 'node:fs';
 import { extname, join, normalize, sep } from 'node:path';
 import { Readable } from 'node:stream';
-import { projectDir } from '@contenteasy/engine';
+import { projectDir } from '@moovi/engine';
 import { apiProject, fail } from '@/lib/session';
 import { chat } from '@/lib/project';
 

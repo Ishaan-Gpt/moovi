@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { STYLE1 } from '@contenteasy/skills';
+import { STYLE1 } from '@moovi/skills';
 import type { Box } from '../src/render/host';
 import { describe, geometry, layerOf, platformZone } from '../src/render/qa';
 

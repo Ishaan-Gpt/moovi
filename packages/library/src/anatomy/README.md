@@ -22,7 +22,7 @@ camera grammar, paper or blueprint. Between figures the old one lifts away and t
 When nothing in the library serves a section, the style improvises one (a layout and elements from enums, drawn by
 the composer); a part nobody has drawn is composed from primitives (box, cylinder, slab, cone, ring, panel, sphere,
 pipe). Both are kept (`data/library/anatomy/grown.json`) and later films can cast them.
-- Run: `pnpm --filter @contenteasy/engine anatomy --url https://site` or `--script file.txt --brand Name --color #hex`.
+- Run: `pnpm --filter @moovi/engine anatomy --url https://site` or `--script file.txt --brand Name --color #hex`.
   Tune the look without new voice or model calls: `tsx scripts/anatomy-try.ts <data/anatomy/<id>>`, `--demo [--setups a,b]`
   or `--all` (every set-up once). Safe-area check of a made film: `tsx scripts/anatomy-safe.ts data/anatomy/<id>`.
 

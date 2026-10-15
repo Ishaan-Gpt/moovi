@@ -83,6 +83,6 @@ function toMcp(r: ToolResult) {
 
 function explain(e: unknown, req: AgentRequest) {
   const m = e instanceof Error ? e.message : String(e);
-  if (/auth|login|credential|401/i.test(m)) return new Error(`${req.agent}: Claude Code is not signed in on this machine. Run \`claude\` once and sign in, or set CE_RUNTIME=http with an API key.`);
+  if (/auth|login|credential|401/i.test(m)) return new Error(`${req.agent}: Claude Code is not signed in on this machine. Run \`claude\` once and sign in, or set MOOVI_RUNTIME=http with an API key.`);
   return new Error(`${req.agent} (Claude Code, ${req.model}): ${m}`);
 }

@@ -301,7 +301,7 @@ export const UI = {
   flipBoard: {
     id: 'flipBoard', group: 'data', render: { draw: 'flip' }, size: { w: 750, h: 225, wRange: [300, 1500] }, layout: ex({ tileMax: 150, h: 'tile * 1.5' }), look: ex({}),
     params: params({ text: 'FREE', settle: '[frame per tile]' }), enter: 'glide-in', exit: 'glide-out', sfx: [{ id: 'pop-9', event: 'cascade' }],
-    use: 'A split-flap board whose tiles cycle and land on a word: urgency/“available” without a clock.', usedIn: [], source: 'style1-timeline drawn("flip"); in ContentEasy preset flip',
+    use: 'A split-flap board whose tiles cycle and land on a word: urgency/“available” without a clock.', usedIn: [], source: 'style1-timeline drawn("flip"); in Moovi preset flip',
   },
   watchCountdown: {
     id: 'watchCountdown', group: 'data', render: { draw: 'watch' }, size: { w: 380, h: 380 }, layout: ex({}), look: ex({ arc: 'green -> urgent orange' }),

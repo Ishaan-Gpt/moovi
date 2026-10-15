@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { project as P, run as runQ, SYS, sys as S } from '@contenteasy/graph';
+import { project as P, run as runQ, SYS, sys as S } from '@moovi/graph';
 import { publish } from '../bus';
 import { config } from '../config';
 import type { Handler } from '../ctx';

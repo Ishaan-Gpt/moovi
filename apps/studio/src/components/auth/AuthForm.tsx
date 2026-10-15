@@ -1,10 +1,10 @@
 'use client';
 import { useEffect, useId, useState, type FormEvent } from 'react';
 import dynamic from 'next/dynamic';
-import { HaloMark } from '@contenteasy/ui';
+import { HaloMark } from '@moovi/ui';
 import { post } from '@/lib/client';
 
-const Moovi = dynamic(() => import('@contenteasy/character/react').then(m => m.Moovi), { ssr: false });
+const Moovi = dynamic(() => import('@moovi/character/react').then(m => m.Moovi), { ssr: false });
 
 /**
  * The door to the set. Moovi waits on the left and reacts to the form (he listens while you type, squints at a wrong
@@ -47,7 +47,7 @@ export function AuthForm({ next, initial, fromBrief }: { next: string; initial: 
         </p>
       </section>
       <section className="door__panel">
-        <a href="/" className="door__brand" aria-label="ContentEasy home"><HaloMark size={30} base="/studio" /><span>ContentEasy</span></a>
+        <a href="/" className="door__brand" aria-label="Moovi home"><HaloMark size={30} base="/studio" /><span>Moovi</span></a>
         <form className="door__card glass" onSubmit={submit} noValidate>
           <div className="door__tabs" role="tablist" aria-label="Account">
             <button type="button" role="tab" aria-selected={mode === 'signin'} onClick={() => { setMode('signin'); setErr(''); }}>Sign in</button>

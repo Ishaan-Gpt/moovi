@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { s1kit } from '@contenteasy/skills';
+import { s1kit } from '@moovi/skills';
 import { config } from '../config';
 import { boxes } from '../render/host';
 import { describe, geometry, layerOf } from '../render/qa';

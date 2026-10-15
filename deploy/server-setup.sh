@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Sets up Moovi on a fresh Ubuntu server (e.g. AWS Lightsail, 4 GB): swap, Docker, the repo, a .env with a fresh
-# CE_SECRET, then starts everything. Safe to run again: it keeps an existing .env and just updates and restarts.
+# MOOVI_SECRET, then starts everything. Safe to run again: it keeps an existing .env and just updates and restarts.
 #   curl -fsSL https://raw.githubusercontent.com/Ishaan-Gpt/moovi/main/deploy/server-setup.sh | sudo bash -s -- <site-address>
 # <site-address> is your domain, or <public-ip>.sslip.io for free HTTPS without a domain.
 set -euo pipefail
@@ -22,11 +22,11 @@ cd "$DIR"
 
 if [ ! -f .env ]; then
   {
-    echo "CE_SECRET=$(openssl rand -hex 32)"
-    echo "CE_BYOK=required"
-    echo "CE_RUNTIME=http"
-    echo "CE_CHROME_PATH=/usr/bin/chromium"
-    [ -n "$SITE" ] && echo "SITE_ADDRESS=$SITE" && echo "CE_ORIGINS=https://$SITE"
+    echo "MOOVI_SECRET=$(openssl rand -hex 32)"
+    echo "MOOVI_BYOK=required"
+    echo "MOOVI_RUNTIME=http"
+    echo "MOOVI_CHROME_PATH=/usr/bin/chromium"
+    [ -n "$SITE" ] && echo "SITE_ADDRESS=$SITE" && echo "MOOVI_ORIGINS=https://$SITE"
   } > .env
   chmod 600 .env
 fi

@@ -1,4 +1,4 @@
-// pnpm --filter @contenteasy/engine exec tsx scripts/smoke.ts
+// pnpm --filter @moovi/engine exec tsx scripts/smoke.ts
 // One real tool loop on the configured runtime: the model must use `add`, see the result, then `finish`.
 import { z } from 'zod';
 import { model, runtime, tool } from '../src/runtime';

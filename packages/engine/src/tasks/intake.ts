@@ -1,8 +1,8 @@
 import { sttAvailable, transcribeWords } from '../audio/stt';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { project as P } from '@contenteasy/graph';
-import { features, INTENTS, match, PACKAGES, type Features, type Match, type UploadProbe } from '@contenteasy/skills';
+import { project as P } from '@moovi/graph';
+import { features, INTENTS, match, PACKAGES, type Features, type Match, type UploadProbe } from '@moovi/skills';
 import { z } from 'zod';
 import { cutRate, ensureDir, faceRatio, probe, sh } from '../bench';
 import { config } from '../config';

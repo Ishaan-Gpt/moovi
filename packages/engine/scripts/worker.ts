@@ -1,5 +1,5 @@
 // pnpm dev:engine — the engine's long-running worker: commands from the studio, every task queue, lease sweeps.
-import { closeMemory, health } from '@contenteasy/graph';
+import { closeMemory, health } from '@moovi/graph';
 import { handleCommand } from '../src/chat';
 import { benchStatus } from '../src/bench';
 import { config } from '../src/config';

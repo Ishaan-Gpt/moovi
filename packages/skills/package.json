@@ -1,5 +1,5 @@
 {
-  "name": "@contenteasy/skills",
+  "name": "@moovi/skills",
   "version": "0.1.0",
   "private": true,
   "description": "The style packages the engine's crew works from: Style 1 (rules, laws with checks, playbook, the full kit) and the unique-style fallback, plus the deterministic style matcher.",

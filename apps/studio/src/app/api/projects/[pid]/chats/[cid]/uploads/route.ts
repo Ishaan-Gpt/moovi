@@ -3,8 +3,8 @@ import { createWriteStream, mkdirSync, statSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
-import { project as P, projectGraph, run } from '@contenteasy/graph';
-import { newId, projectDir } from '@contenteasy/engine';
+import { project as P, projectGraph, run } from '@moovi/graph';
+import { newId, projectDir } from '@moovi/engine';
 import { apiProject, fail } from '@/lib/session';
 import { chat } from '@/lib/project';
 

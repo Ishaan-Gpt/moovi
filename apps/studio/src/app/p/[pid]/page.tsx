@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { createChat } from '@contenteasy/engine';
+import { createChat } from '@moovi/engine';
 import { requireProject } from '@/lib/session';
 import { chats } from '@/lib/project';
 

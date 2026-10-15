@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { project as P, projectGraph, run as runQ, userGraph, type Q } from '@contenteasy/graph';
+import { project as P, projectGraph, run as runQ, userGraph, type Q } from '@moovi/graph';
 import { config } from './config';
 import { group, HEAD_MAX } from './heads';
 import type { AgentId, ChatMessage } from './events';

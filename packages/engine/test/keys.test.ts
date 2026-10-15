@@ -5,8 +5,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 // an isolated data dir and secret: never the real ones
-process.env.CE_DATA_DIR = mkdtempSync(join(tmpdir(), 'ce-keys-'));
-process.env.CE_SECRET = 'test-secret';
+process.env.MOOVI_DATA_DIR = mkdtempSync(join(tmpdir(), 'ce-keys-'));
+process.env.MOOVI_SECRET = 'test-secret';
 const { setModel, loadModel, modelInfo, scopeFor, clearModel } = await import('../src/keys');
 const { model, runtime, withModel } = await import('../src/runtime');
 
@@ -26,7 +26,7 @@ test('a refused key is not saved, with a plain message', async () => {
 test('a good key is checked, sealed at rest, and its tiers come from the live list', async () => {
   const r = await setModel('u_alice', { provider: 'groq', key: 'gsk_good_key_1234' }, groqModels);
   assert.equal(r.ok, true);
-  const disk = readFileSync(join(process.env.CE_DATA_DIR!, 'users', 'u_alice', 'model.json'), 'utf8');
+  const disk = readFileSync(join(process.env.MOOVI_DATA_DIR!, 'users', 'u_alice', 'model.json'), 'utf8');
   assert.ok(!disk.includes('gsk_good_key_1234'), 'the key is never stored in plain text');
   assert.equal(loadModel('u_alice')!.key, 'gsk_good_key_1234');
   assert.deepEqual(modelInfo('u_alice'), { provider: 'groq', label: 'Groq', last4: '1234', models: { director: 'openai/gpt-oss-120b', crew: 'openai/gpt-oss-120b', fast: 'openai/gpt-oss-20b' }, checkedAt: modelInfo('u_alice')!.checkedAt });

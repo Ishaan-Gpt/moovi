@@ -1,7 +1,7 @@
 /**
  * Shared shapes for every style library. A library is plain, editable code: change a number here and the next
  * render picks it up. Media files are referenced by `file`, a path relative to the synced media root
- * (data/library/<style>/, filled by `pnpm --filter @contenteasy/library sync`), and never committed.
+ * (data/library/<style>/, filled by `pnpm --filter @moovi/library sync`), and never committed.
  */
 
 /** Where a media file came from in MotionEasy, so the sync script can copy it. */

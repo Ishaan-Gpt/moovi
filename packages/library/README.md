@@ -1,9 +1,9 @@
-# @contenteasy/library
+# @moovi/library
 
 Style libraries as code. Every value that makes a style look and sound the way it does lives in one constant you can edit; the next render picks it up.
 
 ```ts
-import { style1 } from '@contenteasy/library';
+import { style1 } from '@moovi/library';
 style1.SCENES['hook-stack-slam'];      // a scene recipe: looks, ui, effects, transition, camera, sfx, duration
 style1.getSfx(style1.sfxForEvent.pop); // the sound a kit event plays
 style1.mix.master;                     // loudness / limiter targets (from tl_make.py)
@@ -39,7 +39,7 @@ To include the past renders as well:
 pnpm sync:style1 --videos
 ```
 
-`pnpm --filter @contenteasy/library test` checks that every sound reference resolves and that the sync manifests cover every file the catalog names.
+`pnpm --filter @moovi/library test` checks that every sound reference resolves and that the sync manifests cover every file the catalog names.
 
 ## Not wired yet
 

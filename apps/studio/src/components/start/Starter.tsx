@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { clearHandoff, post, readHandoff, upload } from '@/lib/client';
 
-const Moovi = dynamic(() => import('@contenteasy/character/react').then(m => m.Moovi), { ssr: false });
+const Moovi = dynamic(() => import('@moovi/character/react').then(m => m.Moovi), { ssr: false });
 const TARGET = 'moovi:brief:target';
 
 /**

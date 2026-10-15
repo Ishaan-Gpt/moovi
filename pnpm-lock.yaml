@@ -10,13 +10,13 @@ importers:
 
   apps/landing:
     dependencies:
-      '@contenteasy/brand':
+      '@moovi/brand':
         specifier: workspace:*
         version: link:../../packages/brand
-      '@contenteasy/character':
+      '@moovi/character':
         specifier: workspace:*
         version: link:../../packages/character
-      '@contenteasy/ui':
+      '@moovi/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       gsap:
@@ -50,10 +50,10 @@ importers:
 
   apps/playground:
     dependencies:
-      '@contenteasy/brand':
+      '@moovi/brand':
         specifier: workspace:*
         version: link:../../packages/brand
-      '@contenteasy/character':
+      '@moovi/character':
         specifier: workspace:*
         version: link:../../packages/character
     devDependencies:
@@ -66,19 +66,19 @@ importers:
 
   apps/studio:
     dependencies:
-      '@contenteasy/brand':
+      '@moovi/brand':
         specifier: workspace:*
         version: link:../../packages/brand
-      '@contenteasy/character':
+      '@moovi/character':
         specifier: workspace:*
         version: link:../../packages/character
-      '@contenteasy/engine':
+      '@moovi/engine':
         specifier: workspace:*
         version: link:../../packages/engine
-      '@contenteasy/graph':
+      '@moovi/graph':
         specifier: workspace:*
         version: link:../../packages/graph
-      '@contenteasy/ui':
+      '@moovi/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       next:
@@ -127,13 +127,13 @@ importers:
       '@anthropic-ai/claude-agent-sdk':
         specifier: 0.3.296
         version: 0.3.296(@anthropic-ai/sdk@0.133.0(zod@4.6.6))(@modelcontextprotocol/sdk@1.32.1(zod@4.6.6))(zod@4.6.6)
-      '@contenteasy/graph':
+      '@moovi/graph':
         specifier: workspace:*
         version: link:../graph
-      '@contenteasy/library':
+      '@moovi/library':
         specifier: workspace:*
         version: link:../library
-      '@contenteasy/skills':
+      '@moovi/skills':
         specifier: workspace:*
         version: link:../skills
       playwright-core:

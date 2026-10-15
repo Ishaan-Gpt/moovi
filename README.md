@@ -1,4 +1,4 @@
-# ContentEasy
+# Moovi
 
 **Hire Moovi.** Moovi is an AI video director who leads a visible crew of agents to make and edit your videos, and remembers how you like them.
 
@@ -7,7 +7,7 @@ From the makers of MotionEasy and CaptionsEasy.
 ## Repository
 
 ```
-ContentEasy/
+Moovi/
 ├─ apps/
 │  ├─ playground/     Moovi playground: every state, quality tier and benchmark (Vite)
 │  ├─ landing/        marketing site: Next.js + GSAP + Lenis, Moovi as the travelling hero
@@ -29,11 +29,11 @@ Packages are TypeScript sources consumed by the apps' bundlers, so there's no bu
 
 Self-contained: everything a film needs (renderer, fonts, sound kit, music bed) is in the repo, openly licensed
 (`packages/engine/assets/CREDITS.md`). You need **Node 20+** (24 tested), **pnpm**, **Docker** (for FalkorDB),
-**ffmpeg** on the PATH and **Google Chrome** (or Chromium, via `CE_CHROME_PATH`). No Python.
+**ffmpeg** on the PATH and **Google Chrome** (or Chromium, via `MOOVI_CHROME_PATH`). No Python.
 
 ```bash
 pnpm install
-cp .env.example .env.local      # set CE_SECRET; the rest is optional
+cp .env.example .env.local      # set MOOVI_SECRET; the rest is optional
 pnpm falkordb                   # FalkorDB 6.0.2 in Docker on :6380
 pnpm dev:engine                 # the engine worker: makes every film the studio asks for
 pnpm dev:studio                 # the studio, http://localhost:3100/studio: sign up, add your model key, brief
@@ -71,5 +71,5 @@ and pick from lists; casting, layout, timing, the script doctor and all checks a
 library-first on models that don't draw as well as Claude. How it works: [docs/MODELS.md](docs/MODELS.md). The five
 reel styles and how each is a language rather than a template: [docs/STYLES.md](docs/STYLES.md).
 
-Server settings (in `.env.local`, see `.env.example`): `CE_SECRET` encrypts stored keys. `CE_BYOK=optional` lets a
-user without a key run on the server's own model (`CE_RUNTIME`).
+Server settings (in `.env.local`, see `.env.example`): `MOOVI_SECRET` encrypts stored keys. `MOOVI_BYOK=optional` lets a
+user without a key run on the server's own model (`MOOVI_RUNTIME`).

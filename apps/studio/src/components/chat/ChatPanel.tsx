@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { CrewBlob, type CrewId } from '@contenteasy/ui';
-import { AGENT_NAMES, type AgentId, type ChatMessage } from '@contenteasy/engine/events';
+import { CrewBlob, type CrewId } from '@moovi/ui';
+import { AGENT_NAMES, type AgentId, type ChatMessage } from '@moovi/engine/events';
 import { ago, mediaUrl } from '@/lib/client';
 import type { Activity } from '../office/useChat';
 import { Composer, type ComposerHandle } from './Composer';

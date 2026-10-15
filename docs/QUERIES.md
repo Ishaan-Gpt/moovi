@@ -1,6 +1,6 @@
 # Every Cypher query the engine runs
 
-Generated from `packages/graph/src/queries/` by `pnpm --filter @contenteasy/graph docs`. Agents never write Cypher of
+Generated from `packages/graph/src/queries/` by `pnpm --filter @moovi/graph docs`. Agents never write Cypher of
 their own: they call these by name with parameters. Read-only queries run as `GRAPH.RO_QUERY` (the server refuses
 writes), every query has a timeout, and every one is timed and attributed to the agent that ran it.
 

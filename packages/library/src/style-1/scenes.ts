@@ -29,7 +29,7 @@ export interface SceneRecipe {
   use: string;
   /** Typical length in seconds at the style's pace (~2.6-2.9 words/s). */
   seconds: readonly [number, number];
-  /** Kit preset in s1kit.py / ContentEasy presets.ts, or null (built from layers). */
+  /** Kit preset in s1kit.py / Moovi presets.ts, or null (built from layers). */
   preset: 'lines' | 'list_left' | 'stack_slam' | 'reveal' | 'trio' | 'grid4' | 'export_proof' | 'logo_land' | 'icon_ring' | 'logo_grid' | 'cta_comment' | 'cta_pill' | 'notif' | 'note' | 'seal' | 'flip' | null;
   text: readonly { look: LookId; note: string }[];
   ui: readonly UiId[];

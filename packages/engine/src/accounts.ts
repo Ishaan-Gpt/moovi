@@ -1,6 +1,6 @@
 import { createHash, randomBytes, scrypt as scryptCb, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
-import { createProjectGraph, createUserGraph, ensureSys, project as P, projectGraph, run, SYS, sys as S } from '@contenteasy/graph';
+import { createProjectGraph, createUserGraph, ensureSys, project as P, projectGraph, run, SYS, sys as S } from '@moovi/graph';
 import { newId } from './ids';
 
 /**
