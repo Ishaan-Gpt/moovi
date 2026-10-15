@@ -3,7 +3,7 @@
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { craft, sys, user, project, styles, type Q } from '../src/queries';
+import { craft, sys, user, project, styles, voice, type Q } from '../src/queries';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const block = (q: Q) => `### \`${q.name}\` ${q.ro ? '(read-only)' : '(write)'}\n\n${q.about}\n\n\`\`\`cypher\n${q.cypher}\n\`\`\`\n`;
@@ -42,5 +42,17 @@ ${section('user_<uid> (one per user)', groups[2]!)}
 ${section('proj_<pid> (one per project)', groups[3]!)}
 ${section('styles (what every reel style remembers)', groups[4]!)}`;
 
-writeFileSync(join(here, '../../../docs/QUERIES.md'), md);
-console.log(`docs/QUERIES.md: ${groups.reduce((a, g) => a + g.length, 0)} queries`);
+const voiced = `
+
+## proj_<pid>: who voices each film
+
+| Job | Query | Graph feature |
+|---|---|---|
+| The Voice Director's pick, with its reason | \`castVoice\`, \`whyVoice\` | \`(:Film)-[:VOICED_BY {reason, shortlist, picked, spokenBy}]->(:Voice)\` |
+| A brand keeps its voice; a turned-down voice is never recast | \`voiceHistory\`, \`rejectVoice\` | \`VOICED_BY.rejected\` per chat |
+| Which engine really spoke (never ElevenLabs when Edge did) | \`voiceSpoken\` | \`VOICED_BY.spokenBy\` |
+
+${Object.values(voice).map(block).join('\n')}`;
+
+writeFileSync(join(here, '../../../docs/QUERIES.md'), md + voiced);
+console.log(`docs/QUERIES.md: ${groups.reduce((a, g) => a + g.length, 0) + Object.keys(voice).length} queries`);

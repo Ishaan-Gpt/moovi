@@ -5,3 +5,4 @@ export { seedCraft, seedStylePackage, seedSignatures, type StylePackageSeed, typ
 export { ensureStylesSchema, ensureCraftSchema, ensureSysSchema, ensureUserSchema, ensureProjectSchema } from './schema';
 export { ensureSys, createUserGraph, createProjectGraph } from './tenancy';
 export { ROSTER, DESKS, type AgentId } from '../data/crew';
+export { voice } from './queries';
