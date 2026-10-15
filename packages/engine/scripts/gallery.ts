@@ -5,7 +5,7 @@ import { config } from '../src/config';
 
 /** tsx scripts/gallery.ts out.jpg cols height image.png ...  : tiles frames into one small JPEG (no ffmpeg needed) */
 const [out, colsArg, hArg, ...imgs] = process.argv.slice(2);
-const cols = Number(colsArg), h = Number(hArg), w = Math.round(h * 9 / 16);
+const cols = Number(colsArg), h = Number(hArg), w = Math.round(h * (Number(process.env.ASPECT) || 9 / 16));
 const rows = Math.ceil(imgs.length / cols);
 const uri = (f: string) => `data:image/${f.endsWith('.jpg') ? 'jpeg' : 'png'};base64,${readFileSync(f).toString('base64')}`;
 const html = `<body style="margin:0;background:#F7FAFD"><div style="display:grid;grid-template-columns:repeat(${cols},${w}px);gap:6px;padding:6px">${imgs.map(f => `<img src="${uri(f)}" style="width:${w}px;height:${h}px;object-fit:cover;border-radius:8px">`).join('')}</div></body>`;

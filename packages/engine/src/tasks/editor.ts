@@ -10,12 +10,14 @@ import { boxes, chunk } from '../render/host';
 import { geometry, layerOf, platformZone } from '../render/qa';
 import type { TaskSpec } from '../scheduler';
 import { checkParams } from './builder';
+import { visualAssemble, visualOn, visualRender } from '../visual/crew';
 import { filmKit } from './film';
 
 /** The Editor's desk: plain code. Assemble the scenes into one film, render it in parallel chunks, mix and master
  * the sound, join them, deliver. */
 
 export const assemble: Handler = async ctx => {
+  if (visualOn()) return visualAssemble(ctx);
   const F = await filmKit(ctx);
   const k = F.kit;
   const progs = new Map((await ctx.outs<{ scene: number; program: string }>('build')).map(([, v]) => [v.scene, v.program]));
@@ -49,6 +51,7 @@ export const assemble: Handler = async ctx => {
 };
 
 export const render: Handler = async ctx => {
+  if (ctx.input<{ visual?: boolean }>().visual) return visualRender(ctx);
   const { from, to } = ctx.input<{ from: number; to: number }>();
   const spec = readJson<EngineSpec>((await ctx.out<{ spec: string }>('assemble'))!.spec);
   const out = join(ensureDir(join(ctx.dir, 'chunks')), `${String(from).padStart(5, '0')}-${to}.mp4`);

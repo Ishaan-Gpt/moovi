@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { visualOn, visualReview } from '../visual/crew';
 import { join } from 'node:path';
 import { CRAFT, craft as C, project as P, run as runQ } from '@moovi/graph';
 import { kit, type EngineSpec, type Ev, type TLine, type Timeline } from '@moovi/skills';
@@ -93,6 +94,7 @@ export async function filmChecks(ctx: TaskCtx, style: string): Promise<CheckResu
 }
 
 export const review: Handler = async ctx => {
+  if (visualOn()) return visualReview(ctx);
   const m = (await ctx.out<{ style: string }>('match'))!;
   const know = await knowledge(ctx, 'lens', m.style);
   const spec = readJson<EngineSpec>((await ctx.out<{ spec: string }>('assemble'))!.spec);

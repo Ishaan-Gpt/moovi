@@ -11,6 +11,9 @@ import type { Brief } from './plan';
 import type { Script } from './script';
 import { LOOK_IDS, LOOKS, isLook } from '../render3d/looks';
 import { geocodeAll } from '../maps/geocode';
+import { ARTIFACTS, byId } from '../visual/artifacts';
+import { visualOn } from '../visual/crew';
+import { LAYOUTS, LAYOUT_IDS } from '../visual/layouts';
 import { feedbackMemory, knowledge, systemFor } from './agent';
 import type { Board } from './film';
 
@@ -148,6 +151,7 @@ export const board: Handler = async ctx => {
     props: z.array(z.string()).max(4).describe('kit props it uses (ids from the catalogue)'),
     camera: z.enum(['push', 'dive', 'pull-out', 'pan', 'roll', 'drift']),
     look3d: z.enum(LOOK_IDS).nullable().optional().describe('a 3D look for this shot, or null when the shot is better flat'),
+    stage: z.object({ layout: z.enum(LAYOUT_IDS), artifacts: z.array(z.string()).max(4) }).nullable().optional().describe('visual runs: the layout and the artifact ids (from the library list) for this shot'),
     places: z.array(z.string().min(2).max(80)).max(3).optional().describe('real places this scene names (cities, countries), in the order the map should fly through them; empty when it names none'),
     assets: z.array(z.object({ id: z.string().regex(/^[a-z0-9-]{2,24}$/), kind: z.enum(['capture', 'logo', 'icon', 'upload', 'photo', 'footage', 'scroll']), what: z.string().min(3).max(200), url: z.string().nullable() })).max(3),
   });
@@ -159,6 +163,10 @@ export const board: Handler = async ctx => {
       `THE SCRIPT:\n${S.beats.map((b, i) => `${i}. [${b.role}] ${b.say}`).join('\n')}`,
       cardOut ? `THE STYLE CARD: ${JSON.stringify(cardOut)}` : '',
       isS1 ? `PRESETS (kit): ${S1_PRESETS.map(p => `${p.id} (${p.about})`).join(' · ')}` : '',
+      visualOn() ? `VISUAL STAGE (this film is composed from a library, not drawn by builders): for each shot set stage = { layout, artifacts } from these lists, so the shot has several things on screen, never a single flat card.
+LAYOUTS: ${LAYOUTS.map(l => `${l.id} (${l.slots}: ${l.about})`).join(' · ')}
+ARTIFACTS (id: what, needs): ${ARTIFACTS.map(a => `${a.id}: ${a.name} [${a.needs.slice(0, 3).join(',')}]`).join(' · ')}
+Main artifact first; a layout with N slots takes up to N artifacts; do not repeat an artifact across neighbouring shots.` : '',
       `3D LOOKS (three.js, rendered headless; give a shot one when it suits, never the same twice running, vary across the film): ${LOOKS.map(l => `${l.id} (${l.about})`).join(' · ')}${look3dUsed.length ? `. ALREADY USED IN THIS PROJECT: ${look3dUsed.map(u => `${u.look} ×${u.scenes}`).join(', ')}` : ''}`,
       `MAP SHOTS: when the script names a real place, put it in that shot's places list (up to 3, in flight order): a real map flies there with a pulsing pin and the country highlighted. Only places the script itself names. ${placeUsed.length ? `ALREADY SHOWN IN THIS PROJECT: ${placeUsed.map(p => p.name).join(', ')}` : ''}`,
       `PROPS (drawn in code, low-key 3D): ${PROPS.map(p => p.id).join(', ')}`,
@@ -182,6 +190,7 @@ export const board: Handler = async ctx => {
         for (let i = 1; i < b.shots.length; i++) if (b.shots[i]!.preset && b.shots[i]!.preset === b.shots[i - 1]!.preset) return `Scenes ${i - 1} and ${i} both use ${b.shots[i]!.preset}; never the same preset twice running.`;
       }
       for (let i = 1; i < b.shots.length; i++) if (b.shots[i]!.look3d && b.shots[i]!.look3d === b.shots[i - 1]!.look3d) return `Scenes ${i - 1} and ${i} both use the 3D look ${b.shots[i]!.look3d}; never the same look twice running.`;
+      if (visualOn()) { const bad = b.shots.flatMap(s => s.stage?.artifacts ?? []).find(id => !byId(id)); if (bad) return `Unknown artifact "${bad}". Use ids from the ARTIFACTS list.`; }
       const all = [...b.shots.flatMap(s => s.assets.map(a => a.id)), ...b.corners.map(c => c.id)];
       if (new Set(all).size !== all.length) return 'Asset ids must be unique across the board.';
       if (all.length > 10) return 'At most 10 asset requests in all.';
@@ -215,7 +224,8 @@ export const board: Handler = async ctx => {
     ...BD.shots.filter(s => s.places?.length).map(s => ({ id: `map${s.scene}`, kind: 'map', what: `map of ${s.places!.join(', ')} for scene ${s.scene + 1}`, url: null, scene: s.scene, places: s.places! }))];
   const voiceKey = (await ctx.out('transcribe')) !== null || m.features.footage === 'edit' ? 'transcribe' : 'voice';
   const spawn: TaskSpec[] = reqs.map(a => ({ key: `asset:${a.id}`, kind: 'asset', agent: 'hunter', resource: a.kind === 'look3d' || a.kind === 'map' ? 'chrome' : 'llm', title: `Find: ${a.what.slice(0, 40)}`, scope: a.scene >= 0 ? `scene:${a.scene}` : 'corners', input: a, deps: ['board'], optional: true, max: 2 }));
-  for (const s of BD.shots) spawn.push({ key: `build:${s.scene}`, kind: 'build', agent: 'builder', resource: 'llm', title: `Build scene ${s.scene + 1}`, scope: `scene:${s.scene}`, input: { scene: s.scene },
+  if (visualOn()) spawn.push({ key: 'build:visual', kind: 'build', agent: 'builder', resource: 'cpu', title: 'Plan the visual film', scope: 'film', input: { visual: true }, deps: ['board', voiceKey, ...(cardOut || (await ctx.out('card')) ? ['card'] : []), ...reqs.map(a => `asset:${a.id}`)], max: 2 });
+  else for (const s of BD.shots) spawn.push({ key: `build:${s.scene}`, kind: 'build', agent: 'builder', resource: 'llm', title: `Build scene ${s.scene + 1}`, scope: `scene:${s.scene}`, input: { scene: s.scene },
     deps: ['board', voiceKey, ...(cardOut || (await ctx.out('card')) ? ['card'] : []), ...reqs.filter(a => a.scene === s.scene || a.scene === -1).map(a => `asset:${a.id}`)], max: 3 });
   return { output: BD, spawn, note: `${BD.shots.length} shots, ${reqs.length} assets` };
 };

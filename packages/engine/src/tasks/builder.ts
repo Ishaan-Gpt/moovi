@@ -9,6 +9,7 @@ import { boxes, still } from '../render/host';
 import { describe, geometry, layerOf, platformZone, type Issue } from '../render/qa';
 import { tool, type Tool } from '../runtime';
 import { agentRun, knowledge, systemFor } from './agent';
+import { visualBuild } from '../visual/crew';
 import { filmKit, type AssetOut, type Board } from './film';
 import type { Beat, Script } from './script';
 
@@ -91,6 +92,7 @@ export function fallbackProgram(beat: Beat, shot: Board['shots'][number] | undef
 }
 
 export const build: Handler = async ctx => {
+  if (ctx.input<{ visual?: boolean }>().visual) return visualBuild(ctx);
   const { scene: i } = ctx.input<{ scene: number }>();
   const F = await filmKit(ctx);
   const k = F.kit;

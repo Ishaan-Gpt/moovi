@@ -5,14 +5,21 @@ import { closeVisual, openFilm, renderFilm } from '../src/visual/capture';
 import { auditFilm, checkPlan } from '../src/visual/qa';
 import { planFilm } from '../src/visual/plan';
 import type { BeatIn } from '../src/visual/types';
+import { beatsFromVoice, makeFilm } from '../src/visual/film';
+import { readFileSync } from 'node:fs';
+import { kit } from '@moovi/skills';
 
 /**
  * The visual system, from the terminal (no model, no voice: the sample script is spoken at 2.6 words a second).
  *   tsx scripts/visual.ts stills  [vertical|landscape|square] [light|dark]   a still of every scene, mid-scene
  *   tsx scripts/visual.ts film    [vertical|landscape|square] [light|dark]   render the film (needs ffmpeg for the mp4)
+ *   tsx scripts/visual.ts make <script.json> [words.json] [audio.wav] [vertical|landscape|square] [light|dark]
+ *       a film from a script ({ beats: [{ say }] } or an array of lines) with the voice's word times ([{ word, t, end }]; reading pace
+ *       when none) and the voice (muxed in), checked and audited; the mp4 goes to data/visual/film.mp4
  *   SITE=file-in-data-dir.png  uses that capture for the browser mockup and the brand tile
  */
-const [cmd = 'stills', fmtArg = 'vertical', themeArg = 'light'] = process.argv.slice(2);
+const argv = process.argv.slice(2), cmd0 = argv[0] ?? 'stills';
+const [cmd = 'stills', fmtArg = 'vertical', themeArg = 'light'] = cmd0 === 'make' ? ['make', argv[4] ?? 'vertical', argv[5] ?? 'light'] : argv;
 const format = fmtArg as 'vertical' | 'landscape' | 'square', theme = themeArg as 'light' | 'dark';
 const dir = join(config.data, 'visual'); mkdirSync(dir, { recursive: true });
 
@@ -27,6 +34,14 @@ const SCRIPT = [
 const WPS = 2.6;
 let t = 0;
 const beats: BeatIn[] = SCRIPT.map(text => { const n = text.split(/\s+/).length, d = Math.max(3.2, n / WPS + 0.6), b = { text, start: t, end: t + d }; t += d; return b; });
+if (cmd === 'make') {
+  const raw = JSON.parse(readFileSync(argv[1]!, 'utf8')) as { beats?: { say: string }[] } | string[];
+  const lines = (Array.isArray(raw) ? raw : raw.beats ?? []).map(b => (typeof b === 'string' ? { say: b } : b));
+  const words = argv[2] && argv[2] !== '-' ? (JSON.parse(readFileSync(argv[2], 'utf8')) as { word: string; t: number; end: number }[]) : kit.readingPace(lines);
+  const r = await makeFilm({ beats: beatsFromVoice(lines, words, 30), format, theme, seed: Number(process.env.SEED) || 7, brand: process.env.BRAND ?? null, image: process.env.SITE ? join(config.data, process.env.SITE) : null, askedSeconds: Number(process.env.ASKED) || undefined, dir, out: join(dir, 'film.mp4'), audio: argv[3] && argv[3] !== '-' ? argv[3] : undefined, audit: true });
+  console.log('issues:', r.issues.length ? r.issues : 'none'); console.log(r.stats);
+  await closeVisual(); process.exit(0);
+}
 const plan = planFilm(beats, { format, theme, seed: Number(process.env.SEED) || 7, brand: 'Bluetoki', image: process.env.SITE ? join(config.data, process.env.SITE) : null });
 if (process.env.NO3D) for (const s of plan.scenes) s.elements = s.elements.filter(e => !e.art.startsWith('obj:'));
 writeFileSync(join(dir, 'plan.json'), JSON.stringify(plan, null, 1));

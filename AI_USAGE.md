@@ -44,6 +44,8 @@ Moovi is built with AI coding assistance, disclosed here as the hackathon rules 
 
 | 2026-10-16 | Claude Code (Sonnet) | **Map shots (Task 3, branch vignesh/maps).** Nominatim geocoding with a one-request-a-second gate, a Moovi User-Agent and a (:Place) cache in the graph; a MapLibre GL JS capture on OpenFreeMap tiles with attribution, a per-frame camera that is a pure function of time (fly-to, pulsing pin, highlighted country from Natural Earth), waiting for every tile before each frame, and a three.js globe fallback when tiles fail; (Scene)-[:SHOWS]->(Place) from the art director's board. Measured seconds per second of film (docs/MAPS.md). | Set the task and rules; reviews the result |
 
+| 2026-10-16 | Claude Code (Sonnet) | **The visual system (branch vignesh/visual-system).** A deterministic compositor in the engine's headless Chrome: 9 layouts (split screens, picture in picture, callouts, orbit…), 56 artifacts (icons, UI cards, device mockups, self-drawing charts, 10 three.js objects, particles, light, backdrops) stored in FalkorDB as (Artifact)-[:SERVES]->(Need) and picked per scene by need, with (Scene)-[:USES_ARTIFACT]->(Artifact) kept per film; motion every second (camera, parallax, enter/idle, whip/push/zoom transitions, kinetic type on the voice); QA (length within 2 s, nothing over the caption band, no frozen or empty frames, frames identical whenever asked); an env-gated crew path (MOOVI_RENDERER=visual). Render time 110 s → 36 s for a 26.6 s film, with the iterations measured in docs/VISUAL.md. | Set the task, the split with Tab and the quality bar; reviews the result |
+
 The owner reviews and understands every part that ships. Architecture decisions are recorded in `docs/`.
 
 ## Vignesh B S (AI/ML engineer): the voice library

@@ -156,3 +156,19 @@ export async function closeVisual() {
   if (browser) { const b = await browser; await b.close().catch(() => undefined); browser = null; }
   if (server) { await new Promise(r => server!.close(() => r(null))); server = null; starting = null; }
 }
+
+/**
+ * One chunk of a film as a silent mp4: frames [from, to) rendered on one page, encoded at the format's size. The crew's
+ * render tasks each take a chunk, the join and the sound are the Editor's (mux).
+ */
+export async function renderChunk(plan: VPlan, from: number, to: number, dir: string, out: string, o: RenderOpts = {}): Promise<{ frames: number; ms: number; encodeMs: number }> {
+  const framesDir = join(dir, `frames-${from}-${to}`); rmSync(framesDir, { recursive: true, force: true }); mkdirSync(framesDir, { recursive: true });
+  const t0 = performance.now(), s = await openFilm(plan, o);
+  try { await s.range(from, to, framesDir); } finally { await s.close(); }
+  const t1 = performance.now(), { W, H } = FORMATS[plan.format], ext = (o.format ?? 'jpeg') === 'png' ? 'png' : 'jpg';
+  mkdirSync(dirname(out), { recursive: true });
+  const args = ['-y', '-loglevel', 'error', '-framerate', String(plan.fps), '-start_number', String(from), '-i', join(framesDir, `f%05d.${ext}`), '-frames:v', String(to - from), '-vf', `scale=${W}:${H}:flags=lanczos`, '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '19', '-pix_fmt', 'yuv420p', '-g', '30', '-an', out];
+  await new Promise<void>((res, rej) => { const p = spawn(config.ffmpeg, args, { stdio: ['ignore', 'ignore', 'inherit'] }); p.on('error', rej); p.on('close', code => (code === 0 ? res() : rej(new Error(`ffmpeg exited ${code}`)))); });
+  rmSync(framesDir, { recursive: true, force: true });
+  return { frames: to - from, ms: t1 - t0, encodeMs: performance.now() - t1 };
+}
