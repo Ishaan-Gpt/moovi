@@ -338,6 +338,29 @@ MATCH (s:Scene)-[:USES_3D]->(l:Look3D)
 RETURN l.id AS look, count(DISTINCT s) AS scenes
 ORDER BY scenes DESC`),
 
+  /* ───── maps: the real places a scene shows ───── */
+  showPlace: q('showPlace', false, 'A scene shows a real place: (Scene)-[:SHOWS {n}]->(Place), the Place copied from the geocoding cache.', `
+MATCH (r:Run {id: $run})
+MERGE (s:Scene {id: $scene})
+  ON CREATE SET s.i = $i
+MERGE (r)-[:HAS_SCENE]->(s)
+MERGE (p:Place {key: $key})
+  ON CREATE SET p.name = $name, p.lat = $lat, p.lon = $lon, p.cc = $cc, p.country = $country
+MERGE (s)-[w:SHOWS]->(p)
+SET w.n = $n
+RETURN p.key AS key`),
+
+  placesInRun: q('placesInRun', true, 'The places each scene of a run shows, in scene and visit order (the map camera flies through them).', `
+MATCH (:Run {id: $run})-[:HAS_SCENE]->(s:Scene)-[w:SHOWS]->(p:Place)
+RETURN s.i AS i, w.n AS n, p.key AS key, p.name AS name, p.lat AS lat, p.lon AS lon, p.cc AS cc, p.country AS country
+ORDER BY s.i, w.n`),
+
+  placeUsage: q('placeUsage', true, 'Places this project has already shown (the art director picks a different map shot than the last film).', `
+MATCH (s:Scene)-[:SHOWS]->(p:Place)
+RETURN p.name AS name, p.cc AS cc, count(DISTINCT s) AS scenes
+ORDER BY scenes DESC
+LIMIT $n`),
+
   scenes: q('scenes', true, 'A run’s scene programs in order.', `
 MATCH (:Run {id: $run})-[:HAS_SCENE]->(s:Scene)
 RETURN s.id AS id, s.i AS i, s.program AS program, s.version AS version, s.qa AS qa

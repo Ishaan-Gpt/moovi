@@ -5,6 +5,16 @@ import { q } from './q';
  * Passwords are stored only as scrypt hashes; session tokens only as SHA-256 hashes.
  */
 export const sys = {
+  /* ───── places: the shared geocoding cache (Nominatim allows one request a second, so a name is asked for once) ───── */
+  cachedPlace: q('cachedPlace', true, 'A place name already geocoded: its coordinates and country (so Nominatim is not asked twice).', `
+MATCH (p:Place {key: $key})
+RETURN p.key AS key, p.name AS name, p.lat AS lat, p.lon AS lon, p.cc AS cc, p.country AS country, p.kind AS kind, p.bbox AS bbox`),
+
+  cachePlace: q('cachePlace', false, 'Remember a geocoded place by its normalised name: (:Place {name, lat, lon}).', `
+MERGE (p:Place {key: $key})
+SET p.name = $name, p.lat = $lat, p.lon = $lon, p.cc = $cc, p.country = $country, p.kind = $kind, p.bbox = $bbox, p.at = $at
+RETURN p.key AS key`),
+
   createUser: q('createUser', false, 'Sign-up: a new account, only if no account has this email.', `
 OPTIONAL MATCH (x:User {email: $email})
 WITH x WHERE x IS NULL

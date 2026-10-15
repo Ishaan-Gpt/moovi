@@ -7,10 +7,10 @@ import { write } from './client';
 const LABELS = {
   craft: ['Component', 'Slot', 'Recipe', 'Transition', 'Track', 'Beat', 'Style', 'Law', 'Check', 'Skill', 'SkillSection',
     'StyleSignature', 'Stage', 'Deck', 'Card', 'Film', 'Preset'],
-  sys: ['User', 'Project'],
+  sys: ['User', 'Project', 'Place'],
   user: ['User', 'Lesson', 'Preference', 'AssetUse', 'VideoRef', 'PresetRef', 'Feedback', 'Film', 'Scene', 'Run'],
   project: ['Project', 'Agent', 'Chat', 'Message', 'Upload', 'Video', 'Run', 'Task', 'Source', 'Fact', 'Claim', 'Scene',
-    'Asset', 'Lattice', 'Decision', 'Issue', 'Clip', 'Page', 'Screenshot', 'Feedback'],
+    'Asset', 'Lattice', 'Decision', 'Issue', 'Clip', 'Page', 'Screenshot', 'Feedback', 'Place'],
 } as const;
 
 async function index(graph: string, label: string, prop = 'id') {
@@ -42,6 +42,7 @@ export async function ensureSysSchema(graph: string) {
   for (const l of LABELS.sys) await index(graph, l);
   await index(graph, 'User', 'email');
   await index(graph, 'Session', 'hash');
+  await index(graph, 'Place', 'key');
 }
 
 export async function ensureUserSchema(graph: string) {

@@ -393,6 +393,25 @@ ORDER BY label
 
 ## sys (accounts and the project index)
 
+### `cachedPlace` (read-only)
+
+A place name already geocoded: its coordinates and country (so Nominatim is not asked twice).
+
+```cypher
+MATCH (p:Place {key: $key})
+RETURN p.key AS key, p.name AS name, p.lat AS lat, p.lon AS lon, p.cc AS cc, p.country AS country, p.kind AS kind, p.bbox AS bbox
+```
+
+### `cachePlace` (write)
+
+Remember a geocoded place by its normalised name: (:Place {name, lat, lon}).
+
+```cypher
+MERGE (p:Place {key: $key})
+SET p.name = $name, p.lat = $lat, p.lon = $lon, p.cc = $cc, p.country = $country, p.kind = $kind, p.bbox = $bbox, p.at = $at
+RETURN p.key AS key
+```
+
 ### `createUser` (write)
 
 Sign-up: a new account, only if no account has this email.
@@ -1384,6 +1403,43 @@ How often each 3D look has been used in this project’s films (the art director
 MATCH (s:Scene)-[:USES_3D]->(l:Look3D)
 RETURN l.id AS look, count(DISTINCT s) AS scenes
 ORDER BY scenes DESC
+```
+
+### `showPlace` (write)
+
+A scene shows a real place: (Scene)-[:SHOWS {n}]->(Place), the Place copied from the geocoding cache.
+
+```cypher
+MATCH (r:Run {id: $run})
+MERGE (s:Scene {id: $scene})
+  ON CREATE SET s.i = $i
+MERGE (r)-[:HAS_SCENE]->(s)
+MERGE (p:Place {key: $key})
+  ON CREATE SET p.name = $name, p.lat = $lat, p.lon = $lon, p.cc = $cc, p.country = $country
+MERGE (s)-[w:SHOWS]->(p)
+SET w.n = $n
+RETURN p.key AS key
+```
+
+### `placesInRun` (read-only)
+
+The places each scene of a run shows, in scene and visit order (the map camera flies through them).
+
+```cypher
+MATCH (:Run {id: $run})-[:HAS_SCENE]->(s:Scene)-[w:SHOWS]->(p:Place)
+RETURN s.i AS i, w.n AS n, p.key AS key, p.name AS name, p.lat AS lat, p.lon AS lon, p.cc AS cc, p.country AS country
+ORDER BY s.i, w.n
+```
+
+### `placeUsage` (read-only)
+
+Places this project has already shown (the art director picks a different map shot than the last film).
+
+```cypher
+MATCH (s:Scene)-[:SHOWS]->(p:Place)
+RETURN p.name AS name, p.cc AS cc, count(DISTINCT s) AS scenes
+ORDER BY scenes DESC
+LIMIT $n
 ```
 
 ### `scenes` (read-only)
