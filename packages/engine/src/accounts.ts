@@ -33,6 +33,7 @@ export async function signUp(o: { email: string; password: string; name: string 
 }
 
 export async function signIn(o: { email: string; password: string }) {
+  await ensureSys(); // a fresh server has no `sys` graph until the first sign-up; a read on it would fail
   const [u] = await run<{ id: string; email: string; name: string; hash: string; salt: string }>(SYS, S.userByEmail, { email: normEmail(o.email) });
   // the same work and the same answer whether or not the account exists
   const calc = await scrypt(o.password, Buffer.from(u?.salt ?? '00'.repeat(16), 'hex'), 64, KDF);
