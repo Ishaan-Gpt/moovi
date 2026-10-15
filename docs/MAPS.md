@@ -20,3 +20,7 @@ A still frame costs about 0.6 s (software rasteriser); frames mid-flight cost 1.
 What is not done yet: compositing the rendered frames into the final film's scene program (the frames and `renderMap` are ready; the builder does not pull them in yet).
 
 ![Real tiles on top, the globe fallback below: Paris, Tokyo, Sydney](img/maps-gallery.jpg)
+
+## In the film
+
+A shot with `places` gets a poster of its map as a scene asset: the board spawns an `asset` task (`kind: map`, on the `chrome` resource, no model call) and `maps/asset.ts` renders the landed frame of the flight (88% through: pin pulsing, country highlighted, the name and the attribution on screen) at the film's size. Places are already cached, so it costs no Nominatim request. Tiles that fail give a globe poster and the asset's `about` says so. Full flights (`renderMap`) are not yet pulled into a scene program.

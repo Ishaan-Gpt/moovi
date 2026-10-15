@@ -12,6 +12,7 @@ import { CORNER_PROPS, drawProp, pickCorners } from '../render/prop';
 import { tool, type Tool } from '../runtime';
 import { agentRun, knowledge, systemFor } from './agent';
 import type { AssetOut } from './film';
+import { mapAsset } from '../maps/asset';
 
 /**
  * The Asset Hunter fills one request from the board: a capture of the real site, the product's real logo or a
@@ -23,6 +24,7 @@ import type { AssetOut } from './film';
 const sha = (f: string) => createHash('sha256').update(readFileSync(f)).digest('hex');
 
 export const asset: Handler = async ctx => {
+  if ((ctx.input<{ kind?: string }>()).kind === 'map') return mapAsset(ctx);
   const req = ctx.input<{ id: string; kind: string; what: string; url: string | null; scene: number }>();
   const m = (await ctx.out<{ style: string; features: { urls: string[] } }>('match'))!;
   const know = await knowledge(ctx, 'hunter', m.style);

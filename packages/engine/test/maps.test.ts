@@ -79,3 +79,20 @@ test('tiles that cannot load fall back to the globe, and frames are the same eac
     await assert.rejects(openMap({ places, width: 200, height: 356, mode: 'tiles', styleUrl: 'http://127.0.0.1:1/none.json' }), /tiles did not load/);
   } finally { await closeMaps(); }
 });
+
+test('a map poster is a real image at the film’s size', async t => {
+  const { canRenderMaps, closeMaps, renderMapPoster } = await import('../src/maps/capture');
+  if (!(await canRenderMaps())) { t.skip('no Chrome to drive'); return; }
+  const { mkdtempSync, readFileSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const places: Place[] = [{ key: 'paris', name: 'Paris', lat: 48.86, lon: 2.35, cc: 'fr', country: 'France', kind: 'city', bbox: null }];
+  try {
+    const out = join(mkdtempSync(join(tmpdir(), 'mapposter-')), 'p.png');
+    const r = await renderMapPoster({ places, width: 270, height: 480, mode: 'globe' }, out);
+    const png = readFileSync(out);
+    assert.equal(png.subarray(1, 4).toString(), 'PNG');
+    assert.equal(png.readUInt32BE(16), 270); assert.equal(png.readUInt32BE(20), 480);
+    assert.equal(r.mode, 'globe');
+  } finally { await closeMaps(); }
+});
