@@ -1,0 +1,28 @@
+{
+  "name": "@contenteasy/studio",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --port 3100",
+    "build": "next build",
+    "start": "next start --port 3100",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@contenteasy/brand": "workspace:*",
+    "@contenteasy/character": "workspace:*",
+    "@contenteasy/engine": "workspace:*",
+    "@contenteasy/ui": "workspace:*",
+    "next": "16.2.9",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "@contenteasy/graph": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.0",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "typescript": "5.9.3"
+  }
+}

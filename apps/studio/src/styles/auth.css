@@ -1,0 +1,39 @@
+/* ── the door: sign in / create account ── */
+.door { min-height: 100svh; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(360px, .9fr); background: var(--bg); }
+.door__stage { position: relative; overflow: hidden; display: grid; place-items: center; background: radial-gradient(90% 70% at 50% 100%, var(--ice-soft) 0%, rgb(230 242 251 / 0) 70%), linear-gradient(180deg, var(--paper), var(--bg)); }
+.door__light { position: absolute; inset: auto 12% -18% 12%; height: 62%; border-radius: 50%; background: radial-gradient(closest-side, rgb(207 230 247 / .9), rgb(207 230 247 / 0)); filter: blur(8px); }
+.door__moovi { width: min(46vh, 420px); aspect-ratio: 1; position: relative; }
+.door__line { position: absolute; left: 0; right: 0; bottom: 9%; margin: 0; text-align: center; font-size: clamp(20px, 2.2vw, 30px); font-weight: 600; letter-spacing: -.02em; color: var(--frost); text-wrap: balance; padding: 0 24px; }
+.door__line em { color: var(--accent); font-size: 1.12em; }
+.door__panel { display: grid; align-content: center; justify-items: center; gap: 22px; padding: 48px clamp(20px, 5vw, 64px); position: relative; }
+.door__brand { position: absolute; top: 28px; right: clamp(20px, 5vw, 64px); color: var(--ink); display: inline-flex; align-items: center; gap: 9px; font-weight: 700; font-size: 16px; letter-spacing: -.02em; }
+.door__card { width: min(400px, 100%); padding: 22px 22px 24px; border-radius: var(--r-xl); display: grid; gap: 14px; }
+.door__tabs { position: relative; display: grid; grid-template-columns: 1fr 1fr; padding: 4px; border-radius: 14px; background: rgb(255 255 255 / .55); box-shadow: 0 0 0 1px var(--line) inset; margin-bottom: 4px; }
+.door__tabs button { position: relative; z-index: 1; height: 36px; border-radius: 10px; font-weight: 600; color: var(--ink-2); transition: color .25s var(--ease); }
+.door__tabs button[aria-selected="true"] { color: var(--ink); }
+.door__bead { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); border-radius: 10px; background: #fff; box-shadow: var(--lift); transition: transform .45s var(--jelly); }
+.door__bead[data-on="signup"] { transform: translateX(100%); }
+.door__go { height: 46px; margin-top: 2px; }
+.door__small { max-width: 400px; text-align: center; font-size: 12.5px; margin: 0; }
+@media (max-width: 860px) {
+  .door { grid-template-columns: 1fr; }
+  .door__stage { min-height: 34svh; }
+  .door__moovi { width: 30vh; }
+  .door__line { bottom: 6%; font-size: 18px; }
+  .door__brand { position: static; }
+}
+
+/* ── start: the landing page's brief becoming a project ── */
+.start { position: fixed; inset: 0; display: grid; place-content: center; justify-items: center; gap: 18px; padding: 24px; background: radial-gradient(80% 60% at 50% 100%, var(--ice-soft) 0%, rgb(230 242 251 / 0) 70%), var(--bg); }
+.start__light { position: absolute; left: 50%; top: 58%; width: 520px; height: 220px; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(closest-side, rgb(207 230 247 / .9), rgb(207 230 247 / 0)); filter: blur(10px); }
+.start__moovi { position: relative; width: min(40vh, 340px); aspect-ratio: 1; }
+.start__canvas { width: 100%; height: 100%; }
+.start__line { position: relative; margin: 0; font-size: clamp(18px, 2vw, 24px); font-weight: 600; letter-spacing: -.02em; color: var(--frost); text-align: center; text-wrap: balance; max-width: 520px; overflow-wrap: anywhere; }
+.start__dots { display: inline-flex; gap: 4px; margin-left: 6px; vertical-align: middle; }
+.start__dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); animation: dot 1.2s var(--ease) infinite; }
+.start__dots i:nth-child(2) { animation-delay: .15s; }
+.start__dots i:nth-child(3) { animation-delay: .3s; }
+@keyframes dot { 0%, 100% { opacity: .25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+.start__err { position: relative; display: grid; justify-items: center; gap: 10px; }
+.start__err .err { margin: 0; text-align: center; max-width: 440px; }
+.start__acts { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
