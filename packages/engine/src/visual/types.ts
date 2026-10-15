@@ -25,7 +25,12 @@ export interface Content {
   /** a file in the engine's data dir (a site capture or a clip frame): shown on a device or as a tile */
   image?: string;
   /** a clip (mp4/webm) in the data dir, played on the element's screen when the page can decode it */
+  /** real footage in the data dir (mp4/webm): played on the element's screen or in its panel, frame-accurate, looped */
   clip?: string;
+  /** stock footage fills a panel; a scroll or screen recording is shown whole and top-aligned */
+  clipKind?: 'footage' | 'scroll' | 'recording';
+  /** seconds into the clip where this element starts (different elements show different moments) */
+  clipAt?: number;
 }
 
 export interface VElement {

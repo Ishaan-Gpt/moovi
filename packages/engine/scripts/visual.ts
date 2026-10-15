@@ -42,7 +42,8 @@ if (cmd === 'make') {
   console.log('issues:', r.issues.length ? r.issues : 'none'); console.log(r.stats);
   await closeVisual(); process.exit(0);
 }
-const plan = planFilm(beats, { format, theme, seed: Number(process.env.SEED) || 7, brand: 'Bluetoki', image: process.env.SITE ? join(config.data, process.env.SITE) : null });
+const clipFiles = (process.env.CLIPS ?? '').split(',').filter(Boolean).map((f, i) => ({ path: join(config.data, f), kind: (i % 2 ? 'scroll' : 'footage') as 'footage' | 'scroll', seconds: Number(process.env.CLIP_SECONDS) || 8 }));
+const plan = planFilm(beats, { clips: clipFiles, format, theme, seed: Number(process.env.SEED) || 7, brand: 'Bluetoki', image: process.env.SITE ? join(config.data, process.env.SITE) : null });
 if (process.env.NO3D) for (const s of plan.scenes) s.elements = s.elements.filter(e => !e.art.startsWith('obj:'));
 writeFileSync(join(dir, 'plan.json'), JSON.stringify(plan, null, 1));
 console.log(`${plan.scenes.length} scenes, ${plan.seconds.toFixed(1)} s, ${format}/${theme}`);

@@ -18,7 +18,7 @@ import type { VPlan } from './types';
  */
 const here = dirname(fileURLToPath(import.meta.url));
 const PAGE_DIR = join(here, 'page');
-const MIME: Record<string, string> = { '.js': 'text/javascript', '.html': 'text/html', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.json': 'application/json' };
+const MIME: Record<string, string> = { '.js': 'text/javascript', '.html': 'text/html', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.json': 'application/json', '.mp4': 'video/mp4', '.webm': 'video/webm', '.mov': 'video/quicktime' };
 const roots = (): [string, string][] => [['/three/', dirname(createRequire(import.meta.url).resolve('three'))], ['/vis/', PAGE_DIR], ['/fonts/', join(config.assets, 'renderer', 'fonts')], ['/data/', config.data]];
 
 const PAGE_HTML = `<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#fff}</style></head><body>
@@ -41,7 +41,10 @@ function listen(): Promise<number> {
         if (!url.startsWith(prefix)) continue;
         const full = normalize(join(root, url.slice(prefix.length)));
         if (!full.startsWith(normalize(root) + sep) || !existsSync(full) || !statSync(full).isFile()) break;
-        res.writeHead(200, { 'content-type': MIME[extname(full).toLowerCase()] ?? 'application/octet-stream', 'cache-control': 'no-store' });
+        // byte ranges: a <video> cannot seek in a file the server will only send whole
+        const size = statSync(full).size, type = MIME[extname(full).toLowerCase()] ?? 'application/octet-stream', range = req.headers.range?.match(/bytes=(d*)-(d*)/);
+        if (range) { const start = range[1] ? Number(range[1]) : 0, end = range[2] ? Math.min(Number(range[2]), size - 1) : size - 1; res.writeHead(206, { 'content-type': type, 'content-length': end - start + 1, 'content-range': `bytes ${start}-${end}/${size}`, 'accept-ranges': 'bytes' }); createReadStream(full, { start, end }).pipe(res); return; }
+        res.writeHead(200, { 'content-type': type, 'content-length': size, 'accept-ranges': 'bytes', 'cache-control': 'no-store' });
         createReadStream(full).pipe(res); return;
       }
       res.writeHead(404).end();
@@ -76,7 +79,7 @@ export interface RenderOpts {
   frames?: number[];
   format?: 'jpeg' | 'png';
 }
-export interface Session { range(from: number, to: number, dir: string): Promise<number>; info: { renderer: string; rw: number; rh: number }; frame(n: number): Promise<Buffer>; thumb(n: number): Promise<{ w: number; h: number; px: number[] }>; boxes(n: number): Promise<{ art: string; job: string; x0: number; y0: number; x1: number; y1: number }[]>; prof(): Promise<Record<string, number> & { sections?: Record<string, { ms: number; n: number }> }>; close(): Promise<void> }
+export interface Session { clips(): Promise<{ art: string; ok: boolean; dur: number; w: number; h: number }[]>; range(from: number, to: number, dir: string): Promise<number>; info: { renderer: string; rw: number; rh: number }; frame(n: number): Promise<Buffer>; thumb(n: number): Promise<{ w: number; h: number; px: number[] }>; boxes(n: number): Promise<{ art: string; job: string; x0: number; y0: number; x1: number; y1: number }[]>; prof(): Promise<Record<string, number> & { sections?: Record<string, { ms: number; n: number }> }>; close(): Promise<void> }
 
 /** The plan as the page needs it: slots per scene, image urls, palette, the caption band. */
 export function payload(plan: VPlan, o: { scale?: number } = {}) {
@@ -85,7 +88,7 @@ export function payload(plan: VPlan, o: { scale?: number } = {}) {
   const images = new Set<string>();
   const scenes = plan.scenes.map(s => ({
     ...s, slots: slotsOf(s.layout, plan.format),
-    elements: s.elements.map(e => { const c = { ...e.content }; if (c.image) { c.image = dataUrl(c.image); images.add(c.image); } return { ...e, content: c }; }),
+    elements: s.elements.map(e => { const c = { ...e.content }; if (c.image) { c.image = dataUrl(c.image); images.add(c.image); } if (c.clip) c.clip = dataUrl(c.clip); return { ...e, content: c }; }),
   }));
   return { cfg: { plan: { ...plan, scenes }, W, H, rw, rh, palette: paletteOf(plan.theme), fonts: FONTS, prof: !!process.env.VIS_PROF, images: [...images], art: Object.fromEntries(ARTIFACTS.map(a => [a.id, { kind: a.kind, glyph: a.glyph }])), bands: { caption: bands(plan.format).caption as Rect } }, rw, rh };
 }
@@ -104,6 +107,7 @@ export async function openFilm(plan: VPlan, o: RenderOpts = {}): Promise<Session
   const fmt = o.format ?? 'jpeg';
   type W = { __frame: (n: number, f: string) => string; __thumb: (n: number) => { w: number; h: number; px: number[] }; __boxes: (n: number) => { art: string; job: string; x0: number; y0: number; x1: number; y1: number }[] };
   return {
+    clips: () => page.evaluate(() => (window as unknown as { __clips: () => { art: string; ok: boolean; dur: number; w: number; h: number }[] }).__clips()),
     async range(from, to, dir) { const token = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`; sinks.set(token, dir); mkdirSync(dir, { recursive: true }); try { return await page.evaluate(([a, b, f, s]) => (window as unknown as { __range: (a: number, b: number, f: string, s: string) => Promise<number> }).__range(a as number, b as number, f as string, s as string), [from, to, fmt, `http://127.0.0.1:${port}/__frame/${token}`] as const); } finally { sinks.delete(token); } }, info: { renderer: info.renderer, rw, rh },
     async frame(n) { return Buffer.from(await page.evaluate(([k, f]) => (window as unknown as W).__frame(k as number, f as string), [n, fmt] as const), 'base64'); },
     thumb: n => page.evaluate(k => (window as unknown as W).__thumb(k), n),
@@ -171,4 +175,28 @@ export async function renderChunk(plan: VPlan, from: number, to: number, dir: st
   await new Promise<void>((res, rej) => { const p = spawn(config.ffmpeg, args, { stdio: ['ignore', 'ignore', 'inherit'] }); p.on('error', rej); p.on('close', code => (code === 0 ? res() : rej(new Error(`ffmpeg exited ${code}`)))); });
   rmSync(framesDir, { recursive: true, force: true });
   return { frames: to - from, ms: t1 - t0, encodeMs: performance.now() - t1 };
+}
+
+/**
+ * A short test clip made in the browser itself (a canvas recorded to WebM, a bouncing gradient with a frame counter), so
+ * footage can be tested with no ffmpeg and no download. Returns the file's path.
+ */
+export async function recordTestClip(path: string, seconds = 2, size = [320, 568] as const): Promise<string> {
+  const b = await launch(), ctx = await b.newContext(), page = await ctx.newPage();
+  try {
+    const code = `(async () => {
+      const c = document.createElement('canvas'); c.width = ${size[0]}; c.height = ${size[1]}; document.body.appendChild(c); const g = c.getContext('2d');
+      const rec = new MediaRecorder(c.captureStream(30), { mimeType: 'video/webm;codecs=vp8', videoBitsPerSecond: 1500000 }), parts = [];
+      rec.ondataavailable = e => parts.push(e.data);
+      const done = new Promise(r => { rec.onstop = r; });
+      rec.start(100);
+      const t0 = performance.now();
+      await new Promise(res => { const tick = () => { const t = (performance.now() - t0) / 1000; const gr = g.createLinearGradient(0, 0, c.width, c.height); gr.addColorStop(0, 'hsl(' + (t * 90) % 360 + ',70%,55%)'); gr.addColorStop(1, 'hsl(' + (t * 90 + 120) % 360 + ',70%,35%)'); g.fillStyle = gr; g.fillRect(0, 0, c.width, c.height); g.fillStyle = '#fff'; g.beginPath(); g.arc(c.width / 2 + Math.sin(t * 4) * 90, c.height / 2 + Math.cos(t * 3) * 120, 50, 0, 6.28); g.fill(); if (t < ${seconds}) requestAnimationFrame(tick); else res(); }; tick(); });
+      rec.stop(); await done;
+      const blob = new Blob(parts, { type: 'video/webm' }), buf = new Uint8Array(await blob.arrayBuffer()); let s = ''; for (let i = 0; i < buf.length; i += 0x8000) s += String.fromCharCode.apply(null, buf.subarray(i, i + 0x8000)); return btoa(s);
+    })()`;
+    const b64 = (await page.evaluate(code)) as string;
+    mkdirSync(dirname(path), { recursive: true }); writeFileSync(path, Buffer.from(b64, 'base64'));
+    return path;
+  } finally { await ctx.close().catch(() => undefined); }
 }
