@@ -2,12 +2,14 @@ import { join } from 'node:path';
 import { project as P, user as U } from '@moovi/graph';
 import { kit, readingPace, type Word } from '@moovi/skills';
 import { z } from 'zod';
-import { benchStatus, gaps, readJson, transcribe as benchTranscribe, tts, writeJson } from '../bench';
+import { benchStatus, gaps, readJson, transcribe as benchTranscribe, writeJson } from '../bench';
 import type { Handler, TaskCtx } from '../ctx';
 import { newId } from '../ids';
 import { ask, tool } from '../runtime';
 import type { Brief } from './plan';
 import { knowledge, systemFor } from './agent';
+import { castFor, recordSpoken } from './casting';
+import { speakLines } from '../audio/lines';
 
 /**
  * The Scribe writes what the voice says, beat by beat, and the truth guard checks every beat before it ships:
@@ -136,13 +138,21 @@ export const voice: Handler = async ctx => {
     await ctx.activity('note', `No voice bench here (${bench.why}); timed at reading pace, no voice.`);
     return { output: { words: join(dir, 'words.json'), wav: null, seconds: words.at(-1)!.end, by: 'reading-pace' }, note: 'reading pace' };
   }
-  ctx.note('speaking the script');
-  const v = await tts(dir, S.beats.map(b => b.say).join('\n\n'));
+  ctx.note('casting the voice');
+  const cast = await castFor(ctx, S);
+  await ctx.activity('note', `Voice: ${cast.voice.name} (${cast.voice.id}, ${cast.rate}). ${cast.reason}`);
+  ctx.note(`speaking as ${cast.voice.name}`);
+  const v = await speakLines(dir, S.beats.map(b => b.say), { voice: cast.voice.id, rate: cast.rate, signal: ctx.signal });
+  await recordSpoken(ctx, cast, v.stats, v.seconds);
   // room for the payoff: a short breath after the hook and before the ask
   const lastHook = S.beats[0]?.say.split(/\s+/).at(-1);
   if (lastHook && S.beats.length > 3) { await gaps(dir, [{ word: v.words.find(w => kit.norm(w.word) === kit.norm(lastHook))?.word ?? lastHook, seconds: 0.25 }]).catch(() => undefined); }
   const words = readJson<Word[]>(join(dir, 'words.json'));
-  return { output: { words: join(dir, 'words.json'), wav: join(dir, 'vo.wav'), seconds: words.at(-1)?.end ?? v.seconds, by: 'kokoro' }, note: `${(words.at(-1)?.end ?? v.seconds).toFixed(1)} s, ${words.length} words` };
+  const spokenBy = Object.keys(v.stats.spokenBy).join('+');
+  return {
+    output: { words: join(dir, 'words.json'), wav: join(dir, 'vo.wav'), seconds: words.at(-1)?.end ?? v.seconds, by: spokenBy, voice: cast.voice.id, voiceReason: cast.reason, castBy: cast.by, lines: v.stats },
+    note: `${cast.voice.name} by ${spokenBy}, ${(words.at(-1)?.end ?? v.seconds).toFixed(1)} s, ${words.length} words, ${v.stats.cached}/${v.stats.lines} lines cached`,
+  };
 };
 
 /** Footage (or the user's own voice-over): its audio, every word timed. */

@@ -1502,3 +1502,81 @@ OPTIONAL MATCH (s:Setup {style: st.id})
 RETURN st.id AS style, films, count(s) AS setups, sum(CASE WHEN s.generated = true THEN 1 ELSE 0 END) AS kept
 ORDER BY style
 ```
+
+
+## proj_<pid>: who voices each film
+
+| Job | Query | Graph feature |
+|---|---|---|
+| The Voice Director's pick, with its reason | `castVoice`, `whyVoice` | `(:Film)-[:VOICED_BY {reason, shortlist, picked, spokenBy}]->(:Voice)` |
+| A brand keeps its voice; a turned-down voice is never recast | `voiceHistory`, `rejectVoice` | `VOICED_BY.rejected` per chat |
+| Which engine really spoke (never ElevenLabs when Edge did) | `voiceSpoken` | `VOICED_BY.spokenBy` |
+
+### `castVoice` (write)
+
+The Voice Director casts a voice for a film: the Voice (with its tags), the Film, and the VOICED_BY edge with the reason.
+
+```cypher
+MERGE (v:Voice {id: $voice})
+SET v.name = $name, v.locale = $locale, v.lang = $lang, v.accent = $accent, v.gender = $gender, v.age = $age, v.energy = $energy
+MERGE (f:Film {id: $film})
+SET f.chat = $chat, f.video = $video, f.at = coalesce(f.at, $at)
+WITH f, v
+OPTIONAL MATCH (f)-[old:VOICED_BY]->(:Voice)
+DELETE old
+WITH DISTINCT f, v
+CREATE (f)-[e:VOICED_BY {reason: $reason, by: $by, score: $score, shortlist: $shortlist, rate: $rate, picked: $engine, at: $at}]->(v)
+RETURN v.id AS voice
+```
+
+### `voiceSpoken` (write)
+
+After the voice is recorded: which engine really spoke, how many lines came from the cache, and the time per line.
+
+```cypher
+MATCH (:Film {id: $film})-[e:VOICED_BY]->(:Voice {id: $voice})
+SET e.spokenBy = $spokenBy, e.lines = $lines, e.cached = $cached, e.msPerLine = $msPerLine, e.seconds = $seconds, e.fallback = $fallback
+```
+
+### `voiceHistory` (read-only)
+
+The voices this project’s films were cast with, newest first (keep a brand’s voice; never recast a turned-down one).
+
+```cypher
+MATCH (f:Film)-[e:VOICED_BY]->(v:Voice)
+RETURN v.id AS voice, f.chat AS chat, e.rejected AS rejected, e.at AS at
+ORDER BY e.at DESC
+LIMIT $n
+```
+
+### `rejectVoice` (write)
+
+The user turned the voice down: every film of the chat that used it marks the edge rejected, with the words.
+
+```cypher
+MATCH (f:Film {chat: $chat})-[e:VOICED_BY]->(:Voice {id: $voice})
+SET e.rejected = true, e.rejectedWhy = $why, e.rejectedAt = $at
+RETURN count(e) AS n
+```
+
+### `whyVoice` (read-only)
+
+Why this film sounds the way it does: the voice, its tags, the reason, the shortlist, who picked it and which engine spoke.
+
+```cypher
+MATCH (:Film {id: $film})-[e:VOICED_BY]->(v:Voice)
+RETURN v.id AS voice, v.name AS name, v.accent AS accent, v.gender AS gender, v.age AS age, v.energy AS energy,
+       e.reason AS reason, e.shortlist AS shortlist, e.by AS by, e.picked AS picked, e.spokenBy AS spokenBy,
+       e.lines AS lines, e.cached AS cached, e.msPerLine AS msPerLine
+```
+
+### `voiceMix` (read-only)
+
+How often each voice voiced this project’s films (turned-down ones left out), and the accents that won.
+
+```cypher
+MATCH (f:Film)-[e:VOICED_BY]->(v:Voice)
+WHERE coalesce(e.rejected, false) = false
+RETURN v.id AS voice, v.accent AS accent, count(f) AS films
+ORDER BY films DESC, voice
+```
