@@ -1203,8 +1203,8 @@ A run’s claims and their verdicts (the shipped script’s, not superseded draf
 MATCH (:Run {id: $run})-[:HAS_CLAIM]->(c:Claim)
 WHERE coalesce(c.status, '') <> 'superseded'
 OPTIONAL MATCH (c)-[:SUPPORTED_BY]->(f:Fact)
-RETURN c.id AS id, c.beat AS beat, c.field AS field, c.text AS text, c.status AS status, c.reason AS reason, collect(f.id) AS facts
-ORDER BY c.beat, c.at
+RETURN c.id AS id, c.beat AS beat, c.field AS field, c.text AS text, c.status AS status, c.reason AS reason, c.at AS at, collect(f.id) AS facts
+ORDER BY beat, at
 ```
 
 ### `saveScene` (write)
@@ -1631,7 +1631,7 @@ MATCH (:Run {id: $run})-[:READ]->(p:Page)-[:HAS_SHOT]->(x:Screenshot)
 OPTIONAL MATCH (f:Fact)-[:SHOWN_IN]->(x)
 RETURN x.id AS id, x.kind AS kind, x.path AS path, x.video AS video, x.seconds AS seconds, x.w AS w, x.h AS h, x.sha AS sha,
        p.url AS url, p.title AS title, collect(f.text) AS proves
-ORDER BY CASE x.kind WHEN 'proof' THEN 0 WHEN 'scroll' THEN 1 WHEN 'hero' THEN 2 ELSE 3 END, x.id
+ORDER BY CASE kind WHEN 'proof' THEN 0 WHEN 'scroll' THEN 1 WHEN 'hero' THEN 2 ELSE 3 END, id
 ```
 
 ### `factProof` (read-only)

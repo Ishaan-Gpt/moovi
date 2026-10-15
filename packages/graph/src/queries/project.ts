@@ -305,8 +305,8 @@ RETURN count(c) AS n`),
 MATCH (:Run {id: $run})-[:HAS_CLAIM]->(c:Claim)
 WHERE coalesce(c.status, '') <> 'superseded'
 OPTIONAL MATCH (c)-[:SUPPORTED_BY]->(f:Fact)
-RETURN c.id AS id, c.beat AS beat, c.field AS field, c.text AS text, c.status AS status, c.reason AS reason, collect(f.id) AS facts
-ORDER BY c.beat, c.at`),
+RETURN c.id AS id, c.beat AS beat, c.field AS field, c.text AS text, c.status AS status, c.reason AS reason, c.at AS at, collect(f.id) AS facts
+ORDER BY beat, at`),
 
   /* ───── scenes and assets ───── */
   saveScene: q('saveScene', false, 'A Shot Builder’s scene program (a new version each write; the latest one counts).', `
