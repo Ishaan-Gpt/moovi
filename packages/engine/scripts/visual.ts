@@ -2,6 +2,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { config } from '../src/config';
 import { closeVisual, openFilm, renderFilm } from '../src/visual/capture';
+import { auditFilm, checkPlan } from '../src/visual/qa';
 import { planFilm } from '../src/visual/plan';
 import type { BeatIn } from '../src/visual/types';
 
@@ -32,7 +33,12 @@ writeFileSync(join(dir, 'plan.json'), JSON.stringify(plan, null, 1));
 console.log(`${plan.scenes.length} scenes, ${plan.seconds.toFixed(1)} s, ${format}/${theme}`);
 for (const s of plan.scenes) console.log(`  ${s.i} ${s.layout.padEnd(12)} ${s.elements.map(e => e.art).join(' + ')}  | ${s.ambient.join(' ')} | ${s.camera} ${s.transition ?? '-'}`);
 
-if (cmd === 'prof') {
+if (cmd === 'audit') {
+  const issues = checkPlan(plan, Number(process.env.ASKED) || undefined); console.log('plan checks:', issues.length ? issues : 'clean');
+  const sess = await openFilm(plan, { scale: 0.5 }), t0 = performance.now(); const a = await auditFilm(sess, plan); await sess.close();
+  console.log(`frame audit (${a.framesRendered} frames, ${((performance.now() - t0) / 1000).toFixed(1)} s):`, a.issues.length ? a.issues : 'clean');
+  console.log('motion per second:', a.perSecond.map(s => `${s.second}:${s.energy}`).join(' '));
+} else if (cmd === 'prof') {
   // every 10th frame of the whole film on one page: the per-scene cost (transitions included) and the average
   const sess = await openFilm(plan, { scale: Number(process.env.SCALE) || 0.6667 });
   const per = new Map<number, number[]>(); const total = Math.round(plan.seconds * plan.fps); let sum = 0, cnt = 0;
