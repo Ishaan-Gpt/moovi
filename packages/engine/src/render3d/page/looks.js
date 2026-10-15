@@ -32,19 +32,23 @@ function stage(p, bgFallback) {
 /* ───────── 1 · particle field ───────── */
 function particleField(p) {
   const { scene, camera } = stage(p, '#0E1A2B');
-  const r = rng(p.seed), N = p.count || 2600;
+  const r = rng(p.seed), N = p.count || 7000;
   const pos = new Float32Array(N * 3), base = new Float32Array(N * 3), phase = new Float32Array(N), colors = new Float32Array(N * 3);
-  const a = col(p.accent, '#CFE6F7'), b = col(p.accent2, '#2B67C6'), c = new THREE.Color();
+  const a = col(p.accent, '#CFE6F7'), b = col(p.accent2, '#2B67C6'), c = new THREE.Color(), ARMS = 3;
   for (let i = 0; i < N; i++) {
-    const rad = 2 + Math.pow(r(), 0.6) * 14, th = r() * Math.PI * 2, ph = Math.acos(2 * r() - 1);
-    base[i * 3] = rad * Math.sin(ph) * Math.cos(th); base[i * 3 + 1] = rad * Math.cos(ph) * 0.6; base[i * 3 + 2] = rad * Math.sin(ph) * Math.sin(th);
-    phase[i] = r() * Math.PI * 2; c.copy(a).lerp(b, r()); colors.set([c.r, c.g, c.b], i * 3);
+    // a spiral galaxy: three arms that wind outwards, thick near the core, with a loose halo
+    const halo = r() < 0.18, rad = halo ? 1 + r() * 15 : 0.6 + Math.pow(r(), 0.7) * 11;
+    const arm = Math.floor(r() * ARMS) * (Math.PI * 2 / ARMS), spread = (r() - 0.5) * (halo ? 6 : 1.1) * (0.35 + 0.1 * rad);
+    const th = halo ? r() * Math.PI * 2 : arm + rad * 0.42 + spread * 0.5;
+    base[i * 3] = Math.cos(th) * rad + (r() - 0.5) * 0.5; base[i * 3 + 2] = Math.sin(th) * rad + (r() - 0.5) * 0.5;
+    base[i * 3 + 1] = (r() - 0.5) * (halo ? 5 : 1.2) * Math.exp(-rad * 0.12) * 2;
+    phase[i] = r() * Math.PI * 2; c.copy(b).lerp(a, Math.exp(-rad * 0.28) * 0.9 + r() * 0.1); colors.set([c.r, c.g, c.b], i * 3);
   }
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
   const dot = document.createElement('canvas'); dot.width = dot.height = 64;
   { const g = dot.getContext('2d'), grad = g.createRadialGradient(32, 32, 0, 32, 32, 32); grad.addColorStop(0, '#fff'); grad.addColorStop(0.55, '#fff'); grad.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = grad; g.fillRect(0, 0, 64, 64); }
-  const pts = new THREE.Points(geo, new THREE.PointsMaterial({ map: new THREE.CanvasTexture(dot), alphaTest: 0.02, size: 0.16, vertexColors: true, transparent: true, opacity: 0.92, sizeAttenuation: true, depthWrite: false }));
+  const pts = new THREE.Points(geo, new THREE.PointsMaterial({ map: new THREE.CanvasTexture(dot), size: 0.2, vertexColors: true, transparent: true, opacity: 0.95, sizeAttenuation: true, depthWrite: false, blending: THREE.AdditiveBlending }));
   scene.add(pts);
   return {
     scene, camera,
@@ -55,8 +59,8 @@ function particleField(p) {
         pos[i * 3] = x * co - z * s; pos[i * 3 + 2] = x * s + z * co; pos[i * 3 + 1] = y + Math.sin(t * 1.3 + phase[i]) * 0.25;
       }
       geo.attributes.position.needsUpdate = true;
-      const d = 22 - ease(clamp01(k)) * 9;
-      camera.position.set(Math.sin(k * 1.2) * 3, 2.2 - k * 1.2, d); aim(camera, 0, 0, 0);
+      const d = 17 - ease(clamp01(k)) * 6;
+      camera.position.set(Math.sin(k * 1.2) * 3, 19 - k * 7, d); aim(camera, 0, 0, 0);
     },
   };
 }
