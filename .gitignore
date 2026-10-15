@@ -1,0 +1,32 @@
+node_modules/
+.next/
+.next-preview/
+out/
+dist/
+.env*
+!.env.example
+*.log
+.DS_Store
+.vercel
+
+# raw chat export: local only (it can contain tool output from the machine)
+docs/context/raw/
+
+# heavy 3D work files; ship optimised .glb only
+assets/character/work/
+*.blend1
+
+# studio: MotionEasy engine bundle, fonts, sounds and music beds (copied by `pnpm sync:motioneasy`)
+apps/studio/public/engine/
+apps/studio/public/media/
+# studio: style preview loops (cut from the owner's renders) and Style 1 brand assets (copied by `pnpm sync:styles`)
+apps/studio/public/styles/
+apps/studio/public/me/
+# the local bench's working folders (voice, timings, mixes)
+.bench/
+
+# engine + studio runtime data: users' uploads, runs, renders, vendored engine/SFX/music, FalkorDB backups (local only)
+/data/
+
+# extra Next build folders (second dev servers)
+.next-*/

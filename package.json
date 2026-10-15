@@ -1,0 +1,29 @@
+{
+  "name": "contenteasy",
+  "private": true,
+  "version": "0.1.0",
+  "description": "ContentEasy: hire Moovi, an AI video director who leads a visible crew of agents.",
+  "type": "module",
+  "packageManager": "pnpm@11.8.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev:playground": "pnpm --filter @contenteasy/playground dev",
+    "build": "pnpm -r --if-present build",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "dev:studio": "pnpm --filter @contenteasy/studio dev",
+    "dev:landing": "pnpm --filter @contenteasy/landing dev",
+    "graph:seed": "pnpm --filter @contenteasy/graph seed",
+    "graph:reset": "pnpm --filter @contenteasy/engine reset",
+    "craft:extract": "pnpm --filter @contenteasy/graph extract-craft",
+    "falkordb": "docker run -d --name moovi-falkordb -p 6380:6379 -p 3001:3000 -v moovi-falkordb:/var/lib/falkordb/data falkordb/falkordb:latest",
+    "dev:engine": "pnpm --filter @contenteasy/engine worker",
+    "engine:run": "pnpm --filter @contenteasy/engine run",
+    "test": "pnpm -r --if-present test",
+    "s1:make": "pnpm --filter @contenteasy/engine s1make",
+    "sync:vendor": "node packages/engine/scripts/sync-vendor.mjs",
+    "sync:style1": "node packages/library/scripts/sync-style1.mjs",
+    "s1:fast": "pnpm --filter @contenteasy/engine s1fast"
+  }
+}
