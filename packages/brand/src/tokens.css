@@ -1,0 +1,32 @@
+/* ContentEasy brand tokens. Keep in sync with src/index.ts */
+:root {
+  --ce-ice-white: #F7FAFD;
+  --ce-surface: #FFFFFF;
+  --ce-ice: #CFE6F7;
+  --ce-ice-soft: #E6F2FB;
+  --ce-deep-ice: #2B67C6;
+  --ce-ink: #0E1A2B;
+  --ce-ink-muted: #5B6B80;
+  --ce-hairline: #E3EBF3;
+  /* frost: light icy text for the landing, never black or navy. frost-ink 5.1:1 and frost-muted 3.8:1 on ice-white;
+     the display gradient runs light ice to soft sky blue, like Moovi's jelly letters */
+  --ce-frost-ink: #3F6E9F;
+  --ce-frost-muted: #4C76A3;
+  --ce-frost-hi: #A9D6F6;
+  --ce-frost-mid: #7DB7EA;
+  --ce-glacier: #5394DA;
+  --ce-ice-text: linear-gradient(172deg, var(--ce-frost-hi) 0%, var(--ce-frost-mid) 45%, var(--ce-glacier) 100%);
+  --ce-aurora-mint: #D2F5EC;
+  --ce-aurora-lilac: #E3DEFF;
+  /* semantic minors (studio states only, tiny areas): a claim the truth guard rejected, a check that passed */
+  --ce-signal: #C8463D;
+  --ce-signal-soft: #FBE9E7;
+  --ce-pass: #1F7A5A;
+
+  --ce-radius-sm: 8px;
+  --ce-radius-md: 12px;
+  --ce-radius-lg: 20px;
+
+  --ce-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ce-ease-jelly: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
