@@ -6,16 +6,17 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends ffmpeg chromium fonts-dejavu-core ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
-ENV NODE_ENV=production \
-    CE_CHROME_PATH=/usr/bin/chromium \
+ENV CE_CHROME_PATH=/usr/bin/chromium \
     CE_DATA_DIR=/data \
     NEXT_TELEMETRY_DISABLED=1
 
 RUN corepack enable
 WORKDIR /app
 COPY . .
-RUN pnpm install --frozen-lockfile \
+# dev dependencies too: the worker runs TypeScript through tsx, and the build needs the compilers
+RUN pnpm install --frozen-lockfile --prod=false \
  && pnpm --filter @contenteasy/studio build
+ENV NODE_ENV=production
 
 VOLUME ["/data"]
 EXPOSE 3100
