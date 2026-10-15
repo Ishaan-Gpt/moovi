@@ -89,7 +89,7 @@ export function payload(plan: VPlan, o: { scale?: number } = {}) {
   const rw = Math.round((W * scale) / 2) * 2, rh = Math.round((H * scale) / 2) * 2;
   const images = new Set<string>();
   const scenes = plan.scenes.map(s => ({
-    ...s, slots: slotsOf(s.layout, plan.format),
+    ...s, slots: slotsOf(s.layout, plan.format), backdrop: s.backdrop ? { ...s.backdrop, clip: dataUrl(s.backdrop.clip) } : null,
     elements: s.elements.map(e => { const c = { ...e.content }; if (c.image) { c.image = dataUrl(c.image); images.add(c.image); } if (c.clip) c.clip = dataUrl(c.clip); return { ...e, content: c }; }),
   }));
   return { cfg: { plan: { ...plan, scenes }, W, H, rw, rh, palette: paletteOf(plan.theme), fonts: FONTS, prof: !!process.env.VIS_PROF, images: [...images], art: Object.fromEntries(ARTIFACTS.map(a => [a.id, { kind: a.kind, glyph: a.glyph }])), bands: { caption: bands(plan.format).caption as Rect, hero: bands(plan.format).hero as Rect } }, rw, rh };

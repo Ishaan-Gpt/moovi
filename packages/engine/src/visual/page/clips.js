@@ -55,10 +55,18 @@ export function drawClip(g, clip, x, y, w, h, o = {}) {
 export function footagePanel(g, w, h, t, c, P) {
   const r = Math.min(34, h * 0.08);
   g.save(); roundRect(g, 0, 0, w, h, r); g.clip();
-  const ok = drawClip(g, c._vid, 0, 0, w, h, { zoom: 1.04 + 0.05 * clamp01(t / 6), pan: Math.sin(t * 0.35) * 0.6, panY: Math.cos(t * 0.27) * 0.5 });
+  const ok = drawClip(g, c._vid, 0, 0, w, h, { zoom: 1.04 + 0.05 * clamp01(t / 6), pan: Math.sin(t * 0.35) * 0.6, panY: Math.cos(t * 0.27) * 0.5 }) || drawPicture(g, c._img, 0, 0, w, h, t);
   if (!ok) { g.fillStyle = P.card; g.fillRect(0, 0, w, h); }
   const gr = g.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.25, w / 2, h / 2, Math.max(w, h) * 0.75); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,.28)'); g.fillStyle = gr; g.fillRect(0, 0, w, h);
   g.fillStyle = 'rgba(255,255,255,.35)'; g.fillRect(0, h - 5, w, 5); g.fillStyle = P.accent; g.fillRect(0, h - 5, w * ((t * 0.12) % 1), 5);
   g.restore();
   g.lineWidth = 3; g.strokeStyle = P.hair; roundRect(g, 0, 0, w, h, r); g.stroke();
+}
+
+/** a still picture in a box, covering it, with the slow push and drift that keep a poster alive */
+export function drawPicture(g, img, x, y, w, h, t) {
+  if (!img) return false;
+  const iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height, z = 1.06 + 0.06 * Math.sin(t * 0.3), s = Math.max(w / iw, h / ih) * z, dw = iw * s, dh = ih * s;
+  g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip(); g.drawImage(img, x + (w - dw) / 2 + Math.sin(t * 0.4) * (dw - w) * 0.3, y + (h - dh) / 2 + Math.cos(t * 0.33) * (dh - h) * 0.3, dw, dh); g.restore();
+  return true;
 }

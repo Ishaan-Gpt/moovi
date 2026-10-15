@@ -17,7 +17,7 @@ export type Kind = (typeof KINDS)[number];
 /** hero = fills the main slot; support = a second or third element; accent = small, beside the rest; ambient = behind everything */
 export type Role = 'hero' | 'support' | 'accent' | 'ambient';
 /** what the artifact needs from the scene to look right: nothing, an image (a site capture or a clip frame), numbers, a short list, or a title */
-export type Wants = 'none' | 'image' | 'clip' | 'numbers' | 'list' | 'title';
+export type Wants = 'none' | 'image' | 'clip' | 'photo' | 'numbers' | 'list' | 'title';
 
 export interface Artifact { id: string; kind: Kind; name: string; needs: Need[]; role: Role[]; wants: Wants; /** 1 cheap · 3 heavy to render */ cost: 1 | 2 | 3; glyph?: string }
 
@@ -41,6 +41,9 @@ export const ARTIFACTS: readonly Artifact[] = [
   // real footage: stock clips and screen recordings the footage agent and the researcher bring (an artifact only when a clip exists)
   { id: 'clip:panel', kind: 'clip', name: 'footage panel', needs: ['people', 'nature', 'home', 'travel', 'food', 'health', 'calm', 'emotion', 'hook', 'benefit', 'success', 'product'], role: ['hero', 'support'], wants: 'clip', cost: 1 },
   { id: 'clip:screen', kind: 'clip', name: 'screen recording in a window', needs: ['ui', 'product', 'tool', 'reveal', 'process', 'steps', 'build', 'cta'], role: ['hero', 'support'], wants: 'clip', cost: 1 },
+
+  // real pictures the crew already made: a map flight poster, a 3D render, a capture of the site
+  { id: 'img:poster', kind: 'clip', name: 'poster panel (map, 3D render or site capture)', needs: ['location', 'global', 'travel', 'scale', 'network', 'data', 'product', 'ui', 'reveal', 'brand'], role: ['hero', 'support'], wants: 'photo', cost: 1 },
 
   // UI cards
   { id: 'card:stat', kind: 'card', name: 'big-number stat card', needs: ['number', 'percent', 'growth', 'money', 'proof', 'claim'], role: ['hero', 'support'], wants: 'numbers', cost: 1 },
