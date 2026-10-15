@@ -44,6 +44,19 @@ window.__init = async cfg => {
 };
 
 /* ───────── the offscreen 3D renderer for the few real 3D objects ───────── */
+/**
+ * The picture of the last render as a 2D canvas. Copying a WebGL canvas with drawImage is not reliable here (the first copy
+ * in a page can show an earlier picture), so the pixels are read back, flipped and un-premultiplied: synchronous and exact.
+ */
+function objectPicture() {
+  const o = objectRenderer(), n = o.size, gl = o.r.getContext();
+  o.buf ??= new Uint8Array(n * n * 4); o.img ??= new ImageData(n, n); o.sc ??= cpu(n, n);
+  gl.readPixels(0, 0, n, n, gl.RGBA, gl.UNSIGNED_BYTE, o.buf);
+  const src = o.buf, dst = o.img.data;
+  for (let y = 0; y < n; y++) { let s = (n - 1 - y) * n * 4, d = y * n * 4; for (let x = 0; x < n; x++, s += 4, d += 4) { const a = src[s + 3]; if (a === 255) { dst[d] = src[s]; dst[d + 1] = src[s + 1]; dst[d + 2] = src[s + 2]; } else if (a === 0) { dst[d] = dst[d + 1] = dst[d + 2] = 0; } else { const k = 255 / a; dst[d] = Math.min(255, src[s] * k); dst[d + 1] = Math.min(255, src[s + 1] * k); dst[d + 2] = Math.min(255, src[s + 2] * k); } dst[d + 3] = a; } }
+  o.sc.g.putImageData(o.img, 0, 0);
+  return o.sc.c;
+}
 function objectRenderer() {
   if (S.obj) return S.obj;
   const size = Math.round(Math.min(768, Math.max(320, S.rw * 0.62)));
@@ -141,13 +154,14 @@ function paintElement(g, e, p) {
   g.save(); g.translate(p.cx, p.cy); g.rotate(-p.rz); g.transform(p.a * p.sc, p.b * p.sc, p.c * p.sc, p.d * p.sc, 0, 0); g.globalAlpha = p.alpha;
   if (e.shadow) { const s = shadowSprite(w, h, e.radius); g.globalAlpha = p.alpha * (S.P.dark ? 0.55 : 0.24); g.drawImage(s.c, -w / 2 - s.m, -h / 2 - s.m + h * 0.05, w + 2 * s.m, h + 2 * s.m); g.globalAlpha = p.alpha; }
   if (e.draw) {
-    const cv = e.cv; cv.g.setTransform(1, 0, 0, 1, 0, 0); cv.g.clearRect(0, 0, cv.c.width, cv.c.height); cv.g.setTransform(cv.c.width / w, 0, 0, cv.c.height / h, 0, 0);
-    e.draw(cv.g, w, h, Math.max(0, p.tl));
+    // every draw starts from the default canvas state (text alignment, baseline, line widths…): a frame must not depend on the one before
+    const cv = e.cv; cv.g.save(); cv.g.setTransform(1, 0, 0, 1, 0, 0); cv.g.clearRect(0, 0, cv.c.width, cv.c.height); cv.g.setTransform(cv.c.width / w, 0, 0, cv.c.height / h, 0, 0);
+    e.draw(cv.g, w, h, Math.max(0, p.tl)); cv.g.restore();
     g.imageSmoothingQuality = 'medium'; g.drawImage(cv.c, -w / 2, -h / 2, w, h);
   } else if (e.three) {
     const o = objectRenderer(); e.three.update(Math.max(0, p.tl));
     o.r.render(e.three.scene, e.three.cam);
-    g.drawImage(o.r.domElement, -w / 2, -h / 2, w, h);
+    g.drawImage(objectPicture(), -w / 2, -h / 2, w, h);
   }
   g.restore();
 }
@@ -216,6 +230,7 @@ function drawLeaders(g, sc, local) {
 /* ───────── a scene, a transition, a frame ───────── */
 function paintScene(cv, i, t) {
   const sc = buildScene(i), vs = sc.vs, local = t - vs.start, g = cv.g, k = S.k;
+  g.save();
   const cam = cameraFx(vs.camera, local, vs.end - vs.start + TRANSITION_S, S.W, S.H, S.Z0);
   const ag = S.amb.g; ag.setTransform(1, 0, 0, 1, 0, 0); ag.globalAlpha = 1; ag.drawImage(S.bg.c, 0, 0); ag.setTransform(k * AMB, 0, 0, k * AMB, 0, 0);
   sc.ambient.forEach((a, j) => T('ambient:' + vs.ambient[j], () => { ag.save(); a.draw(ag, local, cam); ag.restore(); }));
@@ -223,7 +238,7 @@ function paintScene(cv, i, t) {
   g.setTransform(k, 0, 0, k, 0, 0);
   for (const e of sc.els) { const p = pose(e, vs, t, cam); e.cur = p; if (p) T('el:' + e.el.art, () => paintElement(g, e, p)); }
   T('leaders+type', () => { drawLeaders(g, sc, local); drawType(g, sc, local); });
-  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.restore();
   return sc;
 }
 

@@ -4,7 +4,7 @@
 import { clamp01, col, ease, hash, mix, rgba, rng } from './util.js';
 
 const sprite = (size, stops) => {
-  const c = document.createElement('canvas'); c.width = c.height = size; const g = c.getContext('2d'), r = size / 2, gr = g.createRadialGradient(r, r, 0, r, r, r);
+  const c = document.createElement('canvas'); c.width = c.height = size; const g = c.getContext('2d', { willReadFrequently: true }), r = size / 2, gr = g.createRadialGradient(r, r, 0, r, r, r);
   for (const [o, a] of stops) gr.addColorStop(o, a); g.fillStyle = gr; g.fillRect(0, 0, size, size); return c;
 };
 const cache = new Map();
@@ -42,6 +42,7 @@ export const BG = {
   },
   blobs(P, box, seed) {
     const r = rng(seed), items = [0, 1, 2].map(i => ({ hex: [P.soft, P.accent2, P.card][i], x: r() * box.W, y: r() * box.H * 0.8, s: box.W * (0.6 + r() * 0.4), sp: 0.15 + r() * 0.3, ph: r() * 6 }));
+    for (const b of items) tinted(b.hex, 'blob');
     return { depth: -700, draw(g, t, cam) { const o = par(cam, -700); for (const b of items) { g.globalAlpha = P.dark ? 0.34 : 0.5; const x = b.x + Math.sin(t * b.sp + b.ph) * box.W * 0.18 + o.x, y = b.y + Math.cos(t * b.sp * 0.9 + b.ph) * box.H * 0.1 + o.y; g.drawImage(tinted(b.hex, 'blob'), x - b.s / 2, y - b.s / 2, b.s, b.s); } g.globalAlpha = 1; } };
   },
 };
@@ -65,6 +66,7 @@ export const FX = {
   },
   bokeh(P, box, seed) {
     const r = rng(seed), items = Array.from({ length: 11 }, (_, i) => ({ hex: [P.soft, P.accent2, P.accent][i % 3], x: r() * box.W, y: r() * box.H, s: 90 + r() * 240, sp: 0.2 + r() * 0.5, ph: r() * 6.28, rad: 30 + r() * 110, a: 0.2 + r() * 0.25 }));
+    for (const b of items) tinted(b.hex, 'bokeh');
     return { depth: -600, draw(g, t, cam) { const o = par(cam, -600); for (const b of items) { g.globalAlpha = b.a; const x = b.x + Math.cos(t * b.sp + b.ph) * b.rad + o.x, y = (b.y + Math.sin(t * b.sp * 0.8 + b.ph) * b.rad - t * 12 + box.H * 4) % (box.H + b.s) - b.s / 2 + o.y; g.drawImage(tinted(b.hex, 'bokeh'), x - b.s / 2, y - b.s / 2, b.s, b.s); } g.globalAlpha = 1; } };
   },
   rain(P, box, seed) {
@@ -73,6 +75,7 @@ export const FX = {
   },
   aurora(P, box, seed) {
     const blobs = [[P.accent2, 0], [P.soft, 2.1]];
+    for (const [hex] of blobs) tinted(hex, 'aurora');
     return { depth: -1000, draw(g, t, cam) { const o = par(cam, -1000); if (P.dark) g.globalCompositeOperation = 'lighter'; blobs.forEach(([hex, ph], i) => { g.globalAlpha = (P.dark ? 0.46 : 0.4) + Math.sin(t * 0.9 + ph) * 0.1; const w = box.W * 1.2, h = box.H * 0.5, x = box.W / 2 + Math.sin(t * 0.35 + ph) * box.W * 0.3 + o.x, y = box.H * (0.3 + i * 0.22) + Math.cos(t * 0.27 + ph * 1.3) * box.H * 0.1 + o.y; g.save(); g.translate(x, y); g.rotate(Math.sin(t * 0.2 + ph) * 0.4); g.drawImage(tinted(hex, 'aurora'), -w / 2, -h / 2, w, h); g.restore(); }); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; } };
   },
   spot(P, box, seed) {
@@ -82,6 +85,7 @@ export const FX = {
     return { depth: -700, draw(g, t, cam) { const o = par(cam, -700); g.lineWidth = 4; for (let i = 0; i < 3; i++) { const f = (t * 0.28 + i / 3) % 1; g.strokeStyle = rgba(P.accent2, 0.5 * (1 - f)); g.beginPath(); g.arc(box.W / 2 + o.x, box.H * 0.32 + o.y, box.W * (0.18 + f * 0.6), 0, Math.PI * 2); g.stroke(); } } };
   },
   sun(P, box, seed) {
+    tinted('#F5B73B', 'sun'); tinted(P.accent2, 'sun2');
     return { depth: -900, draw(g, t, cam) { const o = par(cam, -900); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.5 + Math.sin(t * 1.1) * 0.08; const s = box.W * 1.1; g.drawImage(tinted('#F5B73B', 'sun'), box.W * 0.72 + Math.sin(t * 0.3) * box.W * 0.25 - s / 2 + o.x, box.H * 0.18 + Math.cos(t * 0.4) * 50 - s / 2 + o.y, s, s); g.globalAlpha = 0.35; const s2 = box.W * 0.7; g.drawImage(tinted(P.accent2, 'sun2'), box.W * 0.2 - Math.sin(t * 0.25) * box.W * 0.2 - s2 / 2 + o.x, box.H * 0.4 - s2 / 2 + o.y, s2, s2); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; } };
   },
 };

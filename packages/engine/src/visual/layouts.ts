@@ -13,9 +13,9 @@ export interface Slot { id: string; cx: number; cy: number; w: number; h: number
 /** The caption band and the visual area, in frame pixels, per format. Nothing but ambient layers may cross the band. */
 export function bands(f: FormatId): { caption: Rect; area: Rect; safeBottom: number } {
   const { W, H } = FORMATS[f];
-  if (f === 'vertical') return { caption: { x: 0.06 * W, y: 0.60 * H, w: 0.88 * W, h: 0.2 * H }, area: { x: 0.04 * W, y: 0.05 * H, w: 0.92 * W, h: 0.53 * H }, safeBottom: 0.86 * H };
-  if (f === 'square') return { caption: { x: 0.06 * W, y: 0.62 * H, w: 0.88 * W, h: 0.2 * H }, area: { x: 0.04 * W, y: 0.04 * H, w: 0.92 * W, h: 0.55 * H }, safeBottom: 0.9 * H };
-  return { caption: { x: 0.08 * W, y: 0.72 * H, w: 0.84 * W, h: 0.17 * H }, area: { x: 0.05 * W, y: 0.05 * H, w: 0.9 * W, h: 0.64 * H }, safeBottom: 0.93 * H };
+  if (f === 'vertical') return { caption: { x: 0.06 * W, y: 0.60 * H, w: 0.88 * W, h: 0.2 * H }, area: { x: 0.04 * W, y: 0.045 * H, w: 0.92 * W, h: 0.5 * H }, safeBottom: 0.86 * H };
+  if (f === 'square') return { caption: { x: 0.06 * W, y: 0.62 * H, w: 0.88 * W, h: 0.2 * H }, area: { x: 0.04 * W, y: 0.04 * H, w: 0.92 * W, h: 0.5 * H }, safeBottom: 0.9 * H };
+  return { caption: { x: 0.08 * W, y: 0.72 * H, w: 0.84 * W, h: 0.17 * H }, area: { x: 0.05 * W, y: 0.05 * H, w: 0.9 * W, h: 0.59 * H }, safeBottom: 0.93 * H };
 }
 
 export const LAYOUT_IDS = ['hero', 'split-stack', 'split-side', 'pip', 'triptych', 'cascade', 'callouts', 'orbit', 'wall'] as const;
