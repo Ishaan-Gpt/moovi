@@ -1,0 +1,37 @@
+# Everything Moovi needs on one machine: FalkorDB (memory), the studio (web) and the engine worker (makes the films).
+#   cp .env.example .env   # set CE_SECRET (and optionally a server model key)
+#   docker compose up -d --build
+#   open http://localhost:3100/studio
+services:
+  falkordb:
+    image: falkordb/falkordb:6.0.2
+    restart: unless-stopped
+    volumes: [falkordb:/var/lib/falkordb/data]
+    environment:
+      REDIS_ARGS: --appendonly yes
+
+  studio:
+    build: .
+    restart: unless-stopped
+    depends_on: [falkordb]
+    ports: ["3100:3100"]
+    env_file: [.env]
+    environment:
+      FALKORDB_URL: falkor://falkordb:6379
+      CE_DATA_DIR: /data
+    volumes: [data:/data]
+
+  worker:
+    build: .
+    restart: unless-stopped
+    depends_on: [falkordb]
+    command: ["pnpm", "--filter", "@contenteasy/engine", "exec", "tsx", "scripts/worker.ts"]
+    env_file: [.env]
+    environment:
+      FALKORDB_URL: falkor://falkordb:6379
+      CE_DATA_DIR: /data
+    volumes: [data:/data]
+
+volumes:
+  falkordb:
+  data:

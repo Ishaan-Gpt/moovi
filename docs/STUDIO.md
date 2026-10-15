@@ -34,8 +34,8 @@ landing :3000 ──(rewrites /studio/*)──► studio :3100 (Next 16, basePat
                                 engine worker (packages/engine): scheduler + agents + workers
                                     │ tools                                   │ state
                        render pool (headless Chrome +                FalkorDB (graphs) + Redis (same server)
-                       the MotionEasy bundle) · bench (MotionEasy
-                       Python CLIs + ffmpeg)
+                       the bundled renderer) · audio (TypeScript:
+                       edge-tts voice, SFX + bed mixer) + ffmpeg
 ```
 
 - The studio never runs agents. It writes your message into the project graph, sends the engine a command, and
@@ -236,7 +236,6 @@ check, not a hand fix.
 pnpm install
 pnpm falkordb          # FalkorDB on :6380 (Docker)
 pnpm graph:reset       # drop and re-seed the style-only craft graph
-pnpm sync:vendor       # snapshot the MotionEasy renderer bundle into data/vendor (re-run to take a newer build)
 pnpm dev:engine        # the engine worker
 pnpm --dir apps/studio dev     # the studio on :3100 (also reachable through the landing's /studio rewrite)
 ```
