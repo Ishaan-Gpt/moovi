@@ -1,0 +1,46 @@
+{
+  "name": "@contenteasy/engine",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The engine: a graph-backed task scheduler, the crew's agents (each a tool loop with its own done-check), the workers (voice, render, sound) and the event bus the studio watches.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./bus": "./src/bus.ts",
+    "./events": "./src/events.ts",
+    "./commands": "./src/commands.ts",
+    "./styles": "./src/styles/index.ts",
+    "./styles/serve": "./src/styles/serve.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "tsx --test test/*.test.ts",
+    "reset": "tsx --env-file-if-exists=../../.env.local scripts/reset.ts",
+    "worker": "tsx --env-file-if-exists=../../.env.local scripts/worker.ts",
+    "run": "tsx --env-file-if-exists=../../.env.local scripts/run.ts",
+    "s1make": "tsx --env-file-if-exists=../../.env.local scripts/s1make.ts",
+    "s1fast": "tsx --env-file-if-exists=../../.env.local scripts/s1fast.ts",
+    "s1preview": "tsx scripts/s1preview.ts",
+    "s1templates": "tsx scripts/s1templates.ts",
+    "s1url": "tsx --env-file-if-exists=../../.env.local scripts/s1url.ts",
+    "s4": "tsx --env-file-if-exists=../../.env.local scripts/s4.ts",
+    "s5": "tsx --env-file-if-exists=../../.env.local scripts/s5.ts",
+    "darkvox": "tsx --env-file-if-exists=../../.env.local scripts/darkvox.ts",
+    "anatomy": "tsx --env-file-if-exists=../../.env.local scripts/anatomy.ts",
+    "style-bench": "tsx --env-file-if-exists=../../.env.local scripts/style-bench.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "0.3.296",
+    "@contenteasy/graph": "workspace:*",
+    "@contenteasy/skills": "workspace:*",
+    "playwright-core": "1.56.1",
+    "redis": "5.12.1",
+    "zod": "4.6.6",
+    "@contenteasy/library": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.0",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3"
+  }
+}
