@@ -68,13 +68,13 @@ LIMIT $n
 
 ### `rateArtifacts` (write)
 
-The frame critic scored scenes: each artifact in them gets the score folded into its running mean (rating, films).
+The frame critic scored scenes: each artifact gets its scenes’ scores (summed per artifact: sum, n) folded into its running mean (rating, films).
 
 ```cypher
 UNWIND $rows AS r
 MATCH (a:Artifact {id: r.id})
 WITH a, r, coalesce(a.films, 0) AS f, coalesce(a.ratingSum, 0.0) AS sm
-SET a.films = f + 1, a.ratingSum = sm + r.score, a.rating = (sm + r.score) / (f + 1)
+SET a.films = f + r.n, a.ratingSum = sm + r.sum, a.rating = (sm + r.sum) / (f + r.n)
 RETURN count(a) AS rated
 ```
 
@@ -86,7 +86,7 @@ The same for the layouts: a (Layout) node per layout id with its running mean sc
 UNWIND $rows AS r
 MERGE (l:Layout {id: r.id})
 WITH l, r, coalesce(l.films, 0) AS f, coalesce(l.ratingSum, 0.0) AS sm
-SET l.films = f + 1, l.ratingSum = sm + r.score, l.rating = (sm + r.score) / (f + 1)
+SET l.films = f + r.n, l.ratingSum = sm + r.sum, l.rating = (sm + r.sum) / (f + r.n)
 RETURN count(l) AS rated
 ```
 
@@ -1567,7 +1567,6 @@ A scene is cast again: its old USES_ARTIFACT edges go before the new picks are s
 ```cypher
 MATCH (:Scene {id: $scene})-[u:USES_ARTIFACT]->(:Artifact)
 DELETE u
-RETURN count(u) AS cleared
 ```
 
 ### `scoreScene` (write)

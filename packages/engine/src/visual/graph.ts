@@ -53,15 +53,17 @@ import type { SceneScore } from './critic';
  * craft graph (what the art director reads the next time).
  */
 export async function storeScores(project: Rows, craft: Rows, run: string, plan: VPlan, scores: SceneScore[], at = Date.now()): Promise<void> {
-  const art: { id: string; score: number }[] = [], lay: { id: string; score: number }[] = [];
+  // one row per artifact and per layout (the scores of all its scenes summed): a node must not be hit by several rows of one UNWIND
+  const art = new Map<string, { id: string; sum: number; n: number }>(), lay = new Map<string, { id: string; sum: number; n: number }>();
+  const add = (m: typeof art, id: string, score: number) => { const r = m.get(id) ?? { id, sum: 0, n: 0 }; r.sum += score; r.n++; m.set(id, r); };
   for (const sc of scores) {
     const s = plan.scenes[sc.scene]!;
     await project(P.scoreScene, { scene: `${run}:scene:${sc.scene}`, score: sc.score, footage: sc.parts.footage, motion: sc.parts.motion, depth: sc.parts.depth, layers: sc.parts.layers, richness: sc.parts.richness, clean: sc.parts.clean, at });
-    for (const id of new Set([...s.elements.map(e => e.art), ...s.ambient])) art.push({ id, score: sc.score });
-    lay.push({ id: s.layout, score: sc.score });
+    for (const id of new Set([...s.elements.map(e => e.art), ...s.ambient])) add(art, id, sc.score);
+    add(lay, s.layout, sc.score);
   }
-  if (art.length) await craft(C.rateArtifacts, { rows: art });
-  if (lay.length) await craft(C.rateLayouts, { rows: lay });
+  if (art.size) await craft(C.rateArtifacts, { rows: [...art.values()] });
+  if (lay.size) await craft(C.rateLayouts, { rows: [...lay.values()] });
 }
 
 /** What earlier films' scores say, as the planner wants it. */

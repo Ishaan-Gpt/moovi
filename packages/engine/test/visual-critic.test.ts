@@ -72,9 +72,12 @@ test('scores are stored per scene, per artifact and per layout, and read back as
   const rows = ((q: { name: string }, p: Record<string, unknown> = {}) => { sent.push({ name: q.name, params: p }); return Promise.resolve([]); }) as never;
   await storeScores(rows, rows, 'run_1', plan, scores, 7);
   assert.equal(sent.filter(s => s.name === 'scoreScene').length, plan.scenes.length);
-  const art = sent.find(s => s.name === 'rateArtifacts')!.params.rows as { id: string; score: number }[], lay = sent.find(s => s.name === 'rateLayouts')!.params.rows as { id: string; score: number }[];
-  assert.ok(art.length >= plan.scenes.length * 3 && lay.length === plan.scenes.length);
-  assert.ok(art.every(r => r.score >= 0 && r.score <= 10));
+  const art = sent.find(s => s.name === 'rateArtifacts')!.params.rows as { id: string; sum: number; n: number }[], lay = sent.find(s => s.name === 'rateLayouts')!.params.rows as { id: string; sum: number; n: number }[];
+  assert.equal(new Set(art.map(r => r.id)).size, art.length, 'one row per artifact');
+  assert.equal(new Set(lay.map(r => r.id)).size, lay.length, 'one row per layout');
+  assert.equal(art.reduce((a, r) => a + r.n, 0), plan.scenes.reduce((a, s) => a + new Set([...s.elements.map(e => e.art), ...s.ambient]).size, 0), 'every artifact of every scene is counted once');
+  assert.equal(lay.reduce((a, r) => a + r.n, 0), plan.scenes.length);
+  assert.ok(art.every(r => r.sum / r.n >= 0 && r.sum / r.n <= 10));
   const r = await loadRatings(((q: { name: string }) => Promise.resolve(q.name === 'artifactRatings' ? [{ id: 'chart:bars', mean: 8, n: 4 }] : [{ id: 'hero', mean: 6, n: 2 }])) as never);
   assert.deepEqual(r, { artifacts: { 'chart:bars': { mean: 8, n: 4 } }, layouts: { hero: { mean: 6, n: 2 } } });
 });

@@ -376,7 +376,7 @@ RETURN a.id AS id`),
   clearArtifacts: q('clearArtifacts', false, 'A scene is cast again: its old USES_ARTIFACT edges go before the new picks are stored.', `
 MATCH (:Scene {id: $scene})-[u:USES_ARTIFACT]->(:Artifact)
 DELETE u
-RETURN count(u) AS cleared`),
+`),
 
   scoreScene: q('scoreScene', false, 'The frame critic’s verdict on a scene: its score and the parts it is made of (footage, motion, depth, layers, richness, clean).', `
 MATCH (s:Scene {id: $scene})

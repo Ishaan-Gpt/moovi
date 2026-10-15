@@ -6,6 +6,10 @@ Every second of a film moves, every scene has several things on screen at differ
 ![Dark, vertical](img/visual-dark.jpg)
 ![Light, landscape](img/visual-landscape.jpg)
 
+All ten layouts, forced on the same beat:
+
+![The layouts](img/visual-layouts.jpg)
+
 ## What a film is
 
 `script lines + the voice's word times → beats → planFilm → a plan (JSON) → frames → mp4`
