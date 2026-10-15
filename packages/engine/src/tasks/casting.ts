@@ -1,7 +1,7 @@
 import { projectGraph, voice as V, write } from '@moovi/graph';
 import type { Features } from '@moovi/skills';
 import { z } from 'zod';
-import { rankVoices, rateFor, readWish, reasonFor, type VoiceMemory } from '../audio/cast';
+import { fitRate, rankVoices, rateFor, readWish, reasonFor, type VoiceMemory } from '../audio/cast';
 import type { LineStats } from '../audio/lines';
 import { describeVoice, type VoiceInfo } from '../audio/voices';
 import { config } from '../config';
@@ -58,7 +58,9 @@ export async function castFor(ctx: TaskCtx, S: Script, adjust: (c: Cast) => Cast
       if (hit) { pick = hit; by = 'model'; reason = `${r.reason} (${reasonFor(wish, hit)})`; }
     } catch (e) { console.warn(`[voice] cast: the model did not choose (${String(e).slice(0, 120)}); the ranking's first pick stands`); }
   }
-  const rate = rateFor(wish, pick.voice);
+  // the voice's own pace, quickened when the script would otherwise run past the length the brief asked for
+  const words = S.beats.reduce((n, b) => n + b.say.split(/\s+/).filter(Boolean).length, 0);
+  const rate = fitRate(rateFor(wish, pick.voice), words, B?.seconds);
   const cast: Cast = adjust({ voice: pick.voice, rate, reason, by, shortlist: top.map(t => t.voice.id), engine: config.voice.engine, ms: Date.now() - t0 });
   const x = cast.voice;
   await ctx.q(V.castVoice, {

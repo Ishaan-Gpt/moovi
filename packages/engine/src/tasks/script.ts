@@ -59,7 +59,8 @@ export const script: Handler = async ctx => {
   const isTranscript = !!transcript;
   const spoken = isTranscript ? readJson<Word[]>(transcript.words).map(w => w.word).join(' ') : '';
   const nBeats = isTranscript ? Math.max(3, Math.min(12, Math.round(transcript.seconds / 5))) : B.seconds <= 22 ? 5 : B.seconds <= 32 ? 6 : 7;
-  const targetWords = Math.round(B.seconds * 2.7);
+  // 2.4 words a second: the voice's natural pace plus the headroom the Voice Director can add (audio/cast.ts fitRate)
+  const targetWords = Math.round(B.seconds * 2.4);
   const roles = ['hook', 'story', 'list', 'proof', 'turn', 'brand', 'cta', 'end'] as const;
   const fb = ctx.task.feedback ?? ctx.input<{ feedback?: string }>().feedback ?? null;
   const prevScript = fb ? ctx.input<{ previousScript?: Script }>().previousScript ?? null : null;
@@ -97,7 +98,7 @@ export const script: Handler = async ctx => {
         if (B.cta.kind !== 'none' && s.beats.at(-1)?.role !== 'cta') errs.push('The last beat must be the cta.');
         if (s.beats.length < nBeats - 1 || s.beats.length > nBeats + 1) errs.push(`Write ${nBeats} beats (±1); you wrote ${s.beats.length}.`);
         const total = s.beats.reduce((n, b) => n + b.say.split(/\s+/).length, 0);
-        if (total < targetWords * 0.7 || total > targetWords * 1.3) errs.push(`About ${targetWords} words for ${B.seconds} s; you wrote ${total}.`);
+        if (total < targetWords * 0.8 || total > targetWords * 1.1) errs.push(`About ${targetWords} words for ${B.seconds} s; you wrote ${total}.`);
         for (const [i, b] of s.beats.entries()) if (b.say.split(/\s+/).length > 30) errs.push(`beat ${i + 1} is ${b.say.split(/\s+/).length} words; at most 30.`);
         const clash = used.find(u => u.angle && kit.lcs([...new Set(u.angle.toLowerCase().split(/\W+/))], [...new Set(s.angle.toLowerCase().split(/\W+/))]).length >= 0.6 * Math.min(u.angle.split(/\W+/).length, s.angle.split(/\W+/).length));
         if (clash) errs.push(`The angle is too close to one this user already used ("${clash.angle}").`);

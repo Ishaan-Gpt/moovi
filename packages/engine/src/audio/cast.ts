@@ -157,6 +157,25 @@ export function rateFor(w: VoiceWish, x: VoiceInfo): string {
   return `${pct >= 0 ? '+' : ''}${pct}%`;
 }
 
+/**
+ * Edge's neural voices speak about 2.0 words a second at +0% (measured on this library: 75 words took 39.3 s at +0%,
+ * 98 words took 44.5 s at +10%).
+ */
+export const EDGE_WORDS_PER_SECOND = 2.0;
+
+/**
+ * The rate that lands the script inside the length the brief asked for: the voice's own pace (rateFor) unless the
+ * script needs faster, capped at +35% because Edge voices sound rushed beyond it. Without a target length the
+ * voice's own pace stands.
+ */
+export function fitRate(rate: string, words: number, seconds: number | undefined, maxPct = 35): string {
+  const own = Number(/^([+-]?\d+)%$/.exec(rate)?.[1] ?? 0);
+  if (!seconds || seconds <= 0 || words <= 0) return rate;
+  const need = Math.ceil((words / (seconds * EDGE_WORDS_PER_SECOND) - 1) * 100);
+  const pct = Math.min(Math.max(own, maxPct), Math.max(own, need));
+  return `${pct >= 0 ? '+' : ''}${pct}%`;
+}
+
 /** One plain sentence on why this voice, from what was heard and what matched. */
 export function reasonFor(w: VoiceWish, r: Ranked): string {
   const x = r.voice;
