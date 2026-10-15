@@ -290,6 +290,12 @@ async function prepare(n) {
     if (sc.backdrop) { await sc.backdrop.vid.ready; await seekClip(sc.backdrop.vid, sc.backdrop.at + Math.max(0, t - sc.vs.start)); }
     for (const e of sc.els) if (e.vid) { await e.vid.ready; await seekClip(e.vid, (e.el.content.clipAt ?? 0) + Math.max(0, t - sc.vs.start - e.el.at)); }
   }
+  // a long film must not keep every scene it has ever shown: scenes away from this frame are dropped (and rebuilt if asked for again)
+  if (S.built.size > 4) for (const [i, sc] of [...S.built]) if (Math.abs(i - cur) > 1) {
+    for (const e of sc.els) if (e.vid) { e.vid.v.removeAttribute('src'); e.vid.v.load(); e.vid.v.remove(); }
+    if (sc.backdrop) { sc.backdrop.vid.v.removeAttribute('src'); sc.backdrop.vid.v.load(); sc.backdrop.vid.v.remove(); }
+    S.built.delete(i);
+  }
 }
 
 window.__frame = async (n, fmt) => {
