@@ -4,6 +4,10 @@
 
 From the makers of MotionEasy and CaptionsEasy.
 
+**Live:** https://moovi-three.vercel.app (the studio is at `/studio`; bring your own Gemini, Groq or other model key).
+The landing page runs on Vercel; the studio, the film-making worker and FalkorDB run on one AWS server
+(`docs/DEPLOY.md`). Every push to `main` redeploys the landing page.
+
 ## Repository
 
 ```
