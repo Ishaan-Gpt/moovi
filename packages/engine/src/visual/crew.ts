@@ -39,6 +39,8 @@ export const visualBuild: Handler = async ctx => {
   const card = (ctx.run.card ?? (await ctx.out<{ world?: string }>('card'))) as { world?: string } | null;
   // the real picture of the brand's site, when the Asset Hunter found one: browser mockups and the brand tile use it
   const site = (await ctx.outs<AssetOut>('asset')).map(([, a]) => a).find(a => a && !a.none && a.path && a.kind === 'capture')?.path ?? null;
+  // the brand's mark, when the Asset Hunter found one (the Style 1 corners are logos or icons)
+  const logo = (await ctx.outs<AssetOut>('asset')).map(([, a]) => a).find(a => a && !a.none && a.path && (a.kind === 'logo' || (a.id === 'corner0' && a.kind !== 'drawn')))?.path ?? null;
   // the footage agent's clips and the researcher's scroll captures arrive as assets (kind footage / scroll): they go on screens and panels
   const clips = await Promise.all((await ctx.outs<AssetOut>('asset')).map(([, a]) => a).filter(a => a && !a.none && a.path && (a.kind === 'footage' || a.kind === 'scroll')).map(async a => ({ path: a.path, kind: a.kind as 'footage' | 'scroll', seconds: await probe(a.path).then(p => p.duration || 8).catch(() => 8) })));
   // the map and 3D posters the crew already made, and captures of the site, become poster panels
@@ -50,7 +52,7 @@ export const visualBuild: Handler = async ctx => {
   const rows = ((q: never, p: Record<string, unknown> = {}) => ctx.q(q, p)) as never;
   const used = await artifactUsage(rows).catch(() => ({}));
   const ratings = await loadRatings().catch(() => undefined);
-  const opts: PlanOptions = { format: fmt, fps: 30, theme: card?.world === 'dark' ? 'dark' : 'light', seed: hashSeed(ctx.run.id), image: site, clips, photos, brand: B?.product ?? null, used, prior, ratings, picks: BD?.shots.map(s => s.stage ?? null) };
+  const opts: PlanOptions = { format: fmt, fps: 30, theme: card?.world === 'dark' ? 'dark' : 'light', seed: hashSeed(ctx.run.id), image: site, logo, clips, photos, brand: B?.product ?? null, used, prior, ratings, picks: BD?.shots.map(s => s.stage ?? null) };
   const plan = planFilm(beats, opts);
   const stored = await storePicks(rows, ctx.run.id, plan);
   const dir = ensureDir(join(ctx.dir, 'visual')), file = join(dir, 'plan.json');

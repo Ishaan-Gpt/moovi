@@ -17,6 +17,8 @@ export interface PlanOptions {
   seed?: number;
   /** a capture of the brand's site or a clip frame (a path in the data dir): browser mockups and brand tiles use it */
   image?: string | null;
+  /** the brand's mark (the Asset Hunter's logo): the orbiting brand tile shows it instead of the site capture */
+  logo?: string | null;
   /** real footage the footage agent and the researcher brought: stock clips, scroll captures, screen recordings (paths in the data dir) */
   clips?: { path: string; kind: 'footage' | 'scroll' | 'recording'; seconds?: number }[];
   /** pictures the crew already made (map and 3D posters, captures of the site): they go in poster panels */
@@ -157,7 +159,7 @@ function layoutFor(needs: Set<Need>, seed: number, i: number, recent: LayoutId[]
   return [...from].sort((a, b) => rank(b) - rank(a))[0]!;
 }
 
-function contentFor(a: Artifact, text: string, nums: number[], c: { image?: string | null; brand?: string | null }, role: 'main' | 'other', variant: number, clip: { path: string; kind: 'footage' | 'scroll' | 'recording'; at: number } | null, photo: string | null = null): Content {
+function contentFor(a: Artifact, text: string, nums: number[], c: { image?: string | null; logo?: string | null; brand?: string | null }, role: 'main' | 'other', variant: number, clip: { path: string; kind: 'footage' | 'scroll' | 'recording'; at: number } | null, photo: string | null = null): Content {
   // a scene's elements do not all say the same words: the main one takes the headline phrase, the others a clause or the key words each
   text = noThousands(text);
   const clauses = text.split(/[,;:.!?]|\s[-–—]\s/).map(s => s.trim()).filter(s => s.length > 2);
@@ -170,7 +172,7 @@ function contentFor(a: Artifact, text: string, nums: number[], c: { image?: stri
     case 'chart': return { title, numbers: nums.length ? nums : undefined };
     case 'device': return { title, items: rot, image: a.wants === 'image' ? c.image ?? undefined : role === 'main' ? c.image ?? undefined : undefined, ...(clip && (a.id === 'device:phone' || a.id === 'device:browser') ? { clip: clip.path, clipKind: clip.kind, clipAt: clip.at } : {}), numbers: nums.length ? nums : undefined };
     case 'card': return { title, items: rot.slice(0, 4), numbers: nums.length ? nums : undefined };
-    case 'object3d': return { title: c.brand ?? title, image: a.wants === 'image' ? c.image ?? undefined : undefined, numbers: nums.length ? nums : undefined };
+    case 'object3d': return { title: c.brand ?? title, image: a.wants === 'image' ? (a.id === 'obj:logo' ? c.logo ?? c.image : c.image) ?? undefined : undefined, numbers: nums.length ? nums : undefined };
     case 'icon': return { label: pieces[(variant + 1) % pieces.length] ? titleOf(pieces[(variant + 1) % pieces.length]!, 2) : titleOf(text, 2) };
     default: return {};
   }
@@ -208,7 +210,7 @@ export function castScene(b: BeatIn, i: number, count: number, o: PlanOptions, p
   // real footage as the whole backdrop where the beat is about people, places, feelings or the hook (and the last scene did not use it): the classic big-type-over-footage look
   const bleed = pool.list.some(x => x.kind === 'footage') && !prev?.backdrop && ['people', 'nature', 'home', 'travel', 'food', 'health', 'emotion', 'calm', 'hook', 'benefit', 'success'].some(n => needs.has(n as Need));
   const bdClip = bleed ? nextClip(pool, 'backdrop') : null, backdrop = bdClip ? { clip: bdClip.path, kind: bdClip.kind, at: bdClip.at } : null;
-  const c: Ctx = { mapBeat: !!o.photos?.some(x => x.kind === 'map') && (needs.has('location') || needs.has('global') || needs.has('travel')), photosLeft: o.photos?.length ?? 0, rating: o.ratings?.artifacts ?? null, clipsLeft: backdrop ? 0 : pool.list.length, prior: o.prior?.[i] ?? null, needs, nums, hasImage: !!o.image, hasBrand: !!o.brand, seed, i, prev: new Set(prev ? [...prev.elements.map(e => e.art), ...prev.ambient] : []), used: usedHere, chosen: new Set() };
+  const c: Ctx = { mapBeat: !!o.photos?.some(x => x.kind === 'map') && (needs.has('location') || needs.has('global') || needs.has('travel')), photosLeft: o.photos?.length ?? 0, rating: o.ratings?.artifacts ?? null, clipsLeft: backdrop ? 0 : pool.list.length, prior: o.prior?.[i] ?? null, needs, nums, hasImage: !!(o.image || o.logo), hasBrand: !!o.brand, seed, i, prev: new Set(prev ? [...prev.elements.map(e => e.art), ...prev.ambient] : []), used: usedHere, chosen: new Set() };
   const given = o.picks?.[i] ?? null;
   // the opening hook, the closing call to action and any very short line are set as big type (a film that is all cards has no rhythm)
   const short = b.text.trim().split(/\s+/).length <= 5, typeScene = count >= 3 && (i === 0 || i === count - 1 || (short && i !== count - 2)) && !['location', 'global'].some(n => needs.has(n as Need)) && !nums.length && !prev?.layout.startsWith('type') && !recentLayouts.includes('type');

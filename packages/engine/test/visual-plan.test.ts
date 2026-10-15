@@ -174,3 +174,11 @@ test('a number with a thousands comma is one number, not two clauses', () => {
   const p = planFilm([{ text: 'We grew 40% in 6 months, with 1,200 happy customers across the world.', start: 0, end: 4 }, { text: 'Meet Bluetoki today.', start: 4, end: 8 }, { text: 'Try it.', start: 8, end: 12 }], { format: 'vertical', seed: 11, picks: [{ layout: 'callouts' }] });
   for (const e of p.scenes[0]!.elements) for (const v of [e.content.title, e.content.label, ...(e.content.items ?? [])]) if (v !== undefined) assert.ok(!/^\d{1,2}$/.test(v.trim()) || e.art.startsWith('chart:'), `"${v}" in ${e.art} is a stray fragment`);
 });
+
+test('the orbiting brand tile shows the brand’s own logo when there is one, else the site capture', () => {
+  const bs: BeatIn[] = [{ text: 'Meet Bluetoki, one place for everything.', start: 0, end: 4 }, { text: 'Try it today.', start: 4, end: 8 }];
+  const tile = (o: Record<string, unknown>) => planFilm(bs, { format: 'vertical', seed: 2, picks: [{ layout: 'hero', artifacts: ['obj:logo'] }], ...o }).scenes[0]!.elements[0]!.content.image;
+  assert.equal(tile({ logo: '/data/a/logo.png', image: '/data/a/site.png' }), '/data/a/logo.png');
+  assert.equal(tile({ image: '/data/a/site.png' }), '/data/a/site.png');
+  assert.equal(tile({}), undefined);
+});
