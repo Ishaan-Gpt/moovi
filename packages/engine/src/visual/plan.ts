@@ -151,10 +151,13 @@ function contentFor(a: Artifact, text: string, nums: number[], c: { image?: stri
   }
 }
 
+/** The needs of beat i of n (the detector, plus any a model tagged): what the graph is asked to serve. */
+export const needsFor = (b: BeatIn, i: number, n: number): Need[] => [...new Set<Need>([...detectNeeds(b.text, { index: i, count: n }), ...(b.needs ?? []).filter(isNeed)])];
+
 /** One scene from one beat. */
 export function castScene(b: BeatIn, i: number, count: number, o: PlanOptions, prev: VScene | null, recentLayouts: LayoutId[], usedHere: Record<string, number>): VScene {
   const seed = o.seed ?? 7;
-  const needs = new Set<Need>([...detectNeeds(b.text, { index: i, count }), ...(b.needs ?? []).filter(isNeed)]);
+  const needs = new Set<Need>(needsFor(b, i, count));
   const nums = numbersOf(b.text);
   const c: Ctx = { prior: o.prior?.[i] ?? null, needs, nums, hasImage: !!o.image, hasBrand: !!o.brand, seed, i, prev: new Set(prev ? [...prev.elements.map(e => e.art), ...prev.ambient] : []), used: usedHere, chosen: new Set() };
   const given = o.picks?.[i] ?? null;

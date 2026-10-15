@@ -125,3 +125,24 @@ test('an artifact built around one number is never cast when the beat says none;
     assert.equal(new Set(titles).size, titles.length, `scene ${s.i} repeats a title: ${titles}`);
   }
 });
+
+test('beats are timed on the voice: each starts where its first word is said, the last runs to the end', async () => {
+  const { beatsFromVoice, eventsFor } = await import('../src/visual/film');
+  const say = ['Most teams lose hours.', 'Meet Bluetoki today.'];
+  const words = 'Most teams lose hours. Meet Bluetoki today.'.split(' ').map((word, i) => ({ word, t: 0.3 + i * 0.4 + (i >= 4 ? 0.6 : 0), end: 0.3 + i * 0.4 + 0.3 + (i >= 4 ? 0.6 : 0) }));
+  const b = beatsFromVoice(say.map(s => ({ say: s })), words, 30);
+  assert.equal(b.length, 2);
+  assert.equal(b[0]!.start, 0);
+  assert.ok(Math.abs(b[1]!.start - (words[4]!.t - 4 / 30)) < 0.05, 'the second beat starts just before its first word');
+  assert.equal(b[0]!.end, b[1]!.start, 'beats tile');
+  assert.ok(b[1]!.end >= words.at(-1)!.t);
+  assert.equal(b[0]!.words!.length, 4);
+  assert.ok(b[0]!.words!.every((w, i, a) => i === 0 || w.start >= a[i - 1]!.start));
+  // the sound the picture asks for
+  const plan = planFilm(b, { format: 'vertical', seed: 2 });
+  const ev = eventsFor(plan);
+  assert.ok(ev.some(e => e.event === 'scene' && Math.abs(e.t - plan.scenes[1]!.start) < 0.01), 'a hit at the cut');
+  assert.ok(ev.some(e => e.event === 'key-word'), 'key words are marked');
+  assert.deepEqual([...ev].sort((x, y) => x.t - y.t), ev, 'in order');
+  assert.ok(ev.every(e => e.t >= 0 && e.t <= plan.seconds));
+});
