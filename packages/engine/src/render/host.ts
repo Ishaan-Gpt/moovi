@@ -127,10 +127,34 @@ const idle: Page[] = [];
 const waiters: ((p: Page) => void)[] = [];
 let pages = 0;
 
+/**
+ * The pool's browser, relaunched when the last one went away. Chrome can die under memory pressure in the middle of
+ * a render; without this every later page request failed with "Target page, context or browser has been closed" and
+ * the run lost its remaining render attempts in milliseconds.
+ */
+async function liveBrowser(): Promise<Browser> {
+  if (browser) {
+    const b = await browser.catch(() => null);
+    if (b?.isConnected()) return b;
+    forgetBrowser();
+  }
+  const launching = chromium.launch({ headless: true, ...(config.chrome.path ? { executablePath: config.chrome.path } : { channel: config.chrome.channel }), args: ['--autoplay-policy=no-user-gesture-required', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', ...(process.env.MOOVI_CHROME_ARGS ?? '').split(' ').filter(Boolean)] });
+  browser = launching;
+  const b = await launching;
+  b.on('disconnected', () => { if (browser === launching) forgetBrowser(); });
+  return b;
+}
+
+/** Drop the dead browser and its idle pages; pages still borrowed fail on their own and are not given back. */
+function forgetBrowser() {
+  browser = null;
+  pages -= idle.length;
+  idle.length = 0;
+}
+
 async function newPage(): Promise<Page> {
   const p = await startServer();
-  if (!browser) browser = chromium.launch({ headless: true, ...(config.chrome.path ? { executablePath: config.chrome.path } : { channel: config.chrome.channel }), args: ['--autoplay-policy=no-user-gesture-required', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', ...(process.env.MOOVI_CHROME_ARGS ?? '').split(' ').filter(Boolean)] });
-  const b = await browser;
+  const b = await liveBrowser();
   const page = await b.newPage({ viewport: { width: 1200, height: 900 } });
   page.setDefaultTimeout(0);
   await page.goto(`http://127.0.0.1:${p}/host.html`);
@@ -141,15 +165,21 @@ async function newPage(): Promise<Page> {
 }
 
 /** Borrow a page (at most `config.slots.chrome + render` at once), run `fn`, give it back. */
+const usable = (p: Page) => !p.isClosed() && p.context().browser()?.isConnected() !== false;
+
 export async function withPage<T>(fn: (page: Page) => Promise<T>): Promise<T> {
   let page = idle.pop();
+  while (page && !usable(page)) { pages--; page = idle.pop(); }
   if (!page) {
     if (pages < config.slots.chrome + config.slots.render) { pages++; try { page = await newPage(); } catch (e) { pages--; throw e; } }
     else page = await new Promise<Page>(r => waiters.push(r));
   }
   try { return await fn(page); }
   catch (e) { await page.close().catch(() => undefined); pages--; page = undefined; throw e; }
-  finally { if (page) { const w = waiters.shift(); if (w) w(page); else idle.push(page); } }
+  finally {
+    if (page && !usable(page)) { pages--; page = undefined; } // its browser died while it was borrowed
+    if (page) { const w = waiters.shift(); if (w) w(page); else idle.push(page); }
+  }
 }
 
 export interface Box { id: string; kind: string; x0: number; y0: number; x1: number; y1: number; alpha: number; text?: string; chip?: boolean; contain?: boolean }
