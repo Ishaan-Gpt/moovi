@@ -184,7 +184,7 @@ export async function renderChunk(plan: VPlan, from: number, to: number, dir: st
  * A short test clip made in the browser itself (a canvas recorded to WebM, a bouncing gradient with a frame counter), so
  * footage can be tested with no ffmpeg and no download. Returns the file's path.
  */
-export async function recordTestClip(path: string, seconds = 2, size = [320, 568] as const): Promise<string> {
+export async function recordTestClip(path: string, seconds = 2, size = [320, 568] as const, container: 'webm' | 'mp4' = 'webm'): Promise<string> {
   const b = await launch(), ctx = await b.newContext(), page = await ctx.newPage();
   try {
     // MediaRecorder runs on the wall clock: under CPU load it can give a short or empty clip, so what was recorded is checked
@@ -192,14 +192,14 @@ export async function recordTestClip(path: string, seconds = 2, size = [320, 568
     const code = `(async () => {
       const c = document.createElement('canvas'); c.width = ${size[0]}; c.height = ${size[1]}; document.body.appendChild(c); const g = c.getContext('2d');
       for (let attempt = 0; attempt < 6; attempt++) {
-        const rec = new MediaRecorder(c.captureStream(30), { mimeType: 'video/webm;codecs=vp8', videoBitsPerSecond: 1500000 }), parts = [];
+        const rec = new MediaRecorder(c.captureStream(30), { mimeType: '${container === 'mp4' ? 'video/mp4;codecs=avc1.42E01E' : 'video/webm;codecs=vp8'}', videoBitsPerSecond: 1500000 }), parts = [];
         rec.ondataavailable = e => parts.push(e.data);
         const done = new Promise(r => { rec.onstop = r; });
         rec.start(100);
         const t0 = performance.now();
         await new Promise(res => { const tick = () => { const t = (performance.now() - t0) / 1000; const gr = g.createLinearGradient(0, 0, c.width, c.height); gr.addColorStop(0, 'hsl(' + (t * 90) % 360 + ',70%,55%)'); gr.addColorStop(1, 'hsl(' + (t * 90 + 120) % 360 + ',70%,35%)'); g.fillStyle = gr; g.fillRect(0, 0, c.width, c.height); g.fillStyle = '#fff'; g.beginPath(); g.arc(c.width / 2 + Math.sin(t * 4) * 90, c.height / 2 + Math.cos(t * 3) * 120, 50, 0, 6.28); g.fill(); if (t < ${seconds}) requestAnimationFrame(tick); else res(); }; tick(); });
         rec.stop(); await done;
-        const blob = new Blob(parts, { type: 'video/webm' });
+        const blob = new Blob(parts, { type: '${container === 'mp4' ? 'video/mp4' : 'video/webm'}' });
         if (blob.size < 2000) continue;
         const v = document.createElement('video'); v.muted = true; v.src = URL.createObjectURL(blob);
         const ok = await new Promise(res => { v.onloadeddata = () => { const fix = () => { if (Number.isFinite(v.duration)) { v.removeEventListener('timeupdate', fix); res(v.duration >= ${seconds} * 0.7 && v.videoWidth > 0); } }; if (Number.isFinite(v.duration)) return fix(); v.addEventListener('timeupdate', fix); v.currentTime = 1e7; }; v.onerror = () => res(false); setTimeout(() => res(false), 8000); });
