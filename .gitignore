@@ -30,3 +30,6 @@ apps/studio/public/me/
 
 # extra Next build folders (second dev servers)
 .next-*/
+
+# TypeScript incremental build caches
+*.tsbuildinfo
