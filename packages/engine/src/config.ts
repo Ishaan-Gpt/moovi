@@ -57,7 +57,18 @@ export const config = {
   },
   /** a task's lease: a worker that stops heartbeating loses it after this long */
   leaseMs: num('MOOVI_LEASE_MS', 90_000),
-  searchKeys: { tavily: env('TAVILY_API_KEY'), serper: env('SERPER_API_KEY'), pexels: env('PEXELS_API_KEY') },
+  searchKeys: { tavily: env('TAVILY_API_KEY'), serper: env('SERPER_API_KEY'), pexels: env('PEXELS_API_KEY'), pixabay: env('PIXABAY_API_KEY') },
+  /**
+   * Stock footage (src/footage): the free sources asked, in priority order. Keyless ones (Mixkit, Wikimedia Commons,
+   * NASA, Internet Archive) always work; Pixabay and Pexels join when their key is set.
+   */
+  /** research with no links and no search key still runs, on Wikipedia's own search (MOOVI_RESEARCH_KEYLESS=0 turns that off) */
+  research: { keyless: env('MOOVI_RESEARCH_KEYLESS') !== '0' },
+  footage: {
+    sources: (env('MOOVI_CLIP_SOURCES') ?? 'mixkit,commons,pixabay,pexels,nasa,archive').split(',').map(s => s.trim().toLowerCase()).filter(Boolean),
+    /** a clip longer than this is cut to it when it is downloaded (a scene never needs more) */
+    maxSeconds: num('MOOVI_CLIP_SECONDS', 12),
+  },
 };
 
 export type Resource = keyof typeof config.slots;
