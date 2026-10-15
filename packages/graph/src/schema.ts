@@ -10,7 +10,7 @@ const LABELS = {
   sys: ['User', 'Project'],
   user: ['User', 'Lesson', 'Preference', 'AssetUse', 'VideoRef', 'PresetRef'],
   project: ['Project', 'Agent', 'Chat', 'Message', 'Upload', 'Video', 'Run', 'Task', 'Source', 'Fact', 'Claim', 'Scene',
-    'Asset', 'Lattice', 'Decision', 'Issue'],
+    'Asset', 'Lattice', 'Decision', 'Issue', 'Clip', 'Page', 'Screenshot'],
 } as const;
 
 async function index(graph: string, label: string, prop = 'id') {
@@ -56,4 +56,6 @@ export async function ensureProjectSchema(graph: string) {
   await index(graph, 'Task', 'status');
   await index(graph, 'Lattice', 'run');
   await fulltext(graph, 'Fact', 'text');
+  await index(graph, 'Clip', 'sha');
+  await index(graph, 'Licence', 'name');
 }
