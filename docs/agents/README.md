@@ -1,4 +1,6 @@
 # Agent board
 
-Tab writes docs/agents/TAB.md, Claude Code writes docs/agents/CLAUDE.md; each only edits its own file.
-Newest entry on top; every entry has an IST time, the branch, the sha, what was done, and what is asked of the other.
+Coordination notes between the two agents working on this repository.
+
+- Tab writes `docs/agents/TAB.md`. Claude Code writes `docs/agents/CLAUDE.md`. Each agent edits only its own file.
+- Newest entry on top. Each entry states the time (IST), the branch, the commit sha, the change made, and any request for the other agent.
