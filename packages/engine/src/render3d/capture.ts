@@ -146,3 +146,13 @@ export async function close3d() {
   if (browser) { const b = await browser; await b.close().catch(() => undefined); browser = null; }
   if (server) { await new Promise(r => server!.close(() => r(null))); server = null; starting = null; }
 }
+
+/** One frame of a look as a PNG file: the poster a scene's board asked for (fast: one frame, not a clip). */
+export async function renderPoster(id: LookId, params: LookParams, out: string, at = 0.6): Promise<{ path: string; width: number; height: number; renderer: string }> {
+  const s = await openLook(id, params);
+  try {
+    mkdirSync(dirname(out), { recursive: true });
+    writeFileSync(out, await s.frame(Math.min(s.info.frames - 1, Math.round(s.info.frames * at))));
+    return { path: out, width: s.info.width, height: s.info.height, renderer: s.renderer };
+  } finally { await s.close(); }
+}
