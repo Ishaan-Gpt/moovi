@@ -127,6 +127,9 @@ importers:
       '@anthropic-ai/claude-agent-sdk':
         specifier: 0.3.296
         version: 0.3.296(@anthropic-ai/sdk@0.133.0(zod@4.6.6))(@modelcontextprotocol/sdk@1.32.1(zod@4.6.6))(zod@4.6.6)
+      '@moovi/brand':
+        specifier: workspace:*
+        version: link:../brand
       '@moovi/graph':
         specifier: workspace:*
         version: link:../graph
@@ -142,6 +145,9 @@ importers:
       redis:
         specifier: 5.12.1
         version: 5.12.1
+      three:
+        specifier: 0.170.0
+        version: 0.170.0
       zod:
         specifier: 4.6.6
         version: 4.6.6
@@ -1370,6 +1376,9 @@ packages:
       babel-plugin-macros:
         optional: true
 
+  three@0.170.0:
+    resolution: {integrity: sha512-FQK+LEpYc0fBD+J8g6oSEyyNzjp+Q7Ks1C568WWaoMRLW+TkNNWmenWeGgJjV105Gd+p/2ql1ZcjYvNiPZBhuQ==}
+
   tinyglobby@0.2.17:
     resolution: {integrity: sha512-wXR/dYpcqKmfWpEdZjiKJOwCNFndD0DMnrW/cYjVGttEkBfVgcLFHoNrlj47mjOVic9yyNu65alsgF4NQyTa2g==}
     engines: {node: '>=12.0.0'}
@@ -2446,6 +2455,8 @@ snapshots:
     dependencies:
       client-only: 0.0.1
       react: 19.2.4
+
+  three@0.170.0: {}
 
   tinyglobby@0.2.17:
     dependencies:
