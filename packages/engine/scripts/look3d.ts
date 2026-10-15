@@ -1,6 +1,7 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { config } from '../src/config';
+import { capturePage, closeRender } from '../src/render/host';
 import { close3d, openLook, renderLook, type LookParams } from '../src/render3d/capture';
 import { LOOK_IDS, isLook, type LookId } from '../src/render3d/looks';
 
@@ -13,16 +14,25 @@ import { LOOK_IDS, isLook, type LookId } from '../src/render3d/looks';
 const [cmd = 'bench', a, b] = process.argv.slice(2);
 const dir = join(config.data, 'look3d');
 const size = (s?: string): Pick<LookParams, 'width' | 'height'> => { const m = s?.match(/^(\d+)x(\d+)$/); return m ? { width: +m[1]!, height: +m[2]! } : { width: 540, height: 960 }; };
-const demo = (id: LookId): LookParams => ({ values: [3, 5, 4, 8, 6, 10, 9], seed: 7, ...(id === 'turntable' || id === 'orbit' ? { texture: join(dir, 'texture.png') } : {}) });
+const has = (f: string) => existsSync(join(dir, f));
+const demo = (id: LookId): LookParams => ({ values: [3, 5, 4, 8, 6, 10, 9], seed: 7, ...(id === 'turntable' ? { texture: join(dir, process.env.SITE && has('site.png') ? 'site.png' : 'texture.png') } : id === 'orbit' ? { texture: join(dir, process.env.LOGO && has('logo.svg') ? 'logo.svg' : 'texture.png') } : {}) });
 
-async function makeTexture() {
-  // a stand-in for a site screenshot / logo: a plain generated PNG (no download, nothing committed)
+/**
+ * Textures. SITE=https://… makes the turntable show a real capture of that site; LOGO=<simple-icons slug> makes the orbit
+ * circle that brand's real mark. Otherwise a generated stand-in (nothing downloaded, nothing committed).
+ */
+async function makeTextures() {
+  if (process.env.SITE) await capturePage(process.env.SITE, join(dir, 'site.png'), { width: 1440, height: 900, scale: 1, settleMs: 2500, minDetail: 0.3 });
+  if (process.env.LOGO) {
+    const r = await fetch(`https://cdn.simpleicons.org/${encodeURIComponent(process.env.LOGO)}/2B67C6`);
+    if (r.ok) writeFileSync(join(dir, 'logo.svg'), (await r.text()).replace('<svg ', '<svg width="512" height="512" '));
+  }
   const s = await openLook('particles', { width: 640, height: 400, seconds: 1, fps: 1 });
   writeFileSync(join(dir, 'texture.png'), await s.frame(0)); await s.close();
 }
 
 mkdirSync(dir, { recursive: true });
-await makeTexture();
+await makeTextures();
 if (cmd === 'bench') {
   const seconds = Number(a) || 2, sz = size(b);
   console.log(`3D looks, ${sz.width}x${sz.height}, ${seconds}s at 30 fps, software GL (SwiftShader unless MOOVI_3D_GPU=1)`);
@@ -42,4 +52,4 @@ if (cmd === 'bench') {
   const r = await renderLook(cmd, { ...demo(cmd), ...size(), seconds: Number(a) || 2 }, b?.endsWith('.mp4') ? { out: b } : { framesDir: join(dir, cmd) });
   console.log(r);
 } else { console.error('bench | stills | ' + LOOK_IDS.join(' | ')); process.exitCode = 1; }
-await close3d();
+await close3d(); await closeRender();

@@ -16,10 +16,18 @@ function aim(camera, x, y, z) { camera.lookAt(x, y, z); camera.userData.target =
 const col = (hex, fallback) => new THREE.Color(hex || fallback);
 
 /** Textures are loaded before the first frame (the page waits), so a frame never shows a half-loaded image. */
-export async function loadTexture(url) {
+export async function loadTexture(url, tile) {
   if (!url) return null;
   const img = new Image(); img.crossOrigin = 'anonymous'; img.src = url; await img.decode();
-  const tex = new THREE.Texture(img); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4; tex.needsUpdate = true; return tex;
+  let source = img;
+  if (tile) {
+    // a logo is usually transparent: it goes on a tile of the brand's own colour, with air round it
+    const S = 768, c = document.createElement('canvas'); c.width = c.height = S; const g = c.getContext('2d');
+    g.fillStyle = tile; g.fillRect(0, 0, S, S);
+    const k = Math.min(S * 0.64 / img.naturalWidth, S * 0.64 / img.naturalHeight), w = img.naturalWidth * k, h = img.naturalHeight * k;
+    g.imageSmoothingQuality = 'high'; g.drawImage(img, (S - w) / 2, (S - h) / 2, w, h); source = c;
+  }
+  const tex = new THREE.Texture(source); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4; tex.needsUpdate = true; return tex;
 }
 
 function stage(p, bgFallback) {
