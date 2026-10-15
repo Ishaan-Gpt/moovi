@@ -14,7 +14,6 @@ import { chromium } from 'playwright-core';
 import { config } from '../config';
 import { pieces, type Word } from '../s4/compose';
 import { closePictures, drawPicture, type Picture } from '../s4/picture';
-import { motionEasyDir } from '../s1fast/planner';
 import { castFilm, compose, darkWorld, planLines, rebind, STAGE, type DarkWorld, type LinePlan } from '../darkvox/film';
 import { darkvoxLibrary, VOCAB } from '../darkvox/library';
 import { propFor } from '../darkvox/props';
@@ -158,7 +157,7 @@ export async function run(o: RunInput, h: Hooks = {}): Promise<RunResult> {
   lap('compose', s);
 
   s = Date.now(); C.begin('audio');
-  await mixAudio(dir, motionEasyDir(), ['--bed-lu', String(SOUND.bedUnderVoiceLU)], o.signal);
+  await mixAudio(dir, ['--bed-lu', String(SOUND.bedUnderVoiceLU)], o.signal);
   if (existsSync(join(dir, 'master.wav'))) for (const f of ['mix.wav', 'music.wav', 'sfx.wav']) try { rmSync(join(dir, f)); } catch { /* not there */ }
   lap('audio', s);
 

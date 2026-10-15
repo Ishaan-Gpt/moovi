@@ -117,6 +117,7 @@ export function scopeFor(user: string | null | undefined): ModelScope | null {
     models: m.models, provider: m.provider,
     deadlineScale: m.provider === 'ollama' ? 4 : 1,
     drawsWell: m.provider === 'anthropic',
+    audio: (m.provider === 'groq' || m.provider === 'openai') && m.key ? { provider: m.provider, key: m.key } : undefined,
   };
   cache.set(user, { sig, scope });
   return scope;

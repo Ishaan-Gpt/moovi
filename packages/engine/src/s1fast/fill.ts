@@ -1,10 +1,11 @@
+import { config } from '../config';
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { z } from 'zod';
 import { s1kit } from '@contenteasy/skills';
 import { fill, loadTemplates, templateIndex, type MediaSlot, type SlotValues, type Template } from '@contenteasy/library/style-1/templates';
 import { describe } from '../render/qa';
-import { ask, nearestEnum } from '../runtime';
+import { ask, modelName, modelScope, nearestEnum } from '../runtime';
 import { brandJson, emptyProps, fitToFrame, planOf, qa, writeOut, type KitExtra } from './make';
 import type { Op, Scene, Storyboard, Word } from './planner';
 
@@ -380,11 +381,12 @@ export async function fillPlan(o: { dir: string; id: string; brand: string; word
   };
   const pics = [media.site && 'its desktop page (laptop/browser/card templates)', media.mobile && 'its own phone layout (phone templates)', media.logo && 'its logo mark (mark, logo-land "MEET <brand>" and the CTA lockup templates)'].filter(Boolean).join('; ');
   let bounced = false;
-  const call = (tier: 'crew' | 'fast', ms: number) => within(ms, signal => ask({
+  type Entry = (typeof index)[number];
+  const call = (tier: 'crew' | 'fast', ms: number, menu: Entry[] = index) => within(ms, signal => ask({
     agent: 's1-fill', tier, deadlineMs: ms, maxTurns: 3, signal,
     onTool: (name, _a, r, took) => log(`  fill ${tier} ${name} ${took} ms${r.error ? `: ${String(r.error).slice(0, 300)}` : ''} at ${((Date.now() - t0) / 1000).toFixed(1)} s`),
     system: "You edit a Style 1 reel (voice-led 9:16 explainer on a light stage) by picking the owner's own proven scene templates and filling their slots. You never invent layouts, only choose and fill. You think like a senior motion designer: one idea per scene, the screen carries the KEY words, the pictures carry the rest.",
-    prompt: `Brief: ${o.brief}\nThis brand's pictures: ${pics || 'none (drawn props only)'}.\n\nSpoken words (index:word):\n${W.map((w, i) => `${i}:${w.word}`).join(' ')}\n\nTemplate index (id · shows · role · fits = word-count range · text slots id≤maxChars "original" · content slots id≤maxChars prop.key "original" · media = which picture slots it has):\n${index.map(t => JSON.stringify(t)).join('\n')}\n\nSplit the words into 6-9 scenes (each a whole phrase, 3-10 words, the first starts at 0, in order) and give each the template that best SHOWS what is said (fits should cover its word count; hook first, a cta/ending template last; use each template at most once; vary presets; every hero prop (phone, laptop, panel, coin, lock screen…) at most ONCE in the reel).${media.logo ? ' Put the brand reveal ("Meet <brand>" / its name) on a logo template (logo_land / mark), and end on a logo CTA template (cta_pill with the brand wordmark) when one fits.' : ''}\nFill EVERY text and content slot for this brand:\n- text slots = the on-screen title: the scene's OWN spoken key words (1-4 words, they are typed on screen on the frame the voice says them, so never words the voice does not say in that scene), UPPERCASE where the original is; never end a title on a dangling word (your, the, and, with…); no quote marks.\n- content slots = what the prop shows (real facts from the brief only, same kind of value as the original: a number stays a number, a label a label). A panel/receipt/list gets every row filled with a distinct real item.\n- HARD LIMIT: a slot's value is at most its ≤N characters (count them; boxes are fixed-size): write a shorter phrase, never a cut-off one.\nNever leave the original brand's words (other brand names, Hindi lines, ₹ prices) in.`,
+    prompt: `Brief: ${o.brief}\nThis brand's pictures: ${pics || 'none (drawn props only)'}.\n\nSpoken words (index:word):\n${W.map((w, i) => `${i}:${w.word}`).join(' ')}\n\nTemplate index (id · shows · role · fits = word-count range · text slots id≤maxChars "original" · content slots id≤maxChars prop.key "original" · media = which picture slots it has):\n${menu.map(t => JSON.stringify(t)).join('\n')}\n\nSplit the words into 6-9 scenes (each a whole phrase, 3-10 words, the first starts at 0, in order) and give each the template that best SHOWS what is said (fits should cover its word count; hook first, a cta/ending template last; use each template at most once; vary presets; every hero prop (phone, laptop, panel, coin, lock screen…) at most ONCE in the reel).${media.logo ? ' Put the brand reveal ("Meet <brand>" / its name) on a logo template (logo_land / mark), and end on a logo CTA template (cta_pill with the brand wordmark) when one fits.' : ''}\nFill EVERY text and content slot for this brand:\n- text slots = the on-screen title: the scene's OWN spoken key words (1-4 words, they are typed on screen on the frame the voice says them, so never words the voice does not say in that scene), UPPERCASE where the original is; never end a title on a dangling word (your, the, and, with…); no quote marks.\n- content slots = what the prop shows (real facts from the brief only, same kind of value as the original: a number stays a number, a label a label). A panel/receipt/list gets every row filled with a distinct real item.\n- HARD LIMIT: a slot's value is at most its ≤N characters (count them; boxes are fixed-size): write a shorter phrase, never a cut-off one.\nNever leave the original brand's words (other brand names, Hindi lines, ₹ prices) in.`,
     schema,
     validate: a => {
       // a near-miss id ("Lines_02" for "lines-02", a dropped suffix) is the template the model meant: weak models do this
@@ -400,10 +402,20 @@ export async function fillPlan(o: { dir: string; id: string; brand: string; word
       return `Fix these and submit again (everything else stays):\n- ${issues.slice(0, 12).join('\n- ')}`;
     },
   }));
-  // a real deadline on Sonnet (room for one lint bounce), then straight to Haiku
-  // and if both are out (a busy login), the reel still ships: a mechanical split + pick + fill, no model
-  const ans = await call('crew', 60_000).catch(e => { log(`fill on the crew model failed (${String(e).slice(0, 100)}); retrying on the fast model`); bounced = false; return call('fast', 45_000); })
-    .catch(e => { log(`fill on the fast model failed (${String(e).slice(0, 100)}); mechanical fill`); return mechanicalFill(W, pool, !!o.site); });
+  // a real deadline on the crew model (room for one lint bounce), then the fast one; if both are out the reel still
+  // ships: a mechanical split + pick + fill, no model. A provider with tight request / per-minute token limits (free
+  // tiers: Groq, Cerebras; a local model) gets a shorter menu (a spread over every role) and no lint bounce (the code
+  // repairs the picks instead); any other model that answers 413 "too large" falls back to the same.
+  const short = shortlist(index, 30), tooBig = (e: unknown) => /\b413\b|too large|context.{0,20}(length|window)|maximum context|reduce the length/i.test(String(e));
+  const tight = ['groq', 'cerebras', 'ollama'].includes(modelScope()?.provider ?? (config.runtime === 'http' ? config.provider : ''));
+  // tight limits are counted per model per minute: the brief just used the crew model's budget, so the fill goes to
+  // the fast model first (its own budget), with time to wait out a rate-limit window
+  if (tight) { bounced = true; log(`templates: a ${short.length}-template menu for ${modelName('fast')} (tight request limits)`); }
+  const [t1, t2, ms1, ms2] = tight ? ['fast', 'crew', 120_000, 120_000] as const : ['crew', 'fast', 60_000, 45_000] as const;
+  const first = tight ? short : index;
+  const ans = await call(t1, ms1, first).catch(e => { if (!tooBig(e) || first === short) throw e; log(`the template menu is too large for ${modelName(t1)}: retrying with ${short.length} templates`); bounced = true; return call(t1, ms1, short); })
+    .catch(e => { log(`fill on ${modelName(t1)} failed (${String(e).slice(0, 100)}); retrying on ${modelName(t2)}`); bounced = tight || tooBig(e); return call(t2, ms2, tight || tooBig(e) ? short : index); })
+    .catch(e => { log(`fill on both models failed (${String(e).slice(0, 100)}); mechanical fill`); return mechanicalFill(W, pool, !!o.site); });
   times.call = Date.now() - t0;
 
   // the split: sorted, de-duplicated, first at 0, each scene ends where the next starts
@@ -494,4 +506,13 @@ export async function fillPlan(o: { dir: string; id: string; brand: string; word
   writeFileSync(join(o.dir, 'fill.json'), JSON.stringify({ answer: ans, lint: left, times }, null, 1));
   writeOut({ ...o, extra }, board, scenes, out, log);
   return { board, out, times, plain: [...bad] };
+}
+
+/** At most `n` templates, spread round-robin over their roles (openers, lists, proofs, CTA endings all stay on the menu). */
+function shortlist<T extends { role: string }>(index: T[], n: number): T[] {
+  const groups = new Map<string, T[]>();
+  for (const e of index) { const k = e.role.split(' ')[0]!.toLowerCase(); groups.set(k, [...(groups.get(k) ?? []), e]); }
+  const out: T[] = [], lists = [...groups.values()];
+  for (let i = 0; out.length < n && lists.some(l => l.length > i); i++) for (const l of lists) if (l[i] && out.length < n) out.push(l[i]!);
+  return out;
 }

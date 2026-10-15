@@ -195,9 +195,12 @@ async function retry<T>(fn: () => Promise<T>, signal: AbortSignal): Promise<T> {
     try { return await fn(); } catch (e) {
       last = e;
       const m = String(e instanceof Error ? e.message : e);
+      // a daily quota is not a wait: say so at once (retrying for minutes would only hold the film up)
+      if (/per day|TPD|RPD|daily (limit|quota)|insufficient_quota|exceeded your current quota/i.test(m)) throw new Error(`the API key's daily limit is used up for this model (${m.slice(0, 160)}): it resets tomorrow, or use another key / provider`);
       const transient = e instanceof ApiError ? e.status === 429 || e.status >= 500 : /\b(429|5\d\d)\b|ECONNRESET|ETIMEDOUT|ECONNREFUSED|fetch failed|overloaded|socket/i.test(m);
       if (signal.aborted || !transient) throw e;
       const wait = Math.min(60_000, e instanceof ApiError && e.retryAfter != null ? e.retryAfter + 250 : 1500 * 2 ** i);
+      if (process.env.CE_DEBUG_HTTP) console.warn(`[http] retry ${i + 1} in ${(wait / 1000).toFixed(1)} s after: ${m.slice(0, 200)}`);
       await new Promise<void>((res, rej) => { const t = setTimeout(res, wait); signal.addEventListener('abort', () => { clearTimeout(t); rej(new Error('aborted')); }, { once: true }); });
     }
   }
@@ -325,10 +328,11 @@ function openai(f: typeof fetch, base: string, key: string, provider: Provider):
       if (provider === 'openrouter') Object.assign(headers, { 'x-title': 'ContentEasy' });
       const rf = o.json?.mode === 'schema' && o.json.schema ? { response_format: { type: 'json_schema', json_schema: { name: 'answer', schema: o.json.schema, strict: false } } } : o.json ? { response_format: { type: 'json_object' } } : {};
       const sys = o.json ? `${system}\n\nReply with a JSON object only.` : system; // JSON mode wants the word "JSON" in the prompt
-      const j = await post(f, `${base}/chat/completions`, headers, { model, messages: openaiMessages(sys, msgs), ...(o.tools ? { tools: o.tools.map(t => ({ type: 'function', function: { name: t.name, description: t.description, parameters: jsonSchema(t) } })), tool_choice: 'auto' } : {}), ...rf }, o.signal);
-      const msg = ((j.choices as { message: { content?: string | null; tool_calls?: { id: string; function: { name: string; arguments: string } }[] } }[])?.[0]?.message) ?? {};
+      const j = await post(f, `${base}/chat/completions`, headers, { model, messages: openaiMessages(sys, msgs), ...(o.tools ? { tools: o.tools.map(t => ({ type: 'function', function: { name: t.name, description: t.description, parameters: jsonSchema(t) } })), tool_choice: 'auto' } : {}), ...rf, ...(/gpt-oss/i.test(model) ? { reasoning_effort: 'low' } : {}) }, o.signal);
+      const msg = ((j.choices as { message: { content?: string | null; reasoning?: string | null; tool_calls?: { id: string; function: { name: string; arguments: string } }[] } }[])?.[0]?.message) ?? {};
       const calls = (msg.tool_calls ?? []).map(c => { let args: unknown = {}; try { args = JSON.parse(c.function.arguments || '{}'); } catch { args = extractJson(c.function.arguments) ?? { __unparsed: c.function.arguments }; } return { id: c.id, name: c.function.name, args }; });
-      return { text: msg.content ?? '', calls };
+      // a reasoning model (gpt-oss) can leave the answer empty and put its JSON in the reasoning: read it from there
+      return { text: msg.content || (o.json && !calls.length ? msg.reasoning ?? '' : ''), calls };
     },
   };
 }

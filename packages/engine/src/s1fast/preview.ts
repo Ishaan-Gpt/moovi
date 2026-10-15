@@ -2,7 +2,7 @@ import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, join, normalize, resolve, sep } from 'node:path';
 import { config } from '../config';
-import { motionEasyDir } from './planner';
+import { assetsDir } from './planner';
 
 /**
  * Instant preview: the spec plays LIVE in a browser on the MotionEasy engine's own Player (the renderer draws each
@@ -48,8 +48,8 @@ input[type=range]{flex:1}
 
 /** Serve a preview of <dir>/<id>.json with <dir>/master.wav (or vo.wav); resolves the page URL. */
 export async function servePreview(dir: string, id: string, port = 0): Promise<{ url: string; close: () => void }> {
-  const engine = existsSync(join(config.data, 'vendor', 'engine', 'motioneasy.js')) ? join(config.data, 'vendor', 'engine') : join(motionEasyDir(), 'apps/web/public/engine');
-  const roots = [['/engine/', engine], ['/me/', motionEasyDir()], ['/data/', config.data], ['/v/', resolve(dir)]] as const;
+  const engine = join(assetsDir(), 'renderer');
+  const roots = [['/engine/', engine], ['/me/', assetsDir()], ['/data/', config.data], ['/v/', resolve(dir)]] as const;
   const audio = existsSync(join(dir, 'master.wav')) ? '/v/master.wav' : '/v/vo.wav';
   const server = createServer((req, res) => {
     const u = decodeURIComponent((req.url ?? '/').split('?')[0]!);

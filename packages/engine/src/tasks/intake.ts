@@ -1,3 +1,4 @@
+import { sttAvailable, transcribeWords } from '../audio/stt';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { project as P } from '@contenteasy/graph';
@@ -42,14 +43,11 @@ export const intake: Handler = async ctx => {
   return { output: { features: f, probes }, note: said || 'brief read' };
 };
 
-/** Words a second in the first 45 s of a clip's audio (faster-whisper, local). */
+/** Words a second in the first 45 s of a clip's audio (Whisper on the user's own key; 0 when none is available). */
 async function speechRate(file: string, dir: string, duration: number) {
   ensureDir(dir);
-  const wav = join(dir, 'probe.wav'), out = join(dir, 'probe-words.json');
-  await sh(config.ffmpeg, ['-v', 'error', '-y', '-t', '45', '-i', file, '-vn', '-ac', '1', '-ar', '16000', wav], { timeout: 120_000 });
-  await sh(config.python, ['-W', 'ignore', join(config.motioneasy, 'styles', 'tools', 'words.py'), wav, out, '--model', 'small', '--max-seconds', '45'], { timeout: 300_000, cwd: config.motioneasy });
-  if (!existsSync(out)) return 0;
-  const words = JSON.parse(await import('node:fs').then(fs => fs.readFileSync(out, 'utf8'))) as unknown[];
+  if (!sttAvailable()) return 0;
+  const words = await transcribeWords(file, dir, { maxSeconds: 45 });
   return +(words.length / Math.max(1, Math.min(45, duration))).toFixed(2);
 }
 

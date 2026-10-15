@@ -18,7 +18,6 @@ import { byNouns, closePictures, drawPicture, personOf, planPictures, type Pictu
 import { servePlayer } from '../s4/player';
 import { contactSheet } from '../s4/sheet';
 import { PERIWINKLE, worldFrom, type World } from '../s4/world';
-import { motionEasyDir } from '../s1fast/planner';
 import { cast, chooseArc, grow, grown, improvise, recentArcs, recentSetups, remember, signals, writeBrief, type Arc, type Spec } from './kit';
 import { clock, hostSlug, mixAudio, readSite, tts, type Hooks, type RunInput, type RunResult } from './common';
 
@@ -200,7 +199,7 @@ export async function run(o: RunInput, h: Hooks = {}): Promise<RunResult> {
 
   // audio: the Style 1 kit under the events, the bed 7.5 LU under the voice, mastered to -14 LUFS
   s = Date.now(); C.begin('audio');
-  await mixAudio(dir, motionEasyDir(), ['--bed-lu', '7.5'], o.signal);
+  await mixAudio(dir, ['--bed-lu', '7.5'], o.signal);
   lap('audio', s);
 
   // live preview, then one contact sheet from it (one still per beat, labelled with its set-up)

@@ -6,7 +6,7 @@ import { boxes } from '../render/host';
 import { describe, geometry, layerOf } from '../render/qa';
 import { critique } from './critic';
 import { meUrls } from './preview';
-import { motionEasyDir, sceneOps, storyboard, stripV, type Op, type Storyboard, type Word } from './planner';
+import { assetsDir, sceneOps, storyboard, stripV, type Op, type Storyboard, type Word } from './planner';
 
 /**
  * Plan → spec for a Style 1 video, fast: storyboard, every scene at once (each dry-run through the exact s1kit copy
@@ -20,7 +20,7 @@ const ms = (t0: number) => Math.round(Date.now() - t0);
 export function brandJson(brand: string) {
   // a brand made from a website (s1url) lives in data/brands; the owner's own brands in MotionEasy
   const own = join(config.data, 'brands', `${brand}.json`);
-  return JSON.parse(readFileSync(existsSync(own) ? own : join(motionEasyDir(), 'styles/style-1/brands', `${brand}.json`), 'utf8'));
+  return JSON.parse(readFileSync(existsSync(own) ? own : join(config.data, 'brands', `${brand}.json`), 'utf8'));
 }
 
 /** The brand's own pieces a plan carries: its logo (the kit's `mark`, logo-land and CTA lockup) and the backdrop corners. */
@@ -109,7 +109,7 @@ export function writeOut(o: { dir: string; id: string; brand: string; extra?: Ki
   const timed = out.events.filter(e => typeof e.t === 'number');
   if (timed.length < out.events.length) log(`dropped ${out.events.length - timed.length} sound cue(s) with no time`);
   // a sound name the owner's map doesn't have falls back to the event's own sound (never a crash in the mixer)
-  const map = JSON.parse(readFileSync(join(motionEasyDir(), 'styles/style-1/sfx/map.json'), 'utf8')), known = new Set(Object.keys(map.sounds)), evs = new Set(Object.keys(map.events));
+  const map = JSON.parse(readFileSync(join(assetsDir(), 'sfx', 'map.json'), 'utf8')), known = new Set(Object.keys(map.sounds)), evs = new Set(Object.keys(map.events));
   for (const e of timed) {
     // an event name the map doesn't have: a sound name used as the event plays that sound on a pop; anything else is a pop
     if (!evs.has(e.event)) { log(`unknown event "${e.event}" → pop`); if (known.has(e.event) && !e.sound) e.sound = e.event; e.event = 'pop'; }

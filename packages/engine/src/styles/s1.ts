@@ -11,7 +11,6 @@ import { ask } from '../runtime';
 import { makePlan } from '../s1fast/make';
 import { fillPlan } from '../s1fast/fill';
 import { siteLogo } from '../s1fast/logo';
-import { motionEasyDir } from '../s1fast/planner';
 import { buildTheme, FONTS } from '../s1fast/theme';
 import { servePreview } from '../s1fast/preview';
 import { arcOf } from './kit/arcs';
@@ -118,7 +117,7 @@ Every line short and concrete, one idea per line, no filler, no two lines alike.
 
   // 5 · audio, then the live preview
   s = Date.now(); C.begin('audio');
-  await mixAudio(dir, motionEasyDir(), [], o.signal);
+  await mixAudio(dir, [], o.signal);
   lap('audio', s);
   T.total = C.since0();
   writeFileSync(join(dir, 'url-report.json'), JSON.stringify({ url, brand: out.name, facts: out.facts, seconds: T }, null, 1));

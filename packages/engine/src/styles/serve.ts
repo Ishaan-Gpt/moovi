@@ -29,8 +29,7 @@ const ROOTED = /(["'`(])\/(v|engine|data|me)(?=[/"'`)])|(["'`(])\/(client\.js|ic
 /** root-relative player paths → under base */
 export const rebase = (s: string, base: string) => s.replace(ROOTED, (_m, q1, a, q2, b) => `${q1 ?? q2}${base}/${a ?? b}`);
 
-const motionEasy = () => process.env.MOTIONEASY_DIR ?? config.motioneasy;
-const engineDir = () => (existsSync(join(config.data, 'vendor', 'engine', 'motioneasy.js')) ? join(config.data, 'vendor', 'engine') : join(motionEasy(), 'apps/web/public/engine'));
+const engineDir = () => join(config.assets, 'renderer');
 const TEXT = new Set(['.json', '.js', '.css', '.html']);
 
 /**
@@ -68,7 +67,7 @@ export function previewFile(ref: PreviewRef, path: string, base: string, skin = 
   if (ref.player === 's5-player' && u === '/client.js') return { status: 200, type: 'text/javascript', body: rebase(readFileSync(join(REPO, 'packages', 'engine', 'src', 's5', 'client.js'), 'utf8'), base) };
   if (ref.player === 's5-player' && u === '/icons.json') return { status: 200, type: 'application/json', body: JSON.stringify(ICONS) };
   const roots: [string, string][] = [['/engine/', engineDir()], ['/v/', resolve(ref.dir)], ['/data/', config.data]];
-  if (ref.player === 's1-engine') roots.push(['/me/', motionEasy()]);
+  if (ref.player === 's1-engine') roots.push(['/me/', config.assets]);
   let file: string | null = null;
   for (const [pre, root] of roots) if (u.startsWith(pre)) { const f = normalize(join(root, u.slice(pre.length))); if (f.startsWith(normalize(root) + sep)) file = f; break; }
   if (!file || !existsSync(file) || !statSync(file).isFile()) return { status: 404 };

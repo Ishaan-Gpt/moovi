@@ -9,7 +9,6 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from '
 import { basename, join, resolve } from 'node:path';
 import { config } from '../config';
 import { buildTheme } from '../s1fast/theme';
-import { motionEasyDir } from '../s1fast/planner';
 import { events, plan, tagLines, type Colors, type Tag, type Word } from '../s5/plan';
 import { S5_ARCS, S5_VOICE } from '../s5/library';
 import { servePlayer } from '../s5/player';
@@ -35,10 +34,7 @@ export async function run(o: RunInput, h: Hooks = {}): Promise<RunResult> {
     C.begin('transcript(ref)');
     // the reference's own words (faster-whisper word timings) and its own soundtrack: the clone keeps its exact timing
     const wf = join(cloneDir, 'words.json');
-    if (!existsSync(wf)) {
-      const py = join(motionEasyDir(), '.venv-audio', 'Scripts', 'python.exe');
-      execFileSync(py, ['-I', '-c', `import json,sys\nfrom faster_whisper import WhisperModel\nm=WhisperModel('small',device='cpu',compute_type='int8')\nsg,_=m.transcribe(sys.argv[1],word_timestamps=True)\nw=[{'word':x.word.strip(),'t':round(x.start,3),'end':round(x.end,3)} for s in sg for x in s.words]\njson.dump(w,open(sys.argv[2],'w',encoding='utf8'),indent=1)`, refVideo!, wf], { stdio: 'inherit' });
-    }
+    if (!existsSync(wf)) throw new Error(`clone tests need the reference's word timings: put words.json ([{word, t, end}]) next to ${refVideo}`);
     words = JSON.parse(readFileSync(wf, 'utf8'));
     ff(['-i', refVideo!, '-vn', '-ar', '44100', '-ac', '2', join(dir, 'master.wav')]);
     colors = { paper: '#FFFFFF', ink: '#111111', accent: '#2DC71B', grey: '#8A8F98' }; // the reference's world (clone tests only)
@@ -98,7 +94,7 @@ export async function run(o: RunInput, h: Hooks = {}): Promise<RunResult> {
     // pad the voice so the end card has room (s1make mixes to the voice's length)
     ff(['-i', join(dir, 'vo.wav'), '-af', `apad=whole_dur=${film.duration.toFixed(2)}`, join(dir, 'vo-pad.wav')]);
     renameSync(join(dir, 'vo-pad.wav'), join(dir, 'vo.wav'));
-    await mixAudio(dir, motionEasyDir(), ['--bed-lu', '9'], o.signal);
+    await mixAudio(dir, ['--bed-lu', '9'], o.signal);
   }
   lap('audio', s);
 

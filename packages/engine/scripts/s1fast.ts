@@ -6,7 +6,6 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
 import { closeRender } from '../src/render/host';
 import { makePlan } from '../src/s1fast/make';
-import { motionEasyDir } from '../src/s1fast/planner';
 import { servePreview } from '../src/s1fast/preview';
 
 const args = process.argv.slice(2), flag = (k: string) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : undefined; };
@@ -22,7 +21,7 @@ let renderMs = 0;
 // Default is PREVIEW: mix the audio and open the live player. A frame-by-frame MP4 only with --render (owner rule).
 if (!args.includes('--plan-only')) {
   const tr = Date.now();
-  execFileSync(process.execPath, [join(import.meta.dirname, '..', 'node_modules', 'tsx', 'dist', 'cli.mjs'), join(import.meta.dirname, 's1make.ts'), dir, ...(args.includes('--render') ? [] : ['--audio-only'])], { stdio: 'inherit', env: { ...process.env, MOTIONEASY_DIR: motionEasyDir() } });
+  execFileSync(process.execPath, [join(import.meta.dirname, '..', 'node_modules', 'tsx', 'dist', 'cli.mjs'), join(import.meta.dirname, 's1make.ts'), dir, ...(args.includes('--render') ? [] : ['--audio-only'])], { stdio: 'inherit' });
   renderMs = Date.now() - tr;
 }
 const report = { id, brand, plan_s: planMs / 1000, render_mix_s: renderMs / 1000, total_s: (Date.now() - t0) / 1000, stages_ms: times };

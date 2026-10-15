@@ -9,18 +9,18 @@ import { modelFor, pickProvider } from './runtime/providers';
  * read from the environment and never written anywhere.
  */
 const here = dirname(fileURLToPath(import.meta.url));
-export const REPO = resolve(here, '../../..');
+/**
+ * The repo root: CE_REPO, else the nearest folder with pnpm-workspace.yaml above this file, else above the working
+ * directory. (Bundled into the studio's production build, this file's own path can point inside .next; the
+ * working directory, apps/studio, still finds the root.)
+ */
+const findRoot = (from: string) => { for (let d = resolve(from); ; d = dirname(d)) { if (existsSync(join(d, 'pnpm-workspace.yaml'))) return d; if (dirname(d) === d) return null; } };
+export const REPO = resolve(process.env.CE_REPO?.trim() || findRoot(here) || findRoot(process.cwd()) || resolve(here, '../../..'));
 
 const env = (k: string) => process.env[k]?.trim() || undefined;
 const num = (k: string, d: number) => { const v = Number(env(k)); return Number.isFinite(v) && v > 0 ? v : d; };
 
 const falkor = env('FALKORDB_URL') ?? 'falkor://localhost:6380';
-// MotionEasy sits next to the ContentEasy checkout; walk up so a worktree (.claude/worktrees/<name>) finds it too.
-const findMotionEasy = () => {
-  for (let d = REPO; dirname(d) !== d; d = dirname(d)) if (existsSync(join(d, '..', 'MotionEasy', 'styles'))) return join(d, '..', 'MotionEasy');
-  return join(REPO, '..', 'MotionEasy');
-};
-const MOTIONEASY = resolve(env('MOTIONEASY_DIR') ?? findMotionEasy());
 const gb = totalmem() / 2 ** 30;
 const RUNTIME = (env('CE_RUNTIME') ?? 'claude-code') as 'claude-code' | 'http';
 const PROVIDER = pickProvider();
@@ -30,8 +30,8 @@ export const config = {
   /** the same server speaks plain Redis: streams for events and commands, lists for the ready queues */
   redis: falkor.replace(/^falkors?:/, m => (m === 'falkors:' ? 'rediss:' : 'redis:')),
   data: resolve(env('CE_DATA_DIR') ?? join(REPO, 'data')),
-  motioneasy: MOTIONEASY,
-  python: env('BENCH_PYTHON') ?? join(MOTIONEASY, '.venv-audio', 'Scripts', 'python.exe'),
+  /** everything a film needs that is not code: the renderer bundle and fonts, the sound kit, the music bed (all in the repo, openly licensed: assets/CREDITS.md) */
+  assets: resolve(env('CE_ASSETS_DIR') ?? join(REPO, 'packages', 'engine', 'assets')),
   ffmpeg: env('FFMPEG') ?? 'ffmpeg',
   ffprobe: env('FFPROBE') ?? 'ffprobe',
   /** the browser the render pool drives (system Chrome by default, like MotionEasy's CLI) */

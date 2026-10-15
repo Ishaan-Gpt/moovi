@@ -10,7 +10,6 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { config } from '../config';
-import { motionEasyDir } from '../s1fast/planner';
 import { buildFilm, describe, events, planFilm, siteArcs, type Word } from '../anatomy/plan';
 import { contactSheet, serveAnatomy } from '../anatomy/player';
 import type { Theme } from '../../../library/src/anatomy/tokens';
@@ -84,7 +83,7 @@ export async function run(o: RunInput, h: Hooks = {}): Promise<RunResult> {
   s = Date.now(); C.begin('audio');
   ff(['-i', join(dir, 'vo.wav'), '-af', `apad=whole_dur=${film.duration.toFixed(2)}`, join(dir, 'vo-pad.wav')]);
   renameSync(join(dir, 'vo-pad.wav'), join(dir, 'vo.wav'));
-  await mixAudio(dir, motionEasyDir(), ['--bed-lu', '9'], o.signal);
+  await mixAudio(dir, ['--bed-lu', '9'], o.signal);
   lap('audio', s);
 
   const { url: pv, close } = await serveAnatomy(dir, port);

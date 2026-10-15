@@ -14,8 +14,8 @@ import { config } from '../config';
  */
 const MIME: Record<string, string> = { '.js': 'text/javascript', '.json': 'application/json', '.html': 'text/html', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.mp4': 'video/mp4', '.webm': 'video/webm', '.mov': 'video/quicktime', '.mp3': 'audio/mpeg', '.wav': 'audio/wav', '.woff2': 'font/woff2', '.woff': 'font/woff', '.ttf': 'font/ttf', '.otf': 'font/otf', '.css': 'text/css' };
 
-const ENGINE_DIR = () => { const v = join(config.data, 'vendor', 'engine'); return existsSync(join(v, 'motioneasy.js')) ? v : join(config.motioneasy, 'apps', 'web', 'public', 'engine'); };
-const ROOTS = () => [['/engine/', ENGINE_DIR()], ['/data/', config.data], ['/me/', config.motioneasy]] as const;
+const ENGINE_DIR = () => join(config.assets, 'renderer');
+const ROOTS = () => [['/engine/', ENGINE_DIR()], ['/data/', config.data], ['/me/', config.assets]] as const;
 
 const HOST_HTML = `<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#fff}</style></head><body>
 <script src="/engine/motioneasy.js"></script>

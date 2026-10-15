@@ -77,7 +77,7 @@ input[type=range]{flex:1}
 
 /** Serve <dir>/film.json with its audio on the Style 5 player; resolves the page URL. */
 export async function servePlayer(dir: string, port = 0): Promise<{ url: string; close: () => void }> {
-  const roots = [['/engine/', join(config.data, 'vendor', 'engine')], ['/v/', resolve(dir)]] as const;
+  const roots = [['/engine/', join(config.assets, 'renderer')], ['/v/', resolve(dir)]] as const;
   const clientFile = join(import.meta.dirname, 'client.js');
   const server = createServer((req, res) => {
     const u = decodeURIComponent((req.url ?? '/').split('?')[0]!);

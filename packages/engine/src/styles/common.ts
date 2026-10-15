@@ -1,3 +1,4 @@
+import { speak } from '../audio/tts';
 import { spawn, spawnSync } from 'node:child_process';
 import { basename, join } from 'node:path';
 import { config, REPO } from '../config';
@@ -60,8 +61,6 @@ export interface RunResult {
 export const ENGINE = join(REPO, 'packages', 'engine');
 export const TSX = join(ENGINE, 'node_modules', 'tsx', 'dist', 'cli.mjs');
 export const S1MAKE = join(ENGINE, 'scripts', 's1make.ts');
-export const S1TTS = join(ENGINE, 'py', 's1tts.py');
-export const TTS_PY = join(REPO, 'data', '.venv-tts', 'Scripts', 'python.exe');
 
 /** Thrown when Stop cancels a run: the job reports "cancelled", never "failed". */
 export class Cancelled extends Error { constructor(stage?: string) { super(`cancelled${stage ? ` at ${stage}` : ''}`); this.name = 'Cancelled'; } }
@@ -94,8 +93,8 @@ export function sh(cmd: string, args: string[], o: { timeout?: number; env?: Nod
 }
 
 /** s1make --audio-only: the Style 1 SFX kit under the events, the bed under the voice, mastered to -14 LUFS. */
-export const mixAudio = (dir: string, motionEasy: string, extra: string[] = [], signal?: AbortSignal) =>
-  sh(process.execPath, [TSX, S1MAKE, dir, '--audio-only', ...extra], { env: { ...process.env, MOTIONEASY_DIR: motionEasy }, signal });
+export const mixAudio = (dir: string, extra: string[] = [], signal?: AbortSignal) =>
+  sh(process.execPath, [TSX, S1MAKE, dir, '--audio-only', ...extra], { signal });
 
 /** The voice used when the asked one keeps failing (another edge-tts neural voice, same language). */
 const fallbackVoice = (v: string) => (v.startsWith('en-IN') ? (v === 'en-IN-NeerjaNeural' ? 'en-IN-PrabhatNeural' : 'en-IN-NeerjaNeural') : v === 'en-US-GuyNeural' ? 'en-US-ChristopherNeural' : 'en-US-GuyNeural');
@@ -110,7 +109,7 @@ export async function tts(dir: string, voice: string, rate: string, o: { signal?
   const errs: string[] = [];
   for (const [i, [v, cap]] of tries.entries()) {
     try {
-      await sh(TTS_PY, [S1TTS, dir, '--voice', v, '--rate', rate], { timeout: cap, signal: o.signal });
+      await speak(dir, { voice: v, rate, signal: o.signal, timeoutMs: cap });
       if (i) o.log?.(`voice ok on try ${i + 1} (${v})`);
       return v;
     } catch (e) {

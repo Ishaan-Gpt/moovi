@@ -1,18 +1,19 @@
 import { execFile } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import type { Ev, Word } from '@contenteasy/skills';
 import { config } from './config';
+import { assetsReady, bedFile, bedFrom, bedInfo, sfxStem as mixSfx, type Ev as MixEv } from './audio/mix';
+import { transcribeWords } from './audio/stt';
+import { speak } from './audio/tts';
+import { readWav, writeWav } from './audio/wav';
 
 /**
- * The bench: the owner's MotionEasy audio tools (Kokoro + faster-whisper voice, the event-mapped SFX mixer, the bed
- * loop) and ffmpeg, run locally. Voice at −18 LUFS, bed `bedLu` under it, SFX stem +6 dB, master −14 LUFS with peaks
- * ≤ −1 dBTP: the Style 1 levels. Everything here is a plain function of its files; agents never call it directly.
+ * The bench: ffmpeg plus the engine's own audio (src/audio: the edge-tts voice with word timings, the event-mapped SFX
+ * mixer and the music bed, all TypeScript; speech-to-text on the user's own key). Voice at −18 LUFS, bed `bedLu`
+ * under it, SFX stem +6 dB, master −14 LUFS with peaks ≤ −1 dBTP. Everything here is a plain function of its files;
+ * agents never call it directly. Needs nothing installed but ffmpeg.
  */
-const PY = config.python, ME = config.motioneasy, TOOLS = join(ME, 'styles', 'tools');
-const OURS = join(dirname(fileURLToPath(import.meta.url)), '..', 'py');
-
 export function sh(cmd: string, args: string[], o: { timeout?: number; cwd?: string } = {}): Promise<{ stdout: string; stderr: string }> {
   return new Promise((res, rej) => {
     execFile(cmd, args, { cwd: o.cwd, timeout: o.timeout ?? 600_000, maxBuffer: 64 * 1024 * 1024, windowsHide: true }, (err, stdout, stderr) => {
@@ -21,17 +22,15 @@ export function sh(cmd: string, args: string[], o: { timeout?: number; cwd?: str
     });
   });
 }
-const py = (script: string, args: string[], timeout = 900_000) => sh(PY, ['-W', 'ignore', script, ...args], { timeout, cwd: ME });
 
 export interface BenchStatus { ok: boolean; voice: boolean; sfx: boolean; ffmpeg: boolean; why?: string }
 let status: BenchStatus | null = null;
 export async function benchStatus(): Promise<BenchStatus> {
   if (status) return status;
-  const voice = existsSync(PY) && existsSync(join(ME, '.venv-audio', 'models', 'kokoro')) && existsSync(join(TOOLS, 'vo.py'));
-  const sfx = existsSync(join(TOOLS, 'sfx_mix.py')) && existsSync(join(ME, 'styles', 'style-1', 'sfx', 'map.json'));
+  const sfx = assetsReady();
   const ffmpeg = await sh(config.ffmpeg, ['-version'], { timeout: 10_000 }).then(() => true, () => false);
-  const why = !existsSync(ME) ? `No MotionEasy at ${ME} (set MOTIONEASY_DIR)` : !voice ? 'MotionEasy has no voice tools (.venv-audio with Kokoro)' : !ffmpeg ? 'ffmpeg is not on the PATH' : !sfx ? 'MotionEasy has no SFX map' : undefined;
-  status = { ok: voice && sfx && ffmpeg, voice, sfx, ffmpeg, why };
+  const why = !ffmpeg ? 'ffmpeg is not on the PATH (install it, or set FFMPEG)' : !sfx ? `the sound kit is missing from ${config.assets}` : undefined;
+  status = { ok: sfx && ffmpeg, voice: true, sfx, ffmpeg, why };
   return status;
 }
 
@@ -65,10 +64,8 @@ export async function cutRate(file: string, duration: number): Promise<number> {
   return duration > 0 ? +(n / duration).toFixed(3) : 0;
 }
 
-export async function faceRatio(file: string): Promise<number> {
-  const { stdout } = await sh(PY, ['-W', 'ignore', join(OURS, 'face.py'), file, '--samples', '12'], { timeout: 180_000 });
-  return (JSON.parse(stdout.trim().split('\n').at(-1)!) as { ratio: number }).ratio;
-}
+/** Share of sampled frames with a face. Face detection is not bundled: "unknown" (−1), and footage is classified by its other signals. */
+export async function faceRatio(_file: string): Promise<number> { return -1; }
 
 /** Stills from a video at given times (for a reference's contact sheet and a vision model). */
 export async function frames(file: string, times: number[], dir: string, width = 540): Promise<string[]> {
@@ -84,19 +81,31 @@ export async function frames(file: string, times: number[], dir: string, width =
 
 /* ───────── voice ───────── */
 
-/** Kokoro speaks the script (blank line = a new beat), faster-whisper times every word. About a minute on a laptop CPU. */
+/** The script spoken (edge-tts, word timings in the same pass); `speed` 1.18 = 18 % faster. */
 export async function tts(dir: string, script: string, o: { voice?: string; speed?: number } = {}): Promise<{ words: Word[]; seconds: number; wav: string }> {
   ensureDir(dir);
   writeFileSync(join(dir, 'script.txt'), script, 'utf8');
-  await py(join(TOOLS, 'vo.py'), ['tts', join(dir, 'script.txt'), dir, '--voice', o.voice ?? 'am_michael', '--speed', String(o.speed ?? 1.18)]);
-  const rep = readJson<{ duration_s: number }>(join(dir, 'vo-report.json'));
-  return { words: readJson<Word[]>(join(dir, 'words.json')), seconds: rep.duration_s, wav: join(dir, 'vo.wav') };
+  const pct = Math.round(((o.speed ?? 1.12) - 1) * 100);
+  await speak(dir, { voice: o.voice && /Neural$/.test(o.voice) ? o.voice : 'en-US-AndrewMultilingualNeural', rate: `${pct >= 0 ? '+' : ''}${pct}%` });
+  const wav = join(dir, 'vo.wav');
+  return { words: readJson<Word[]>(join(dir, 'words.json')), seconds: (await probe(wav)).duration, wav };
 }
 
-/** Open pauses after words (room for a visual beat), keeping words.json in sync. */
+/** Open pauses after words (room for a visual beat): silence spliced into vo.wav, later words shifted to match. */
 export async function gaps(dir: string, after: { word: string; seconds: number }[]) {
   if (!after.length) return;
-  await py(join(TOOLS, 'vo_gaps.py'), [dir, ...after.map(a => `${a.word}=${a.seconds}`)]);
+  const wavFile = join(dir, 'vo.wav'), words = readJson<Word[]>(join(dir, 'words.json')), pcm = readWav(wavFile);
+  const norm = (w: string) => w.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+  const at: { i: number; s: number }[] = [];
+  for (const a of after) { const i = words.findIndex((w, k) => norm(w.word) === norm(a.word) && !at.some(x => x.i === k)); if (i >= 0) at.push({ i, s: a.seconds }); }
+  at.sort((x, y) => y.i - x.i); // from the end, so earlier cut points stay valid
+  for (const { i, s } of at) {
+    const cutAt = Math.round((words[i]!.end ?? words[i]!.t) * pcm.sr), pad = Math.round(s * pcm.sr);
+    pcm.ch = pcm.ch.map(c => { const y = new Float32Array(c.length + pad); y.set(c.subarray(0, cutAt)); y.set(c.subarray(cutAt), cutAt + pad); return y; });
+    for (let k = i + 1; k < words.length; k++) { words[k]!.t = +(words[k]!.t + s).toFixed(3); if (words[k]!.end != null) words[k]!.end = +(words[k]!.end! + s).toFixed(3); }
+  }
+  writeWav(wavFile, pcm);
+  writeJson(join(dir, 'words.json'), words);
 }
 
 /** A voice track from a file (the user's voice-over, or the audio of footage): 44.1 kHz mono + every word timed. */
@@ -104,32 +113,29 @@ export async function transcribe(src: string, dir: string): Promise<{ words: Wor
   ensureDir(dir);
   const wav = join(dir, 'vo.wav');
   await sh(config.ffmpeg, ['-v', 'error', '-y', '-i', src, '-vn', '-ac', '1', '-ar', '44100', wav], { timeout: 300_000 });
-  await py(join(TOOLS, 'words.py'), [wav, join(dir, 'words.json'), '--model', 'small']);
-  return { words: readJson<Word[]>(join(dir, 'words.json')), seconds: (await probe(wav)).duration, wav };
+  const words = await transcribeWords(wav, dir);
+  writeJson(join(dir, 'words.json'), words);
+  return { words, seconds: (await probe(wav)).duration, wav };
 }
 
 /* ───────── sound ───────── */
 
 export async function sfxStem(dir: string, events: Ev[]): Promise<string> {
   writeJson(join(dir, 'events.json'), events);
-  await py(join(TOOLS, 'sfx_mix.py'), [join(dir, 'events.json'), join(dir, 'sfx.wav'), '--style', 'style-1'], 300_000);
+  mixSfx(events as unknown as MixEv[], join(dir, 'sfx.wav'));
   return join(dir, 'sfx.wav');
 }
 
-/** The style's own bed (Style 1: the owner's bed from its strong beat), or a library track from its strong section. */
+/** The bundled bed (an openly licensed track from its start point; its credit is in assets/music/bed.json). */
 export function ownerBed(): { file: string; start: number; bpm: number } | null {
-  const j = join(ME, 'styles', 'style-1', 'music', 'bed.json');
-  if (!existsSync(j)) return null;
-  const b = readJson<{ file: string; start: number; bpm: number }>(j);
-  const file = join(ME, 'styles', 'style-1', 'music', b.file);
-  return existsSync(file) ? { file, start: b.start, bpm: b.bpm } : null;
+  if (!assetsReady()) return null;
+  return { file: bedFile(), start: bedInfo().start, bpm: 0 };
 }
-export const libraryTrack = (src: string) => join(ME, 'assets', 'audio', 'music', 'web', basename(src));
+/** A library track by name: only the bundled bed ships, so every pick plays it. */
+export const libraryTrack = (_src: string) => bedFile();
 
 export async function bed(dir: string, o: { file: string; start: number; bpm: number; seconds: number }): Promise<string> {
-  const out = join(dir, 'music.wav');
-  await sh(PY, ['-W', 'ignore', join(OURS, 'bed.py'), o.file, out, '--seconds', o.seconds.toFixed(3), '--start', String(o.start), '--bpm', String(o.bpm)], { timeout: 300_000 });
-  return out;
+  return bedFrom(existsSync(o.file) ? o.file : bedFile(), existsSync(o.file) ? o.start : bedInfo().start, o.seconds, join(dir, 'music.wav'));
 }
 
 /**

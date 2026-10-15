@@ -21,7 +21,9 @@ export const modelName = (tier: Tier) => model(tier);
  * bring-your-own-key, ../keys.ts), so one worker serves many users at once and no job ever uses another's key.
  * Outside a scope (the terminal, tests) it is the machine's configured runtime.
  */
-export interface ModelScope { runtime: Runtime; models: Record<Tier, string>; provider: string; deadlineScale: number; drawsWell: boolean }
+export interface ModelScope { runtime: Runtime; models: Record<Tier, string>; provider: string; deadlineScale: number; drawsWell: boolean;
+  /** speech-to-text on the user's own key (Groq or OpenAI Whisper), for footage and voice-overs; engine-side only */
+  audio?: { provider: 'groq' | 'openai'; key: string } }
 const scoped = new AsyncLocalStorage<ModelScope>();
 export const withModel = <T>(s: ModelScope, fn: () => T): T => scoped.run(s, fn);
 export const modelScope = () => scoped.getStore() ?? null;
@@ -129,6 +131,7 @@ async function askJson<S extends z.ZodRawShape>(rt: Runtime, o: Parameters<typeo
       if (!bad) return r;
       error = bad;
     } else error = r.error;
+    if (process.env.CE_DEBUG_HTTP) console.warn(`[ask] ${o.agent} repair turn ${attempt + 1}: ${error.slice(0, 300)}`);
     history.push({ role: 'assistant', text: text.slice(0, 6000) }, { role: 'user', text: `That answer has problems: ${error}\nReply with the corrected JSON object only.` });
   }
   return { ok: false, error };

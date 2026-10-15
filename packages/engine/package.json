@@ -21,7 +21,6 @@
     "s1make": "tsx --env-file-if-exists=../../.env.local scripts/s1make.ts",
     "s1fast": "tsx --env-file-if-exists=../../.env.local scripts/s1fast.ts",
     "s1preview": "tsx scripts/s1preview.ts",
-    "s1templates": "tsx scripts/s1templates.ts",
     "s1url": "tsx --env-file-if-exists=../../.env.local scripts/s1url.ts",
     "s4": "tsx --env-file-if-exists=../../.env.local scripts/s4.ts",
     "s5": "tsx --env-file-if-exists=../../.env.local scripts/s5.ts",

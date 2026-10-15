@@ -15,7 +15,7 @@ const AUTONOMOUS = new Set(['s1']);
 
 /**
  * The shared craft graph: components, slots, flows, recipes, transitions, beds and their beat grids, and the owner's
- * styles (brand-scrubbed by scripts/extract-styles.mjs). Idempotent. A style package (packages/skills) is seeded on
+ * styles (brand-scrubbed once from MotionEasy, MIT; the data now lives in packages/graph/data). Idempotent. A style package (packages/skills) is seeded on
  * top by `seedStylePackage`.
  */
 export async function seedCraft(opts: { reset?: boolean } = {}) {

@@ -26,7 +26,8 @@ const { chunk, closeRender } = await import('../src/render/host');
 
 const dir = resolve(process.env.INIT_CWD ?? process.cwd(), dirArg); // pnpm runs scripts in the package dir; INIT_CWD is where you typed it
 if (!(dir + sep).startsWith(resolve(config.data) + sep)) throw new Error(`${dir} is outside the data dir (${config.data}); the render host only writes there`);
-const ME = config.motioneasy, PY = config.python;
+const ME = config.assets;
+const { stems: makeStems } = await import('../src/audio/mix');
 // the spec is <dir name>.json; otherwise the one JSON that isn't a known side file (the fast planner also writes board/plan/scenes)
 const specFile = existsSync(join(dir, `${basename(dir)}.json`)) ? `${basename(dir)}.json` : readdirSync(dir).find(f => f.endsWith('.json') && !['events.json', 'words.json', 'make-report.json', 'timeline.json', 'vo-report.json', 'board.json', 'plan.json', 'scenes.json', 'fast-report.json'].includes(f));
 if (!specFile) throw new Error(`No <id>.json spec in ${dir}`);
@@ -87,7 +88,7 @@ let audioInfo: Record<string, unknown> = {};
 async function renderAudio() {
   const voice = join(dir, 'vo.wav');
   const [stems, vl] = await Promise.all([
-    clock('audio.stems(sfx+bed)', () => sh(PY, ['-W', 'ignore', join(import.meta.dirname, '..', 'py', 's1audio.py'), join(dir, 'events.json'), dir, '--me', ME, '--cache', join(config.data, 'cache', 's1audio'), '--seconds', dur.toFixed(3)], { timeout: 600_000 })),
+    clock('audio.stems(sfx+bed)', async () => makeStems(JSON.parse(readFileSync(join(dir, 'events.json'), 'utf8')), dir, dur)),
     clock('audio.voice_lufs', async () => (await loudness(voice)).lufs),
   ]);
   void stems;

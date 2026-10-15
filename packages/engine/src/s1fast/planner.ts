@@ -1,3 +1,4 @@
+import { config } from '../config';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { z } from 'zod';
@@ -17,20 +18,15 @@ export type Op = Record<string, unknown>;
 export interface Scene { name: string; from: number; to: number; text: string; idea: string; preset: string; props: string[]; hero?: string; tier: 'fast' | 'crew' }
 export interface Storyboard { brand: string; brief?: string; scenes: Scene[] }
 
-export function motionEasyDir() {
-  if (process.env.MOTIONEASY_DIR) return process.env.MOTIONEASY_DIR;
-  for (let d = REPO; ; d = dirname(d)) {
-    if (existsSync(join(d, '..', 'MotionEasy', 'styles'))) return join(d, '..', 'MotionEasy');
-    if (dirname(d) === d) throw new Error('MotionEasy not found next to ContentEasy; set MOTIONEASY_DIR');
-  }
-}
+/** Everything a film needs that is not code (renderer, fonts, sound kit, music bed): packages/engine/assets. */
+export const assetsDir = () => config.assets;
 
 let cached: { skill: string; kit: string; props: string; gold: { id: string; plan: string }[]; kinds: Set<string> } | null = null;
 function sources() {
   if (cached) return cached;
-  const me = motionEasyDir();
-  const skill = readFileSync(join(me, '.claude/skills/style-1/SKILL.md'), 'utf8');
-  const kit = readFileSync(join(me, 'styles/tools/s1kit.py'), 'utf8');
+  // the Style 1 rules and kit as this repo has them (brand-free): the model's reference for freeform scenes
+  const skill = readFileSync(join(REPO, 'packages/skills/src/style-1/skill.ts'), 'utf8');
+  const kit = readFileSync(join(REPO, 'packages/skills/src/style-1/s1kit/kit.ts'), 'utf8');
   const propsTs = readFileSync(join(REPO, 'packages/library/src/style-1/props.ts'), 'utf8');
   const props = propsTs.slice(propsTs.indexOf('['), propsTs.lastIndexOf(']') + 1);
   const dir = join(REPO, 'packages/library/src/style-1/plans');

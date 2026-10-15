@@ -16,14 +16,11 @@
     "dev:landing": "pnpm --filter @contenteasy/landing dev",
     "graph:seed": "pnpm --filter @contenteasy/graph seed",
     "graph:reset": "pnpm --filter @contenteasy/engine reset",
-    "craft:extract": "pnpm --filter @contenteasy/graph extract-craft",
-    "falkordb": "docker run -d --name moovi-falkordb -p 6380:6379 -p 3001:3000 -v moovi-falkordb:/var/lib/falkordb/data falkordb/falkordb:latest",
+    "falkordb": "docker run -d --name moovi-falkordb -p 6380:6379 -p 3001:3000 -v moovi-falkordb:/var/lib/falkordb/data falkordb/falkordb:6.0.2",
     "dev:engine": "pnpm --filter @contenteasy/engine worker",
     "engine:run": "pnpm --filter @contenteasy/engine run",
     "test": "pnpm -r --if-present test",
     "s1:make": "pnpm --filter @contenteasy/engine s1make",
-    "sync:vendor": "node packages/engine/scripts/sync-vendor.mjs",
-    "sync:style1": "node packages/library/scripts/sync-style1.mjs",
     "s1:fast": "pnpm --filter @contenteasy/engine s1fast"
   }
 }

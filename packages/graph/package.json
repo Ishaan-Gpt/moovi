@@ -9,7 +9,6 @@
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
-    "extract-craft": "node scripts/extract-craft.mjs",
     "seed": "tsx scripts/seed.ts",
     "check": "tsx scripts/check.ts",
     "docs": "tsx scripts/docs.ts"
