@@ -208,9 +208,11 @@ export const board: Handler = async ctx => {
   await ctx.say(`Boarded ${BD.shots.length} shots. ${BD.shots.map((s, i) => `${i + 1}. ${s.move}`).slice(0, 4).join(' · ')}${BD.shots.length > 4 ? ' …' : ''}`);
 
   // fan out: every asset request, then one Shot Builder per scene (each waits for its own assets and the corners)
-  const reqs = [...BD.corners.map(c => ({ ...c, scene: -1 })), ...BD.shots.flatMap(s => s.assets.map(a => ({ ...a, scene: s.scene })))];
+  const reqs: (Board['corners'][number] & { scene: number; look?: string })[] = [...BD.corners.map(c => ({ ...c, scene: -1 })), ...BD.shots.flatMap(s => s.assets.map(a => ({ ...a, scene: s.scene }))),
+    // a scene with a 3D look gets a rendered poster of it as an asset (no model call: the look, the site and the scene's numbers decide)
+    ...BD.shots.filter(s => s.look3d && isLook(s.look3d)).map(s => ({ id: `look${s.scene}`, kind: 'look3d', what: `3D ${s.look3d} for scene ${s.scene + 1}`, url: null, scene: s.scene, look: s.look3d! }))];
   const voiceKey = (await ctx.out('transcribe')) !== null || m.features.footage === 'edit' ? 'transcribe' : 'voice';
-  const spawn: TaskSpec[] = reqs.map(a => ({ key: `asset:${a.id}`, kind: 'asset', agent: 'hunter', resource: 'llm', title: `Find: ${a.what.slice(0, 40)}`, scope: a.scene >= 0 ? `scene:${a.scene}` : 'corners', input: a, deps: ['board'], optional: true, max: 2 }));
+  const spawn: TaskSpec[] = reqs.map(a => ({ key: `asset:${a.id}`, kind: 'asset', agent: 'hunter', resource: a.kind === 'look3d' ? 'chrome' : 'llm', title: `Find: ${a.what.slice(0, 40)}`, scope: a.scene >= 0 ? `scene:${a.scene}` : 'corners', input: a, deps: ['board'], optional: true, max: 2 }));
   for (const s of BD.shots) spawn.push({ key: `build:${s.scene}`, kind: 'build', agent: 'builder', resource: 'llm', title: `Build scene ${s.scene + 1}`, scope: `scene:${s.scene}`, input: { scene: s.scene },
     deps: ['board', voiceKey, ...(cardOut || (await ctx.out('card')) ? ['card'] : []), ...reqs.filter(a => a.scene === s.scene || a.scene === -1).map(a => `asset:${a.id}`)], max: 3 });
   return { output: BD, spawn, note: `${BD.shots.length} shots, ${reqs.length} assets` };

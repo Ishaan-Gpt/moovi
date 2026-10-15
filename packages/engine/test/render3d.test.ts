@@ -64,3 +64,27 @@ test('a scene is linked to its 3D look in the project graph: (Scene)-[:USES_3D]-
     assert.deepEqual((await runQ<{ look: string; scenes: number }>(g, P.look3dUsage, {})).map(r => [r.look, r.scenes]), [['particles', 2], ['tower', 1]]);
   } finally { await dropGraph(g).catch(() => {}); await closeMemory().catch(() => {}); }
 });
+
+test('a scene’s numbers become the tower’s bars; a scene without numbers gets no chart', async () => {
+  const { numbersIn, SIZES } = await import('../src/render3d/asset');
+  assert.deepEqual(numbersIn('Revenue went from 1,200 to 3,400 in 6 months'), [1200, 3400, 6]);
+  assert.deepEqual(numbersIn('no figures here'), []);
+  assert.equal(numbersIn('1 2 3 4 5 6 7 8 9 10 11').length, 8);
+  assert.deepEqual(SIZES.vertical, [1080, 1920]);
+});
+
+test('a look’s poster is a real PNG at the film’s size', async t => {
+  if (!(await canRender3d())) { t.skip('no Chrome to drive'); return; }
+  const { renderPoster } = await import('../src/render3d/capture');
+  const { mkdtempSync, readFileSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  try {
+    const out = join(mkdtempSync(join(tmpdir(), 'poster-')), 'p.png');
+    const r = await renderPoster('tower', { width: 270, height: 480, values: [2, 4, 3, 9] }, out);
+    const png = readFileSync(out);
+    assert.equal(png.subarray(1, 4).toString(), 'PNG');
+    assert.equal(png.readUInt32BE(16), 270); assert.equal(png.readUInt32BE(20), 480);
+    assert.equal(r.width, 270);
+  } finally { await close3d(); }
+});
