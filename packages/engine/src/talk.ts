@@ -8,6 +8,7 @@ import { ask, tool, type Tool } from './runtime';
 import { startRun } from './runs';
 import { keyOf, type TaskSpec } from './scheduler';
 import { learn, NOTE } from './tasks/keeper';
+import { FEEDBACK_KINDS, feedbackFromEdit, recordFeedback, type EditNote, type FilmRef } from './memory';
 
 /**
  * The chat. Moovi answers by default; "@scribe …" (or any agent) goes to that agent, who answers from its own work
@@ -19,7 +20,7 @@ type Msg = Extract<Command, { type: 'message' }>;
 const json = <T>(s: unknown): T | null => { if (s == null) return null; if (typeof s !== 'string') return s as T; try { return JSON.parse(s) as T; } catch { return null; } };
 
 async function context(pid: string, chat: string) {
-  const [c] = await pq<{ title: string; videoStatus: string; version: number; duration: number | null }>(pid, P.chat, { id: chat });
+  const [c] = await pq<{ title: string; videoStatus: string; version: number; duration: number | null; video: string }>(pid, P.chat, { id: chat });
   const [run] = await pq<{ id: string; n: number; status: string; skill: string | null }>(pid, P.latestRun, { chat });
   const msgs = await pq<{ role: string; agent: string | null; text: string; kind: string }>(pid, P.messages, { chat, n: 400 });
   const board = run ? await pq<{ id: string; kind: string; agent: string; scope: string | null; status: string; note: string | null; ms: number | null }>(pid, P.board, { run: run.id }) : [];
@@ -83,13 +84,15 @@ async function moovi(pid: string, chat: string, cmd: Msg, ctx: Awaited<ReturnTyp
       } }),
   ];
   const r = await ask({ agent: 'moovi:talk', tier: 'director', tools, maxTurns: 6, deadlineMs: 150_000,
-    system: `You are Moovi, the director of an AI video crew. You talk to the user in the chat: warm, brief, concrete. You can answer questions about the video and the crew's work (use your tools), or turn a request into a change. Changes you can run: "scenes" (rebuild some scenes' visuals), "sound" (music or SFX levels), "script" (new words: rewrite, re-voice, re-board everything after), "remake" (start over with the change). ${ready ? 'The video is ready.' : run ? `The current version is ${run.status}.` : 'There is no video yet.'}`,
+    system: `You are Moovi, the director of an AI video crew. You talk to the user in the chat: warm, brief, concrete. You can answer questions about the video and the crew's work (use your tools), or turn a request into a change. Changes you can run: "scenes" (rebuild some scenes' visuals), "sound" (music or SFX levels), "script" (new words or a new voice: rewrite, re-voice, re-board everything after), "remake" (start over with the change). Whenever the user edits or turns something down, also list it in notes (kind script_line, voice, style, shot, caption or sound; rejected true when they turned it down, false when they chose it; scene number when it is about one scene; value = the style id or voice name; why = their reason in their own words). ${ready ? 'The video is ready.' : run ? `The current version is ${run.status}.` : 'There is no video yet.'}`,
     prompt: `The chat so far:\n${ctx.msgs.map(m => `${m.role === 'user' ? 'User' : AGENT_NAMES[(m.agent ?? 'moovi') as AgentId]}: ${m.text}`).join('\n')}\n\nThe user now${cmd.mentions.includes('video') ? ' (about the video)' : ''}: ${cmd.text}`,
     schema: {
       reply: z.string().min(1).max(700),
-      edit: z.object({ mode: z.enum(['none', 'scenes', 'sound', 'script', 'remake']), scenes: z.array(z.number().int().min(1)).max(14), change: z.string().max(600), sound: z.object({ bedLu: z.number().min(0).max(14).nullable(), sfxDb: z.number().min(-6).max(12).nullable() }).nullable() }),
+      edit: z.object({ mode: z.enum(['none', 'scenes', 'sound', 'script', 'remake']), scenes: z.array(z.number().int().min(1)).max(14), change: z.string().max(600), sound: z.object({ bedLu: z.number().min(0).max(14).nullable(), sfxDb: z.number().min(-6).max(12).nullable() }).nullable(),
+        notes: z.array(z.object({ kind: z.enum(FEEDBACK_KINDS), rejected: z.boolean(), scene: z.number().int().min(1).nullable(), value: z.string().max(120).nullable(), why: z.string().max(300) })).max(6).optional() }),
     } });
   await say(pid, chat, 'moovi', r.reply);
+  if (run) await keepNotes(pid, chat, cmd, run, r.edit, scenes).catch(e => console.error('[feedback]', e));
   if (r.edit.mode === 'none') return;
   if (run && (run.status === 'running' || run.status === 'planned')) {
     await say(pid, chat, 'moovi', 'I’ll make that change as soon as this version is ready.', 'note', { pendingEdit: r.edit });
@@ -97,6 +100,22 @@ async function moovi(pid: string, chat: string, cmd: Msg, ctx: Awaited<ReturnTyp
   }
   if (!run) return;
   await startEdit(pid, chat, run.id, r.edit);
+}
+
+/** The user's change is feedback on the film they were looking at: stored for the next film (and this edit) to read. */
+async function keepNotes(pid: string, chat: string, cmd: Msg, run: { id: string; n: number; skill: string | null }, e: Parameters<typeof feedbackFromEdit>[0], scenes: { i: number; program: string }[]) {
+  const [c] = await pq<{ video: string; title: string | null }>(pid, P.chat, { id: chat });
+  if (!c) return;
+  const work = await pq<{ kind: string; output: string | null }>(pid, P.tasksOf, { run: run.id, kinds: ['board', 'voice'] });
+  const shots = new Map<number, string>();
+  for (const sh of json<{ shots: { scene: number; idea: string }[] }>(work.find(t => t.kind === 'board')?.output)?.shots ?? []) shots.set(sh.scene, sh.idea);
+  for (const sc of scenes) if (!shots.has(sc.i)) shots.set(sc.i, json<{ name?: string }>(sc.program)?.name ?? '');
+  const voice = json<{ voice?: string }>(work.find(t => t.kind === 'voice')?.output)?.voice ?? 'en-US-AndrewMultilingualNeural';
+  const items = feedbackFromEdit(e, { shots, voice, style: run.skill });
+  if (!items.length) return;
+  const ref: FilmRef = { user: cmd.user, project: pid, run: run.id, runN: run.n, video: c.video, style: run.skill, title: c.title };
+  await recordFeedback(ref, items);
+  await say(pid, chat, 'keeper', `Kept for the next film: ${items.map(i => `${i.rejected ? 'turned down' : 'chose'} ${i.kind.replace('_', ' ')}${i.scene != null ? ` ${i.scene + 1}` : ''}`).join(', ')}.`, 'note');
 }
 
 /** After a run ends: start the change the user asked for while it was running (the latest one wins). */

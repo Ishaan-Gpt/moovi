@@ -7,7 +7,8 @@ import type { Handler, TaskCtx } from '../ctx';
 import { newId } from '../ids';
 import { ask, tool } from '../runtime';
 import type { Brief } from './plan';
-import { knowledge, systemFor } from './agent';
+import { feedbackMemory, filmRef, knowledge, systemFor } from './agent';
+import { changedLines, recordFeedback, voiceFor } from '../memory';
 
 /**
  * The Scribe writes what the voice says, beat by beat, and the truth guard checks every beat before it ships:
@@ -59,6 +60,7 @@ export const script: Handler = async ctx => {
   const roles = ['hook', 'story', 'list', 'proof', 'turn', 'brand', 'cta', 'end'] as const;
   const fb = ctx.task.feedback ?? ctx.input<{ feedback?: string }>().feedback ?? null;
   const prevScript = fb ? ctx.input<{ previousScript?: Script }>().previousScript ?? null : null;
+  const { block: memory } = await feedbackMemory(ctx, 'scribe');
   const feedback = fb ? `\n\nTHE CHANGE TO MAKE: ${fb}${prevScript ? `\nTHE LAST SCRIPT: ${JSON.stringify(prevScript.beats)}` : ''}` : '';
 
   const out = await ask({
@@ -72,6 +74,7 @@ export const script: Handler = async ctx => {
       isTranscript ? `TRANSCRIPT (${transcript.seconds.toFixed(1)} s): ${spoken}` : `LENGTH: ${B.seconds} s ≈ ${targetWords} spoken words in ${nBeats} beats. First beat: hook. ${B.cta.kind !== 'none' ? 'Last beat: cta (the ask); the brand beat right before it says the product name.' : 'Last beat: end.'}`,
       `FACTS YOU MAY CITE:\n${factRows.map(f => `- ${f.id}: ${f.text} (source: ${f.source})`).join('\n') || '(none: write no numbers, no proof words, nothing a fact would have to hold)'}`,
       `ANGLES ALREADY USED BY THIS USER: ${used.map(u => u.angle).filter(Boolean).join(' · ') || 'none'}`,
+      memory,
     ].join('\n\n') + feedback,
     schema: {
       title: z.string().min(3).max(60), angle: z.string().min(5).max(200), hook: z.string().min(3).max(60),
@@ -106,6 +109,14 @@ export const script: Handler = async ctx => {
   });
   const S: Script = { title: out.title, angle: out.angle, hook: out.hook, beats: out.beats as Beat[], mode: isTranscript ? 'transcript' : 'tts' };
   writeJson(join(ctx.dir, 'script.json'), S);
+  // the user sent the words back: every line that came out different is a note on the film they were looking at
+  if (prevScript && ctx.run.parent) {
+    const changed = changedLines(prevScript.beats, S.beats);
+    if (changed.length) {
+      await recordFeedback(await filmRef(ctx, ctx.run.parent, prevScript.title), changed.map(c => ({ kind: 'script_line' as const, rejected: true, scene: c.scene, before: c.before, after: c.after, why: fb, source: 'diff' as const }))).catch(e => ctx.activity('note', `feedback not kept: ${String(e).slice(0, 100)}`));
+      await ctx.activity('tool', `graph · ${changed.length} rewritten line${changed.length === 1 ? '' : 's'} kept as feedback`);
+    }
+  }
   await ctx.q(P.decide, { agent: 'scribe', target: ctx.run.id, id: newId('d'), kind: 'script', why: `${S.beats.length} beats, angle "${S.angle}"`, at: Date.now(), lessons: know.lessons.map(l => l.id), laws: [], because: [...new Set(S.beats.flatMap(b => b.facts))] });
   await ctx.say(`${S.beats.length} beats, every claim checked against its source. Hook: “${S.beats[0]?.say ?? ''}”`, 'note');
   return { output: S, note: `${S.beats.length} beats` };
@@ -126,6 +137,8 @@ function fallback(B: Brief, facts: { id: string; text: string }[], transcript: s
 
 /* ───────── the voice ───────── */
 
+const DEFAULT_VOICE = 'en-US-AndrewMultilingualNeural';
+
 export const voice: Handler = async ctx => {
   const S = (await ctx.out<Script>('script'))!;
   const dir = join(ctx.dir, 'voice');
@@ -137,12 +150,15 @@ export const voice: Handler = async ctx => {
     return { output: { words: join(dir, 'words.json'), wav: null, seconds: words.at(-1)!.end, by: 'reading-pace' }, note: 'reading pace' };
   }
   ctx.note('speaking the script');
-  const v = await tts(dir, S.beats.map(b => b.say).join('\n\n'));
+  // the voice this user keeps choosing, never one they turned down (their feedback memory)
+  const pick = voiceFor((await feedbackMemory(ctx, 'planner')).mem, DEFAULT_VOICE);
+  if (pick.voice !== DEFAULT_VOICE) await ctx.activity('note', `voice ${pick.voice}: ${pick.why}`);
+  const v = await tts(dir, S.beats.map(b => b.say).join('\n\n'), { voice: pick.voice });
   // room for the payoff: a short breath after the hook and before the ask
   const lastHook = S.beats[0]?.say.split(/\s+/).at(-1);
   if (lastHook && S.beats.length > 3) { await gaps(dir, [{ word: v.words.find(w => kit.norm(w.word) === kit.norm(lastHook))?.word ?? lastHook, seconds: 0.25 }]).catch(() => undefined); }
   const words = readJson<Word[]>(join(dir, 'words.json'));
-  return { output: { words: join(dir, 'words.json'), wav: join(dir, 'vo.wav'), seconds: words.at(-1)?.end ?? v.seconds, by: 'kokoro' }, note: `${(words.at(-1)?.end ?? v.seconds).toFixed(1)} s, ${words.length} words` };
+  return { output: { words: join(dir, 'words.json'), wav: join(dir, 'vo.wav'), seconds: words.at(-1)?.end ?? v.seconds, by: 'kokoro', voice: pick.voice }, note: `${(words.at(-1)?.end ?? v.seconds).toFixed(1)} s, ${words.length} words` };
 };
 
 /** Footage (or the user's own voice-over): its audio, every word timed. */

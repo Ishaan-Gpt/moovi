@@ -1,6 +1,7 @@
-import { CRAFT, craft as C, run as runQ, user as U } from '@moovi/graph';
+import { CRAFT, craft as C, MemoryDown, project as P, run as runQ, user as U } from '@moovi/graph';
 import type { Role } from '@moovi/skills';
 import type { TaskCtx } from '../ctx';
+import { loadMemory, memoryBlock, NO_MEMORY, type FilmRef, type Memory, type MemoryRole } from '../memory';
 import { AGENT_NAMES, type AgentId } from '../events';
 import { model, runWithFallback, type Tier, type Tool } from '../runtime';
 import { resultText } from '../runtime/tool';
@@ -22,6 +23,23 @@ export async function knowledge(ctx: TaskCtx, role: Role, style: string) {
       '# What this user has taught the crew (follow these over the style where they differ)', lessons.length ? lessons.map(l => `- ${l.text}`).join('\n') : '(nothing yet)',
     ].join('\n\n'),
   };
+}
+
+/** What this user's earlier edits and rejections say (named queries on their own graph); a graph with no notes answers empty. */
+export async function feedbackMemory(ctx: TaskCtx, role: MemoryRole): Promise<{ mem: Memory; block: string }> {
+  const t0 = performance.now();
+  // a user graph with no notes yet may not exist: that is an empty memory; a memory that is down still stops the film
+  const mem = await loadMemory((query, params) => ctx.uq(query, params)).catch(e => { if (e instanceof MemoryDown) throw e; return NO_MEMORY; });
+  const block = memoryBlock(mem, role);
+  if (!mem.empty) void ctx.activity('tool', `graph · feedback memory: ${mem.rejectedStyles.length} styles turned down, ${mem.rewrittenLines.length} lines rewritten, ${mem.rejectedShots.length} shots sent back (${(performance.now() - t0).toFixed(0)} ms)`);
+  return { mem, block };
+}
+
+/** The film (and the run of it) a note is about: this task's own run, or the run the user was looking at (`runId`). */
+export async function filmRef(ctx: TaskCtx, runId: string = ctx.run.id, title: string | null = null): Promise<FilmRef> {
+  const [r] = runId === ctx.run.id ? [{ n: ctx.run.n, skill: ctx.run.skill, brief: ctx.run.brief }] : await ctx.q<{ n: number; skill: string | null; brief: Record<string, unknown> | string | null }>(P.run, { id: runId });
+  const brief = typeof r?.brief === 'string' ? (() => { try { return JSON.parse(r.brief) as { title?: string }; } catch { return null; } })() : (r?.brief as { title?: string } | null);
+  return { user: ctx.user, project: ctx.pid, run: runId, runN: r?.n ?? 1, video: ctx.run.video, style: r?.skill ?? ctx.run.skill, title: title ?? brief?.title ?? null };
 }
 
 export const ROLE_LINE: Record<Role, string> = {
