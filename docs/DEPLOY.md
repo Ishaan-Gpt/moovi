@@ -30,6 +30,23 @@ The simplest setup that runs everything, and the one the repo is built for (`Doc
 
 FalkorDB's volume and the data volume persist across restarts and redeploys. Back up both.
 
+## The live server (AWS EC2)
+
+Moovi's own deployment: one EC2 `t3.small` (2 vCPU, 2 GB + 4 GB swap, 30 GB disk) in Mumbai (`ap-south-1`), a fixed IP
+and HTTPS on `https://<ip-with-dashes>.sslip.io/studio` (no domain needed). Set up by `deploy/server-setup.sh`;
+everything lives in `/opt/moovi` on the server, settings in `/opt/moovi/.env`.
+
+```bash
+ssh -i ~/.ssh/moovi-ec2.pem ubuntu@<ip>                              # log in
+cd /opt/moovi && sudo git pull && sudo docker compose up -d --build  # update to the latest main
+sudo docker compose logs -f worker                                   # watch films being made
+sudo docker compose restart                                          # restart everything
+```
+
+Pause the server when nobody needs it (stops the hourly cost, keeps the disk and IP):
+`aws ec2 stop-instances --instance-ids <id>`, and `start-instances` to bring it back. More room: stop it, change
+the type (`aws ec2 modify-instance-attribute --instance-id <id> --instance-type c7i-flex.large`), start it.
+
 ## Managed alternative: Railway (or Render)
 
 1. **FalkorDB:** add Railway's FalkorDB template (it has a persistent volume). Don't use FalkorDB Cloud's free tier for

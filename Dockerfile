@@ -3,8 +3,10 @@
 FROM node:24-bookworm-slim
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends ffmpeg chromium fonts-dejavu-core ca-certificates \
+ && apt-get install -y --no-install-recommends chromium fonts-dejavu-core ca-certificates git \
  && rm -rf /var/lib/apt/lists/*
+# a current static ffmpeg: Debian's 5.1 lacks filter options the sound mixer uses (ebur128 framelog=quiet, ...)
+COPY --from=mwader/static-ffmpeg:8.0 /ffmpeg /ffprobe /usr/local/bin/
 
 ENV CE_CHROME_PATH=/usr/bin/chromium \
     CE_DATA_DIR=/data \
