@@ -158,3 +158,13 @@ test('pictures the crew already made (a map, a 3D render, a capture) go in poste
   assert.ok(posters.every(p => photos.some(x => x.path === p.image)));
   assert.equal(posters.find(p => p.scene === 0)?.image, '/data/a/map.png', 'the beat about the world gets the map');
 });
+
+test('big type is for the hook, the closing line and very short lines, not for every beat', () => {
+  const bs: BeatIn[] = ['Most small teams lose hours every week to messy spreadsheets.', 'Meet Bluetoki: one place for your orders, stock and customers.', 'It connects your shop, your phone and your team, every single day.', 'Set it up in minutes, track every order, and never miss a sale.', 'Fast.', 'Try Bluetoki free today.'].map((text, i) => ({ text, start: i * 4, end: (i + 1) * 4 }));
+  const p = planFilm(bs, { format: 'vertical', seed: 3 });
+  assert.equal(p.scenes[0]!.layout, 'type', 'the hook');
+  assert.equal(p.scenes[5]!.layout, 'type', 'the closing line');
+  for (const i of [1, 2, 3]) assert.notEqual(p.scenes[i]!.layout, 'type', `beat ${i} is a long line with something to show`);
+  assert.ok(p.scenes.filter(s => s.layout === 'type').length <= 3, 'never two in a row, and not most of the film');
+  for (let i = 1; i < p.scenes.length; i++) assert.ok(!(p.scenes[i]!.layout === 'type' && p.scenes[i - 1]!.layout === 'type'));
+});
