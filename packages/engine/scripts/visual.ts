@@ -16,6 +16,8 @@ import { kit } from '@moovi/skills';
  *   tsx scripts/visual.ts make <script.json> [words.json] [audio.wav] [vertical|landscape|square] [light|dark]
  *       a film from a script ({ beats: [{ say }] } or an array of lines) with the voice's word times ([{ word, t, end }]; reading pace
  *       when none) and the voice (muxed in), checked and audited; the mp4 goes to data/visual/film.mp4
+ *   CLIPS=a.mp4,b.mp4  (files in the data dir: stock footage, then a scroll capture, alternating) put real footage on screens and panels;
+ *   CRITIC=1  scores every scene on sampled frames and renders the weak ones again
  *   SITE=file-in-data-dir.png  uses that capture for the browser mockup and the brand tile
  */
 const argv = process.argv.slice(2), cmd0 = argv[0] ?? 'stills';
@@ -38,7 +40,7 @@ if (cmd === 'make') {
   const raw = JSON.parse(readFileSync(argv[1]!, 'utf8')) as { beats?: { say: string }[] } | string[];
   const lines = (Array.isArray(raw) ? raw : raw.beats ?? []).map(b => (typeof b === 'string' ? { say: b } : b));
   const words = argv[2] && argv[2] !== '-' ? (JSON.parse(readFileSync(argv[2], 'utf8')) as { word: string; t: number; end: number }[]) : kit.readingPace(lines);
-  const r = await makeFilm({ beats: beatsFromVoice(lines, words, 30), format, theme, seed: Number(process.env.SEED) || 7, brand: process.env.BRAND ?? null, image: process.env.SITE ? join(config.data, process.env.SITE) : null, askedSeconds: Number(process.env.ASKED) || undefined, dir, out: join(dir, 'film.mp4'), audio: argv[3] && argv[3] !== '-' ? argv[3] : undefined, audit: true });
+  const r = await makeFilm({ beats: beatsFromVoice(lines, words, 30), format, theme, seed: Number(process.env.SEED) || 7, brand: process.env.BRAND ?? null, image: process.env.SITE ? join(config.data, process.env.SITE) : null, askedSeconds: Number(process.env.ASKED) || undefined, critic: process.env.CRITIC ? { attempts: 1 } : undefined, clips: (process.env.CLIPS ?? '').split(',').filter(Boolean).map((f, i) => ({ path: join(config.data, f), kind: (i % 2 ? 'scroll' : 'footage') as 'footage' | 'scroll', seconds: Number(process.env.CLIP_SECONDS) || 8 })), dir, out: join(dir, 'film.mp4'), audio: argv[3] && argv[3] !== '-' ? argv[3] : undefined, audit: true });
   console.log('issues:', r.issues.length ? r.issues : 'none'); console.log(r.stats);
   await closeVisual(); process.exit(0);
 }

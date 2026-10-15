@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process';
 import { createReadStream, existsSync, mkdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import { createRequire } from 'node:module';
-import { cpus } from 'node:os';
+import { cpus, freemem } from 'node:os';
 import { dirname, extname, join, normalize, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium, type Browser, type Page } from 'playwright-core';
@@ -77,6 +77,8 @@ export interface RenderOpts {
   workers?: number;
   /** frames to render (default: all) */
   frames?: number[];
+  /** only these [from, to) frame ranges are rendered, over the frames already on disk (the re-render of the scenes that failed) */
+  ranges?: [number, number][];
   format?: 'jpeg' | 'png';
 }
 export interface Session { clips(): Promise<{ art: string; ok: boolean; dur: number; w: number; h: number }[]>; range(from: number, to: number, dir: string): Promise<number>; info: { renderer: string; rw: number; rh: number }; frame(n: number): Promise<Buffer>; thumb(n: number): Promise<{ w: number; h: number; px: number[] }>; boxes(n: number): Promise<{ art: string; job: string; x0: number; y0: number; x1: number; y1: number }[]>; prof(): Promise<Record<string, number> & { sections?: Record<string, { ms: number; n: number }> }>; close(): Promise<void> }
@@ -117,7 +119,8 @@ export async function openFilm(plan: VPlan, o: RenderOpts = {}): Promise<Session
   };
 }
 
-export const defaultWorkers = () => Math.max(1, Math.min(4, Math.floor(cpus().length / 2)));
+/** pages rendering at once: half the cores, at most 4, and only as many as the free memory carries (a page is about 0.7 GB with footage) */
+export const defaultWorkers = (freeBytes = freemem(), cores = cpus().length) => Math.max(1, Math.min(4, Math.floor(cores / 2), Math.floor(freeBytes / 2 ** 30 / 0.9)));
 
 export interface FilmStats { frames: number; seconds: number; workers: number; captureMs: number; encodeMs: number; totalMs: number; /** wall seconds per second of film */ secPerSec: number; msPerFrame: number; renderer: string; out: string | null; framesDir: string; encodeError: string | null }
 
@@ -126,7 +129,7 @@ export interface FilmStats { frames: number; seconds: number; workers: number; c
  * the audio, when given) at the format's full size. Without ffmpeg the frames stay on disk and `out` is null.
  */
 export async function renderFilm(plan: VPlan, dir: string, o: RenderOpts & { out?: string; audio?: string; keepFrames?: boolean } = {}): Promise<FilmStats> {
-  const framesDir = join(dir, 'frames'); rmSync(framesDir, { recursive: true, force: true }); mkdirSync(framesDir, { recursive: true });
+  const framesDir = join(dir, 'frames'); if (!o.ranges) rmSync(framesDir, { recursive: true, force: true }); mkdirSync(framesDir, { recursive: true });
   const ext = (o.format ?? 'jpeg') === 'png' ? 'png' : 'jpg', total = Math.max(1, Math.round(plan.seconds * plan.fps));
   const n = Math.max(1, Math.min(o.workers ?? defaultWorkers(), total));
   const t0 = performance.now();
@@ -134,8 +137,8 @@ export async function renderFilm(plan: VPlan, dir: string, o: RenderOpts & { out
   const tOpen = performance.now() - t0;
   try {
     await Promise.all(sessions.map(async (s, w) => {
-      const from = Math.floor((w * total) / n), to = Math.floor(((w + 1) * total) / n);
-      await s.range(from, to, framesDir);
+      // every worker takes its share of each range (the whole film when no ranges are given)
+      for (const [a, b] of o.ranges ?? [[0, total]] as [number, number][]) { const from = a + Math.floor(((b - a) * w) / n), to = a + Math.floor(((b - a) * (w + 1)) / n); if (to > from) await s.range(from, to, framesDir); }
     }));
   } finally { await Promise.all(sessions.map(s => s.close())); }
   const captureMs = performance.now() - t0;
@@ -199,4 +202,16 @@ export async function recordTestClip(path: string, seconds = 2, size = [320, 568
     mkdirSync(dirname(path), { recursive: true }); writeFileSync(path, Buffer.from(b64, 'base64'));
     return path;
   } finally { await ctx.close().catch(() => undefined); }
+}
+
+/** Encode the frames already on disk (after a render, or a re-render of some scenes) into an mp4 with the audio, when given. */
+export async function encodeFrames(plan: VPlan, framesDir: string, out: string, o: { audio?: string; format?: 'jpeg' | 'png'; keepFrames?: boolean } = {}): Promise<{ out: string | null; encodeMs: number; encodeError: string | null }> {
+  const { W, H } = FORMATS[plan.format], t1 = performance.now(), ext = (o.format ?? 'jpeg') === 'png' ? 'png' : 'jpg';
+  mkdirSync(dirname(out), { recursive: true });
+  const args = ['-y', '-loglevel', 'error', '-framerate', String(plan.fps), '-i', join(framesDir, `f%05d.${ext}`), ...(o.audio ? ['-i', o.audio] : []), '-vf', `scale=${W}:${H}:flags=lanczos`, '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '19', '-pix_fmt', 'yuv420p', ...(o.audio ? ['-c:a', 'aac', '-b:a', '192k', '-shortest'] : []), '-movflags', '+faststart', out];
+  try {
+    await new Promise<void>((res, rej) => { const p = spawn(config.ffmpeg, args, { stdio: ['ignore', 'ignore', 'inherit'] }); p.on('error', rej); p.on('close', c => (c === 0 ? res() : rej(new Error(`ffmpeg exited ${c}`)))); });
+    if (!o.keepFrames) rmSync(framesDir, { recursive: true, force: true });
+    return { out, encodeMs: performance.now() - t1, encodeError: null };
+  } catch (e) { if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e; return { out: null, encodeMs: 0, encodeError: 'ffmpeg is not installed: the frames are in framesDir' }; }
 }
