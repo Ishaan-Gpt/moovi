@@ -9,6 +9,7 @@ import { ask, tool, type Tool } from '../runtime';
 import type { TaskSpec } from '../scheduler';
 import type { Brief } from './plan';
 import type { Script } from './script';
+import { LOOK_IDS, LOOKS, isLook } from '../render3d/looks';
 import { knowledge, systemFor } from './agent';
 import type { Board } from './film';
 
@@ -121,6 +122,7 @@ export const board: Handler = async ctx => {
   const isS1 = m.style === 's1';
   const uploads = (await ctx.q<{ id: string; name: string; mime: string }>(P.uploads, { chat: ctx.chat })).filter(u => u.mime.startsWith('image/') || (u.mime.startsWith('video/') && m.features.footage === 'edit'));
   const used = await ctx.uq<{ title: string; angle: string | null }>(U.anglesUsed, { style: null, n: 6 });
+  const look3dUsed = await ctx.q<{ look: string; scenes: number }>(P.look3dUsage, {}).catch(() => [] as { look: string; scenes: number }[]);
   const tools: Tool[] = [
     tool({ name: 'suggest_sequence', description: 'The cheapest preset orders for the beats (graph: algo.SPpaths over the preset lattice, with this user’s over-use from PageRank). A starting point, not an order.', input: {},
       async run() { return isS1 ? { json: await suggest(ctx, 's1', S.beats.map(b => (b.role === 'end' ? 'cta' : b.role))) } : { text: 'Unique style: no presets are ranked; design each shot from the card.' }; } }),
@@ -131,6 +133,7 @@ export const board: Handler = async ctx => {
     hero: z.string().min(2).max(80), move: z.string().min(4).max(160).describe('the signature move'), layout: z.string().min(4).max(240),
     props: z.array(z.string()).max(4).describe('kit props it uses (ids from the catalogue)'),
     camera: z.enum(['push', 'dive', 'pull-out', 'pan', 'roll', 'drift']),
+    look3d: z.enum(LOOK_IDS).nullable().optional().describe('a 3D look for this shot, or null when the shot is better flat'),
     assets: z.array(z.object({ id: z.string().regex(/^[a-z0-9-]{2,24}$/), kind: z.enum(['capture', 'logo', 'icon', 'upload', 'photo']), what: z.string().min(3).max(200), url: z.string().nullable() })).max(3),
   });
   const r = await ask({
@@ -141,6 +144,7 @@ export const board: Handler = async ctx => {
       `THE SCRIPT:\n${S.beats.map((b, i) => `${i}. [${b.role}] ${b.say}`).join('\n')}`,
       cardOut ? `THE STYLE CARD: ${JSON.stringify(cardOut)}` : '',
       isS1 ? `PRESETS (kit): ${S1_PRESETS.map(p => `${p.id} (${p.about})`).join(' · ')}` : '',
+      `3D LOOKS (three.js, rendered headless; give a shot one when it suits, never the same twice running, vary across the film): ${LOOKS.map(l => `${l.id} (${l.about})`).join(' · ')}${look3dUsed.length ? `. ALREADY USED IN THIS PROJECT: ${look3dUsed.map(u => `${u.look} ×${u.scenes}`).join(', ')}` : ''}`,
       `PROPS (drawn in code, low-key 3D): ${PROPS.map(p => p.id).join(', ')}`,
       `THE USER'S UPLOADS YOU CAN USE: ${uploads.map(u => `upload:${u.id} (${u.name})`).join(', ') || 'none'}`,
       `THIS USER'S EARLIER VIDEOS (never repeat their ideas): ${used.map(u => u.title).join(' · ') || 'none'}`,
@@ -157,6 +161,7 @@ export const board: Handler = async ctx => {
         if (bad) return `Unknown preset "${bad.preset}". Use one of: ${ids.join(', ')} or null.`;
         for (let i = 1; i < b.shots.length; i++) if (b.shots[i]!.preset && b.shots[i]!.preset === b.shots[i - 1]!.preset) return `Scenes ${i - 1} and ${i} both use ${b.shots[i]!.preset}; never the same preset twice running.`;
       }
+      for (let i = 1; i < b.shots.length; i++) if (b.shots[i]!.look3d && b.shots[i]!.look3d === b.shots[i - 1]!.look3d) return `Scenes ${i - 1} and ${i} both use the 3D look ${b.shots[i]!.look3d}; never the same look twice running.`;
       const all = [...b.shots.flatMap(s => s.assets.map(a => a.id)), ...b.corners.map(c => c.id)];
       if (new Set(all).size !== all.length) return 'Asset ids must be unique across the board.';
       if (all.length > 10) return 'At most 10 asset requests in all.';
@@ -171,6 +176,8 @@ export const board: Handler = async ctx => {
   // nothing real fits)
   if (isS1) for (const id of ['corner0', 'corner1'] as const) if (!BD.corners.some(c => c.id === id)) BD.corners.push({ id, kind: 'icon', what: `${id === 'corner0' ? 'the product, or a' : 'a second'} relatable object for "${B.title}"`, url: null });
   writeJson(join(ctx.dir, 'board.json'), BD);
+  // the 3D look of each scene is kept in the graph: (Scene)-[:USES_3D]->(Look3D)
+  for (const s of BD.shots) if (s.look3d && isLook(s.look3d)) await ctx.q(P.useLook3d, { run: ctx.run.id, scene: `${ctx.run.id}:scene:${s.scene}`, i: s.scene, look: s.look3d, name: LOOKS.find(l => l.id === s.look3d)!.name, why: s.idea.slice(0, 200), at: Date.now() });
   for (const s of BD.shots) await ctx.q(P.decide, { agent: 'director', target: ctx.run.id, id: newId('d'), kind: 'board', why: `Scene ${s.scene + 1}: ${s.idea} (move: ${s.move})`, at: Date.now(), lessons: know.lessons.map(l => l.id), laws: [], because: [] });
   await ctx.say(`Boarded ${BD.shots.length} shots. ${BD.shots.map((s, i) => `${i + 1}. ${s.move}`).slice(0, 4).join(' · ')}${BD.shots.length > 4 ? ' …' : ''}`);
 
