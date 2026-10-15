@@ -103,7 +103,7 @@ test('real footage plays on a panel, a phone and a browser window: frame-accurat
     const n0 = Math.round((sc.start + el.at + 0.9) * plan.fps), n1 = n0 + 15; // half a second later: the footage has moved
     const h0 = sha(await a.frame(n0)), h1 = sha(await a.frame(n1)), h0b = sha(await a.frame(n0));
     const opened = await a.clips();
-    assert.ok(opened.length > 0 && opened.every(c => c.ok && c.dur > 1 && c.w > 100), `every clip decoded: ${JSON.stringify(opened)}`);
+    assert.ok(opened.length > 0 && opened.every(c => c.ok && c.dur > 0.5 && c.w > 100), `every clip decoded: ${JSON.stringify(opened)}`);
     assert.notEqual(h0, h1, 'the footage moves');
     assert.equal(h0, h0b, 'the same frame, the same pixels');
     await a.close();

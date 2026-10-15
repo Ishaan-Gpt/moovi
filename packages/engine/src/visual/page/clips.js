@@ -33,9 +33,11 @@ export async function seekClip(clip, t) {
     let seeked = false, framed = !v.requestVideoFrameCallback;
     const fin = () => { if (seeked && framed) res(); };
     v.addEventListener('seeked', () => { seeked = true; fin(); }, { once: true });
-    v.requestVideoFrameCallback?.(() => { framed = true; fin(); });
+    // the presented frame must be the one asked for (its media time, within two frames): a frame presented before the seek lands is not
+    let tries = 0; const arm = () => v.requestVideoFrameCallback((_, md) => { if (Math.abs(md.mediaTime - mt) <= 0.07 || ++tries > 10) { framed = true; fin(); } else arm(); });
+    if (v.requestVideoFrameCallback) arm();
     v.currentTime = Math.min(mt, Math.max(0, clip.dur - 0.001));
-    setTimeout(res, 2500);
+    setTimeout(res, 1500);
   });
 }
 

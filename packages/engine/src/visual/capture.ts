@@ -187,16 +187,26 @@ export async function renderChunk(plan: VPlan, from: number, to: number, dir: st
 export async function recordTestClip(path: string, seconds = 2, size = [320, 568] as const): Promise<string> {
   const b = await launch(), ctx = await b.newContext(), page = await ctx.newPage();
   try {
+    // MediaRecorder runs on the wall clock: under CPU load it can give a short or empty clip, so what was recorded is checked
+    // (it must decode and last most of the time asked for) and the recording is repeated until it does
     const code = `(async () => {
       const c = document.createElement('canvas'); c.width = ${size[0]}; c.height = ${size[1]}; document.body.appendChild(c); const g = c.getContext('2d');
-      const rec = new MediaRecorder(c.captureStream(30), { mimeType: 'video/webm;codecs=vp8', videoBitsPerSecond: 1500000 }), parts = [];
-      rec.ondataavailable = e => parts.push(e.data);
-      const done = new Promise(r => { rec.onstop = r; });
-      rec.start(100);
-      const t0 = performance.now();
-      await new Promise(res => { const tick = () => { const t = (performance.now() - t0) / 1000; const gr = g.createLinearGradient(0, 0, c.width, c.height); gr.addColorStop(0, 'hsl(' + (t * 90) % 360 + ',70%,55%)'); gr.addColorStop(1, 'hsl(' + (t * 90 + 120) % 360 + ',70%,35%)'); g.fillStyle = gr; g.fillRect(0, 0, c.width, c.height); g.fillStyle = '#fff'; g.beginPath(); g.arc(c.width / 2 + Math.sin(t * 4) * 90, c.height / 2 + Math.cos(t * 3) * 120, 50, 0, 6.28); g.fill(); if (t < ${seconds}) requestAnimationFrame(tick); else res(); }; tick(); });
-      rec.stop(); await done;
-      const blob = new Blob(parts, { type: 'video/webm' }), buf = new Uint8Array(await blob.arrayBuffer()); let s = ''; for (let i = 0; i < buf.length; i += 0x8000) s += String.fromCharCode.apply(null, buf.subarray(i, i + 0x8000)); return btoa(s);
+      for (let attempt = 0; attempt < 6; attempt++) {
+        const rec = new MediaRecorder(c.captureStream(30), { mimeType: 'video/webm;codecs=vp8', videoBitsPerSecond: 1500000 }), parts = [];
+        rec.ondataavailable = e => parts.push(e.data);
+        const done = new Promise(r => { rec.onstop = r; });
+        rec.start(100);
+        const t0 = performance.now();
+        await new Promise(res => { const tick = () => { const t = (performance.now() - t0) / 1000; const gr = g.createLinearGradient(0, 0, c.width, c.height); gr.addColorStop(0, 'hsl(' + (t * 90) % 360 + ',70%,55%)'); gr.addColorStop(1, 'hsl(' + (t * 90 + 120) % 360 + ',70%,35%)'); g.fillStyle = gr; g.fillRect(0, 0, c.width, c.height); g.fillStyle = '#fff'; g.beginPath(); g.arc(c.width / 2 + Math.sin(t * 4) * 90, c.height / 2 + Math.cos(t * 3) * 120, 50, 0, 6.28); g.fill(); if (t < ${seconds}) requestAnimationFrame(tick); else res(); }; tick(); });
+        rec.stop(); await done;
+        const blob = new Blob(parts, { type: 'video/webm' });
+        if (blob.size < 2000) continue;
+        const v = document.createElement('video'); v.muted = true; v.src = URL.createObjectURL(blob);
+        const ok = await new Promise(res => { v.onloadeddata = () => { const fix = () => { if (Number.isFinite(v.duration)) { v.removeEventListener('timeupdate', fix); res(v.duration >= ${seconds} * 0.7 && v.videoWidth > 0); } }; if (Number.isFinite(v.duration)) return fix(); v.addEventListener('timeupdate', fix); v.currentTime = 1e7; }; v.onerror = () => res(false); setTimeout(() => res(false), 8000); });
+        if (!ok) continue;
+        const buf = new Uint8Array(await blob.arrayBuffer()); let s = ''; for (let i = 0; i < buf.length; i += 0x8000) s += String.fromCharCode.apply(null, buf.subarray(i, i + 0x8000)); return btoa(s);
+      }
+      throw new Error('could not record a test clip');
     })()`;
     const b64 = (await page.evaluate(code)) as string;
     mkdirSync(dirname(path), { recursive: true }); writeFileSync(path, Buffer.from(b64, 'base64'));
