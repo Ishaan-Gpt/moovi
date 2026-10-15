@@ -6,6 +6,7 @@ import { startRun } from './runs';
 import { abortRun } from './worker';
 import { byokMode, loadModel, scopeFor } from './keys';
 import { withModel } from './runtime';
+import { recordFeedback } from './memory';
 
 /**
  * The engine's side of the chat: a brief starts a run (intake → match; the matched style's playbook follows);
@@ -60,6 +61,14 @@ async function handle(cmd: Command) {
       const killed = abortRun(r.id);
       await publish(cmd.chat, { type: 'run', run: { id: r.id, n: r.n, status: 'cancelled' } });
       await say(cmd.project, cmd.chat, 'moovi', `Stopped${killed ? ', and nothing of it is still running' : ''}. Tell me what to change and I’ll pick it up from there.`);
+      return;
+    }
+    case 'feedback': {
+      const [c] = await pq<{ video: string; title: string | null }>(cmd.project, P.chat, { id: cmd.chat });
+      const [r] = await pq<{ id: string; n: number; skill: string | null }>(cmd.project, P.latestRun, { chat: cmd.chat });
+      if (!c || !r || !cmd.items.length) return;
+      await recordFeedback({ user: cmd.user, project: cmd.project, run: r.id, runN: r.n, video: c.video, style: r.skill, title: c.title }, cmd.items.map(i => ({ ...i, source: 'ui' as const })));
+      await say(cmd.project, cmd.chat, 'keeper', `Kept for the next film: ${cmd.items.map(i => `${i.rejected ? 'turned down' : 'chose'} ${i.kind.replace('_', ' ')}`).join(', ')}.`, 'note');
       return;
     }
     case 'message': {

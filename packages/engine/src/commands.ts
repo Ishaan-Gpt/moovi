@@ -10,7 +10,21 @@ export type Command =
   /** the answer to a question card */
   | { type: 'answer'; user: string; project: string; chat: string; question: string; choice: string }
   /** stop whatever the chat's run is doing */
-  | { type: 'stop'; user: string; project: string; chat: string };
+  | { type: 'stop'; user: string; project: string; chat: string }
+  /** the user edited or turned down something in the film (a script line, the voice, the style, a shot, a caption): kept for the next film */
+  | { type: 'feedback'; user: string; project: string; chat: string; items: FeedbackItem[] };
+
+export interface FeedbackItem {
+  kind: 'script_line' | 'voice' | 'style' | 'shot' | 'caption' | 'sound';
+  rejected: boolean;
+  /** 0-based scene the note is about */
+  scene?: number | null;
+  before?: string | null;
+  after?: string | null;
+  /** a style id or voice name */
+  value?: string | null;
+  why?: string | null;
+}
 
 export const COMMANDS = 'ce:cmd';
 export const chatStream = (chat: string) => `ce:chat:${chat}`;

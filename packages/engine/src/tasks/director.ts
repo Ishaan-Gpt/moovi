@@ -9,7 +9,7 @@ import { ask, tool, type Tool } from '../runtime';
 import type { TaskSpec } from '../scheduler';
 import type { Brief } from './plan';
 import type { Script } from './script';
-import { knowledge, systemFor } from './agent';
+import { feedbackMemory, knowledge, systemFor } from './agent';
 import type { Board } from './film';
 
 /**
@@ -30,6 +30,7 @@ export const card: Handler = async ctx => {
   const B = (await ctx.out<Brief>('plan'))!;
   const study = await ctx.out<Record<string, unknown>>('study');
   const know = await knowledge(ctx, 'director', 'unique');
+  const { block: memory } = await feedbackMemory(ctx, 'director');
   const nearestLaws = await runQ<{ n: number; title: string; text: string }>(CRAFT, C.lawsAndChecks, { style: m.nearest });
   const prefs = await ctx.uq<{ key: string; value: string }>(U.preferences);
   const shape = StyleCard.shape;
@@ -42,6 +43,7 @@ export const card: Handler = async ctx => {
       study ? `THE REFERENCE, MEASURED AND STUDIED: ${JSON.stringify(study)}` : 'NO REFERENCE.',
       `THE NEAREST KNOWN STYLE (${m.nearest}) — borrow what fits:\n${nearestLaws.map(l => `${l.n}. ${l.title}: ${l.text}`).join('\n')}`,
       `THE USER'S LOOK: ${prefs.map(p => `${p.key}: ${p.value}`).join(', ') || 'unknown'}`,
+      memory,
       `FONTS AVAILABLE: ${FONTS.join(', ')}`,
     ].join('\n\n'),
     schema: shape as unknown as typeof shape,
@@ -89,6 +91,14 @@ export const study: Handler = async ctx => {
 
 /* ───────── the board ───────── */
 
+const ideaWords = (s: string) => new Set(s.toLowerCase().match(/[\p{L}\p{N}]{3,}/gu) ?? []);
+/** Two shot ideas are the same idea when most of the shorter one's words are in the other (a rejected shot is not drawn again). */
+export function sameIdea(a: string, b: string): boolean {
+  const A = ideaWords(a), B = ideaWords(b);
+  if (!A.size || !B.size) return false;
+  return [...A].filter(w => B.has(w)).length / Math.min(A.size, B.size) >= 0.7;
+}
+
 async function suggest(ctx: TaskCtx, style: string, roles: string[], k = 3) {
   const presets = await runQ<{ id: string; name: string; roles: string[]; needs: string[] }>(CRAFT, C.stylePresets, { style });
   const flows = await runQ<{ a: string; b: string; w: number }>(CRAFT, C.presetFlows, { style });
@@ -118,6 +128,7 @@ export const board: Handler = async ctx => {
   const S = (await ctx.out<Script>('script'))!;
   const cardOut = ctx.run.card ?? (await ctx.out<unknown>('card'));
   const know = await knowledge(ctx, 'director', m.style);
+  const { mem, block: memory } = await feedbackMemory(ctx, 'director');
   const isS1 = m.style === 's1';
   const uploads = (await ctx.q<{ id: string; name: string; mime: string }>(P.uploads, { chat: ctx.chat })).filter(u => u.mime.startsWith('image/') || (u.mime.startsWith('video/') && m.features.footage === 'edit'));
   const used = await ctx.uq<{ title: string; angle: string | null }>(U.anglesUsed, { style: null, n: 6 });
@@ -146,6 +157,7 @@ export const board: Handler = async ctx => {
       `THE USER'S UPLOADS YOU CAN USE: ${uploads.map(u => `upload:${u.id} (${u.name})`).join(', ') || 'none'}`,
       `REAL VIDEO: an asset of kind "footage" is real stock video of a concrete subject (free sources, licence kept; say the subject in plain words, e.g. "rocket lifting off the pad"); kind "scroll" is the research's smooth scroll capture of a page it read${shots.length ? ` (it took ${shots.filter(s => s.video).length} scroll capture${shots.filter(s => s.video).length === 1 ? '' : 's'} and ${shots.filter(s => !s.video).length} screenshot${shots.filter(s => !s.video).length === 1 ? '' : 's'}${shots.some(s => s.kind === 'proof') ? ', with proof shots of the quoted facts' : ''})` : ' (none taken for this video)'}. Use footage where a line talks about a real-world thing the kit cannot draw well.`,
       `THIS USER'S EARLIER VIDEOS (never repeat their ideas): ${used.map(u => u.title).join(' · ') || 'none'}`,
+      memory,
       isS1 ? 'CORNERS: Style 1 needs two corner assets (e.g. the product logo and a relatable icon). Request them in `corners`.' : 'CORNERS: none for a unique style unless the card calls for them.',
       `THE KIT, IN SHORT:\n${kitDocs(B.format).split('## Props')[0]}`,
     ].filter(Boolean).join('\n\n'),
@@ -153,6 +165,8 @@ export const board: Handler = async ctx => {
     validate: b => {
       if (b.shots.length !== S.beats.length) return `Board ${S.beats.length} shots, one per beat (you gave ${b.shots.length}).`;
       for (const [i, s] of b.shots.entries()) if (s.scene !== i) return `Shot ${i} must have scene ${i}.`;
+      const again = b.shots.find(s => mem.rejectedShots.some(r => r.shot && sameIdea(r.shot, s.idea)));
+      if (again) return `Scene ${again.scene + 1} repeats a shot this user sent back (“${again.idea.slice(0, 80)}”). Design a clearly different one.`;
       if (isS1) {
         const ids = S1_PRESETS.map(p => p.id) as readonly string[];
         const bad = b.shots.find(s => s.preset && !ids.includes(s.preset));

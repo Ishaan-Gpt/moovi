@@ -15,7 +15,7 @@ import type { Script } from './script';
  * ranks the 63-voice library (src/audio/cast.ts) with the project's voice memory from its graph, and lets the fast
  * model choose between close calls (with a reason). The pick and its reason become (:Film)-[:VOICED_BY]->(:Voice).
  */
-export interface Cast { voice: VoiceInfo; rate: string; reason: string; by: 'brief' | 'ranking' | 'model'; shortlist: string[]; engine: 'edge' | 'elevenlabs'; ms: number }
+export interface Cast { voice: VoiceInfo; rate: string; reason: string; by: 'brief' | 'ranking' | 'model' | 'memory'; shortlist: string[]; engine: 'edge' | 'elevenlabs'; ms: number }
 
 const indexed = new Set<string>();
 async function ensureVoiceIndexes(pid: string) {
@@ -27,7 +27,8 @@ async function ensureVoiceIndexes(pid: string) {
   indexed.add(pid);
 }
 
-export async function castFor(ctx: TaskCtx, S: Script): Promise<Cast> {
+/** `adjust` lets a caller overrule the pick before it is written (the feedback memory: script.ts withFeedback). */
+export async function castFor(ctx: TaskCtx, S: Script, adjust: (c: Cast) => Cast = c => c): Promise<Cast> {
   const t0 = Date.now();
   const m = await ctx.out<{ features: Features }>('match');
   const B = await ctx.out<Brief>('plan');
@@ -58,11 +59,11 @@ export async function castFor(ctx: TaskCtx, S: Script): Promise<Cast> {
     } catch (e) { console.warn(`[voice] cast: the model did not choose (${String(e).slice(0, 120)}); the ranking's first pick stands`); }
   }
   const rate = rateFor(wish, pick.voice);
-  const cast: Cast = { voice: pick.voice, rate, reason, by, shortlist: top.map(t => t.voice.id), engine: config.voice.engine, ms: Date.now() - t0 };
-  const x = pick.voice;
+  const cast: Cast = adjust({ voice: pick.voice, rate, reason, by, shortlist: top.map(t => t.voice.id), engine: config.voice.engine, ms: Date.now() - t0 });
+  const x = cast.voice;
   await ctx.q(V.castVoice, {
     voice: x.id, name: x.name, locale: x.locale, lang: x.lang, accent: x.accent, gender: x.gender, age: x.age, energy: x.energy,
-    film: ctx.run.id, chat: ctx.chat, video: ctx.run.video, reason, by, score: pick.score, shortlist: cast.shortlist, rate, engine: cast.engine, at: Date.now(),
+    film: ctx.run.id, chat: ctx.chat, video: ctx.run.video, reason: cast.reason, by: cast.by, score: x.id === pick.voice.id ? pick.score : null, shortlist: cast.shortlist, rate: cast.rate, engine: cast.engine, at: Date.now(),
   });
   return cast;
 }

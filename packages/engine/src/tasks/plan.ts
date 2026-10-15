@@ -8,7 +8,7 @@ import type { Handler } from '../ctx';
 import { publish } from '../bus';
 import { newId } from '../ids';
 import { ask, tool, type Tool } from '../runtime';
-import { agentRun, knowledge, systemFor } from './agent';
+import { agentRun, feedbackMemory, knowledge, systemFor } from './agent';
 import { canon, fetchRead, pickSentences, Reader, wikiSearch, type Shot } from '../research/capture';
 
 /**
@@ -27,10 +27,27 @@ const HOOKS = ['question', 'confession', 'bold-claim', 'old-vs-new', 'number', '
 const words = (s: string) => new Set(s.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? []);
 const similar = (a: string, b: string) => { const A = words(a), B = words(b); const i = [...A].filter(x => B.has(x)).length; return i / Math.max(1, Math.min(A.size, B.size)); };
 
+/** The planner's prompt: the brief, what rules read from it, what this user already made, and what they told us about their films. */
+export function planPrompt(a: { f: Features; style: string; nearest?: string; used: { angle: string | null; hook: string | null }[]; prev: { title: string }[]; canResearch: boolean; fmt: string; def: number; block?: string }): string {
+  const { f, style, used, prev, canResearch, fmt, def } = a;
+  return [
+    `THE BRIEF (the user's words): ${f.text || '(no text; the upload is the brief)'}`,
+    `READ BY RULES: format ${f.format ?? 'not given'} · length ${f.seconds ? `${f.seconds} s` : 'not given'} · language ${f.language} · upload ${f.footage}${f.footageWhy.length ? ` (${f.footageWhy.join('; ')})` : ''} · links ${f.urls.join(', ') || 'none'}`,
+    `STYLE: ${style === 'unique' ? `a unique style designed for this video (nearest known: ${a.nearest})` : style}`,
+    `ANGLES AND HOOKS THIS USER'S VIDEOS ALREADY TOOK: ${used.map(u => `"${u.angle}" (${u.hook})`).join(' · ') || 'none yet'}`,
+    `EARLIER VIDEOS IN THIS PROJECT: ${prev.map(p => p.title).join(' · ') || 'none'}`,
+    a.block ?? '',
+    `FACTS: list only claims the user's own brief states (product name, what it does, prices, numbers). Never add your own.`,
+    canResearch ? `QUESTIONS: up to 3 things research should confirm${f.urls.length ? ' from these links' : config.searchKeys.tavily ? ' with a web search' : ' from Wikipedia (the researcher searches it)'} (e.g. what the product does, its real features).` : 'QUESTIONS: none (no links to read).',
+    `LENGTH: ${f.seconds ? `${f.seconds} s as asked` : `about ${def} s`}. FORMAT: ${fmt}.`,
+  ].filter(Boolean).join('\n\n');
+}
+
 export const plan: Handler = async ctx => {
   const m = (await ctx.out<{ style: string; features: Features }>('match'))!;
   const f = m.features, style = m.style;
   const know = await knowledge(ctx, 'moovi', style);
+  const { block } = await feedbackMemory(ctx, 'planner');
   const used = await ctx.uq<{ angle: string | null; hook: string | null; title: string }>(U.anglesUsed, { style: null, n: 12 });
   const prev = await ctx.q<{ title: string; style: string | null; brief: string | null }>(P.videos);
   // research works keyless too: the browser reads the brief's links, and with no search key it searches Wikipedia
@@ -41,16 +58,7 @@ export const plan: Handler = async ctx => {
   const brief = await ask({
     agent: 'moovi:plan', tier: 'director', signal: ctx.signal,
     system: systemFor('moovi', 'Turn the user’s brief into the plan the crew works from. Take a NEW angle and hook form this user has not used.', know.text),
-    prompt: [
-      `THE BRIEF (the user's words): ${f.text || '(no text; the upload is the brief)'}`,
-      `READ BY RULES: format ${f.format ?? 'not given'} · length ${f.seconds ? `${f.seconds} s` : 'not given'} · language ${f.language} · upload ${f.footage}${f.footageWhy.length ? ` (${f.footageWhy.join('; ')})` : ''} · links ${f.urls.join(', ') || 'none'}`,
-      `STYLE: ${style === 'unique' ? `a unique style designed for this video (nearest known: ${(m as unknown as { nearest: string }).nearest})` : style}`,
-      `ANGLES AND HOOKS THIS USER'S VIDEOS ALREADY TOOK: ${used.map(u => `"${u.angle}" (${u.hook})`).join(' · ') || 'none yet'}`,
-      `EARLIER VIDEOS IN THIS PROJECT: ${prev.map(p => p.title).join(' · ') || 'none'}`,
-      `FACTS: list only claims the user's own brief states (product name, what it does, prices, numbers). Never add your own.`,
-      canResearch ? `QUESTIONS: up to 3 things research should confirm${f.urls.length ? ' from these links' : config.searchKeys.tavily ? ' with a web search' : ' from Wikipedia (the researcher searches it)'} (e.g. what the product does, its real features).` : 'QUESTIONS: none (no links to read).',
-      `LENGTH: ${f.seconds ? `${f.seconds} s as asked` : `about ${def} s`}. FORMAT: ${fmt}.`,
-    ].join('\n\n'),
+    prompt: planPrompt({ f, style, nearest: (m as unknown as { nearest: string }).nearest, used, prev, canResearch, fmt, def, block }),
     schema: {
       title: z.string().min(3).max(48), angle: z.string().min(10).max(200), hookForm: z.enum(HOOKS), audience: z.string().min(3).max(120), goal: z.string().min(3).max(160),
       seconds: z.number().min(8).max(120), format: z.enum(['vertical', 'landscape']),

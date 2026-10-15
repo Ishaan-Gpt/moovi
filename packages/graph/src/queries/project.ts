@@ -402,4 +402,25 @@ MATCH (:Agent {id: $agent})-[:MADE]->(d:Decision)
 RETURN d.id AS id, d.kind AS kind, d.why AS why, d.target AS target, d.at AS at
 ORDER BY d.at DESC
 LIMIT $n`),
+
+  /* ───── feedback on this project's films (the user-graph copy is what later films read) ───── */
+  noteFeedback: q('noteFeedback', false, 'A user edit or rejection is kept on the real Run and Video (the film) it was about, so “why” can show it.', `
+MATCH (r:Run {id: $run})<-[:BUILT_BY]-(v:Video)
+MERGE (fb:Feedback {id: $id})
+  ON CREATE SET fb.kind = $kind, fb.rejected = $rejected, fb.before = $before, fb.after = $after, fb.value = $value,
+                fb.why = $why, fb.source = $source, fb.scene = $scene, fb.at = $at
+MERGE (fb)-[:IN_RUN]->(r)
+MERGE (fb)-[:ON_FILM]->(v)
+RETURN fb.id AS id`),
+
+  noteFeedbackScene: q('noteFeedbackScene', false, 'The note also points at the real Scene it was about.', `
+MATCH (fb:Feedback {id: $id}), (s:Scene {id: $scene})
+MERGE (fb)-[:ON_SCENE]->(s)`),
+
+  feedbackOnRun: q('feedbackOnRun', true, 'The notes the user gave on a run, with the scene each was about.', `
+MATCH (fb:Feedback)-[:IN_RUN]->(:Run {id: $run})
+OPTIONAL MATCH (fb)-[:ON_SCENE]->(s:Scene)
+RETURN fb.id AS id, fb.kind AS kind, fb.rejected AS rejected, fb.before AS before, fb.after AS after, fb.value AS value,
+       fb.why AS why, s.i AS scene
+ORDER BY fb.at`),
 };

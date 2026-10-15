@@ -10,6 +10,8 @@ import type { Handler, TaskCtx } from '../ctx';
 import { publish } from '../bus';
 import { ask } from '../runtime';
 import type { TaskSpec } from '../scheduler';
+import { feedbackMemory } from './agent';
+import { steerStyle } from '../memory';
 
 /**
  * Intake and match: deterministic first. The brief is read with rules, every upload is measured (length, size,
@@ -77,10 +79,13 @@ export const matchStyle: Handler = async ctx => {
     const r = await ask({ agent: 'moovi:intent', tier: 'fast', system: 'You classify what a short video brief is for. Choose only from the given intents.', prompt: `Brief: ${f.text || '(no text)'}\n\nPick the 1–3 intents that describe it best from: ${INTENTS.join(', ')}`, schema: { intents: z.array(z.enum(INTENTS as [string, ...string[]])).min(1).max(3) }, maxTurns: 3, signal: ctx.signal });
     m = match({ ...f, intents: r.intents });
   }
+  // a style this user already turned down is not eligible: the Art Director designs a new look instead
+  const steer = reuse ? { match: m, steered: null } : steerStyle(m, (await feedbackMemory(ctx, 'planner')).mem);
+  m = steer.match;
   const style = reuse?.style ?? m.style;
   const pkg = PACKAGES[style] ?? PACKAGES.unique!;
   const nearestName = { s1: 'Style 1, the explainer short', s2: 'Style 2, the Hinglish promo', s3: 'Style 3, the launch film', s4: 'Style 4, the metaphor essay', e1: 'the premium reel edit' }[m.nearest] ?? m.nearest;
-  const matchRow = { style, score: m.score, nearest: m.nearest, scores: m.scores, footage: f.footage, features: f, reuse: reuse ? { video: reuse.video } : null };
+  const matchRow = { style, score: m.score, nearest: m.nearest, scores: m.scores, footage: f.footage, features: f, reuse: reuse ? { video: reuse.video } : null, steered: steer.steered };
   await ctx.q(P.setRun, { id: ctx.run.id, status: null, brief: null, skill: style, card: reuse?.card ? JSON.stringify(reuse.card) : null, match: JSON.stringify(matchRow), error: null, at: Date.now() });
   await publish(ctx.chat, { type: 'run', run: { id: ctx.run.id, n: ctx.run.n, status: 'running', style } });
   const say = reuse ? `Same look as your earlier video, new script. I’m keeping its ${style === 'unique' ? 'style card' : 'style'} and writing fresh.`
@@ -88,7 +93,7 @@ export const matchStyle: Handler = async ctx => {
     : f.footage === 'edit' ? `I’ll edit your footage into a premium reel with a look designed for it (closest known: ${nearestName}).`
     : f.footage === 'reference' ? 'I’ll study your reference and design a new style from it, with a fresh script and our own assets.'
     : `No known style fits this one exactly, so the Art Director will design one for it (closest known: ${nearestName}).`;
-  await ctx.say(say, 'text', undefined, 'moovi');
+  await ctx.say(steer.steered ? `You turned ${steer.steered === 's1' ? 'Style 1' : steer.steered} down before, so I’m not using it. ${say}` : say, 'text', undefined, 'moovi');
   return { output: matchRow, spawn: playbookSpecs(ctx, pkg.playbook, f, !!reuse?.card), note: style === 'unique' ? `unique (nearest ${m.nearest})` : style };
 };
 

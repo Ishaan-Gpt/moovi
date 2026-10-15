@@ -8,9 +8,9 @@ const LABELS = {
   craft: ['Component', 'Slot', 'Recipe', 'Transition', 'Track', 'Beat', 'Style', 'Law', 'Check', 'Skill', 'SkillSection',
     'StyleSignature', 'Stage', 'Deck', 'Card', 'Film', 'Preset'],
   sys: ['User', 'Project'],
-  user: ['User', 'Lesson', 'Preference', 'AssetUse', 'VideoRef', 'PresetRef'],
+  user: ['User', 'Lesson', 'Preference', 'AssetUse', 'VideoRef', 'PresetRef', 'Feedback', 'Film', 'Scene', 'Run'],
   project: ['Project', 'Agent', 'Chat', 'Message', 'Upload', 'Video', 'Run', 'Task', 'Source', 'Fact', 'Claim', 'Scene',
-    'Asset', 'Lattice', 'Decision', 'Issue', 'Clip', 'Page', 'Screenshot'],
+    'Asset', 'Lattice', 'Decision', 'Issue', 'Clip', 'Page', 'Screenshot', 'Feedback'],
 } as const;
 
 async function index(graph: string, label: string, prop = 'id') {
@@ -49,6 +49,7 @@ export async function ensureUserSchema(graph: string) {
   await index(graph, 'AssetUse', 'hash');
   await index(graph, 'Lesson', 'topic');
   await index(graph, 'Preference', 'key');
+  await index(graph, 'Feedback', 'kind');
 }
 
 export async function ensureProjectSchema(graph: string) {
