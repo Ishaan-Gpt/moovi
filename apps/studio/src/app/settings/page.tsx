@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { byokMode, modelInfo, PROVIDER_CHOICES } from '@moovi/engine';
+import { byokMode, modelInfo, providerChoices } from '@moovi/engine';
 import { requireUser } from '@/lib/session';
 import { Sidebar } from '@/components/dash/Sidebar';
 import { ModelForm } from '@/components/settings/ModelForm';
@@ -21,7 +21,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
           <h1 className="dash__title">{welcome ? <>One thing first: <em className="serif">your model</em></> : <>Your <em className="serif">model</em></>}</h1>
           <p className="dash__lede muted">Moovi and the crew think on a model you bring. Paste a key from any provider below; Gemini and Groq both give free keys in a minute.</p>
         </header>
-        <ModelForm initial={modelInfo(user.id)} choices={PROVIDER_CHOICES} next={safeNext(next)} welcome={!!welcome} required={byokMode() === 'required'} />
+        <ModelForm initial={modelInfo(user.id)} choices={providerChoices()} next={safeNext(next)} welcome={!!welcome} required={byokMode() === 'required'} />
       </main>
     </div>
   );

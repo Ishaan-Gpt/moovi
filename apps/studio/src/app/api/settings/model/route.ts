@@ -1,4 +1,4 @@
-import { byokMode, clearModel, hit, modelInfo, PROVIDER_CHOICES, setModel } from '@moovi/engine';
+import { byokMode, clearModel, hit, modelInfo, providerChoices, setModel } from '@moovi/engine';
 import { apiUser, fail } from '@/lib/session';
 
 export const runtime = 'nodejs';
@@ -7,7 +7,7 @@ export const runtime = 'nodejs';
 export async function GET(req: Request) {
   const r = await apiUser(req);
   if ('error' in r) return r.error;
-  return Response.json({ mode: byokMode(), model: modelInfo(r.user.id), choices: PROVIDER_CHOICES });
+  return Response.json({ mode: byokMode(), model: modelInfo(r.user.id), choices: providerChoices() });
 }
 
 /** Save a key: checked against the provider first (a refused key is never saved), then stored sealed on the server. */

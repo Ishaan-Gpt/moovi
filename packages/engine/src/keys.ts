@@ -16,6 +16,7 @@ import { config } from './config';
 import { httpRuntime, listModels } from './runtime/http';
 import { PRESETS, PROVIDERS, pickModel, type Provider } from './runtime/providers';
 import type { ModelScope, Tier } from './runtime/index';
+import type { CompleteRequest, Runtime } from './runtime/types';
 
 export interface ModelChoice { provider: Provider; key: string; baseUrl?: string; models: Record<Tier, string>; checkedAt: number }
 export interface ModelInfo { provider: Provider; label: string; last4: string; models: Record<Tier, string>; checkedAt: number }
@@ -35,6 +36,8 @@ export const PROVIDER_CHOICES: { id: Provider; label: string; keyUrl?: string; h
   { id: 'ollama', label: 'Ollama (a model on this server)', hint: 'No key; the server runs the model.', needsKey: false },
   { id: 'compatible', label: 'Any OpenAI-compatible API', hint: 'Its base URL and key.', needsKey: true, needsBase: true },
 ];
+/** The choices this server offers: Ollama only where an Ollama server is configured (OLLAMA_HOST or MOOVI_PROVIDER=ollama). */
+export const providerChoices = () => PROVIDER_CHOICES.filter(c => c.id !== 'ollama' || !!process.env.OLLAMA_HOST?.trim() || config.provider === 'ollama');
 const labelOf = (p: Provider) => PROVIDER_CHOICES.find(c => c.id === p)?.label ?? p;
 
 export const byokMode = (): 'required' | 'optional' => (process.env.MOOVI_BYOK?.trim().toLowerCase() === 'optional' ? 'optional' : 'required');
@@ -74,7 +77,7 @@ export function clearModel(user: string) { rmSync(fileOf(user), { force: true })
  */
 export async function setModel(user: string, o: { provider: string; key?: string; baseUrl?: string }, f: typeof fetch = fetch): Promise<{ ok: true; info: ModelInfo } | { ok: false; error: string }> {
   const provider = o.provider as Provider;
-  if (!PROVIDERS.includes(provider)) return { ok: false, error: 'Pick a provider from the list.' };
+  if (!PROVIDERS.includes(provider) || !providerChoices().some(c => c.id === provider)) return { ok: false, error: 'Pick a provider from the list.' };
   const choice = PROVIDER_CHOICES.find(c => c.id === provider)!;
   const key = (o.key ?? '').trim();
   if (choice.needsKey && key.length < 8) return { ok: false, error: `Paste your ${choice.label} API key.` };
@@ -113,7 +116,7 @@ export function scopeFor(user: string | null | undefined): ModelScope | null {
   const sig = createHash('sha256').update(JSON.stringify([m.provider, m.key, m.baseUrl, m.models])).digest('hex');
   const hit = cache.get(user); if (hit?.sig === sig) return hit.scope;
   const scope: ModelScope = {
-    runtime: httpRuntime({ provider: m.provider, key: m.key || undefined, baseUrl: m.baseUrl, models: m.models }),
+    runtime: withServerFallback(httpRuntime({ provider: m.provider, key: m.key || undefined, baseUrl: m.baseUrl, models: m.models }), m.models),
     models: m.models, provider: m.provider,
     deadlineScale: m.provider === 'ollama' ? 4 : 1,
     drawsWell: m.provider === 'anthropic',
@@ -121,6 +124,37 @@ export function scopeFor(user: string | null | undefined): ModelScope | null {
   };
   cache.set(user, { sig, scope });
   return scope;
+}
+
+/**
+ * The server's own model as a safety net: when a user's key is refused or out of quota mid-job, that one request runs
+ * again on this machine's configured model (MOOVI_RUNTIME=http with its provider's key; MOOVI_FALLBACK=0 turns it
+ * off). The same tier is used, so a director call stays a director call.
+ */
+const keyFailure = (e: unknown) => /\b(401|403|429)\b|invalid.{0,20}key|unauthori|permission|quota|daily limit|rate limit|insufficient|billing|exhausted/i.test(e instanceof Error ? e.message : String(e));
+let server: Runtime | null | undefined;
+const serverRuntime = () => {
+  if (server !== undefined) return server;
+  const own = process.env[`${config.provider.toUpperCase()}_API_KEY`]?.trim();
+  return (server = process.env.MOOVI_FALLBACK !== '0' && config.runtime === 'http' && (own || config.provider === 'ollama') ? httpRuntime() : null);
+};
+export function withServerFallback(rt: Runtime, models: Record<Tier, string>): Runtime {
+  const tierOf = (id: string) => (Object.keys(models) as Tier[]).find(t => models[t] === id) ?? 'crew';
+  const retry = async <T>(what: string, id: string, signal: AbortSignal | undefined, first: () => Promise<T>, again: (s: Runtime, model: string) => Promise<T>) => {
+    try { return await first(); }
+    catch (e) {
+      const s = serverRuntime();
+      if (!s || signal?.aborted || !keyFailure(e)) throw e;
+      const model = config.models[tierOf(id)];
+      console.warn(`[engine] ${what}: the user's model failed (${String(e instanceof Error ? e.message : e).slice(0, 120)}); using the server's ${model}`);
+      return again(s, model);
+    }
+  };
+  return {
+    name: rt.name, vision: rt.vision,
+    run: req => retry(req.agent, req.model ?? '', req.signal, () => rt.run(req), (s, model) => s.run({ ...req, model })),
+    ...(rt.complete ? { complete: (req: CompleteRequest) => retry(req.agent, req.model, undefined, () => rt.complete!(req), (s, model) => (s.complete ? s.complete({ ...req, model }) : Promise.reject(new Error('no fallback')))) } : {}),
+  };
 }
 
 /** Thrown when a user without a model starts work under MOOVI_BYOK=required: the chat shows this and links Settings. */

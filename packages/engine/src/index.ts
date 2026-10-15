@@ -6,4 +6,4 @@ export { signUp, signIn, signOut, sessionUser, createProject, listProjects, owns
 export { newId } from './ids';
 export { say, userSay } from './live';
 export { projectDir, runDir } from './ctx';
-export { setModel, modelInfo, clearModel, byokMode, PROVIDER_CHOICES, type ModelInfo } from './keys';
+export { setModel, modelInfo, clearModel, byokMode, PROVIDER_CHOICES, providerChoices, type ModelInfo } from './keys';
