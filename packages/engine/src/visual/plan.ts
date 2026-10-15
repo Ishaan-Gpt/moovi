@@ -155,8 +155,8 @@ function layoutFor(needs: Set<Need>, seed: number, i: number, recent: LayoutId[]
 
 function contentFor(a: Artifact, text: string, nums: number[], c: { image?: string | null; brand?: string | null }, role: 'main' | 'other', variant: number, clip: { path: string; kind: 'footage' | 'scroll' | 'recording'; at: number } | null, photo: string | null = null): Content {
   // a scene's elements do not all say the same words: the main one takes the headline phrase, the others a clause or the key words each
-  const clauses = text.split(/[,;:.!?]|s[-–—]s/).map(s => s.trim()).filter(s => s.length > 2);
-  const pieces = [titleOf(text, 4), ...clauses.map(x => titleOf(x, 3)), titleOf(text.split(/s+/).slice(2).join(' '), 3)].filter((x, i, all) => x && all.indexOf(x) === i);
+  const clauses = text.split(/[,;:.!?]|\s[-–—]\s/).map(s => s.trim()).filter(s => s.length > 2);
+  const pieces = [titleOf(text, 4), ...clauses.map(x => titleOf(x, 3)), titleOf(text.split(/\s+/).slice(2).join(' '), 3)].filter((x, i, all) => x && all.indexOf(x) === i);
   const title = pieces[variant % pieces.length] ?? titleOf(text, 4);
   const items = itemsOf(text);
   const rot = items.length > 2 ? [...items.slice(variant % items.length), ...items.slice(0, variant % items.length)] : items;
@@ -206,7 +206,7 @@ export function castScene(b: BeatIn, i: number, count: number, o: PlanOptions, p
   const c: Ctx = { mapBeat: !!o.photos?.some(x => x.kind === 'map') && (needs.has('location') || needs.has('global') || needs.has('travel')), photosLeft: o.photos?.length ?? 0, rating: o.ratings?.artifacts ?? null, clipsLeft: backdrop ? 0 : pool.list.length, prior: o.prior?.[i] ?? null, needs, nums, hasImage: !!o.image, hasBrand: !!o.brand, seed, i, prev: new Set(prev ? [...prev.elements.map(e => e.art), ...prev.ambient] : []), used: usedHere, chosen: new Set() };
   const given = o.picks?.[i] ?? null;
   // the opening hook, the closing call to action and any very short line are set as big type (a film that is all cards has no rhythm)
-  const short = b.text.trim().split(/s+/).length <= 5, typeScene = count >= 3 && (i === 0 || i === count - 1 || short) && !['location', 'global', 'number', 'percent', 'money'].some(n => needs.has(n as Need)) && !prev?.layout.startsWith('type') && !recentLayouts.includes('type');
+  const short = b.text.trim().split(/\s+/).length <= 5, typeScene = count >= 3 && (i === 0 || i === count - 1 || (short && i !== count - 2)) && !['location', 'global'].some(n => needs.has(n as Need)) && !nums.length && !prev?.layout.startsWith('type') && !recentLayouts.includes('type');
   const layout: LayoutId = given?.layout && (LAYOUT_IDS as readonly string[]).includes(given.layout) ? (given.layout as LayoutId) : typeScene ? 'type' : layoutFor(needs, seed, i, recentLayouts, o.ratings?.layouts);
   const slots = slotsOf(layout, o.format);
   const elements: VElement[] = [];
