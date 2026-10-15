@@ -1,0 +1,315 @@
+{
+ "_doc": "Event → sound map for every style (packages/engine/src/audio/mix.ts). Only openly licensed sounds: CC0 (freesound, Kenney), MIT (MotionEasy synth tones) and risers synthesized here. align: start = the attack lands on t; peak = the loudest moment lands on t; end = it finishes on t. level_db: the RMS the sound is set to in the SFX stem.",
+ "sounds": {
+  "typing": {
+   "file": "fs.foley.very-fast-typing-short.wav",
+   "align": "start",
+   "slices": "onsets",
+   "slice_len": 0.06
+  },
+  "ui-blip": {
+   "file": "fs.ui.pop-4.wav",
+   "align": "start"
+  },
+  "snap": {
+   "file": "fs.ui.mouse-2-button-fast-click.wav",
+   "align": "peak"
+  },
+  "click": {
+   "file": "kenney.click.wav",
+   "align": "start"
+  },
+  "mouse": {
+   "file": "fs.ui.mouse-2-button-fast-click.wav",
+   "align": "peak"
+  },
+  "pop": {
+   "file": "ui.pop.wav",
+   "align": "start"
+  },
+  "pop-4": {
+   "file": "fs.ui.pop-4.wav",
+   "align": "start"
+  },
+  "pop-9": {
+   "file": "fs.ui.pop-9.wav",
+   "align": "start"
+  },
+  "bubble": {
+   "file": "fs.ui.the-best-bubble-pop-sound-fo.wav",
+   "align": "start"
+  },
+  "drop": {
+   "file": "fs.foley.water-drop.wav",
+   "align": "start"
+  },
+  "drop-splash": {
+   "file": "fs.foley.water-drop-splash.wav",
+   "align": "peak"
+  },
+  "woosh-short": {
+   "file": "fs.whoosh.swosh-whoosh-air-cut.wav",
+   "align": "peak"
+  },
+  "woosh-tight": {
+   "file": "fs-147285.wav",
+   "align": "peak"
+  },
+  "air-cut": {
+   "file": "fs.whoosh.swosh-whoosh-air-cut.wav",
+   "align": "peak"
+  },
+  "soft-hit": {
+   "file": "fs.impact.soft-hit.wav",
+   "align": "start"
+  },
+  "punch": {
+   "file": "fs.impact.punch2.wav",
+   "align": "peak"
+  },
+  "riser": {
+   "file": "riser.wav",
+   "align": "end"
+  },
+  "riser-short": {
+   "file": "riser-short.wav",
+   "align": "end"
+  },
+  "ui-riser": {
+   "file": "ui-riser.wav",
+   "align": "start"
+  },
+  "fast-typing": {
+   "file": "fs.foley.very-fast-typing-short.wav",
+   "align": "start"
+  },
+  "chime": {
+   "file": "tonal.chime.wav",
+   "align": "start"
+  },
+  "notify": {
+   "file": "tonal.notify.wav",
+   "align": "start"
+  },
+  "paper-swipe": {
+   "file": "fs-147282.wav",
+   "align": "peak"
+  },
+  "paper-swipe-2": {
+   "file": "fs-147285.wav",
+   "align": "peak"
+  },
+  "card-shuffle": {
+   "file": "fs-671917.wav",
+   "align": "start"
+  },
+  "paper-scratch": {
+   "file": "kenney-scratch.wav",
+   "align": "start"
+  },
+  "pluck": {
+   "file": "kenney-pluck.wav",
+   "align": "start"
+  }
+ },
+ "events": {
+  "word": {
+   "sounds": [
+    "typing"
+   ],
+   "level_db": -18,
+   "then": {
+    "sound": "click",
+    "after": 0,
+    "level_db": -27
+   }
+  },
+  "key-word": {
+   "sounds": [
+    "snap"
+   ],
+   "level_db": -24
+  },
+  "list-item": {
+   "sounds": [
+    "ui-blip",
+    "click"
+   ],
+   "level_db": -26
+  },
+  "pop": {
+   "sounds": [
+    "pop",
+    "pop-9",
+    "pop-4"
+   ],
+   "level_db": -25
+  },
+  "cascade": {
+   "sounds": [
+    "pop-9",
+    "pop-4",
+    "pop"
+   ],
+   "level_db": -29,
+   "every": 2,
+   "fade_db": -6
+  },
+  "bubble": {
+   "sounds": [
+    "bubble"
+   ],
+   "level_db": -24
+  },
+  "card-in": {
+   "sounds": [
+    "woosh-short"
+   ],
+   "level_db": -25,
+   "then": {
+    "sound": "soft-hit",
+    "after": 0,
+    "level_db": -32
+   }
+  },
+  "slide-out": {
+   "sounds": [
+    "woosh-tight"
+   ],
+   "level_db": -30
+  },
+  "scene": {
+   "sounds": [
+    "air-cut",
+    "woosh-tight"
+   ],
+   "level_db": -25
+  },
+  "hard-hit": {
+   "sounds": [
+    "punch"
+   ],
+   "level_db": -21
+  },
+  "stat": {
+   "sounds": [
+    "chime"
+   ],
+   "level_db": -27
+  },
+  "notify": {
+   "sounds": [
+    "notify"
+   ],
+   "level_db": -30
+  },
+  "accent": {
+   "sounds": [
+    "drop"
+   ],
+   "level_db": -27
+  },
+  "click-ui": {
+   "sounds": [
+    "mouse"
+   ],
+   "level_db": -27
+  },
+  "code": {
+   "sounds": [
+    "fast-typing"
+   ],
+   "level_db": -34,
+   "max_len": 1.2
+  },
+  "ui-reveal": {
+   "sounds": [
+    "ui-riser"
+   ],
+   "level_db": -32
+  },
+  "build": {
+   "sounds": [
+    "riser"
+   ],
+   "level_db": -30
+  },
+  "big-build": {
+   "sounds": [
+    "riser"
+   ],
+   "level_db": -30
+  },
+  "cta": {
+   "sounds": [
+    "drop-splash"
+   ],
+   "level_db": -28
+  },
+  "page-turn": {
+   "sounds": [
+    "paper-swipe",
+    "paper-swipe-2"
+   ],
+   "level_db": -26
+  },
+  "riffle": {
+   "sounds": [
+    "card-shuffle"
+   ],
+   "level_db": -27
+  },
+  "paper-pop": {
+   "sounds": [
+    "pop-9",
+    "pluck",
+    "pop-4"
+   ],
+   "level_db": -27
+  },
+  "thud": {
+   "sounds": [
+    "soft-hit"
+   ],
+   "level_db": -22
+  },
+  "tear": {
+   "sounds": [
+    "paper-scratch",
+    "paper-swipe-2"
+   ],
+   "level_db": -24
+  }
+ },
+ "rules": {
+  "min_gap": 0.06,
+  "priority": [
+   "hard-hit",
+   "scene",
+   "card-in",
+   "key-word",
+   "stat",
+   "cta",
+   "bubble",
+   "pop",
+   "list-item",
+   "notify",
+   "click-ui",
+   "accent",
+   "word",
+   "cascade",
+   "slide-out",
+   "code",
+   "ui-reveal",
+   "build",
+   "big-build",
+   "thud",
+   "page-turn",
+   "riffle",
+   "tear",
+   "paper-pop"
+  ],
+  "jitter_db": 1,
+  "peak_ceiling_db": -6
+ }
+}
