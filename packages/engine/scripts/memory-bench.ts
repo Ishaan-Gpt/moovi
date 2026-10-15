@@ -15,13 +15,13 @@ if (!h.ok) { console.error(`FalkorDB is not reachable (${(h as { error?: string 
 const uid = `membench_${Date.now().toString(36)}`;
 const median = (a: number[]) => [...a].sort((x, y) => x - y)[Math.floor(a.length / 2)]!;
 const time = async <T>(f: () => Promise<T>) => { const t = performance.now(); const r = await f(); return [performance.now() - t, r] as const; };
-const note = (i: number): Feedback => [
+const note = (i: number): Feedback => ([
   { kind: 'style', rejected: true, value: `s${i % 5}`, why: `too busy ${i}` },
   { kind: 'voice', rejected: i % 3 === 0, value: ['en-GB-RyanNeural', 'en-US-GuyNeural', 'en-US-AriaNeural'][i % 3]!, why: 'taste' },
   { kind: 'script_line', rejected: true, scene: i % 6, before: `old line ${i}`, after: `new line ${i}`, why: 'less hype' },
   { kind: 'shot', rejected: true, scene: i % 6, before: `a spinning cup ${i}`, why: 'stock look' },
   { kind: 'caption', rejected: true, value: 'size', why: `too small ${i}` },
-][i % 5]!;
+] satisfies Feedback[])[i % 5]!;
 
 try {
   const rows = userRows(uid);
