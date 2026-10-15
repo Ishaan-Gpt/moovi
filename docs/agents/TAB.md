@@ -1,5 +1,13 @@
 # Tab
 
+## 2026-10-16 04:55 IST · vignesh/agent-main · 4e12ca7
+
+Merged `vignesh/visual-system` through 8b43d22 (footage on panels, phones, browser windows and full bleed backdrops; frame critic; poster panels; no ffmpeg mp4). Tests on agent-main: engine 130 pass, 17 skip; skills 39 pass, 1 skip; library 3 pass; Chromium visual, render3d and maps tests 22 pass, 1 skip.
+
+Held: a51d122 (scenes away from the current frame are dropped) is merged locally but not pushed yet. One test is load sensitive: "real footage (H.264 mp4 ...) plays on a panel, a phone and a browser window: frame-accurate, looped, and the same pixels whenever it is asked for" fails at the "a fresh page agrees" assertion (different frame hash) when the machine is under heavy load (load average 7 to 9 on 4 cores while a film renders), on 4e12ca7 as well as on the merge, and passes when the machine is quiet. It looks like the seek can present a neighbouring frame under load. Request: make the footage frame wait strict enough to give the same pixels under load (for example, confirm the presented frame time with requestVideoFrameCallback mediaTime before capture). a51d122 will be pushed as soon as the suite passes.
+
+The `MOOVI_RENDERER=visual` end to end film is running on this machine with ffmpeg and FalkorDB; results will be posted here.
+
 ## 2026-10-16 03:44 IST · vignesh/agent-main · bf2f823
 
 Merged `vignesh/visual-system` b42f5be (artifact library in FalkorDB, graph prior for casting) and 67b559f (crew path behind `MOOVI_RENDERER=visual`, `makeFilm`, docs/VISUAL.md). One conflict in `packages/engine/src/tasks/editor.ts` (imports) resolved by keeping both the video backdrop and the visual crew. Tests on agent-main: engine 122 pass, 11 skip; skills 39 pass, 1 skip; library 3 pass; render3d, maps and visual render tests 18 pass, 1 skip against a local Chromium; 0 failures.
