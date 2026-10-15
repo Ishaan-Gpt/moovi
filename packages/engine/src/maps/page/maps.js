@@ -9,10 +9,28 @@ const withTimeout = (p, ms, what) => Promise.race([p, new Promise((_, rej) => se
 /** Natural Earth marks a few countries ISO_A2 "-99" (France, Norway…); the real code is ISO_A2_EH. Same rule as countries.ts. */
 export const ccOf = p => { const a = String(p.ISO_A2 || ''), b = String(p.ISO_A2_EH || ''); const v = a && a !== '-99' ? a : b && b !== '-99' ? b : ''; return v ? v.toLowerCase() : null; };
 
+/** What is written over the picture (the place's name, the attribution), drawn into the exported frame itself. */
+const OV = { name: '', a: 0, attr: '' };
 function overlay(cfg, attribution) {
-  $('attr').textContent = attribution;
-  $('name').textContent = '';
-  return { setName(text, a) { $('name').textContent = text || ''; $('name').style.opacity = String(a); } };
+  OV.attr = attribution; OV.name = ''; OV.a = 0;
+  return { setName(text, a) { OV.name = text || ''; OV.a = a; } };
+}
+let composite = null;
+function exportFrame(src, w, h, fmt) {
+  composite = composite || document.createElement('canvas');
+  if (composite.width !== w) { composite.width = w; composite.height = h; }
+  const g = composite.getContext('2d');
+  g.drawImage(src, 0, 0, w, h);
+  if (OV.name && OV.a > 0.01) {
+    const px = Math.round(w * 0.075); g.font = '700 ' + px + 'px system-ui, "Segoe UI", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.globalAlpha = OV.a; g.lineJoin = 'round'; g.lineWidth = px * 0.28; g.strokeStyle = 'rgba(247,250,253,.92)'; g.strokeText(OV.name, w / 2, h * 0.11); g.fillStyle = '#0E1A2B'; g.fillText(OV.name, w / 2, h * 0.11); g.globalAlpha = 1;
+  }
+  // the attribution, always on screen
+  const fs = Math.max(11, Math.round(w * 0.022)); g.font = '600 ' + fs + 'px system-ui, "Segoe UI", sans-serif'; g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+  const tw = g.measureText(OV.attr).width, bx = 10, bh = fs + 12, by = h - bh - 8;
+  g.fillStyle = 'rgba(247,250,253,.86)'; g.beginPath(); g.roundRect(bx, by, tw + 16, bh, 6); g.fill();
+  g.fillStyle = '#0E1A2B'; g.fillText(OV.attr, bx + 8, by + fs + 3);
+  return fmt === 'png' ? composite.toDataURL('image/png').slice(22) : composite.toDataURL('image/jpeg', 0.94).slice(23);
 }
 
 /* ───────── tiles: MapLibre + OpenFreeMap ───────── */
@@ -23,6 +41,9 @@ async function openTiles(cfg) {
   await withTimeout(new Promise((res, rej) => { map.once('load', res); const t = setInterval(() => { if (styleError) { clearInterval(t); rej(new Error(styleError)); } }, 100); }), cfg.loadTimeoutMs, 'the map style');
   // tint the water to the brand's ice blue when the style has it (a style without the layer is left alone)
   try { map.setPaintProperty('water', 'fill-color', cfg.colors.ice); } catch (e) { /* style has no such layer */ }
+  // fewer labels: road names, shields, one-way arrows and POIs cost label-placement time on every frame and read as clutter in a
+  // video; the place and country names (label_*) stay, and the shot's own name is drawn big over the picture
+  if (cfg.labels !== 'all') for (const l of map.getStyle().layers) if (l.type === 'symbol' && !/^(label_|water_name_point)/.test(l.id)) map.setLayoutProperty(l.id, 'visibility', 'none');
   const countries = await (await fetch(cfg.countriesUrl)).json();
   const want = new Set(cfg.stops.map(s => s.cc).filter(Boolean));
   map.addSource('hl', { type: 'geojson', data: { type: 'FeatureCollection', features: countries.features.filter(f => want.has(ccOf(f.properties))).map(f => ({ type: 'Feature', geometry: f.geometry, properties: { cc: ccOf(f.properties) } })) } });
@@ -32,19 +53,19 @@ async function openTiles(cfg) {
   map.addLayer({ id: 'pin-ring', type: 'circle', source: 'pins', paint: { 'circle-radius': 10, 'circle-color': cfg.colors.deepIce, 'circle-opacity': 0, 'circle-stroke-color': cfg.colors.deepIce, 'circle-stroke-width': 3, 'circle-stroke-opacity': 0, 'circle-pitch-alignment': 'map' } });
   map.addLayer({ id: 'pin-core', type: 'circle', source: 'pins', paint: { 'circle-radius': 9, 'circle-color': cfg.colors.deepIce, 'circle-stroke-color': cfg.colors.white, 'circle-stroke-width': 3.5, 'circle-opacity': 0, 'circle-stroke-opacity': 0 } });
   const ui = overlay(cfg, cfg.attribution);
-  const settle = ms => new Promise(res => {
-    const t0 = Date.now();
-    const check = () => {
-      if (map.loaded() && map.areTilesLoaded() && !map.isMoving()) { map.once('render', () => res(true)); map.triggerRepaint(); return; }
-      if (Date.now() - t0 > ms) { res(false); return; }
-      setTimeout(check, 30);
-    };
-    map.once('render', () => setTimeout(check, 0)); // a jump starts a load on the next render
+  // one render is enough: 'idle' fires after a render in which every tile is loaded and nothing is animating
+  const settle = (ms, change) => new Promise(res => {
+    const t = setTimeout(() => { map.off('idle', done); res(false); }, ms);
+    const done = () => { clearTimeout(t); res(true); };
+    map.once('idle', done);
+    change();
   });
   return {
     mode: 'tiles',
+    shot: fmt => exportFrame(map.getCanvas(), cfg.width, cfg.height, fmt),
     async frame(cam) {
       const s = cfg.stops[cam.focus], a = cam.landed;
+      const ok = await settle(cfg.tileTimeoutMs, () => {
       map.jumpTo({ center: [cam.lon, cam.lat], zoom: cam.zoom, bearing: cam.bearing, pitch: cam.pitch });
       map.setPaintProperty('hl-fill', 'fill-opacity', ['case', ['==', ['get', 'cc'], s.cc || ''], 0.26 * a, 0]);
       map.setPaintProperty('hl-line', 'line-opacity', ['case', ['==', ['get', 'cc'], s.cc || ''], 0.9 * a, 0]);
@@ -54,7 +75,7 @@ async function openTiles(cfg) {
       map.setPaintProperty('pin-ring', 'circle-radius', 10 + 46 * cam.pulse);
       map.setPaintProperty('pin-ring', 'circle-stroke-opacity', ['case', ['==', ['get', 'i'], cam.focus], 0.75 * (1 - cam.pulse) * a, 0]);
       ui.setName(s.name, a);
-      const ok = await settle(cfg.tileTimeoutMs);
+      });
       return { ok };
     },
   };
@@ -101,6 +122,7 @@ async function openGlobe(cfg) {
   const ui = overlay(cfg, '© Natural Earth (public domain)');
   return {
     mode: 'globe',
+    shot: fmt => exportFrame(renderer.domElement, cfg.width, cfg.height, fmt),
     async frame(cam) {
       const s = cfg.stops[cam.focus], a = cam.landed;
       const h = cam.globeH, pos = dir(THREE, cam.lat, cam.lon, 1 + h);
@@ -128,4 +150,5 @@ window.__open = async cfg => {
   return { mode: s.mode };
 };
 window.__frame = cam => window.__session.frame(cam);
+window.__shot = fmt => window.__session.shot(fmt);
 window.__ready = true;

@@ -7,7 +7,7 @@ import type { Script } from './script';
 
 /** The run's film as the kit sees it: beats, word times, the stage, the format, and how asset refs resolve. */
 export interface Board {
-  shots: { scene: number; preset: string | null; idea: string; hero: string; move: string; layout: string; props: string[]; camera: string; assets: { id: string; kind: string; what: string; url: string | null }[] }[];
+  shots: { scene: number; preset: string | null; idea: string; hero: string; move: string; layout: string; props: string[]; camera: string; places?: string[]; assets: { id: string; kind: string; what: string; url: string | null }[] }[];
   corners: { id: string; kind: string; what: string; url: string | null }[];
 }
 export interface AssetOut { id: string; path: string; kind: string; w: number; h: number; about: string; none?: boolean; sha?: string }
