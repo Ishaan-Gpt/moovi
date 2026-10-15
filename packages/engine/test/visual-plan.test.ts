@@ -146,3 +146,15 @@ test('beats are timed on the voice: each starts where its first word is said, th
   assert.deepEqual([...ev].sort((x, y) => x.t - y.t), ev, 'in order');
   assert.ok(ev.every(e => e.t >= 0 && e.t <= plan.seconds));
 });
+
+test('pictures the crew already made (a map, a 3D render, a capture) go in poster panels; a map goes to the beat about a place', () => {
+  const photos = [{ path: '/data/a/render.png', kind: 'look3d' as const }, { path: '/data/a/map.png', kind: 'map' as const }];
+  const bs: BeatIn[] = ['We ship to customers in 40 countries across the world.', 'Meet Bluetoki: orders, stock and customers in one place.', 'It connects your shop, your phone and your team, everywhere.'].map((text, i) => ({ text, start: i * 4, end: (i + 1) * 4 }));
+  const none = planFilm(bs, { format: 'vertical', seed: 6 });
+  assert.ok(!none.scenes.some(s => s.elements.some(e => e.art === 'img:poster')), 'no pictures, no poster panel');
+  const withPhotos = planFilm(bs, { format: 'vertical', seed: 6, photos });
+  const posters = withPhotos.scenes.flatMap(s => s.elements.filter(e => e.art === 'img:poster').map(e => ({ scene: s.i, image: e.content.image })));
+  assert.ok(posters.length >= 1, 'a poster panel is cast');
+  assert.ok(posters.every(p => photos.some(x => x.path === p.image)));
+  assert.equal(posters.find(p => p.scene === 0)?.image, '/data/a/map.png', 'the beat about the world gets the map');
+});

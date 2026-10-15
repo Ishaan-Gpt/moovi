@@ -112,3 +112,24 @@ test('real footage plays on a panel, a phone and a browser window: frame-accurat
     await b.close();
   } finally { await closeVisual(); }
 });
+
+test('a poster panel shows the picture it was given (a map, a 3D render, a capture)', async t => {
+  if (!(await canRenderVisual())) { t.skip('no Chrome to drive'); return; }
+  const { config } = await import('../src/config');
+  const { mkdirSync, writeFileSync } = await import('node:fs');
+  const dir = join(config.data, 'visual-test'); mkdirSync(dir, { recursive: true });
+  try {
+    // two different pictures, made by the renderer itself
+    const make = async (seed: number, name: string) => { const s = await openFilm(planFilm(beats(2, 2), { format: 'vertical', seed }), { scale: 0.3 }); const f = join(dir, name); writeFileSync(f, await s.frame(40)); await s.close(); return f; };
+    const [a, b] = [await make(1, 'photo-a.jpg'), await make(2, 'photo-b.jpg')];
+    const bs = beats(3, 3), o = { format: 'vertical' as const, seed: 6 };
+    const pa = planFilm(bs, { ...o, photos: [{ path: a, kind: 'map' }] }), pb = planFilm(bs, { ...o, photos: [{ path: b, kind: 'map' }] });
+    const scene = pa.scenes.find(s => s.elements.some(e => e.art === 'img:poster'));
+    assert.ok(scene, 'a poster panel is cast');
+    assert.deepEqual(pa.scenes.map(s => s.elements.map(e => e.art)), pb.scenes.map(s => s.elements.map(e => e.art)), 'the same casting; only the picture differs');
+    const n = Math.round((scene!.start + 1.6) * 30);
+    const sa = await openFilm(pa, { scale: 0.3 }), ha = sha(await sa.frame(n)); await sa.close();
+    const sb = await openFilm(pb, { scale: 0.3 }), hb = sha(await sb.frame(n)); await sb.close();
+    assert.notEqual(ha, hb, 'the panel shows its own picture');
+  } finally { await closeVisual(); }
+});

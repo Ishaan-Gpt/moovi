@@ -19,6 +19,8 @@ export interface PlanOptions {
   image?: string | null;
   /** real footage the footage agent and the researcher brought: stock clips, scroll captures, screen recordings (paths in the data dir) */
   clips?: { path: string; kind: 'footage' | 'scroll' | 'recording'; seconds?: number }[];
+  /** pictures the crew already made (map and 3D posters, captures of the site): they go in poster panels */
+  photos?: { path: string; kind: 'map' | 'look3d' | 'capture' | 'photo' }[];
   brand?: string | null;
   /** artifact id → times used in this project's earlier films (from the graph): the art director varies */
   used?: Record<string, number>;
@@ -102,12 +104,13 @@ export function typeLines(b: BeatIn, seed: number, i: number, big = false): Type
 
 /* ───────── casting ───────── */
 
-interface Ctx { rating: Record<string, { mean: number; n: number }> | null; clipsLeft: number; prior: Record<string, number> | null; needs: Set<Need>; nums: number[]; hasImage: boolean; hasBrand: boolean; seed: number; i: number; prev: Set<string>; used: Record<string, number>; chosen: Set<string> }
+interface Ctx { mapBeat: boolean; photosLeft: number; rating: Record<string, { mean: number; n: number }> | null; clipsLeft: number; prior: Record<string, number> | null; needs: Set<Need>; nums: number[]; hasImage: boolean; hasBrand: boolean; seed: number; i: number; prev: Set<string>; used: Record<string, number>; chosen: Set<string> }
 
 function score(a: Artifact, c: Ctx, role: string): number {
   if (a.wants === 'image' && !c.hasImage) return -99;
   // footage only when there is some; and when there is, it gets the main slot often (real moving pictures are the bar)
   if (a.wants === 'clip') { if (!c.clipsLeft) return -99; }
+  if (a.wants === 'photo') { if (!c.photosLeft) return -99; }
   // an artifact built around a number needs the beat to say one; bars, a line and the tower may be shapes
   if (a.wants === 'numbers' && !c.nums.length && !SHAPE_OK.has(a.id)) return -50;
   const overlap = c.prior ? (c.prior[a.id] ?? 0) : a.needs.filter(n => c.needs.has(n)).length;
@@ -121,6 +124,7 @@ function score(a: Artifact, c: Ctx, role: string): number {
   if (c.chosen.has(a.id)) s -= 99;
   s -= (a.cost - 1) * 0.3;
   if (a.wants === 'clip') s += 7;
+  if (a.wants === 'photo') s += c.mapBeat ? 9 : 3.5; // a beat about a place gets the flight map the crew made for it
   // an artifact that has scored well in earlier films is preferred, one that scored badly is not (shrunk to 7 when little is known)
   const rt = c.rating?.[a.id]; if (rt) s += (rt.mean - 7) * 0.45 * (rt.n / (rt.n + 3));
   return s + jit(c.seed, `${c.i}:${a.id}`) * 1.6;
@@ -149,7 +153,7 @@ function layoutFor(needs: Set<Need>, seed: number, i: number, recent: LayoutId[]
   return [...from].sort((a, b) => rank(b) - rank(a))[0]!;
 }
 
-function contentFor(a: Artifact, text: string, nums: number[], c: { image?: string | null; brand?: string | null }, role: 'main' | 'other', variant: number, clip: { path: string; kind: 'footage' | 'scroll' | 'recording'; at: number } | null): Content {
+function contentFor(a: Artifact, text: string, nums: number[], c: { image?: string | null; brand?: string | null }, role: 'main' | 'other', variant: number, clip: { path: string; kind: 'footage' | 'scroll' | 'recording'; at: number } | null, photo: string | null = null): Content {
   // a scene's elements do not all say the same words: the main one takes the headline phrase, the others a clause or the key words each
   const clauses = text.split(/[,;:.!?]|s[-–—]s/).map(s => s.trim()).filter(s => s.length > 2);
   const pieces = [titleOf(text, 4), ...clauses.map(x => titleOf(x, 3)), titleOf(text.split(/s+/).slice(2).join(' '), 3)].filter((x, i, all) => x && all.indexOf(x) === i);
@@ -157,7 +161,7 @@ function contentFor(a: Artifact, text: string, nums: number[], c: { image?: stri
   const items = itemsOf(text);
   const rot = items.length > 2 ? [...items.slice(variant % items.length), ...items.slice(0, variant % items.length)] : items;
   switch (a.kind) {
-    case 'clip': return clip ? { title, clip: clip.path, clipKind: clip.kind, clipAt: clip.at } : { title };
+    case 'clip': if (a.wants === 'photo') return { title, image: photo ?? undefined, clipKind: undefined }; return clip ? { title, clip: clip.path, clipKind: clip.kind, clipAt: clip.at } : { title };
     case 'chart': return { title, numbers: nums.length ? nums : undefined };
     case 'device': return { title, items: rot, image: a.wants === 'image' ? c.image ?? undefined : role === 'main' ? c.image ?? undefined : undefined, ...(clip && (a.id === 'device:phone' || a.id === 'device:browser') ? { clip: clip.path, clipKind: clip.kind, clipAt: clip.at } : {}), numbers: nums.length ? nums : undefined };
     case 'card': return { title, items: rot.slice(0, 4), numbers: nums.length ? nums : undefined };
@@ -182,14 +186,24 @@ const nextClip = (pool: ClipPool, art: string): { path: string; kind: 'footage' 
   return { path: c.path, kind: c.kind, at: +((c.seconds ?? 8) / 3 * n % Math.max(1, c.seconds ?? 8)).toFixed(2) };
 };
 
+/** the next picture for a poster panel: a map when the beat is about a place, else the least used */
+const nextPhoto = (o: PlanOptions, needs: Set<Need>, usedHere: Record<string, number>): string | null => {
+  const list = o.photos ?? []; if (!list.length) return null;
+  const place = needs.has('location') || needs.has('global') || needs.has('travel');
+  const rank = (x: NonNullable<PlanOptions['photos']>[number]) => (usedHere[`photo:${x.path}`] ?? 0) * 2 + (place ? (x.kind === 'map' ? -3 : 0) : x.kind === 'map' ? 2 : 0);
+  const pick1 = [...list].sort((x, y) => rank(x) - rank(y))[0]!;
+  usedHere[`photo:${pick1.path}`] = (usedHere[`photo:${pick1.path}`] ?? 0) + 1;
+  return pick1.path;
+};
+
 export function castScene(b: BeatIn, i: number, count: number, o: PlanOptions, prev: VScene | null, recentLayouts: LayoutId[], usedHere: Record<string, number>, pool: ClipPool = { list: [], handed: [] }): VScene {
   const seed = o.seed ?? 7;
   const needs = new Set<Need>(needsFor(b, i, count));
   const nums = numbersOf(b.text);
-  const c: Ctx = { rating: o.ratings?.artifacts ?? null, clipsLeft: pool.list.length, prior: o.prior?.[i] ?? null, needs, nums, hasImage: !!o.image, hasBrand: !!o.brand, seed, i, prev: new Set(prev ? [...prev.elements.map(e => e.art), ...prev.ambient] : []), used: usedHere, chosen: new Set() };
+  const c: Ctx = { mapBeat: !!o.photos?.some(x => x.kind === 'map') && (needs.has('location') || needs.has('global') || needs.has('travel')), photosLeft: o.photos?.length ?? 0, rating: o.ratings?.artifacts ?? null, clipsLeft: pool.list.length, prior: o.prior?.[i] ?? null, needs, nums, hasImage: !!o.image, hasBrand: !!o.brand, seed, i, prev: new Set(prev ? [...prev.elements.map(e => e.art), ...prev.ambient] : []), used: usedHere, chosen: new Set() };
   const given = o.picks?.[i] ?? null;
   // the opening hook, the closing call to action and any very short line are set as big type (a film that is all cards has no rhythm)
-  const short = b.text.trim().split(/s+/).length <= 5, typeScene = count >= 3 && (i === 0 || i === count - 1 || short) && !prev?.layout.startsWith('type') && !recentLayouts.includes('type');
+  const short = b.text.trim().split(/s+/).length <= 5, typeScene = count >= 3 && (i === 0 || i === count - 1 || short) && !['location', 'global', 'number', 'percent', 'money'].some(n => needs.has(n as Need)) && !prev?.layout.startsWith('type') && !recentLayouts.includes('type');
   const layout: LayoutId = given?.layout && (LAYOUT_IDS as readonly string[]).includes(given.layout) ? (given.layout as LayoutId) : typeScene ? 'type' : layoutFor(needs, seed, i, recentLayouts, o.ratings?.layouts);
   const slots = slotsOf(layout, o.format);
   const elements: VElement[] = [];
@@ -209,7 +223,7 @@ export function castScene(b: BeatIn, i: number, count: number, o: PlanOptions, p
     c.chosen.add(a.id); kinds.push(a.kind);
     const enter: Enter = pick(ENTERS, seed, `enter:${i}:${k}`, elements.map(e => e.enter));
     const idle: Idle = pick(IDLES, seed, `idle:${i}:${k}`, elements.map(e => e.idle));
-    elements.push({ slot: s.id, art: a.id, content: contentFor(a, b.text, nums, o, s.job === 'main' ? 'main' : 'other', k, a.wants === 'clip' || ((a.id === 'device:phone' || a.id === 'device:browser') && s.job === 'main') ? nextClip(pool, a.id) : null), enter, idle, at: +(0.08 + k * 0.16).toFixed(2) });
+    elements.push({ slot: s.id, art: a.id, content: contentFor(a, b.text, nums, o, s.job === 'main' ? 'main' : 'other', k, a.wants === 'clip' || ((a.id === 'device:phone' || a.id === 'device:browser') && s.job === 'main') ? nextClip(pool, a.id) : null, a.wants === 'photo' ? nextPhoto(o, needs, usedHere) : null), enter, idle, at: +(0.08 + k * 0.16).toFixed(2) });
     usedHere[a.id] = (usedHere[a.id] ?? 0) + 1;
   }
   // ambient depth: a backdrop, then particles or light, then (sometimes) a second light

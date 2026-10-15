@@ -96,7 +96,8 @@ function makeElement(el, slot, A) {
     if (slot.job === 'label') { size = fit(slot.rect, 3.4); draw = (g, w, h, t) => callout(g, w, h, t, c, P, art.glyph); }
     else { const s = Math.min(slot.rect.w, slot.rect.h); size = { w: s, h: s }; draw = (g, w, h, t) => iconBadge(g, w, h, t, c, P, art.glyph); shadow = false; }
   } else if (kind === 'clip') {
-    if (name === 'screen') { size = fit(slot.rect, 1.45); draw = (g, w, h, t) => { g.save(); roundRect(g, 0, 0, w, h, 22); g.clip(); browserChrome(g, w, h, t, { ...c, clipKind: c.clipKind ?? 'recording' }, P); g.restore(); g.lineWidth = 3; g.strokeStyle = P.hair; roundRect(g, 0, 0, w, h, 22); g.stroke(); }; }
+    if (name === 'poster') { size = fit(slot.rect, Math.max(0.7, Math.min(1.6, slot.rect.w / slot.rect.h))); draw = (g, w, h, t) => footagePanel(g, w, h, t, c, P); radius = 30; }
+    else if (name === 'screen') { size = fit(slot.rect, 1.45); draw = (g, w, h, t) => { g.save(); roundRect(g, 0, 0, w, h, 22); g.clip(); browserChrome(g, w, h, t, { ...c, clipKind: c.clipKind ?? 'recording' }, P); g.restore(); g.lineWidth = 3; g.strokeStyle = P.hair; roundRect(g, 0, 0, w, h, 22); g.stroke(); }; }
     else { size = fit(slot.rect, Math.max(0.6, Math.min(1.8, slot.rect.w / slot.rect.h))); draw = (g, w, h, t) => footagePanel(g, w, h, t, c, P); radius = 30; }
   } else if (kind === 'card') { size = fit(slot.rect, ASPECT[el.art] ?? 1.2); draw = (g, w, h, t) => CARDS[name](g, w, h, t, c, P); shadow = !['notif', 'chat', 'chips'].includes(name); }
   else if (kind === 'chart') { size = fit(slot.rect, ASPECT[el.art] ?? 1.2); draw = (g, w, h, t) => CHARTS[name](g, w, h, t, c, P); shadow = !['counter', 'ring'].includes(name); }
