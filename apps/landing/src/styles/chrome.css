@@ -1,0 +1,123 @@
+/* ───────────── utility chrome ───────────── */
+html.is-locked, html.is-locked body { overflow: hidden; }
+.skip { position: fixed; left: 12px; top: -60px; z-index: 300; background: var(--ink); color: var(--canvas); padding: 10px 14px; border-radius: 10px; transition: top .3s var(--ease); }
+.skip:focus { top: 12px; }
+
+/* rolling letters */
+.roll { display: inline-flex; white-space: pre; }
+.roll__cell { display: inline-block; overflow: clip; vertical-align: top; line-height: 1.15; }
+.roll__char { position: relative; display: inline-block; transition: transform .55s var(--ease); transition-delay: calc(var(--i) * 16ms); }
+.roll__copy { position: absolute; left: 0; top: 100%; }
+.roll-host:hover .roll__char, .roll-host:focus-visible .roll__char { transform: translateY(-100%); }
+
+
+/* ───────────── intro: Moovi's halo pops in, bobs and turns, then the page opens through its ring ───────────── */
+.intro { position: fixed; inset: 0; z-index: 200; background: var(--canvas);
+  background-image: radial-gradient(60% 55% at 50% 46%, var(--ce-ice-white), transparent 70%), linear-gradient(180deg, var(--ce-ice-soft), var(--ce-ice));
+  --hole: 0vmax;
+  -webkit-mask-image: radial-gradient(circle at 50% 46%, transparent var(--hole), #000 calc(var(--hole) + 1px));
+  mask-image: radial-gradient(circle at 50% 46%, transparent var(--hole), #000 calc(var(--hole) + 1px)); }
+html[data-intro="done"] .intro { display: none; }
+.intro__art { position: absolute; left: 50%; top: 46%; translate: -50% -50%; }
+.intro__spin { width: min(360px, 62vw); aspect-ratio: 1; will-change: transform; }
+.intro__halo { display: block; width: 100%; height: auto; opacity: 0; will-change: transform, opacity; }
+.intro__meta { position: absolute; left: 50%; top: calc(100% + 26px); translate: -50% 0; display: flex; gap: 18px; align-items: center; white-space: nowrap; color: var(--ink-2); }
+.intro__statusbox { display: inline-block; height: 1.3em; overflow: clip; }
+.intro__status { display: flex; flex-direction: column; line-height: 1.3; text-transform: uppercase; letter-spacing: .14em; }
+.intro__status span:last-child { color: var(--accent); }
+
+/* ───────────── header ───────────── */
+.header { position: fixed; inset: 0 0 auto 0; z-index: 50; height: var(--header-h); display: flex; align-items: center; justify-content: space-between; padding-inline: var(--pad); padding-right: calc(var(--pad) + 44px); pointer-events: none; }
+.header > * { position: relative; pointer-events: auto; }
+.header__logo { opacity: 0; transform: translateY(-6px); transition: opacity .6s var(--ease), transform .6s var(--ease); }
+.header.is-scrolled .header__logo, .header.is-menu .header__logo { opacity: 1; transform: none; }
+.logo { display: inline-flex; align-items: center; gap: 6px; }
+@keyframes halo-turn { to { transform: rotate(360deg); } }
+.logo__word { font-weight: 700; font-size: 23px; letter-spacing: -.04em; line-height: 1; }
+.header__logo { padding: 4px 16px 4px 6px; }
+.header__nav { padding: 4px; }
+.header__nav ul { position: relative; display: flex; gap: 2px; list-style: none; margin: 0; padding: 0; }
+.header__nav a { position: relative; display: inline-block; padding: 9px 16px; color: var(--ink-2); font-weight: 700; transition: color .4s var(--ease); }
+.header__nav a:hover { color: var(--ink); }
+.header__nav a.is-active { color: var(--ink); }
+/* a bead of the halo's jelly, sliding behind the active link; it squishes as it moves */
+.header__blob { position: absolute; top: 4px; bottom: 4px; left: 4px; width: 0; border-radius: 999px; opacity: 0; pointer-events: none;
+  background: radial-gradient(120% 160% at 32% 0%, var(--ce-surface) 0%, var(--ce-ice-soft) 38%, var(--ce-ice) 100%);
+  box-shadow: inset 0 1px 1px var(--ce-surface), inset 0 -2px 5px -2px color-mix(in oklab, var(--ce-ice) 60%, var(--ce-frost-mid)), 0 3px 8px -5px color-mix(in oklab, var(--ce-frost-mid) 70%, transparent);
+  transition: transform .75s var(--ease-jelly), width .55s var(--ease-jelly), opacity .4s; }
+.header__blob.is-moving { animation: blob-squish .6s var(--ease); }
+@keyframes blob-squish { 0% { scale: 1 1; } 35% { scale: 1.12 .8; } 70% { scale: .97 1.05; } 100% { scale: 1 1; } }
+/* sign in sits beside the nav (its own pill: it leaves the page for the studio) */
+.header__nav { margin-left: auto; }
+.header__signin { margin-left: 8px; padding: 13px 20px; color: var(--ink); font-weight: 700; transition: transform .3s var(--ease-jelly); }
+.header__signin:hover { transform: translateY(-1px); }
+.mmenu__signin { display: inline-block; margin-top: 18px; padding: 12px 20px; border-radius: 999px; background: var(--ce-ice-soft); color: var(--ink); font-weight: 700; }
+.header__menu { display: none; padding: 9px 18px; color: var(--ink); font-weight: 700; }
+
+/*
+ * The site's jelly pill, the same material as the hero's prompt box: an ice-white body inside a soft ice-blue jelly
+ * rim with a wet top edge. Opaque enough to read over anything, so no backdrop blur (which would re-blur the moving
+ * 3D world under it every frame).
+ */
+.goo-glass { position: relative; border-radius: 999px; border: 3px solid transparent;
+  background:
+    linear-gradient(180deg, color-mix(in oklab, var(--ce-surface) 94%, transparent), color-mix(in oklab, var(--ce-ice-white) 90%, transparent)) padding-box,
+    linear-gradient(165deg, var(--ce-ice-soft), var(--ce-ice) 55%, color-mix(in oklab, var(--ce-ice) 80%, var(--ce-frost-mid))) border-box;
+  box-shadow: inset 0 1px 0 var(--ce-surface), 0 10px 26px -16px color-mix(in oklab, var(--ce-frost-mid) 70%, transparent);
+  transition: transform .5s var(--ease-jelly); }
+.goo-glass:hover { transform: scale(1.012, .988); }
+.mmenu[hidden] { display: none; }
+.mmenu { position: fixed; inset: 0; z-index: -1; background: var(--canvas); padding: calc(var(--header-h) + 24px) var(--pad) var(--pad); display: flex; flex-direction: column; justify-content: space-between; }
+.mmenu ul { list-style: none; margin: 0; padding: 0; display: grid; }
+.mmenu li { border-bottom: 1.5px dotted var(--cut); animation: mm-in .6s var(--ease) both; animation-delay: calc(var(--i) * 50ms); }
+.mmenu__link { display: flex; align-items: baseline; gap: 14px; padding: 14px 0; font-family: var(--font-serif); font-style: italic; font-size: 44px; line-height: 1; }
+.mmenu__link .t-mono { color: var(--ink-2); font-style: normal; }
+.mmenu__foot { color: var(--ink-2); }
+@keyframes mm-in { from { opacity: 0; transform: translateY(14px); } }
+
+/* ───────────── right edge: the page's timeline ───────────── */
+.timeline { position: fixed; top: 0; right: 0; bottom: 0; width: 44px; z-index: 45; display: flex; flex-direction: column; align-items: center; pointer-events: none; }
+.timeline__tab { pointer-events: auto; writing-mode: vertical-rl; background: var(--ice); color: var(--ink); padding: 18px 12px; border-radius: 0 0 0 12px; white-space: nowrap; transition: background .4s var(--ease); }
+.timeline__tab:hover { background: #bcdcf3; }
+.timeline__track { position: relative; flex: 1; width: 20px; margin: 16px 0 12px; container-type: size; }
+.timeline__ticks { position: absolute; inset: 0 auto 0 50%; width: 8px; margin-left: -4px; background: repeating-linear-gradient(to bottom, var(--cut) 0 1px, transparent 1px 12px); -webkit-mask: linear-gradient(transparent, #000 4%, #000 96%, transparent); mask: linear-gradient(transparent, #000 4%, #000 96%, transparent); }
+.timeline__ticks::after { content: ''; position: absolute; inset: 0 3.25px; background: var(--cut); opacity: .5; }
+.timeline__head { position: absolute; top: 0; left: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; will-change: transform; }
+.timeline__head span { display: block; width: 100%; height: 100%; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px color-mix(in oklab, var(--ce-frost-mid) 15%, transparent); }
+.timeline__tc { writing-mode: vertical-rl; transform: rotate(180deg); color: var(--ink-2); padding-bottom: 14px; }
+
+/* ───────────── scroll cue ───────────── */
+.scroll-cue { position: fixed; left: 50%; bottom: calc(var(--pad) * .9); z-index: 6; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; color: var(--ink); transition: opacity .5s var(--ease), transform .5s var(--ease); pointer-events: none; }
+.scroll-cue.is-hidden { opacity: 0; transform: translate(-50%, 10px); }
+.icon-scroll-bead { animation: cue-bead 1.8s var(--ease) infinite; }
+@keyframes cue-bead { 0% { transform: translateY(0); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateY(7px); opacity: 0; } }
+html:not([data-intro="done"]) .scroll-cue { opacity: 0; }
+
+
+/* ───────────── page transition sheet ───────────── */
+.sheet { position: fixed; inset: 0; z-index: 150; display: none; align-items: center; justify-content: center; background: var(--ice); will-change: transform; }
+.sheet__inner { display: grid; justify-items: center; gap: 28px; }
+.sheet__label { font-family: var(--font-serif); font-style: italic; font-size: max(48px, calc(130 * var(--u))); line-height: 1; letter-spacing: -.02em; }
+.sheet__track { position: relative; width: min(420px, 62vw); height: 0; border-top: 1.5px dotted var(--cut); }
+.sheet__bead { position: absolute; left: 0; top: -17px; color: var(--ink); animation: sheet-run .9s var(--ease) both; }
+.sheet.is-waiting .sheet__bead { animation: sheet-loop 1.6s var(--ease-sheet) infinite alternate; }
+.sheet__wait { color: var(--ink-2); opacity: 0; transition: opacity .4s; text-transform: uppercase; }
+.sheet.is-waiting .sheet__wait { opacity: 1; }
+@keyframes sheet-run { from { left: 0; } to { left: calc(100% - 34px); } }
+@keyframes sheet-loop { from { left: 0; } to { left: calc(100% - 34px); } }
+
+/* route-level loading */
+.route-loading { min-height: 100svh; display: grid; place-items: center; align-content: center; gap: 18px; color: var(--ink); text-transform: uppercase; }
+
+@media (max-width: 760px) {
+  .header { padding-right: var(--pad); }
+  .header__nav { display: none; }
+  .header__signin { display: none; }
+  .header__menu { margin-left: auto; }
+  .header__menu { display: inline-flex; }
+  .timeline { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon-scroll-bead { animation: none; }
+}

@@ -1,0 +1,54 @@
+@import '@contenteasy/brand/tokens.css';
+
+/*
+ * Moovi landing tokens.
+ * Type and spacing scale off one "screen unit" (Oryzo's system): the smaller of width-fit and height-fit,
+ * so every scene fits the viewport in both directions. On narrow screens the unit switches to width only.
+ */
+:root {
+  --canvas: var(--ce-ice-white);
+  --surface: var(--ce-surface);
+  --ice: var(--ce-ice);
+  --ice-soft: var(--ce-ice-soft);
+  --accent: var(--ce-glacier);   /* icy, never deep blue: the page is ice white and ice blue */
+  /* text is icy blue, never black: frost ink for reading, frost muted for quiet lines, the ice gradient for display */
+  --ink: var(--ce-frost-ink);
+  --ink-2: var(--ce-frost-muted);
+  --ink-3: color-mix(in oklab, var(--ce-ice) 62%, var(--ce-frost-muted));   /* unfilled scroll text */
+  --ice-text: var(--ce-ice-text);
+  --line: var(--ce-hairline);
+  --cut: color-mix(in oklab, var(--ce-frost-ink) 26%, transparent); /* dotted cut marks */
+  --mint: var(--ce-aurora-mint);
+  --lilac: var(--ce-aurora-lilac);
+
+  --pad: max(16px, 3.125vw);
+  --inner: calc(100vw - var(--pad) * 2);
+  --u: min(calc(var(--inner) / 1800), calc(100svh / 1024 * 1.25));
+
+  --fs-mega: calc(300 * var(--u));
+  --fs-h1: calc(164 * var(--u));
+  --fs-h2: calc(68 * var(--u));
+  --fs-h3: calc(45 * var(--u));
+  --fs-h4: calc(32 * var(--u));
+  --fs-sub1: max(12px, calc(20 * var(--u)));
+  --fs-sub2: max(10px, calc(15 * var(--u)));
+  --fs-body1: max(17px, calc(34 * var(--u)));
+  --fs-body2: max(15px, calc(22 * var(--u)));
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-sheet: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-jelly: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --header-h: 64px;
+}
+
+@media (max-width: 760px) {
+  :root {
+    --u: calc(var(--inner) / 760);
+    --fs-mega: calc(260 * var(--u));
+    --fs-h1: calc(118 * var(--u));
+    --fs-h2: calc(64 * var(--u));
+    --fs-h3: calc(42 * var(--u));
+    --header-h: 56px;
+  }
+}
