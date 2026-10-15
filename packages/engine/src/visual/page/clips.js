@@ -7,7 +7,8 @@ import { clamp01, ease, roundRect } from './util.js';
 export function makeClip(url) {
   const v = document.createElement('video');
   v.muted = true; v.playsInline = true; v.preload = 'auto'; v.crossOrigin = 'anonymous'; v.loop = false;
-  v.style.cssText = 'position:fixed;left:-9999px;top:0;width:2px;height:2px';
+  // inside the viewport (a video far off screen may never be presented, so its picture can lag a seek), but too small and transparent to matter
+  v.style.cssText = 'position:fixed;left:0;top:0;width:4px;height:4px;opacity:0.02;pointer-events:none;z-index:-1';
   const clip = { v, dur: 0, ok: false, w: 0, h: 0, at: -1 };
   clip.ready = new Promise(res => {
     const done = ok => { clip.ok = ok && v.videoWidth > 0; clip.dur = v.duration || 0; clip.w = v.videoWidth; clip.h = v.videoHeight; res(clip.ok); };

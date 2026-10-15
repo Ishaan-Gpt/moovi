@@ -1,5 +1,5 @@
 import { byId } from './artifacts';
-import { FORMATS, bands, slotsOf, type Rect } from './layouts';
+import { FORMATS, bandOf, slotsOf, type Rect } from './layouts';
 import type { Session } from './capture';
 import type { VPlan } from './types';
 
@@ -17,7 +17,7 @@ export const LENGTH_TOLERANCE_S = 2;
 const overlap = (a: Rect, b: Rect) => Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
 
 export function checkPlan(plan: VPlan, askedSeconds?: number): Issue[] {
-  const out: Issue[] = [], { caption } = bands(plan.format), { W, H } = FORMATS[plan.format];
+  const out: Issue[] = [], { W, H } = FORMATS[plan.format];
   if (askedSeconds !== undefined && Math.abs(plan.seconds - askedSeconds) > LENGTH_TOLERANCE_S) out.push({ kind: 'length', detail: `the film is ${plan.seconds.toFixed(1)} s, ${askedSeconds} s was asked (±${LENGTH_TOLERANCE_S} s)` });
   let t = 0;
   for (const s of plan.scenes) {
@@ -29,6 +29,7 @@ export function checkPlan(plan: VPlan, askedSeconds?: number): Issue[] {
     if (!s.type.length) out.push({ kind: 'scene', scene: s.i, detail: `scene ${s.i} has no words` });
     if (s.i > 0 && !s.transition) out.push({ kind: 'scene', scene: s.i, detail: `scene ${s.i} arrives with no transition` });
     // a scene's elements settle in their slots: none of the slots may cross the caption band (ambient layers may, they sit behind it)
+    const caption = bandOf(s.layout, plan.format);
     for (const slot of slotsOf(s.layout, plan.format)) {
       const el = s.elements.find(e => e.slot === slot.id), art = el && byId(el.art);
       if (art && !['particles', 'glow', 'bg'].includes(art.kind) && overlap(slot.rect, caption) > 0) out.push({ kind: 'caption-band', scene: s.i, detail: `scene ${s.i}: ${el!.art} in slot ${slot.id} reaches into the caption band` });
@@ -65,7 +66,7 @@ export function motionReport(pairs: { t: number; a: Thumb; b: Thumb }[], singles
  * projected box (camera, parallax and tilt included). Frames inside a transition are skipped (scenes are sliding).
  */
 export function coverIssues(boxes: { art: string; job: string; x0: number; y0: number; x1: number; y1: number }[], plan: VPlan, t: number, sceneI: number): Issue[] {
-  const { caption } = bands(plan.format), s = plan.scenes[sceneI]!, out: Issue[] = [];
+  const s = plan.scenes[sceneI]!, caption = bandOf(s.layout, plan.format), out: Issue[] = [];
   for (const b of boxes) {
     const el = s.elements.find(e => e.art === b.art); if (!el || t - s.start < el.at + 0.8) continue;
     const r: Rect = { x: b.x0, y: b.y0, w: b.x1 - b.x0, h: b.y1 - b.y0 }, ov = overlap(r, caption) / (caption.w * caption.h);
