@@ -38,7 +38,7 @@ export function scoreScenes(plan: VPlan, audit: Pick<Audit, 'issues' | 'perSecon
       depth: clamp01((s.ambient.length + zs.size + (hasObject ? 1 : 0)) / 6),
       layers: s.elements.length >= 3 ? 1 : s.elements.length === 2 ? 0.65 : 0.25,
       richness: clamp01((elKinds.size + 0.5 * ambKinds.size - 1) / 3),
-      clean: clamp01(1 - 0.5 * mine.filter(i => ['caption-cover', 'static', 'empty-frame'].includes(i.kind)).length),
+      clean: clamp01(1 - 0.5 * mine.filter(i => ['caption-cover', 'static', 'empty-frame', 'footage'].includes(i.kind)).length),
     };
     const w = { ...WEIGHTS, footage: o.clipsAvailable ? WEIGHTS.footage : 0 };
     const sum = (Object.keys(parts) as Part[]).reduce((a, k) => a + w[k] * parts[k], 0), tot = (Object.keys(parts) as Part[]).reduce((a, k) => a + w[k], 0);

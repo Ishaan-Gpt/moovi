@@ -88,11 +88,13 @@ test('renderFilm writes every frame once, in parallel pages, and says what it co
   } finally { await closeVisual(); }
 });
 
-test('real footage plays on a panel, a phone and a browser window: frame-accurate, looped, and the same pixels whenever it is asked for', async t => {
+test('real footage (H.264 mp4, as the footage agent brings it) plays on a panel, a phone and a browser window: frame-accurate, looped, and the same pixels whenever it is asked for', async t => {
   if (!(await canRenderVisual())) { t.skip('no Chrome to drive'); return; }
   const { recordTestClip } = await import('../src/visual/capture');
   const { config } = await import('../src/config');
-  const clip = await recordTestClip(join(config.data, 'visual-test', 'clip.webm'), 2);
+  // mp4 first (it has an index, so seeks are exact, like the footage agent's files); a browser that cannot record mp4 gets WebM
+  let clip = await recordTestClip(join(config.data, 'visual-test', 'clip.mp4'), 2, [320, 568], 'mp4').catch(() => null);
+  clip ??= await recordTestClip(join(config.data, 'visual-test', 'clip.webm'), 2);
   try {
     const plan = planFilm(beats(3, 3), { format: 'vertical', seed: 9, clips: [{ path: clip, kind: 'footage', seconds: 2 }, { path: clip, kind: 'scroll', seconds: 2 }] });
     const withClip = plan.scenes.filter(s => s.elements.some(e => e.content.clip));
@@ -139,7 +141,7 @@ test('footage can fill the whole frame behind a scene: the words go white over i
   if (!(await canRenderVisual())) { t.skip('no Chrome to drive'); return; }
   const { recordTestClip } = await import('../src/visual/capture');
   const { config } = await import('../src/config');
-  const clip = await recordTestClip(join(config.data, 'visual-test', 'bleed.webm'), 2);
+  const clip = (await recordTestClip(join(config.data, 'visual-test', 'bleed.mp4'), 2, [320, 568], 'mp4').catch(() => null)) ?? (await recordTestClip(join(config.data, 'visual-test', 'bleed.webm'), 2));
   try {
     const plan = planFilm(beats(4, 3), { format: 'vertical', seed: 9, clips: [{ path: clip, kind: 'footage', seconds: 2 }] });
     const bleed = plan.scenes.filter(s => s.backdrop);

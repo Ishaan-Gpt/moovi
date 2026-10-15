@@ -10,7 +10,7 @@ import type { VPlan } from './types';
  *  - auditFilm: on rendered frames (sampled, cheap): nothing static for more than a second, no empty frame, no element
  *    covering the caption band once it has arrived.
  */
-export interface Issue { kind: 'length' | 'timeline' | 'scene' | 'caption-band' | 'static' | 'empty-frame' | 'caption-cover' | 'out-of-frame'; scene?: number; t?: number; detail: string }
+export interface Issue { kind: 'footage' | 'length' | 'timeline' | 'scene' | 'caption-band' | 'static' | 'empty-frame' | 'caption-cover' | 'out-of-frame'; scene?: number; t?: number; detail: string }
 
 /** How far the film may be from the length asked for (the brief's "within 2 s"). */
 export const LENGTH_TOLERANCE_S = 2;
@@ -78,7 +78,7 @@ export function coverIssues(boxes: { art: string; job: string; x0: number; y0: n
 export interface Audit { issues: Issue[]; perSecond: { second: number; energy: number }[]; framesRendered: number }
 
 /** Sample the film: one motion pair per second, an empty-frame look at each pair, a cover check at each pair and at each scene's middle. */
-export async function auditFilm(sess: Pick<Session, 'thumb' | 'boxes'>, plan: VPlan): Promise<Audit> {
+export async function auditFilm(sess: Pick<Session, 'thumb' | 'boxes'> & Partial<Pick<Session, 'clips'>>, plan: VPlan): Promise<Audit> {
   const fps = plan.fps, pairs: { t: number; a: Thumb; b: Thumb }[] = [], singles: { t: number; thumb: Thumb }[] = [], issues: Issue[] = [];
   let frames = 0;
   const sceneAt = (t: number) => { let c = 0; plan.scenes.forEach((s, i) => { if (t >= s.start - 1e-6) c = i; }); return c; };
@@ -90,6 +90,8 @@ export async function auditFilm(sess: Pick<Session, 'thumb' | 'boxes'>, plan: VP
     const i = sceneAt(t0), sc = plan.scenes[i]!;
     if (!(sc.transition && t0 - sc.start < 0.6)) issues.push(...coverIssues(await sess.boxes(Math.round(t0 * fps)), plan, t0, i));
   }
+  // footage the browser could not decode shows as an empty panel: say so (an image without H.264 support, a broken file)
+  for (const c of (await sess.clips?.()) ?? []) if (!c.ok) issues.push({ kind: 'footage', detail: `a ${c.art} clip could not be decoded by the browser (check the file and the browser's H.264 support): its panel shows no picture` });
   const m = motionReport(pairs, singles);
   return { issues: [...issues, ...m.issues], perSecond: m.perSecond, framesRendered: frames };
 }
