@@ -89,7 +89,7 @@ MATCH (:Run {id: $run})-[:READ]->(p:Page)-[:HAS_SHOT]->(x:Screenshot)
 OPTIONAL MATCH (f:Fact)-[:SHOWN_IN]->(x)
 RETURN x.id AS id, x.kind AS kind, x.path AS path, x.video AS video, x.seconds AS seconds, x.w AS w, x.h AS h, x.sha AS sha,
        p.url AS url, p.title AS title, collect(f.text) AS proves
-ORDER BY CASE x.kind WHEN 'proof' THEN 0 WHEN 'scroll' THEN 1 WHEN 'hero' THEN 2 ELSE 3 END, x.id`),
+ORDER BY CASE kind WHEN 'proof' THEN 0 WHEN 'scroll' THEN 1 WHEN 'hero' THEN 2 ELSE 3 END, id`),
 
   factProof: q('factProof', true, 'Fact checking: each fact of a run with the page it came from and its proof shot (no shot = the quote was never seen on screen).', `
 MATCH (f:Fact {run: $run})-[:FROM]->(s:Source)

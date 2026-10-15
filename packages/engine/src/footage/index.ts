@@ -1,5 +1,7 @@
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { createWriteStream, existsSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { Readable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 import { join } from 'node:path';
 import { ensureDir, sh } from '../bench';
 import { config } from '../config';
@@ -59,17 +61,40 @@ export function startAt(duration: number | undefined, seconds: number): number {
  */
 export async function fetchClip(c: ClipCandidate, out: string, seconds = config.footage.maxSeconds): Promise<string> {
   let last: Error | null = null;
+  const ss = startAt(c.duration, seconds);
+  const cut = (input: string, http: boolean) => sh(config.ffmpeg, ['-v', 'error', '-y', ...(http ? httpIn(input) : []), ...(ss ? ['-ss', String(ss)] : []), '-i', input, '-t', String(seconds), '-an',
+    '-vf', "scale='if(gt(iw,ih),min(1920,iw),-2)':'if(gt(iw,ih),-2,min(1920,ih))',fps='min(30,source_fps)',format=yuv420p,scale=trunc(iw/2)*2:trunc(ih/2)*2",
+    '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '22', '-movflags', '+faststart', out], { timeout: 180_000 });
+  const ok = () => existsSync(out) && statSync(out).size > 2_000;
   for (const url of downloadUrls(c)) {
     try {
-      const ss = startAt(c.duration, seconds);
-      await sh(config.ffmpeg, ['-v', 'error', '-y', ...httpIn(url), ...(ss ? ['-ss', String(ss)] : []), '-i', url, '-t', String(seconds), '-an',
-        '-vf', "scale='if(gt(iw,ih),min(1920,iw),-2)':'if(gt(iw,ih),-2,min(1920,ih))',fps='min(30,source_fps)',format=yuv420p,scale=trunc(iw/2)*2:trunc(ih/2)*2",
-        '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '22', '-movflags', '+faststart', out], { timeout: 180_000 });
-      if (existsSync(out) && statSync(out).size > 2_000) return out;
+      await cut(url, true);
+      if (ok()) return out;
       last = new Error('the file came back empty');
     } catch (e) { last = e as Error; }
+    // some ffmpeg builds cannot open https themselves (no TLS, or a static build that crashes on DNS): fetch the
+    // file with Node first, then cut it locally
+    const tmp = `${out}.src`;
+    try {
+      await downloadTo(url, tmp);
+      await cut(tmp, false);
+      if (ok()) return out;
+      last = new Error('the file came back empty');
+    } catch (e) { last = new Error(`${last?.message.slice(0, 120) ?? ''}; direct download: ${(e as Error).message.slice(0, 120)}`); }
+    finally { rmSync(tmp, { force: true }); }
   }
   throw last ?? new Error('no URL worked');
+}
+
+/** Stream a URL to a file with Node's fetch (our User-Agent, a size cap so a 4K original cannot fill the disk). */
+export async function downloadTo(url: string, file: string, maxBytes = 250e6, f: Fetch = fetch): Promise<string> {
+  const r = await f(url, { headers: { 'user-agent': UA }, signal: AbortSignal.timeout(120_000) });
+  if (!r.ok || !r.body) throw new Error(`HTTP ${r.status}`);
+  const size = Number(r.headers.get('content-length') ?? 0);
+  if (size > maxBytes) throw new Error(`too big (${Math.round(size / 1e6)} MB)`);
+  await pipeline(Readable.fromWeb(r.body as import('node:stream/web').ReadableStream), createWriteStream(file));
+  if (statSync(file).size > maxBytes) throw new Error('too big');
+  return file;
 }
 
 /** One frame in the middle, for eyes (a model's or a person's). */
@@ -169,9 +194,15 @@ export async function commonsPhoto(query: string, f: Fetch = fetch): Promise<Cli
 /** A still → `seconds` of slow push-in at the film's size (ffmpeg zoompan, eased, 30 fps). */
 export async function stillPush(img: string, out: string, o: { seconds?: number; w?: number; h?: number } = {}) {
   const s = o.seconds ?? 6, w = o.w ?? 1080, h = o.h ?? 1920, n = Math.round(s * 30);
-  await sh(config.ffmpeg, ['-v', 'error', '-y', ...httpIn(img), '-i', img,
+  const push = (input: string) => sh(config.ffmpeg, ['-v', 'error', '-y', ...httpIn(input), '-i', input,
     '-vf', `scale=${w * 2}:${h * 2}:force_original_aspect_ratio=increase,crop=${w * 2}:${h * 2},zoompan=z='1+0.12*(1-cos(PI*on/${n}))/2':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=${n}:s=${w}x${h}:fps=30,format=yuv420p`,
     '-frames:v', String(n), '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '20', '-movflags', '+faststart', out], { timeout: 180_000 });
+  try { await push(img); } catch (e) {
+    if (!/^https?:\/\//.test(img)) throw e;
+    // the same Node download fallback as fetchClip
+    const tmp = `${out}.src`;
+    try { await downloadTo(img, tmp, 50e6); await push(tmp); } finally { rmSync(tmp, { force: true }); }
+  }
   return out;
 }
 

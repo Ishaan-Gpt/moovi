@@ -124,3 +124,16 @@ test('findClips: sources asked at once, merged by priority, judged by pixels, ev
     assert.ok(v.ok && v.width % 2 === 0);
   } finally { ADAPTERS.mixkit = orig; }
 });
+
+test('downloadTo streams a URL to a file and refuses one over the size cap', async () => {
+  const { downloadTo } = await import('../src/footage/index');
+  const { readFileSync } = await import('node:fs');
+  const dir = mkdtempSync(join(tmpdir(), 'moovi-dl-'));
+  const body = new Uint8Array(4096).fill(7);
+  const fake = (async () => new Response(body, { status: 200, headers: { 'content-length': String(body.length) } })) as unknown as typeof fetch;
+  const f = await downloadTo('https://example.test/clip.mp4', join(dir, 'a.mp4'), 10_000, fake);
+  assert.equal(readFileSync(f).length, 4096);
+  await assert.rejects(downloadTo('https://example.test/clip.mp4', join(dir, 'b.mp4'), 1_000, fake), /too big/);
+  const missing = (async () => new Response('no', { status: 404 })) as unknown as typeof fetch;
+  await assert.rejects(downloadTo('https://example.test/x.mp4', join(dir, 'c.mp4'), 10_000, missing), /HTTP 404/);
+});
