@@ -98,6 +98,9 @@ function score(a: Artifact, c: Ctx, role: string): number {
   if (a.wants === 'image' && !c.hasImage) return -99;
   if (a.wants === 'numbers' && !c.nums.length && !c.needs.has('growth') && !c.needs.has('number') && !c.needs.has('percent') && !c.needs.has('money') && !c.needs.has('compare') && !c.needs.has('data')) return -50;
   const overlap = a.needs.filter(n => c.needs.has(n)).length;
+  // light and particles only where the beat asks for them; two number-led artifacts in one scene say the same thing twice
+  if (role === 'ambient' && overlap === 0 && a.kind !== 'bg') return -3 + jit(c.seed, `${c.i}:${a.id}`) * 1.6;
+  if (a.wants === 'numbers' && c.chosen.size && [...c.chosen].some(id => byId(id)?.wants === 'numbers')) return -6;
   let s = overlap * 3 + (a.role.includes(role as never) ? 1 : -4);
   if (a.wants === 'numbers' && c.nums.length) s += 2.5;
   if (c.prev.has(a.id)) s -= 4;
