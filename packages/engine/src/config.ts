@@ -22,6 +22,15 @@ const num = (k: string, d: number) => { const v = Number(env(k)); return Number.
 
 const falkor = env('FALKORDB_URL') ?? 'falkor://localhost:6380';
 const gb = totalmem() / 2 ** 30;
+
+/**
+ * How many film chunks render at once by default. Each chunk is one Chrome page (about 1.5 GB at 1080x1920); 3 GB stay
+ * for the worker and FalkorDB and one core for everything else. 8 GB and 4 cores render 3 chunks at once (the old rule,
+ * (gb - 6) / 1.5, gave 1 there); a 2 GB server still renders 1; never more than 4.
+ */
+export function renderSlots(cores: number, memGb: number): number {
+  return Math.max(1, Math.min(4, cores - 1, Math.floor((memGb - 3) / 1.5)));
+}
 const RUNTIME = (env('MOOVI_RUNTIME') ?? 'claude-code') as 'claude-code' | 'http';
 const PROVIDER = pickProvider();
 
@@ -61,7 +70,7 @@ export const config = {
   slots: {
     llm: num('MOOVI_SLOTS_LLM', 4),
     cpu: num('MOOVI_SLOTS_CPU', Math.max(2, Math.min(6, cpus().length - 2))),
-    render: num('MOOVI_SLOTS_RENDER', Math.max(1, Math.min(4, Math.floor((gb - 6) / 1.5)))),
+    render: num('MOOVI_SLOTS_RENDER', renderSlots(cpus().length, gb)),
     chrome: num('MOOVI_SLOTS_CHROME', 3),
     voice: 1,
     audio: num('MOOVI_SLOTS_AUDIO', 1),
