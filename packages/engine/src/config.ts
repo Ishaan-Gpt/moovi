@@ -68,7 +68,9 @@ export const config = {
     : { director: env('MOOVI_MODEL_DIRECTOR') ?? 'claude-opus-5-5', crew: env('MOOVI_MODEL_CREW') ?? 'claude-sonnet-5-5', fast: env('MOOVI_MODEL_FAST') ?? 'claude-haiku-5-5' },
   /** how many tasks of each kind run at once (render chunks are sized to memory: ~1.5 GB a Chrome page) */
   slots: {
-    llm: num('MOOVI_SLOTS_LLM', 4),
+    // model calls wait on the network, not this machine: 8 at once lets every Shot Builder of a 6 to 8 scene film run
+    // together while the Asset Hunters finish (4 queued builders behind 13 hunters on the FalkorDB brief)
+    llm: num('MOOVI_SLOTS_LLM', 8),
     cpu: num('MOOVI_SLOTS_CPU', Math.max(2, Math.min(6, cpus().length - 2))),
     render: num('MOOVI_SLOTS_RENDER', renderSlots(cpus().length, gb)),
     chrome: num('MOOVI_SLOTS_CHROME', 3),
