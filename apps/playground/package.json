@@ -1,0 +1,19 @@
+{
+  "name": "@contenteasy/playground",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5199 --strictPort",
+    "build": "vite build",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@contenteasy/brand": "workspace:*",
+    "@contenteasy/character": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "vite": "7.1.7"
+  }
+}

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Moovi playground</title>
+</head>
+<body>
+  <main class="stage">
+    <canvas id="moovi" aria-label="Moovi, your AI video director" role="img"></canvas>
+  </main>
+  <header class="meta">
+    <span>Moovi playground · <code>@contenteasy/character</code></span>
+    <span id="stats" aria-live="off"></span>
+  </header>
+  <footer class="controls">
+    <div class="bar" role="group" aria-label="State" id="states"></div>
+    <div class="bar" role="group" aria-label="Quality" id="quality"></div>
+    <button class="bench" id="bench">Benchmark</button>
+    <output id="benchOut"></output>
+  </footer>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
