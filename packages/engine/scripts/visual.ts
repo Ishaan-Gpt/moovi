@@ -68,7 +68,7 @@ if (cmd === 'audit') {
 } else if (cmd === 'stills') {
   const sess = await openFilm(plan, { scale: 0.5 });
   console.log('renderer:', sess.info.renderer, `${sess.info.rw}x${sess.info.rh}`);
-  for (const s of plan.scenes) { const n = Math.round((s.start + Math.min(2.6, (s.end - s.start) * 0.62)) * plan.fps); const t0 = performance.now(); writeFileSync(join(dir, `scene-${s.i}.jpg`), await sess.frame(n)); console.log(`scene ${s.i} frame ${n}: ${(performance.now() - t0).toFixed(0)} ms`); }
+  for (const s of plan.scenes) { const n = Math.round((s.end - 0.45) * plan.fps); const t0 = performance.now(); writeFileSync(join(dir, `scene-${s.i}.jpg`), await sess.frame(n)); console.log(`scene ${s.i} frame ${n}: ${(performance.now() - t0).toFixed(0)} ms`); }
   await sess.close();
 } else {
   const out = join(dir, `film-${format}-${theme}.mp4`);
