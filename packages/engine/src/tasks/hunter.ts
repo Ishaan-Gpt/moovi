@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
-import { project as P, user as U } from '@moovi/graph';
+import { media as M, project as P, user as U } from '@moovi/graph';
 import { kit } from '@moovi/skills';
 import { z } from 'zod';
 import { ensureDir, probe, sh } from '../bench';
@@ -12,10 +12,13 @@ import { CORNER_PROPS, drawProp, pickCorners } from '../render/prop';
 import { tool, type Tool } from '../runtime';
 import { agentRun, knowledge, systemFor } from './agent';
 import type { AssetOut } from './film';
+import { findClipsOrStill, type Clip } from '../footage';
+import { clipLine, clipRows } from '../footage/graph';
 
 /**
  * The Asset Hunter fills one request from the board: a capture of the real site, the product's real logo or a
- * relatable icon, or one of the user's uploads. It looks at what it found (its own eyes are the judge), and an asset
+ * relatable icon, one of the user's uploads, real stock footage (src/footage: free sources, licence kept, judged
+ * frame by frame) or a screenshot / scroll capture the Researcher already took of a page it read. It looks at what it found (its own eyes are the judge), and an asset
  * is accepted only when it scores 7 or more AND the user graph says none of this user's videos used it before.
  * Nothing found is fine: the Shot Builder draws the thing in code instead. The two Style 1 corners are never left
  * empty: with nothing real, one of the style's own props is drawn (the no-reuse rule is for real assets).
@@ -35,6 +38,18 @@ export const asset: Handler = async ctx => {
   let accepted: AssetOut | null = null, none = '';
   let n = 0;
   const keep = (file: string) => { const k = `c${n++}`; found.set(k, file); return k; };
+  const clips = new Map<string, Clip>(); // candidate name → the clip it is (footage)
+  const B0 = await ctx.out<{ format?: string }>('plan');
+  const vertical = B0?.format !== 'landscape';
+  const seenClip = async (c: { provider: string; ref: string }) => (await ctx.q<{ id: string; status: string }>(M.clipSeen, { id: `clip:${c.provider}:${c.ref}`.slice(0, 200), sha: null }))
+    .some(x => x.status === 'used' || x.status === 'rejected');
+  /** search the free footage sources, keep every candidate in the graph, return the ones that passed */
+  const searchFootage = async (query: string) => {
+    const r = await findClipsOrStill(query, { dir: join(dir, 'footage'), want: 3, tries: 6, skip: seenClip, signal: ctx.signal, w: vertical ? 1080 : 1920, h: vertical ? 1920 : 1080, log: s => ctx.note(s.slice(0, 80)) });
+    await ctx.q(M.writeClips, { run: ctx.run.id, at: Date.now(), rows: clipRows(r) });
+    return r;
+  };
+  const researched = async () => (await ctx.q<{ id: string; kind: string; path: string; video: boolean; seconds: number | null; url: string; title: string; proves: string[] }>(M.runShots, { run: ctx.run.id })).filter(s => existsSync(s.path));
   const img = (f: string) => ({ data: readFileSync(f).toString('base64'), mime: (extname(f).toLowerCase() === '.jpg' || extname(f).toLowerCase() === '.jpeg' ? 'image/jpeg' : 'image/png') as 'image/png' | 'image/jpeg' });
 
   const tools: Tool[] = [
@@ -69,6 +84,21 @@ export const asset: Handler = async ctx => {
         const k = keep(png);
         return { text: `Candidate ${k}: ${url}`, images: [img(png)] };
       } }),
+    tool({ name: 'footage', description: 'Search free stock footage (Mixkit, Wikimedia Commons, Pixabay, Pexels, NASA, Internet Archive, in that order) for real video of the subject. Clips are downloaded, checked for bars, washed-out or static frames, and shown to you as one frame each. Every clip keeps its source and licence. Use plain concrete words ("server racks", "rocket launch").', input: { query: z.string().min(3).max(80) },
+      async run({ query }) {
+        const r = await searchFootage(query);
+        if (!r.accepted.length) return { error: `No usable footage for "${query}" (asked ${r.asked.join(', ')}; ${r.found} found, ${r.rejected.length} turned down${r.rejected.length ? `: ${[...new Set(r.rejected.flatMap(c => c.why))].slice(0, 3).join('; ')}` : ''}). Try other words, or another kind of asset.` };
+        const lines = r.accepted.map(c => { const k = keep(c.path!); clips.set(k, c); return clipLine(k, c); });
+        return { text: `${lines.join('\n')}\nLook at each before accepting.`, images: r.accepted.filter(c => c.poster).map(c => img(c.poster!)) };
+      } }),
+    tool({ name: 'research_shots', description: 'Screenshots and smooth scroll captures the Researcher already took of the pages it read (proof shots highlight the exact sentence a fact was quoted from).', input: {},
+      async run() {
+        const all = await researched();
+        if (!all.length) return { text: 'The research took no shots for this video.' };
+        const stills = all.filter(s => !s.video).slice(0, 4);
+        const lines = all.slice(0, 10).map(s => `${keep(s.path)}: ${s.kind}${s.video ? ` video, ${s.seconds?.toFixed(1)} s` : ' image'} of ${s.title || s.url}${s.proves.length ? ` (shows: ${s.proves[0]!.slice(0, 80)})` : ''}`);
+        return { text: lines.join('\n'), images: stills.map(s => img(s.path)) };
+      } }),
     tool({ name: 'uploads', description: 'The user’s own images for this video.', input: {},
       async run() { return ups.length ? { text: ups.map(u => `${keep(u.path)}: ${u.name}`).join('\n'), images: ups.slice(0, 4).map(u => img(u.path)) } : { text: 'No image uploads.' }; } }),
     ...(req.id.startsWith('corner') ? [tool({ name: 'draw', description: `Draw one of the style's own props as the corner asset (a transparent PNG): ${CORNER_PROPS.map(p => p.id).join(', ')}. For when nothing real (logo, capture, upload) fits.`, input: { prop: z.enum(CORNER_PROPS.map(p => p.id) as [string, ...string[]]) },
@@ -89,18 +119,24 @@ export const asset: Handler = async ctx => {
         const final = join(dir, `${req.id}${extname(f) || '.png'}`);
         if (f !== final) copyFileSync(f, final);
         const pr = await probe(final).catch(() => ({ width: 0, height: 0 }));
-        const kind = drawn.has(candidate) ? 'drawn' : req.kind;
-        accepted = { id: req.id, path: final, kind, w: pr.width ?? 0, h: pr.height ?? 0, about, sha: h };
-        await ctx.q(P.writeAsset, { run: ctx.run.id, id: req.id, kind, path: final, sha: h, source: candidate, about, score, w: accepted.w, h: accepted.h, request: req.what, at: Date.now() });
+        const clip = clips.get(candidate);
+        const kind = drawn.has(candidate) ? 'drawn' : clip ? 'footage' : /\.mp4$/i.test(f) ? 'scroll' : req.kind;
+        const credit = clip ? ` (${clip.provider}, ${clip.licence}${clip.author ? `, by ${clip.author}` : ''})` : '';
+        accepted = { id: req.id, path: final, kind, w: pr.width ?? 0, h: pr.height ?? 0, about: `${about}${credit}`.slice(0, 240), sha: h };
+        await ctx.q(P.writeAsset, { run: ctx.run.id, id: req.id, kind, path: final, sha: h, source: clip ? clip.id : candidate, about: accepted.about, score, w: accepted.w, h: accepted.h, request: req.what, at: Date.now() });
+        if (clip && req.scene >= 0) await ctx.q(M.useClip, { run: ctx.run.id, clip: clip.id, asset: req.id, scene: `${ctx.run.id}:scene:${req.scene}`, i: req.scene });
         return { text: 'Accepted.' };
       } }),
     tool({ name: 'none', description: 'Nothing real fits (the Shot Builder will draw it in code). Say why.', input: { why: z.string().min(4) }, ends: true, async run({ why }) { none = why; return { text: 'ok' }; } }),
   ];
   await agentRun(ctx, { role: 'hunter', tier: 'crew', tools, maxTurns: 14, deadlineMs: 5 * 60_000,
-    system: systemFor('hunter', 'Fill one asset request with something REAL. Look at every candidate (the tools show you the image) and accept the best one, or call none.', know.text),
+    system: systemFor('hunter', 'Fill one asset request with something REAL. A footage request wants real moving video (use footage); a scroll request wants the research’s scroll capture of the site (research_shots). Look at every candidate (the tools show you the image or one frame of the clip) and accept the best one, or call none.', know.text),
     prompt: `REQUEST ${req.id} (${req.kind}) for ${req.scene >= 0 ? `scene ${req.scene + 1}` : 'the corners'}: ${req.what}${req.url ? `\nURL: ${req.url}` : ''}\nLINKS IN THE BRIEF: ${m.features.urls.join(', ') || 'none'}` })
     .catch(async e => { await ctx.activity('note', `hunter stopped: ${(e as Error).message.slice(0, 160)}`); });
   let a = accepted as AssetOut | null;
+  // a run ships on any model: a footage or scroll request the agent left unfilled takes the best clip that passed
+  if (!a && req.kind === 'footage') a = await autoFootage(ctx, req, searchFootage, dir);
+  if (!a && req.kind === 'scroll') a = await autoScroll(ctx, req, await researched(), dir);
   if (!a && req.id.startsWith('corner')) {
     // a corner is never empty: draw the prop that fits the script best (corner1 takes the other one)
     const S = await ctx.out<{ beats: { say: string }[] }>('script');
@@ -115,6 +151,34 @@ export const asset: Handler = async ctx => {
   if (a) return { output: a, note: `${a.kind}: ${a.about.slice(0, 40)}` };
   return { output: { id: req.id, none: true, why: none || 'nothing accepted' }, note: 'none: drawn instead' };
 };
+
+/** The deterministic footage pick: the first clip that passed the frame checks for the request's own words. */
+async function autoFootage(ctx: Parameters<Handler>[0], req: { id: string; what: string; scene: number }, search: (q: string) => Promise<{ accepted: Clip[] }>, dir: string): Promise<AssetOut | null> {
+  const r = await search(req.what.replace(/^(a|an|the)\s+/i, '').split(/[,.;:]/)[0]!.slice(0, 60)).catch(() => ({ accepted: [] as Clip[] }));
+  for (const c of r.accepted) {
+    const [seen] = await ctx.uq<{ video: string }>(U.assetUsed, { hash: c.sha });
+    if (seen) continue;
+    const final = join(dir, `${req.id}.mp4`);
+    copyFileSync(c.path!, final);
+    const about = `${c.title} (${c.provider}, ${c.licence}${c.author ? `, by ${c.author}` : ''})`.slice(0, 240);
+    await ctx.q(P.writeAsset, { run: ctx.run.id, id: req.id, kind: 'footage', path: final, sha: c.sha, source: c.id, about, score: 7, w: c.width ?? 0, h: c.height ?? 0, request: req.what, at: Date.now() });
+    if (req.scene >= 0) await ctx.q(M.useClip, { run: ctx.run.id, clip: c.id, asset: req.id, scene: `${ctx.run.id}:scene:${req.scene}`, i: req.scene });
+    return { id: req.id, path: final, kind: 'footage', w: c.width ?? 0, h: c.height ?? 0, about, sha: c.sha };
+  }
+  return null;
+}
+
+/** The deterministic scroll pick: the research's first scroll capture. */
+async function autoScroll(ctx: Parameters<Handler>[0], req: { id: string; what: string }, shots: { path: string; video: boolean; title: string; url: string }[], dir: string): Promise<AssetOut | null> {
+  const s = shots.find(x => x.video);
+  if (!s) return null;
+  const final = join(dir, `${req.id}.mp4`);
+  copyFileSync(s.path, final);
+  const pr = await probe(final).catch(() => ({ width: 0, height: 0 }));
+  const h = sha(final), about = `a smooth scroll through ${s.title || s.url}`.slice(0, 240);
+  await ctx.q(P.writeAsset, { run: ctx.run.id, id: req.id, kind: 'scroll', path: final, sha: h, source: s.url, about, score: 7, w: pr.width ?? 0, h: pr.height ?? 0, request: req.what, at: Date.now() });
+  return { id: req.id, path: final, kind: 'scroll', w: pr.width ?? 0, h: pr.height ?? 0, about, sha: h };
+}
 
 /** Any image (svg, ico, webp…) → a PNG of at most `max` px on its long side (ffmpeg; svg via the pool's Chrome). */
 async function toPng(src: string, out: string, max: number) {

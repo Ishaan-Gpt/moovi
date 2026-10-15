@@ -109,7 +109,7 @@ export const build: Handler = async ctx => {
   const st: { last: Last | null } = { last: null };
   let looked = 0;
 
-  const assetList = [...F.assets.values()].filter(a => !a.id.startsWith('corner')).map((a: AssetOut) => `asset:${a.id} — ${a.kind}, ${a.w}×${a.h}: ${a.about}`);
+  const assetList = [...F.assets.values()].filter(a => !a.id.startsWith('corner')).map((a: AssetOut) => `asset:${a.id} — ${a.kind}${/\.mp4$/i.test(a.path) ? ' VIDEO (an image layer plays it; vt = start second, fit cover for full-bleed)' : ''}, ${a.w}×${a.h}: ${a.about}`);
   const uploadList = [...F.uploads.keys()].map(u => `upload:${u}`);
   const ctxText = () => JSON.stringify({
     scene: i + 1, of: k.scenes.length, role: beat.role, says: beat.say,

@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { CRAFT, craft as C, project as P, run as runQ, user as U } from '@moovi/graph';
+import { CRAFT, craft as C, media as M, project as P, run as runQ, user as U } from '@moovi/graph';
 import { FONTS, PROPS, S1_PRESETS, StyleCard, fallbackCard, kitDocs, type Features } from '@moovi/skills';
 import { z } from 'zod';
 import { cutRate, frames as grabFrames, probe, writeJson } from '../bench';
@@ -121,6 +121,7 @@ export const board: Handler = async ctx => {
   const isS1 = m.style === 's1';
   const uploads = (await ctx.q<{ id: string; name: string; mime: string }>(P.uploads, { chat: ctx.chat })).filter(u => u.mime.startsWith('image/') || (u.mime.startsWith('video/') && m.features.footage === 'edit'));
   const used = await ctx.uq<{ title: string; angle: string | null }>(U.anglesUsed, { style: null, n: 6 });
+  const shots = await ctx.q<{ kind: string; video: boolean }>(M.runShots, { run: ctx.run.id }).catch(() => [] as { kind: string; video: boolean }[]);
   const tools: Tool[] = [
     tool({ name: 'suggest_sequence', description: 'The cheapest preset orders for the beats (graph: algo.SPpaths over the preset lattice, with this user’s over-use from PageRank). A starting point, not an order.', input: {},
       async run() { return isS1 ? { json: await suggest(ctx, 's1', S.beats.map(b => (b.role === 'end' ? 'cta' : b.role))) } : { text: 'Unique style: no presets are ranked; design each shot from the card.' }; } }),
@@ -131,7 +132,7 @@ export const board: Handler = async ctx => {
     hero: z.string().min(2).max(80), move: z.string().min(4).max(160).describe('the signature move'), layout: z.string().min(4).max(240),
     props: z.array(z.string()).max(4).describe('kit props it uses (ids from the catalogue)'),
     camera: z.enum(['push', 'dive', 'pull-out', 'pan', 'roll', 'drift']),
-    assets: z.array(z.object({ id: z.string().regex(/^[a-z0-9-]{2,24}$/), kind: z.enum(['capture', 'logo', 'icon', 'upload', 'photo']), what: z.string().min(3).max(200), url: z.string().nullable() })).max(3),
+    assets: z.array(z.object({ id: z.string().regex(/^[a-z0-9-]{2,24}$/), kind: z.enum(['capture', 'logo', 'icon', 'upload', 'photo', 'footage', 'scroll']), what: z.string().min(3).max(200), url: z.string().nullable() })).max(3),
   });
   const r = await ask({
     agent: 'director:board', tier: 'director', signal: ctx.signal, tools, maxTurns: 10, deadlineMs: 6 * 60_000,
@@ -143,6 +144,7 @@ export const board: Handler = async ctx => {
       isS1 ? `PRESETS (kit): ${S1_PRESETS.map(p => `${p.id} (${p.about})`).join(' · ')}` : '',
       `PROPS (drawn in code, low-key 3D): ${PROPS.map(p => p.id).join(', ')}`,
       `THE USER'S UPLOADS YOU CAN USE: ${uploads.map(u => `upload:${u.id} (${u.name})`).join(', ') || 'none'}`,
+      `REAL VIDEO: an asset of kind "footage" is real stock video of a concrete subject (free sources, licence kept; say the subject in plain words, e.g. "rocket lifting off the pad"); kind "scroll" is the research's smooth scroll capture of a page it read${shots.length ? ` (it took ${shots.filter(s => s.video).length} scroll capture${shots.filter(s => s.video).length === 1 ? '' : 's'} and ${shots.filter(s => !s.video).length} screenshot${shots.filter(s => !s.video).length === 1 ? '' : 's'}${shots.some(s => s.kind === 'proof') ? ', with proof shots of the quoted facts' : ''})` : ' (none taken for this video)'}. Use footage where a line talks about a real-world thing the kit cannot draw well.`,
       `THIS USER'S EARLIER VIDEOS (never repeat their ideas): ${used.map(u => u.title).join(' · ') || 'none'}`,
       isS1 ? 'CORNERS: Style 1 needs two corner assets (e.g. the product logo and a relatable icon). Request them in `corners`.' : 'CORNERS: none for a unique style unless the card calls for them.',
       `THE KIT, IN SHORT:\n${kitDocs(B.format).split('## Props')[0]}`,
