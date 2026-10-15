@@ -101,6 +101,23 @@ export function sameIdea(a: string, b: string): boolean {
   return [...A].filter(w => B.has(w)).length / Math.min(A.size, B.size) >= 0.7;
 }
 
+/** Real moving video on the board: how many shots must carry a footage or scroll asset (a third of them, at least two). */
+export const needVideo = (shots: number) => Math.min(shots, Math.max(2, Math.ceil(shots / 3)));
+const VIDEO_KINDS = new Set(['footage', 'scroll']);
+
+/**
+ * The board's media mix, checked before the crew spends time on it: enough shots with real moving video, the site's
+ * scroll capture used when research took one, and at least one 3D look. A string is the repair note for the model.
+ */
+export function mediaMixProblem(shots: { assets: { kind: string }[]; look3d?: string | null }[], o: { hasScroll: boolean }): string | null {
+  const want = needVideo(shots.length);
+  const moving = shots.filter(s => s.assets.some(a => VIDEO_KINDS.has(a.kind))).length;
+  if (moving < want) return `Only ${moving} shot${moving === 1 ? '' : 's'} carry real moving video; give at least ${want} shots a "footage" asset (a concrete filmable subject, e.g. "server racks in a data centre") or a "scroll" asset.`;
+  if (o.hasScroll && !shots.some(s => s.assets.some(a => a.kind === 'scroll'))) return 'Research took a smooth scroll capture of the site: use it in one shot (an asset of kind "scroll").';
+  if (!shots.some(s => s.look3d)) return 'Give at least one shot a 3D look (look3d), the one where depth helps most.';
+  return null;
+}
+
 async function suggest(ctx: TaskCtx, style: string, roles: string[], k = 3) {
   const presets = await runQ<{ id: string; name: string; roles: string[]; needs: string[] }>(CRAFT, C.stylePresets, { style });
   const flows = await runQ<{ a: string; b: string; w: number }>(CRAFT, C.presetFlows, { style });
@@ -163,7 +180,7 @@ export const board: Handler = async ctx => {
       `MAP SHOTS: when the script names a real place, put it in that shot's places list (up to 3, in flight order): a real map flies there with a pulsing pin and the country highlighted. Only places the script itself names. ${placeUsed.length ? `ALREADY SHOWN IN THIS PROJECT: ${placeUsed.map(p => p.name).join(', ')}` : ''}`,
       `PROPS (drawn in code, low-key 3D): ${PROPS.map(p => p.id).join(', ')}`,
       `THE USER'S UPLOADS YOU CAN USE: ${uploads.map(u => `upload:${u.id} (${u.name})`).join(', ') || 'none'}`,
-      `REAL VIDEO: an asset of kind "footage" is real stock video of a concrete subject (free sources, licence kept; say the subject in plain words, e.g. "rocket lifting off the pad"); kind "scroll" is the research's smooth scroll capture of a page it read${shots.length ? ` (it took ${shots.filter(s => s.video).length} scroll capture${shots.filter(s => s.video).length === 1 ? '' : 's'} and ${shots.filter(s => !s.video).length} screenshot${shots.filter(s => !s.video).length === 1 ? '' : 's'}${shots.some(s => s.kind === 'proof') ? ', with proof shots of the quoted facts' : ''})` : ' (none taken for this video)'}. Use footage where a line talks about a real-world thing the kit cannot draw well.`,
+      `REAL VIDEO: an asset of kind "footage" is real stock video of a concrete subject (free sources, licence kept; say the subject in plain words, e.g. "rocket lifting off the pad"); kind "scroll" is the research's smooth scroll capture of a page it read${shots.length ? ` (it took ${shots.filter(s => s.video).length} scroll capture${shots.filter(s => s.video).length === 1 ? '' : 's'} and ${shots.filter(s => !s.video).length} screenshot${shots.filter(s => !s.video).length === 1 ? '' : 's'}${shots.some(s => s.kind === 'proof') ? ', with proof shots of the quoted facts' : ''})` : ' (none taken for this video)'}. Use footage where a line talks about a real-world thing the kit cannot draw well. EVERY FILM MOVES: at least ${needVideo(S.beats.length)} shots carry a footage or scroll asset (real moving video behind or inside the design), and at least one shot has a 3D look.`,
       `THIS USER'S EARLIER VIDEOS (never repeat their ideas): ${used.map(u => u.title).join(' · ') || 'none'}`,
       memory,
       isS1 ? 'CORNERS: Style 1 needs two corner assets (e.g. the product logo and a relatable icon). Request them in `corners`.' : 'CORNERS: none for a unique style unless the card calls for them.',
@@ -181,6 +198,8 @@ export const board: Handler = async ctx => {
         if (bad) return `Unknown preset "${bad.preset}". Use one of: ${ids.join(', ')} or null.`;
         for (let i = 1; i < b.shots.length; i++) if (b.shots[i]!.preset && b.shots[i]!.preset === b.shots[i - 1]!.preset) return `Scenes ${i - 1} and ${i} both use ${b.shots[i]!.preset}; never the same preset twice running.`;
       }
+      const mix = mediaMixProblem(b.shots, { hasScroll: shots.some(s => s.video) });
+      if (mix) return mix;
       for (let i = 1; i < b.shots.length; i++) if (b.shots[i]!.look3d && b.shots[i]!.look3d === b.shots[i - 1]!.look3d) return `Scenes ${i - 1} and ${i} both use the 3D look ${b.shots[i]!.look3d}; never the same look twice running.`;
       const all = [...b.shots.flatMap(s => s.assets.map(a => a.id)), ...b.corners.map(c => c.id)];
       if (new Set(all).size !== all.length) return 'Asset ids must be unique across the board.';
