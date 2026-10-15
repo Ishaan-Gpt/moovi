@@ -60,6 +60,8 @@ export interface VScene {
   end: number;
   layout: LayoutId;
   elements: VElement[];
+  /** footage filling the whole frame behind the scene (stock footage; the scene's words are set in white over it) */
+  backdrop?: { clip: string; kind: 'footage' | 'scroll' | 'recording'; at: number } | null;
   /** ambient artifact ids: a backdrop, particles, light */
   ambient: string[];
   camera: CameraId;

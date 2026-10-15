@@ -11,7 +11,7 @@ import * as THREE from '/three/three.module.js';
 import { CARDS, CHARTS, browserChrome, callout, iconBadge, laptopBody, phoneBody, tabletBody } from './draw.js';
 import { ambientOf } from './ambient.js';
 import { objectOf } from './objects.js';
-import { footagePanel, makeClip, seekClip } from './clips.js';
+import { drawClip, footagePanel, makeClip, seekClip } from './clips.js';
 import { TRANSITION_S, cameraFx, enterFx, idleFx, transitionFx } from './motion.js';
 import { FONT, clamp, clamp01, col, ease, hash, lerp, rgba, roundRect } from './util.js';
 
@@ -85,8 +85,9 @@ function shadowSprite(w, h, r) {
   const out = { c: sp.c, m }; shadows.set(key, out); return out;
 }
 
-function makeElement(el, slot, A) {
-  const P = S.P, art = A[el.art] ?? { kind: 'card' }, c = { ...el.content };
+function makeElement(el, slot, A, onFootage = false) {
+  // elements with no panel of their own (a big number, a ring) sit straight on footage: their small words go white
+  const P = onFootage ? { ...S.P, muted: '#FFFFFF' } : S.P, art = A[el.art] ?? { kind: 'card' }, c = { ...el.content };
   if (c.image) c._img = S.images[c.image] ?? null;
   if (c.clip) c._vid = makeClip(c.clip);
   const seed = hash(`${el.art}:${el.slot}:${slot.id}`), name = el.art.split(':')[1];
@@ -128,9 +129,10 @@ function buildScene(i) {
   if (S.built.has(i)) return S.built.get(i);
   const vs = S.plan.scenes[i], box = { W: S.W, H: S.H };
   const ambient = vs.ambient.map(id => { const f = ambientOf(id); return f ? f(S.P, box, hash(`${i}:${id}`)) : null; }).filter(Boolean).sort((a, b) => a.depth - b.depth);
-  const els = vs.elements.map(e => { const slot = vs.slots.find(s => s.id === e.slot); return slot ? makeElement(e, slot, S.cfg.art) : null; }).filter(Boolean).sort((a, b) => a.base.z - b.base.z);
+  const els = vs.elements.map(e => { const slot = vs.slots.find(s => s.id === e.slot); return slot ? makeElement(e, slot, S.cfg.art, !!vs.backdrop) : null; }).filter(Boolean).sort((a, b) => a.base.z - b.base.z);
   const main = els.find(e => e.slot.job === 'main') ?? els[0];
-  const sc = { vs, ambient, els, main };
+  const backdrop = vs.backdrop ? { vid: makeClip(vs.backdrop.clip), at: vs.backdrop.at } : null;
+  const sc = { vs, ambient, els, main, backdrop };
   S.built.set(i, sc);
   return sc;
 }
@@ -174,7 +176,7 @@ function paintElement(g, e, p) {
 
 /* ───────── type and callouts ───────── */
 function drawType(g, sc, local) {
-  const vs = sc.vs, P = S.P, band = vs.layout === 'type' ? S.cfg.bands.hero : S.cfg.bands.caption, big = vs.layout === 'type';
+  const vs = sc.vs, P0 = S.P, inv = !!sc.backdrop?.vid.ok, P = inv ? { ...P0, bg: '#05080d', ink: '#FFFFFF', accent: P0.soft } : P0, band = vs.layout === 'type' ? S.cfg.bands.hero : S.cfg.bands.caption, big = vs.layout === 'type';
   if (!vs.type.length) return;
   const pages = [...new Set(vs.type.map(l => l.page))];
   const startOf = p => Math.min(...vs.type.filter(l => l.page === p).flatMap(l => l.at));
@@ -238,9 +240,17 @@ function paintScene(cv, i, t) {
   const sc = buildScene(i), vs = sc.vs, local = t - vs.start, g = cv.g, k = S.k;
   g.save();
   const cam = cameraFx(vs.camera, local, vs.end - vs.start + TRANSITION_S, S.W, S.H, S.Z0);
+  const bd = sc.backdrop?.vid.ok ? sc.backdrop : null;
+  if (bd) {
+    // footage fills the whole frame: a slow push and drift, a dark scrim top and bottom so the words and the cards read on any picture
+    g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.fillStyle = '#05080d'; g.fillRect(0, 0, S.rw, S.rh);
+    drawClip(g, bd.vid, 0, 0, S.rw, S.rh, { zoom: 1.06 + 0.05 * clamp01(local / 6), pan: Math.sin(local * 0.3) * 0.6, panY: Math.cos(local * 0.22) * 0.5 });
+    const sg = g.createLinearGradient(0, 0, 0, S.rh); sg.addColorStop(0, 'rgba(5,8,13,.38)'); sg.addColorStop(0.35, 'rgba(5,8,13,.08)'); sg.addColorStop(0.55, 'rgba(5,8,13,.32)'); sg.addColorStop(1, 'rgba(5,8,13,.62)'); g.fillStyle = sg; g.fillRect(0, 0, S.rw, S.rh);
+  } else {
   const ag = S.amb.g; ag.setTransform(1, 0, 0, 1, 0, 0); ag.globalAlpha = 1; ag.drawImage(S.bg.c, 0, 0); ag.setTransform(k * AMB, 0, 0, k * AMB, 0, 0);
   sc.ambient.forEach((a, j) => T('ambient:' + vs.ambient[j], () => { ag.save(); a.draw(ag, local, cam); ag.restore(); }));
   g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'low'; g.drawImage(S.amb.c, 0, 0, S.rw, S.rh);
+  }
   g.setTransform(k, 0, 0, k, 0, 0);
   for (const e of sc.els) { const p = pose(e, vs, t, cam); e.cur = p; if (p) T('el:' + e.el.art, () => paintElement(g, e, p)); }
   T('leaders+type', () => { drawLeaders(g, sc, local); drawType(g, sc, local); });
@@ -277,6 +287,7 @@ async function prepare(n) {
   const live = [cur]; if (cur > 0 && scenes[cur].transition && (t - scenes[cur].start) / TRANSITION_S < 1) live.push(cur - 1);
   for (const i of live) {
     const sc = buildScene(i);
+    if (sc.backdrop) { await sc.backdrop.vid.ready; await seekClip(sc.backdrop.vid, sc.backdrop.at + Math.max(0, t - sc.vs.start)); }
     for (const e of sc.els) if (e.vid) { await e.vid.ready; await seekClip(e.vid, (e.el.content.clipAt ?? 0) + Math.max(0, t - sc.vs.start - e.el.at)); }
   }
 }
@@ -330,4 +341,4 @@ window.__range = async (from, to, fmt, sink) => {
 };
 
 /** the footage this page has opened: did it decode, how long is it, how wide (for the tests and the crew's diagnostics) */
-window.__clips = () => [...S.built.values()].flatMap(sc => sc.els.filter(e => e.vid).map(e => ({ art: e.el.art, ok: e.vid.ok, dur: +e.vid.dur.toFixed(2), w: e.vid.w, h: e.vid.h })));
+window.__clips = () => [...S.built.values()].flatMap(sc => [...(sc.backdrop ? [{ art: 'backdrop', vid: sc.backdrop.vid }] : []), ...sc.els.filter(e => e.vid).map(e => ({ art: e.el.art, vid: e.vid }))].map(x => ({ art: x.art, ok: x.vid.ok, dur: +x.vid.dur.toFixed(2), w: x.vid.w, h: x.vid.h })));

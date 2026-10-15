@@ -200,7 +200,10 @@ export function castScene(b: BeatIn, i: number, count: number, o: PlanOptions, p
   const seed = o.seed ?? 7;
   const needs = new Set<Need>(needsFor(b, i, count));
   const nums = numbersOf(b.text);
-  const c: Ctx = { mapBeat: !!o.photos?.some(x => x.kind === 'map') && (needs.has('location') || needs.has('global') || needs.has('travel')), photosLeft: o.photos?.length ?? 0, rating: o.ratings?.artifacts ?? null, clipsLeft: pool.list.length, prior: o.prior?.[i] ?? null, needs, nums, hasImage: !!o.image, hasBrand: !!o.brand, seed, i, prev: new Set(prev ? [...prev.elements.map(e => e.art), ...prev.ambient] : []), used: usedHere, chosen: new Set() };
+  // real footage as the whole backdrop where the beat is about people, places, feelings or the hook (and the last scene did not use it): the classic big-type-over-footage look
+  const bleed = pool.list.some(x => x.kind === 'footage') && !prev?.backdrop && ['people', 'nature', 'home', 'travel', 'food', 'health', 'emotion', 'calm', 'hook', 'benefit', 'success'].some(n => needs.has(n as Need));
+  const bdClip = bleed ? nextClip(pool, 'backdrop') : null, backdrop = bdClip ? { clip: bdClip.path, kind: bdClip.kind, at: bdClip.at } : null;
+  const c: Ctx = { mapBeat: !!o.photos?.some(x => x.kind === 'map') && (needs.has('location') || needs.has('global') || needs.has('travel')), photosLeft: o.photos?.length ?? 0, rating: o.ratings?.artifacts ?? null, clipsLeft: backdrop ? 0 : pool.list.length, prior: o.prior?.[i] ?? null, needs, nums, hasImage: !!o.image, hasBrand: !!o.brand, seed, i, prev: new Set(prev ? [...prev.elements.map(e => e.art), ...prev.ambient] : []), used: usedHere, chosen: new Set() };
   const given = o.picks?.[i] ?? null;
   // the opening hook, the closing call to action and any very short line are set as big type (a film that is all cards has no rhythm)
   const short = b.text.trim().split(/s+/).length <= 5, typeScene = count >= 3 && (i === 0 || i === count - 1 || short) && !['location', 'global', 'number', 'percent', 'money'].some(n => needs.has(n as Need)) && !prev?.layout.startsWith('type') && !recentLayouts.includes('type');
@@ -233,7 +236,7 @@ export function castScene(b: BeatIn, i: number, count: number, o: PlanOptions, p
   for (const id of ambient) usedHere[id] = (usedHere[id] ?? 0) + 1;
   const cam: CameraId = pick(CAMERAS, seed, `camera:${i}`, prev ? [prev.camera] : []);
   const transition: TransitionId | null = i === 0 ? null : pick(TRANSITIONS, seed, `transition:${i}`, prev?.transition ? [prev.transition] : []);
-  return { i, start: b.start, end: b.end, layout, elements, ambient, camera: cam, transition, type: typeLines(b, seed, i, layout === 'type') };
+  return { i, start: b.start, end: b.end, layout, elements, ambient, camera: cam, transition, backdrop, type: typeLines(b, seed, i, layout === 'type') };
 }
 
 /** The whole film's plan. Scenes tile the timeline (each starts where the last ended). */

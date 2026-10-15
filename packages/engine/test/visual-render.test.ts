@@ -96,7 +96,8 @@ test('real footage plays on a panel, a phone and a browser window: frame-accurat
   try {
     const plan = planFilm(beats(3, 3), { format: 'vertical', seed: 9, clips: [{ path: clip, kind: 'footage', seconds: 2 }, { path: clip, kind: 'scroll', seconds: 2 }] });
     const withClip = plan.scenes.filter(s => s.elements.some(e => e.content.clip));
-    assert.ok(withClip.length >= 2, `footage is cast in at least two scenes, got ${withClip.length}`);
+    assert.ok(withClip.length >= 1, 'footage is cast on a panel, a phone or a window');
+    assert.ok(plan.scenes.filter(s => s.backdrop || s.elements.some(e => e.content.clip)).length >= 2, 'footage is in at least two scenes');
     for (const s of withClip) assert.ok(s.elements.some(e => e.content.clip && (e.art.startsWith('clip:') || e.art.startsWith('device:'))));
     const sc = withClip[0]!, el = sc.elements.find(e => e.content.clip)!;
     const a = await openFilm(plan, { scale: 0.3 });
@@ -131,5 +132,26 @@ test('a poster panel shows the picture it was given (a map, a 3D render, a captu
     const sa = await openFilm(pa, { scale: 0.3 }), ha = sha(await sa.frame(n)); await sa.close();
     const sb = await openFilm(pb, { scale: 0.3 }), hb = sha(await sb.frame(n)); await sb.close();
     assert.notEqual(ha, hb, 'the panel shows its own picture');
+  } finally { await closeVisual(); }
+});
+
+test('footage can fill the whole frame behind a scene: the words go white over it, and it moves', async t => {
+  if (!(await canRenderVisual())) { t.skip('no Chrome to drive'); return; }
+  const { recordTestClip } = await import('../src/visual/capture');
+  const { config } = await import('../src/config');
+  const clip = await recordTestClip(join(config.data, 'visual-test', 'bleed.webm'), 2);
+  try {
+    const plan = planFilm(beats(4, 3), { format: 'vertical', seed: 9, clips: [{ path: clip, kind: 'footage', seconds: 2 }] });
+    const bleed = plan.scenes.filter(s => s.backdrop);
+    assert.ok(bleed.length >= 1, 'a scene about people, a place or the hook gets footage as its backdrop');
+    assert.ok(bleed.every(s => !s.elements.some(e => e.content.clip)), 'footage is not shown twice in one scene');
+    for (let i = 1; i < plan.scenes.length; i++) assert.ok(!(plan.scenes[i]!.backdrop && plan.scenes[i - 1]!.backdrop), 'never two backdrops in a row');
+    const sc = bleed[0]!, s = await openFilm(plan, { scale: 0.3 });
+    const n0 = Math.round((sc.start + 1.2) * 30), h0 = sha(await s.frame(n0)), h1 = sha(await s.frame(n0 + 12)), h0b = sha(await s.frame(n0));
+    assert.notEqual(h0, h1, 'the backdrop moves');
+    assert.equal(h0, h0b);
+    const opened = await s.clips();
+    assert.ok(opened.some(c => c.art === 'backdrop' && c.ok), 'the backdrop video decoded');
+    await s.close();
   } finally { await closeVisual(); }
 });

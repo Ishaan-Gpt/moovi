@@ -18,7 +18,11 @@ Every second of a film moves, every scene has several things on screen at differ
 
 ## Real footage
 
-Stock clips (the footage agent: `AssetOut` kind `footage`) and scroll captures or screen recordings (kind `scroll`) are played on a footage panel, in a browser-style window (`clip:screen`), on the phone's screen and in the browser mockup. The planner hands the pool out round-robin, stock footage to panels and recordings to windows and phones, each time from a different moment of the clip, and favours footage in the main slot. The page seeks a video per element to a time computed from the frame number, waits for the seek and for the presented frame, and loops it, so footage is as deterministic as everything else and any chunk of a film can be rendered on any page. `recordTestClip` records a WebM in the browser, so footage is tested with no ffmpeg and no download.
+Stock clips (the footage agent: `AssetOut` kind `footage`) and scroll captures or screen recordings (kind `scroll`) are played on a footage panel, in a browser-style window (`clip:screen`), on the phone's screen and in the browser mockup. Where a beat is about people, a place, a feeling or the hook, and stock footage exists, the footage fills the whole frame behind the scene (a dark scrim top and bottom, the words in white over it, never two backdrops in a row). The planner hands the pool out round-robin, stock footage to panels and recordings to windows and phones, each time from a different moment of the clip, and favours footage in the main slot. The page seeks a video per element to a time computed from the frame number, waits for the seek and for the presented frame, and loops it, so footage is as deterministic as everything else and any chunk of a film can be rendered on any page. `recordTestClip` records a WebM in the browser, so footage is tested with no ffmpeg and no download.
+
+## Big type and posters
+
+The hook, the closing line and any very short line are set as **big type** (the `type` layout): two words a line, huge, in the middle of the frame, the accent word in serif italic, two small icons above; unless the beat is about a place or a number. A **poster panel** (`img:poster`) shows a picture the crew already made: the map flight poster (a beat about a place gets it), the 3D look render, a capture of the site, with a slow push and drift.
 
 ## The frame critic (`critic.ts`)
 
