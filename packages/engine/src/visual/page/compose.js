@@ -173,7 +173,7 @@ function paintElement(g, e, p) {
 
 /* ───────── type and callouts ───────── */
 function drawType(g, sc, local) {
-  const vs = sc.vs, P = S.P, band = S.cfg.bands.caption;
+  const vs = sc.vs, P = S.P, band = vs.layout === 'type' ? S.cfg.bands.hero : S.cfg.bands.caption, big = vs.layout === 'type';
   if (!vs.type.length) return;
   const pages = [...new Set(vs.type.map(l => l.page))];
   const startOf = p => Math.min(...vs.type.filter(l => l.page === p).flatMap(l => l.at));
@@ -183,7 +183,7 @@ function drawType(g, sc, local) {
   const next = pages.find(p => p > page), outT = next !== undefined ? startOf(next) : Infinity, first = startOf(page);
   const fade = clamp01((outT - local) / 0.22 + 0.001);
   g.save();
-  const bw = band.w, maxSize = Math.min(band.h / (lines.length * 1.12 + 0.2), S.W * 0.115);
+  const bw = band.w, maxSize = Math.min(band.h / (lines.length * 1.12 + 0.2), S.W * (big ? 0.2 : 0.115));
   let size = maxSize;
   for (const l of lines) { g.font = `800 ${size}px ${FONT.ui}`; while (g.measureText(l.text).width > bw && size > 24) { size -= 2; g.font = `800 ${size}px ${FONT.ui}`; } }
   const lh = size * 1.1, y0 = band.y + (band.h - lines.length * lh) / 2 + lh * 0.82;

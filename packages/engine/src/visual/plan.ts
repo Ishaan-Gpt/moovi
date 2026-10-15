@@ -72,7 +72,7 @@ export function itemsOf(text: string): string[] {
 /* ───────── kinetic type ───────── */
 
 /** Lines of 2-3 words (about 16 characters), grouped in pages of up to 3 lines; each word lands on the voice. */
-export function typeLines(b: BeatIn, seed: number, i: number): TypeLine[] {
+export function typeLines(b: BeatIn, seed: number, i: number, big = false): TypeLine[] {
   const ws = words(b.text);
   if (!ws.length) return [];
   const dur = Math.max(0.5, b.end - b.start);
@@ -84,7 +84,7 @@ export function typeLines(b: BeatIn, seed: number, i: number): TypeLine[] {
   let cur: { ws: string[]; at: number[] } = { ws: [], at: [] };
   for (const [k, w] of ws.entries()) {
     const len = cur.ws.join(' ').length + w.length + 1;
-    if (cur.ws.length && (len > 17 || cur.ws.length >= 3)) { lines.push(cur); cur = { ws: [], at: [] }; }
+    if (cur.ws.length && (len > (big ? 11 : 17) || cur.ws.length >= (big ? 2 : 3))) { lines.push(cur); cur = { ws: [], at: [] }; }
     cur.ws.push(w); cur.at.push(times[k]!);
   }
   if (cur.ws.length) lines.push(cur);
@@ -94,7 +94,10 @@ export function typeLines(b: BeatIn, seed: number, i: number): TypeLine[] {
     let best = -1, len = 3; l.ws.forEach((w, k) => { if (!STOP.has(w.toLowerCase()) && w.length > len) { best = k; len = w.length; } });
     return best >= 0 ? best : null;
   };
-  return lines.map((l, k) => ({ text: l.ws.join(' '), at: l.at, style: TYPE_STYLES[(h32(`${seed}:type:${i}:${k}`) + k) % TYPE_STYLES.length]!, em: em(l), page: Math.floor(k / 3) }));
+  // pages of nearly equal size, at most three lines each (5 lines are 3 + 2, never 3 + 1 with one orphan word on its own)
+  const pages = Math.ceil(lines.length / 3), base = Math.floor(lines.length / pages), extra = lines.length % pages, pageOf: number[] = [];
+  for (let pg = 0, k = 0; pg < pages; pg++) for (let j = 0; j < base + (pg < extra ? 1 : 0); j++, k++) pageOf[k] = pg;
+  return lines.map((l, k) => ({ text: l.ws.join(' '), at: l.at, style: TYPE_STYLES[(h32(`${seed}:type:${i}:${k}`) + k) % TYPE_STYLES.length]!, em: em(l), page: pageOf[k]! }));
 }
 
 /* ───────── casting ───────── */
@@ -185,7 +188,9 @@ export function castScene(b: BeatIn, i: number, count: number, o: PlanOptions, p
   const nums = numbersOf(b.text);
   const c: Ctx = { rating: o.ratings?.artifacts ?? null, clipsLeft: pool.list.length, prior: o.prior?.[i] ?? null, needs, nums, hasImage: !!o.image, hasBrand: !!o.brand, seed, i, prev: new Set(prev ? [...prev.elements.map(e => e.art), ...prev.ambient] : []), used: usedHere, chosen: new Set() };
   const given = o.picks?.[i] ?? null;
-  const layout: LayoutId = given?.layout && (LAYOUT_IDS as readonly string[]).includes(given.layout) ? (given.layout as LayoutId) : layoutFor(needs, seed, i, recentLayouts, o.ratings?.layouts);
+  // the opening hook, the closing call to action and any very short line are set as big type (a film that is all cards has no rhythm)
+  const short = b.text.trim().split(/s+/).length <= 5, typeScene = count >= 3 && (i === 0 || i === count - 1 || short) && !prev?.layout.startsWith('type') && !recentLayouts.includes('type');
+  const layout: LayoutId = given?.layout && (LAYOUT_IDS as readonly string[]).includes(given.layout) ? (given.layout as LayoutId) : typeScene ? 'type' : layoutFor(needs, seed, i, recentLayouts, o.ratings?.layouts);
   const slots = slotsOf(layout, o.format);
   const elements: VElement[] = [];
   const main = ARTIFACTS.filter(a => a.kind !== 'particles' && a.kind !== 'glow' && a.kind !== 'bg' && a.kind !== 'icon');
@@ -214,7 +219,7 @@ export function castScene(b: BeatIn, i: number, count: number, o: PlanOptions, p
   for (const id of ambient) usedHere[id] = (usedHere[id] ?? 0) + 1;
   const cam: CameraId = pick(CAMERAS, seed, `camera:${i}`, prev ? [prev.camera] : []);
   const transition: TransitionId | null = i === 0 ? null : pick(TRANSITIONS, seed, `transition:${i}`, prev?.transition ? [prev.transition] : []);
-  return { i, start: b.start, end: b.end, layout, elements, ambient, camera: cam, transition, type: typeLines(b, seed, i) };
+  return { i, start: b.start, end: b.end, layout, elements, ambient, camera: cam, transition, type: typeLines(b, seed, i, layout === 'type') };
 }
 
 /** The whole film's plan. Scenes tile the timeline (each starts where the last ended). */

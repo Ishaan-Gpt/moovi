@@ -1,12 +1,12 @@
-// tsx scripts/peek.ts <chat> [...]: where each chat's run is: its run states, last messages and live work.
-import { history, redis } from '../src/bus';
-
-for (const chat of process.argv.slice(2)) {
-  const all = await history(chat, '0');
-  const runs = all.filter(e => e.type === 'run').map(e => (e.type === 'run' ? `${e.run.n}:${e.run.status}` : '')).join(' ');
-  console.log(`\n── ${chat} · runs ${runs}`);
-  for (const e of all.filter(e => e.type === 'message').slice(-3)) if (e.type === 'message') console.log(`  ${e.message.agent ?? 'you'} [${e.message.kind}]: ${e.message.text.replace(/\s+/g, ' ').slice(0, 260)}`);
-  const acts = all.filter(e => e.type === 'activity' && e.kind !== 'tool').slice(-3);
-  console.log(`  now: ${acts.map(e => (e.type === 'activity' ? `${e.agent} ${e.kind} ${e.text.slice(0, 60)}` : '')).join(' | ')}`);
-}
-(await redis()).quit();
+import { writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { config } from '../src/config';
+import { closeVisual, openFilm } from '../src/visual/capture';
+import { planFilm } from '../src/visual/plan';
+/** tsx scripts/peek.ts t1 t2 ... : the visual sample film (vertical, light) at those seconds, to data/visual/peek-N.jpg */
+const SCRIPT = ['Most small teams lose hours every week to messy spreadsheets.', 'Meet Bluetoki: one place for your orders, stock and customers.', 'We grew 40% in 6 months, with 1,200 happy customers.', 'It connects your shop, your phone and your team, everywhere.', 'Set it up in minutes, track every order, and never miss a sale.', 'Try Bluetoki free today.'];
+let t = 0; const beats = SCRIPT.map(text => { const n = text.split(/\s+/).length, d = Math.max(3.2, n / 2.6 + 0.6), b = { text, start: t, end: t + d }; t += d; return b; });
+const plan = planFilm(beats, { format: (process.env.FORMAT as 'vertical') || 'vertical', theme: (process.env.THEME as 'light') || 'light', seed: 7, brand: 'Bluetoki' });
+const s = await openFilm(plan, { scale: 0.5 });
+for (const [i, sec] of process.argv.slice(2).entries()) writeFileSync(join(config.data, 'visual', `peek-${i}.jpg`), await s.frame(Math.round(Number(sec) * 30)));
+await s.close(); await closeVisual();

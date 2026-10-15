@@ -11,14 +11,15 @@ export interface Rect { x: number; y: number; w: number; h: number }
 export interface Slot { id: string; cx: number; cy: number; w: number; h: number; z: number; job: 'main' | 'side' | 'pip' | 'label' | 'satellite' }
 
 /** The caption band and the visual area, in frame pixels, per format. Nothing but ambient layers may cross the band. */
-export function bands(f: FormatId): { caption: Rect; area: Rect; safeBottom: number } {
+export function bands(f: FormatId): { caption: Rect; area: Rect; safeBottom: number; /** where the words go in a typographic scene: bigger, in the middle of the frame */ hero: Rect } {
   const { W, H } = FORMATS[f];
-  if (f === 'vertical') return { caption: { x: 0.06 * W, y: 0.60 * H, w: 0.88 * W, h: 0.2 * H }, area: { x: 0.04 * W, y: 0.045 * H, w: 0.92 * W, h: 0.5 * H }, safeBottom: 0.86 * H };
-  if (f === 'square') return { caption: { x: 0.06 * W, y: 0.62 * H, w: 0.88 * W, h: 0.2 * H }, area: { x: 0.04 * W, y: 0.04 * H, w: 0.92 * W, h: 0.5 * H }, safeBottom: 0.9 * H };
-  return { caption: { x: 0.08 * W, y: 0.72 * H, w: 0.84 * W, h: 0.17 * H }, area: { x: 0.05 * W, y: 0.05 * H, w: 0.9 * W, h: 0.59 * H }, safeBottom: 0.93 * H };
+  const hero = f === 'landscape' ? { x: 0.07 * W, y: 0.27 * H, w: 0.86 * W, h: 0.46 * H } : { x: 0.05 * W, y: 0.27 * H, w: 0.9 * W, h: 0.36 * H };
+  if (f === 'vertical') return { hero, caption: { x: 0.06 * W, y: 0.60 * H, w: 0.88 * W, h: 0.2 * H }, area: { x: 0.04 * W, y: 0.045 * H, w: 0.92 * W, h: 0.5 * H }, safeBottom: 0.86 * H };
+  if (f === 'square') return { hero, caption: { x: 0.06 * W, y: 0.62 * H, w: 0.88 * W, h: 0.2 * H }, area: { x: 0.04 * W, y: 0.04 * H, w: 0.92 * W, h: 0.5 * H }, safeBottom: 0.9 * H };
+  return { hero, caption: { x: 0.08 * W, y: 0.72 * H, w: 0.84 * W, h: 0.17 * H }, area: { x: 0.05 * W, y: 0.05 * H, w: 0.9 * W, h: 0.59 * H }, safeBottom: 0.93 * H };
 }
 
-export const LAYOUT_IDS = ['hero', 'split-stack', 'split-side', 'pip', 'triptych', 'cascade', 'callouts', 'orbit', 'wall'] as const;
+export const LAYOUT_IDS = ['hero', 'split-stack', 'split-side', 'pip', 'triptych', 'cascade', 'callouts', 'orbit', 'wall', 'type'] as const;
 export type LayoutId = (typeof LAYOUT_IDS)[number];
 
 export interface LayoutInfo { id: LayoutId; name: string; about: string; /** how many elements it holds (main first) */ slots: number; /** needs a wide area to read well */ prefers: FormatId[] }
@@ -34,6 +35,7 @@ const TALL: Record<LayoutId, Slot[]> = {
   triptych: [S('a', 0.29, 0.5, 0.56, 0.92, 0, 'main'), S('b', 0.79, 0.27, 0.42, 0.46, 40, 'side'), S('c', 0.79, 0.75, 0.42, 0.46, 0, 'side')],
   cascade: [S('a', 0.4, 0.3, 0.74, 0.5, -60, 'main'), S('b', 0.6, 0.55, 0.74, 0.46, 40, 'side'), S('c', 0.4, 0.8, 0.74, 0.4, 140, 'side')],
   callouts: [S('a', 0.5, 0.5, 0.64, 0.8, 0, 'main'), S('b', 0.18, 0.22, 0.34, 0.2, 100, 'label'), S('c', 0.82, 0.78, 0.34, 0.2, 100, 'label')],
+  type: [S('a', 0.18, 0.1, 0.2, 0.16, 90, 'satellite'), S('b', 0.82, 0.14, 0.2, 0.16, -70, 'satellite')],
   orbit: [S('a', 0.5, 0.5, 0.5, 0.56, 0, 'main'), S('b', 0.14, 0.2, 0.2, 0.2, 80, 'satellite'), S('c', 0.86, 0.3, 0.2, 0.2, -80, 'satellite'), S('d', 0.16, 0.8, 0.2, 0.2, 60, 'satellite'), S('e', 0.86, 0.82, 0.2, 0.2, -40, 'satellite')],
   wall: [S('a', 0.26, 0.26, 0.46, 0.46, 0, 'side'), S('b', 0.76, 0.26, 0.46, 0.46, 30, 'side'), S('c', 0.26, 0.76, 0.46, 0.46, 30, 'side'), S('d', 0.76, 0.76, 0.46, 0.46, 0, 'side')],
 };
@@ -45,6 +47,7 @@ const WIDE: Record<LayoutId, Slot[]> = {
   triptych: [S('a', 0.17, 0.5, 0.31, 0.78, 0, 'main'), S('b', 0.5, 0.5, 0.31, 0.78, 40, 'side'), S('c', 0.83, 0.5, 0.31, 0.78, 0, 'side')],
   cascade: [S('a', 0.26, 0.4, 0.44, 0.7, -60, 'main'), S('b', 0.5, 0.56, 0.44, 0.66, 40, 'side'), S('c', 0.74, 0.44, 0.44, 0.6, 140, 'side')],
   callouts: [S('a', 0.5, 0.5, 0.46, 0.92, 0, 'main'), S('b', 0.14, 0.28, 0.24, 0.3, 100, 'label'), S('c', 0.86, 0.72, 0.24, 0.3, 100, 'label')],
+  type: [S('a', 0.1, 0.16, 0.12, 0.26, 90, 'satellite'), S('b', 0.9, 0.2, 0.12, 0.26, -70, 'satellite')],
   orbit: [S('a', 0.5, 0.5, 0.34, 0.8, 0, 'main'), S('b', 0.14, 0.24, 0.16, 0.3, 80, 'satellite'), S('c', 0.86, 0.26, 0.16, 0.3, -80, 'satellite'), S('d', 0.14, 0.78, 0.16, 0.3, 60, 'satellite'), S('e', 0.86, 0.78, 0.16, 0.3, -40, 'satellite')],
   wall: [S('a', 0.18, 0.3, 0.3, 0.5, 0, 'side'), S('b', 0.4, 0.3, 0.3, 0.5, 30, 'side'), S('c', 0.62, 0.3, 0.3, 0.5, 30, 'side'), S('d', 0.84, 0.3, 0.3, 0.5, 0, 'side')],
 };
@@ -58,6 +61,7 @@ export const LAYOUTS: readonly LayoutInfo[] = [
   { id: 'cascade', name: 'Cascading cards', about: 'three cards stacked at different depths', slots: 3, prefers: ['vertical', 'landscape', 'square'] },
   { id: 'callouts', name: 'Hero with callouts', about: 'a hero with two labelled callouts and leader lines', slots: 3, prefers: ['vertical', 'landscape', 'square'] },
   { id: 'orbit', name: 'Orbit', about: 'a hero with four satellites circling it', slots: 5, prefers: ['vertical', 'square', 'landscape'] },
+  { id: 'type', name: 'Big type', about: 'the words themselves, huge, with two small accents: the hook, the payoff, the call to action', slots: 2, prefers: ['vertical', 'landscape', 'square'] },
   { id: 'wall', name: 'Wall', about: 'four tiles at once: features, logos, proof', slots: 4, prefers: ['square', 'landscape', 'vertical'] },
 ];
 
@@ -67,4 +71,6 @@ export function slotsOf(layout: LayoutId, f: FormatId): { id: string; rect: Rect
   return table[layout].map(s => ({ id: s.id, z: s.z, job: s.job, rect: { x: area.x + (s.cx - s.w / 2) * area.w, y: area.y + (s.cy - s.h / 2) * area.h, w: s.w * area.w, h: s.h * area.h } }));
 }
 
+/** the band the words occupy in a scene with this layout */
+export const bandOf = (layout: LayoutId, f: FormatId): Rect => (layout === 'type' ? bands(f).hero : bands(f).caption);
 export const slotCount = (l: LayoutId) => LAYOUTS.find(x => x.id === l)!.slots;

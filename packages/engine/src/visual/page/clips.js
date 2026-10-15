@@ -7,7 +7,8 @@ import { clamp01, ease, roundRect } from './util.js';
 export function makeClip(url) {
   const v = document.createElement('video');
   v.muted = true; v.playsInline = true; v.preload = 'auto'; v.crossOrigin = 'anonymous'; v.loop = false;
-  v.style.cssText = 'position:fixed;left:-9999px;top:0;width:2px;height:2px';
+  // inside the viewport (a video far off screen may never be presented, so its picture can lag a seek), but too small and transparent to matter
+  v.style.cssText = 'position:fixed;left:0;top:0;width:4px;height:4px;opacity:0.02;pointer-events:none;z-index:-1';
   const clip = { v, dur: 0, ok: false, w: 0, h: 0, at: -1 };
   clip.ready = new Promise(res => {
     const done = ok => { clip.ok = ok && v.videoWidth > 0; clip.dur = v.duration || 0; clip.w = v.videoWidth; clip.h = v.videoHeight; res(clip.ok); };
@@ -32,9 +33,11 @@ export async function seekClip(clip, t) {
     let seeked = false, framed = !v.requestVideoFrameCallback;
     const fin = () => { if (seeked && framed) res(); };
     v.addEventListener('seeked', () => { seeked = true; fin(); }, { once: true });
-    v.requestVideoFrameCallback?.(() => { framed = true; fin(); });
+    // the presented frame must be the one asked for (its media time, within two frames): a frame presented before the seek lands is not
+    let tries = 0; const arm = () => v.requestVideoFrameCallback((_, md) => { if (Math.abs(md.mediaTime - mt) <= 0.07 || ++tries > 10) { framed = true; fin(); } else arm(); });
+    if (v.requestVideoFrameCallback) arm();
     v.currentTime = Math.min(mt, Math.max(0, clip.dur - 0.001));
-    setTimeout(res, 2500);
+    setTimeout(res, 1500);
   });
 }
 
