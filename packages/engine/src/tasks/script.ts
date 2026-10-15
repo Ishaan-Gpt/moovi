@@ -9,6 +9,7 @@ import { ask, tool } from '../runtime';
 import type { Brief } from './plan';
 import { feedbackMemory, filmRef, knowledge, systemFor } from './agent';
 import { castFor, recordSpoken, type Cast } from './casting';
+import { retakeRate } from '../audio/cast';
 import { speakLines } from '../audio/lines';
 import { voiceById } from '../audio/voices';
 import { changedLines, recordFeedback, type Memory } from '../memory';
@@ -171,7 +172,14 @@ export const voice: Handler = async ctx => {
   const cast = await castFor(ctx, S, c => withFeedback(c, mem));
   await ctx.activity('note', `Voice: ${cast.voice.name} (${cast.voice.id}, ${cast.rate}). ${cast.reason}`);
   ctx.note(`speaking as ${cast.voice.name}`);
-  const v = await speakLines(dir, S.beats.map(b => b.say), { voice: cast.voice.id, rate: cast.rate, signal: ctx.signal });
+  let v = await speakLines(dir, S.beats.map(b => b.say), { voice: cast.voice.id, rate: cast.rate, signal: ctx.signal });
+  // one faster take when the first runs past the asked length (Edge's rate is not linear in time)
+  const faster = retakeRate(cast.rate, v.seconds, (await ctx.out<Brief>('plan'))?.seconds);
+  if (faster) {
+    await ctx.activity('note', `Voice ran ${v.seconds.toFixed(1)} s; a second take at ${faster}`);
+    v = await speakLines(dir, S.beats.map(b => b.say), { voice: cast.voice.id, rate: faster, signal: ctx.signal });
+    cast.rate = faster;
+  }
   await recordSpoken(ctx, cast, v.stats, v.seconds);
   // room for the payoff: a short breath after the hook and before the ask
   const lastHook = S.beats[0]?.say.split(/\s+/).at(-1);

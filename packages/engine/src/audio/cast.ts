@@ -176,6 +176,20 @@ export function fitRate(rate: string, words: number, seconds: number | undefined
   return `${pct >= 0 ? '+' : ''}${pct}%`;
 }
 
+/**
+ * After the first take: when the narration still runs long (numbers read as words, long names), the rate for a
+ * second take that lands it about a second inside the asked length, so the cut with its tail fits within 2 s of
+ * the ask. Null when the first take fits, there is no asked length, or the rate is already at the ceiling.
+ */
+export function retakeRate(rate: string, spokenSeconds: number, askedSeconds: number | undefined, maxPct = 45): string | null {
+  if (!askedSeconds || askedSeconds <= 0 || spokenSeconds <= askedSeconds) return null;
+  const own = Number(/^([+-]?\d+)%$/.exec(rate)?.[1] ?? 0);
+  if (own >= maxPct) return null;
+  const target = Math.max(1, askedSeconds - 1);
+  const pct = Math.min(maxPct, Math.ceil((1 + own / 100) * (spokenSeconds / target) * 100 - 100));
+  return pct > own ? `+${pct}%` : null;
+}
+
 /** One plain sentence on why this voice, from what was heard and what matched. */
 export function reasonFor(w: VoiceWish, r: Ranked): string {
   const x = r.voice;
