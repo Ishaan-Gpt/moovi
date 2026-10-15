@@ -163,3 +163,13 @@ export async function closeMaps() {
   if (browser) { const b = await browser; await b.close().catch(() => undefined); browser = null; }
   if (server) { await new Promise(r => server!.close(() => r(null))); server = null; starting = null; }
 }
+
+/** One frame of the flight as an image file (default: 88% through, when the camera has landed and the name is showing). */
+export async function renderMapPoster(o: MapOptions, out: string, at = 0.88): Promise<{ path: string; mode: 'tiles' | 'globe'; fellBack: string | null; width: number; height: number }> {
+  const s = await openMap({ ...o, seconds: o.seconds ?? 4, format: o.format ?? 'png' });
+  try {
+    mkdirSync(dirname(out), { recursive: true });
+    writeFileSync(out, await s.frame(Math.min(s.frames - 1, Math.round(s.frames * at))));
+    return { path: out, mode: s.mode, fellBack: s.fellBack, width: Math.round(o.width ?? 1080), height: Math.round(o.height ?? 1920) };
+  } finally { await s.close(); }
+}

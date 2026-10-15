@@ -15,6 +15,7 @@ import type { AssetOut } from './film';
 import { findClipsOrStill, type Clip } from '../footage';
 import { clipLine, clipRows } from '../footage/graph';
 import { look3dAsset } from '../render3d/asset';
+import { mapAsset } from '../maps/asset';
 
 /**
  * The Asset Hunter fills one request from the board: a capture of the real site, the product's real logo or a
@@ -28,6 +29,7 @@ const sha = (f: string) => createHash('sha256').update(readFileSync(f)).digest('
 
 export const asset: Handler = async ctx => {
   if ((ctx.input<{ kind?: string }>()).kind === 'look3d') return look3dAsset(ctx);
+  if ((ctx.input<{ kind?: string }>()).kind === 'map') return mapAsset(ctx);
   const req = ctx.input<{ id: string; kind: string; what: string; url: string | null; scene: number }>();
   const m = (await ctx.out<{ style: string; features: { urls: string[] } }>('match'))!;
   const know = await knowledge(ctx, 'hunter', m.style);
