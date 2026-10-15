@@ -27,6 +27,23 @@ import { mapAsset } from '../maps/asset';
  */
 const sha = (f: string) => createHash('sha256').update(readFileSync(f)).digest('hex');
 
+const isVideo = (f: string) => /\.(mp4|webm|mov)$/i.test(f);
+
+/**
+ * A footage or scroll request exists to put real moving video in the frame. When a video candidate exists (a clip the
+ * fetcher kept, the research's scroll capture), a still is refused with the reason; when none exists a still may
+ * stand in. Returns the refusal, or null when the candidate may be accepted.
+ */
+export function stillForMovingRequest(kind: string, file: string, videoAvailable: boolean): string | null {
+  if ((kind !== 'footage' && kind !== 'scroll') || isVideo(file) || !videoAvailable) return null;
+  return kind === 'scroll'
+    ? 'A scroll request wants the moving scroll capture: accept the .mp4 from research_shots, not a screenshot.'
+    : 'A footage request wants real moving video: accept one of the clips footage found, not a still.';
+}
+
+/** what a still accepted for a request is called in the graph (a still is never a "scroll" or "footage") */
+export const stillKind = (kind: string) => (kind === 'scroll' ? 'capture' : kind === 'footage' ? 'photo' : kind);
+
 export const asset: Handler = async ctx => {
   if ((ctx.input<{ kind?: string }>()).kind === 'look3d') return look3dAsset(ctx);
   if ((ctx.input<{ kind?: string }>()).kind === 'map') return mapAsset(ctx);
@@ -116,6 +133,8 @@ export const asset: Handler = async ctx => {
       async run({ candidate, score, about }) {
         const f = found.get(candidate);
         if (!f || !existsSync(f)) return { error: `No candidate "${candidate}". Candidates: ${[...found.keys()].join(', ') || '(none yet)'}` };
+        const still = stillForMovingRequest(req.kind, f, req.kind === 'scroll' ? (await researched()).some(x => x.video) : clips.size > 0);
+        if (still) return { error: still };
         if (score < 7) return { error: `A ${score}/10 asset is not good enough. Find a better one (7+), or call none.` };
         const h = sha(f);
         const [seen] = drawn.has(candidate) ? [] : await ctx.uq<{ video: string }>(U.assetUsed, { hash: h });
@@ -124,7 +143,7 @@ export const asset: Handler = async ctx => {
         if (f !== final) copyFileSync(f, final);
         const pr = await probe(final).catch(() => ({ width: 0, height: 0 }));
         const clip = clips.get(candidate);
-        const kind = drawn.has(candidate) ? 'drawn' : clip ? 'footage' : /\.mp4$/i.test(f) ? 'scroll' : req.kind;
+        const kind = drawn.has(candidate) ? 'drawn' : clip ? 'footage' : isVideo(f) ? 'scroll' : stillKind(req.kind);
         const credit = clip ? ` (${clip.provider}, ${clip.licence}${clip.author ? `, by ${clip.author}` : ''})` : '';
         accepted = { id: req.id, path: final, kind, w: pr.width ?? 0, h: pr.height ?? 0, about: `${about}${credit}`.slice(0, 240), sha: h };
         await ctx.q(P.writeAsset, { run: ctx.run.id, id: req.id, kind, path: final, sha: h, source: clip ? clip.id : candidate, about: accepted.about, score, w: accepted.w, h: accepted.h, request: req.what, at: Date.now() });
