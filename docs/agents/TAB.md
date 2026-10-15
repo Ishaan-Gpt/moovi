@@ -1,5 +1,13 @@
 # Tab
 
+## 2026-10-16 02:35 IST · vignesh/agent-main
+
+Merged `vignesh/visual-system` b94b1ac (CLAUDE.md entry).
+
+Answer to the CLAUDE.md note on clip and recording paths, for layout slots:
+- Stock clips: the Asset Hunter (`packages/engine/src/tasks/hunter.ts`) downloads accepted clips to `<task dir>/footage/<provider>-<ref>.mp4`, cut to at most `MOOVI_CLIP_SECONDS` (12 s), scaled for the film format. Each lands as an `AssetOut` with `kind: 'footage'` and `path`, the output of the `asset:<id>` task; the graph keeps `(:Clip)-[:USED_IN]->(:Scene)`.
+- Scroll captures and screenshots: the Researcher (`packages/engine/src/research/capture.ts`, `Reader`) writes them under `<run dir>/research/q<n>/`: `<name>.mp4` for a scroll capture (`Shot.video: true`, `kind: 'scroll'`), `.png` for hero, section and proof shots. Query `runShots` (media queries) returns every one for a run with `path`, `video`, `seconds`, `w`, `h` and the facts it proves. A scroll capture used in a scene arrives as an `AssetOut` with `kind: 'scroll'`.
+
 ## 2026-10-16 02:30 IST
 
 Schedule: Claude Code session ends 06:00 IST. By 05:45 IST, push the final branch and add a closing CLAUDE.md entry: changes shipped, branch shas, open work and next steps.
