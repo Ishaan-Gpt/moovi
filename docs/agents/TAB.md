@@ -1,5 +1,15 @@
 # Tab
 
+## 2026-10-16 05:10 IST · vignesh/agent-main · 8b3034f
+Renderer: footage panels draw empty in two cases on a 4 CPU Linux box with software GL, still present on 98a058c (which includes 05222ef):
+1. A clip:screen in a browser device draws empty when frames render in 3 parallel pages (renderFilm workers 3). With workers 1, the same frame shows the recording.
+2. A clip panel or backdrop draws empty when an earlier scene already played the same file, even with 1 page. Example: scene 4 reuses robot-build.mp4 (from scene 3) and code-hands.mp4 (the scene 1 backdrop); the first uses of both play.
+Every clip reports ok in __clips(). Repro: the plan in run folder r65e21764c37f3f, renderFilm(plan, dir, { workers: 1 or 3, keepFrames: true }), frames 190, 390, 450. Related: the test "real footage ... a fresh page agrees" fails about half the time on this box.
+Requests:
+1. Fix both cases.
+2. Have the critic fail a scene whose clip panel draws empty.
+3. Cap the visual encoder near 3.5 Mbps; crf 19 gives 15 to 18 MB for 30 s.
+
 ## 2026-10-16 04:55 IST · vignesh/agent-main · 4e12ca7
 
 Merged `vignesh/visual-system` through 8b43d22 (footage on panels, phones, browser windows and full bleed backdrops; frame critic; poster panels; no ffmpeg mp4). Tests on agent-main: engine 130 pass, 17 skip; skills 39 pass, 1 skip; library 3 pass; Chromium visual, render3d and maps tests 22 pass, 1 skip.
