@@ -1,0 +1,210 @@
+[
+ {
+  "source": "styles/style-1/sfx/typing.mp3",
+  "file": "sfx/typing.mp3"
+ },
+ {
+  "source": "styles/style-1/sfx/fs.foley.very-fast-typing-short.wav",
+  "file": "sfx/fs.foley.very-fast-typing-short.wav"
+ },
+ {
+  "source": "styles/style-1/sfx/viral.typing.wav",
+  "file": "sfx/viral.typing.wav"
+ },
+ {
+  "source": "styles/style-1/sfx/ui-animations.mp3",
+  "file": "sfx/ui-animations.mp3"
+ },
+ {
+  "source": "styles/style-1/sfx/kenney.click.wav",
+  "file": "sfx/kenney.click.wav"
+ },
+ {
+  "source": "styles/style-1/sfx/fs.ui.mouse-2-button-fast-click.wav",
+  "file": "sfx/fs.ui.mouse-2-button-fast-click.wav"
+ },
+ {
+  "source": "styles/style-1/sfx/finger-snap-tight.wav",
+  "file": "sfx/finger-snap-tight.wav"
+ },
+ {
+  "source": "styles/style-1/sfx/finger-snap.mp3",
+  "file": "sfx/finger-snap.mp3"
+ },
+ {
+  "source": "styles/style-1/sfx/ui.pop.wav",
+  "file": "sfx/ui.pop.wav"
+ },
+ {
+  "source": "styles/style-1/sfx/fs.ui.pop-4.wav",
+  "file": "sfx/fs.ui.pop-4.wav"
+ },
+ {
+  "source": "styles/style-1/sfx/fs.ui.pop-9.wav",
+  "file": "sfx/fs.ui.pop-9.wav"
+ },
+ {
+  "source": "styles/style-1/sfx/fs.ui.the-best-bubble-pop-sound-fo.wav",
+  "file": "sfx/fs.ui.the-best-bubble-pop-sound-fo.wav"
+ },
+ {
+  "source": "styles/style-1/sfx/fs.foley.water-drop.wav",
+  "file": "sfx/fs.foley.water-drop.wav"
+ },
+ {
+  "source": "styles/style-1/sfx/fs.foley.water-drop-splash.wav",
+  "file": "sfx/fs.foley.water-drop-splash.wav"
+ },
+ {
+  "source": "styles/style-1/sfx/woosh-short.wav",
+  "file": "sfx/woosh-short.wav"
+ },
+ {
+  "source": "styles/style-1/sfx/woosh-tight.wav",
+  "file": "sfx/woosh-tight.wav"
+ },
+ {
+  "source": "styles/style-1/sfx/woosh.mp3",
+  "file": "sfx/woosh.mp3"
+ },
+ {
+  "source": "styles/style-1/sfx/fs.whoosh.swosh-whoosh-air-cut.wav",
+  "file": "sfx/fs.whoosh.swosh-whoosh-air-cut.wav"
+ },
+ {
+  "source": "styles/style-1/sfx/fs.impact.soft-hit.wav",
+  "file": "sfx/fs.impact.soft-hit.wav"
+ },
+ {
+  "source": "styles/style-1/sfx/fs.impact.punch2.wav",
+  "file": "sfx/fs.impact.punch2.wav"
+ },
+ {
+  "source": "styles/style-1/sfx/riser.mp3",
+  "file": "sfx/riser.mp3"
+ },
+ {
+  "source": "styles/style-1/sfx/riser-short.wav",
+  "file": "sfx/riser-short.wav"
+ },
+ {
+  "source": "styles/style-1/sfx/ui-riser.mp3",
+  "file": "sfx/ui-riser.mp3"
+ },
+ {
+  "source": "styles/style-1/sfx/tonal.chime.wav",
+  "file": "sfx/tonal.chime.wav"
+ },
+ {
+  "source": "styles/style-1/sfx/tonal.notify.wav",
+  "file": "sfx/tonal.notify.wav"
+ },
+ {
+  "source": "styles/style-1/music/bed.mp3",
+  "file": "music/bed.mp3"
+ },
+ {
+  "source": "styles/style-1/backgrounds/bg-white.png",
+  "file": "backgrounds/bg-white.png"
+ },
+ {
+  "source": "styles/style-1/backgrounds/bg-offwhite.png",
+  "file": "backgrounds/bg-offwhite.png"
+ },
+ {
+  "source": "styles/style-1/backgrounds/bg-grey.png",
+  "file": "backgrounds/bg-grey.png"
+ },
+ {
+  "source": "styles/style-1/backgrounds/bg-offwhite-grid-panel.png",
+  "file": "backgrounds/bg-offwhite-grid-panel.png"
+ },
+ {
+  "source": "styles/style-1/backgrounds/bg-offwhite-grid-full.png",
+  "file": "backgrounds/bg-offwhite-grid-full.png"
+ },
+ {
+  "source": "styles/style-1/backgrounds/bg-white-dots.png",
+  "file": "backgrounds/bg-white-dots.png"
+ },
+ {
+  "source": "styles/style-1/backgrounds/bg-white-plus.png",
+  "file": "backgrounds/bg-white-plus.png"
+ },
+ {
+  "source": "styles/style-1/backgrounds/overlay-plus.png",
+  "file": "backgrounds/overlay-plus.png"
+ },
+ {
+  "source": "styles/style-1/backgrounds/overlay-grid-panel.png",
+  "file": "backgrounds/overlay-grid-panel.png"
+ },
+ {
+  "source": "styles/style-1/backgrounds/overlay-grid-full.png",
+  "file": "backgrounds/overlay-grid-full.png"
+ },
+ {
+  "source": "styles/style-1/backgrounds/overlay-dots.png",
+  "file": "backgrounds/overlay-dots.png"
+ },
+ {
+  "source": "styles/style-1/backgrounds/spec.json",
+  "file": "backgrounds/spec.json"
+ },
+ {
+  "source": "styles/style-1/brands/captionseasy.json",
+  "file": "brand/captionseasy.json"
+ },
+ {
+  "source": "styles/style-1/brands/eegnite.json",
+  "file": "brand/eegnite.json"
+ },
+ {
+  "source": "styles/style-1/brands/neutral.json",
+  "file": "brand/neutral.json"
+ },
+ {
+  "source": "styles/style-1/brands/oped.json",
+  "file": "brand/oped.json"
+ },
+ {
+  "source": "styles/style-1/assets/logos/blender/ready.svg",
+  "file": "brand/logos/blender/ready.svg"
+ },
+ {
+  "source": "styles/style-1/assets/logos/blender/asset.json",
+  "file": "brand/logos/blender/asset.json"
+ },
+ {
+  "source": "styles/style-1/assets/logos/claude/brand.svg",
+  "file": "brand/logos/claude/brand.svg"
+ },
+ {
+  "source": "styles/style-1/assets/logos/claude/white.svg",
+  "file": "brand/logos/claude/white.svg"
+ },
+ {
+  "source": "styles/style-1/assets/logos/figma/ready.svg",
+  "file": "brand/logos/figma/ready.svg"
+ },
+ {
+  "source": "styles/style-1/assets/logos/figma/asset.json",
+  "file": "brand/logos/figma/asset.json"
+ },
+ {
+  "source": "styles/style-1/assets/logos/inkscape/ready.svg",
+  "file": "brand/logos/inkscape/ready.svg"
+ },
+ {
+  "source": "styles/style-1/assets/logos/inkscape/asset.json",
+  "file": "brand/logos/inkscape/asset.json"
+ },
+ {
+  "source": "styles/style-1/assets/logos/openai/white.svg",
+  "file": "brand/logos/openai/white.svg"
+ },
+ {
+  "source": "styles/style-1/music/bed.json",
+  "file": "music/bed.json"
+ }
+]

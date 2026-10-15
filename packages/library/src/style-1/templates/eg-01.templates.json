@@ -1,0 +1,1014 @@
+[
+ {
+  "id": "eg-01.hook",
+  "source": {
+   "video": "eg-01",
+   "scene": "hook",
+   "index": 0,
+   "brand": "eegnite"
+  },
+  "preset": "lines",
+  "shows": "lines with mark · title \"YOUR BUSINESS DOESN'T NEED / MORE TRAFFIC. / IT NEEDS / GROWTH.\"",
+  "role": "hook · statement",
+  "words": 9,
+  "fits": [
+   5,
+   14
+  ],
+  "seconds": 3.8,
+  "needs": {
+   "logo": true,
+   "media": 0
+  },
+  "props": [
+   "mark"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "growth.",
+     "pos": 1,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "Your",
+     "pos": 0,
+     "str": true
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "YOUR BUSINESS DOESN'T NEED",
+     "max": 30
+    },
+    {
+     "id": "t1",
+     "orig": "MORE TRAFFIC.",
+     "max": 16
+    },
+    {
+     "id": "t2",
+     "orig": "IT NEEDS",
+     "max": 10
+    },
+    {
+     "id": "t3",
+     "orig": "GROWTH.",
+     "max": 9
+    }
+   ],
+   "content": [],
+   "media": []
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        520,
+        820,
+        700
+       ],
+       "kw": {}
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        620,
+        860,
+        900
+       ],
+       "kw": {}
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t2"
+        },
+        900,
+        380,
+        700
+       ],
+       "kw": {}
+      },
+      {
+       "$el": "accent",
+       "args": [
+        {
+         "$T": "t3"
+        },
+        1000,
+        900
+       ],
+       "kw": {}
+      }
+     ]
+    ],
+    "kw": {
+     "visuals": [
+      {
+       "$el": "mark",
+       "args": [
+        540,
+        1420,
+        340,
+        {
+         "$Ws": "w0"
+        }
+       ],
+       "kw": {
+        "spin": 8
+       }
+      }
+     ],
+     "at": {
+      "$Ws": "w1"
+     }
+    }
+   },
+   {
+    "dims": [
+     [
+      [
+       -1,
+       2
+      ],
+      [
+       -1,
+       3
+      ]
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "eg-01.meet",
+  "source": {
+   "video": "eg-01",
+   "scene": "meet",
+   "index": 1,
+   "brand": "eegnite"
+  },
+  "preset": "logo_land",
+  "shows": "logo_land · title \"MEET / EEGNITE™\"",
+  "role": "brand reveal",
+  "words": 2,
+  "fits": [
+   2,
+   4
+  ],
+  "seconds": 1.33,
+  "needs": {
+   "logo": true,
+   "media": 0
+  },
+  "props": [],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Ignite.",
+     "pos": 1,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "Meet",
+     "pos": 0,
+     "str": true
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "MEET",
+     "max": 6
+    },
+    {
+     "id": "t1",
+     "orig": "EEGNITE™",
+     "max": 10
+    }
+   ],
+   "content": [],
+   "media": []
+  },
+  "ops": [
+   {
+    "call": "logo_land",
+    "args": [
+     {
+      "$N": 1
+     },
+     {
+      "$Ws": "w0"
+     }
+    ],
+    "kw": {
+     "title": {
+      "$T": "t0"
+     },
+     "wordmark": {
+      "$T": "t1"
+     },
+     "at": {
+      "$Ws": "w1"
+     }
+    }
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "eg-01.services",
+  "source": {
+   "video": "eg-01",
+   "scene": "services",
+   "index": 2,
+   "brand": "eegnite"
+  },
+  "preset": "list_left",
+  "shows": "list_left with icon, browser, win + icon.src, icon.src, icon.src, icon.src, browser.src · title \"SEO THAT RANKS. / ADS THAT CONVERT. / SITES THAT SELL.\"",
+  "role": "list of points",
+  "words": 10,
+  "fits": [
+   6,
+   16
+  ],
+  "seconds": 4.63,
+  "needs": {
+   "logo": false,
+   "media": 5
+  },
+  "props": [
+   "icon",
+   "browser",
+   "win"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "SEO",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "ranks",
+     "pos": 0.222,
+     "str": true
+    },
+    {
+     "id": "w2",
+     "orig": "adds",
+     "pos": 0.333,
+     "str": true
+    },
+    {
+     "id": "w3",
+     "orig": "convert,",
+     "pos": 0.556,
+     "str": true
+    },
+    {
+     "id": "w4",
+     "orig": "websites",
+     "pos": 0.667,
+     "str": true
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "SEO THAT RANKS.",
+     "max": 18
+    },
+    {
+     "id": "t1",
+     "orig": "ADS THAT CONVERT.",
+     "max": 20
+    },
+    {
+     "id": "t2",
+     "orig": "SITES THAT SELL.",
+     "max": 19
+    }
+   ],
+   "content": [],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/style-1/videos/eg-01/assets/logos/tool-semrush.png",
+     "as": "icon.src"
+    },
+    {
+     "id": "m1",
+     "orig": "styles/style-1/videos/eg-01/assets/logos/tool-google.png",
+     "as": "icon.src"
+    },
+    {
+     "id": "m2",
+     "orig": "styles/style-1/videos/eg-01/assets/logos/tool-meta.png",
+     "as": "icon.src"
+    },
+    {
+     "id": "m3",
+     "orig": "styles/style-1/videos/eg-01/assets/logos/tool-gtm.png",
+     "as": "icon.src"
+    },
+    {
+     "id": "m4",
+     "orig": "styles/style-1/videos/eg-01/assets/caps/s1.png",
+     "as": "browser.src"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "list_left",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$T": "t0"
+      },
+      {
+       "$T": "t1"
+      },
+      {
+       "$T": "t2"
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "top": 430,
+     "visuals": [
+      {
+       "$el": "icon",
+       "args": [
+        {
+         "$M": "m0"
+        },
+        220,
+        900,
+        {
+         "$Ws": "w0"
+        }
+       ],
+       "kw": {
+        "rot": -6,
+        "float": [
+         7,
+         3,
+         0.2
+        ]
+       }
+      },
+      {
+       "$el": "icon",
+       "args": [
+        {
+         "$M": "m1"
+        },
+        450,
+        870,
+        {
+         "$Ws": "w1"
+        }
+       ],
+       "kw": {
+        "rot": 4,
+        "float": [
+         7,
+         2.7,
+         1.2
+        ]
+       }
+      },
+      {
+       "$el": "icon",
+       "args": [
+        {
+         "$M": "m2"
+        },
+        680,
+        900,
+        {
+         "$Ws": "w2"
+        }
+       ],
+       "kw": {
+        "rot": -3,
+        "float": [
+         7,
+         3.3,
+         2.2
+        ]
+       }
+      },
+      {
+       "$el": "icon",
+       "args": [
+        {
+         "$M": "m3"
+        },
+        900,
+        870,
+        {
+         "$Ws": "w3"
+        }
+       ],
+       "kw": {
+        "rot": 6,
+        "float": [
+         7,
+         2.9,
+         3
+        ]
+       }
+      },
+      {
+       "$el": "browser",
+       "args": [
+        {
+         "$M": "m4"
+        },
+        {
+         "$el": "win",
+         "args": [
+          180,
+          990,
+          720
+         ],
+         "kw": {}
+        },
+        {
+         "$Ws": "w4"
+        }
+       ],
+       "kw": {}
+      }
+     ]
+    }
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "eg-01.roof",
+  "source": {
+   "video": "eg-01",
+   "scene": "roof",
+   "index": 3,
+   "brand": "eegnite"
+  },
+  "preset": "icon_ring",
+  "shows": "icon_ring + image.icons, image.icons, image.icons, image.icons, image.icons, image.icons · title \"SOCIAL. EMAIL. ANALYTICS. / EVERYTHING UNDER / ONE ROOF.\"",
+  "role": "brand + features ring",
+  "words": 7,
+  "fits": [
+   4,
+   11
+  ],
+  "seconds": 3.63,
+  "needs": {
+   "logo": true,
+   "media": 6
+  },
+  "props": [],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "social",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "email",
+     "pos": 0.167,
+     "str": true
+    },
+    {
+     "id": "w2",
+     "orig": "analytics,",
+     "pos": 0.333,
+     "str": true
+    },
+    {
+     "id": "w3",
+     "orig": "everything",
+     "pos": 0.5,
+     "str": true
+    },
+    {
+     "id": "w4",
+     "orig": "under",
+     "pos": 0.667,
+     "str": true
+    },
+    {
+     "id": "w5",
+     "orig": "one",
+     "pos": 0.833,
+     "str": true
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "SOCIAL. EMAIL. ANALYTICS.",
+     "max": 29
+    },
+    {
+     "id": "t1",
+     "orig": "EVERYTHING UNDER",
+     "max": 19
+    },
+    {
+     "id": "t2",
+     "orig": "ONE ROOF.",
+     "max": 11
+    }
+   ],
+   "content": [],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/style-1/videos/eg-01/assets/logos/tool-hubspot.png",
+     "as": "image.icons"
+    },
+    {
+     "id": "m1",
+     "orig": "styles/style-1/videos/eg-01/assets/logos/tool-google-analytics.png",
+     "as": "image.icons"
+    },
+    {
+     "id": "m2",
+     "orig": "styles/style-1/videos/eg-01/assets/logos/tool-meta.png",
+     "as": "image.icons"
+    },
+    {
+     "id": "m3",
+     "orig": "styles/style-1/videos/eg-01/assets/logos/tool-gtm.png",
+     "as": "image.icons"
+    },
+    {
+     "id": "m4",
+     "orig": "styles/style-1/videos/eg-01/assets/logos/tool-google.png",
+     "as": "image.icons"
+    },
+    {
+     "id": "m5",
+     "orig": "styles/style-1/videos/eg-01/assets/logos/tool-semrush.png",
+     "as": "image.icons"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "icon_ring",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$M": "m0"
+      },
+      {
+       "$M": "m1"
+      },
+      {
+       "$M": "m2"
+      },
+      {
+       "$M": "m3"
+      },
+      {
+       "$M": "m4"
+      },
+      {
+       "$M": "m5"
+      }
+     ],
+     [
+      {
+       "$Ws": "w0"
+      },
+      {
+       "$Ws": "w1"
+      },
+      {
+       "$Ws": "w2"
+      },
+      {
+       "$Ws": "w3"
+      },
+      {
+       "$Ws": "w4"
+      },
+      {
+       "$Ws": "w5"
+      }
+     ],
+     {
+      "$T": "t0"
+     }
+    ],
+    "kw": {
+     "footer": [
+      {
+       "$T": "t1"
+      },
+      {
+       "$T": "t2"
+      }
+     ],
+     "at": {
+      "$Ws": "w0"
+     }
+    }
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "eg-01.results",
+  "source": {
+   "video": "eg-01",
+   "scene": "results",
+   "index": 4,
+   "brand": "eegnite"
+  },
+  "preset": "stack_slam",
+  "shows": "stack_slam with logo_grid + logo_grid.src_list, logo_grid.src_list, logo_grid.src_list, logo_grid.src_list, logo_grid.src_list, logo_grid.src_list · title \"NO FLUFF. / NO EXCUSES. / JUST RESULTS.\"",
+  "role": "punch / emphasis",
+  "words": 6,
+  "fits": [
+   4,
+   10
+  ],
+  "seconds": 3.13,
+  "needs": {
+   "logo": false,
+   "media": 6
+  },
+  "props": [
+   "logo_grid"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "results.",
+     "pos": 1,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "No",
+     "pos": 0,
+     "str": true
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "NO FLUFF.",
+     "max": 11
+    },
+    {
+     "id": "t1",
+     "orig": "NO EXCUSES.",
+     "max": 14
+    },
+    {
+     "id": "t2",
+     "orig": "JUST RESULTS.",
+     "max": 16
+    }
+   ],
+   "content": [],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/style-1/videos/eg-01/assets/logos/al-jiwan-jewelry-tile.png",
+     "as": "logo_grid.src_list"
+    },
+    {
+     "id": "m1",
+     "orig": "styles/style-1/videos/eg-01/assets/logos/aquagear-australia-tile.png",
+     "as": "logo_grid.src_list"
+    },
+    {
+     "id": "m2",
+     "orig": "styles/style-1/videos/eg-01/assets/logos/bluefrog-pharma-tile.png",
+     "as": "logo_grid.src_list"
+    },
+    {
+     "id": "m3",
+     "orig": "styles/style-1/videos/eg-01/assets/logos/deepmark-tile.png",
+     "as": "logo_grid.src_list"
+    },
+    {
+     "id": "m4",
+     "orig": "styles/style-1/videos/eg-01/assets/logos/house-of-aluna-tile.png",
+     "as": "logo_grid.src_list"
+    },
+    {
+     "id": "m5",
+     "orig": "styles/style-1/videos/eg-01/assets/logos/interio-lounge-tile.png",
+     "as": "logo_grid.src_list"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "stack_slam",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$T": "t0"
+      },
+      {
+       "$T": "t1"
+      },
+      {
+       "$T": "t2"
+      }
+     ]
+    ],
+    "kw": {
+     "visuals": {
+      "$el": "logo_grid",
+      "args": [
+       [
+        {
+         "$M": "m0"
+        },
+        {
+         "$M": "m1"
+        },
+        {
+         "$M": "m2"
+        },
+        {
+         "$M": "m3"
+        },
+        {
+         "$M": "m4"
+        },
+        {
+         "$M": "m5"
+        }
+       ],
+       {
+        "$Ws": "w0"
+       }
+      ],
+      "kw": {}
+     },
+     "at": {
+      "$Ws": "w1"
+     }
+    }
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "eg-01.chosen",
+  "source": {
+   "video": "eg-01",
+   "scene": "chosen",
+   "index": 5,
+   "brand": "eegnite"
+  },
+  "preset": "lines",
+  "shows": "lines with mark · title \"BE SEEN. / BE CHOSEN.\"",
+  "role": "statement",
+  "words": 4,
+  "fits": [
+   2,
+   6
+  ],
+  "seconds": 1.87,
+  "needs": {
+   "logo": true,
+   "media": 0
+  },
+  "props": [
+   "mark"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Be",
+     "pos": 0,
+     "str": true
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "BE SEEN.",
+     "max": 10
+    },
+    {
+     "id": "t1",
+     "orig": "BE CHOSEN.",
+     "max": 12
+    }
+   ],
+   "content": [],
+   "media": []
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "accent",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        760,
+        820
+       ],
+       "kw": {}
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        960,
+        920,
+        900
+       ],
+       "kw": {
+        "motion": "slam",
+        "instant": true
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "visuals": [
+      {
+       "$el": "mark",
+       "args": [
+        540,
+        520,
+        200,
+        null
+       ],
+       "kw": {
+        "spin": 14
+       }
+      }
+     ],
+     "at": {
+      "$Ws": "w0"
+     }
+    }
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "eg-01.cta",
+  "source": {
+   "video": "eg-01",
+   "scene": "cta",
+   "index": 6,
+   "brand": "eegnite"
+  },
+  "preset": "cta_pill",
+  "shows": "cta_pill · title \"BOOK YOUR FREE / CONSULTATION. / EEGNITE™\"",
+  "role": "ending · cta (button)",
+  "words": 7,
+  "fits": [
+   4,
+   11
+  ],
+  "seconds": 4.1,
+  "needs": {
+   "logo": true,
+   "media": 0
+  },
+  "props": [],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "ignite",
+     "pos": 0.833,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "Book",
+     "pos": 0,
+     "str": true
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "BOOK YOUR FREE",
+     "max": 17
+    },
+    {
+     "id": "t1",
+     "orig": "CONSULTATION.",
+     "max": 16
+    },
+    {
+     "id": "t2",
+     "orig": "EEGNITE™",
+     "max": 10
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "eegnite.com",
+     "max": 11,
+     "prop": "pill",
+     "key": "pill"
+    }
+   ],
+   "media": []
+  },
+  "ops": [
+   {
+    "call": "cta_pill",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$T": "t0"
+      },
+      {
+       "$T": "t1"
+      }
+     ],
+     {
+      "$C": "c0"
+     },
+     {
+      "$Ws": "w0"
+     }
+    ],
+    "kw": {
+     "wordmark": {
+      "$T": "t2"
+     },
+     "at": {
+      "$Ws": "w1"
+     }
+    }
+   }
+  ],
+  "ok": true
+ }
+]

@@ -1,0 +1,2299 @@
+[
+ {
+  "id": "ce-12-kia-scene-hai.said",
+  "source": {
+   "video": "ce-12-kia-scene-hai",
+   "scene": "said",
+   "index": 0,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with burst, voice · title \"Tumne bola / “kya scene hai?”\" · prop text: 0:02",
+  "role": "hook · statement",
+  "words": 5,
+  "fits": [
+   3,
+   8
+  ],
+  "seconds": 3.03,
+  "needs": {
+   "logo": false,
+   "media": 0
+  },
+  "props": [
+   "burst",
+   "voice"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Tumne",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "bola",
+     "pos": 0.25
+    },
+    {
+     "id": "w2",
+     "orig": "Aur",
+     "next": 0
+    },
+    {
+     "id": "w3",
+     "orig": "kya",
+     "pos": 0.5
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Tumne bola",
+     "max": 12
+    },
+    {
+     "id": "t1",
+     "orig": "“kya scene hai?”",
+     "max": 19
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "0:02",
+     "max": 4,
+     "prop": "voice",
+     "key": "len"
+    }
+   ],
+   "media": []
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        440,
+        400,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        545,
+        560
+       ],
+       "kw": {}
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "visuals": [
+      {
+       "$el": "burst",
+       "args": [
+        540,
+        1150,
+        700,
+        null
+       ],
+       "kw": {}
+      },
+      {
+       "kind": "image",
+       "draw": "voice",
+       "cx": 540,
+       "cy": 1150,
+       "w": 720,
+       "h": 150,
+       "enter": "glide",
+       "p": {
+        "playAt": {
+         "$W": "w1",
+         "add": 0
+        },
+        "dur": 42,
+        "len": {
+         "$C": "c0"
+        }
+       },
+       "f": {
+        "$S": 0
+       }
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$S": 0
+      },
+      1.1,
+      540,
+      1040,
+      -0.8
+     ],
+     [
+      {
+       "$W": "w2",
+       "add": -4
+      },
+      1,
+      540,
+      960,
+      0
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 0
+      },
+      "click-ui"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w3",
+       "add": 0
+      },
+      "accent"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-12-kia-scene-hai.wrong",
+  "source": {
+   "video": "ce-12-kia-scene-hai",
+   "scene": "wrong",
+   "index": 1,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with phone, capt, marker, crowd + phone.screen · title \"Aur captions ne likha / “Kia scene hai.” / Ya phir seedha / Hindi scri\" · prop text: Kia scene hai, Kia??",
+  "role": "statement",
+  "words": 20,
+  "fits": [
+   12,
+   32
+  ],
+  "seconds": 7.17,
+  "needs": {
+   "logo": false,
+   "media": 1
+  },
+  "props": [
+   "phone",
+   "capt",
+   "marker",
+   "crowd"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Ya",
+     "pos": 0.368
+    },
+    {
+     "id": "w1",
+     "orig": "Jo",
+     "pos": 0.684
+    },
+    {
+     "id": "w2",
+     "orig": "Aur",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w3",
+     "orig": "likha",
+     "pos": 0.158
+    },
+    {
+     "id": "w4",
+     "orig": "Kia",
+     "pos": 0.211
+    },
+    {
+     "id": "w5",
+     "orig": "Hindi",
+     "pos": 0.526
+    },
+    {
+     "id": "w6",
+     "orig": "padh",
+     "pos": 0.842
+    },
+    {
+     "id": "w7",
+     "orig": "aadhe",
+     "pos": 0.737,
+     "str": true
+    },
+    {
+     "id": "w8",
+     "orig": "Hinglish",
+     "next": 0
+    },
+    {
+     "id": "w9",
+     "orig": "mein.",
+     "pos": 0.632
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Aur captions ne likha",
+     "max": 25
+    },
+    {
+     "id": "t1",
+     "orig": "“Kia scene hai.”",
+     "max": 19
+    },
+    {
+     "id": "t2",
+     "orig": "Ya phir seedha",
+     "max": 17
+    },
+    {
+     "id": "t3",
+     "orig": "Hindi script mein.",
+     "max": 21
+    },
+    {
+     "id": "t4",
+     "orig": "Jo aadhe followers",
+     "max": 21
+    },
+    {
+     "id": "t5",
+     "orig": "padh hi nahi paate.",
+     "max": 22
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "Kia scene hai",
+     "max": 13,
+     "prop": "capt",
+     "key": "fix"
+    },
+    {
+     "id": "c1",
+     "orig": "क्या सीन है",
+     "max": 11,
+     "prop": "capt",
+     "key": "chunks"
+    },
+    {
+     "id": "c2",
+     "orig": "Kia??",
+     "max": 5,
+     "prop": "marker",
+     "key": "label"
+    }
+   ],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/assets/premium-captions/premium-4.mp4",
+     "as": "phone.screen"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        440,
+        620,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035,
+        "out": {
+         "$W": "w0",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        545,
+        520
+       ],
+       "kw": {
+        "out": {
+         "$W": "w0",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t2"
+        },
+        440,
+        460,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035,
+        "out": {
+         "$W": "w1",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t3"
+        },
+        545,
+        520
+       ],
+       "kw": {
+        "out": {
+         "$W": "w1",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t4"
+        },
+        440,
+        560,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t5"
+        },
+        545,
+        560
+       ],
+       "kw": {}
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w2"
+     },
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "phone",
+       "screen": {
+        "$M": "m0"
+       },
+       "cx": 540,
+       "cy": 1170,
+       "w": 400,
+       "h": 811.9999999999999,
+       "focus": [
+        0.5,
+        0
+       ],
+       "shadow": [
+        0,
+        30,
+        50,
+        0.28
+       ],
+       "enter": "glide",
+       "zoom": 1.5,
+       "vt": 0.5,
+       "float": [
+        4,
+        3.1,
+        0.3
+       ],
+       "_at": {
+        "$Ws": "w2"
+       },
+       "ui": [
+        {
+         "draw": "capt",
+         "p": {
+          "style": "stroke",
+          "font": "bricolage",
+          "size": 0.15,
+          "y": 0.6,
+          "fix": [
+           {
+            "$W": "w3",
+            "add": 2
+           },
+           {
+            "$C": "c0"
+           }
+          ],
+          "squig": [
+           {
+            "$W": "w4",
+            "add": 3
+           },
+           0
+          ],
+          "until": {
+           "$W": "w5",
+           "add": 0
+          }
+         }
+        },
+        {
+         "draw": "capt",
+         "p": {
+          "style": "stroke",
+          "size": 0.15,
+          "y": 0.6,
+          "chunks": [
+           [
+            {
+             "$W": "w5",
+             "add": 0
+            },
+            {
+             "$C": "c1"
+            }
+           ]
+          ],
+          "font": "inter-std"
+         }
+        }
+       ],
+       "path": [
+        [
+         {
+          "$W": "w1",
+          "add": -2
+         },
+         540,
+         1170
+        ],
+        [
+         {
+          "$W": "w1",
+          "add": 12
+         },
+         330,
+         1170
+        ]
+       ]
+      },
+      {
+       "kind": "image",
+       "draw": "marker",
+       "cx": 540,
+       "cy": 1251.2,
+       "w": 440,
+       "h": 200,
+       "enter": null,
+       "p": {
+        "color": "#E5484D",
+        "frames": 9,
+        "label": {
+         "$C": "c2"
+        },
+        "ly": -140
+       },
+       "f": {
+        "$W": "w4",
+        "add": 6
+       },
+       "out": {
+        "$W": "w5",
+        "add": -1
+       }
+      },
+      {
+       "kind": "image",
+       "draw": "crowd",
+       "cx": 800,
+       "cy": 1170,
+       "w": 340,
+       "h": 660,
+       "enter": null,
+       "p": {
+        "cols": 2,
+        "rows": 4,
+        "confuseAt": {
+         "$W": "w6",
+         "add": 0
+        }
+       },
+       "_at": {
+        "$Ws": "w7"
+       },
+       "_off": -4
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w2",
+       "add": -4
+      },
+      1,
+      540,
+      960,
+      0.6
+     ],
+     [
+      {
+       "$W": "w4",
+       "add": 0
+      },
+      1.06,
+      540,
+      1080,
+      0
+     ],
+     [
+      {
+       "$W": "w5",
+       "add": 0
+      },
+      1.04,
+      540,
+      1060,
+      -0.4
+     ],
+     [
+      {
+       "$W": "w8",
+       "add": -4
+      },
+      1,
+      540,
+      980,
+      0
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w3",
+       "add": 2
+      },
+      "code"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w4",
+       "add": 3
+      },
+      "accent"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w4",
+       "add": 6
+      },
+      "key-word"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w5",
+       "add": 0
+      },
+      "hard-hit",
+      "soft-hit"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w9",
+       "add": 17
+      },
+      "slide-out"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w7",
+       "add": 0
+      },
+      "cascade"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w6",
+       "add": 0
+      },
+      "pop",
+      "bubble"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-12-kia-scene-hai.problem",
+  "source": {
+   "video": "ce-12-kia-scene-hai",
+   "scene": "problem",
+   "index": 2,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with pill, marker · title \"Hinglish creators ka / ye asli problem hai.\" · prop text: KIA scene hai",
+  "role": "statement",
+  "words": 7,
+  "fits": [
+   4,
+   11
+  ],
+  "seconds": 2.27,
+  "needs": {
+   "logo": false,
+   "media": 0
+  },
+  "props": [
+   "pill",
+   "marker"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Hinglish",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "creators",
+     "pos": 0.167,
+     "str": true
+    },
+    {
+     "id": "w2",
+     "orig": "problem",
+     "pos": 0.833
+    },
+    {
+     "id": "w3",
+     "orig": "Hum",
+     "next": 0
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Hinglish creators ka",
+     "max": 23
+    },
+    {
+     "id": "t1",
+     "orig": "ye asli problem hai.",
+     "max": 23
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "KIA scene hai",
+     "max": 13,
+     "prop": "pill",
+     "key": "text"
+    },
+    {
+     "id": "c1",
+     "orig": "क्या सीन है",
+     "max": 11,
+     "prop": "pill",
+     "key": "text"
+    }
+   ],
+   "media": []
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        440,
+        600,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        545,
+        600
+       ],
+       "kw": {
+        "motion": "slam",
+        "sparks": true
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "pill",
+       "cx": 540,
+       "cy": 1020,
+       "w": 620,
+       "h": 150,
+       "enter": "glide",
+       "p": {
+        "text": {
+         "$C": "c0"
+        },
+        "fill": "rgba(20,18,23,0.92)"
+       },
+       "rot": -3,
+       "_at": {
+        "$Ws": "w0"
+       },
+       "_off": 2
+      },
+      {
+       "kind": "image",
+       "draw": "pill",
+       "cx": 540,
+       "cy": 1260,
+       "w": 620,
+       "h": 150,
+       "enter": "glide",
+       "p": {
+        "text": {
+         "$C": "c1"
+        },
+        "fill": "rgba(20,18,23,0.92)"
+       },
+       "rot": 3,
+       "_at": {
+        "$Ws": "w1"
+       },
+       "_off": 0
+      },
+      {
+       "kind": "image",
+       "draw": "marker",
+       "cx": 540,
+       "cy": 1140,
+       "w": 760,
+       "h": 470,
+       "enter": null,
+       "p": {
+        "color": "#E5484D",
+        "frames": 10,
+        "width": 12
+       },
+       "f": {
+        "$W": "w2",
+        "add": 0
+       }
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w0",
+       "add": -4
+      },
+      1.04,
+      540,
+      990,
+      -0.6
+     ],
+     [
+      {
+       "$W": "w3",
+       "add": -4
+      },
+      1,
+      540,
+      960,
+      0
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 0
+      },
+      "hard-hit",
+      "punch"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 0
+      },
+      "pop",
+      "pop-9"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-12-kia-scene-hai.neq",
+  "source": {
+   "video": "ce-12-kia-scene-hai",
+   "scene": "neq",
+   "index": 3,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with voice, num, pill · title \"Hum bolte ek tarah, / captions likhte doosri tarah.\" · prop text: kya, kia",
+  "role": "statement",
+  "words": 9,
+  "fits": [
+   5,
+   14
+  ],
+  "seconds": 3.53,
+  "needs": {
+   "logo": false,
+   "media": 0
+  },
+  "props": [
+   "voice",
+   "num",
+   "pill"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Hum",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "bolte",
+     "pos": 0.125
+    },
+    {
+     "id": "w2",
+     "orig": "likhte",
+     "pos": 0.75,
+     "str": true
+    },
+    {
+     "id": "w3",
+     "orig": "CaptionsEasy",
+     "next": 0
+    },
+    {
+     "id": "w4",
+     "orig": "doosri",
+     "pos": 0.875
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Hum bolte ek tarah,",
+     "max": 22
+    },
+    {
+     "id": "t1",
+     "orig": "captions likhte doosri tarah.",
+     "max": 33
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "kya",
+     "max": 3,
+     "prop": "voice",
+     "key": "len"
+    },
+    {
+     "id": "c1",
+     "orig": "kia",
+     "max": 3,
+     "prop": "pill",
+     "key": "text"
+    }
+   ],
+   "media": []
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        440,
+        560,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        545,
+        680
+       ],
+       "kw": {}
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "voice",
+       "cx": 540,
+       "cy": 880,
+       "w": 620,
+       "h": 130,
+       "enter": "glide",
+       "p": {
+        "playAt": {
+         "$W": "w1",
+         "add": 0
+        },
+        "dur": 26,
+        "len": {
+         "$C": "c0"
+        }
+       },
+       "_at": {
+        "$Ws": "w0"
+       },
+       "_off": 0
+      },
+      {
+       "kind": "image",
+       "draw": "num",
+       "cx": 540,
+       "cy": 1130,
+       "w": 330,
+       "h": 330,
+       "enter": null,
+       "p": {
+        "text": "≠",
+        "rot": 0
+       },
+       "f": {
+        "$W": "w2",
+        "add": 0
+       }
+      },
+      {
+       "kind": "image",
+       "draw": "pill",
+       "cx": 540,
+       "cy": 1380,
+       "w": 560,
+       "h": 140,
+       "enter": "glide",
+       "p": {
+        "text": {
+         "$C": "c1"
+        },
+        "fill": "rgba(20,18,23,0.92)",
+        "color": "#FFB4B4"
+       },
+       "_at": {
+        "$Ws": "w2"
+       },
+       "_off": 2
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w0",
+       "add": -4
+      },
+      1,
+      540,
+      960,
+      0.6
+     ],
+     [
+      {
+       "$W": "w3",
+       "add": -4
+      },
+      1.04,
+      540,
+      1000,
+      0
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 0
+      },
+      "click-ui"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 0
+      },
+      "hard-hit",
+      "soft-hit"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w4",
+       "add": 0
+      },
+      "pop",
+      "pop-4"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-12-kia-scene-hai.fix",
+  "source": {
+   "video": "ce-12-kia-scene-hai",
+   "scene": "fix",
+   "index": 4,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with burst, mark, phone, capt, voice, num, pill + mark.src, phone.screen · title \"CaptionsEasy Hinglish / sahi likhta hai. / Jaise tum bolte ho, / waise\" · prop text: kya scene hai, kya, kya ✓",
+  "role": "statement",
+  "words": 10,
+  "fits": [
+   6,
+   16
+  ],
+  "seconds": 4.07,
+  "needs": {
+   "logo": false,
+   "media": 2
+  },
+  "props": [
+   "burst",
+   "mark",
+   "phone",
+   "capt",
+   "voice",
+   "num",
+   "pill"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Jaise",
+     "pos": 0.556,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "CaptionsEasy",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w2",
+     "orig": "Hinglish",
+     "pos": 0.111
+    },
+    {
+     "id": "w3",
+     "orig": "sahi",
+     "pos": 0.222
+    },
+    {
+     "id": "w4",
+     "orig": "bolte",
+     "pos": 0.778
+    },
+    {
+     "id": "w5",
+     "orig": "waise.",
+     "pos": 1,
+     "str": true
+    },
+    {
+     "id": "w6",
+     "orig": "Aur",
+     "next": 0
+    },
+    {
+     "id": "w7",
+     "orig": "ho,",
+     "pos": 0.889
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "CaptionsEasy Hinglish",
+     "max": 25
+    },
+    {
+     "id": "t1",
+     "orig": "sahi likhta hai.",
+     "max": 19
+    },
+    {
+     "id": "t2",
+     "orig": "Jaise tum bolte ho,",
+     "max": 22
+    },
+    {
+     "id": "t3",
+     "orig": "waise.",
+     "max": 8
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "kya scene hai",
+     "max": 13,
+     "prop": "capt",
+     "key": "fix"
+    },
+    {
+     "id": "c1",
+     "orig": "kya",
+     "max": 3,
+     "prop": "voice",
+     "key": "len"
+    },
+    {
+     "id": "c2",
+     "orig": "kya ✓",
+     "max": 5,
+     "prop": "pill",
+     "key": "text"
+    }
+   ],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/style-1/videos/ce-12-kia-scene-hai/assets/corner-bars.png",
+     "as": "mark.src"
+    },
+    {
+     "id": "m1",
+     "orig": "styles/assets/premium-captions/premium-1.mp4",
+     "as": "phone.screen"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        440,
+        640,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035,
+        "out": {
+         "$W": "w0",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        545,
+        480
+       ],
+       "kw": {
+        "out": {
+         "$W": "w0",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t2"
+        },
+        440,
+        560,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t3"
+        },
+        545,
+        240
+       ],
+       "kw": {
+        "motion": "slam",
+        "sparks": true
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w1"
+     },
+     "visuals": [
+      {
+       "$el": "burst",
+       "args": [
+        780,
+        1000,
+        420,
+        {
+         "$Ws": "w1"
+        }
+       ],
+       "kw": {}
+      },
+      {
+       "$el": "mark",
+       "args": [
+        780,
+        1000,
+        200,
+        {
+         "$Ws": "w1"
+        }
+       ],
+       "kw": {
+        "src": {
+         "$M": "m0"
+        },
+        "out": {
+         "$W": "w0",
+         "add": -2
+        }
+       }
+      },
+      {
+       "kind": "image",
+       "draw": "phone",
+       "screen": {
+        "$M": "m1"
+       },
+       "cx": 330,
+       "cy": 1180,
+       "w": 400,
+       "h": 811.9999999999999,
+       "focus": [
+        0.5,
+        0
+       ],
+       "shadow": [
+        0,
+        30,
+        50,
+        0.28
+       ],
+       "enter": "glide",
+       "zoom": 1.5,
+       "vt": 3.5,
+       "float": [
+        4,
+        3,
+        0.5
+       ],
+       "_at": {
+        "$Ws": "w1"
+       },
+       "ui": [
+        {
+         "draw": "capt",
+         "p": {
+          "style": "stroke",
+          "font": "bricolage",
+          "size": 0.15,
+          "y": 0.6,
+          "fix": [
+           {
+            "$W": "w2",
+            "add": 2
+           },
+           {
+            "$C": "c0"
+           }
+          ],
+          "tick": {
+           "$W": "w3",
+           "add": 2
+          }
+         }
+        }
+       ]
+      },
+      {
+       "kind": "image",
+       "draw": "voice",
+       "cx": 790,
+       "cy": 960,
+       "w": 440,
+       "h": 110,
+       "enter": "glide",
+       "p": {
+        "playAt": {
+         "$W": "w4",
+         "add": 0
+        },
+        "dur": 22,
+        "len": {
+         "$C": "c1"
+        }
+       },
+       "_at": {
+        "$Ws": "w0"
+       },
+       "_off": 0
+      },
+      {
+       "kind": "image",
+       "draw": "num",
+       "cx": 790,
+       "cy": 1175,
+       "w": 260,
+       "h": 260,
+       "enter": null,
+       "p": {
+        "text": "=",
+        "rot": 0
+       },
+       "f": {
+        "$W": "w5",
+        "add": -4
+       }
+      },
+      {
+       "kind": "image",
+       "draw": "pill",
+       "cx": 790,
+       "cy": 1380,
+       "w": 400,
+       "h": 120,
+       "enter": "glide",
+       "p": {
+        "text": {
+         "$C": "c2"
+        },
+        "fill": "#1F9D6B"
+       },
+       "_at": {
+        "$Ws": "w5"
+       },
+       "_off": -2
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w1",
+       "add": -4
+      },
+      1.06,
+      540,
+      1000,
+      -0.6
+     ],
+     [
+      {
+       "$W": "w3",
+       "add": 0
+      },
+      1.03,
+      480,
+      1020,
+      0
+     ],
+     [
+      {
+       "$W": "w6",
+       "add": -4
+      },
+      1,
+      540,
+      980,
+      0
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 0
+      },
+      "key-word"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 2
+      },
+      "code"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w3",
+       "add": 2
+      },
+      "stat"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w4",
+       "add": 0
+      },
+      "click-ui"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w7",
+       "add": 10
+      },
+      "hard-hit",
+      "soft-hit"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-12-kia-scene-hai.cine",
+  "source": {
+   "video": "ce-12-kia-scene-hai",
+   "scene": "cine",
+   "index": 5,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with phone, marker + phone.src, phone.src · title \"Aur upar se / cinematic animation. / Bina watermark.\" · prop text: No watermark",
+  "role": "statement",
+  "words": 7,
+  "fits": [
+   4,
+   11
+  ],
+  "seconds": 3.43,
+  "needs": {
+   "logo": false,
+   "media": 2
+  },
+  "props": [
+   "phone",
+   "marker"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Bina",
+     "pos": 0.833
+    },
+    {
+     "id": "w1",
+     "orig": "Aur",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w2",
+     "orig": "cinematic",
+     "pos": 0.5,
+     "str": true
+    },
+    {
+     "id": "w3",
+     "orig": "watermark.",
+     "pos": 1
+    },
+    {
+     "id": "w4",
+     "orig": "Comment",
+     "next": 0
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Aur upar se",
+     "max": 14
+    },
+    {
+     "id": "t1",
+     "orig": "cinematic animation.",
+     "max": 23
+    },
+    {
+     "id": "t2",
+     "orig": "Bina watermark.",
+     "max": 18
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "No watermark",
+     "max": 12,
+     "prop": "marker",
+     "key": "label"
+    }
+   ],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/assets/premium-captions/premium-4.mp4",
+     "as": "phone.src"
+    },
+    {
+     "id": "m1",
+     "orig": "styles/assets/premium-captions/premium-2.mp4",
+     "as": "phone.src"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        440,
+        400,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035,
+        "out": {
+         "$W": "w0",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        545,
+        600
+       ],
+       "kw": {
+        "out": {
+         "$W": "w0",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t2"
+        },
+        440,
+        480,
+        900
+       ],
+       "kw": {
+        "tracking": -0.035,
+        "motion": "slam",
+        "instant": true,
+        "sparks": true
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w1"
+     },
+     "visuals": [
+      {
+       "$el": "phone",
+       "args": [
+        {
+         "$M": "m0"
+        },
+        380,
+        1170,
+        340,
+        {
+         "$Ws": "w1"
+        }
+       ],
+       "kw": {
+        "enter": "glide",
+        "rot": -6,
+        "vt": 4,
+        "float": [
+         5,
+         3.2,
+         0.2
+        ]
+       }
+      },
+      {
+       "$el": "phone",
+       "args": [
+        {
+         "$M": "m1"
+        },
+        680,
+        1200,
+        380,
+        {
+         "$Ws": "w2"
+        }
+       ],
+       "kw": {
+        "enter": "glide",
+        "rot": 4,
+        "vt": 4.5,
+        "glow": "#E6C6FF",
+        "float": [
+         5,
+         3,
+         1
+        ]
+       }
+      },
+      {
+       "kind": "image",
+       "draw": "marker",
+       "cx": 810,
+       "cy": 1530,
+       "w": 200,
+       "h": 150,
+       "enter": null,
+       "p": {
+        "color": "#1F9D6B",
+        "frames": 9,
+        "label": {
+         "$C": "c0"
+        },
+        "lx": -90,
+        "ly": -120
+       },
+       "f": {
+        "$W": "w3",
+        "add": 0
+       }
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w1",
+       "add": -4
+      },
+      1.04,
+      540,
+      1000,
+      0.6
+     ],
+     [
+      {
+       "$W": "w3",
+       "add": 0
+      },
+      1.06,
+      600,
+      1080,
+      0
+     ],
+     [
+      {
+       "$W": "w4",
+       "add": -4
+      },
+      1,
+      540,
+      980,
+      0
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 0
+      },
+      "card-in"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w0",
+       "add": 0
+      },
+      "key-word"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w3",
+       "add": 0
+      },
+      "stat"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-12-kia-scene-hai.cta",
+  "source": {
+   "video": "ce-12-kia-scene-hai",
+   "scene": "cta",
+   "index": 6,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with comment, cursor, phone + phone.src · title \"Comment mein likho, / sabse funny galti / kya ki thi?\" · prop text: 'bhai' bola, 'bye' likha",
+  "role": "ending · statement",
+  "words": 12,
+  "fits": [
+   7,
+   19
+  ],
+  "seconds": 5.03,
+  "needs": {
+   "logo": false,
+   "media": 1
+  },
+  "props": [
+   "comment",
+   "cursor",
+   "phone"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Comment",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "tumhare",
+     "pos": 0.273
+    },
+    {
+     "id": "w2",
+     "orig": "thi.",
+     "pos": 1
+    },
+    {
+     "id": "w3",
+     "orig": "likho",
+     "pos": 0.182,
+     "str": true
+    },
+    {
+     "id": "w4",
+     "orig": "sabse",
+     "pos": 0.545,
+     "str": true
+    },
+    {
+     "id": "w5",
+     "orig": "funny",
+     "pos": 0.636
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Comment mein likho,",
+     "max": 22
+    },
+    {
+     "id": "t1",
+     "orig": "sabse funny galti",
+     "max": 20
+    },
+    {
+     "id": "t2",
+     "orig": "kya ki thi?",
+     "max": 14
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "'bhai' bola, 'bye' likha",
+     "max": 24,
+     "prop": "comment",
+     "key": "text"
+    }
+   ],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/assets/premium-captions/premium-3.mp4",
+     "as": "phone.src"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        440,
+        600,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        545,
+        560
+       ],
+       "kw": {}
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t2"
+        },
+        650,
+        360
+       ],
+       "kw": {}
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "visuals": [
+      {
+       "kind": "comment",
+       "x": 90,
+       "y": 840,
+       "w": 900,
+       "h": 140,
+       "_at": {
+        "$Ws": "w0"
+       },
+       "_off": 4,
+       "text": {
+        "$C": "c0"
+       },
+       "start": {
+        "$W": "w1",
+        "add": 2
+       },
+       "perChar": 1,
+       "send": {
+        "$W": "w2",
+        "add": 6
+       }
+      },
+      {
+       "kind": "cursor",
+       "_at": {
+        "$Ws": "w3"
+       },
+       "_off": 2,
+       "keys": [
+        [
+         0,
+         820,
+         1300
+        ],
+        [
+         {
+          "$W": "w2",
+          "add": 4
+         },
+         920,
+         910,
+         1
+        ]
+       ],
+       "size": 110
+      },
+      {
+       "$el": "phone",
+       "args": [
+        {
+         "$M": "m0"
+        },
+        540,
+        1360,
+        260,
+        {
+         "$Ws": "w4"
+        }
+       ],
+       "kw": {
+        "enter": "glide",
+        "rot": -3,
+        "vt": 6,
+        "float": [
+         6,
+         3,
+         0.2
+        ]
+       }
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w0",
+       "add": -4
+      },
+      1.04,
+      540,
+      980,
+      -0.6
+     ],
+     [
+      {
+       "$W": "w2",
+       "add": 36
+      },
+      1,
+      540,
+      980,
+      0
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 2
+      },
+      "code"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 4
+      },
+      "click-ui"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 12
+      },
+      "cta"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w5",
+       "add": 0
+      },
+      "accent"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ }
+]

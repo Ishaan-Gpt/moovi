@@ -1,0 +1,253 @@
+[
+ {
+  "t": 0.0,
+  "event": "word",
+  "text": "This"
+ },
+ {
+  "t": 0.03,
+  "event": "hard-hit",
+  "sound": "soft-hit"
+ },
+ {
+  "t": 0.133,
+  "event": "word",
+  "text": "looks"
+ },
+ {
+  "t": 0.367,
+  "event": "word",
+  "text": "like"
+ },
+ {
+  "t": 0.4,
+  "event": "pop",
+  "sound": "pop"
+ },
+ {
+  "t": 0.633,
+  "event": "word",
+  "text": "After"
+ },
+ {
+  "t": 0.967,
+  "event": "word",
+  "text": "Effects."
+ },
+ {
+  "t": 3.267,
+  "event": "word",
+  "text": "No"
+ },
+ {
+  "t": 3.4,
+  "event": "scene",
+  "sound": "air-cut"
+ },
+ {
+  "t": 3.7,
+  "event": "word",
+  "text": "keyframes,"
+ },
+ {
+  "t": 4.667,
+  "event": "word",
+  "text": "no"
+ },
+ {
+  "t": 4.8,
+  "event": "word",
+  "text": "plugins,"
+ },
+ {
+  "t": 4.833,
+  "event": "card-in"
+ },
+ {
+  "t": 5.467,
+  "event": "word",
+  "text": "not"
+ },
+ {
+  "t": 5.6,
+  "event": "word",
+  "text": "even"
+ },
+ {
+  "t": 5.767,
+  "event": "word",
+  "text": "an"
+ },
+ {
+  "t": 5.9,
+  "event": "word",
+  "text": "install."
+ },
+ {
+  "t": 5.9,
+  "event": "key-word"
+ },
+ {
+  "t": 5.933,
+  "event": "pop",
+  "sound": "pop-9"
+ },
+ {
+  "t": 6.967,
+  "event": "scene",
+  "sound": "woosh-tight"
+ },
+ {
+  "t": 7.0,
+  "event": "word",
+  "text": "a"
+ },
+ {
+  "t": 7.0,
+  "event": "pop",
+  "sound": "pop-4"
+ },
+ {
+  "t": 7.0,
+  "event": "cascade",
+  "count": 4,
+  "spacing": 0.067
+ },
+ {
+  "t": 7.067,
+  "event": "word",
+  "text": "free"
+ },
+ {
+  "t": 7.067,
+  "event": "pop",
+  "sound": "bubble"
+ },
+ {
+  "t": 7.133,
+  "event": "pop",
+  "sound": "pop"
+ },
+ {
+  "t": 7.2,
+  "event": "pop",
+  "sound": "pop-9"
+ },
+ {
+  "t": 7.267,
+  "event": "word",
+  "text": "website"
+ },
+ {
+  "t": 10.367,
+  "event": "pop",
+  "sound": "pop-4"
+ },
+ {
+  "t": 10.467,
+  "event": "scene",
+  "sound": "air-cut"
+ },
+ {
+  "t": 10.6,
+  "event": "hard-hit",
+  "sound": "punch"
+ },
+ {
+  "t": 11.233,
+  "event": "pop",
+  "sound": "bubble"
+ },
+ {
+  "t": 11.233,
+  "event": "stat"
+ },
+ {
+  "t": 11.767,
+  "event": "pop",
+  "sound": "pop"
+ },
+ {
+  "t": 11.767,
+  "event": "pop",
+  "sound": "bubble"
+ },
+ {
+  "t": 14.533,
+  "event": "scene",
+  "sound": "woosh-tight"
+ },
+ {
+  "t": 14.667,
+  "event": "click-ui"
+ },
+ {
+  "t": 15.467,
+  "event": "word",
+  "text": "No"
+ },
+ {
+  "t": 15.633,
+  "event": "word",
+  "text": "watermark."
+ },
+ {
+  "t": 15.667,
+  "event": "notify"
+ },
+ {
+  "t": 17.0,
+  "event": "word",
+  "text": "CAPTIONS"
+ },
+ {
+  "t": 17.133,
+  "event": "scene",
+  "sound": "air-cut"
+ },
+ {
+  "t": 17.267,
+  "event": "pop",
+  "sound": "pop-9"
+ },
+ {
+  "t": 17.267,
+  "event": "build"
+ },
+ {
+  "t": 17.267,
+  "event": "key-word"
+ },
+ {
+  "t": 17.733,
+  "event": "word",
+  "text": "EASY"
+ },
+ {
+  "t": 19.967,
+  "event": "scene",
+  "sound": "woosh-tight"
+ },
+ {
+  "t": 20.067,
+  "event": "word",
+  "text": "Comment"
+ },
+ {
+  "t": 20.3,
+  "event": "word",
+  "text": "\u201cCAPTIONS\u201d"
+ },
+ {
+  "t": 20.967,
+  "event": "click-ui"
+ },
+ {
+  "t": 21.3,
+  "event": "notify"
+ },
+ {
+  "t": 21.5,
+  "event": "cta"
+ }
+]

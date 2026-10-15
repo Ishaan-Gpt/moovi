@@ -1,0 +1,1041 @@
+{
+ "component": "style1-timeline",
+ "format": "vertical",
+ "fps": 30,
+ "props": {
+  "timeline": {
+   "fps": 30,
+   "frames": 700,
+   "bg": "#FFFFEB",
+   "backdrop": {
+    "corners": [],
+    "sparkles": [
+     [
+      205,
+      340,
+      26,
+      "#F0D7FF",
+      0
+     ],
+     [
+      955,
+      1630,
+      30,
+      "#F0D7FF",
+      3.3
+     ],
+     [
+      150,
+      1490,
+      20,
+      "#F0D7FF",
+      2.4
+     ],
+     [
+      890,
+      440,
+      18,
+      "#F0D7FF",
+      1.3
+     ]
+    ],
+    "glows": [
+     [
+      1,
+      2,
+      3,
+      "#abc",
+      0.5
+     ]
+    ],
+    "grid": {
+     "step": 90,
+     "color": "#8E7BB0",
+     "dot": 2.3,
+     "line": "rgba(120,100,120,0.06)"
+    },
+    "grain": 0.05,
+    "vignette": 0.09
+   },
+   "scenes": [
+    {
+     "f0": 0,
+     "layers": [
+      {
+       "kind": "image",
+       "src": "styles/assets/looks/x.mp4",
+       "cx": 540,
+       "cy": 1100,
+       "w": 600,
+       "h": 225.0,
+       "card": true,
+       "radius": 28,
+       "vt": 0.4,
+       "loop": [
+        0.35,
+        1.8
+       ],
+       "enter": "rise"
+      },
+      {
+       "kind": "image",
+       "src": "styles/assets/looks/y.mp4",
+       "cx": 540,
+       "cy": 1400,
+       "w": 500,
+       "h": 187.5,
+       "card": true,
+       "radius": 12,
+       "vt": 0.4,
+       "loop": [
+        0.35,
+        1.8
+       ],
+       "enter": "glide",
+       "f": 12
+      },
+      {
+       "kind": "image",
+       "src": "c.png",
+       "cx": 300,
+       "cy": 1600,
+       "w": 700,
+       "h": 300,
+       "card": true,
+       "radius": 5
+      },
+      {
+       "kind": "line",
+       "top": 420,
+       "width": 900,
+       "weight": 800,
+       "color": "#1A1A1A",
+       "font": "inter-std",
+       "reveal": 6,
+       "hold": 6,
+       "slide": 60,
+       "tracking": -0.02,
+       "words": [
+        {
+         "w": "This",
+         "f": 0
+        },
+        {
+         "w": "looks",
+         "f": 4
+        },
+        {
+         "w": "like",
+         "f": 11
+        }
+       ],
+       "cx": 540
+      },
+      {
+       "kind": "line",
+       "top": 530,
+       "width": 900,
+       "weight": 800,
+       "color": "#1A1A1A",
+       "font": "inter-std",
+       "reveal": 6,
+       "hold": 6,
+       "slide": 60,
+       "tracking": -0.02,
+       "words": [
+        {
+         "w": "After",
+         "f": 19
+        },
+        {
+         "w": "Effects.",
+         "f": 29
+        }
+       ],
+       "cx": 540
+      }
+     ],
+     "f1": 102,
+     "keys": [
+      [
+       0,
+       1.05,
+       540,
+       960
+      ],
+      [
+       102,
+       1.0,
+       540,
+       980
+      ]
+     ],
+     "exit": {
+      "axis": "x",
+      "to": 220,
+      "frames": 10
+     }
+    },
+    {
+     "f0": 102,
+     "layers": [
+      {
+       "kind": "image",
+       "src": "big.png",
+       "cx": 540,
+       "cy": 1200,
+       "w": 600,
+       "h": 400,
+       "card": true,
+       "radius": 28,
+       "f": 145
+      },
+      {
+       "kind": "image",
+       "src": "i.png",
+       "cx": 800,
+       "cy": 1500,
+       "w": 190,
+       "h": 190,
+       "card": true,
+       "radius": 40,
+       "fit": "contain",
+       "enter": "pop",
+       "f": 178
+      },
+      {
+       "kind": "line",
+       "top": 420,
+       "width": 762,
+       "weight": 900,
+       "color": "#1A1A1A",
+       "font": "inter-std",
+       "reveal": 6,
+       "hold": 6,
+       "slide": 60,
+       "tracking": -0.02,
+       "words": [
+        {
+         "w": "No",
+         "f": 98
+        },
+        {
+         "w": "keyframes,",
+         "f": 111
+        }
+       ],
+       "cx": 540,
+       "dim": 140
+      },
+      {
+       "kind": "line",
+       "top": 560,
+       "width": 654,
+       "weight": 900,
+       "color": "#1A1A1A",
+       "font": "inter-std",
+       "reveal": 6,
+       "hold": 6,
+       "slide": 60,
+       "tracking": -0.02,
+       "words": [
+        {
+         "w": "no",
+         "f": 140
+        },
+        {
+         "w": "plugins,",
+         "f": 144
+        }
+       ],
+       "cx": 540,
+       "dim": 164
+      },
+      {
+       "kind": "line",
+       "top": 700,
+       "width": 800,
+       "weight": 900,
+       "color": "#1A1A1A",
+       "font": "inter-std",
+       "reveal": 6,
+       "hold": 6,
+       "slide": 60,
+       "tracking": -0.02,
+       "words": [
+        {
+         "w": "not",
+         "f": 164
+        },
+        {
+         "w": "even",
+         "f": 168
+        },
+        {
+         "w": "an",
+         "f": 173
+        },
+        {
+         "w": "install.",
+         "f": 177
+        }
+       ],
+       "cx": 540
+      }
+     ],
+     "enter": {
+      "axis": "x",
+      "from": -500,
+      "tau": 7.5,
+      "arrive": 126
+     },
+     "f1": 209,
+     "keys": [
+      [
+       102,
+       1.05,
+       540,
+       960
+      ],
+      [
+       209,
+       1.0,
+       540,
+       980
+      ]
+     ],
+     "exit": {
+      "axis": "x",
+      "to": 220,
+      "frames": 10
+     }
+    },
+    {
+     "f0": 209,
+     "layers": [
+      {
+       "kind": "line",
+       "top": 175,
+       "width": 420,
+       "weight": 400,
+       "color": "#1A1A1A",
+       "font": "instrument",
+       "reveal": 6,
+       "hold": 6,
+       "slide": 60,
+       "tracking": -0.01,
+       "words": [
+        {
+         "w": "a",
+         "f": 210
+        },
+        {
+         "w": "free",
+         "f": 212
+        },
+        {
+         "w": "website",
+         "f": 218
+        }
+       ],
+       "cx": 540,
+       "italic": true,
+       "gradient": [
+        "#2B2118",
+        "#B97A2C",
+        "#7E9F45"
+       ],
+       "instant": true
+      },
+      {
+       "kind": "image",
+       "draw": "phone",
+       "screen": "styles/assets/premium-captions/premium-1.mp4",
+       "cx": 350,
+       "cy": 760,
+       "w": 290,
+       "h": 588.6999999999999,
+       "focus": [
+        0.5,
+        0.5
+       ],
+       "shadow": [
+        0,
+        30,
+        50,
+        0.28
+       ],
+       "enter": "pop",
+       "vt": 4.033333333333333,
+       "rot": -2,
+       "float": [
+        5,
+        3.0,
+        0
+       ],
+       "f": 210
+      },
+      {
+       "kind": "image",
+       "draw": "phone",
+       "screen": "styles/assets/premium-captions/premium-2.mp4",
+       "cx": 730,
+       "cy": 760,
+       "w": 290,
+       "h": 588.6999999999999,
+       "focus": [
+        0.5,
+        0.5
+       ],
+       "shadow": [
+        0,
+        30,
+        50,
+        0.28
+       ],
+       "enter": "pop",
+       "vt": 4.1,
+       "rot": 2,
+       "float": [
+        5,
+        3.3,
+        1
+       ],
+       "f": 212
+      },
+      {
+       "kind": "image",
+       "draw": "phone",
+       "screen": "styles/assets/premium-captions/premium-3.mp4",
+       "cx": 350,
+       "cy": 1390,
+       "w": 290,
+       "h": 588.6999999999999,
+       "focus": [
+        0.5,
+        0.5
+       ],
+       "shadow": [
+        0,
+        30,
+        50,
+        0.28
+       ],
+       "enter": "pop",
+       "vt": 4.166666666666667,
+       "rot": 2,
+       "float": [
+        5,
+        3.6,
+        2
+       ],
+       "f": 214
+      },
+      {
+       "kind": "image",
+       "draw": "phone",
+       "screen": "styles/assets/premium-captions/premium-4.mp4",
+       "cx": 730,
+       "cy": 1390,
+       "w": 290,
+       "h": 588.6999999999999,
+       "focus": [
+        0.5,
+        0.5
+       ],
+       "shadow": [
+        0,
+        30,
+        50,
+        0.28
+       ],
+       "enter": "pop",
+       "vt": 4.233333333333333,
+       "rot": -2,
+       "float": [
+        5,
+        3.9,
+        3
+       ],
+       "f": 216
+      }
+     ],
+     "enter": {
+      "axis": "x",
+      "from": -500,
+      "tau": 7.5,
+      "arrive": 233
+     },
+     "f1": 314,
+     "keys": [
+      [
+       209,
+       1.1,
+       540,
+       960
+      ],
+      [
+       314,
+       1.0,
+       540,
+       980
+      ]
+     ],
+     "exit": {
+      "axis": "y",
+      "to": -220,
+      "frames": 10
+     }
+    },
+    {
+     "f0": 314,
+     "layers": [
+      {
+       "kind": "image",
+       "draw": "asterisk",
+       "color": "#E9CCFF",
+       "rays": [
+        [
+         12,
+         303.8,
+         62.0
+        ],
+        [
+         48,
+         263.5,
+         43.400000000000006
+        ],
+        [
+         81,
+         279.0,
+         58.9
+        ],
+        [
+         122,
+         272.8,
+         46.5
+        ],
+        [
+         145,
+         285.2,
+         49.6
+        ],
+        [
+         174,
+         291.4,
+         46.5
+        ],
+        [
+         190,
+         279.0,
+         68.2
+        ],
+        [
+         225,
+         294.5,
+         37.199999999999996
+        ],
+        [
+         254,
+         294.5,
+         49.6
+        ],
+        [
+         276,
+         279.0,
+         43.400000000000006
+        ],
+        [
+         309,
+         291.4,
+         34.1
+        ],
+        [
+         342,
+         291.4,
+         52.7
+        ]
+       ],
+       "core": 86.80000000000001,
+       "cx": 540,
+       "cy": 1080,
+       "w": 620,
+       "h": 620,
+       "spin": 22,
+       "enter": "pop",
+       "f": 337
+      },
+      {
+       "kind": "image",
+       "draw": "phone",
+       "screen": "styles/assets/premium-captions/premium-1.mp4",
+       "cx": 215,
+       "cy": 1090,
+       "w": 300,
+       "h": 608.9999999999999,
+       "focus": [
+        0.5,
+        0.5
+       ],
+       "shadow": [
+        0,
+        30,
+        50,
+        0.28
+       ],
+       "vt": 1.2,
+       "float": [
+        7,
+        3.0,
+        0
+       ],
+       "enter": "slam",
+       "rot": -4,
+       "f": 311
+      },
+      {
+       "kind": "image",
+       "draw": "phone",
+       "screen": "styles/assets/premium-captions/premium-2.mp4",
+       "cx": 540,
+       "cy": 1050,
+       "w": 300,
+       "h": 608.9999999999999,
+       "focus": [
+        0.5,
+        0.5
+       ],
+       "shadow": [
+        0,
+        30,
+        50,
+        0.28
+       ],
+       "vt": 1.2,
+       "float": [
+        7,
+        3.3,
+        1
+       ],
+       "enter": "pop",
+       "glow": "#E6C6FF",
+       "f": 337
+      },
+      {
+       "kind": "image",
+       "draw": "phone",
+       "screen": "styles/assets/premium-captions/premium-3.mp4",
+       "cx": 865,
+       "cy": 1090,
+       "w": 300,
+       "h": 608.9999999999999,
+       "focus": [
+        0.5,
+        0.5
+       ],
+       "shadow": [
+        0,
+        30,
+        50,
+        0.28
+       ],
+       "vt": 1.2,
+       "float": [
+        7,
+        3.6,
+        2
+       ],
+       "enter": "pop",
+       "rot": 4,
+       "f": 353
+      }
+     ],
+     "enter": {
+      "axis": "y",
+      "from": 300,
+      "tau": 7.5,
+      "arrive": 338
+     },
+     "f1": 436,
+     "keys": [
+      [
+       314,
+       1.05,
+       540,
+       960
+      ],
+      [
+       436,
+       1.0,
+       540,
+       980
+      ]
+     ],
+     "exit": {
+      "axis": "y",
+      "to": -220,
+      "frames": 10
+     }
+    },
+    {
+     "f0": 436,
+     "layers": [
+      {
+       "kind": "progress",
+       "x": 260,
+       "y": 230,
+       "w": 560,
+       "h": 118,
+       "label": "Exporting",
+       "done": "Exported",
+       "f": 437,
+       "f1": 468
+      },
+      {
+       "kind": "line",
+       "top": 420,
+       "width": 720,
+       "weight": 800,
+       "color": "#1A1A1A",
+       "font": "inter-std",
+       "reveal": 6,
+       "hold": 6,
+       "slide": 60,
+       "tracking": -0.02,
+       "words": [
+        {
+         "w": "No",
+         "f": 464
+        },
+        {
+         "w": "watermark.",
+         "f": 469
+        }
+       ],
+       "cx": 540
+      },
+      {
+       "kind": "image",
+       "draw": "phone",
+       "screen": "styles/assets/premium-captions/premium-1.mp4",
+       "cx": 540,
+       "cy": 1150,
+       "w": 360,
+       "h": 730.8,
+       "focus": [
+        0.5,
+        0.5
+       ],
+       "shadow": [
+        0,
+        30,
+        50,
+        0.28
+       ],
+       "enter": "rise",
+       "vt": 4.0,
+       "float": [
+        6,
+        3.2,
+        0.4
+       ]
+      },
+      {
+       "kind": "mark",
+       "x": 537.4,
+       "y": 1382.8000000000002,
+       "w": 160,
+       "h": 110,
+       "frames": 9,
+       "color": "#E4C2FF",
+       "f": 470
+      }
+     ],
+     "enter": {
+      "axis": "y",
+      "from": 300,
+      "tau": 7.5,
+      "arrive": 460
+     },
+     "f1": 514,
+     "keys": [
+      [
+       436,
+       1.05,
+       540,
+       960
+      ],
+      [
+       514,
+       1.0,
+       540,
+       980
+      ]
+     ],
+     "exit": {
+      "axis": "y",
+      "to": -220,
+      "frames": 10
+     }
+    },
+    {
+     "f0": 514,
+     "layers": [
+      {
+       "kind": "image",
+       "draw": "asterisk",
+       "color": "#E9CCFF",
+       "rays": [
+        [
+         12,
+         279.3,
+         57.0
+        ],
+        [
+         48,
+         242.25,
+         39.900000000000006
+        ],
+        [
+         81,
+         256.5,
+         54.15
+        ],
+        [
+         122,
+         250.8,
+         42.75
+        ],
+        [
+         145,
+         262.2,
+         45.6
+        ],
+        [
+         174,
+         267.9,
+         42.75
+        ],
+        [
+         190,
+         256.5,
+         62.7
+        ],
+        [
+         225,
+         270.75,
+         34.199999999999996
+        ],
+        [
+         254,
+         270.75,
+         45.6
+        ],
+        [
+         276,
+         256.5,
+         39.900000000000006
+        ],
+        [
+         309,
+         267.9,
+         31.35
+        ],
+        [
+         342,
+         267.9,
+         48.45
+        ]
+       ],
+       "core": 79.80000000000001,
+       "cx": 540,
+       "cy": 840,
+       "w": 570.0,
+       "h": 570.0,
+       "spin": 22,
+       "enter": "pop",
+       "f": 518
+      },
+      {
+       "kind": "image",
+       "src": "styles/style-1/videos/ce-03-not-after-effects/assets/logo.png",
+       "cx": 540,
+       "cy": 840,
+       "w": 300,
+       "h": 300,
+       "enter": "pop",
+       "shadow": [
+        0,
+        18,
+        30,
+        0.18
+       ],
+       "f": 518
+      },
+      {
+       "kind": "line",
+       "top": 1120,
+       "width": 900,
+       "weight": 900,
+       "color": "#1A1A1A",
+       "font": "inter-std",
+       "reveal": 6,
+       "hold": 6,
+       "slide": 60,
+       "tracking": -0.02,
+       "words": [
+        {
+         "w": "CAPTIONS",
+         "f": 510
+        },
+        {
+         "w": "EASY",
+         "f": 532
+        }
+       ],
+       "cx": 540,
+       "motion": "slam",
+       "instant": true
+      }
+     ],
+     "enter": {
+      "axis": "y",
+      "from": 300,
+      "tau": 7.5,
+      "arrive": 538
+     },
+     "f1": 599,
+     "keys": [
+      [
+       514,
+       1.1,
+       540,
+       960
+      ],
+      [
+       599,
+       1.0,
+       540,
+       980
+      ]
+     ],
+     "exit": {
+      "axis": "y",
+      "to": -220,
+      "frames": 10
+     }
+    },
+    {
+     "f0": 599,
+     "layers": [
+      {
+       "kind": "line",
+       "top": 300,
+       "width": 440,
+       "weight": 600,
+       "color": "#1A1A1A",
+       "font": "inter-std",
+       "reveal": 6,
+       "hold": 6,
+       "slide": 60,
+       "tracking": -0.02,
+       "words": [
+        {
+         "w": "Comment",
+         "f": 602
+        }
+       ],
+       "cx": 540
+      },
+      {
+       "kind": "line",
+       "top": 400,
+       "width": 900,
+       "weight": 900,
+       "color": "#1A1A1A",
+       "font": "inter-std",
+       "reveal": 6,
+       "hold": 6,
+       "slide": 60,
+       "tracking": -0.02,
+       "words": [
+        {
+         "w": "\u201cCAPTIONS\u201d",
+         "f": 609
+        }
+       ],
+       "cx": 540,
+       "motion": "slam",
+       "instant": true
+      },
+      {
+       "kind": "comment",
+       "x": 90,
+       "y": 760,
+       "w": 900,
+       "h": 140,
+       "text": "captions",
+       "start": 610,
+       "perChar": 1.6,
+       "send": 631,
+       "f": 600
+      },
+      {
+       "kind": "cursor",
+       "keys": [
+        [
+         605,
+         820,
+         1180
+        ],
+        [
+         629,
+         920,
+         835,
+         1
+        ]
+       ],
+       "size": 110,
+       "f": 605
+      },
+      {
+       "kind": "typebox",
+       "x": 300,
+       "y": 1010,
+       "w": 680,
+       "h": 124,
+       "r": 62,
+       "fill": "#034F46",
+       "color": "#FFFFEB",
+       "text": "Sent! Check your DMs",
+       "cursor": 637,
+       "start": 639,
+       "perChar": 1.0
+      }
+     ],
+     "enter": {
+      "axis": "y",
+      "from": 300,
+      "tau": 7.5,
+      "arrive": 623
+     },
+     "f1": 700,
+     "keys": [
+      [
+       599,
+       1.05,
+       540,
+       960
+      ],
+      [
+       700,
+       1.0,
+       540,
+       980
+      ]
+     ]
+    }
+   ]
+  }
+ }
+}

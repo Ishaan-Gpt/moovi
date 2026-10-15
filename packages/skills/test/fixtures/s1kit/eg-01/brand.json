@@ -1,0 +1,42 @@
+{
+ "name": "eegnite",
+ "site": "https://www.eegnite.com",
+ "stage": "#FFFEF8",
+ "ink": "#0A0A0A",
+ "accent": "#FF6105",
+ "accent_deep": "#2A1810",
+ "font": "geist",
+ "logo": "styles/style-1/videos/eg-01/assets/eegnite-logo.png (petal mark; wordmark set in Geist 800 caps)",
+ "voice": "bold, all-caps headlines, short punches: 'No Fluff. No Excuses. Just Results.', 'Be seen. Be chosen.'",
+ "facts": "From the site (2026-10-10): performance digital marketing agency; SEO, social media, PPC (Google/Meta), web design & development, email marketing; tools shown: Google, Meta, GA, HubSpot, GTM, Semrush; client logos shown on site; free consultation offered. Stats counters on the site did not load: use no numbers.",
+ "cta": {
+  "keyword": "",
+  "follow": "eegnite.com",
+  "line": "Book your free consultation"
+ },
+ "glows": [
+  [
+   140,
+   280,
+   820,
+   "#FFD9C2",
+   0.55
+  ],
+  [
+   1000,
+   1000,
+   760,
+   "#FFE6D2",
+   0.5
+  ],
+  [
+   180,
+   1760,
+   700,
+   "#FFDCC6",
+   0.45
+  ]
+ ],
+ "grid": "#C98A62",
+ "burst": "#FFD3B8"
+}

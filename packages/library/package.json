@@ -1,0 +1,25 @@
+{
+  "name": "@contenteasy/library",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Style libraries as editable code: every Style 1 asset (sfx, music beds, backgrounds, past videos) catalogued, plus its text looks, effects, transitions, UI components and scene recipes. Heavy media is synced into data/library, never committed.",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./style-1": "./src/style-1/index.ts",
+    "./style-1/templates": "./src/style-1/templates/templates.ts",
+    "./dark-vox": "./src/dark-vox/tokens.ts",
+    "./anatomy": "./src/anatomy/tokens.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "sync": "node scripts/sync-style1.mjs",
+    "test": "tsx --test test/*.test.ts"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.0",
+    "typescript": "5.9.3",
+    "tsx": "4.20.6"
+  }
+}

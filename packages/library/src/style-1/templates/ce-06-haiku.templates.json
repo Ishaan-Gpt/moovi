@@ -1,0 +1,3456 @@
+[
+ {
+  "id": "ce-06-haiku.hook",
+  "source": {
+   "video": "ce-06-haiku",
+   "scene": "hook",
+   "index": 0,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with asterisk, phone + phone.screen · title \"Wait, / don't scroll.\"",
+  "role": "hook · statement",
+  "words": 3,
+  "fits": [
+   2,
+   5
+  ],
+  "seconds": 1.27,
+  "needs": {
+   "logo": false,
+   "media": 1
+  },
+  "props": [
+   "asterisk",
+   "phone"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Wait,",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "scroll.",
+     "pos": 1
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Wait,",
+     "max": 7
+    },
+    {
+     "id": "t1",
+     "orig": "don't scroll.",
+     "max": 16
+    }
+   ],
+   "content": [],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/assets/premium-captions/premium-1.mp4",
+     "as": "phone.screen"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        330,
+        520,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        600,
+        820
+       ],
+       "kw": {
+        "motion": "slam",
+        "sparks": true
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "push": 1.06,
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "asterisk",
+       "color": "#E9CCFF",
+       "rays": [
+        [
+         12,
+         480.2,
+         98
+        ],
+        [
+         48,
+         416.5,
+         68.60000000000001
+        ],
+        [
+         81,
+         441,
+         93.1
+        ],
+        [
+         122,
+         431.2,
+         73.5
+        ],
+        [
+         145,
+         450.8,
+         78.4
+        ],
+        [
+         174,
+         460.59999999999997,
+         73.5
+        ],
+        [
+         190,
+         441,
+         107.8
+        ],
+        [
+         225,
+         465.5,
+         58.8
+        ],
+        [
+         254,
+         465.5,
+         78.4
+        ],
+        [
+         276,
+         441,
+         68.60000000000001
+        ],
+        [
+         309,
+         460.59999999999997,
+         53.9
+        ],
+        [
+         342,
+         460.59999999999997,
+         83.30000000000001
+        ]
+       ],
+       "core": 137.20000000000002,
+       "cx": 540,
+       "cy": 1290,
+       "w": 980,
+       "h": 980,
+       "spin": 18,
+       "enter": "pop",
+       "f": {
+        "$S": 2
+       }
+      },
+      {
+       "kind": "image",
+       "draw": "phone",
+       "screen": {
+        "$M": "m0"
+       },
+       "cx": 540,
+       "cy": 1290,
+       "w": 440,
+       "h": 893.1999999999999,
+       "f": {
+        "$S": 4
+       },
+       "enter": "glide",
+       "focus": [
+        0.5,
+        0.5
+       ],
+       "shadow": [
+        0,
+        30,
+        50,
+        0.28
+       ],
+       "float": [
+        5,
+        3,
+        0.4
+       ],
+       "ui": []
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$S": 0
+      },
+      1,
+      540,
+      960
+     ],
+     [
+      {
+       "$W": "w1",
+       "add": 8
+      },
+      1.1,
+      540,
+      1040
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 0
+      },
+      "hard-hit",
+      "punch"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-06-haiku.reels",
+  "source": {
+   "video": "ce-06-haiku",
+   "scene": "reels",
+   "index": 1,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with asterisk, dropzone, file + file.label · title \"If you make Reels, / leave everything.\" · prop text: Drop your video, Uploaded",
+  "role": "statement",
+  "words": 10,
+  "fits": [
+   6,
+   16
+  ],
+  "seconds": 2.83,
+  "needs": {
+   "logo": false,
+   "media": 1
+  },
+  "props": [
+   "asterisk",
+   "dropzone",
+   "file"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "If",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "then",
+     "pos": 0.444
+    },
+    {
+     "id": "w2",
+     "orig": "you",
+     "pos": 0.111
+    },
+    {
+     "id": "w3",
+     "orig": "Reels,",
+     "pos": 0.333
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "If you make Reels,",
+     "max": 21
+    },
+    {
+     "id": "t1",
+     "orig": "leave everything.",
+     "max": 20
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "Drop your video",
+     "max": 15,
+     "prop": "dropzone",
+     "key": "label"
+    },
+    {
+     "id": "c1",
+     "orig": "Uploaded",
+     "max": 8,
+     "prop": "dropzone",
+     "key": "done"
+    }
+   ],
+   "media": [
+    {
+     "id": "m0",
+     "orig": ".mp4",
+     "as": "file.label"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        420,
+        880,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        540,
+        820
+       ],
+       "kw": {}
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "push": 1.04,
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "asterisk",
+       "color": "#E9CCFF",
+       "rays": [
+        [
+         12,
+         441,
+         90
+        ],
+        [
+         48,
+         382.5,
+         63.00000000000001
+        ],
+        [
+         81,
+         405,
+         85.5
+        ],
+        [
+         122,
+         396,
+         67.5
+        ],
+        [
+         145,
+         414,
+         72
+        ],
+        [
+         174,
+         423,
+         67.5
+        ],
+        [
+         190,
+         405,
+         99
+        ],
+        [
+         225,
+         427.5,
+         54
+        ],
+        [
+         254,
+         427.5,
+         72
+        ],
+        [
+         276,
+         405,
+         63.00000000000001
+        ],
+        [
+         309,
+         423,
+         49.5
+        ],
+        [
+         342,
+         423,
+         76.5
+        ]
+       ],
+       "core": 126.00000000000001,
+       "cx": 540,
+       "cy": 1190,
+       "w": 900,
+       "h": 900,
+       "spin": 18,
+       "enter": "pop",
+       "f": {
+        "$S": 6
+       }
+      },
+      {
+       "kind": "image",
+       "draw": "dropzone",
+       "cx": 540,
+       "cy": 1200,
+       "w": 640,
+       "h": 330,
+       "f": {
+        "$S": 22
+       },
+       "enter": "glide",
+       "p": {
+        "label": {
+         "$C": "c0"
+        },
+        "done": {
+         "$C": "c1"
+        },
+        "doneAt": {
+         "$W": "w1",
+         "add": 8
+        }
+       }
+      },
+      {
+       "kind": "image",
+       "draw": "file",
+       "cx": 540,
+       "cy": 800,
+       "w": 220,
+       "h": 270,
+       "f": {
+        "$W": "w2",
+        "add": 0
+       },
+       "enter": "glide",
+       "p": {
+        "label": {
+         "$M": "m0"
+        }
+       },
+       "path": [
+        [
+         {
+          "$W": "w2",
+          "add": 0
+         },
+         540,
+         800
+        ],
+        [
+         {
+          "$W": "w1",
+          "add": 2
+         },
+         540,
+         1190
+        ]
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w3",
+       "add": 0
+      },
+      "key-word"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 2
+      },
+      "card-in"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-06-haiku.site",
+  "source": {
+   "video": "ce-06-haiku",
+   "scene": "site",
+   "index": 2,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with asterisk, laptop + laptop.src, image.src · title \"There is a website / where viral captions.\"",
+  "role": "statement",
+  "words": 11,
+  "fits": [
+   7,
+   18
+  ],
+  "seconds": 3,
+  "needs": {
+   "logo": false,
+   "media": 2
+  },
+  "props": [
+   "asterisk",
+   "laptop"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "There",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "website",
+     "pos": 0.3
+    },
+    {
+     "id": "w2",
+     "orig": "viral",
+     "pos": 0.6
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "There is a website",
+     "max": 21
+    },
+    {
+     "id": "t1",
+     "orig": "where viral captions.",
+     "max": 25
+    }
+   ],
+   "content": [],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/assets/premium-captions/premium-2.mp4",
+     "as": "laptop.src"
+    },
+    {
+     "id": "m1",
+     "orig": "sources/brand/captionseasy-icon-512.png",
+     "as": "image.src"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        420,
+        860,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        540,
+        880
+       ],
+       "kw": {}
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "push": 1.05,
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "asterisk",
+       "color": "#E9CCFF",
+       "rays": [
+        [
+         12,
+         480.2,
+         98
+        ],
+        [
+         48,
+         416.5,
+         68.60000000000001
+        ],
+        [
+         81,
+         441,
+         93.1
+        ],
+        [
+         122,
+         431.2,
+         73.5
+        ],
+        [
+         145,
+         450.8,
+         78.4
+        ],
+        [
+         174,
+         460.59999999999997,
+         73.5
+        ],
+        [
+         190,
+         441,
+         107.8
+        ],
+        [
+         225,
+         465.5,
+         58.8
+        ],
+        [
+         254,
+         465.5,
+         78.4
+        ],
+        [
+         276,
+         441,
+         68.60000000000001
+        ],
+        [
+         309,
+         460.59999999999997,
+         53.9
+        ],
+        [
+         342,
+         460.59999999999997,
+         83.30000000000001
+        ]
+       ],
+       "core": 137.20000000000002,
+       "cx": 540,
+       "cy": 1200,
+       "w": 980,
+       "h": 980,
+       "spin": 18,
+       "enter": "pop",
+       "f": {
+        "$W": "w0",
+        "add": 2
+       }
+      },
+      {
+       "kind": "image",
+       "draw": "laptop",
+       "cx": 540,
+       "cy": 1200,
+       "w": 880,
+       "h": 620,
+       "f": {
+        "$W": "w0",
+        "add": 4
+       },
+       "enter": "glide",
+       "p": {
+        "src": {
+         "$M": "m0"
+        },
+        "vt": 0.5
+       }
+      },
+      {
+       "kind": "image",
+       "src": {
+        "$M": "m1"
+       },
+       "cx": 540,
+       "cy": 800,
+       "w": 170,
+       "h": 170,
+       "enter": "pop",
+       "shadow": [
+        0,
+        18,
+        30,
+        0.18
+       ],
+       "f": {
+        "$W": "w1",
+        "add": 0
+       }
+      }
+     ]
+    }
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 0
+      },
+      "card-in"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 0
+      },
+      "key-word"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-06-haiku.free",
+  "source": {
+   "video": "ce-06-haiku",
+   "scene": "free",
+   "index": 3,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with asterisk, seal · title \"Genuinely / free.\" · prop text: 100%, FREE",
+  "role": "statement",
+  "words": 2,
+  "fits": [
+   2,
+   4
+  ],
+  "seconds": 1.03,
+  "needs": {
+   "logo": false,
+   "media": 0
+  },
+  "props": [
+   "asterisk",
+   "seal"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Genuinely",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "free.",
+     "pos": 1
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Genuinely",
+     "max": 11
+    },
+    {
+     "id": "t1",
+     "orig": "free.",
+     "max": 7
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "100%",
+     "max": 4,
+     "prop": "seal",
+     "key": "top"
+    },
+    {
+     "id": "c1",
+     "orig": "FREE",
+     "max": 4,
+     "prop": "seal",
+     "key": "bottom"
+    }
+   ],
+   "media": []
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        420,
+        620,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        540,
+        420
+       ],
+       "kw": {
+        "motion": "slam",
+        "sparks": true
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "push": 1.08,
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "asterisk",
+       "color": "#E9CCFF",
+       "rays": [
+        [
+         12,
+         480.2,
+         98
+        ],
+        [
+         48,
+         416.5,
+         68.60000000000001
+        ],
+        [
+         81,
+         441,
+         93.1
+        ],
+        [
+         122,
+         431.2,
+         73.5
+        ],
+        [
+         145,
+         450.8,
+         78.4
+        ],
+        [
+         174,
+         460.59999999999997,
+         73.5
+        ],
+        [
+         190,
+         441,
+         107.8
+        ],
+        [
+         225,
+         465.5,
+         58.8
+        ],
+        [
+         254,
+         465.5,
+         78.4
+        ],
+        [
+         276,
+         441,
+         68.60000000000001
+        ],
+        [
+         309,
+         460.59999999999997,
+         53.9
+        ],
+        [
+         342,
+         460.59999999999997,
+         83.30000000000001
+        ]
+       ],
+       "core": 137.20000000000002,
+       "cx": 540,
+       "cy": 1170,
+       "w": 980,
+       "h": 980,
+       "spin": 18,
+       "enter": "pop",
+       "f": {
+        "$W": "w0",
+        "add": 1
+       }
+      },
+      {
+       "kind": "image",
+       "draw": "seal",
+       "cx": 540,
+       "cy": 1170,
+       "w": 560,
+       "h": 560,
+       "f": {
+        "$W": "w0",
+        "add": 4
+       },
+       "enter": "glide",
+       "p": {
+        "top": {
+         "$C": "c0"
+        },
+        "bottom": {
+         "$C": "c1"
+        }
+       }
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$S": -213
+      },
+      1,
+      540,
+      960
+     ],
+     [
+      {
+       "$W": "w1",
+       "add": 10
+      },
+      1.08,
+      540,
+      1010
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 0
+      },
+      "stat"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-06-haiku.notrial",
+  "source": {
+   "video": "ce-06-haiku",
+   "scene": "notrial",
+   "index": 4,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with panel, row · title \"No free trial, / no watermark, no subscription.\" · prop text: Your plan, Free trial, Watermark, Subscription",
+  "role": "statement",
+  "words": 7,
+  "fits": [
+   4,
+   11
+  ],
+  "seconds": 3.3,
+  "needs": {
+   "logo": false,
+   "media": 0
+  },
+  "props": [
+   "panel",
+   "row"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "No",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "trial,",
+     "pos": 0.333
+    },
+    {
+     "id": "w2",
+     "orig": "watermark,",
+     "pos": 0.667
+    },
+    {
+     "id": "w3",
+     "orig": "subscription.",
+     "pos": 1
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "No free trial,",
+     "max": 17
+    },
+    {
+     "id": "t1",
+     "orig": "no watermark, no subscription.",
+     "max": 34
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "Your plan",
+     "max": 9,
+     "prop": "panel",
+     "key": "title"
+    },
+    {
+     "id": "c1",
+     "orig": "Free trial",
+     "max": 10,
+     "prop": "row",
+     "key": "label"
+    },
+    {
+     "id": "c2",
+     "orig": "Watermark",
+     "max": 9,
+     "prop": "row",
+     "key": "label"
+    },
+    {
+     "id": "c3",
+     "orig": "Subscription",
+     "max": 12,
+     "prop": "row",
+     "key": "label"
+    }
+   ],
+   "media": []
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        420,
+        760,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        540,
+        900
+       ],
+       "kw": {}
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "push": 1.05,
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "panel",
+       "cx": 540,
+       "cy": 1200,
+       "w": 780,
+       "h": 560,
+       "f": {
+        "$W": "w0",
+        "add": 2
+       },
+       "enter": "glide",
+       "p": {
+        "title": {
+         "$C": "c0"
+        }
+       }
+      },
+      {
+       "kind": "image",
+       "draw": "row",
+       "cx": 540,
+       "cy": 1140,
+       "w": 640,
+       "h": 100,
+       "f": {
+        "$W": "w0",
+        "add": 10
+       },
+       "enter": "glide",
+       "p": {
+        "label": {
+         "$C": "c1"
+        }
+       },
+       "kill": {
+        "$W": "w1",
+        "add": 12
+       },
+       "shatter": true
+      },
+      {
+       "kind": "image",
+       "draw": "row",
+       "cx": 540,
+       "cy": 1260,
+       "w": 640,
+       "h": 100,
+       "f": {
+        "$W": "w0",
+        "add": 10
+       },
+       "enter": "glide",
+       "p": {
+        "label": {
+         "$C": "c2"
+        }
+       },
+       "kill": {
+        "$W": "w2",
+        "add": 12
+       },
+       "shatter": true
+      },
+      {
+       "kind": "image",
+       "draw": "row",
+       "cx": 540,
+       "cy": 1380,
+       "w": 640,
+       "h": 100,
+       "f": {
+        "$W": "w0",
+        "add": 10
+       },
+       "enter": "glide",
+       "p": {
+        "label": {
+         "$C": "c3"
+        }
+       },
+       "kill": {
+        "$W": "w3",
+        "add": 12
+       },
+       "shatter": true
+      }
+     ]
+    }
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 0
+      },
+      "key-word"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 12
+      },
+      "slide-out"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 12
+      },
+      "slide-out"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w3",
+       "add": 12
+      },
+      "slide-out"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-06-haiku.looks",
+  "source": {
+   "video": "ce-06-haiku",
+   "scene": "looks",
+   "index": 5,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with carousel + carousel.items, carousel.items, carousel.items, carousel.items, carousel.items, carousel.items, carousel.items, carousel.items · title \"More than 30 / viral looks.\"",
+  "role": "statement",
+  "words": 5,
+  "fits": [
+   3,
+   8
+  ],
+  "seconds": 1.87,
+  "needs": {
+   "logo": false,
+   "media": 8
+  },
+  "props": [
+   "carousel"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "More",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "30",
+     "pos": 0.5
+    },
+    {
+     "id": "w2",
+     "orig": "looks.",
+     "pos": 1
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "More than 30",
+     "max": 15
+    },
+    {
+     "id": "t1",
+     "orig": "viral looks.",
+     "max": 15
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "Metal Script",
+     "max": 12,
+     "prop": "carousel",
+     "key": "items"
+    },
+    {
+     "id": "c1",
+     "orig": "Soft Glow",
+     "max": 9,
+     "prop": "carousel",
+     "key": "items"
+    },
+    {
+     "id": "c2",
+     "orig": "Neon Duo",
+     "max": 8,
+     "prop": "carousel",
+     "key": "items"
+    },
+    {
+     "id": "c3",
+     "orig": "Serif Behind",
+     "max": 12,
+     "prop": "carousel",
+     "key": "items"
+    },
+    {
+     "id": "c4",
+     "orig": "Ice Duo",
+     "max": 7,
+     "prop": "carousel",
+     "key": "items"
+    },
+    {
+     "id": "c5",
+     "orig": "Serif Accent Glow",
+     "max": 17,
+     "prop": "carousel",
+     "key": "items"
+    },
+    {
+     "id": "c6",
+     "orig": "Hormozi Box",
+     "max": 11,
+     "prop": "carousel",
+     "key": "items"
+    },
+    {
+     "id": "c7",
+     "orig": "Comic Burst",
+     "max": 11,
+     "prop": "carousel",
+     "key": "items"
+    }
+   ],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/assets/looks/metal_script.mp4",
+     "as": "carousel.items"
+    },
+    {
+     "id": "m1",
+     "orig": "styles/assets/looks/soft_glow.mp4",
+     "as": "carousel.items"
+    },
+    {
+     "id": "m2",
+     "orig": "styles/assets/looks/neon_duo.mp4",
+     "as": "carousel.items"
+    },
+    {
+     "id": "m3",
+     "orig": "styles/assets/looks/serif_behind.mp4",
+     "as": "carousel.items"
+    },
+    {
+     "id": "m4",
+     "orig": "styles/assets/looks/ice_duo.mp4",
+     "as": "carousel.items"
+    },
+    {
+     "id": "m5",
+     "orig": "styles/assets/looks/serif_accent_glow.mp4",
+     "as": "carousel.items"
+    },
+    {
+     "id": "m6",
+     "orig": "styles/assets/looks/hormozi_box.mp4",
+     "as": "carousel.items"
+    },
+    {
+     "id": "m7",
+     "orig": "styles/assets/looks/comic_burst.mp4",
+     "as": "carousel.items"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        420,
+        640,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        540,
+        640
+       ],
+       "kw": {
+        "motion": "slam",
+        "sparks": true
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "push": 1.05,
+     "visuals": [
+      {
+       "kind": "carousel",
+       "cx": 540,
+       "cy": 1190,
+       "rx": 400,
+       "ry": 120,
+       "w": 560,
+       "f": {
+        "$W": "w0",
+        "add": 2
+       },
+       "step": 0.42,
+       "items": [
+        [
+         {
+          "$M": "m0"
+         },
+         {
+          "$C": "c0"
+         }
+        ],
+        [
+         {
+          "$M": "m1"
+         },
+         {
+          "$C": "c1"
+         }
+        ],
+        [
+         {
+          "$M": "m2"
+         },
+         {
+          "$C": "c2"
+         }
+        ],
+        [
+         {
+          "$M": "m3"
+         },
+         {
+          "$C": "c3"
+         }
+        ],
+        [
+         {
+          "$M": "m4"
+         },
+         {
+          "$C": "c4"
+         }
+        ],
+        [
+         {
+          "$M": "m5"
+         },
+         {
+          "$C": "c5"
+         }
+        ],
+        [
+         {
+          "$M": "m6"
+         },
+         {
+          "$C": "c6"
+         }
+        ],
+        [
+         {
+          "$M": "m7"
+         },
+         {
+          "$C": "c7"
+         }
+        ]
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 0
+      },
+      "stat"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 0
+      },
+      "key-word"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-06-haiku.anim",
+  "source": {
+   "video": "ce-06-haiku",
+   "scene": "anim",
+   "index": 6,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with phone, capt + phone.screen · title \"Animation on / every word.\" · prop text: Animation, on, every, word",
+  "role": "statement",
+  "words": 4,
+  "fits": [
+   2,
+   6
+  ],
+  "seconds": 1.13,
+  "needs": {
+   "logo": false,
+   "media": 1
+  },
+  "props": [
+   "phone",
+   "capt"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Animation",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "on",
+     "pos": 0.333
+    },
+    {
+     "id": "w2",
+     "orig": "every",
+     "pos": 0.667
+    },
+    {
+     "id": "w3",
+     "orig": "word.",
+     "pos": 1
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Animation on",
+     "max": 15
+    },
+    {
+     "id": "t1",
+     "orig": "every word.",
+     "max": 14
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "Animation",
+     "max": 9,
+     "prop": "capt",
+     "key": "chunks"
+    },
+    {
+     "id": "c1",
+     "orig": "on",
+     "max": 3,
+     "prop": "capt",
+     "key": "chunks"
+    },
+    {
+     "id": "c2",
+     "orig": "every",
+     "max": 5,
+     "prop": "capt",
+     "key": "chunks"
+    },
+    {
+     "id": "c3",
+     "orig": "word",
+     "max": 4,
+     "prop": "capt",
+     "key": "chunks"
+    }
+   ],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/assets/premium-captions/premium-3.mp4",
+     "as": "phone.screen"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        420,
+        760,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        540,
+        760
+       ],
+       "kw": {
+        "motion": "slam",
+        "sparks": true
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "push": 1.04,
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "phone",
+       "screen": {
+        "$M": "m0"
+       },
+       "cx": 540,
+       "cy": 1200,
+       "w": 460,
+       "h": 933.8,
+       "f": {
+        "$W": "w0",
+        "add": -4
+       },
+       "enter": "glide",
+       "focus": [
+        0.5,
+        0
+       ],
+       "shadow": [
+        0,
+        30,
+        50,
+        0.28
+       ],
+       "float": [
+        5,
+        3,
+        0.4
+       ],
+       "ui": [
+        {
+         "draw": "capt",
+         "p": {
+          "style": "stroke",
+          "font": "bricolage",
+          "size": 0.15,
+          "y": 0.6,
+          "chunks": [
+           [
+            {
+             "$W": "w0",
+             "add": 2
+            },
+            {
+             "$C": "c0"
+            },
+            0
+           ],
+           [
+            {
+             "$W": "w1",
+             "add": 2
+            },
+            {
+             "$C": "c1"
+            },
+            -1
+           ],
+           [
+            {
+             "$W": "w2",
+             "add": 2
+            },
+            {
+             "$C": "c2"
+            },
+            0
+           ],
+           [
+            {
+             "$W": "w3",
+             "add": 2
+            },
+            {
+             "$C": "c3"
+            },
+            -1
+           ]
+          ]
+         }
+        }
+       ],
+       "zoom": 1.5
+      }
+     ]
+    }
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 0
+      },
+      "key-word"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 2
+      },
+      "pop",
+      "pop-9"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-06-haiku.ae",
+  "source": {
+   "video": "ce-06-haiku",
+   "scene": "ae",
+   "index": 7,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with asterisk, nle · title \"Just like / After Effects.\" · prop text: Text, Glow, Video",
+  "role": "statement",
+  "words": 4,
+  "fits": [
+   2,
+   6
+  ],
+  "seconds": 1.67,
+  "needs": {
+   "logo": false,
+   "media": 0
+  },
+  "props": [
+   "asterisk",
+   "nle"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Just",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "Effects.",
+     "pos": 1
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Just like",
+     "max": 11
+    },
+    {
+     "id": "t1",
+     "orig": "After Effects.",
+     "max": 17
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "Text",
+     "max": 4,
+     "prop": "nle",
+     "key": "tracks"
+    },
+    {
+     "id": "c1",
+     "orig": "Glow",
+     "max": 4,
+     "prop": "nle",
+     "key": "tracks"
+    },
+    {
+     "id": "c2",
+     "orig": "Video",
+     "max": 5,
+     "prop": "nle",
+     "key": "tracks"
+    }
+   ],
+   "media": []
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        360,
+        600,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        510,
+        900
+       ],
+       "kw": {
+        "motion": "slam",
+        "sparks": true
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "push": 1.05,
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "asterisk",
+       "color": "#E9CCFF",
+       "rays": [
+        [
+         12,
+         509.59999999999997,
+         104
+        ],
+        [
+         48,
+         442,
+         72.80000000000001
+        ],
+        [
+         81,
+         468,
+         98.8
+        ],
+        [
+         122,
+         457.6,
+         78
+        ],
+        [
+         145,
+         478.40000000000003,
+         83.2
+        ],
+        [
+         174,
+         488.79999999999995,
+         78
+        ],
+        [
+         190,
+         468,
+         114.4
+        ],
+        [
+         225,
+         494,
+         62.4
+        ],
+        [
+         254,
+         494,
+         83.2
+        ],
+        [
+         276,
+         468,
+         72.80000000000001
+        ],
+        [
+         309,
+         488.79999999999995,
+         57.2
+        ],
+        [
+         342,
+         488.79999999999995,
+         88.4
+        ]
+       ],
+       "core": 145.60000000000002,
+       "cx": 540,
+       "cy": 1190,
+       "w": 1040,
+       "h": 1040,
+       "spin": 18,
+       "enter": "pop",
+       "f": {
+        "$W": "w0",
+        "add": 1
+       }
+      },
+      {
+       "kind": "image",
+       "draw": "nle",
+       "cx": 540,
+       "cy": 1200,
+       "w": 900,
+       "h": 470,
+       "f": {
+        "$W": "w0",
+        "add": 3
+       },
+       "enter": "glide",
+       "p": {
+        "tracks": [
+         {
+          "$C": "c0"
+         },
+         {
+          "$C": "c1"
+         },
+         {
+          "$C": "c2"
+         }
+        ],
+        "tc": [
+         {
+          "$W": "w0",
+          "add": 3
+         },
+         {
+          "$W": "w1",
+          "add": 12
+         }
+        ]
+       }
+      }
+     ]
+    }
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 0
+      },
+      "key-word"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-06-haiku.signup",
+  "source": {
+   "video": "ce-06-haiku",
+   "scene": "signup",
+   "index": 8,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with panel, typebox, cursor · title \"Just one free / sign up.\" · prop text: Create account, Sign up free",
+  "role": "statement",
+  "words": 5,
+  "fits": [
+   3,
+   8
+  ],
+  "seconds": 1.1,
+  "needs": {
+   "logo": false,
+   "media": 0
+  },
+  "props": [
+   "panel",
+   "typebox",
+   "cursor"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Just",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "one",
+     "pos": 0.25
+    },
+    {
+     "id": "w2",
+     "orig": "sign",
+     "pos": 0.75
+    },
+    {
+     "id": "w3",
+     "orig": "up.",
+     "pos": 1
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Just one free",
+     "max": 16
+    },
+    {
+     "id": "t1",
+     "orig": "sign up.",
+     "max": 10
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "Create account",
+     "max": 14,
+     "prop": "panel",
+     "key": "title"
+    },
+    {
+     "id": "c1",
+     "orig": "Sign up free",
+     "max": 12,
+     "prop": "typebox",
+     "key": "text"
+    }
+   ],
+   "media": []
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        420,
+        700,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        540,
+        620
+       ],
+       "kw": {
+        "motion": "slam"
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "push": 1.04,
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "panel",
+       "cx": 540,
+       "cy": 1170,
+       "w": 780,
+       "h": 520,
+       "f": {
+        "$W": "w1",
+        "add": 0
+       },
+       "enter": "glide",
+       "p": {
+        "title": {
+         "$C": "c0"
+        }
+       }
+      },
+      {
+       "kind": "typebox",
+       "x": 240,
+       "y": 1200,
+       "w": 600,
+       "h": 130,
+       "r": 65,
+       "fill": "#034F46",
+       "color": "#FFFFFF",
+       "text": {
+        "$C": "c1"
+       },
+       "cursor": {
+        "$W": "w2",
+        "add": -2
+       },
+       "start": {
+        "$W": "w2",
+        "add": 0
+       },
+       "perChar": 1.2
+      },
+      {
+       "kind": "cursor",
+       "f": {
+        "$W": "w1",
+        "add": 0
+       },
+       "keys": [
+        [
+         {
+          "$W": "w1",
+          "add": 0
+         },
+         820,
+         1260
+        ],
+        [
+         {
+          "$W": "w3",
+          "add": 10
+         },
+         640,
+         1265,
+         1
+        ]
+       ],
+       "size": 110
+      }
+     ]
+    }
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 0
+      },
+      "click-ui"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w3",
+       "add": 10
+      },
+      "cta"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-06-haiku.ready",
+  "source": {
+   "video": "ce-06-haiku",
+   "scene": "ready",
+   "index": 9,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with notif, phone, reelui + notif.iconSrc, phone.screen · title \"And tonight's Reel / is ready. / Your reel is ready\"",
+  "role": "statement",
+  "words": 5,
+  "fits": [
+   3,
+   8
+  ],
+  "seconds": 1.53,
+  "needs": {
+   "logo": false,
+   "media": 2
+  },
+  "props": [
+   "notif",
+   "phone",
+   "reelui"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "And",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "Reel",
+     "pos": 0.5
+    },
+    {
+     "id": "w2",
+     "orig": "ready.",
+     "pos": 1
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "And tonight's Reel",
+     "max": 21
+    },
+    {
+     "id": "t1",
+     "orig": "is ready.",
+     "max": 11
+    },
+    {
+     "id": "t2",
+     "orig": "Your reel is ready",
+     "max": 21
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "CaptionsEasy",
+     "max": 12,
+     "prop": "notif",
+     "key": "app"
+    },
+    {
+     "id": "c1",
+     "orig": "Captions done · 9:16 · MP4",
+     "max": 26,
+     "prop": "notif",
+     "key": "body"
+    },
+    {
+     "id": "c2",
+     "orig": "yourname",
+     "max": 8,
+     "prop": "reelui",
+     "key": "handle"
+    },
+    {
+     "id": "c3",
+     "orig": "Ye trick koi nahi batata…",
+     "max": 25,
+     "prop": "reelui",
+     "key": "caption"
+    }
+   ],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "sources/brand/captionseasy-icon-512.png",
+     "as": "notif.iconSrc"
+    },
+    {
+     "id": "m1",
+     "orig": "styles/assets/premium-captions/premium-4.mp4",
+     "as": "phone.screen"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        420,
+        880,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        540,
+        620
+       ],
+       "kw": {
+        "motion": "slam",
+        "sparks": true
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "push": 1.05,
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "notif",
+       "cx": 540,
+       "cy": 830,
+       "w": 860,
+       "h": 210,
+       "f": {
+        "$W": "w1",
+        "add": 4
+       },
+       "enter": "glide",
+       "p": {},
+       "app": {
+        "$C": "c0"
+       },
+       "title": {
+        "$T": "t2"
+       },
+       "body": {
+        "$C": "c1"
+       },
+       "iconSrc": {
+        "$M": "m0"
+       }
+      },
+      {
+       "kind": "image",
+       "draw": "phone",
+       "screen": {
+        "$M": "m1"
+       },
+       "cx": 540,
+       "cy": 1410,
+       "w": 400,
+       "h": 811.9999999999999,
+       "f": {
+        "$W": "w1",
+        "add": -6
+       },
+       "enter": "glide",
+       "focus": [
+        0.5,
+        0
+       ],
+       "shadow": [
+        0,
+        30,
+        50,
+        0.28
+       ],
+       "float": [
+        5,
+        3,
+        0.4
+       ],
+       "ui": [
+        {
+         "draw": "reelui",
+         "p": {
+          "inAt": {
+           "$W": "w1",
+           "add": 2
+          },
+          "handle": {
+           "$C": "c2"
+          },
+          "caption": {
+           "$C": "c3"
+          }
+         }
+        }
+       ],
+       "zoom": 1.5
+      }
+     ]
+    }
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 0
+      },
+      "notify"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 0
+      },
+      "pop",
+      "pop-4"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-06-haiku.late",
+  "source": {
+   "video": "ce-06-haiku",
+   "scene": "late",
+   "index": 10,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with asterisk, marker · title \"Don't be / late.\"",
+  "role": "statement",
+  "words": 3,
+  "fits": [
+   2,
+   5
+  ],
+  "seconds": 0.77,
+  "needs": {
+   "logo": false,
+   "media": 0
+  },
+  "props": [
+   "asterisk",
+   "marker"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Don't",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "late.",
+     "pos": 1
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Don't be",
+     "max": 10
+    },
+    {
+     "id": "t1",
+     "orig": "late.",
+     "max": 7
+    }
+   ],
+   "content": [],
+   "media": []
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        400,
+        520,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        540,
+        380
+       ],
+       "kw": {
+        "motion": "slam",
+        "sparks": true
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "push": 1.06,
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "asterisk",
+       "color": "#E9CCFF",
+       "rays": [
+        [
+         12,
+         480.2,
+         98
+        ],
+        [
+         48,
+         416.5,
+         68.60000000000001
+        ],
+        [
+         81,
+         441,
+         93.1
+        ],
+        [
+         122,
+         431.2,
+         73.5
+        ],
+        [
+         145,
+         450.8,
+         78.4
+        ],
+        [
+         174,
+         460.59999999999997,
+         73.5
+        ],
+        [
+         190,
+         441,
+         107.8
+        ],
+        [
+         225,
+         465.5,
+         58.8
+        ],
+        [
+         254,
+         465.5,
+         78.4
+        ],
+        [
+         276,
+         441,
+         68.60000000000001
+        ],
+        [
+         309,
+         460.59999999999997,
+         53.9
+        ],
+        [
+         342,
+         460.59999999999997,
+         83.30000000000001
+        ]
+       ],
+       "core": 137.20000000000002,
+       "cx": 540,
+       "cy": 1190,
+       "w": 980,
+       "h": 980,
+       "spin": 18,
+       "enter": "pop",
+       "f": {
+        "$W": "w0",
+        "add": 2
+       }
+      },
+      {
+       "kind": "image",
+       "draw": "marker",
+       "cx": 540,
+       "cy": 600,
+       "w": 520,
+       "h": 230,
+       "f": {
+        "$W": "w1",
+        "add": 2
+       },
+       "enter": null,
+       "p": {
+        "color": "#7B4FD6",
+        "frames": 10,
+        "width": 12
+       }
+      }
+     ]
+    }
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 0
+      },
+      "hard-hit",
+      "soft-hit"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 2
+      },
+      "accent"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-06-haiku.comment",
+  "source": {
+   "video": "ce-06-haiku",
+   "scene": "comment",
+   "index": 11,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with asterisk, comment, cursor, typebox · title \"Just comment / the captions.\" · prop text: captions, Sent! Check your DMs",
+  "role": "statement",
+  "words": 4,
+  "fits": [
+   2,
+   6
+  ],
+  "seconds": 1.5,
+  "needs": {
+   "logo": false,
+   "media": 0
+  },
+  "props": [
+   "asterisk",
+   "comment",
+   "cursor",
+   "typebox"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Just",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "comment",
+     "pos": 0.333
+    },
+    {
+     "id": "w2",
+     "orig": "the",
+     "pos": 0.667
+    },
+    {
+     "id": "w3",
+     "orig": "captions.",
+     "pos": 1
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Just comment",
+     "max": 15
+    },
+    {
+     "id": "t1",
+     "orig": "the captions.",
+     "max": 16
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "captions",
+     "max": 8,
+     "prop": "comment",
+     "key": "text"
+    },
+    {
+     "id": "c1",
+     "orig": "Sent! Check your DMs",
+     "max": 20,
+     "prop": "typebox",
+     "key": "text"
+    }
+   ],
+   "media": []
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        420,
+        720,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        540,
+        700
+       ],
+       "kw": {}
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "push": 1.04,
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "asterisk",
+       "color": "#E9CCFF",
+       "rays": [
+        [
+         12,
+         480.2,
+         98
+        ],
+        [
+         48,
+         416.5,
+         68.60000000000001
+        ],
+        [
+         81,
+         441,
+         93.1
+        ],
+        [
+         122,
+         431.2,
+         73.5
+        ],
+        [
+         145,
+         450.8,
+         78.4
+        ],
+        [
+         174,
+         460.59999999999997,
+         73.5
+        ],
+        [
+         190,
+         441,
+         107.8
+        ],
+        [
+         225,
+         465.5,
+         58.8
+        ],
+        [
+         254,
+         465.5,
+         78.4
+        ],
+        [
+         276,
+         441,
+         68.60000000000001
+        ],
+        [
+         309,
+         460.59999999999997,
+         53.9
+        ],
+        [
+         342,
+         460.59999999999997,
+         83.30000000000001
+        ]
+       ],
+       "core": 137.20000000000002,
+       "cx": 540,
+       "cy": 1190,
+       "w": 980,
+       "h": 980,
+       "spin": 18,
+       "enter": "pop",
+       "f": {
+        "$W": "w0",
+        "add": 1
+       }
+      },
+      {
+       "kind": "comment",
+       "x": 90,
+       "y": 900,
+       "w": 900,
+       "h": 140,
+       "f": {
+        "$W": "w1",
+        "add": 0
+       },
+       "text": {
+        "$C": "c0"
+       },
+       "start": {
+        "$W": "w1",
+        "add": 0
+       },
+       "perChar": 1.6,
+       "send": {
+        "$W": "w1",
+        "add": 22
+       }
+      },
+      {
+       "kind": "cursor",
+       "f": {
+        "$W": "w1",
+        "add": -6
+       },
+       "keys": [
+        [
+         {
+          "$W": "w1",
+          "add": -6
+         },
+         820,
+         1200
+        ],
+        [
+         {
+          "$W": "w1",
+          "add": 20
+         },
+         920,
+         975,
+         1
+        ]
+       ],
+       "size": 110
+      },
+      {
+       "kind": "typebox",
+       "x": 300,
+       "y": 1120,
+       "w": 680,
+       "h": 124,
+       "r": 62,
+       "fill": "#034F46",
+       "color": "#FFFFEB",
+       "text": {
+        "$C": "c1"
+       },
+       "cursor": {
+        "$W": "w1",
+        "add": 28
+       },
+       "start": {
+        "$W": "w1",
+        "add": 30
+       },
+       "perChar": 1
+      }
+     ]
+    }
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 0
+      },
+      "click-ui"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 17
+      },
+      "click-ui"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w3",
+       "add": 1
+      },
+      "notify"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-06-haiku.dm",
+  "source": {
+   "video": "ce-06-haiku",
+   "scene": "dm",
+   "index": 12,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with chat, plane + image.src · title \"I'll DM you / the link, / right away.\" · prop text: Creator, captions, Link sent ✓",
+  "role": "ending · statement",
+  "words": 7,
+  "fits": [
+   4,
+   11
+  ],
+  "seconds": 2.6,
+  "needs": {
+   "logo": false,
+   "media": 1
+  },
+  "props": [
+   "chat",
+   "plane"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "I'll",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "DM",
+     "pos": 0.167
+    },
+    {
+     "id": "w2",
+     "orig": "link",
+     "pos": 0.667
+    },
+    {
+     "id": "w3",
+     "orig": "away.",
+     "pos": 1
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "I'll DM you",
+     "max": 14
+    },
+    {
+     "id": "t1",
+     "orig": "the link,",
+     "max": 11
+    },
+    {
+     "id": "t2",
+     "orig": "right away.",
+     "max": 14
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "Creator",
+     "max": 7,
+     "prop": "chat",
+     "key": "name"
+    },
+    {
+     "id": "c1",
+     "orig": "captions",
+     "max": 8,
+     "prop": "chat",
+     "key": "msgs"
+    },
+    {
+     "id": "c2",
+     "orig": "Link sent ✓",
+     "max": 11,
+     "prop": "chat",
+     "key": "msgs"
+    }
+   ],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "sources/brand/captionseasy-logo.png",
+     "as": "image.src"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        370,
+        720,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        510,
+        560
+       ],
+       "kw": {
+        "sparks": true
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t2"
+        },
+        690,
+        620,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035,
+        "motion": "slam"
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "push": 1.04,
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "chat",
+       "cx": 540,
+       "cy": 1080,
+       "w": 840,
+       "h": 480,
+       "f": {
+        "$W": "w0",
+        "add": 2
+       },
+       "enter": "glide",
+       "p": {
+        "name": {
+         "$C": "c0"
+        },
+        "msgs": [
+         [
+          {
+           "$W": "w1",
+           "add": 0
+          },
+          "in",
+          {
+           "$C": "c1"
+          }
+         ],
+         [
+          {
+           "$W": "w2",
+           "add": 0
+          },
+          "out",
+          {
+           "$C": "c2"
+          }
+         ]
+        ]
+       }
+      },
+      {
+       "kind": "image",
+       "draw": "plane",
+       "cx": 200,
+       "cy": 1420,
+       "w": 200,
+       "h": 140,
+       "f": {
+        "$W": "w1",
+        "add": 0
+       },
+       "enter": null,
+       "p": {},
+       "path": [
+        [
+         {
+          "$W": "w1",
+          "add": 0
+         },
+         200,
+         1420
+        ],
+        [
+         {
+          "$W": "w2",
+          "add": 4
+         },
+         760,
+         1000
+        ]
+       ]
+      },
+      {
+       "kind": "image",
+       "src": {
+        "$M": "m0"
+       },
+       "cx": 540,
+       "cy": 1560,
+       "w": 600,
+       "h": 103,
+       "f": {
+        "$W": "w3",
+        "add": 0
+       },
+       "enter": "pop",
+       "shadow": [
+        0,
+        18,
+        30,
+        0.18
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 0
+      },
+      "cta"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w3",
+       "add": 0
+      },
+      "pop",
+      "pop-9"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ }
+]

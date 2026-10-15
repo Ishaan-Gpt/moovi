@@ -1,0 +1,185 @@
+{
+ "video": "ce-03-not-after-effects",
+ "kit": {
+  "brand": "captionseasy",
+  "alias": {},
+  "logo": "styles/style-1/videos/ce-03-not-after-effects/assets/logo.png",
+  "attrs": {}
+ },
+ "words": "styles/style-1/videos/ce-03-not-after-effects/words.json",
+ "ops": [
+  {
+   "call": "lines",
+   "args": [
+    "a",
+    [
+     "This looks like",
+     "After Effects."
+    ]
+   ],
+   "kw": {
+    "visuals": [
+     {
+      "$el": "look",
+      "args": [
+       "styles/assets/looks/x.mp4",
+       540,
+       1100
+      ],
+      "kw": {}
+     },
+     {
+      "$el": "look",
+      "args": [
+       "styles/assets/looks/y.mp4",
+       540,
+       1400,
+       500,
+       "like"
+      ],
+      "kw": {
+       "enter": "glide",
+       "radius": 12
+      }
+     },
+     {
+      "$el": "card",
+      "args": [
+       "c.png",
+       300,
+       1600,
+       700,
+       300,
+       null
+      ],
+      "kw": {
+       "radius": 5
+      }
+     }
+    ]
+   }
+  },
+  {
+   "call": "stack_slam",
+   "args": [
+    "b",
+    [
+     "No keyframes,",
+     "no plugins,",
+     "not even an install."
+    ]
+   ],
+   "kw": {
+    "slam_last": false,
+    "visuals": [
+     {
+      "$el": "card",
+      "args": [
+       "big.png",
+       540,
+       1200,
+       600,
+       400,
+       "plugins"
+      ],
+      "kw": {}
+     },
+     {
+      "$el": "icon",
+      "args": [
+       "i.png",
+       800,
+       1500,
+       "install"
+      ],
+      "kw": {}
+     }
+    ]
+   }
+  },
+  {
+   "call": "grid4",
+   "args": [
+    "c",
+    [
+     "styles/assets/premium-captions/premium-1.mp4",
+     "styles/assets/premium-captions/premium-2.mp4",
+     "styles/assets/premium-captions/premium-3.mp4",
+     "styles/assets/premium-captions/premium-4.mp4"
+    ],
+    "a free website",
+    "free"
+   ],
+   "kw": {}
+  },
+  {
+   "call": "trio",
+   "args": [
+    "d",
+    [
+     "styles/assets/premium-captions/premium-1.mp4",
+     "styles/assets/premium-captions/premium-2.mp4",
+     "styles/assets/premium-captions/premium-3.mp4"
+    ],
+    [
+     "slams",
+     "glows",
+     "pops"
+    ]
+   ],
+   "kw": {}
+  },
+  {
+   "call": "export_proof",
+   "args": [
+    "e",
+    "styles/assets/premium-captions/premium-1.mp4",
+    "export",
+    "watermark"
+   ],
+   "kw": {}
+  },
+  {
+   "call": "logo_land",
+   "args": [
+    "f",
+    "captions"
+   ],
+   "kw": {
+    "wordmark": "CAPTIONS EASY",
+    "size": 300
+   }
+  },
+  {
+   "call": "cta_comment",
+   "args": [
+    "g",
+    "captions",
+    "Sent! Check your DMs"
+   ],
+   "kw": {
+    "at": "comment"
+   }
+  },
+  {
+   "call": "finish",
+   "args": [],
+   "kw": {
+    "corners": [],
+    "glows": [
+     [
+      1,
+      2,
+      3,
+      "#abc",
+      0.5
+     ]
+    ],
+    "key_words": [
+     "captions",
+     "Captions"
+    ]
+   }
+  }
+ ]
+}

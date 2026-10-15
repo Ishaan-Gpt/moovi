@@ -1,0 +1,355 @@
+{
+ "video": "eg-01",
+ "kit": {
+  "brand": "eegnite",
+  "alias": {
+   "eegnite": "ignite",
+   "ads": "adds"
+  },
+  "logo": "styles/style-1/videos/eg-01/assets/eegnite-logo.png",
+  "attrs": {}
+ },
+ "words": "styles/style-1/videos/eg-01/words.json",
+ "ops": [
+  {
+   "dims": [
+    {
+     "$id": "traffic",
+     "value": {
+      "$el": "ln",
+      "args": [
+       "MORE TRAFFIC.",
+       620,
+       860,
+       900
+      ],
+      "kw": {}
+     }
+    },
+    {
+     "$id": "needs",
+     "value": {
+      "$el": "ln",
+      "args": [
+       "IT NEEDS",
+       900,
+       380,
+       700
+      ],
+      "kw": {}
+     }
+    }
+   ]
+  },
+  {
+   "call": "lines",
+   "args": [
+    "hook",
+    [
+     {
+      "$el": "ln",
+      "args": [
+       "YOUR BUSINESS DOESN'T NEED",
+       520,
+       820,
+       700
+      ],
+      "kw": {}
+     },
+     {
+      "$ref": "traffic"
+     },
+     {
+      "$ref": "needs"
+     },
+     {
+      "$el": "accent",
+      "args": [
+       "GROWTH.",
+       1000,
+       900
+      ],
+      "kw": {}
+     }
+    ]
+   ],
+   "kw": {
+    "visuals": [
+     {
+      "$el": "mark",
+      "args": [
+       540,
+       1420,
+       340,
+       "growth"
+      ],
+      "kw": {
+       "spin": 8
+      }
+     }
+    ]
+   }
+  },
+  {
+   "call": "logo_land",
+   "args": [
+    "meet",
+    "eegnite"
+   ],
+   "kw": {
+    "title": "MEET",
+    "wordmark": "EEGNITE™"
+   }
+  },
+  {
+   "call": "list_left",
+   "args": [
+    "services",
+    [
+     "SEO THAT RANKS.",
+     "ADS THAT CONVERT.",
+     "SITES THAT SELL."
+    ]
+   ],
+   "kw": {
+    "at": "seo",
+    "top": 430,
+    "visuals": [
+     {
+      "$el": "icon",
+      "args": [
+       "styles/style-1/videos/eg-01/assets/logos/tool-semrush.png",
+       220,
+       900,
+       "seo"
+      ],
+      "kw": {
+       "rot": -6,
+       "float": [
+        7,
+        3.0,
+        0.2
+       ]
+      }
+     },
+     {
+      "$el": "icon",
+      "args": [
+       "styles/style-1/videos/eg-01/assets/logos/tool-google.png",
+       450,
+       870,
+       "ranks"
+      ],
+      "kw": {
+       "rot": 4,
+       "float": [
+        7,
+        2.7,
+        1.2
+       ]
+      }
+     },
+     {
+      "$el": "icon",
+      "args": [
+       "styles/style-1/videos/eg-01/assets/logos/tool-meta.png",
+       680,
+       900,
+       "ads"
+      ],
+      "kw": {
+       "rot": -3,
+       "float": [
+        7,
+        3.3,
+        2.2
+       ]
+      }
+     },
+     {
+      "$el": "icon",
+      "args": [
+       "styles/style-1/videos/eg-01/assets/logos/tool-gtm.png",
+       900,
+       870,
+       "convert"
+      ],
+      "kw": {
+       "rot": 6,
+       "float": [
+        7,
+        2.9,
+        3.0
+       ]
+      }
+     },
+     {
+      "$el": "browser",
+      "args": [
+       "styles/style-1/videos/eg-01/assets/caps/s1.png",
+       {
+        "$el": "win",
+        "args": [
+         180,
+         990,
+         720
+        ],
+        "kw": {}
+       },
+       "websites"
+      ],
+      "kw": {}
+     }
+    ]
+   }
+  },
+  {
+   "call": "icon_ring",
+   "args": [
+    "roof",
+    [
+     "styles/style-1/videos/eg-01/assets/logos/tool-hubspot.png",
+     "styles/style-1/videos/eg-01/assets/logos/tool-google-analytics.png",
+     "styles/style-1/videos/eg-01/assets/logos/tool-meta.png",
+     "styles/style-1/videos/eg-01/assets/logos/tool-gtm.png",
+     "styles/style-1/videos/eg-01/assets/logos/tool-google.png",
+     "styles/style-1/videos/eg-01/assets/logos/tool-semrush.png"
+    ],
+    [
+     "social",
+     "email",
+     "analytics",
+     "everything",
+     "under",
+     "one"
+    ],
+    "SOCIAL. EMAIL. ANALYTICS."
+   ],
+   "kw": {
+    "footer": [
+     "EVERYTHING UNDER",
+     "ONE ROOF."
+    ]
+   }
+  },
+  {
+   "call": "stack_slam",
+   "args": [
+    "results",
+    [
+     "NO FLUFF.",
+     "NO EXCUSES.",
+     "JUST RESULTS."
+    ]
+   ],
+   "kw": {
+    "visuals": {
+     "$el": "logo_grid",
+     "args": [
+      [
+       "styles/style-1/videos/eg-01/assets/logos/al-jiwan-jewelry-tile.png",
+       "styles/style-1/videos/eg-01/assets/logos/aquagear-australia-tile.png",
+       "styles/style-1/videos/eg-01/assets/logos/bluefrog-pharma-tile.png",
+       "styles/style-1/videos/eg-01/assets/logos/deepmark-tile.png",
+       "styles/style-1/videos/eg-01/assets/logos/house-of-aluna-tile.png",
+       "styles/style-1/videos/eg-01/assets/logos/interio-lounge-tile.png"
+      ],
+      "results"
+     ],
+     "kw": {}
+    }
+   }
+  },
+  {
+   "call": "lines",
+   "args": [
+    "chosen",
+    [
+     {
+      "$el": "accent",
+      "args": [
+       "BE SEEN.",
+       760,
+       820
+      ],
+      "kw": {}
+     },
+     {
+      "$el": "ln",
+      "args": [
+       "BE CHOSEN.",
+       960,
+       920,
+       900
+      ],
+      "kw": {
+       "motion": "slam",
+       "instant": true
+      }
+     }
+    ]
+   ],
+   "kw": {
+    "visuals": [
+     {
+      "$el": "mark",
+      "args": [
+       540,
+       520,
+       200,
+       null
+      ],
+      "kw": {
+       "spin": 14
+      }
+     }
+    ]
+   }
+  },
+  {
+   "call": "cta_pill",
+   "args": [
+    "cta",
+    [
+     "BOOK YOUR FREE",
+     "CONSULTATION."
+    ],
+    "eegnite.com",
+    "eegnite"
+   ],
+   "kw": {
+    "wordmark": "EEGNITE™"
+   }
+  },
+  {
+   "call": "finish",
+   "args": [],
+   "kw": {
+    "corners": [
+     {
+      "src": "styles/style-1/videos/eg-01/assets/eegnite-logo.png",
+      "x": 0,
+      "y": 150,
+      "w": 380,
+      "still": true
+     },
+     {
+      "src": "styles/style-1/videos/eg-01/assets/logos/tool-google.png",
+      "x": 1080,
+      "y": 1690,
+      "w": 360,
+      "still": true,
+      "in": 8
+     }
+    ],
+    "key_words": [
+     "GROWTH",
+     "EEGNITE™",
+     "RESULTS",
+     "SEEN",
+     "CHOSEN"
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,2712 @@
+[
+ {
+  "id": "ce-10-teen-galtiyaan.hook",
+  "source": {
+   "video": "ce-10-teen-galtiyaan",
+   "scene": "hook",
+   "index": 0,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with reach · title \"Tumhari reel ki reach / captions maar rahe hain. / Aur tumhe pata bhi \"",
+  "role": "hook · statement",
+  "words": 13,
+  "fits": [
+   8,
+   21
+  ],
+  "seconds": 3.63,
+  "needs": {
+   "logo": false,
+   "media": 0
+  },
+  "props": [
+   "reach"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "maar",
+     "pos": 0.417
+    },
+    {
+     "id": "w1",
+     "orig": "Tumhari",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w2",
+     "orig": "Galti",
+     "next": 0
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Tumhari reel ki reach",
+     "max": 25
+    },
+    {
+     "id": "t1",
+     "orig": "captions maar rahe hain.",
+     "max": 28
+    },
+    {
+     "id": "t2",
+     "orig": "Aur tumhe pata bhi nahi.",
+     "max": 28
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "Reach",
+     "max": 5,
+     "prop": "reach",
+     "key": "title"
+    },
+    {
+     "id": "c1",
+     "orig": "Last 7 reels",
+     "max": 12,
+     "prop": "reach",
+     "key": "sub"
+    }
+   ],
+   "media": []
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        400,
+        640,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        500,
+        640
+       ],
+       "kw": {}
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t2"
+        },
+        1530,
+        560,
+        600
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "reach",
+       "cx": 540,
+       "cy": 1070,
+       "w": 860,
+       "h": 640,
+       "enter": "glide",
+       "p": {
+        "dropAt": {
+         "$W": "w0",
+         "add": 0
+        },
+        "title": {
+         "$C": "c0"
+        },
+        "sub": {
+         "$C": "c1"
+        }
+       },
+       "f": {
+        "$S": 0
+       }
+      }
+     ],
+     "at": {
+      "$Ws": "w1"
+     }
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$S": 0
+      },
+      1.14,
+      540,
+      1000,
+      -1.2
+     ],
+     [
+      {
+       "$W": "w2",
+       "add": -4
+      },
+      1,
+      540,
+      960,
+      0
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w0",
+       "add": 0
+      },
+      "hard-hit",
+      "punch"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w0",
+       "add": 6
+      },
+      "pop",
+      "pop-9"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-10-teen-galtiyaan.g1",
+  "source": {
+   "video": "ce-10-teen-galtiyaan",
+   "scene": "g1",
+   "index": 1,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with num, phone, capt, reelui, marker + phone.screen · title \"Galti number ek. / Captions bilkul neeche. / Wahan Instagram ka userna\" · prop text: 1, ye trick koi nahi batata, yourname, Ye trick koi nahi bat",
+  "role": "statement",
+  "words": 27,
+  "fits": [
+   16,
+   43
+  ],
+  "seconds": 9.83,
+  "needs": {
+   "logo": false,
+   "media": 1
+  },
+  "props": [
+   "num",
+   "phone",
+   "capt",
+   "reelui",
+   "marker"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Wahan",
+     "pos": 0.231
+    },
+    {
+     "id": "w1",
+     "orig": "Tumhare",
+     "pos": 0.577
+    },
+    {
+     "id": "w2",
+     "orig": "Unhe",
+     "pos": 0.769
+    },
+    {
+     "id": "w3",
+     "orig": "Galti",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w4",
+     "orig": "ek.",
+     "pos": 0.077
+    },
+    {
+     "id": "w5",
+     "orig": "Captions",
+     "pos": 0.115,
+     "str": true
+    },
+    {
+     "id": "w6",
+     "orig": "upar",
+     "pos": 0.846
+    },
+    {
+     "id": "w7",
+     "orig": "rakho.",
+     "pos": 0.885
+    },
+    {
+     "id": "w8",
+     "orig": "paas.",
+     "pos": 1
+    },
+    {
+     "id": "w9",
+     "orig": "Instagram",
+     "pos": 0.269
+    },
+    {
+     "id": "w10",
+     "orig": "username",
+     "pos": 0.346
+    },
+    {
+     "id": "w11",
+     "orig": "caption",
+     "pos": 0.423
+    },
+    {
+     "id": "w12",
+     "orig": "chhup",
+     "pos": 0.654
+    },
+    {
+     "id": "w13",
+     "orig": "Center",
+     "pos": 0.923
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Galti number ek.",
+     "max": 19
+    },
+    {
+     "id": "t1",
+     "orig": "Captions bilkul neeche.",
+     "max": 27
+    },
+    {
+     "id": "t2",
+     "orig": "Wahan Instagram ka username",
+     "max": 31
+    },
+    {
+     "id": "t3",
+     "orig": "aur caption text aata hai.",
+     "max": 30
+    },
+    {
+     "id": "t4",
+     "orig": "Tumhare captions",
+     "max": 19
+    },
+    {
+     "id": "t5",
+     "orig": "chhup jaate hain.",
+     "max": 20
+    },
+    {
+     "id": "t6",
+     "orig": "Unhe thoda upar rakho.",
+     "max": 26
+    },
+    {
+     "id": "t7",
+     "orig": "Center ke paas.",
+     "max": 18
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "1",
+     "max": 3,
+     "prop": "num",
+     "key": "text"
+    },
+    {
+     "id": "c1",
+     "orig": "ye trick koi nahi batata",
+     "max": 24,
+     "prop": "capt",
+     "key": "text"
+    },
+    {
+     "id": "c2",
+     "orig": "yourname",
+     "max": 8,
+     "prop": "reelui",
+     "key": "handle"
+    },
+    {
+     "id": "c3",
+     "orig": "Ye trick koi nahi batata…",
+     "max": 25,
+     "prop": "reelui",
+     "key": "caption"
+    },
+    {
+     "id": "c4",
+     "orig": "Hidden!",
+     "max": 7,
+     "prop": "marker",
+     "key": "label"
+    },
+    {
+     "id": "c5",
+     "orig": "Safe zone",
+     "max": 9,
+     "prop": "marker",
+     "key": "label"
+    }
+   ],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/assets/premium-captions/premium-1.mp4",
+     "as": "phone.screen"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        400,
+        620,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035,
+        "out": {
+         "$W": "w0",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        500,
+        640
+       ],
+       "kw": {
+        "out": {
+         "$W": "w0",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t2"
+        },
+        400,
+        640,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035,
+        "out": {
+         "$W": "w1",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t3"
+        },
+        500,
+        700
+       ],
+       "kw": {
+        "out": {
+         "$W": "w1",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t4"
+        },
+        400,
+        520,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035,
+        "out": {
+         "$W": "w2",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t5"
+        },
+        500,
+        520
+       ],
+       "kw": {
+        "out": {
+         "$W": "w2",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t6"
+        },
+        400,
+        720,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t7"
+        },
+        500,
+        460
+       ],
+       "kw": {}
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w3"
+     },
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "num",
+       "cx": 250,
+       "cy": 1120,
+       "w": 330,
+       "h": 420,
+       "enter": null,
+       "p": {
+        "text": {
+         "$C": "c0"
+        }
+       },
+       "f": {
+        "$W": "w4",
+        "add": 0
+       },
+       "noexit": true
+      },
+      {
+       "kind": "image",
+       "draw": "phone",
+       "screen": {
+        "$M": "m0"
+       },
+       "cx": 680,
+       "cy": 1160,
+       "w": 400,
+       "h": 811.9999999999999,
+       "focus": [
+        0.5,
+        0
+       ],
+       "shadow": [
+        0,
+        30,
+        50,
+        0.28
+       ],
+       "enter": "glide",
+       "zoom": 1.5,
+       "vt": 0.4,
+       "float": [
+        4,
+        3.2,
+        0.3
+       ],
+       "_at": {
+        "$Ws": "w5"
+       },
+       "ui": [
+        {
+         "draw": "capt",
+         "p": {
+          "text": {
+           "$C": "c1"
+          },
+          "style": "plain",
+          "size": 0.075,
+          "ys": [
+           [
+            0,
+            0.9
+           ],
+           [
+            {
+             "$W": "w6",
+             "add": 0
+            },
+            0.9
+           ],
+           [
+            {
+             "$W": "w7",
+             "add": 8
+            },
+            0.56
+           ]
+          ],
+          "tick": {
+           "$W": "w8",
+           "add": 0
+          }
+         }
+        },
+        {
+         "draw": "reelui",
+         "p": {
+          "inAt": {
+           "$W": "w9",
+           "add": 0
+          },
+          "userAt": {
+           "$W": "w10",
+           "add": 0
+          },
+          "textAt": {
+           "$W": "w11",
+           "add": 0
+          },
+          "handle": {
+           "$C": "c2"
+          },
+          "caption": {
+           "$C": "c3"
+          }
+         }
+        }
+       ]
+      },
+      {
+       "kind": "image",
+       "draw": "marker",
+       "cx": 680,
+       "cy": 1501.04,
+       "w": 420,
+       "h": 150,
+       "enter": null,
+       "p": {
+        "color": "#E5484D",
+        "frames": 9,
+        "label": {
+         "$C": "c4"
+        },
+        "ly": -125
+       },
+       "f": {
+        "$W": "w12",
+        "add": 0
+       },
+       "out": {
+        "$W": "w6",
+        "add": 0
+       }
+      },
+      {
+       "kind": "image",
+       "draw": "marker",
+       "cx": 680,
+       "cy": 1208.72,
+       "w": 420,
+       "h": 170,
+       "enter": null,
+       "p": {
+        "color": "#1F9D6B",
+        "frames": 9,
+        "label": {
+         "$C": "c5"
+        },
+        "ly": -135,
+        "rot": 0.04
+       },
+       "f": {
+        "$W": "w13",
+        "add": 0
+       }
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w3",
+       "add": -4
+      },
+      1,
+      540,
+      960,
+      0.6
+     ],
+     [
+      {
+       "$W": "w9",
+       "add": 0
+      },
+      1.03,
+      560,
+      990,
+      0
+     ],
+     [
+      {
+       "$W": "w12",
+       "add": 0
+      },
+      1.05,
+      570,
+      1010,
+      -0.5
+     ],
+     [
+      {
+       "$W": "w8",
+       "add": 10
+      },
+      1.01,
+      540,
+      970,
+      0.3
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w4",
+       "add": 0
+      },
+      "hard-hit",
+      "soft-hit"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w9",
+       "add": 0
+      },
+      "card-in"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w10",
+       "add": 0
+      },
+      "accent"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w11",
+       "add": 0
+      },
+      "list-item"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w12",
+       "add": 0
+      },
+      "key-word"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w6",
+       "add": 0
+      },
+      "slide-out",
+      "woosh-tight"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w13",
+       "add": 0
+      },
+      "pop",
+      "bubble"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w8",
+       "add": 0
+      },
+      "stat"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-10-teen-galtiyaan.g2",
+  "source": {
+   "video": "ce-10-teen-galtiyaan",
+   "scene": "g2",
+   "index": 2,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with num, phone, capt, marker + phone.screen · title \"Galti number do. / Ek saath poori line. / Log padhte kam hain, / dekht\" · prop text: 2, log padhte kam hain aur dekhte zyada isliye captions hame",
+  "role": "statement",
+  "words": 20,
+  "fits": [
+   12,
+   32
+  ],
+  "seconds": 6.93,
+  "needs": {
+   "logo": false,
+   "media": 1
+  },
+  "props": [
+   "num",
+   "phone",
+   "capt",
+   "marker"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Log",
+     "pos": 0.368
+    },
+    {
+     "id": "w1",
+     "orig": "Ek",
+     "pos": 0.684
+    },
+    {
+     "id": "w2",
+     "orig": "Galti",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w3",
+     "orig": "do.",
+     "pos": 0.105
+    },
+    {
+     "id": "w4",
+     "orig": "Ek",
+     "pos": 0.158,
+     "str": true
+    },
+    {
+     "id": "w5",
+     "orig": "mein",
+     "pos": 0.789
+    },
+    {
+     "id": "w6",
+     "orig": "do",
+     "pos": 0.842
+    },
+    {
+     "id": "w7",
+     "orig": "words.",
+     "pos": 0.947
+    },
+    {
+     "id": "w8",
+     "orig": "Bas.",
+     "pos": 1
+    },
+    {
+     "id": "w9",
+     "orig": "poori",
+     "pos": 0.263
+    },
+    {
+     "id": "w10",
+     "orig": "Galti",
+     "next": 0
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Galti number do.",
+     "max": 19
+    },
+    {
+     "id": "t1",
+     "orig": "Ek saath poori line.",
+     "max": 23
+    },
+    {
+     "id": "t2",
+     "orig": "Log padhte kam hain,",
+     "max": 23
+    },
+    {
+     "id": "t3",
+     "orig": "dekhte zyada.",
+     "max": 16
+    },
+    {
+     "id": "t4",
+     "orig": "Ek baar mein",
+     "max": 15
+    },
+    {
+     "id": "t5",
+     "orig": "do teen words. Bas.",
+     "max": 22
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "2",
+     "max": 3,
+     "prop": "num",
+     "key": "text"
+    },
+    {
+     "id": "c1",
+     "orig": "log padhte kam hain aur dekhte zyada isliye captions hamesha chhote aur clear rakho",
+     "max": 83,
+     "prop": "capt",
+     "key": "text"
+    },
+    {
+     "id": "c2",
+     "orig": "ek baar",
+     "max": 7,
+     "prop": "capt",
+     "key": "chunks"
+    },
+    {
+     "id": "c3",
+     "orig": "mein",
+     "max": 4,
+     "prop": "capt",
+     "key": "chunks"
+    },
+    {
+     "id": "c4",
+     "orig": "do teen",
+     "max": 7,
+     "prop": "capt",
+     "key": "chunks"
+    },
+    {
+     "id": "c5",
+     "orig": "words",
+     "max": 5,
+     "prop": "capt",
+     "key": "chunks"
+    },
+    {
+     "id": "c6",
+     "orig": "bas",
+     "max": 3,
+     "prop": "capt",
+     "key": "chunks"
+    },
+    {
+     "id": "c7",
+     "orig": "Too much",
+     "max": 8,
+     "prop": "marker",
+     "key": "label"
+    }
+   ],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/assets/premium-captions/premium-2.mp4",
+     "as": "phone.screen"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        400,
+        620,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035,
+        "out": {
+         "$W": "w0",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        500,
+        560
+       ],
+       "kw": {
+        "out": {
+         "$W": "w0",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t2"
+        },
+        400,
+        680,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035,
+        "out": {
+         "$W": "w1",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t3"
+        },
+        500,
+        400
+       ],
+       "kw": {
+        "out": {
+         "$W": "w1",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t4"
+        },
+        400,
+        460,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t5"
+        },
+        500,
+        600
+       ],
+       "kw": {}
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w2"
+     },
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "num",
+       "cx": 830,
+       "cy": 1120,
+       "w": 330,
+       "h": 420,
+       "enter": null,
+       "p": {
+        "text": {
+         "$C": "c0"
+        },
+        "rot": 6
+       },
+       "f": {
+        "$W": "w3",
+        "add": 0
+       },
+       "noexit": true
+      },
+      {
+       "kind": "image",
+       "draw": "phone",
+       "screen": {
+        "$M": "m0"
+       },
+       "cx": 400,
+       "cy": 1160,
+       "w": 400,
+       "h": 811.9999999999999,
+       "focus": [
+        0.5,
+        0
+       ],
+       "shadow": [
+        0,
+        30,
+        50,
+        0.28
+       ],
+       "enter": "glide",
+       "zoom": 1.5,
+       "vt": 2,
+       "float": [
+        4,
+        3,
+        0.8
+       ],
+       "_at": {
+        "$Ws": "w4"
+       },
+       "ui": [
+        {
+         "draw": "capt",
+         "p": {
+          "text": {
+           "$C": "c1"
+          },
+          "style": "plain",
+          "size": 0.062,
+          "maxW": 0.9,
+          "y": 0.5,
+          "until": {
+           "$W": "w1",
+           "add": 0
+          }
+         }
+        },
+        {
+         "draw": "capt",
+         "p": {
+          "style": "stroke",
+          "size": 0.12,
+          "y": 0.5,
+          "upper": true,
+          "font": "bricolage",
+          "chunks": [
+           [
+            {
+             "$W": "w1",
+             "add": 0
+            },
+            {
+             "$C": "c2"
+            }
+           ],
+           [
+            {
+             "$W": "w5",
+             "add": 0
+            },
+            {
+             "$C": "c3"
+            }
+           ],
+           [
+            {
+             "$W": "w6",
+             "add": 0
+            },
+            {
+             "$C": "c4"
+            }
+           ],
+           [
+            {
+             "$W": "w7",
+             "add": 0
+            },
+            {
+             "$C": "c5"
+            }
+           ],
+           [
+            {
+             "$W": "w8",
+             "add": 0
+            },
+            {
+             "$C": "c6"
+            }
+           ]
+          ],
+          "tick": {
+           "$W": "w8",
+           "add": 1
+          }
+         }
+        }
+       ]
+      },
+      {
+       "kind": "image",
+       "draw": "marker",
+       "cx": 400,
+       "cy": 1160,
+       "w": 430,
+       "h": 230,
+       "enter": null,
+       "p": {
+        "color": "#E5484D",
+        "frames": 9,
+        "label": {
+         "$C": "c7"
+        },
+        "ly": -150
+       },
+       "f": {
+        "$W": "w9",
+        "add": 0
+       },
+       "out": {
+        "$W": "w1",
+        "add": -1
+       }
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w2",
+       "add": -4
+      },
+      1,
+      540,
+      960,
+      -0.6
+     ],
+     [
+      {
+       "$W": "w9",
+       "add": 0
+      },
+      1.04,
+      520,
+      1000,
+      0
+     ],
+     [
+      {
+       "$W": "w1",
+       "add": 0
+      },
+      1.06,
+      510,
+      1010,
+      0.5
+     ],
+     [
+      {
+       "$W": "w10",
+       "add": -4
+      },
+      1.02,
+      540,
+      980,
+      0
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w3",
+       "add": 0
+      },
+      "hard-hit",
+      "soft-hit"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w9",
+       "add": 0
+      },
+      "key-word"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 0
+      },
+      "slide-out",
+      "air-cut"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w6",
+       "add": 0
+      },
+      "pop",
+      "pop-4"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w7",
+       "add": 0
+      },
+      "pop",
+      "pop"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w8",
+       "add": 0
+      },
+      "stat"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-10-teen-galtiyaan.g3",
+  "source": {
+   "video": "ce-10-teen-galtiyaan",
+   "scene": "g3",
+   "index": 3,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with num, phone, sky, capt, marker + phone.screen · title \"Galti number teen. / Plain white text. / Bright background pe / gayab.\" · prop text: 3, yahan sab kuch dikhega, Gayab",
+  "role": "statement",
+  "words": 15,
+  "fits": [
+   9,
+   24
+  ],
+  "seconds": 5.83,
+  "needs": {
+   "logo": false,
+   "media": 1
+  },
+  "props": [
+   "num",
+   "phone",
+   "sky",
+   "capt",
+   "marker"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Bright",
+     "pos": 0.429
+    },
+    {
+     "id": "w1",
+     "orig": "Stroke",
+     "pos": 0.714
+    },
+    {
+     "id": "w2",
+     "orig": "Galti",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w3",
+     "orig": "teen.",
+     "pos": 0.143
+    },
+    {
+     "id": "w4",
+     "orig": "Plain",
+     "pos": 0.214,
+     "str": true
+    },
+    {
+     "id": "w5",
+     "orig": "gayab.",
+     "pos": 0.643
+    },
+    {
+     "id": "w6",
+     "orig": "box",
+     "pos": 0.929
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Galti number teen.",
+     "max": 21
+    },
+    {
+     "id": "t1",
+     "orig": "Plain white text.",
+     "max": 20
+    },
+    {
+     "id": "t2",
+     "orig": "Bright background pe",
+     "max": 23
+    },
+    {
+     "id": "t3",
+     "orig": "gayab.",
+     "max": 8
+    },
+    {
+     "id": "t4",
+     "orig": "Stroke do,",
+     "max": 12
+    },
+    {
+     "id": "t5",
+     "orig": "ya box do.",
+     "max": 12
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "3",
+     "max": 3,
+     "prop": "num",
+     "key": "text"
+    },
+    {
+     "id": "c1",
+     "orig": "yahan sab kuch dikhega",
+     "max": 22,
+     "prop": "capt",
+     "key": "text"
+    },
+    {
+     "id": "c2",
+     "orig": "Gayab",
+     "max": 5,
+     "prop": "marker",
+     "key": "label"
+    }
+   ],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/assets/premium-captions/premium-3.mp4",
+     "as": "phone.screen"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        400,
+        600,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035,
+        "out": {
+         "$W": "w0",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        500,
+        480
+       ],
+       "kw": {
+        "out": {
+         "$W": "w0",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t2"
+        },
+        400,
+        620,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035,
+        "out": {
+         "$W": "w1",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t3"
+        },
+        500,
+        260
+       ],
+       "kw": {
+        "motion": "slam",
+        "out": {
+         "$W": "w1",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t4"
+        },
+        400,
+        380,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t5"
+        },
+        500,
+        340
+       ],
+       "kw": {}
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w2"
+     },
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "num",
+       "cx": 250,
+       "cy": 1120,
+       "w": 330,
+       "h": 420,
+       "enter": null,
+       "p": {
+        "text": {
+         "$C": "c0"
+        }
+       },
+       "f": {
+        "$W": "w3",
+        "add": 0
+       },
+       "noexit": true
+      },
+      {
+       "kind": "image",
+       "draw": "phone",
+       "screen": {
+        "$M": "m0"
+       },
+       "cx": 680,
+       "cy": 1160,
+       "w": 400,
+       "h": 811.9999999999999,
+       "focus": [
+        0.5,
+        0.5
+       ],
+       "shadow": [
+        0,
+        30,
+        50,
+        0.28
+       ],
+       "enter": "glide",
+       "float": [
+        4,
+        3.1,
+        0.2
+       ],
+       "_at": {
+        "$Ws": "w4"
+       },
+       "ui": [
+        {
+         "draw": "sky",
+         "p": {}
+        },
+        {
+         "draw": "capt",
+         "p": {
+          "text": {
+           "$C": "c1"
+          },
+          "style": "plain",
+          "font": "bricolage",
+          "size": 0.1,
+          "y": 0.42,
+          "fade": [
+           {
+            "$W": "w5",
+            "add": 0
+           },
+           {
+            "$W": "w5",
+            "add": 10
+           },
+           {
+            "$W": "w1",
+            "add": 0
+           }
+          ],
+          "strokeAt": {
+           "$W": "w1",
+           "add": 0
+          },
+          "boxAt": {
+           "$W": "w6",
+           "add": 0
+          }
+         }
+        }
+       ]
+      },
+      {
+       "kind": "image",
+       "draw": "marker",
+       "cx": 680,
+       "cy": 1095.04,
+       "w": 400,
+       "h": 150,
+       "enter": null,
+       "p": {
+        "color": "#E5484D",
+        "frames": 9,
+        "label": {
+         "$C": "c2"
+        },
+        "ly": -115
+       },
+       "f": {
+        "$W": "w5",
+        "add": 4
+       },
+       "out": {
+        "$W": "w1",
+        "add": -1
+       }
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w2",
+       "add": -4
+      },
+      1,
+      540,
+      960,
+      0.6
+     ],
+     [
+      {
+       "$W": "w4",
+       "add": 0
+      },
+      1.03,
+      560,
+      990,
+      0
+     ],
+     [
+      {
+       "$W": "w5",
+       "add": 0
+      },
+      1.06,
+      570,
+      1010,
+      -0.4
+     ],
+     [
+      {
+       "$W": "w6",
+       "add": 20
+      },
+      1.02,
+      550,
+      980,
+      0
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w3",
+       "add": 0
+      },
+      "hard-hit",
+      "soft-hit"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w5",
+       "add": 0
+      },
+      "accent"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 0
+      },
+      "pop",
+      "pop-9"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w6",
+       "add": 0
+      },
+      "pop",
+      "bubble"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-10-teen-galtiyaan.fix",
+  "source": {
+   "video": "ce-10-teen-galtiyaan",
+   "scene": "fix",
+   "index": 4,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with panel, row · title \"Teeno fix chahiye / ek jagah?\" · prop text: Caption checklist, Center ke paas, Ek baar mein 2-3 words, S",
+  "role": "statement",
+  "words": 5,
+  "fits": [
+   3,
+   8
+  ],
+  "seconds": 1.37,
+  "needs": {
+   "logo": false,
+   "media": 0
+  },
+  "props": [
+   "panel",
+   "row"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Teeno",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "Main",
+     "next": 0
+    },
+    {
+     "id": "w2",
+     "orig": "fix",
+     "pos": 0.25
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Teeno fix chahiye",
+     "max": 20
+    },
+    {
+     "id": "t1",
+     "orig": "ek jagah?",
+     "max": 11
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "Caption checklist",
+     "max": 17,
+     "prop": "panel",
+     "key": "title"
+    },
+    {
+     "id": "c1",
+     "orig": "Center ke paas",
+     "max": 14,
+     "prop": "row",
+     "key": "label"
+    },
+    {
+     "id": "c2",
+     "orig": "Ek baar mein 2-3 words",
+     "max": 22,
+     "prop": "row",
+     "key": "label"
+    },
+    {
+     "id": "c3",
+     "orig": "Stroke ya box",
+     "max": 13,
+     "prop": "row",
+     "key": "label"
+    }
+   ],
+   "media": []
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        400,
+        640,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        500,
+        360
+       ],
+       "kw": {}
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "panel",
+       "cx": 540,
+       "cy": 1140,
+       "w": 820,
+       "h": 560,
+       "enter": "glide",
+       "p": {
+        "title": {
+         "$C": "c0"
+        }
+       },
+       "_at": {
+        "$Ws": "w0"
+       },
+       "_off": 0
+      },
+      {
+       "kind": "image",
+       "draw": "row",
+       "cx": 540,
+       "cy": 1010,
+       "w": 720,
+       "h": 100,
+       "enter": "glide",
+       "p": {
+        "label": {
+         "$C": "c1"
+        }
+       },
+       "f": {
+        "$W": "w0",
+        "add": 2
+       }
+      },
+      {
+       "kind": "image",
+       "draw": "row",
+       "cx": 540,
+       "cy": 1135,
+       "w": 720,
+       "h": 100,
+       "enter": "glide",
+       "p": {
+        "label": {
+         "$C": "c2"
+        }
+       },
+       "f": {
+        "$W": "w0",
+        "add": 5
+       }
+      },
+      {
+       "kind": "image",
+       "draw": "row",
+       "cx": 540,
+       "cy": 1260,
+       "w": 720,
+       "h": 100,
+       "enter": "glide",
+       "p": {
+        "label": {
+         "$C": "c3"
+        }
+       },
+       "f": {
+        "$W": "w0",
+        "add": 8
+       }
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w0",
+       "add": -4
+      },
+      1.04,
+      540,
+      1000,
+      -0.5
+     ],
+     [
+      {
+       "$W": "w1",
+       "add": -4
+      },
+      1,
+      540,
+      960,
+      0
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w0",
+       "add": 2
+      },
+      "list-item"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 0
+      },
+      "list-item"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 3
+      },
+      "list-item"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-10-teen-galtiyaan.ce",
+  "source": {
+   "video": "ce-10-teen-galtiyaan",
+   "scene": "ce",
+   "index": 5,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with burst, mark, phone, typebox + mark.src, phone.src · title \"Main CaptionsEasy / use karta hoon. / Free hai, / watermark nahi.\" · prop text: Free, No watermark",
+  "role": "statement",
+  "words": 9,
+  "fits": [
+   5,
+   14
+  ],
+  "seconds": 3.2,
+  "needs": {
+   "logo": false,
+   "media": 2
+  },
+  "props": [
+   "burst",
+   "mark",
+   "phone",
+   "typebox"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Free",
+     "pos": 0.625
+    },
+    {
+     "id": "w1",
+     "orig": "Main",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w2",
+     "orig": "CaptionsEasy",
+     "pos": 0.125,
+     "str": true
+    },
+    {
+     "id": "w3",
+     "orig": "use",
+     "pos": 0.25,
+     "str": true
+    },
+    {
+     "id": "w4",
+     "orig": "watermark",
+     "pos": 0.875
+    },
+    {
+     "id": "w5",
+     "orig": "Save",
+     "next": 0
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Main CaptionsEasy",
+     "max": 20
+    },
+    {
+     "id": "t1",
+     "orig": "use karta hoon.",
+     "max": 18
+    },
+    {
+     "id": "t2",
+     "orig": "Free hai,",
+     "max": 11
+    },
+    {
+     "id": "t3",
+     "orig": "watermark nahi.",
+     "max": 18
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "Free",
+     "max": 4,
+     "prop": "typebox",
+     "key": "text"
+    },
+    {
+     "id": "c1",
+     "orig": "No watermark",
+     "max": 12,
+     "prop": "typebox",
+     "key": "text"
+    }
+   ],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/style-1/videos/ce-10-teen-galtiyaan/assets/corner-bars.png",
+     "as": "mark.src"
+    },
+    {
+     "id": "m1",
+     "orig": "styles/assets/premium-captions/premium-1.mp4",
+     "as": "phone.src"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        400,
+        640,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035,
+        "out": {
+         "$W": "w0",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        500,
+        480
+       ],
+       "kw": {
+        "out": {
+         "$W": "w0",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t2"
+        },
+        400,
+        340,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t3"
+        },
+        500,
+        520
+       ],
+       "kw": {}
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w1"
+     },
+     "visuals": [
+      {
+       "$el": "burst",
+       "args": [
+        330,
+        1130,
+        560,
+        {
+         "$Ws": "w2"
+        }
+       ],
+       "kw": {}
+      },
+      {
+       "$el": "mark",
+       "args": [
+        330,
+        1130,
+        250,
+        {
+         "$Ws": "w2"
+        }
+       ],
+       "kw": {
+        "src": {
+         "$M": "m0"
+        }
+       }
+      },
+      {
+       "$el": "phone",
+       "args": [
+        {
+         "$M": "m1"
+        },
+        760,
+        1170,
+        380,
+        {
+         "$Ws": "w3"
+        }
+       ],
+       "kw": {
+        "enter": "glide",
+        "rot": 4,
+        "vt": 3,
+        "glow": "#E6C6FF",
+        "float": [
+         5,
+         3,
+         0.4
+        ]
+       }
+      },
+      {
+       "kind": "typebox",
+       "x": 120,
+       "y": 1420,
+       "w": 300,
+       "h": 96,
+       "r": 48,
+       "fill": "#034F46",
+       "color": "#FFFFEB",
+       "text": {
+        "$C": "c0"
+       },
+       "cursor": {
+        "$W": "w0",
+        "add": -2
+       },
+       "start": {
+        "$W": "w0",
+        "add": 0
+       },
+       "perChar": 0.8
+      },
+      {
+       "kind": "typebox",
+       "x": 120,
+       "y": 1530,
+       "w": 400,
+       "h": 96,
+       "r": 48,
+       "fill": "#F3E8FF",
+       "color": "#1A1A1A",
+       "text": {
+        "$C": "c1"
+       },
+       "cursor": {
+        "$W": "w4",
+        "add": -2
+       },
+       "start": {
+        "$W": "w4",
+        "add": 0
+       },
+       "perChar": 0.8
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w1",
+       "add": -4
+      },
+      1.06,
+      540,
+      1000,
+      0.6
+     ],
+     [
+      {
+       "$W": "w5",
+       "add": -4
+      },
+      1,
+      540,
+      960,
+      0
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 0
+      },
+      "key-word"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w0",
+       "add": 0
+      },
+      "pop",
+      "pop-4"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w4",
+       "add": 0
+      },
+      "notify"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-10-teen-galtiyaan.cta",
+  "source": {
+   "video": "ce-10-teen-galtiyaan",
+   "scene": "cta",
+   "index": 6,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with burst, bookmark · title \"Save kar lo, / agli reel se pehle / kaam aayega.\"",
+  "role": "ending · statement",
+  "words": 9,
+  "fits": [
+   5,
+   14
+  ],
+  "seconds": 3.7,
+  "needs": {
+   "logo": false,
+   "media": 0
+  },
+  "props": [
+   "burst",
+   "bookmark"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Save",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "aayega.",
+     "pos": 1
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Save kar lo,",
+     "max": 15
+    },
+    {
+     "id": "t1",
+     "orig": "agli reel se pehle",
+     "max": 21
+    },
+    {
+     "id": "t2",
+     "orig": "kaam aayega.",
+     "max": 15
+    }
+   ],
+   "content": [],
+   "media": []
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        400,
+        440,
+        900
+       ],
+       "kw": {
+        "tracking": -0.035,
+        "motion": "slam",
+        "instant": true,
+        "sparks": true
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        515,
+        600
+       ],
+       "kw": {}
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t2"
+        },
+        630,
+        420
+       ],
+       "kw": {}
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "visuals": [
+      {
+       "$el": "burst",
+       "args": [
+        540,
+        1130,
+        640,
+        {
+         "$Ws": "w0"
+        }
+       ],
+       "kw": {}
+      },
+      {
+       "kind": "image",
+       "draw": "bookmark",
+       "cx": 540,
+       "cy": 1110,
+       "w": 300,
+       "h": 300,
+       "enter": "glide",
+       "p": {
+        "saveAt": {
+         "$W": "w0",
+         "add": 4
+        }
+       },
+       "_at": {
+        "$Ws": "w0"
+       },
+       "_off": 0
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w0",
+       "add": -4
+      },
+      1.06,
+      540,
+      1000,
+      -0.6
+     ],
+     [
+      {
+       "$W": "w1",
+       "add": 36
+      },
+      1,
+      540,
+      980,
+      0
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w0",
+       "add": 4
+      },
+      "cta"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w0",
+       "add": 0
+      },
+      "hard-hit",
+      "soft-hit"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ }
+]

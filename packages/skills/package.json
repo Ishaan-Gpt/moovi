@@ -1,0 +1,23 @@
+{
+  "name": "@contenteasy/skills",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The style packages the engine's crew works from: Style 1 (rules, laws with checks, playbook, the full kit) and the unique-style fallback, plus the deterministic style matcher.",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "tsx --test test/*.test.ts"
+  },
+  "dependencies": {
+    "zod": "4.6.6"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.0",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3"
+  }
+}

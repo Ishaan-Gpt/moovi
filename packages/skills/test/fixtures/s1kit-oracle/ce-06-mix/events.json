@@ -1,0 +1,401 @@
+[
+ {
+  "t": 0.03,
+  "event": "hard-hit",
+  "sound": "soft-hit"
+ },
+ {
+  "t": 0.033,
+  "event": "word",
+  "text": "RUKO!"
+ },
+ {
+  "t": 0.043000000000000003,
+  "event": "key-word"
+ },
+ {
+  "t": 0.067,
+  "event": "hard-hit",
+  "sound": "punch"
+ },
+ {
+  "t": 0.633,
+  "event": "word",
+  "text": "Scroll"
+ },
+ {
+  "t": 0.933,
+  "event": "word",
+  "text": "mat"
+ },
+ {
+  "t": 1.1,
+  "event": "word",
+  "text": "karna."
+ },
+ {
+  "t": 1.23,
+  "event": "build"
+ },
+ {
+  "t": 1.467,
+  "event": "word",
+  "text": "Agar"
+ },
+ {
+  "t": 1.6,
+  "event": "scene",
+  "sound": "air-cut"
+ },
+ {
+  "t": 1.733,
+  "event": "pop",
+  "sound": "pop"
+ },
+ {
+  "t": 1.867,
+  "event": "word",
+  "text": "tum"
+ },
+ {
+  "t": 2.067,
+  "event": "word",
+  "text": "reels"
+ },
+ {
+  "t": 2.3,
+  "event": "word",
+  "text": "banate"
+ },
+ {
+  "t": 2.667,
+  "event": "word",
+  "text": "ho,"
+ },
+ {
+  "t": 3.0,
+  "event": "word",
+  "text": "toh"
+ },
+ {
+  "t": 3.1,
+  "event": "word",
+  "text": "sab"
+ },
+ {
+  "t": 3.333,
+  "event": "word",
+  "text": "chhod"
+ },
+ {
+  "t": 3.6,
+  "event": "word",
+  "text": "ke,"
+ },
+ {
+  "t": 3.733,
+  "event": "word",
+  "text": "abhi"
+ },
+ {
+  "t": 3.767,
+  "event": "pop",
+  "sound": "pop-9"
+ },
+ {
+  "t": 3.767,
+  "event": "notify"
+ },
+ {
+  "t": 4.033,
+  "event": "word",
+  "text": "ye"
+ },
+ {
+  "t": 4.2,
+  "event": "word",
+  "text": "karo."
+ },
+ {
+  "t": 4.2,
+  "event": "key-word"
+ },
+ {
+  "t": 5.033,
+  "event": "word",
+  "text": "Ek"
+ },
+ {
+  "t": 5.2,
+  "event": "word",
+  "text": "website"
+ },
+ {
+  "t": 5.6,
+  "event": "word",
+  "text": "hai,"
+ },
+ {
+  "t": 5.767,
+  "event": "scene",
+  "sound": "air-cut"
+ },
+ {
+  "t": 6.367,
+  "event": "word",
+  "text": "viral"
+ },
+ {
+  "t": 6.633,
+  "event": "word",
+  "text": "captions"
+ },
+ {
+  "t": 7.133,
+  "event": "hard-hit",
+  "sound": "soft-hit"
+ },
+ {
+  "t": 7.333,
+  "event": "word",
+  "text": "Genuinely"
+ },
+ {
+  "t": 7.467,
+  "event": "scene",
+  "sound": "air-cut"
+ },
+ {
+  "t": 7.6,
+  "event": "pop",
+  "sound": "pop-4"
+ },
+ {
+  "t": 8.267,
+  "event": "word",
+  "text": "free."
+ },
+ {
+  "t": 8.8,
+  "event": "word",
+  "text": "Na"
+ },
+ {
+  "t": 8.933,
+  "event": "scene",
+  "sound": "woosh-tight"
+ },
+ {
+  "t": 9.067,
+  "event": "pop",
+  "sound": "bubble"
+ },
+ {
+  "t": 9.233,
+  "event": "word",
+  "text": "free"
+ },
+ {
+  "t": 9.433,
+  "event": "word",
+  "text": "trial."
+ },
+ {
+  "t": 10.267,
+  "event": "word",
+  "text": "Na"
+ },
+ {
+  "t": 10.5,
+  "event": "word",
+  "text": "watermark."
+ },
+ {
+  "t": 11.233,
+  "event": "word",
+  "text": "Na"
+ },
+ {
+  "t": 11.433,
+  "event": "word",
+  "text": "subscription."
+ },
+ {
+  "t": 13.9,
+  "event": "word",
+  "text": "Har"
+ },
+ {
+  "t": 14.033,
+  "event": "scene",
+  "sound": "air-cut"
+ },
+ {
+  "t": 14.333,
+  "event": "word",
+  "text": "word"
+ },
+ {
+  "t": 14.367,
+  "event": "pop",
+  "sound": "pop"
+ },
+ {
+  "t": 14.367,
+  "event": "hard-hit",
+  "sound": "punch"
+ },
+ {
+  "t": 14.6,
+  "event": "word",
+  "text": "pe"
+ },
+ {
+  "t": 14.733,
+  "event": "word",
+  "text": "animation."
+ },
+ {
+  "t": 14.767,
+  "event": "pop",
+  "sound": "pop-9"
+ },
+ {
+  "t": 14.767,
+  "event": "stat"
+ },
+ {
+  "t": 15.333,
+  "event": "pop",
+  "sound": "pop-4"
+ },
+ {
+  "t": 15.333,
+  "event": "pop",
+  "sound": "bubble"
+ },
+ {
+  "t": 15.7,
+  "event": "word",
+  "text": "After"
+ },
+ {
+  "t": 16.0,
+  "event": "word",
+  "text": "Effects"
+ },
+ {
+  "t": 16.3,
+  "event": "word",
+  "text": "jaisa."
+ },
+ {
+  "t": 16.6,
+  "event": "word",
+  "text": "Bas"
+ },
+ {
+  "t": 16.733,
+  "event": "scene",
+  "sound": "woosh-tight"
+ },
+ {
+  "t": 17.0,
+  "event": "word",
+  "text": "ek"
+ },
+ {
+  "t": 17.267,
+  "event": "word",
+  "text": "free"
+ },
+ {
+  "t": 17.3,
+  "event": "pop",
+  "sound": "bubble"
+ },
+ {
+  "t": 17.4,
+  "event": "word",
+  "text": "signup,"
+ },
+ {
+  "t": 17.4,
+  "event": "code"
+ },
+ {
+  "t": 17.867,
+  "event": "scene",
+  "sound": "air-cut"
+ },
+ {
+  "t": 18.1,
+  "event": "click-ui"
+ },
+ {
+  "t": 18.133,
+  "event": "word",
+  "text": "Aaj"
+ },
+ {
+  "t": 18.167,
+  "event": "click-ui"
+ },
+ {
+  "t": 18.233,
+  "event": "cta"
+ },
+ {
+  "t": 18.433,
+  "event": "word",
+  "text": "raat"
+ },
+ {
+  "t": 18.633,
+  "event": "word",
+  "text": "ki"
+ },
+ {
+  "t": 18.8,
+  "event": "word",
+  "text": "reel"
+ },
+ {
+  "t": 19.0,
+  "event": "word",
+  "text": "ready."
+ },
+ {
+  "t": 19.033,
+  "event": "notify"
+ },
+ {
+  "t": 19.6,
+  "event": "pop",
+  "sound": "pop"
+ },
+ {
+  "t": 19.667,
+  "event": "scene",
+  "sound": "woosh-tight"
+ },
+ {
+  "t": 19.767,
+  "event": "word",
+  "text": "Der"
+ },
+ {
+  "t": 19.8,
+  "event": "key-word"
+ },
+ {
+  "t": 20.033,
+  "event": "word",
+  "text": "mat"
+ },
+ {
+  "t": 20.167,
+  "event": "word",
+  "text": "karo."
+ }
+]

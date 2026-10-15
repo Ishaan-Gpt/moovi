@@ -1,0 +1,2536 @@
+[
+ {
+  "id": "ce-05-ullu-ban-gaye.hook",
+  "source": {
+   "video": "ce-05-ullu-ban-gaye",
+   "scene": "hook",
+   "index": 0,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with phone + phone.src, phone.src, phone.src · title \"Aise / viral captions / banana chahte ho?\"",
+  "role": "hook · statement",
+  "words": 6,
+  "fits": [
+   4,
+   10
+  ],
+  "seconds": 2.17,
+  "needs": {
+   "logo": false,
+   "media": 3
+  },
+  "props": [
+   "phone"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "banana",
+     "pos": 0.6,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "chahte",
+     "pos": 0.8,
+     "str": true
+    },
+    {
+     "id": "w2",
+     "orig": "Aise",
+     "pos": 0,
+     "str": true
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Aise",
+     "max": 6
+    },
+    {
+     "id": "t1",
+     "orig": "viral captions",
+     "max": 17
+    },
+    {
+     "id": "t2",
+     "orig": "banana chahte ho?",
+     "max": 20
+    }
+   ],
+   "content": [],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/assets/premium-captions/premium-2.mp4",
+     "as": "phone.src"
+    },
+    {
+     "id": "m1",
+     "orig": "styles/assets/premium-captions/premium-3.mp4",
+     "as": "phone.src"
+    },
+    {
+     "id": "m2",
+     "orig": "styles/assets/premium-captions/premium-1.mp4",
+     "as": "phone.src"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        400,
+        150,
+        600
+       ],
+       "kw": {
+        "fixed": true
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        470,
+        640
+       ],
+       "kw": {
+        "fixed": true
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t2"
+        },
+        620,
+        560,
+        700
+       ],
+       "kw": {
+        "fixed": true
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "visuals": [
+      {
+       "$el": "phone",
+       "args": [
+        {
+         "$M": "m0"
+        },
+        230,
+        1260,
+        290,
+        {
+         "$Ws": "w0"
+        }
+       ],
+       "kw": {
+        "enter": "pop",
+        "rot": -7,
+        "vt": 2,
+        "float": [
+         7,
+         3.1,
+         1.2
+        ]
+       }
+      },
+      {
+       "$el": "phone",
+       "args": [
+        {
+         "$M": "m1"
+        },
+        850,
+        1260,
+        290,
+        {
+         "$Ws": "w1"
+        }
+       ],
+       "kw": {
+        "enter": "pop",
+        "rot": 7,
+        "vt": 3,
+        "float": [
+         7,
+         2.8,
+         2.4
+        ]
+       }
+      },
+      {
+       "$el": "phone",
+       "args": [
+        {
+         "$M": "m2"
+        },
+        540,
+        1260,
+        400,
+        null
+       ],
+       "kw": {
+        "vt": 0,
+        "float": [
+         5,
+         3.4,
+         0.2
+        ]
+       }
+      }
+     ],
+     "at": {
+      "$Ws": "w2"
+     }
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$S": 0
+      },
+      1.3,
+      540,
+      1100
+     ],
+     [
+      {
+       "$S": 50
+      },
+      1,
+      540,
+      960
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-05-ullu-ban-gaye.comments",
+  "source": {
+   "video": "ce-05-ullu-ban-gaye",
+   "scene": "comments",
+   "index": 1,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with phone, feed + phone.src · title \"Har video pe jaake / “captions”\" · prop text: captions",
+  "role": "statement",
+  "words": 9,
+  "fits": [
+   5,
+   14
+  ],
+  "seconds": 3.5,
+  "needs": {
+   "logo": false,
+   "media": 1
+  },
+  "props": [
+   "phone",
+   "feed"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Toh",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "video",
+     "pos": 0.25,
+     "str": true
+    },
+    {
+     "id": "w2",
+     "orig": "jaake",
+     "pos": 0.5,
+     "str": true
+    },
+    {
+     "id": "w3",
+     "orig": "captions",
+     "pos": 0.625
+    },
+    {
+     "id": "w4",
+     "orig": "comment",
+     "pos": 0.75
+    },
+    {
+     "id": "w5",
+     "orig": "Aur",
+     "next": 0
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Har video pe jaake",
+     "max": 21
+    },
+    {
+     "id": "t1",
+     "orig": "“captions”",
+     "max": 12
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "captions",
+     "max": 8,
+     "prop": "feed",
+     "key": "text"
+    }
+   ],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/assets/premium-captions/premium-4.mp4",
+     "as": "phone.src"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        400,
+        640,
+        700
+       ],
+       "kw": {}
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        500,
+        560,
+        900
+       ],
+       "kw": {
+        "motion": "slam",
+        "instant": true
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "visuals": [
+      {
+       "$el": "phone",
+       "args": [
+        {
+         "$M": "m0"
+        },
+        800,
+        1000,
+        290,
+        {
+         "$Ws": "w1"
+        }
+       ],
+       "kw": {
+        "enter": "rise",
+        "rot": 8,
+        "vt": 1,
+        "float": [
+         6,
+         3,
+         0.8
+        ]
+       }
+      },
+      {
+       "kind": "feed",
+       "x": 120,
+       "y": 820,
+       "w": 760,
+       "h": 730,
+       "_at": {
+        "$Ws": "w2"
+       },
+       "rows": [
+        {
+         "$W": "w3",
+         "add": 0
+        },
+        {
+         "$W": "w3",
+         "add": 8
+        },
+        {
+         "$W": "w3",
+         "add": 15
+        },
+        {
+         "$W": "w4",
+         "add": 0
+        },
+        {
+         "$W": "w4",
+         "add": 6
+        },
+        {
+         "$W": "w4",
+         "add": 11
+        },
+        {
+         "$W": "w4",
+         "add": 16
+        },
+        {
+         "$W": "w4",
+         "add": 20
+        },
+        {
+         "$W": "w4",
+         "add": 24
+        }
+       ],
+       "text": {
+        "$C": "c0"
+       }
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w0",
+       "add": -4
+      },
+      1.04,
+      540,
+      960
+     ],
+     [
+      {
+       "$W": "w5",
+       "add": -4
+      },
+      1,
+      540,
+      1000
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-05-ullu-ban-gaye.trap",
+  "source": {
+   "video": "ce-05-ullu-ban-gaye",
+   "scene": "trap",
+   "index": 2,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with trial, phone + phone.src · title \"Aur milta kya hai?\"",
+  "role": "statement",
+  "words": 12,
+  "fits": [
+   7,
+   19
+  ],
+  "seconds": 4.73,
+  "needs": {
+   "logo": false,
+   "media": 1
+  },
+  "props": [
+   "trial",
+   "phone"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Aur",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "limited",
+     "pos": 0.545,
+     "str": true
+    },
+    {
+     "id": "w2",
+     "orig": "Ya",
+     "pos": 0.364,
+     "str": true
+    },
+    {
+     "id": "w3",
+     "orig": "watermark",
+     "pos": 1
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Aur milta kya hai?",
+     "max": 21
+    }
+   ],
+   "content": [],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/assets/premium-captions/premium-2.mp4",
+     "as": "phone.src"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        400,
+        720,
+        800
+       ],
+       "kw": {}
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "trial",
+       "cx": 540,
+       "cy": 760,
+       "w": 620,
+       "h": 300,
+       "_at": {
+        "$Ws": "w1"
+       },
+       "enter": "pop",
+       "float": [
+        5,
+        3.2,
+        0.5
+       ]
+      },
+      {
+       "$el": "phone",
+       "args": [
+        {
+         "$M": "m0"
+        },
+        540,
+        1270,
+        280,
+        {
+         "$Ws": "w2"
+        }
+       ],
+       "kw": {
+        "enter": "rise",
+        "vt": 1,
+        "wm": {
+         "$W": "w3",
+         "add": 0
+        },
+        "float": [
+         5,
+         2.9,
+         1
+        ]
+       }
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w0",
+       "add": -4
+      },
+      1,
+      540,
+      960
+     ],
+     [
+      {
+       "$S": 142
+      },
+      1.04,
+      540,
+      940
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w3",
+       "add": 0
+      },
+      "thud"
+     ]
+    ]
+   }
+  ],
+  "ok": false,
+  "note": "original refill differs: f1: 312 ≠ 324"
+ },
+ {
+  "id": "ce-05-ullu-ban-gaye.ullu",
+  "source": {
+   "video": "ce-05-ullu-ban-gaye",
+   "scene": "ullu",
+   "index": 3,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with burst, owl · title \"ULLU / ban gaye na?\"",
+  "role": "statement",
+  "words": 4,
+  "fits": [
+   2,
+   6
+  ],
+  "seconds": 1.8,
+  "needs": {
+   "logo": false,
+   "media": 0
+  },
+  "props": [
+   "burst",
+   "owl"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Ullu",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "Ab",
+     "next": 0
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "ULLU",
+     "max": 6
+    },
+    {
+     "id": "t1",
+     "orig": "ban gaye na?",
+     "max": 15
+    }
+   ],
+   "content": [],
+   "media": []
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        390,
+        520,
+        900
+       ],
+       "kw": {
+        "motion": "slam",
+        "instant": true
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        1360,
+        560,
+        700
+       ],
+       "kw": {}
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "visuals": [
+      {
+       "$el": "burst",
+       "args": [
+        540,
+        1000,
+        900,
+        {
+         "$Ws": "w0"
+        }
+       ],
+       "kw": {}
+      },
+      {
+       "kind": "image",
+       "draw": "owl",
+       "cx": 540,
+       "cy": 1000,
+       "w": 520,
+       "h": 520,
+       "shadow": [
+        0,
+        26,
+        46,
+        0.22
+       ],
+       "float": [
+        8,
+        2.8,
+        0.3
+       ],
+       "enter": "slam",
+       "dizzy": [
+        {
+         "$W": "w0",
+         "add": 0
+        },
+        {
+         "$W": "w1",
+         "add": 2
+        }
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "f0"
+    ],
+    "value": {
+     "$S": 0
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "layers",
+     1,
+     "f"
+    ],
+    "value": {
+     "$S": -2
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$S": 0
+      },
+      1.12,
+      540,
+      980
+     ],
+     [
+      {
+       "$W": "w1",
+       "add": -4
+      },
+      1,
+      540,
+      960
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w0",
+       "add": 0
+      },
+      "hard-hit",
+      "punch"
+     ]
+    ]
+   }
+  ],
+  "ok": false,
+  "note": "original refill differs: f0: 312 ≠ 324 | layer 1: {\"kind\":\"image\",\"draw\":\"owl\",\"cx\":540,\"cy\":1000,\"w\":520,\"h\":520,\"shadow\":[0,26,46,0.22],\"float\":[8,2.8,0.3],\"enter\":\"sla ≠ {\"kind\":\"image\",\"draw\":\"owl\",\"cx\":540,\"cy\":1000,\"w\":520,\"h\":520,\"shadow\":[0,26,46,0.22],\"float\":[8,2.8,0.3],\"enter\":\"sla"
+ },
+ {
+  "id": "ce-05-ullu-ban-gaye.ab-nahi",
+  "source": {
+   "video": "ce-05-ullu-ban-gaye",
+   "scene": "ab-nahi",
+   "index": 4,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with trial, phone + phone.src · title \"Ab nahi.\"",
+  "role": "statement",
+  "words": 2,
+  "fits": [
+   2,
+   4
+  ],
+  "seconds": 1.07,
+  "needs": {
+   "logo": false,
+   "media": 1
+  },
+  "props": [
+   "trial",
+   "phone"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Ab",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "nahi",
+     "pos": 1
+    },
+    {
+     "id": "w2",
+     "orig": "Main",
+     "next": 0
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Ab nahi.",
+     "max": 10
+    }
+   ],
+   "content": [],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/assets/premium-captions/premium-2.mp4",
+     "as": "phone.src"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        470,
+        640,
+        900
+       ],
+       "kw": {
+        "motion": "slam",
+        "instant": true
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "enter": [
+      "x",
+      -500
+     ],
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "trial",
+       "cx": 300,
+       "cy": 1020,
+       "w": 470,
+       "h": 228,
+       "rot": -8,
+       "kill": {
+        "$W": "w0",
+        "add": 1
+       },
+       "shatter": true
+      },
+      {
+       "$el": "phone",
+       "args": [
+        {
+         "$M": "m0"
+        },
+        790,
+        1060,
+        250
+       ],
+       "kw": {
+        "vt": 4,
+        "rot": 7,
+        "wm": 0,
+        "kill": {
+         "$W": "w1",
+         "add": 1
+        },
+        "shatter": true
+       }
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w0",
+       "add": -4
+      },
+      1,
+      540,
+      960
+     ],
+     [
+      {
+       "$W": "w2",
+       "add": -4
+      },
+      1.06,
+      540,
+      980
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 0
+      },
+      "hard-hit",
+      "punch"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w0",
+       "add": 1
+      },
+      "thud"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w0",
+       "add": 3
+      },
+      "slide-out"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 3
+      },
+      "slide-out"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-05-ullu-ban-gaye.website",
+  "source": {
+   "video": "ce-05-ullu-ban-gaye",
+   "scene": "website",
+   "index": 5,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with browser, win, card + browser.src, card.src · title \"Ek website\"",
+  "role": "statement",
+  "words": 7,
+  "fits": [
+   4,
+   11
+  ],
+  "seconds": 1.97,
+  "needs": {
+   "logo": false,
+   "media": 2
+  },
+  "props": [
+   "browser",
+   "win",
+   "card"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Main",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "website",
+     "pos": 0.333,
+     "str": true
+    },
+    {
+     "id": "w2",
+     "orig": "viral",
+     "next": 0
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Ek website",
+     "max": 12
+    }
+   ],
+   "content": [],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/style-1/videos/ce-05-ullu-ban-gaye/assets/caps/editor.png",
+     "as": "browser.src"
+    },
+    {
+     "id": "m1",
+     "orig": "styles/assets/premium-captions/premium-1.mp4",
+     "as": "card.src"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        440,
+        560,
+        800
+       ],
+       "kw": {}
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "visuals": [
+      {
+       "$el": "browser",
+       "args": [
+        {
+         "$M": "m0"
+        },
+        {
+         "$el": "win",
+         "args": [
+          70,
+          860,
+          940
+         ],
+         "kw": {}
+        },
+        {
+         "$Ws": "w1"
+        }
+       ],
+       "kw": {}
+      },
+      {
+       "$el": "card",
+       "args": [
+        {
+         "$M": "m1"
+        },
+        583.5729166666666,
+        1243.5069444444443,
+        384.81249999999994,
+        537.2361111111111,
+        {
+         "$Ws": "w1"
+        }
+       ],
+       "kw": {
+        "radius": 10,
+        "focus": [
+         0.5,
+         0.5
+        ],
+        "vt": 3,
+        "enter": "rise",
+        "tilt": 4
+       }
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w0",
+       "add": -4
+      },
+      1,
+      540,
+      960
+     ],
+     [
+      {
+       "$W": "w2",
+       "add": -4
+      },
+      1.04,
+      560,
+      980
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-05-ullu-ban-gaye.free",
+  "source": {
+   "video": "ce-05-ullu-ban-gaye",
+   "scene": "free",
+   "index": 6,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with burst, phone + phone.src, phone.src, phone.src · title \"sach mein / bilkul free.\"",
+  "role": "statement",
+  "words": 8,
+  "fits": [
+   5,
+   13
+  ],
+  "seconds": 2.8,
+  "needs": {
+   "logo": false,
+   "media": 3
+  },
+  "props": [
+   "burst",
+   "phone"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "viral",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "bilkul",
+     "pos": 0.571,
+     "str": true
+    },
+    {
+     "id": "w2",
+     "orig": "sach",
+     "pos": 0.286,
+     "str": true
+    },
+    {
+     "id": "w3",
+     "orig": "captions",
+     "pos": 0.143,
+     "str": true
+    },
+    {
+     "id": "w4",
+     "orig": "Na",
+     "next": 0
+    },
+    {
+     "id": "w5",
+     "orig": "free",
+     "pos": 0.714
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "sach mein",
+     "max": 11
+    },
+    {
+     "id": "t1",
+     "orig": "bilkul free.",
+     "max": 15
+    }
+   ],
+   "content": [],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/assets/premium-captions/premium-3.mp4",
+     "as": "phone.src"
+    },
+    {
+     "id": "m1",
+     "orig": "styles/assets/premium-captions/premium-4.mp4",
+     "as": "phone.src"
+    },
+    {
+     "id": "m2",
+     "orig": "styles/assets/premium-captions/premium-1.mp4",
+     "as": "phone.src"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        400,
+        300,
+        600
+       ],
+       "kw": {}
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        470,
+        640
+       ],
+       "kw": {
+        "motion": "slam"
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "enter": [
+      "x",
+      500
+     ],
+     "visuals": [
+      {
+       "$el": "burst",
+       "args": [
+        540,
+        1120,
+        860,
+        {
+         "$Ws": "w1"
+        }
+       ],
+       "kw": {
+        "color": "#F3DDFF"
+       }
+      },
+      {
+       "$el": "phone",
+       "args": [
+        {
+         "$M": "m0"
+        },
+        260,
+        1180,
+        290,
+        {
+         "$Ws": "w0"
+        }
+       ],
+       "kw": {
+        "enter": "pop",
+        "rot": -8,
+        "vt": 1.5,
+        "float": [
+         7,
+         3,
+         0.4
+        ]
+       }
+      },
+      {
+       "$el": "phone",
+       "args": [
+        {
+         "$M": "m1"
+        },
+        820,
+        1180,
+        290,
+        {
+         "$Ws": "w2"
+        }
+       ],
+       "kw": {
+        "enter": "pop",
+        "rot": 8,
+        "vt": 2.5,
+        "float": [
+         7,
+         2.7,
+         1.6
+        ]
+       }
+      },
+      {
+       "$el": "phone",
+       "args": [
+        {
+         "$M": "m2"
+        },
+        540,
+        1120,
+        330,
+        {
+         "$Ws": "w3"
+        }
+       ],
+       "kw": {
+        "enter": "slam",
+        "glow": "#E6C6FF",
+        "vt": 4,
+        "float": [
+         6,
+         3.3,
+         2.2
+        ]
+       }
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w0",
+       "add": -4
+      },
+      1.08,
+      540,
+      1000
+     ],
+     [
+      {
+       "$W": "w4",
+       "add": -4
+      },
+      1,
+      540,
+      960
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w5",
+       "add": 0
+      },
+      "stat"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-05-ullu-ban-gaye.no-catch",
+  "source": {
+   "video": "ce-05-ullu-ban-gaye",
+   "scene": "no-catch",
+   "index": 7,
+   "brand": "captionseasy"
+  },
+  "preset": "list_left",
+  "shows": "list_left with tag · title \"Na trial. / Na per-minute charge.\"",
+  "role": "list of points",
+  "words": 6,
+  "fits": [
+   4,
+   10
+  ],
+  "seconds": 2.13,
+  "needs": {
+   "logo": false,
+   "media": 0
+  },
+  "props": [
+   "tag"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Na",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "trial",
+     "pos": 0.2
+    },
+    {
+     "id": "w2",
+     "orig": "charge",
+     "pos": 1
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Na trial.",
+     "max": 11
+    },
+    {
+     "id": "t1",
+     "orig": "Na per-minute charge.",
+     "max": 25
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "Free trial",
+     "max": 10,
+     "prop": "tag",
+     "key": "label"
+    },
+    {
+     "id": "c1",
+     "orig": "limited",
+     "max": 7,
+     "prop": "tag",
+     "key": "sub"
+    },
+    {
+     "id": "c2",
+     "orig": "₹ / minute",
+     "max": 10,
+     "prop": "tag",
+     "key": "label"
+    },
+    {
+     "id": "c3",
+     "orig": "per-minute charge",
+     "max": 17,
+     "prop": "tag",
+     "key": "sub"
+    }
+   ],
+   "media": []
+  },
+  "ops": [
+   {
+    "call": "list_left",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$T": "t0"
+      },
+      {
+       "$T": "t1"
+      }
+     ]
+    ],
+    "kw": {
+     "top": 420,
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "tag",
+       "label": {
+        "$C": "c0"
+       },
+       "sub": {
+        "$C": "c1"
+       },
+       "cx": 340,
+       "cy": 1010,
+       "w": 520,
+       "h": 200,
+       "f": {
+        "$W": "w0",
+        "add": -2
+       },
+       "enter": "pop",
+       "rot": -6,
+       "float": [
+        5,
+        3,
+        0.3
+       ],
+       "kill": {
+        "$W": "w1",
+        "add": 2
+       },
+       "shatter": true
+      },
+      {
+       "kind": "image",
+       "draw": "tag",
+       "label": {
+        "$C": "c2"
+       },
+       "sub": {
+        "$C": "c3"
+       },
+       "cx": 720,
+       "cy": 1300,
+       "w": 540,
+       "h": 200,
+       "f": {
+        "$W": "w0",
+        "add": 4
+       },
+       "enter": "pop",
+       "rot": 5,
+       "float": [
+        5,
+        2.7,
+        1.9
+       ],
+       "kill": {
+        "$W": "w2",
+        "add": 2
+       },
+       "shatter": true
+      }
+     ],
+     "at": {
+      "$Ws": "w0"
+     }
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "layers",
+     0,
+     "size"
+    ],
+    "value": 96
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "layers",
+     1,
+     "top"
+    ],
+    "value": 560
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "layers",
+     1,
+     "size"
+    ],
+    "value": 80
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 4
+      },
+      "slide-out"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 4
+      },
+      "slide-out"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 2
+      },
+      "accent"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 2
+      },
+      "thud"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-05-ullu-ban-gaye.export",
+  "source": {
+   "video": "ce-05-ullu-ban-gaye",
+   "scene": "export",
+   "index": 8,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with progress, phone, mark_hl + phone.src · title \"Bina watermark.\" · prop text: Exporting, Exported",
+  "role": "statement",
+  "words": 5,
+  "fits": [
+   3,
+   8
+  ],
+  "seconds": 2.23,
+  "needs": {
+   "logo": false,
+   "media": 1
+  },
+  "props": [
+   "progress",
+   "phone",
+   "mark_hl"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Aur",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "export",
+     "pos": 0.25,
+     "str": true
+    },
+    {
+     "id": "w2",
+     "orig": "watermark",
+     "pos": 0.75,
+     "str": true
+    },
+    {
+     "id": "w3",
+     "orig": "Bas",
+     "next": 0
+    },
+    {
+     "id": "w4",
+     "orig": "Bina",
+     "pos": 0.5
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Bina watermark.",
+     "max": 18
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "Exporting",
+     "max": 9,
+     "prop": "progress",
+     "key": "label"
+    },
+    {
+     "id": "c1",
+     "orig": "Exported",
+     "max": 8,
+     "prop": "progress",
+     "key": "done"
+    }
+   ],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/assets/premium-captions/premium-2.mp4",
+     "as": "phone.src"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        560,
+        640,
+        800
+       ],
+       "kw": {}
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "visuals": [
+      {
+       "kind": "progress",
+       "x": 260,
+       "y": 400,
+       "w": 560,
+       "h": 118,
+       "_at": {
+        "$Ws": "w1"
+       },
+       "_off": -3,
+       "_until": {
+        "$Ws": "w2"
+       },
+       "label": {
+        "$C": "c0"
+       },
+       "done": {
+        "$C": "c1"
+       }
+      },
+      {
+       "$el": "phone",
+       "args": [
+        {
+         "$M": "m0"
+        },
+        540,
+        1180,
+        330,
+        {
+         "$Ws": "w1"
+        }
+       ],
+       "kw": {
+        "enter": "rise",
+        "vt": 5,
+        "wm": 0,
+        "wmOff": {
+         "$W": "w2",
+         "add": 0
+        },
+        "float": [
+         5,
+         3.2,
+         0.4
+        ]
+       }
+      },
+      {
+       "$el": "mark_hl",
+       "args": [
+        513.45,
+        1383.4,
+        170,
+        110,
+        {
+         "$Ws": "w2"
+        }
+       ],
+       "kw": {}
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "layers",
+     3,
+     "_off"
+    ],
+    "value": 2
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w0",
+       "add": -4
+      },
+      1,
+      540,
+      960
+     ],
+     [
+      {
+       "$W": "w3",
+       "add": -4
+      },
+      1.05,
+      540,
+      1060
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 0
+      },
+      "click-ui"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w4",
+       "add": 8
+      },
+      "notify"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 1
+      },
+      "slide-out"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 3
+      },
+      "accent"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-05-ullu-ban-gaye.cta",
+  "source": {
+   "video": "ce-05-ullu-ban-gaye",
+   "scene": "cta",
+   "index": 9,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with comment, cursor, typebox, phone + phone.src · title \"Bas neeche / “CAPTIONS”\" · prop text: captions, Sent! Check your DMs",
+  "role": "statement",
+  "words": 10,
+  "fits": [
+   6,
+   16
+  ],
+  "seconds": 3.4,
+  "needs": {
+   "logo": false,
+   "media": 1
+  },
+  "props": [
+   "comment",
+   "cursor",
+   "typebox",
+   "phone"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Bas",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "captions",
+     "pos": 0.222
+    },
+    {
+     "id": "w2",
+     "orig": "karo",
+     "pos": 0.444
+    },
+    {
+     "id": "w3",
+     "orig": "comment",
+     "pos": 0.333,
+     "str": true
+    },
+    {
+     "id": "w4",
+     "orig": "link",
+     "pos": 0.556
+    },
+    {
+     "id": "w5",
+     "orig": "tumhaare",
+     "pos": 0.667,
+     "str": true
+    },
+    {
+     "id": "w6",
+     "orig": "Is",
+     "next": 0
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Bas neeche",
+     "max": 12
+    },
+    {
+     "id": "t1",
+     "orig": "“CAPTIONS”",
+     "max": 12
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "captions",
+     "max": 8,
+     "prop": "comment",
+     "key": "text"
+    },
+    {
+     "id": "c1",
+     "orig": "Sent! Check your DMs",
+     "max": 20,
+     "prop": "typebox",
+     "key": "text"
+    }
+   ],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/assets/premium-captions/premium-1.mp4",
+     "as": "phone.src"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        400,
+        380,
+        600
+       ],
+       "kw": {}
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        490,
+        760,
+        900
+       ],
+       "kw": {
+        "motion": "slam",
+        "instant": true
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "visuals": [
+      {
+       "kind": "comment",
+       "x": 90,
+       "y": 760,
+       "w": 900,
+       "h": 140,
+       "_at": {
+        "$Ws": "w0"
+       },
+       "_off": 6,
+       "text": {
+        "$C": "c0"
+       },
+       "start": {
+        "$W": "w1",
+        "add": 0
+       },
+       "perChar": 1.6,
+       "send": {
+        "$W": "w2",
+        "add": 4
+       }
+      },
+      {
+       "kind": "cursor",
+       "_at": {
+        "$Ws": "w3"
+       },
+       "_off": 2,
+       "keys": [
+        [
+         0,
+         820,
+         1180
+        ],
+        [
+         {
+          "$W": "w2",
+          "add": 2
+         },
+         920,
+         830,
+         1
+        ]
+       ],
+       "size": 110
+      },
+      {
+       "kind": "typebox",
+       "x": 300,
+       "y": 1010,
+       "w": 680,
+       "h": 124,
+       "r": 62,
+       "fill": "#034F46",
+       "color": "#FFFFEB",
+       "text": {
+        "$C": "c1"
+       },
+       "cursor": {
+        "$W": "w4",
+        "add": -3
+       },
+       "start": {
+        "$W": "w4",
+        "add": 0
+       },
+       "perChar": 1
+      },
+      {
+       "$el": "phone",
+       "args": [
+        {
+         "$M": "m0"
+        },
+        540,
+        1500,
+        260,
+        {
+         "$Ws": "w5"
+        }
+       ],
+       "kw": {
+        "enter": "rise",
+        "rot": -3,
+        "vt": 6,
+        "float": [
+         6,
+         3,
+         0.2
+        ]
+       }
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w0",
+       "add": -4
+      },
+      1.06,
+      540,
+      960
+     ],
+     [
+      {
+       "$W": "w6",
+       "add": -4
+      },
+      1,
+      540,
+      980
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 0
+      },
+      "code"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 2
+      },
+      "click-ui"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w4",
+       "add": 0
+      },
+      "notify"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w5",
+       "add": 6
+      },
+      "cta"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-05-ullu-ban-gaye.outro",
+  "source": {
+   "video": "ce-05-ullu-ban-gaye",
+   "scene": "outro",
+   "index": 10,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with burst, owl · title \"Is baar, / ullu nahi banoge.\"",
+  "role": "ending · statement",
+  "words": 5,
+  "fits": [
+   3,
+   8
+  ],
+  "seconds": 3.23,
+  "needs": {
+   "logo": false,
+   "media": 0
+  },
+  "props": [
+   "burst",
+   "owl"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Is",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "banoge",
+     "pos": 1
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Is baar,",
+     "max": 10
+    },
+    {
+     "id": "t1",
+     "orig": "ullu nahi banoge.",
+     "max": 20
+    }
+   ],
+   "content": [],
+   "media": []
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        400,
+        330,
+        700
+       ],
+       "kw": {}
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        1360,
+        760,
+        900
+       ],
+       "kw": {
+        "motion": "slam",
+        "instant": true
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "visuals": [
+      {
+       "$el": "burst",
+       "args": [
+        540,
+        1010,
+        820,
+        null
+       ],
+       "kw": {}
+      },
+      {
+       "kind": "image",
+       "draw": "owl",
+       "cx": 540,
+       "cy": 1010,
+       "w": 520,
+       "h": 520,
+       "shadow": [
+        0,
+        26,
+        46,
+        0.22
+       ],
+       "float": [
+        8,
+        2.8,
+        0.3
+       ],
+       "enter": "pop",
+       "shades": {
+        "$W": "w1",
+        "add": 2
+       }
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w0",
+       "add": -4
+      },
+      1,
+      540,
+      960
+     ],
+     [
+      {
+       "$W": "w1",
+       "add": 30
+      },
+      1.08,
+      540,
+      1000
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 2
+      },
+      "key-word"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 5
+      },
+      "thud"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ }
+]

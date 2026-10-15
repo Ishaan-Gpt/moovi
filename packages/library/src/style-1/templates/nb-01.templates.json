@@ -1,0 +1,1658 @@
+[
+ {
+  "id": "nb-01.hook",
+  "source": {
+   "video": "nb-01",
+   "scene": "hook",
+   "index": 0,
+   "brand": "oped"
+  },
+  "preset": "lines",
+  "shows": "lines with card + card.src · title \"You read the whole / chapter. / One exam question… / and it's gone.\"",
+  "role": "hook · statement",
+  "words": 14,
+  "fits": [
+   8,
+   22
+  ],
+  "seconds": 5.33,
+  "needs": {
+   "logo": false,
+   "media": 1
+  },
+  "props": [
+   "card"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "gone.",
+     "pos": 1
+    },
+    {
+     "id": "w1",
+     "orig": "You",
+     "pos": 0,
+     "str": true
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "You read the whole",
+     "max": 21
+    },
+    {
+     "id": "t1",
+     "orig": "chapter.",
+     "max": 10
+    },
+    {
+     "id": "t2",
+     "orig": "One exam question…",
+     "max": 21
+    },
+    {
+     "id": "t3",
+     "orig": "and it's gone.",
+     "max": 17
+    }
+   ],
+   "content": [],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/style-1/videos/nb-01/assets/oped-classroom-DIfIc81Q.jpg",
+     "as": "card.src"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        430,
+        700,
+        400
+       ],
+       "kw": {
+        "tracking": -0.015
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        560,
+        360
+       ],
+       "kw": {
+        "gradient": [
+         "#04BDBD",
+         "#04BDBD"
+        ]
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t2"
+        },
+        730,
+        700,
+        400
+       ],
+       "kw": {
+        "tracking": -0.015
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t3"
+        },
+        860,
+        520
+       ],
+       "kw": {
+        "gradient": [
+         "#04BDBD",
+         "#04BDBD"
+        ]
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "visuals": [
+      {
+       "$el": "card",
+       "args": [
+        {
+         "$M": "m0"
+        },
+        540,
+        1330,
+        820,
+        547,
+        null
+       ],
+       "kw": {
+        "radius": 30,
+        "out": {
+         "$W": "w0",
+         "add": 2
+        },
+        "float": [
+         6,
+         3,
+         0
+        ]
+       }
+      }
+     ],
+     "at": {
+      "$Ws": "w1"
+     }
+    }
+   },
+   {
+    "dims": [
+     [
+      [
+       -1,
+       1
+      ],
+      [
+       -1,
+       3
+      ]
+     ]
+    ]
+   },
+   {
+    "dims": [
+     [
+      [
+       -1,
+       2
+      ],
+      [
+       -1,
+       4
+      ]
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "nb-01.watching",
+  "source": {
+   "video": "nb-01",
+   "scene": "watching",
+   "index": 1,
+   "brand": "oped"
+  },
+  "preset": "stack_slam",
+  "shows": "stack_slam with card + card.src · title \"That's not learning. / That's watching.\"",
+  "role": "punch / emphasis",
+  "words": 5,
+  "fits": [
+   3,
+   8
+  ],
+  "seconds": 2.67,
+  "needs": {
+   "logo": false,
+   "media": 1
+  },
+  "props": [
+   "card"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "That's",
+     "pos": 0,
+     "str": true
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "That's not learning.",
+     "max": 23
+    },
+    {
+     "id": "t1",
+     "orig": "That's watching.",
+     "max": 19
+    }
+   ],
+   "content": [],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/style-1/videos/nb-01/assets/oped-classroom-DIfIc81Q.jpg",
+     "as": "card.src"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "stack_slam",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$T": "t0"
+      },
+      {
+       "$T": "t1"
+      }
+     ]
+    ],
+    "kw": {
+     "visuals": [
+      {
+       "$el": "card",
+       "args": [
+        {
+         "$M": "m0"
+        },
+        540,
+        1200,
+        760,
+        507,
+        null
+       ],
+       "kw": {
+        "radius": 30,
+        "bw": true,
+        "enter": "pop",
+        "float": [
+         5,
+         3,
+         1
+        ]
+       }
+      }
+     ],
+     "at": {
+      "$Ws": "w0"
+     }
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "layers",
+     1,
+     "weight"
+    ],
+    "value": 400
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "layers",
+     2,
+     "weight"
+    ],
+    "value": 400
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "layers",
+     2,
+     "italic"
+    ],
+    "value": true
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "nb-01.meet",
+  "source": {
+   "video": "nb-01",
+   "scene": "meet",
+   "index": 2,
+   "brand": "oped"
+  },
+  "preset": "lines",
+  "shows": "lines with burst, mark · title \"Meet / OPED. / An AI teacher that won't let you / Fake It.\"",
+  "role": "statement",
+  "words": 11,
+  "fits": [
+   7,
+   18
+  ],
+  "seconds": 3.73,
+  "needs": {
+   "logo": true,
+   "media": 0
+  },
+  "props": [
+   "burst",
+   "mark"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Oped,",
+     "pos": 0.1,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "Meet",
+     "pos": 0,
+     "str": true
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Meet",
+     "max": 6
+    },
+    {
+     "id": "t1",
+     "orig": "OPED.",
+     "max": 7
+    },
+    {
+     "id": "t2",
+     "orig": "An AI teacher that won't let you",
+     "max": 37
+    },
+    {
+     "id": "t3",
+     "orig": "Fake It.",
+     "max": 10
+    }
+   ],
+   "content": [],
+   "media": []
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        330,
+        200,
+        400
+       ],
+       "kw": {
+        "tracking": -0.015
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        470,
+        440,
+        400
+       ],
+       "kw": {
+        "tracking": -0.015,
+        "motion": "slam",
+        "instant": true
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t2"
+        },
+        1330,
+        900,
+        400
+       ],
+       "kw": {
+        "tracking": -0.015
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t3"
+        },
+        1440,
+        420
+       ],
+       "kw": {
+        "gradient": [
+         "#04BDBD",
+         "#04BDBD"
+        ]
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "visuals": [
+      {
+       "$el": "burst",
+       "args": [
+        540,
+        900,
+        560,
+        {
+         "$Ws": "w0"
+        }
+       ],
+       "kw": {}
+      },
+      {
+       "$el": "mark",
+       "args": [
+        540,
+        900,
+        320,
+        {
+         "$Ws": "w0"
+        }
+       ],
+       "kw": {}
+      }
+     ],
+     "at": {
+      "$Ws": "w1"
+     }
+    }
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "nb-01.pick",
+  "source": {
+   "video": "nb-01",
+   "scene": "pick",
+   "index": 3,
+   "brand": "oped"
+  },
+  "preset": "lines",
+  "shows": "lines with browser, win + browser.src · title \"Any NCERT chapter. / Class 4 to 10.\"",
+  "role": "statement",
+  "words": 9,
+  "fits": [
+   5,
+   14
+  ],
+  "seconds": 3.9,
+  "needs": {
+   "logo": false,
+   "media": 1
+  },
+  "props": [
+   "browser",
+   "win"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Pick",
+     "pos": 0,
+     "str": true
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Any NCERT chapter.",
+     "max": 21
+    },
+    {
+     "id": "t1",
+     "orig": "Class 4 to 10.",
+     "max": 17
+    }
+   ],
+   "content": [],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/style-1/videos/nb-01/assets/caps/home.png",
+     "as": "browser.src"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        400,
+        740,
+        400
+       ],
+       "kw": {
+        "tracking": -0.015
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        530,
+        450
+       ],
+       "kw": {
+        "gradient": [
+         "#04BDBD",
+         "#04BDBD"
+        ]
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "visuals": [
+      {
+       "$el": "browser",
+       "args": [
+        {
+         "$M": "m0"
+        },
+        {
+         "$el": "win",
+         "args": [
+          60,
+          720,
+          960
+         ],
+         "kw": {}
+        },
+        {
+         "$Ws": "w0"
+        }
+       ],
+       "kw": {}
+      }
+     ],
+     "at": {
+      "$Ws": "w0"
+     }
+    }
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "nb-01.explain",
+  "source": {
+   "video": "nb-01",
+   "scene": "explain",
+   "index": 4,
+   "brand": "oped"
+  },
+  "preset": "lines",
+  "shows": "lines with card + card.src · title \"Explain it in / your own words.\"",
+  "role": "statement",
+  "words": 6,
+  "fits": [
+   4,
+   10
+  ],
+  "seconds": 2.27,
+  "needs": {
+   "logo": false,
+   "media": 1
+  },
+  "props": [
+   "card"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "explain",
+     "pos": 0,
+     "str": true
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Explain it in",
+     "max": 16
+    },
+    {
+     "id": "t1",
+     "orig": "your own words.",
+     "max": 18
+    }
+   ],
+   "content": [],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/style-1/videos/nb-01/assets/card-recall.png",
+     "as": "card.src"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        380,
+        500,
+        400
+       ],
+       "kw": {
+        "tracking": -0.015
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        520,
+        600
+       ],
+       "kw": {
+        "gradient": [
+         "#04BDBD",
+         "#04BDBD"
+        ]
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "visuals": [
+      {
+       "$el": "card",
+       "args": [
+        {
+         "$M": "m0"
+        },
+        540,
+        1120,
+        880,
+        662.6506024096385,
+        {
+         "$Ws": "w0"
+        }
+       ],
+       "kw": {
+        "radius": 30,
+        "enter": "rise",
+        "tilt": 5,
+        "float": [
+         7,
+         3.1,
+         0.4
+        ]
+       }
+      }
+     ],
+     "at": {
+      "$Ws": "w0"
+     }
+    }
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "nb-01.strict",
+  "source": {
+   "video": "nb-01",
+   "scene": "strict",
+   "index": 5,
+   "brand": "oped"
+  },
+  "preset": "lines",
+  "shows": "lines with card + card.src · title \"Lenient on words. / Strict on ideas.\"",
+  "role": "statement",
+  "words": 6,
+  "fits": [
+   4,
+   10
+  ],
+  "seconds": 2.93,
+  "needs": {
+   "logo": false,
+   "media": 1
+  },
+  "props": [
+   "card"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Linear",
+     "pos": 0,
+     "str": true
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Lenient on words.",
+     "max": 20
+    },
+    {
+     "id": "t1",
+     "orig": "Strict on ideas.",
+     "max": 19
+    }
+   ],
+   "content": [],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/style-1/videos/nb-01/assets/card-check.png",
+     "as": "card.src"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        380,
+        660,
+        400
+       ],
+       "kw": {
+        "tracking": -0.015
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        510,
+        600,
+        400
+       ],
+       "kw": {
+        "tracking": -0.015
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "visuals": [
+      {
+       "$el": "card",
+       "args": [
+        {
+         "$M": "m0"
+        },
+        540,
+        1100,
+        900,
+        541.5162454873647,
+        {
+         "$Ws": "w0"
+        }
+       ],
+       "kw": {
+        "radius": 30,
+        "enter": "rise",
+        "tilt": -5,
+        "float": [
+         7,
+         3.1,
+         0.4
+        ]
+       }
+      }
+     ],
+     "at": {
+      "$Ws": "w0"
+     }
+    }
+   },
+   {
+    "dims": [
+     [
+      [
+       -1,
+       1
+      ],
+      [
+       -1,
+       2
+      ]
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "nb-01.angle",
+  "source": {
+   "video": "nb-01",
+   "scene": "angle",
+   "index": 6,
+   "brand": "oped"
+  },
+  "preset": "lines",
+  "shows": "lines with card + card.src · title \"Missed something? / A different angle.\"",
+  "role": "statement",
+  "words": 10,
+  "fits": [
+   6,
+   16
+  ],
+  "seconds": 3.43,
+  "needs": {
+   "logo": false,
+   "media": 1
+  },
+  "props": [
+   "card"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "different",
+     "pos": 0.556,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "Miss",
+     "pos": 0,
+     "str": true
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Missed something?",
+     "max": 20
+    },
+    {
+     "id": "t1",
+     "orig": "A different angle.",
+     "max": 21
+    }
+   ],
+   "content": [],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/style-1/videos/nb-01/assets/card-angle.png",
+     "as": "card.src"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        380,
+        680,
+        400
+       ],
+       "kw": {
+        "tracking": -0.015
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        515,
+        620
+       ],
+       "kw": {
+        "gradient": [
+         "#04BDBD",
+         "#04BDBD"
+        ]
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "visuals": [
+      {
+       "$el": "card",
+       "args": [
+        {
+         "$M": "m0"
+        },
+        540,
+        1120,
+        880,
+        662.6506024096385,
+        {
+         "$Ws": "w0"
+        }
+       ],
+       "kw": {
+        "radius": 30,
+        "enter": "rise",
+        "tilt": 5,
+        "float": [
+         7,
+         3.1,
+         0.4
+        ]
+       }
+      }
+     ],
+     "at": {
+      "$Ws": "w1"
+     }
+    }
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "nb-01.free",
+  "source": {
+   "video": "nb-01",
+   "scene": "free",
+   "index": 7,
+   "brand": "oped"
+  },
+  "preset": "lines",
+  "shows": "lines with card + card.src, card.src, card.src · title \"And for students, it costs / zero.\"",
+  "role": "statement",
+  "words": 5,
+  "fits": [
+   3,
+   8
+  ],
+  "seconds": 2.27,
+  "needs": {
+   "logo": false,
+   "media": 3
+  },
+  "props": [
+   "card"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "And",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "students,",
+     "pos": 0.5,
+     "str": true
+    },
+    {
+     "id": "w2",
+     "orig": "it's",
+     "pos": 0.75,
+     "str": true
+    },
+    {
+     "id": "w3",
+     "orig": "free.",
+     "pos": 1,
+     "str": true
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "And for students, it costs",
+     "max": 30
+    },
+    {
+     "id": "t1",
+     "orig": "zero.",
+     "max": 7
+    }
+   ],
+   "content": [],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/style-1/videos/nb-01/assets/card-ready.png",
+     "as": "card.src"
+    },
+    {
+     "id": "m1",
+     "orig": "styles/style-1/videos/nb-01/assets/card-recall.png",
+     "as": "card.src"
+    },
+    {
+     "id": "m2",
+     "orig": "styles/style-1/videos/nb-01/assets/card-check.png",
+     "as": "card.src"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        420,
+        860,
+        400
+       ],
+       "kw": {
+        "tracking": -0.015
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        540,
+        400
+       ],
+       "kw": {
+        "gradient": [
+         "#04BDBD",
+         "#04BDBD"
+        ],
+        "motion": "slam"
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "visuals": [
+      {
+       "$el": "card",
+       "args": [
+        {
+         "$M": "m0"
+        },
+        300,
+        1180,
+        420,
+        297.23991507431,
+        {
+         "$Ws": "w1"
+        }
+       ],
+       "kw": {
+        "radius": 30,
+        "enter": "pop",
+        "tilt": 5,
+        "float": [
+         7,
+         3.1,
+         0.4
+        ],
+        "rot": -6
+       }
+      },
+      {
+       "$el": "card",
+       "args": [
+        {
+         "$M": "m1"
+        },
+        790,
+        1130,
+        420,
+        316.26506024096386,
+        {
+         "$Ws": "w2"
+        }
+       ],
+       "kw": {
+        "radius": 30,
+        "enter": "pop",
+        "tilt": 5,
+        "float": [
+         7,
+         3.1,
+         0.4
+        ],
+        "rot": 5
+       }
+      },
+      {
+       "$el": "card",
+       "args": [
+        {
+         "$M": "m2"
+        },
+        540,
+        1480,
+        460,
+        276.77496991576413,
+        {
+         "$Ws": "w3"
+        }
+       ],
+       "kw": {
+        "radius": 30,
+        "enter": "pop",
+        "tilt": 5,
+        "float": [
+         7,
+         3.1,
+         0.4
+        ],
+        "rot": -2
+       }
+      }
+     ]
+    }
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "nb-01.cta",
+  "source": {
+   "video": "nb-01",
+   "scene": "cta",
+   "index": 8,
+   "brand": "oped"
+  },
+  "preset": "cta_pill",
+  "shows": "cta_pill · title \"Learn it. Prove it. / Join the beta. / OPED.\"",
+  "role": "cta (button)",
+  "words": 8,
+  "fits": [
+   5,
+   13
+  ],
+  "seconds": 2.87,
+  "needs": {
+   "logo": true,
+   "media": 0
+  },
+  "props": [],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "beta.",
+     "pos": 1,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "Learn",
+     "pos": 0,
+     "str": true
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Learn it. Prove it.",
+     "max": 22
+    },
+    {
+     "id": "t1",
+     "orig": "Join the beta.",
+     "max": 17
+    },
+    {
+     "id": "t2",
+     "orig": "OPED.",
+     "max": 7
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "Join Beta ↗",
+     "max": 11,
+     "prop": "pill",
+     "key": "pill"
+    }
+   ],
+   "media": []
+  },
+  "ops": [
+   {
+    "call": "cta_pill",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$T": "t0"
+      },
+      {
+       "$T": "t1"
+      }
+     ],
+     {
+      "$C": "c0"
+     },
+     {
+      "$Ws": "w0"
+     }
+    ],
+    "kw": {
+     "wordmark": {
+      "$T": "t2"
+     },
+     "at": {
+      "$Ws": "w1"
+     }
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "layers",
+     0,
+     "top"
+    ],
+    "value": 450
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "layers",
+     0,
+     "weight"
+    ],
+    "value": 400
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "layers",
+     1,
+     "top"
+    ],
+    "value": 600
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "layers",
+     1,
+     "weight"
+    ],
+    "value": 400
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "layers",
+     1,
+     "italic"
+    ],
+    "value": true
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "layers",
+     5,
+     "top"
+    ],
+    "value": 1255
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "layers",
+     5,
+     "width"
+    ],
+    "value": 280
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "layers",
+     5,
+     "weight"
+    ],
+    "value": 400
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "nb-01.outro",
+  "source": {
+   "video": "nb-01",
+   "scene": "outro",
+   "index": 9,
+   "brand": "oped"
+  },
+  "preset": "lines",
+  "shows": "lines with burst, mark · title \"That was / OPED. / Stop watching. / Start understanding.\"",
+  "role": "ending · statement",
+  "words": 7,
+  "fits": [
+   4,
+   11
+  ],
+  "seconds": 4.77,
+  "needs": {
+   "logo": true,
+   "media": 0
+  },
+  "props": [
+   "burst",
+   "mark"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "That",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "OPED.",
+     "pos": 0.333,
+     "str": true
+    },
+    {
+     "id": "w2",
+     "orig": "start",
+     "pos": 0.833
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "That was",
+     "max": 10
+    },
+    {
+     "id": "t1",
+     "orig": "OPED.",
+     "max": 7
+    },
+    {
+     "id": "t2",
+     "orig": "Stop watching.",
+     "max": 17
+    },
+    {
+     "id": "t3",
+     "orig": "Start understanding.",
+     "max": 23
+    }
+   ],
+   "content": [],
+   "media": []
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        330,
+        360,
+        400
+       ],
+       "kw": {
+        "tracking": -0.015
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        460,
+        500,
+        400
+       ],
+       "kw": {
+        "tracking": -0.015,
+        "motion": "slam",
+        "instant": true
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t2"
+        },
+        1290,
+        560,
+        400
+       ],
+       "kw": {
+        "tracking": -0.015
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t3"
+        },
+        1410,
+        700
+       ],
+       "kw": {
+        "gradient": [
+         "#04BDBD",
+         "#04BDBD"
+        ]
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "visuals": [
+      {
+       "$el": "burst",
+       "args": [
+        540,
+        960,
+        600,
+        {
+         "$Ws": "w1"
+        }
+       ],
+       "kw": {}
+      },
+      {
+       "$el": "mark",
+       "args": [
+        540,
+        960,
+        340,
+        {
+         "$Ws": "w1"
+        }
+       ],
+       "kw": {}
+      }
+     ]
+    }
+   },
+   {
+    "dims": [
+     [
+      [
+       -1,
+       4
+      ],
+      [
+       -1,
+       5
+      ]
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 0
+      },
+      "build"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 0
+      },
+      "key-word"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 0
+      },
+      "accent"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ }
+]

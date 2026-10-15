@@ -1,0 +1,394 @@
+[
+ {
+  "t": 0.0,
+  "event": "word",
+  "text": "YOUR"
+ },
+ {
+  "t": 0.03,
+  "event": "hard-hit",
+  "sound": "soft-hit"
+ },
+ {
+  "t": 0.1,
+  "event": "word",
+  "text": "BUSINESS"
+ },
+ {
+  "t": 0.5,
+  "event": "word",
+  "text": "DOESN'T"
+ },
+ {
+  "t": 0.933,
+  "event": "word",
+  "text": "NEED"
+ },
+ {
+  "t": 1.167,
+  "event": "word",
+  "text": "MORE"
+ },
+ {
+  "t": 1.4,
+  "event": "word",
+  "text": "TRAFFIC."
+ },
+ {
+  "t": 2.3,
+  "event": "word",
+  "text": "IT"
+ },
+ {
+  "t": 2.367,
+  "event": "word",
+  "text": "NEEDS"
+ },
+ {
+  "t": 2.667,
+  "event": "word",
+  "text": "GROWTH."
+ },
+ {
+  "t": 2.6769999999999996,
+  "event": "key-word"
+ },
+ {
+  "t": 2.7,
+  "event": "pop",
+  "sound": "pop"
+ },
+ {
+  "t": 3.667,
+  "event": "word",
+  "text": "MEET"
+ },
+ {
+  "t": 3.8,
+  "event": "scene",
+  "sound": "air-cut"
+ },
+ {
+  "t": 4.033,
+  "event": "word",
+  "text": "EEGNITE\u2122"
+ },
+ {
+  "t": 4.043,
+  "event": "key-word"
+ },
+ {
+  "t": 4.067,
+  "event": "pop",
+  "sound": "pop-9"
+ },
+ {
+  "t": 4.067,
+  "event": "build"
+ },
+ {
+  "t": 4.067,
+  "event": "key-word"
+ },
+ {
+  "t": 5.0,
+  "event": "word",
+  "text": "SEO"
+ },
+ {
+  "t": 5.133,
+  "event": "scene",
+  "sound": "woosh-tight"
+ },
+ {
+  "t": 5.267,
+  "event": "pop",
+  "sound": "pop-4"
+ },
+ {
+  "t": 5.6,
+  "event": "word",
+  "text": "THAT"
+ },
+ {
+  "t": 6.033,
+  "event": "word",
+  "text": "RANKS."
+ },
+ {
+  "t": 6.067,
+  "event": "pop",
+  "sound": "bubble"
+ },
+ {
+  "t": 6.333,
+  "event": "word",
+  "text": "ADS"
+ },
+ {
+  "t": 6.367,
+  "event": "pop",
+  "sound": "pop"
+ },
+ {
+  "t": 6.867,
+  "event": "word",
+  "text": "THAT"
+ },
+ {
+  "t": 7.067,
+  "event": "word",
+  "text": "CONVERT."
+ },
+ {
+  "t": 7.1,
+  "event": "pop",
+  "sound": "pop-9"
+ },
+ {
+  "t": 7.2,
+  "event": "word",
+  "text": "SITES"
+ },
+ {
+  "t": 7.9,
+  "event": "card-in"
+ },
+ {
+  "t": 8.2,
+  "event": "word",
+  "text": "THAT"
+ },
+ {
+  "t": 9.033,
+  "event": "word",
+  "text": "SELL."
+ },
+ {
+  "t": 9.767,
+  "event": "scene",
+  "sound": "air-cut"
+ },
+ {
+  "t": 9.867,
+  "event": "word",
+  "text": "SOCIAL."
+ },
+ {
+  "t": 9.9,
+  "event": "pop",
+  "sound": "pop-4"
+ },
+ {
+  "t": 10.167,
+  "event": "word",
+  "text": "EMAIL."
+ },
+ {
+  "t": 10.2,
+  "event": "pop",
+  "sound": "bubble"
+ },
+ {
+  "t": 10.6,
+  "event": "word",
+  "text": "ANALYTICS."
+ },
+ {
+  "t": 10.633,
+  "event": "pop",
+  "sound": "pop"
+ },
+ {
+  "t": 11.767,
+  "event": "word",
+  "text": "EVERYTHING"
+ },
+ {
+  "t": 11.8,
+  "event": "pop",
+  "sound": "pop-9"
+ },
+ {
+  "t": 12.1,
+  "event": "word",
+  "text": "UNDER"
+ },
+ {
+  "t": 12.133,
+  "event": "pop",
+  "sound": "pop-4"
+ },
+ {
+  "t": 12.433,
+  "event": "word",
+  "text": "ONE"
+ },
+ {
+  "t": 12.467,
+  "event": "pop",
+  "sound": "bubble"
+ },
+ {
+  "t": 12.7,
+  "event": "word",
+  "text": "ROOF."
+ },
+ {
+  "t": 13.267,
+  "event": "word",
+  "text": "NO"
+ },
+ {
+  "t": 13.4,
+  "event": "scene",
+  "sound": "woosh-tight"
+ },
+ {
+  "t": 13.633,
+  "event": "word",
+  "text": "FLUFF."
+ },
+ {
+  "t": 14.133,
+  "event": "word",
+  "text": "NO"
+ },
+ {
+  "t": 14.233,
+  "event": "word",
+  "text": "EXCUSES."
+ },
+ {
+  "t": 15.3,
+  "event": "word",
+  "text": "JUST"
+ },
+ {
+  "t": 15.4,
+  "event": "word",
+  "text": "RESULTS."
+ },
+ {
+  "t": 15.4,
+  "event": "key-word"
+ },
+ {
+  "t": 15.41,
+  "event": "key-word"
+ },
+ {
+  "t": 15.433,
+  "event": "pop",
+  "sound": "pop"
+ },
+ {
+  "t": 15.5,
+  "event": "pop",
+  "sound": "pop-9"
+ },
+ {
+  "t": 15.567,
+  "event": "pop",
+  "sound": "pop-4"
+ },
+ {
+  "t": 15.633,
+  "event": "pop",
+  "sound": "bubble"
+ },
+ {
+  "t": 15.7,
+  "event": "pop",
+  "sound": "pop"
+ },
+ {
+  "t": 15.767,
+  "event": "pop",
+  "sound": "pop-9"
+ },
+ {
+  "t": 16.533,
+  "event": "scene",
+  "sound": "air-cut"
+ },
+ {
+  "t": 16.633,
+  "event": "word",
+  "text": "BE"
+ },
+ {
+  "t": 16.733,
+  "event": "word",
+  "text": "SEEN."
+ },
+ {
+  "t": 16.743000000000002,
+  "event": "key-word"
+ },
+ {
+  "t": 17.2,
+  "event": "word",
+  "text": "BE"
+ },
+ {
+  "t": 17.3,
+  "event": "word",
+  "text": "CHOSEN."
+ },
+ {
+  "t": 17.310000000000002,
+  "event": "key-word"
+ },
+ {
+  "t": 18.267,
+  "event": "word",
+  "text": "BOOK"
+ },
+ {
+  "t": 18.4,
+  "event": "scene",
+  "sound": "woosh-tight"
+ },
+ {
+  "t": 18.667,
+  "event": "word",
+  "text": "YOUR"
+ },
+ {
+  "t": 18.867,
+  "event": "word",
+  "text": "FREE"
+ },
+ {
+  "t": 18.9,
+  "event": "pop",
+  "sound": "pop-4"
+ },
+ {
+  "t": 19.1,
+  "event": "word",
+  "text": "CONSULTATION."
+ },
+ {
+  "t": 20.2,
+  "event": "word",
+  "text": "EEGNITE\u2122"
+ },
+ {
+  "t": 20.2,
+  "event": "code"
+ },
+ {
+  "t": 20.21,
+  "event": "key-word"
+ },
+ {
+  "t": 20.9,
+  "event": "click-ui"
+ },
+ {
+  "t": 21.033,
+  "event": "cta"
+ }
+]

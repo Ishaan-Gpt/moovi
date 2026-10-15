@@ -1,0 +1,666 @@
+[
+ {
+  "t": -0.1,
+  "event": "pop",
+  "sound": "pop-9"
+ },
+ {
+  "t": 0.0,
+  "event": "word",
+  "text": "PLAIN"
+ },
+ {
+  "t": 0.01,
+  "event": "key-word"
+ },
+ {
+  "t": 0.05,
+  "event": "hard-hit"
+ },
+ {
+  "t": 0.2,
+  "event": "word",
+  "text": "WHITE"
+ },
+ {
+  "t": 0.367,
+  "event": "pop",
+  "sound": "pop"
+ },
+ {
+  "t": 0.433,
+  "event": "word",
+  "text": "captions?"
+ },
+ {
+  "t": 1.367,
+  "event": "word",
+  "text": "That's"
+ },
+ {
+  "t": 1.6,
+  "event": "word",
+  "text": "why"
+ },
+ {
+  "t": 1.8,
+  "event": "word",
+  "text": "your"
+ },
+ {
+  "t": 1.967,
+  "event": "word",
+  "text": "Reels"
+ },
+ {
+  "t": 2.267,
+  "event": "word",
+  "text": "look"
+ },
+ {
+  "t": 2.467,
+  "event": "word",
+  "text": "boring."
+ },
+ {
+  "t": 3.133,
+  "event": "scene",
+  "sound": "air-cut"
+ },
+ {
+  "t": 3.233,
+  "event": "pop",
+  "sound": "pop-4"
+ },
+ {
+  "t": 3.233,
+  "event": "card-in"
+ },
+ {
+  "t": 3.3,
+  "event": "word",
+  "text": "Top"
+ },
+ {
+  "t": 3.533,
+  "event": "word",
+  "text": "creators"
+ },
+ {
+  "t": 3.967,
+  "event": "word",
+  "text": "use"
+ },
+ {
+  "t": 4.233,
+  "event": "word",
+  "text": "CINEMATIC,"
+ },
+ {
+  "t": 4.243,
+  "event": "key-word"
+ },
+ {
+  "t": 5.1,
+  "event": "word",
+  "text": "After"
+ },
+ {
+  "t": 5.567,
+  "event": "word",
+  "text": "Effects-style"
+ },
+ {
+  "t": 6.033,
+  "event": "word",
+  "text": "captions"
+ },
+ {
+  "t": 6.433,
+  "event": "word",
+  "text": "that"
+ },
+ {
+  "t": 6.633,
+  "event": "card-in"
+ },
+ {
+  "t": 6.7,
+  "event": "word",
+  "text": "move"
+ },
+ {
+  "t": 6.9,
+  "event": "word",
+  "text": "with"
+ },
+ {
+  "t": 7.067,
+  "event": "card-in"
+ },
+ {
+  "t": 7.133,
+  "event": "word",
+  "text": "every"
+ },
+ {
+  "t": 7.4,
+  "event": "word",
+  "text": "word."
+ },
+ {
+  "t": 8.033,
+  "event": "scene",
+  "sound": "woosh-tight"
+ },
+ {
+  "t": 8.133,
+  "event": "pop",
+  "sound": "bubble"
+ },
+ {
+  "t": 8.2,
+  "event": "word",
+  "text": "But"
+ },
+ {
+  "t": 8.3,
+  "event": "word",
+  "text": "Submagic"
+ },
+ {
+  "t": 8.833,
+  "event": "word",
+  "text": "wants"
+ },
+ {
+  "t": 9.1,
+  "event": "word",
+  "text": "a"
+ },
+ {
+  "t": 9.233,
+  "event": "word",
+  "text": "subscription."
+ },
+ {
+  "t": 9.243,
+  "event": "key-word"
+ },
+ {
+  "t": 9.567,
+  "event": "pop",
+  "sound": "pop"
+ },
+ {
+  "t": 9.633,
+  "event": "word",
+  "text": "And"
+ },
+ {
+  "t": 10.233,
+  "event": "word",
+  "text": "CapCut"
+ },
+ {
+  "t": 10.633,
+  "event": "word",
+  "text": "wants"
+ },
+ {
+  "t": 10.933,
+  "event": "word",
+  "text": "Pro."
+ },
+ {
+  "t": 10.943,
+  "event": "key-word"
+ },
+ {
+  "t": 11.633,
+  "event": "scene",
+  "sound": "woosh-short"
+ },
+ {
+  "t": 11.733,
+  "event": "pop",
+  "sound": "pop-9"
+ },
+ {
+  "t": 11.8,
+  "event": "word",
+  "text": "Say"
+ },
+ {
+  "t": 11.933,
+  "event": "word",
+  "text": "hello"
+ },
+ {
+  "t": 12.2,
+  "event": "word",
+  "text": "to"
+ },
+ {
+  "t": 12.3,
+  "event": "pop",
+  "sound": "pop-4"
+ },
+ {
+  "t": 12.4,
+  "event": "build"
+ },
+ {
+  "t": 12.867,
+  "event": "word",
+  "text": "CaptionsEasy."
+ },
+ {
+  "t": 12.877,
+  "event": "key-word"
+ },
+ {
+  "t": 13.4,
+  "event": "scene",
+  "sound": "air-cut"
+ },
+ {
+  "t": 13.5,
+  "event": "pop",
+  "sound": "bubble"
+ },
+ {
+  "t": 13.567,
+  "event": "word",
+  "text": "30+"
+ },
+ {
+  "t": 13.577,
+  "event": "key-word"
+ },
+ {
+  "t": 13.6,
+  "event": "stat"
+ },
+ {
+  "t": 13.933,
+  "event": "pop",
+  "sound": "bubble"
+ },
+ {
+  "t": 14.0,
+  "event": "word",
+  "text": "viral"
+ },
+ {
+  "t": 14.267,
+  "event": "pop",
+  "sound": "pop"
+ },
+ {
+  "t": 14.333,
+  "event": "word",
+  "text": "caption"
+ },
+ {
+  "t": 14.6,
+  "event": "pop",
+  "sound": "pop-9"
+ },
+ {
+  "t": 14.6,
+  "event": "pop",
+  "sound": "pop-4"
+ },
+ {
+  "t": 14.667,
+  "event": "word",
+  "text": "looks."
+ },
+ {
+  "t": 14.933,
+  "event": "pop",
+  "sound": "bubble"
+ },
+ {
+  "t": 15.0,
+  "event": "word",
+  "text": "Every"
+ },
+ {
+  "t": 15.533,
+  "event": "pop",
+  "sound": "pop"
+ },
+ {
+  "t": 15.6,
+  "event": "word",
+  "text": "word"
+ },
+ {
+  "t": 15.767,
+  "event": "pop",
+  "sound": "pop-9"
+ },
+ {
+  "t": 15.833,
+  "event": "word",
+  "text": "in"
+ },
+ {
+  "t": 15.933,
+  "event": "pop",
+  "sound": "pop-4"
+ },
+ {
+  "t": 16.0,
+  "event": "word",
+  "text": "sync."
+ },
+ {
+  "t": 16.633,
+  "event": "scene",
+  "sound": "woosh-tight"
+ },
+ {
+  "t": 16.733,
+  "event": "pop",
+  "sound": "pop"
+ },
+ {
+  "t": 16.933,
+  "event": "code"
+ },
+ {
+  "t": 17.533,
+  "event": "word",
+  "text": "Ever."
+ },
+ {
+  "t": 17.543,
+  "event": "key-word"
+ },
+ {
+  "t": 18.267,
+  "event": "scene",
+  "sound": "woosh-short"
+ },
+ {
+  "t": 18.367,
+  "event": "pop",
+  "sound": "pop-9"
+ },
+ {
+  "t": 18.433,
+  "event": "word",
+  "text": "It"
+ },
+ {
+  "t": 18.567,
+  "event": "word",
+  "text": "even"
+ },
+ {
+  "t": 18.833,
+  "event": "word",
+  "text": "gets"
+ },
+ {
+  "t": 19.1,
+  "event": "notify"
+ },
+ {
+  "t": 19.167,
+  "event": "word",
+  "text": "HINGLISH"
+ },
+ {
+  "t": 19.177,
+  "event": "key-word"
+ },
+ {
+  "t": 19.433,
+  "event": "card-in"
+ },
+ {
+  "t": 19.5,
+  "event": "word",
+  "text": "right."
+ },
+ {
+  "t": 20.0,
+  "event": "scene",
+  "sound": "air-cut"
+ },
+ {
+  "t": 20.1,
+  "event": "pop",
+  "sound": "pop-4"
+ },
+ {
+  "t": 20.3,
+  "event": "word",
+  "text": "It's"
+ },
+ {
+  "t": 20.5,
+  "event": "word",
+  "text": "free."
+ },
+ {
+  "t": 20.51,
+  "event": "key-word"
+ },
+ {
+  "t": 20.533,
+  "event": "accent"
+ },
+ {
+  "t": 20.967,
+  "event": "word",
+  "text": "Fully"
+ },
+ {
+  "t": 21.133,
+  "event": "pop",
+  "sound": "bubble"
+ },
+ {
+  "t": 21.2,
+  "event": "word",
+  "text": "open"
+ },
+ {
+  "t": 21.567,
+  "event": "word",
+  "text": "source."
+ },
+ {
+  "t": 22.367,
+  "event": "card-in"
+ },
+ {
+  "t": 22.433,
+  "event": "word",
+  "text": "It"
+ },
+ {
+  "t": 22.533,
+  "event": "word",
+  "text": "runs"
+ },
+ {
+  "t": 22.733,
+  "event": "word",
+  "text": "right"
+ },
+ {
+  "t": 23.0,
+  "event": "word",
+  "text": "in"
+ },
+ {
+  "t": 23.133,
+  "event": "word",
+  "text": "your"
+ },
+ {
+  "t": 23.233,
+  "event": "word",
+  "text": "browser,"
+ },
+ {
+  "t": 23.9,
+  "event": "word",
+  "text": "your"
+ },
+ {
+  "t": 24.067,
+  "event": "word",
+  "text": "clips"
+ },
+ {
+  "t": 24.333,
+  "event": "word",
+  "text": "never"
+ },
+ {
+  "t": 24.6,
+  "event": "word",
+  "text": "leave"
+ },
+ {
+  "t": 24.867,
+  "event": "word",
+  "text": "your"
+ },
+ {
+  "t": 25.033,
+  "event": "word",
+  "text": "machine."
+ },
+ {
+  "t": 25.7,
+  "event": "scene",
+  "sound": "woosh-tight"
+ },
+ {
+  "t": 25.733,
+  "event": "list-item"
+ },
+ {
+  "t": 25.8,
+  "event": "pop",
+  "sound": "pop"
+ },
+ {
+  "t": 25.867,
+  "event": "word",
+  "text": "Pick"
+ },
+ {
+  "t": 25.9,
+  "event": "click-ui"
+ },
+ {
+  "t": 26.0,
+  "event": "word",
+  "text": "a"
+ },
+ {
+  "t": 26.133,
+  "event": "word",
+  "text": "look."
+ },
+ {
+  "t": 26.133,
+  "event": "list-item"
+ },
+ {
+  "t": 26.2,
+  "event": "card-in"
+ },
+ {
+  "t": 26.267,
+  "event": "word",
+  "text": "Export."
+ },
+ {
+  "t": 26.3,
+  "event": "click-ui"
+ },
+ {
+  "t": 26.6,
+  "event": "list-item"
+ },
+ {
+  "t": 26.667,
+  "event": "pop",
+  "sound": "pop-9"
+ },
+ {
+  "t": 26.733,
+  "event": "word",
+  "text": "Post."
+ },
+ {
+  "t": 26.743,
+  "event": "key-word"
+ },
+ {
+  "t": 26.767,
+  "event": "click-ui"
+ },
+ {
+  "t": 26.967,
+  "event": "scene",
+  "sound": "woosh-short"
+ },
+ {
+  "t": 27.067,
+  "event": "pop",
+  "sound": "pop-4"
+ },
+ {
+  "t": 27.067,
+  "event": "pop",
+  "sound": "bubble"
+ },
+ {
+  "t": 27.133,
+  "event": "word",
+  "text": "Viral"
+ },
+ {
+  "t": 28.0,
+  "event": "word",
+  "text": "captions."
+ },
+ {
+  "t": 28.567,
+  "event": "pop",
+  "sound": "pop"
+ },
+ {
+  "t": 28.633,
+  "event": "word",
+  "text": "Zero"
+ },
+ {
+  "t": 28.933,
+  "event": "word",
+  "text": "watermark."
+ },
+ {
+  "t": 28.943,
+  "event": "key-word"
+ },
+ {
+  "t": 29.733,
+  "event": "code"
+ },
+ {
+  "t": 29.767,
+  "event": "cta"
+ }
+]

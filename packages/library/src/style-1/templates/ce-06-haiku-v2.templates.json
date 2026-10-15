@@ -1,0 +1,2460 @@
+[
+ {
+  "id": "ce-06-haiku-v2.hook",
+  "source": {
+   "video": "ce-06-haiku-v2",
+   "scene": "hook",
+   "index": 0,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with burst, phone + phone.src · title \"Ruko! / scroll mat karna!\"",
+  "role": "hook · statement",
+  "words": 4,
+  "fits": [
+   2,
+   6
+  ],
+  "seconds": 1.6,
+  "needs": {
+   "logo": false,
+   "media": 1
+  },
+  "props": [
+   "burst",
+   "phone"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Ruko!",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "karna!",
+     "pos": 1
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Ruko!",
+     "max": 7
+    },
+    {
+     "id": "t1",
+     "orig": "scroll mat karna!",
+     "max": 20
+    }
+   ],
+   "content": [],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/assets/premium-captions/premium-1.mp4",
+     "as": "phone.src"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        300,
+        260,
+        800
+       ],
+       "kw": {
+        "size": 170,
+        "tracking": -0.035,
+        "motion": "slam",
+        "instant": true
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        500,
+        850
+       ],
+       "kw": {
+        "size": 92
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "visuals": [
+      {
+       "$el": "burst",
+       "args": [
+        540,
+        1290,
+        900,
+        {
+         "$Ws": "w0"
+        }
+       ],
+       "kw": {}
+      },
+      {
+       "$el": "phone",
+       "args": [
+        {
+         "$M": "m0"
+        },
+        540,
+        1300,
+        430,
+        {
+         "$Ws": "w0"
+        }
+       ],
+       "kw": {
+        "enter": "rise",
+        "vt": 1,
+        "float": [
+         6,
+         3,
+         0.4
+        ]
+       }
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$S": 0
+      },
+      1.14,
+      540,
+      1080
+     ],
+     [
+      {
+       "$W": "w1",
+       "add": 6
+      },
+      1,
+      540,
+      960
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w0",
+       "add": 0
+      },
+      "hard-hit",
+      "punch"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-06-haiku-v2.reels",
+  "source": {
+   "video": "ce-06-haiku-v2",
+   "scene": "reels",
+   "index": 1,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with deck + deck.items, deck.items, deck.items, deck.items · title \"Agar tum Reels / banate ho, / sab chhod ke / abhi ye karo!\"",
+  "role": "statement",
+  "words": 12,
+  "fits": [
+   7,
+   19
+  ],
+  "seconds": 3,
+  "needs": {
+   "logo": false,
+   "media": 4
+  },
+  "props": [
+   "deck"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Agar",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "ye",
+     "pos": 0.909
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Agar tum Reels",
+     "max": 17
+    },
+    {
+     "id": "t1",
+     "orig": "banate ho,",
+     "max": 12
+    },
+    {
+     "id": "t2",
+     "orig": "sab chhod ke",
+     "max": 15
+    },
+    {
+     "id": "t3",
+     "orig": "abhi ye karo!",
+     "max": 16
+    }
+   ],
+   "content": [],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/assets/premium-captions/premium-2.mp4",
+     "as": "deck.items"
+    },
+    {
+     "id": "m1",
+     "orig": "styles/assets/premium-captions/premium-3.mp4",
+     "as": "deck.items"
+    },
+    {
+     "id": "m2",
+     "orig": "styles/assets/premium-captions/premium-4.mp4",
+     "as": "deck.items"
+    },
+    {
+     "id": "m3",
+     "orig": "styles/assets/premium-captions/premium-1.mp4",
+     "as": "deck.items"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        300,
+        728,
+        800
+       ],
+       "kw": {
+        "size": 86,
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        412,
+        520,
+        800
+       ],
+       "kw": {
+        "size": 86,
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t2"
+        },
+        530,
+        600
+       ],
+       "kw": {
+        "size": 92
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t3"
+        },
+        650,
+        650
+       ],
+       "kw": {
+        "size": 92
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "visuals": [
+      {
+       "kind": "deck",
+       "cx": 540,
+       "cy": 1300,
+       "w": 430,
+       "f": {
+        "$W": "w0",
+        "add": 2
+       },
+       "every": 9,
+       "items": [
+        {
+         "$M": "m0"
+        },
+        {
+         "$M": "m1"
+        },
+        {
+         "$M": "m2"
+        },
+        {
+         "$M": "m3"
+        }
+       ],
+       "vt": 1
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w0",
+       "add": -4
+      },
+      1.04,
+      540,
+      980
+     ],
+     [
+      {
+       "$W": "w1",
+       "add": 4
+      },
+      1.06,
+      540,
+      1000
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w0",
+       "add": 0
+      },
+      "pop",
+      "pop-9"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-06-haiku-v2.site",
+  "source": {
+   "video": "ce-06-haiku-v2",
+   "scene": "site",
+   "index": 2,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with browser, win, coin + browser.src · title \"Ek website hai, / jahan aise viral / captions banenge, / genuinely fre\" · prop text: ₹0",
+  "role": "statement",
+  "words": 11,
+  "fits": [
+   7,
+   18
+  ],
+  "seconds": 4.03,
+  "needs": {
+   "logo": false,
+   "media": 1
+  },
+  "props": [
+   "browser",
+   "win",
+   "coin"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Ek",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "free",
+     "pos": 0.9,
+     "str": true
+    },
+    {
+     "id": "w2",
+     "orig": "mein!",
+     "pos": 1
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Ek website hai,",
+     "max": 18
+    },
+    {
+     "id": "t1",
+     "orig": "jahan aise viral",
+     "max": 19
+    },
+    {
+     "id": "t2",
+     "orig": "captions banenge,",
+     "max": 20
+    },
+    {
+     "id": "t3",
+     "orig": "genuinely free mein!",
+     "max": 23
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "₹0",
+     "max": 3,
+     "prop": "coin",
+     "key": "face"
+    }
+   ],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/style-1/videos/ce-06-haiku-v2/assets/editor.png",
+     "as": "browser.src"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        300,
+        780,
+        800
+       ],
+       "kw": {
+        "size": 86,
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        410,
+        800
+       ],
+       "kw": {
+        "size": 92
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t2"
+        },
+        530,
+        884,
+        800
+       ],
+       "kw": {
+        "size": 86,
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t3"
+        },
+        640,
+        900
+       ],
+       "kw": {
+        "size": 92
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "visuals": [
+      {
+       "$el": "browser",
+       "args": [
+        {
+         "$M": "m0"
+        },
+        {
+         "$el": "win",
+         "args": [
+          70,
+          880,
+          940
+         ],
+         "kw": {}
+        },
+        {
+         "$Ws": "w0"
+        }
+       ],
+       "kw": {
+        "tilt": 3,
+        "float": [
+         6,
+         3,
+         0.5
+        ]
+       }
+      },
+      {
+       "kind": "image",
+       "draw": "coin",
+       "cx": 730,
+       "cy": 1660,
+       "w": 250,
+       "h": 250,
+       "enter": "glide",
+       "p": {
+        "face": {
+         "$C": "c0"
+        }
+       },
+       "_at": {
+        "$Ws": "w1"
+       },
+       "_off": 0
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w0",
+       "add": -4
+      },
+      1.05,
+      540,
+      1000
+     ],
+     [
+      {
+       "$W": "w2",
+       "add": 4
+      },
+      1,
+      540,
+      980
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 0
+      },
+      "stat"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-06-haiku-v2.trap",
+  "source": {
+   "video": "ce-06-haiku-v2",
+   "scene": "trap",
+   "index": 3,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with panel, stamp · title \"Na free trial / ka chakkar, / na watermark, / na subscription!\" · prop text: Free trial, NO, Watermark, NO",
+  "role": "statement",
+  "words": 9,
+  "fits": [
+   5,
+   14
+  ],
+  "seconds": 3.3,
+  "needs": {
+   "logo": false,
+   "media": 0
+  },
+  "props": [
+   "panel",
+   "stamp"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Na",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "trial",
+     "pos": 0.25
+    },
+    {
+     "id": "w2",
+     "orig": "watermark,",
+     "pos": 0.75
+    },
+    {
+     "id": "w3",
+     "orig": "subscription!",
+     "pos": 1
+    },
+    {
+     "id": "w4",
+     "orig": "chakkar,",
+     "pos": 0.5
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Na free trial",
+     "max": 16
+    },
+    {
+     "id": "t1",
+     "orig": "ka chakkar,",
+     "max": 14
+    },
+    {
+     "id": "t2",
+     "orig": "na watermark,",
+     "max": 16
+    },
+    {
+     "id": "t3",
+     "orig": "na subscription!",
+     "max": 19
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "Free trial",
+     "max": 10,
+     "prop": "panel",
+     "key": "title"
+    },
+    {
+     "id": "c1",
+     "orig": "NO",
+     "max": 3,
+     "prop": "stamp",
+     "key": "text"
+    },
+    {
+     "id": "c2",
+     "orig": "Watermark",
+     "max": 9,
+     "prop": "panel",
+     "key": "title"
+    },
+    {
+     "id": "c3",
+     "orig": "NO",
+     "max": 3,
+     "prop": "stamp",
+     "key": "text"
+    },
+    {
+     "id": "c4",
+     "orig": "Subscription",
+     "max": 12,
+     "prop": "panel",
+     "key": "title"
+    },
+    {
+     "id": "c5",
+     "orig": "NO",
+     "max": 3,
+     "prop": "stamp",
+     "key": "text"
+    }
+   ],
+   "media": []
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        300,
+        676,
+        800
+       ],
+       "kw": {
+        "size": 86,
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        412,
+        572,
+        800
+       ],
+       "kw": {
+        "size": 86,
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t2"
+        },
+        530,
+        650
+       ],
+       "kw": {
+        "size": 92
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t3"
+        },
+        640,
+        800
+       ],
+       "kw": {
+        "size": 92
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "panel",
+       "cx": 540,
+       "cy": 1030,
+       "w": 600,
+       "h": 190,
+       "enter": "glide",
+       "p": {
+        "title": {
+         "$C": "c0"
+        }
+       },
+       "f": {
+        "$W": "w0",
+        "add": -2
+       },
+       "rot": -3,
+       "kill": {
+        "$W": "w1",
+        "add": 2
+       },
+       "shatter": true,
+       "float": [
+        5,
+        3,
+        -3
+       ]
+      },
+      {
+       "kind": "image",
+       "draw": "stamp",
+       "cx": 600,
+       "cy": 1018,
+       "w": 230,
+       "h": 112,
+       "enter": "glide",
+       "p": {
+        "text": {
+         "$C": "c1"
+        },
+        "color": "#E5484D"
+       },
+       "f": {
+        "$W": "w1",
+        "add": -8
+       },
+       "rot": -9,
+       "kill": {
+        "$W": "w1",
+        "add": 2
+       },
+       "shatter": true
+      },
+      {
+       "kind": "image",
+       "draw": "panel",
+       "cx": 540,
+       "cy": 1235,
+       "w": 600,
+       "h": 190,
+       "enter": "glide",
+       "p": {
+        "title": {
+         "$C": "c2"
+        }
+       },
+       "f": {
+        "$W": "w0",
+        "add": -2
+       },
+       "rot": 2,
+       "kill": {
+        "$W": "w2",
+        "add": 2
+       },
+       "shatter": true,
+       "float": [
+        5,
+        3,
+        2
+       ]
+      },
+      {
+       "kind": "image",
+       "draw": "stamp",
+       "cx": 600,
+       "cy": 1223,
+       "w": 230,
+       "h": 112,
+       "enter": "glide",
+       "p": {
+        "text": {
+         "$C": "c3"
+        },
+        "color": "#E5484D"
+       },
+       "f": {
+        "$W": "w2",
+        "add": -8
+       },
+       "rot": -9,
+       "kill": {
+        "$W": "w2",
+        "add": 2
+       },
+       "shatter": true
+      },
+      {
+       "kind": "image",
+       "draw": "panel",
+       "cx": 540,
+       "cy": 1440,
+       "w": 600,
+       "h": 190,
+       "enter": "glide",
+       "p": {
+        "title": {
+         "$C": "c4"
+        }
+       },
+       "f": {
+        "$W": "w0",
+        "add": -2
+       },
+       "rot": -2,
+       "kill": {
+        "$W": "w3",
+        "add": 2
+       },
+       "shatter": true,
+       "float": [
+        5,
+        3,
+        -2
+       ]
+      },
+      {
+       "kind": "image",
+       "draw": "stamp",
+       "cx": 600,
+       "cy": 1428,
+       "w": 230,
+       "h": 112,
+       "enter": "glide",
+       "p": {
+        "text": {
+         "$C": "c5"
+        },
+        "color": "#E5484D"
+       },
+       "f": {
+        "$W": "w3",
+        "add": -8
+       },
+       "rot": -9,
+       "kill": {
+        "$W": "w3",
+        "add": 2
+       },
+       "shatter": true
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w0",
+       "add": -4
+      },
+      1.04,
+      540,
+      980
+     ],
+     [
+      {
+       "$W": "w3",
+       "add": 8
+      },
+      1,
+      540,
+      960
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w0",
+       "add": 3
+      },
+      "stat"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 2
+      },
+      "thud"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w4",
+       "add": 13
+      },
+      "stat"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 2
+      },
+      "thud"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 21
+      },
+      "stat"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w3",
+       "add": 2
+      },
+      "hard-hit",
+      "soft-hit"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-06-haiku-v2.looks",
+  "source": {
+   "video": "ce-06-haiku-v2",
+   "scene": "looks",
+   "index": 4,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with num, phone + phone.src, phone.src, phone.src · title \"se zyada / viral looks.\" · prop text: 30",
+  "role": "statement",
+  "words": 5,
+  "fits": [
+   3,
+   8
+  ],
+  "seconds": 1.6,
+  "needs": {
+   "logo": false,
+   "media": 3
+  },
+  "props": [
+   "num",
+   "phone"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "30",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "viral",
+     "pos": 0.75,
+     "str": true
+    },
+    {
+     "id": "w2",
+     "orig": "looks.",
+     "pos": 1
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "se zyada",
+     "max": 10
+    },
+    {
+     "id": "t1",
+     "orig": "viral looks.",
+     "max": 15
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "30",
+     "max": 3,
+     "prop": "num",
+     "key": "text"
+    }
+   ],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/assets/premium-captions/premium-1.mp4",
+     "as": "phone.src"
+    },
+    {
+     "id": "m1",
+     "orig": "styles/assets/premium-captions/premium-3.mp4",
+     "as": "phone.src"
+    },
+    {
+     "id": "m2",
+     "orig": "styles/assets/premium-captions/premium-4.mp4",
+     "as": "phone.src"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        300,
+        416,
+        800
+       ],
+       "kw": {
+        "size": 86,
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        412,
+        600
+       ],
+       "kw": {
+        "size": 92
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "num",
+       "cx": 540,
+       "cy": 900,
+       "w": 360,
+       "h": 360,
+       "enter": null,
+       "p": {
+        "text": {
+         "$C": "c0"
+        }
+       },
+       "f": {
+        "$W": "w0",
+        "add": -2
+       }
+      },
+      {
+       "$el": "phone",
+       "args": [
+        {
+         "$M": "m0"
+        },
+        250,
+        1460,
+        290,
+        {
+         "$Ws": "w1"
+        }
+       ],
+       "kw": {
+        "enter": "rise",
+        "rot": -6,
+        "vt": 1,
+        "float": [
+         6,
+         3,
+         0.6
+        ]
+       }
+      },
+      {
+       "$el": "phone",
+       "args": [
+        {
+         "$M": "m1"
+        },
+        540,
+        1480,
+        300,
+        {
+         "$Ws": "w1"
+        }
+       ],
+       "kw": {
+        "enter": "rise",
+        "vt": 2,
+        "float": [
+         6,
+         2.8,
+         1.4
+        ]
+       }
+      },
+      {
+       "$el": "phone",
+       "args": [
+        {
+         "$M": "m2"
+        },
+        830,
+        1460,
+        290,
+        {
+         "$Ws": "w1"
+        }
+       ],
+       "kw": {
+        "enter": "rise",
+        "rot": 6,
+        "vt": 3,
+        "float": [
+         6,
+         3.2,
+         2.2
+        ]
+       }
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w0",
+       "add": -4
+      },
+      1.05,
+      540,
+      960
+     ],
+     [
+      {
+       "$W": "w2",
+       "add": 10
+      },
+      1,
+      540,
+      980
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w0",
+       "add": -2
+      },
+      "key-word"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-06-haiku-v2.anim",
+  "source": {
+   "video": "ce-06-haiku-v2",
+   "scene": "anim",
+   "index": 5,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with phone, capt + phone.screen · title \"Har word pe / animation, / bilkul After / Effects jaisa.\" · prop text: Har word pe, animation,, bilkul, After Effects jaisa.",
+  "role": "statement",
+  "words": 8,
+  "fits": [
+   5,
+   13
+  ],
+  "seconds": 2.7,
+  "needs": {
+   "logo": false,
+   "media": 1
+  },
+  "props": [
+   "phone",
+   "capt"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Har",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "animation,",
+     "pos": 0.429
+    },
+    {
+     "id": "w2",
+     "orig": "bilkul",
+     "pos": 0.571
+    },
+    {
+     "id": "w3",
+     "orig": "After",
+     "pos": 0.714
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Har word pe",
+     "max": 14
+    },
+    {
+     "id": "t1",
+     "orig": "animation,",
+     "max": 12
+    },
+    {
+     "id": "t2",
+     "orig": "bilkul After",
+     "max": 15
+    },
+    {
+     "id": "t3",
+     "orig": "Effects jaisa.",
+     "max": 17
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "Har word pe",
+     "max": 11,
+     "prop": "capt",
+     "key": "chunks"
+    },
+    {
+     "id": "c1",
+     "orig": "animation,",
+     "max": 10,
+     "prop": "capt",
+     "key": "chunks"
+    },
+    {
+     "id": "c2",
+     "orig": "bilkul",
+     "max": 6,
+     "prop": "capt",
+     "key": "chunks"
+    },
+    {
+     "id": "c3",
+     "orig": "After Effects jaisa.",
+     "max": 20,
+     "prop": "capt",
+     "key": "chunks"
+    }
+   ],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/assets/premium-captions/premium-2.mp4",
+     "as": "phone.screen"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        300,
+        572,
+        800
+       ],
+       "kw": {
+        "size": 86,
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        412,
+        520,
+        800
+       ],
+       "kw": {
+        "size": 86,
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t2"
+        },
+        530,
+        600
+       ],
+       "kw": {
+        "size": 92
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t3"
+        },
+        642,
+        700
+       ],
+       "kw": {
+        "size": 92
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "phone",
+       "screen": {
+        "$M": "m0"
+       },
+       "cx": 540,
+       "cy": 1320,
+       "w": 420,
+       "h": 852.5999999999999,
+       "focus": [
+        0.5,
+        0
+       ],
+       "shadow": [
+        0,
+        30,
+        50,
+        0.28
+       ],
+       "enter": "glide",
+       "zoom": 1.5,
+       "vt": 0.5,
+       "float": [
+        5,
+        3,
+        0.4
+       ],
+       "_at": {
+        "$Ws": "w0"
+       },
+       "ui": [
+        {
+         "draw": "capt",
+         "p": {
+          "style": "stroke",
+          "font": "bricolage",
+          "size": 0.12,
+          "y": 0.62,
+          "chunks": [
+           [
+            {
+             "$W": "w0",
+             "add": 2
+            },
+            {
+             "$C": "c0"
+            }
+           ],
+           [
+            {
+             "$W": "w1",
+             "add": 2
+            },
+            {
+             "$C": "c1"
+            }
+           ],
+           [
+            {
+             "$W": "w2",
+             "add": 2
+            },
+            {
+             "$C": "c2"
+            }
+           ],
+           [
+            {
+             "$W": "w3",
+             "add": 2
+            },
+            {
+             "$C": "c3"
+            }
+           ]
+          ]
+         }
+        }
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w0",
+       "add": -4
+      },
+      1.05,
+      540,
+      980
+     ],
+     [
+      {
+       "$W": "w3",
+       "add": 10
+      },
+      1,
+      540,
+      960
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 0
+      },
+      "key-word"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-06-haiku-v2.signup",
+  "source": {
+   "video": "ce-06-haiku-v2",
+   "scene": "signup",
+   "index": 6,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with burst, phone, seal + phone.src · title \"Bas ek free / sign up, / aur aaj raat / ki reel ready!\" · prop text: ONE, FREE",
+  "role": "statement",
+  "words": 11,
+  "fits": [
+   7,
+   18
+  ],
+  "seconds": 2.73,
+  "needs": {
+   "logo": false,
+   "media": 1
+  },
+  "props": [
+   "burst",
+   "phone",
+   "seal"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Bas",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "aur",
+     "pos": 0.5,
+     "str": true
+    },
+    {
+     "id": "w2",
+     "orig": "free",
+     "pos": 0.2,
+     "str": true
+    },
+    {
+     "id": "w3",
+     "orig": "ready!",
+     "pos": 1
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Bas ek free",
+     "max": 14
+    },
+    {
+     "id": "t1",
+     "orig": "sign up,",
+     "max": 10
+    },
+    {
+     "id": "t2",
+     "orig": "aur aaj raat",
+     "max": 15
+    },
+    {
+     "id": "t3",
+     "orig": "ki reel ready!",
+     "max": 17
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "ONE",
+     "max": 3,
+     "prop": "seal",
+     "key": "top"
+    },
+    {
+     "id": "c1",
+     "orig": "FREE",
+     "max": 4,
+     "prop": "seal",
+     "key": "bottom"
+    }
+   ],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/assets/premium-captions/premium-4.mp4",
+     "as": "phone.src"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        300,
+        572,
+        800
+       ],
+       "kw": {
+        "size": 86,
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        412,
+        416,
+        800
+       ],
+       "kw": {
+        "size": 86,
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t2"
+        },
+        530,
+        600
+       ],
+       "kw": {
+        "size": 92
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t3"
+        },
+        642,
+        700
+       ],
+       "kw": {
+        "size": 92
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "visuals": [
+      {
+       "$el": "burst",
+       "args": [
+        540,
+        1300,
+        820,
+        {
+         "$Ws": "w1"
+        }
+       ],
+       "kw": {}
+      },
+      {
+       "$el": "phone",
+       "args": [
+        {
+         "$M": "m0"
+        },
+        320,
+        1320,
+        390,
+        {
+         "$Ws": "w1"
+        }
+       ],
+       "kw": {
+        "enter": "rise",
+        "vt": 1,
+        "float": [
+         6,
+         3,
+         0.5
+        ]
+       }
+      },
+      {
+       "kind": "image",
+       "draw": "seal",
+       "cx": 745,
+       "cy": 1230,
+       "w": 300,
+       "h": 300,
+       "enter": "glide",
+       "p": {
+        "top": {
+         "$C": "c0"
+        },
+        "bottom": {
+         "$C": "c1"
+        }
+       },
+       "_at": {
+        "$Ws": "w2"
+       },
+       "_off": 0
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w0",
+       "add": -4
+      },
+      1.04,
+      540,
+      980
+     ],
+     [
+      {
+       "$W": "w3",
+       "add": 6
+      },
+      1,
+      540,
+      960
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 0
+      },
+      "stat"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-06-haiku-v2.der",
+  "source": {
+   "video": "ce-06-haiku-v2",
+   "scene": "der",
+   "index": 7,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with burst · title \"Der / mat karo!\"",
+  "role": "statement",
+  "words": 3,
+  "fits": [
+   2,
+   5
+  ],
+  "seconds": 0.87,
+  "needs": {
+   "logo": false,
+   "media": 0
+  },
+  "props": [
+   "burst"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Der",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "abhi",
+     "pos": 0
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Der",
+     "max": 6
+    },
+    {
+     "id": "t1",
+     "orig": "mat karo!",
+     "max": 11
+    }
+   ],
+   "content": [],
+   "media": []
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        640,
+        156,
+        800
+       ],
+       "kw": {
+        "size": 200,
+        "tracking": -0.035,
+        "motion": "slam",
+        "instant": true
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        880,
+        450
+       ],
+       "kw": {
+        "size": 110
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "visuals": [
+      {
+       "$el": "burst",
+       "args": [
+        540,
+        1000,
+        880,
+        {
+         "$Ws": "w0"
+        }
+       ],
+       "kw": {
+        "spin": 30
+       }
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w0",
+       "add": -3
+      },
+      1.12,
+      540,
+      1000
+     ],
+     [
+      {
+       "$W": "w1",
+       "add": -4
+      },
+      1,
+      540,
+      960
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w0",
+       "add": 0
+      },
+      "hard-hit",
+      "punch"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-06-haiku-v2.cta",
+  "source": {
+   "video": "ce-06-haiku-v2",
+   "scene": "cta",
+   "index": 8,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with comment, cursor, typebox, mark · title \"Abhi captions / comment karo, / link turant DM / kar dunga.\" · prop text: captions, Sent! Check your DMs",
+  "role": "ending · statement",
+  "words": 9,
+  "fits": [
+   5,
+   14
+  ],
+  "seconds": 3.93,
+  "needs": {
+   "logo": true,
+   "media": 0
+  },
+  "props": [
+   "comment",
+   "cursor",
+   "typebox",
+   "mark"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Abhi",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "captions",
+     "pos": 0
+    },
+    {
+     "id": "w2",
+     "orig": "link",
+     "pos": 0.5
+    },
+    {
+     "id": "w3",
+     "orig": "comment",
+     "pos": 0.25,
+     "str": true
+    },
+    {
+     "id": "w4",
+     "orig": "DM",
+     "pos": 0.75,
+     "str": true
+    },
+    {
+     "id": "w5",
+     "orig": "abhi",
+     "pos": 0
+    },
+    {
+     "id": "w6",
+     "orig": "karo,",
+     "pos": 0.375
+    },
+    {
+     "id": "w7",
+     "orig": "turant",
+     "pos": 0.625
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Abhi captions",
+     "max": 16
+    },
+    {
+     "id": "t1",
+     "orig": "comment karo,",
+     "max": 16
+    },
+    {
+     "id": "t2",
+     "orig": "link turant DM",
+     "max": 17
+    },
+    {
+     "id": "t3",
+     "orig": "kar dunga.",
+     "max": 12
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "captions",
+     "max": 8,
+     "prop": "comment",
+     "key": "text"
+    },
+    {
+     "id": "c1",
+     "orig": "Sent! Check your DMs",
+     "max": 20,
+     "prop": "typebox",
+     "key": "text"
+    }
+   ],
+   "media": []
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        300,
+        676,
+        800
+       ],
+       "kw": {
+        "size": 86,
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        412,
+        650
+       ],
+       "kw": {
+        "size": 92,
+        "motion": "slam"
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t2"
+        },
+        1070,
+        728,
+        800
+       ],
+       "kw": {
+        "size": 86,
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t3"
+        },
+        1186,
+        520,
+        800
+       ],
+       "kw": {
+        "size": 86,
+        "tracking": -0.035
+       }
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "visuals": [
+      {
+       "kind": "comment",
+       "x": 90,
+       "y": 600,
+       "w": 900,
+       "h": 140,
+       "_at": {
+        "$Ws": "w0"
+       },
+       "_off": 6,
+       "text": {
+        "$C": "c0"
+       },
+       "start": {
+        "$W": "w1",
+        "add": 0
+       },
+       "perChar": 1.6,
+       "send": {
+        "$W": "w2",
+        "add": -3
+       }
+      },
+      {
+       "kind": "cursor",
+       "_at": {
+        "$Ws": "w3"
+       },
+       "_off": 2,
+       "keys": [
+        [
+         0,
+         820,
+         1180
+        ],
+        [
+         {
+          "$W": "w2",
+          "add": -5
+         },
+         920,
+         750,
+         1
+        ]
+       ],
+       "size": 110
+      },
+      {
+       "kind": "typebox",
+       "x": 300,
+       "y": 860,
+       "w": 680,
+       "h": 124,
+       "r": 62,
+       "fill": "#034F46",
+       "color": "#FFFFEB",
+       "text": {
+        "$C": "c1"
+       },
+       "cursor": {
+        "$W": "w2",
+        "add": 6
+       },
+       "start": {
+        "$W": "w2",
+        "add": 0
+       },
+       "perChar": 1
+      },
+      {
+       "$el": "mark",
+       "args": [
+        540,
+        1420,
+        250,
+        {
+         "$Ws": "w4"
+        }
+       ],
+       "kw": {
+        "enter": "pop"
+       }
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w5",
+       "add": -4
+      },
+      1.06,
+      540,
+      960
+     ],
+     [
+      {
+       "$W": "w2",
+       "add": 30
+      },
+      1,
+      540,
+      980
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 0
+      },
+      "notify"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w6",
+       "add": 9
+      },
+      "click-ui"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w7",
+       "add": 10
+      },
+      "cta"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ }
+]

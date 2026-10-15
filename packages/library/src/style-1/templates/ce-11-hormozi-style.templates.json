@@ -1,0 +1,2233 @@
+[
+ {
+  "id": "ce-11-hormozi-style.hook",
+  "source": {
+   "video": "ce-11-hormozi-style",
+   "scene": "hook",
+   "index": 0,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with burst, phone, card + phone.src, card.src · title \"Ye captions dekhe hain? / Bade, bold, / ek ek word uchhalta hua?\"",
+  "role": "hook · statement",
+  "words": 11,
+  "fits": [
+   7,
+   18
+  ],
+  "seconds": 4.17,
+  "needs": {
+   "logo": false,
+   "media": 2
+  },
+  "props": [
+   "burst",
+   "phone",
+   "card"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Bade,",
+     "pos": 0.4
+    },
+    {
+     "id": "w1",
+     "orig": "bold,",
+     "pos": 0.5,
+     "str": true
+    },
+    {
+     "id": "w2",
+     "orig": "Ye",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w3",
+     "orig": "Internet",
+     "next": 0
+    },
+    {
+     "id": "w4",
+     "orig": "uchhalta",
+     "pos": 0.9
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Ye captions dekhe hain?",
+     "max": 27
+    },
+    {
+     "id": "t1",
+     "orig": "Bade, bold,",
+     "max": 14
+    },
+    {
+     "id": "t2",
+     "orig": "ek ek word uchhalta hua?",
+     "max": 28
+    }
+   ],
+   "content": [],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/assets/premium-captions/premium-1.mp4",
+     "as": "phone.src"
+    },
+    {
+     "id": "m1",
+     "orig": "styles/assets/looks/hormozi_box.mp4",
+     "as": "card.src"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        440,
+        600,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035,
+        "out": {
+         "$W": "w0",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        440,
+        560,
+        900
+       ],
+       "kw": {
+        "tracking": -0.035,
+        "motion": "slam",
+        "instant": true,
+        "sparks": true
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t2"
+        },
+        555,
+        620
+       ],
+       "kw": {}
+      }
+     ]
+    ],
+    "kw": {
+     "visuals": [
+      {
+       "$el": "burst",
+       "args": [
+        540,
+        1180,
+        780,
+        null
+       ],
+       "kw": {}
+      },
+      {
+       "$el": "phone",
+       "args": [
+        {
+         "$M": "m0"
+        },
+        540,
+        1180,
+        380,
+        null
+       ],
+       "kw": {
+        "enter": "glide",
+        "f": 0,
+        "vt": 0.6,
+        "glow": "#E6C6FF",
+        "float": [
+         5,
+         3,
+         0.3
+        ]
+       }
+      },
+      {
+       "$el": "card",
+       "args": [
+        {
+         "$M": "m1"
+        },
+        600,
+        1420,
+        600,
+        225,
+        {
+         "$Ws": "w1"
+        }
+       ],
+       "kw": {
+        "enter": "slam",
+        "rot": -5,
+        "vt": 0.7,
+        "loop": [
+         0.35,
+         1.8
+        ],
+        "float": [
+         6,
+         2.6,
+         1
+        ]
+       }
+      }
+     ],
+     "at": {
+      "$Ws": "w2"
+     }
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$S": 0
+      },
+      1.12,
+      540,
+      1060,
+      -1
+     ],
+     [
+      {
+       "$W": "w3",
+       "add": -4
+      },
+      1,
+      540,
+      960,
+      0
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w0",
+       "add": 0
+      },
+      "hard-hit",
+      "punch"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 0
+      },
+      "key-word"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w4",
+       "add": 0
+      },
+      "accent"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-11-hormozi-style.dict",
+  "source": {
+   "video": "ce-11-hormozi-style",
+   "scene": "dict",
+   "index": 1,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with dict, mark_hl · title \"Internet isse / Hormozi style bolta hai. / Alex Hormozi ki videos se /\" · prop text: Hormozi style, /hor·mo·zi stail/, noun, Bade, bold captions.",
+  "role": "statement",
+  "words": 13,
+  "fits": [
+   8,
+   21
+  ],
+  "seconds": 4.77,
+  "needs": {
+   "logo": false,
+   "media": 0
+  },
+  "props": [
+   "dict",
+   "mark_hl"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Alex",
+     "pos": 0.5
+    },
+    {
+     "id": "w1",
+     "orig": "Internet",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w2",
+     "orig": "Hormozi",
+     "pos": 0.167
+    },
+    {
+     "id": "w3",
+     "orig": "famous",
+     "pos": 0.917,
+     "str": true
+    },
+    {
+     "id": "w4",
+     "orig": "Raaz",
+     "next": 0
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Internet isse",
+     "max": 16
+    },
+    {
+     "id": "t1",
+     "orig": "Hormozi style bolta hai.",
+     "max": 28
+    },
+    {
+     "id": "t2",
+     "orig": "Alex Hormozi ki videos se",
+     "max": 29
+    },
+    {
+     "id": "t3",
+     "orig": "famous hua.",
+     "max": 14
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "Hormozi style",
+     "max": 13,
+     "prop": "dict",
+     "key": "word"
+    },
+    {
+     "id": "c1",
+     "orig": "/hor·mo·zi stail/",
+     "max": 17,
+     "prop": "dict",
+     "key": "pron"
+    },
+    {
+     "id": "c2",
+     "orig": "noun",
+     "max": 4,
+     "prop": "dict",
+     "key": "pos"
+    },
+    {
+     "id": "c3",
+     "orig": "Bade, bold captions. Ek waqt pe ek word, aur important word colour mein.",
+     "max": 72,
+     "prop": "dict",
+     "key": "def"
+    }
+   ],
+   "media": []
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        440,
+        400,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035,
+        "out": {
+         "$W": "w0",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        545,
+        620
+       ],
+       "kw": {
+        "out": {
+         "$W": "w0",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t2"
+        },
+        440,
+        620,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t3"
+        },
+        545,
+        360
+       ],
+       "kw": {}
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w1"
+     },
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "dict",
+       "cx": 540,
+       "cy": 1090,
+       "w": 900,
+       "h": 560,
+       "enter": "glide",
+       "p": {
+        "word": {
+         "$C": "c0"
+        },
+        "pron": {
+         "$C": "c1"
+        },
+        "pos": {
+         "$C": "c2"
+        },
+        "typeAt": {
+         "$W": "w2",
+         "add": 4
+        },
+        "perChar": 0.75,
+        "def": {
+         "$C": "c3"
+        }
+       },
+       "_at": {
+        "$Ws": "w1"
+       },
+       "_off": 0
+      },
+      {
+       "$el": "mark_hl",
+       "args": [
+        130,
+        840,
+        520,
+        92,
+        {
+         "$Ws": "w3"
+        }
+       ],
+       "kw": {}
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w1",
+       "add": -4
+      },
+      1.04,
+      540,
+      1000,
+      0.6
+     ],
+     [
+      {
+       "$W": "w3",
+       "add": 0
+      },
+      1.07,
+      520,
+      1040,
+      0
+     ],
+     [
+      {
+       "$W": "w4",
+       "add": -4
+      },
+      1.02,
+      540,
+      980,
+      0
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 0
+      },
+      "key-word"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 4
+      },
+      "code"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w3",
+       "add": 0
+      },
+      "stat"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-11-hormozi-style.rule",
+  "source": {
+   "video": "ce-11-hormozi-style",
+   "scene": "rule",
+   "index": 2,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with wave · title \"Raaz simple hai. / Ek waqt pe ek idea. / Jo word bola, / wahi screen p\" · prop text: ek, waqt, pe, ek",
+  "role": "statement",
+  "words": 19,
+  "fits": [
+   11,
+   30
+  ],
+  "seconds": 6.8,
+  "needs": {
+   "logo": false,
+   "media": 0
+  },
+  "props": [
+   "wave"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Jo",
+     "pos": 0.444
+    },
+    {
+     "id": "w1",
+     "orig": "Aur",
+     "pos": 0.778
+    },
+    {
+     "id": "w2",
+     "orig": "Raaz",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w3",
+     "orig": "Ek",
+     "pos": 0.167
+    },
+    {
+     "id": "w4",
+     "orig": "waqt",
+     "pos": 0.222
+    },
+    {
+     "id": "w5",
+     "orig": "pe",
+     "pos": 0.278
+    },
+    {
+     "id": "w6",
+     "orig": "ek",
+     "pos": 0.333
+    },
+    {
+     "id": "w7",
+     "orig": "idea.",
+     "pos": 0.389
+    },
+    {
+     "id": "w8",
+     "orig": "word",
+     "pos": 0.5
+    },
+    {
+     "id": "w9",
+     "orig": "bola,",
+     "pos": 0.556
+    },
+    {
+     "id": "w10",
+     "orig": "wahi",
+     "pos": 0.611
+    },
+    {
+     "id": "w11",
+     "orig": "screen",
+     "pos": 0.667
+    },
+    {
+     "id": "w12",
+     "orig": "pe.",
+     "pos": 0.722
+    },
+    {
+     "id": "w13",
+     "orig": "important",
+     "pos": 0.833
+    },
+    {
+     "id": "w14",
+     "orig": "word",
+     "pos": 0.889
+    },
+    {
+     "id": "w15",
+     "orig": "colour",
+     "pos": 0.944
+    },
+    {
+     "id": "w16",
+     "orig": "mein.",
+     "pos": 1
+    },
+    {
+     "id": "w17",
+     "orig": "Aankh",
+     "next": 0
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Raaz simple hai.",
+     "max": 19
+    },
+    {
+     "id": "t1",
+     "orig": "Ek waqt pe ek idea.",
+     "max": 22
+    },
+    {
+     "id": "t2",
+     "orig": "Jo word bola,",
+     "max": 16
+    },
+    {
+     "id": "t3",
+     "orig": "wahi screen pe.",
+     "max": 18
+    },
+    {
+     "id": "t4",
+     "orig": "Aur important word",
+     "max": 21
+    },
+    {
+     "id": "t5",
+     "orig": "colour mein.",
+     "max": 15
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "ek",
+     "max": 3,
+     "prop": "wave",
+     "key": "words"
+    },
+    {
+     "id": "c1",
+     "orig": "waqt",
+     "max": 4,
+     "prop": "wave",
+     "key": "words"
+    },
+    {
+     "id": "c2",
+     "orig": "pe",
+     "max": 3,
+     "prop": "wave",
+     "key": "words"
+    },
+    {
+     "id": "c3",
+     "orig": "ek",
+     "max": 3,
+     "prop": "wave",
+     "key": "words"
+    },
+    {
+     "id": "c4",
+     "orig": "idea",
+     "max": 4,
+     "prop": "wave",
+     "key": "words"
+    },
+    {
+     "id": "c5",
+     "orig": "jo",
+     "max": 3,
+     "prop": "wave",
+     "key": "words"
+    },
+    {
+     "id": "c6",
+     "orig": "word",
+     "max": 4,
+     "prop": "wave",
+     "key": "words"
+    },
+    {
+     "id": "c7",
+     "orig": "bola",
+     "max": 4,
+     "prop": "wave",
+     "key": "words"
+    },
+    {
+     "id": "c8",
+     "orig": "wahi",
+     "max": 4,
+     "prop": "wave",
+     "key": "words"
+    },
+    {
+     "id": "c9",
+     "orig": "screen",
+     "max": 6,
+     "prop": "wave",
+     "key": "words"
+    },
+    {
+     "id": "c10",
+     "orig": "pe",
+     "max": 3,
+     "prop": "wave",
+     "key": "words"
+    },
+    {
+     "id": "c11",
+     "orig": "aur",
+     "max": 3,
+     "prop": "wave",
+     "key": "words"
+    },
+    {
+     "id": "c12",
+     "orig": "important",
+     "max": 9,
+     "prop": "wave",
+     "key": "words"
+    },
+    {
+     "id": "c13",
+     "orig": "word",
+     "max": 4,
+     "prop": "wave",
+     "key": "words"
+    },
+    {
+     "id": "c14",
+     "orig": "colour",
+     "max": 6,
+     "prop": "wave",
+     "key": "words"
+    },
+    {
+     "id": "c15",
+     "orig": "mein",
+     "max": 4,
+     "prop": "wave",
+     "key": "words"
+    }
+   ],
+   "media": []
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        440,
+        480,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035,
+        "out": {
+         "$W": "w0",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        545,
+        560
+       ],
+       "kw": {
+        "out": {
+         "$W": "w0",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t2"
+        },
+        440,
+        440,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035,
+        "out": {
+         "$W": "w1",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t3"
+        },
+        545,
+        460
+       ],
+       "kw": {
+        "out": {
+         "$W": "w1",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t4"
+        },
+        440,
+        620,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t5"
+        },
+        545,
+        380
+       ],
+       "kw": {}
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w2"
+     },
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "wave",
+       "cx": 540,
+       "cy": 1150,
+       "w": 900,
+       "h": 460,
+       "enter": "glide",
+       "p": {
+        "words": [
+         [
+          {
+           "$W": "w3",
+           "add": 0
+          },
+          {
+           "$C": "c0"
+          },
+          false
+         ],
+         [
+          {
+           "$W": "w4",
+           "add": 0
+          },
+          {
+           "$C": "c1"
+          },
+          false
+         ],
+         [
+          {
+           "$W": "w5",
+           "add": 0
+          },
+          {
+           "$C": "c2"
+          },
+          false
+         ],
+         [
+          {
+           "$W": "w6",
+           "add": 0
+          },
+          {
+           "$C": "c3"
+          },
+          false
+         ],
+         [
+          {
+           "$W": "w7",
+           "add": 0
+          },
+          {
+           "$C": "c4"
+          },
+          true
+         ],
+         [
+          {
+           "$W": "w0",
+           "add": 0
+          },
+          {
+           "$C": "c5"
+          },
+          false
+         ],
+         [
+          {
+           "$W": "w8",
+           "add": 0
+          },
+          {
+           "$C": "c6"
+          },
+          false
+         ],
+         [
+          {
+           "$W": "w9",
+           "add": 0
+          },
+          {
+           "$C": "c7"
+          },
+          false
+         ],
+         [
+          {
+           "$W": "w10",
+           "add": 0
+          },
+          {
+           "$C": "c8"
+          },
+          false
+         ],
+         [
+          {
+           "$W": "w11",
+           "add": 0
+          },
+          {
+           "$C": "c9"
+          },
+          false
+         ],
+         [
+          {
+           "$W": "w12",
+           "add": 0
+          },
+          {
+           "$C": "c10"
+          },
+          false
+         ],
+         [
+          {
+           "$W": "w1",
+           "add": 0
+          },
+          {
+           "$C": "c11"
+          },
+          false
+         ],
+         [
+          {
+           "$W": "w13",
+           "add": 0
+          },
+          {
+           "$C": "c12"
+          },
+          true
+         ],
+         [
+          {
+           "$W": "w14",
+           "add": 0
+          },
+          {
+           "$C": "c13"
+          },
+          false
+         ],
+         [
+          {
+           "$W": "w15",
+           "add": 0
+          },
+          {
+           "$C": "c14"
+          },
+          true
+         ],
+         [
+          {
+           "$W": "w16",
+           "add": 0
+          },
+          {
+           "$C": "c15"
+          },
+          false
+         ]
+        ]
+       },
+       "_at": {
+        "$Ws": "w2"
+       },
+       "_off": 0
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w2",
+       "add": -4
+      },
+      1,
+      540,
+      960,
+      -0.6
+     ],
+     [
+      {
+       "$W": "w0",
+       "add": 0
+      },
+      1.04,
+      540,
+      1020,
+      0
+     ],
+     [
+      {
+       "$W": "w13",
+       "add": 0
+      },
+      1.07,
+      540,
+      1060,
+      0.5
+     ],
+     [
+      {
+       "$W": "w17",
+       "add": -4
+      },
+      1.02,
+      540,
+      990,
+      0
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 0
+      },
+      "key-word"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w7",
+       "add": 0
+      },
+      "pop",
+      "pop-4"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w13",
+       "add": 0
+      },
+      "hard-hit",
+      "soft-hit"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w15",
+       "add": 0
+      },
+      "pop",
+      "bubble"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-11-hormozi-style.eye",
+  "source": {
+   "video": "ce-11-hormozi-style",
+   "scene": "eye",
+   "index": 3,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with phone, brackets, pill + phone.src · title \"Aankh hatti nahi, / toh video skip nahi hoti.\" · prop text: Skip  ›",
+  "role": "statement",
+  "words": 8,
+  "fits": [
+   5,
+   13
+  ],
+  "seconds": 2.5,
+  "needs": {
+   "logo": false,
+   "media": 1
+  },
+  "props": [
+   "phone",
+   "brackets",
+   "pill"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Aankh",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "nahi,",
+     "pos": 0.286
+    },
+    {
+     "id": "w2",
+     "orig": "nahi",
+     "pos": 0.857
+    },
+    {
+     "id": "w3",
+     "orig": "toh",
+     "pos": 0.429,
+     "str": true
+    },
+    {
+     "id": "w4",
+     "orig": "Ye",
+     "next": 0
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Aankh hatti nahi,",
+     "max": 20
+    },
+    {
+     "id": "t1",
+     "orig": "toh video skip nahi hoti.",
+     "max": 29
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "Skip  ›",
+     "max": 7,
+     "prop": "pill",
+     "key": "text"
+    }
+   ],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/assets/premium-captions/premium-3.mp4",
+     "as": "phone.src"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        440,
+        520,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        545,
+        620
+       ],
+       "kw": {}
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "visuals": [
+      {
+       "$el": "phone",
+       "args": [
+        {
+         "$M": "m0"
+        },
+        540,
+        1180,
+        400,
+        {
+         "$Ws": "w0"
+        }
+       ],
+       "kw": {
+        "enter": "glide",
+        "vt": 2.2,
+        "float": [
+         4,
+         3,
+         0.4
+        ]
+       }
+      },
+      {
+       "kind": "image",
+       "draw": "brackets",
+       "cx": 540,
+       "cy": 1261.2,
+       "w": 330,
+       "h": 170,
+       "enter": null,
+       "p": {
+        "lockAt": {
+         "$W": "w1",
+         "add": 0
+        }
+       },
+       "f": {
+        "$W": "w0",
+        "add": 2
+       }
+      },
+      {
+       "kind": "image",
+       "draw": "pill",
+       "cx": 800,
+       "cy": 1500,
+       "w": 220,
+       "h": 84,
+       "enter": "slam",
+       "p": {
+        "text": {
+         "$C": "c0"
+        }
+       },
+       "kill": {
+        "$W": "w2",
+        "add": 1
+       },
+       "shatter": true,
+       "_at": {
+        "$Ws": "w3"
+       },
+       "_off": 0
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w0",
+       "add": -4
+      },
+      1,
+      540,
+      960,
+      0.5
+     ],
+     [
+      {
+       "$W": "w1",
+       "add": 0
+      },
+      1.05,
+      540,
+      1060,
+      0
+     ],
+     [
+      {
+       "$W": "w4",
+       "add": -4
+      },
+      1.02,
+      540,
+      1000,
+      0
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 0
+      },
+      "stat"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 1
+      },
+      "hard-hit",
+      "punch"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 4
+      },
+      "thud"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-11-hormozi-style.looks",
+  "source": {
+   "video": "ce-11-hormozi-style",
+   "scene": "looks",
+   "index": 4,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with swatch, mark, typebox + swatch.src, swatch.src, swatch.src, swatch.src, swatch.src, mark.src · title \"Ye wala look, / aur 30+ aise looks / CaptionsEasy pe / free milte hain\" · prop text: Hormozi Box, Beast Bounce, Comic Burst, Kinetic Mix",
+  "role": "statement",
+  "words": 14,
+  "fits": [
+   8,
+   22
+  ],
+  "seconds": 4.6,
+  "needs": {
+   "logo": false,
+   "media": 6
+  },
+  "props": [
+   "swatch",
+   "mark",
+   "typebox"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "CaptionsEasy",
+     "pos": 0.692,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "Ye",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w2",
+     "orig": "look,",
+     "pos": 0.154
+    },
+    {
+     "id": "w3",
+     "orig": "tees",
+     "pos": 0.308,
+     "str": true
+    },
+    {
+     "id": "w4",
+     "orig": "free",
+     "pos": 0.846
+    },
+    {
+     "id": "w5",
+     "orig": "Agli",
+     "next": 0
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Ye wala look,",
+     "max": 16
+    },
+    {
+     "id": "t1",
+     "orig": "aur 30+ aise looks",
+     "max": 21
+    },
+    {
+     "id": "t2",
+     "orig": "CaptionsEasy pe",
+     "max": 18
+    },
+    {
+     "id": "t3",
+     "orig": "free milte hain.",
+     "max": 19
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "Hormozi Box",
+     "max": 11,
+     "prop": "swatch",
+     "key": "name"
+    },
+    {
+     "id": "c1",
+     "orig": "Beast Bounce",
+     "max": 12,
+     "prop": "swatch",
+     "key": "name"
+    },
+    {
+     "id": "c2",
+     "orig": "Comic Burst",
+     "max": 11,
+     "prop": "swatch",
+     "key": "name"
+    },
+    {
+     "id": "c3",
+     "orig": "Kinetic Mix",
+     "max": 11,
+     "prop": "swatch",
+     "key": "name"
+    },
+    {
+     "id": "c4",
+     "orig": "Soft Glow",
+     "max": 9,
+     "prop": "swatch",
+     "key": "name"
+    },
+    {
+     "id": "c5",
+     "orig": "Free",
+     "max": 4,
+     "prop": "typebox",
+     "key": "text"
+    }
+   ],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/assets/looks/hormozi_box.mp4",
+     "as": "swatch.src"
+    },
+    {
+     "id": "m1",
+     "orig": "styles/assets/looks/beast_bounce.mp4",
+     "as": "swatch.src"
+    },
+    {
+     "id": "m2",
+     "orig": "styles/assets/looks/comic_burst.mp4",
+     "as": "swatch.src"
+    },
+    {
+     "id": "m3",
+     "orig": "styles/assets/looks/kinetic_mix.mp4",
+     "as": "swatch.src"
+    },
+    {
+     "id": "m4",
+     "orig": "styles/assets/looks/soft_glow.mp4",
+     "as": "swatch.src"
+    },
+    {
+     "id": "m5",
+     "orig": "styles/style-1/videos/ce-11-hormozi-style/assets/corner-bars.png",
+     "as": "mark.src"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        440,
+        420,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035,
+        "out": {
+         "$W": "w0",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        545,
+        560
+       ],
+       "kw": {
+        "out": {
+         "$W": "w0",
+         "add": -6
+        }
+       }
+      },
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t2"
+        },
+        440,
+        520,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t3"
+        },
+        545,
+        480
+       ],
+       "kw": {}
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w1"
+     },
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "swatch",
+       "cx": 540,
+       "cy": 870,
+       "w": 720,
+       "h": 270,
+       "enter": "glide",
+       "p": {
+        "src": {
+         "$M": "m0"
+        },
+        "name": {
+         "$C": "c0"
+        },
+        "selAt": {
+         "$W": "w2",
+         "add": 2
+        }
+       },
+       "_at": {
+        "$Ws": "w1"
+       },
+       "_off": 0
+      },
+      {
+       "kind": "image",
+       "draw": "swatch",
+       "cx": 320,
+       "cy": 1210,
+       "w": 380,
+       "h": 142,
+       "enter": "glide",
+       "p": {
+        "src": {
+         "$M": "m1"
+        },
+        "name": {
+         "$C": "c1"
+        }
+       },
+       "_at": {
+        "$Ws": "w3"
+       },
+       "_off": 2
+      },
+      {
+       "kind": "image",
+       "draw": "swatch",
+       "cx": 760,
+       "cy": 1210,
+       "w": 380,
+       "h": 142,
+       "enter": "glide",
+       "p": {
+        "src": {
+         "$M": "m2"
+        },
+        "name": {
+         "$C": "c2"
+        }
+       },
+       "_at": {
+        "$Ws": "w3"
+       },
+       "_off": 5
+      },
+      {
+       "kind": "image",
+       "draw": "swatch",
+       "cx": 320,
+       "cy": 1430,
+       "w": 380,
+       "h": 142,
+       "enter": "glide",
+       "p": {
+        "src": {
+         "$M": "m3"
+        },
+        "name": {
+         "$C": "c3"
+        }
+       },
+       "_at": {
+        "$Ws": "w3"
+       },
+       "_off": 8
+      },
+      {
+       "kind": "image",
+       "draw": "swatch",
+       "cx": 760,
+       "cy": 1430,
+       "w": 380,
+       "h": 142,
+       "enter": "glide",
+       "p": {
+        "src": {
+         "$M": "m4"
+        },
+        "name": {
+         "$C": "c4"
+        }
+       },
+       "_at": {
+        "$Ws": "w3"
+       },
+       "_off": 11
+      },
+      {
+       "$el": "mark",
+       "args": [
+        900,
+        700,
+        150,
+        {
+         "$Ws": "w0"
+        }
+       ],
+       "kw": {
+        "src": {
+         "$M": "m5"
+        }
+       }
+      },
+      {
+       "kind": "typebox",
+       "x": 420,
+       "y": 1585,
+       "w": 240,
+       "h": 88,
+       "r": 44,
+       "fill": "#034F46",
+       "color": "#FFFFEB",
+       "text": {
+        "$C": "c5"
+       },
+       "cursor": {
+        "$W": "w4",
+        "add": -2
+       },
+       "start": {
+        "$W": "w4",
+        "add": 0
+       },
+       "perChar": 0.8
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w1",
+       "add": -4
+      },
+      1.04,
+      540,
+      980,
+      -0.6
+     ],
+     [
+      {
+       "$W": "w3",
+       "add": 0
+      },
+      1,
+      540,
+      1020,
+      0
+     ],
+     [
+      {
+       "$W": "w5",
+       "add": -4
+      },
+      1.03,
+      540,
+      990,
+      0
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 2
+      },
+      "click-ui"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 3
+      },
+      "stat"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w3",
+       "add": 0
+      },
+      "cascade"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w0",
+       "add": 0
+      },
+      "key-word"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w4",
+       "add": 0
+      },
+      "pop",
+      "pop-4"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ },
+ {
+  "id": "ce-11-hormozi-style.cta",
+  "source": {
+   "video": "ce-11-hormozi-style",
+   "scene": "cta",
+   "index": 5,
+   "brand": "captionseasy"
+  },
+  "preset": "lines",
+  "shows": "lines with chat + chat.reel · title \"Agli baar koi poochhe, / ye video bhej dena.\" · prop text: Dost, Bhai ye caption style kaunsa hai?",
+  "role": "ending · statement",
+  "words": 13,
+  "fits": [
+   8,
+   21
+  ],
+  "seconds": 4.8,
+  "needs": {
+   "logo": false,
+   "media": 1
+  },
+  "props": [
+   "chat"
+  ],
+  "slots": {
+   "words": [
+    {
+     "id": "w0",
+     "orig": "Agli",
+     "pos": 0,
+     "str": true
+    },
+    {
+     "id": "w1",
+     "orig": "poochhe",
+     "pos": 0.25
+    },
+    {
+     "id": "w2",
+     "orig": "bhej",
+     "pos": 0.917
+    },
+    {
+     "id": "w3",
+     "orig": "dena.",
+     "pos": 1
+    }
+   ],
+   "text": [
+    {
+     "id": "t0",
+     "orig": "Agli baar koi poochhe,",
+     "max": 26
+    },
+    {
+     "id": "t1",
+     "orig": "ye video bhej dena.",
+     "max": 22
+    }
+   ],
+   "content": [
+    {
+     "id": "c0",
+     "orig": "Dost",
+     "max": 4,
+     "prop": "chat",
+     "key": "name"
+    },
+    {
+     "id": "c1",
+     "orig": "Bhai ye caption style kaunsa hai?",
+     "max": 33,
+     "prop": "chat",
+     "key": "msgs"
+    }
+   ],
+   "media": [
+    {
+     "id": "m0",
+     "orig": "styles/assets/premium-captions/premium-1.mp4",
+     "as": "chat.reel"
+    }
+   ]
+  },
+  "ops": [
+   {
+    "call": "lines",
+    "args": [
+     {
+      "$N": 1
+     },
+     [
+      {
+       "$el": "ln",
+       "args": [
+        {
+         "$T": "t0"
+        },
+        440,
+        600,
+        800
+       ],
+       "kw": {
+        "tracking": -0.035
+       }
+      },
+      {
+       "$el": "serif",
+       "args": [
+        {
+         "$T": "t1"
+        },
+        545,
+        560
+       ],
+       "kw": {}
+      }
+     ]
+    ],
+    "kw": {
+     "at": {
+      "$Ws": "w0"
+     },
+     "visuals": [
+      {
+       "kind": "image",
+       "draw": "chat",
+       "cx": 540,
+       "cy": 1170,
+       "w": 860,
+       "h": 860,
+       "enter": "glide",
+       "p": {
+        "name": {
+         "$C": "c0"
+        },
+        "msgs": [
+         [
+          {
+           "$W": "w1",
+           "add": 2
+          },
+          "in",
+          {
+           "$C": "c1"
+          }
+         ],
+         [
+          {
+           "$W": "w2",
+           "add": 0
+          },
+          "out",
+          {
+           "reel": {
+            "$M": "m0"
+           },
+           "vt": 1
+          }
+         ]
+        ],
+        "seenAt": {
+         "$W": "w2",
+         "add": 10
+        }
+       },
+       "_at": {
+        "$Ws": "w0"
+       },
+       "_off": 0
+      }
+     ]
+    }
+   },
+   {
+    "set": [
+     "S",
+     -1,
+     "_keys"
+    ],
+    "value": [
+     [
+      {
+       "$W": "w0",
+       "add": -4
+      },
+      1.04,
+      540,
+      990,
+      0.6
+     ],
+     [
+      {
+       "$W": "w3",
+       "add": 36
+      },
+      1,
+      540,
+      980,
+      0
+     ]
+    ]
+   },
+   {
+    "sfx": [
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w1",
+       "add": 2
+      },
+      "notify"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w2",
+       "add": 0
+      },
+      "card-in"
+     ],
+     [
+      {
+       "$N": 1
+      },
+      {
+       "$Wf": "w3",
+       "add": 2
+      },
+      "cta"
+     ]
+    ]
+   }
+  ],
+  "ok": true
+ }
+]
