@@ -3,12 +3,12 @@
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { craft, sys, user, project, styles, voice, type Q } from '../src/queries';
+import { craft, sys, user, project, styles, media, voice, type Q } from '../src/queries';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const block = (q: Q) => `### \`${q.name}\` ${q.ro ? '(read-only)' : '(write)'}\n\n${q.about}\n\n\`\`\`cypher\n${q.cypher}\n\`\`\`\n`;
 const section = (title: string, qs: Q[]) => `## ${title}\n\n${qs.map(block).join('\n')}`;
-const groups = [craft, sys, user, project, styles].map(g => Object.values(g));
+const groups = [craft, sys, user, project, styles, media].map(g => Object.values(g));
 
 const md = `# Every Cypher query the engine runs
 
@@ -35,12 +35,15 @@ The ones the product stands on:
 | The library grows | \`growSetup\`, \`grownSetups\` | kept improvisations as \`(:Setup {generated: true})\` |
 | Why this film | \`filmStory\` | each beat's set-up, arc and site |
 | What the matcher scores | \`signatures\` | style signatures |
+| Never the same clip twice, credits for every clip | \`clipSeen\`, \`useClip\`, \`clipCredits\` | \`(:Clip)-[:FROM]->(:Source)-[:UNDER]->(:Licence)\`, \`(:Clip)-[:USED_IN]->(:Scene)\` |
+| Every fact has a page and a proof shot | \`factProof\`, \`claimEvidence\` | path Claim → Fact → Page / Screenshot |
 
 ${section('craft (style knowledge, shared)', groups[0]!)}
 ${section('sys (accounts and the project index)', groups[1]!)}
 ${section('user_<uid> (one per user)', groups[2]!)}
 ${section('proj_<pid> (one per project)', groups[3]!)}
-${section('styles (what every reel style remembers)', groups[4]!)}`;
+${section('styles (what every reel style remembers)', groups[4]!)}
+${section('proj_<pid>: footage and research captures', groups[5]!)}`;
 
 const voiced = `
 

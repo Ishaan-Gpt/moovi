@@ -223,8 +223,8 @@ MATCH (:Run {id: $run})-[:HAS_TASK]->(t:Task)
 OPTIONAL MATCH (t)-[:DEPENDS_ON]->(d:Task)
 RETURN t.id AS id, t.kind AS kind, t.agent AS agent, t.scope AS scope, t.title AS title, t.status AS status,
        t.attempts AS attempts, t.started_at AS started, t.ended_at AS ended, t.ms AS ms, t.note AS note, t.error AS error,
-       collect(d.id) AS deps
-ORDER BY t.at, t.id`),
+       t.at AS at, collect(d.id) AS deps
+ORDER BY at, id`),
 
   reopen: q('reopen', false, 'Send-back: these tasks and everything downstream of them go back to waiting (attempt budgets reset).', `
 MATCH (:Run {id: $run})-[:HAS_TASK]->(t:Task)
