@@ -350,7 +350,7 @@ window.__range = async (from, to, fmt, sink) => {
 };
 
 /** the footage this page has opened: did it decode, how long is it, how wide (for the tests and the crew's diagnostics) */
-window.__clips = () => [...S.built.values()].flatMap(sc => [...(sc.backdrop ? [{ art: 'backdrop', vid: sc.backdrop.vid }] : []), ...sc.els.filter(e => e.vid).map(e => ({ art: e.el.art, vid: e.vid }))].map(x => ({ art: x.art, ok: x.vid.ok, dur: +x.vid.dur.toFixed(2), w: x.vid.w, h: x.vid.h })));
+window.__clips = () => [...S.built.values()].flatMap(sc => [...(sc.backdrop ? [{ art: 'backdrop', vid: sc.backdrop.vid }] : []), ...sc.els.filter(e => e.vid).map(e => ({ art: e.el.art, vid: e.vid }))].map(x => ({ art: x.art, ok: x.vid.ok, dur: +x.vid.dur.toFixed(2), w: x.vid.w, h: x.vid.h, stale: x.vid.stale ?? 0 })));
 
 /**
  * Render frames [from, to) and encode them to H.264 in the browser (WebCodecs): no ffmpeg needed. The samples (AVCC, no

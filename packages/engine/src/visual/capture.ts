@@ -83,7 +83,7 @@ export interface RenderOpts {
   ranges?: [number, number][];
   format?: 'jpeg' | 'png';
 }
-export interface Session { encodeRange(from: number, to: number, dir: string, bitrate: number): Promise<number>; clips(): Promise<{ art: string; ok: boolean; dur: number; w: number; h: number }[]>; range(from: number, to: number, dir: string): Promise<number>; info: { renderer: string; rw: number; rh: number }; frame(n: number): Promise<Buffer>; thumb(n: number): Promise<{ w: number; h: number; px: number[] }>; boxes(n: number): Promise<{ art: string; job: string; x0: number; y0: number; x1: number; y1: number }[]>; prof(): Promise<Record<string, number> & { sections?: Record<string, { ms: number; n: number }> }>; close(): Promise<void> }
+export interface Session { encodeRange(from: number, to: number, dir: string, bitrate: number): Promise<number>; clips(): Promise<{ art: string; ok: boolean; dur: number; w: number; h: number; stale?: number }[]>; range(from: number, to: number, dir: string): Promise<number>; info: { renderer: string; rw: number; rh: number }; frame(n: number): Promise<Buffer>; thumb(n: number): Promise<{ w: number; h: number; px: number[] }>; boxes(n: number): Promise<{ art: string; job: string; x0: number; y0: number; x1: number; y1: number }[]>; prof(): Promise<Record<string, number> & { sections?: Record<string, { ms: number; n: number }> }>; close(): Promise<void> }
 
 /** The plan as the page needs it: slots per scene, image urls, palette, the caption band. */
 export function payload(plan: VPlan, o: { scale?: number } = {}) {
@@ -112,7 +112,7 @@ export async function openFilm(plan: VPlan, o: RenderOpts = {}): Promise<Session
   type W = { __frame: (n: number, f: string) => string; __thumb: (n: number) => { w: number; h: number; px: number[] }; __boxes: (n: number) => { art: string; job: string; x0: number; y0: number; x1: number; y1: number }[] };
   return {
     async encodeRange(from, to, dir, bitrate) { const token = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`; sinks.set(token, dir); mkdirSync(dir, { recursive: true }); try { return await page.evaluate(([a, b, o]) => (window as unknown as { __encodeRange: (a: number, b: number, o: unknown) => Promise<number> }).__encodeRange(a as number, b as number, o), [from, to, { bitrate, sink: `http://127.0.0.1:${port}/__frame/${token}` }] as const); } finally { sinks.delete(token); } },
-    clips: () => page.evaluate(() => (window as unknown as { __clips: () => { art: string; ok: boolean; dur: number; w: number; h: number }[] }).__clips()),
+    clips: () => page.evaluate(() => (window as unknown as { __clips: () => { art: string; ok: boolean; dur: number; w: number; h: number; stale?: number }[] }).__clips()),
     async range(from, to, dir) { const token = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`; sinks.set(token, dir); mkdirSync(dir, { recursive: true }); try { return await page.evaluate(([a, b, f, s]) => (window as unknown as { __range: (a: number, b: number, f: string, s: string) => Promise<number> }).__range(a as number, b as number, f as string, s as string), [from, to, fmt, `http://127.0.0.1:${port}/__frame/${token}`] as const); } finally { sinks.delete(token); } }, info: { renderer: info.renderer, rw, rh },
     async frame(n) { return Buffer.from(await page.evaluate(([k, f]) => (window as unknown as W).__frame(k as number, f as string), [n, fmt] as const), 'base64'); },
     thumb: n => page.evaluate(k => (window as unknown as W).__thumb(k), n),
