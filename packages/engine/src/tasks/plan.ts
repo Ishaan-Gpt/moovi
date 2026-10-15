@@ -9,7 +9,7 @@ import { publish } from '../bus';
 import { newId } from '../ids';
 import { ask, tool, type Tool } from '../runtime';
 import { agentRun, feedbackMemory, knowledge, systemFor } from './agent';
-import { canon, fetchRead, pickSentences, Reader, wikiSearch, type Shot } from '../research/capture';
+import { canon, fetchRead, pickSentences, sharedReader, wikiSearch, type Shot } from '../research/capture';
 
 /**
  * Moovi plans: the brief becomes a typed plan (title, a NEW angle and hook form, audience, length, the ask, the
@@ -106,7 +106,8 @@ export const research: Handler = async ctx => {
   const B = await ctx.out<Brief>('plan');
   const know = await knowledge(ctx, 'researcher' as Role, m.style);
   // the browser reads pages the way a person sees them and shoots them for the film (src/research/capture.ts)
-  const reader = new Reader(join(ctx.dir, 'research', `q${ctx.task.scope ?? '0'}`.replace(/[^a-z0-9]+/gi, '')), B?.format === 'landscape' ? 'landscape' : 'vertical');
+  // one Chrome per run, shared by its research questions: a page asked about twice is read and shot once
+  const { reader, release } = sharedReader(ctx.run.id, join(ctx.dir, 'research'), B?.format === 'landscape' ? 'landscape' : 'vertical');
   const pages = new Map<string, { text: string; id: string }>();
   const shots: Shot[] = [];
   let facts = 0, proofs = 0;
@@ -166,7 +167,7 @@ export const research: Handler = async ctx => {
     }
     const caps = shots.map(s => ({ id: s.id, kind: s.kind, path: s.path, video: s.video, seconds: s.seconds ?? null }));
     return { output: { facts, proofs, pages: [...new Set([...pages.values()].map(v => v.id))].length, shots: caps, stopped: r.stopped }, note: `${facts} fact${facts === 1 ? '' : 's'}, ${shots.length} shot${shots.length === 1 ? '' : 's'}` };
-  } finally { await reader.close(); }
+  } finally { await release(); }
 };
 
 const shotRow = (s: Shot) => ({ id: s.id, kind: s.kind, path: s.path, y: s.y, w: s.w, h: s.h, seconds: s.seconds ?? null, sha: s.sha, video: s.video });

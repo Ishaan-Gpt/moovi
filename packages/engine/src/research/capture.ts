@@ -47,6 +47,10 @@ export class Reader {
   private browser: Browser | null = null;
   private ctx: BrowserContext | null = null;
   private pages = new Map<string, Page>();
+  /** each URL is read once per Reader; a second research question on the same page gets the first read and its shots */
+  private reads = new Map<string, Promise<PageRead>>();
+  /** one job at a time per page (a read, then proof shots): two jobs never scroll the same tab at once */
+  private locks = new Map<string, Promise<unknown>>();
   private n = 0;
   readonly vw: number; readonly vh: number; readonly dpr: number;
 
@@ -65,9 +69,27 @@ export class Reader {
     return this.ctx;
   }
 
-  /** Open and read a page; shots: hero + sections (+ a scroll capture when `scroll`). */
-  async read(url: string, o: { scroll?: boolean; scrollSeconds?: number; sections?: number } = {}): Promise<PageRead> {
-    const u = /^https?:\/\//.test(url) ? url : `https://${url}`;
+  private serial<T>(key: string, job: () => Promise<T>): Promise<T> {
+    const next = (this.locks.get(key) ?? Promise.resolve()).catch(() => undefined).then(job);
+    this.locks.set(key, next.catch(() => undefined));
+    return next;
+  }
+
+  /**
+   * Open and read a page; shots: hero + sections (+ a scroll capture when `scroll`). Memoised per URL: research asks
+   * several questions of the same site, and the page, its stills and its scroll video are made once, not per question.
+   */
+  read(url: string, o: { scroll?: boolean; scrollSeconds?: number; sections?: number } = {}): Promise<PageRead> {
+    const u = withScheme(url), key = pageKey(u);
+    const hit = this.reads.get(key);
+    if (hit) return hit;
+    const job = this.serial(key, () => this.readNow(u, o));
+    this.reads.set(key, job);
+    job.catch(() => this.reads.delete(key)); // a failed read may be tried again
+    return job;
+  }
+
+  private async readNow(u: string, o: { scroll?: boolean; scrollSeconds?: number; sections?: number }): Promise<PageRead> {
     const ms: Record<string, number> = {};
     let t = Date.now();
     const lap = (k: string) => { ms[k] = Date.now() - t; t = Date.now(); };
@@ -138,9 +160,13 @@ export class Reader {
    * The proof shot: find `quote` in the page's text, scroll it to 40 % of the screen, outline it and shoot. Null when
    * the quote is not visible text (it may live in a meta tag or a hidden element).
    */
-  async proof(url: string, quote: string): Promise<Shot | null> {
-    const u = /^https?:\/\//.test(url) ? url : `https://${url}`;
-    const page = this.pages.get(u) ?? [...this.pages.entries()].find(([k]) => k.replace(/\/$/, '') === u.replace(/\/$/, ''))?.[1];
+  proof(url: string, quote: string): Promise<Shot | null> {
+    const u = withScheme(url);
+    return this.serial(pageKey(u), () => this.proofNow(u, quote));
+  }
+
+  private async proofNow(u: string, quote: string): Promise<Shot | null> {
+    const page = this.pages.get(u) ?? [...this.pages.entries()].find(([k]) => pageKey(k) === pageKey(u))?.[1];
     if (!page) return null;
     const want = canon(quote).split(' ').slice(0, 14).join(' ');
     if (want.length < 8) return null;
@@ -197,8 +223,35 @@ export class Reader {
   async close() {
     await this.ctx?.close().catch(() => undefined);
     await this.browser?.close().catch(() => undefined);
-    this.ctx = null; this.browser = null; this.pages.clear();
+    this.ctx = null; this.browser = null; this.pages.clear(); this.reads.clear(); this.locks.clear();
   }
+}
+
+const withScheme = (url: string) => (/^https?:\/\//.test(url) ? url : `https://${url}`);
+/** the same page however it was written (trailing slash, http/https, case of the host) */
+export const pageKey = (url: string) => withScheme(url).replace(/^http:/, 'https:').replace(/\/+$/, '').replace(/^(https:\/\/[^/]+)/, h => h.toLowerCase());
+
+const shared = new Map<string, { reader: Reader; users: number }>();
+/**
+ * The run's one Reader: every research task of a run that runs in this process shares one Chrome, and every page is
+ * read and shot once. `release()` (once per task) closes the browser after the last task lets go.
+ */
+export function sharedReader(run: string, dir: string, format: Format): { reader: Reader; release: () => Promise<void> } {
+  const k = `${run}|${format}`;
+  const s = shared.get(k) ?? { reader: new Reader(dir, format), users: 0 };
+  shared.set(k, s);
+  s.users++;
+  let released = false;
+  return {
+    reader: s.reader,
+    release: async () => {
+      if (released) return;
+      released = true;
+      if (--s.users > 0) return;
+      shared.delete(k);
+      await s.reader.close();
+    },
+  };
 }
 
 /** Plain HTTP read, for when Chrome is not available (no shots). */
