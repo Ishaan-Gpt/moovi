@@ -342,3 +342,31 @@ window.__range = async (from, to, fmt, sink) => {
 
 /** the footage this page has opened: did it decode, how long is it, how wide (for the tests and the crew's diagnostics) */
 window.__clips = () => [...S.built.values()].flatMap(sc => [...(sc.backdrop ? [{ art: 'backdrop', vid: sc.backdrop.vid }] : []), ...sc.els.filter(e => e.vid).map(e => ({ art: e.el.art, vid: e.vid }))].map(x => ({ art: x.art, ok: x.vid.ok, dur: +x.vid.dur.toFixed(2), w: x.vid.w, h: x.vid.h })));
+
+/**
+ * Render frames [from, to) and encode them to H.264 in the browser (WebCodecs): no ffmpeg needed. The samples (AVCC, no
+ * B-frames, a keyframe at the start of the range and every two seconds) are POSTed to the local server as one blob: a JSON
+ * header with the sizes and times, then the bytes. Node joins the ranges and writes the mp4 (visual/mp4.ts).
+ */
+window.__encodeRange = async (from, to, opts) => {
+  const fps = S.plan.fps, chunks = [];
+  let description = null, failed = null;
+  const enc = new VideoEncoder({ output: (chunk, meta) => { if (meta?.decoderConfig?.description) description = new Uint8Array(meta.decoderConfig.description.slice ? meta.decoderConfig.description.slice(0) : meta.decoderConfig.description); const d = new Uint8Array(chunk.byteLength); chunk.copyTo(d); chunks.push({ key: chunk.type === 'key', ts: chunk.timestamp, dur: chunk.duration ?? Math.round(1e6 / fps), d }); }, error: e => { failed = String(e); } });
+  const cfg = { codec: 'avc1.640033', width: S.rw, height: S.rh, bitrate: opts.bitrate, framerate: fps, avc: { format: 'avc' }, latencyMode: 'quality' };
+  const sup = await VideoEncoder.isConfigSupported(cfg); if (!sup.supported) throw new Error('this browser cannot encode H.264 with WebCodecs');
+  enc.configure(cfg);
+  for (let n = from; n < to; n++) {
+    await prepare(n); compose(n);
+    const vf = new VideoFrame(S.main.c, { timestamp: Math.round((n * 1e6) / fps), duration: Math.round(1e6 / fps) });
+    enc.encode(vf, { keyFrame: n === from || (n - from) % (fps * 2) === 0 }); vf.close();
+    if (enc.encodeQueueSize > 6) await new Promise(r => enc.addEventListener('dequeue', r, { once: true }));
+    if (failed) throw new Error(failed);
+  }
+  await enc.flush(); enc.close();
+  if (failed) throw new Error(failed);
+  const head = JSON.stringify({ from, to, w: S.rw, h: S.rh, desc: Array.from(description ?? []), samples: chunks.map(c => ({ key: c.key, ts: c.ts, dur: c.dur, len: c.d.length })) });
+  const hb = new TextEncoder().encode(head), lenb = new Uint8Array(4); new DataView(lenb.buffer).setUint32(0, hb.length);
+  const r = await fetch(opts.sink + '?name=' + encodeURIComponent('r' + String(from).padStart(5, '0') + '.bin'), { method: 'POST', body: new Blob([lenb, hb, ...chunks.map(c => c.d)]) });
+  if (!r.ok) throw new Error('could not store the encoded range');
+  return chunks.length;
+};
