@@ -1,0 +1,25 @@
+{
+  "name": "@contenteasy/graph",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Moovi's memory: the FalkorDB client, schema, seeds and the Cypher query library the crew depends on.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "extract-craft": "node scripts/extract-craft.mjs",
+    "seed": "tsx scripts/seed.ts",
+    "check": "tsx scripts/check.ts",
+    "docs": "tsx scripts/docs.ts"
+  },
+  "dependencies": {
+    "falkordb": "6.8.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.0",
+    "typescript": "5.9.3",
+    "tsx": "4.20.6"
+  }
+}

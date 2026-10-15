@@ -1,0 +1,2179 @@
+{
+ "source": "MotionEasy (MIT): packages/library registry, remix.ts slots and recipes, music.gen.ts",
+ "components": [
+  {
+   "id": "hook-strike",
+   "name": "Strike & Swap",
+   "category": "hooks",
+   "description": "A question everyone recognises, a marker strikes out the painful part, and the new answer slams in beneath it in serif. A pattern interrupt in under three seconds.",
+   "notes": "Open with it. The struck words must appear exactly in the line.",
+   "duration": 4.2,
+   "formats": [
+    "vertical",
+    "portrait",
+    "square",
+    "landscape"
+   ],
+   "slots": [
+    {
+     "id": "hook",
+     "rank": 0
+    }
+   ]
+  },
+  {
+   "id": "stat-trio",
+   "name": "Stat Trio",
+   "category": "proof",
+   "description": "Three proof points as cards that land one after another, numbers counting as they arrive. The hero card is set in ink.",
+   "notes": "Write stats as 'number|label', e.g. '30+|caption looks'. Real numbers only.",
+   "duration": 4.15,
+   "formats": [
+    "vertical",
+    "portrait",
+    "square",
+    "landscape"
+   ],
+   "slots": [
+    {
+     "id": "proof",
+     "rank": 0
+    }
+   ]
+  },
+  {
+   "id": "checklist",
+   "name": "Checklist",
+   "category": "proof",
+   "description": "Claims tick off one by one: each check draws itself, the line rises beside it, and a soft tick keeps time. Clean, confident proof.",
+   "notes": "Only true claims. 4–6 short items read best.",
+   "duration": 4.32,
+   "formats": [
+    "vertical",
+    "portrait",
+    "square",
+    "landscape"
+   ],
+   "slots": [
+    {
+     "id": "list",
+     "rank": 1
+    },
+    {
+     "id": "proof",
+     "rank": 2
+    }
+   ]
+  },
+  {
+   "id": "four-steps",
+   "name": "Four Steps",
+   "category": "lists",
+   "description": "A how-it-works beat: a big odometer rolls 01 → 04 while each step's title and detail swap in, and a progress rail fills underneath.",
+   "notes": "Write steps as 'Title|detail'. 3–5 steps.",
+   "duration": 7,
+   "formats": [
+    "vertical",
+    "portrait",
+    "square",
+    "landscape"
+   ],
+   "slots": [
+    {
+     "id": "list",
+     "rank": 0
+    }
+   ]
+  },
+  {
+   "id": "now-live",
+   "name": "Now Live Stamp",
+   "category": "launch",
+   "description": "A rubber-stamp badge slams onto the frame with a tilt and an ink ripple, then the headline and the link settle in under it.",
+   "notes": "Announcements: launches, new features, price drops. One stamp per post.",
+   "duration": 4.4,
+   "formats": [
+    "vertical",
+    "portrait",
+    "square",
+    "landscape"
+   ],
+   "slots": [
+    {
+     "id": "cta",
+     "rank": 1
+    }
+   ]
+  },
+  {
+   "id": "beat-slam",
+   "name": "Beat Slam",
+   "category": "kinetic-type",
+   "description": "One word per beat, slammed into frame from the camera with a light flare and a micro kick. Accent words land in serif italic.",
+   "notes": "Best as a hook in the first 2 seconds. Don't follow it with another slam; cut to media.",
+   "duration": 2.85,
+   "formats": [
+    "vertical",
+    "portrait",
+    "square",
+    "landscape"
+   ],
+   "slots": [
+    {
+     "id": "hook",
+     "rank": 1
+    }
+   ]
+  },
+  {
+   "id": "kinetic-stack",
+   "name": "Kinetic Stack",
+   "category": "kinetic-type",
+   "description": "Poster typography: every line is set to the full width of the frame, so short words go huge. Lines slam in from alternating sides on the beat with real motion blur: solid, outline, then a colour bar.",
+   "notes": "Fills the frame with type, so it needs no backdrop. 2–5 short lines; one word per line hits hardest. Set the BPM to the track.",
+   "duration": 3.24,
+   "formats": [
+    "vertical",
+    "portrait",
+    "square",
+    "landscape"
+   ],
+   "slots": [
+    {
+     "id": "hook",
+     "rank": 2
+    }
+   ]
+  },
+  {
+   "id": "type-marquee",
+   "name": "Type Marquee",
+   "category": "kinetic-type",
+   "description": "The whole frame is type: rows of outlined words scroll against each other while the message flies in on the middle row, lands dead centre and gets a colour band behind it.",
+   "notes": "A loud opener or chapter card. The echo rows repeat a word (the product, the topic); keep the message to 1–3 words.",
+   "duration": 3.9,
+   "formats": [
+    "vertical",
+    "portrait",
+    "square",
+    "landscape"
+   ],
+   "slots": [
+    {
+     "id": "hook",
+     "rank": 4
+    }
+   ]
+  },
+  {
+   "id": "char-cascade",
+   "name": "Char Cascade",
+   "category": "kinetic-type",
+   "description": "Every letter arrives on its own spring, a couple of frames after the last, never in lockstep. Accent words pop a little bigger, then a hairline draws underneath.",
+   "notes": "The per-character stagger that makes type feel hand-animated. Rise for calm lines, Drop for punch, Scatter for a playful hook. Don't follow it with another per-letter reveal.",
+   "duration": 3.05,
+   "formats": [
+    "vertical",
+    "portrait",
+    "square",
+    "landscape"
+   ],
+   "slots": [
+    {
+     "id": "hook",
+     "rank": 3
+    },
+    {
+     "id": "body",
+     "rank": 2
+    }
+   ]
+  },
+  {
+   "id": "image-type",
+   "name": "Image Type",
+   "category": "kinetic-type",
+   "description": "One huge word with your footage playing inside the letters. Then the word becomes a window: it opens out until the footage is the whole frame. Type that turns into the next shot.",
+   "notes": "Use a short, wide word (4–7 letters) and footage with colour and movement. With Open on, it hands over to the footage: follow it with a cut, not another reveal.",
+   "duration": 4.7,
+   "formats": [
+    "vertical",
+    "portrait",
+    "square",
+    "landscape"
+   ],
+   "slots": [
+    {
+     "id": "footage",
+     "rank": 2
+    }
+   ]
+  },
+  {
+   "id": "word-rotator",
+   "name": "Word Rotator",
+   "category": "kinetic-type",
+   "description": "A fixed line and a rotating word that rolls on a 3D drum. The slot behind it resizes with a spring for every new word.",
+   "notes": "Great for 'X for Y' value props. Keep words short (one or two words) and 3–6 of them.",
+   "duration": 5.15,
+   "formats": [
+    "vertical",
+    "portrait",
+    "square",
+    "landscape"
+   ],
+   "slots": [
+    {
+     "id": "hook",
+     "rank": 8
+    },
+    {
+     "id": "body",
+     "rank": 5
+    }
+   ]
+  },
+  {
+   "id": "echo-stack",
+   "name": "Echo Stack",
+   "category": "kinetic-type",
+   "description": "The line repeats into a stack of outlined echoes that roll past each other, then collapse into one solid word on the hit.",
+   "notes": "Short lines only (1–3 words). The collapse is the hit: put your music's downbeat there.",
+   "duration": 4.2,
+   "formats": [
+    "vertical",
+    "portrait",
+    "square",
+    "landscape"
+   ],
+   "slots": [
+    {
+     "id": "hook",
+     "rank": 5
+    }
+   ]
+  },
+  {
+   "id": "focus-pull",
+   "name": "Focus Pull",
+   "category": "text-reveals",
+   "description": "A rack focus on type: each word drifts out of a deep blur and locks sharp, while the camera creeps in. Calm, expensive, Apple-keynote.",
+   "notes": "Use for statements that deserve a beat of silence. Pair with slow music; avoid after another blur reveal.",
+   "duration": 4.52,
+   "formats": [
+    "vertical",
+    "portrait",
+    "square",
+    "landscape"
+   ],
+   "slots": [
+    {
+     "id": "body",
+     "rank": 0
+    }
+   ]
+  },
+  {
+   "id": "light-sweep",
+   "name": "Light Sweep",
+   "category": "text-reveals",
+   "description": "Type waits in the dark, barely embossed. A band of light sweeps across and leaves every letter lit, with a soft specular edge.",
+   "notes": "One sweep per video, on the hero line (motion law Q4). Pairs with a slow, low music bed.",
+   "duration": 4.1,
+   "formats": [
+    "vertical",
+    "portrait",
+    "square",
+    "landscape"
+   ],
+   "slots": [
+    {
+     "id": "body",
+     "rank": 1
+    }
+   ]
+  },
+  {
+   "id": "mask-rise",
+   "name": "Masked Rise",
+   "category": "text-reveals",
+   "description": "Lines climb out of invisible slots with a slight tilt, then a felt marker swipes behind the accent words. The launch-film reveal, refined.",
+   "notes": "Each line is its own beat. Mark one idea per frame: the *accent* words get the marker.",
+   "duration": 3.74,
+   "formats": [
+    "vertical",
+    "portrait",
+    "square",
+    "landscape"
+   ],
+   "slots": [
+    {
+     "id": "body",
+     "rank": 3
+    },
+    {
+     "id": "list",
+     "rank": 2
+    }
+   ]
+  },
+  {
+   "id": "bar-wipe",
+   "name": "Bar Wipe",
+   "category": "text-reveals",
+   "description": "A solid bar shoots across each line, then pulls away to the far side and leaves the words behind. Editorial and fast; every line on its own beat.",
+   "notes": "Great for lists of claims or a three-line hook. The bar uses the accent colour; on a busy backdrop use Ink.",
+   "duration": 2.67,
+   "formats": [
+    "vertical",
+    "portrait",
+    "square",
+    "landscape"
+   ],
+   "slots": [
+    {
+     "id": "list",
+     "rank": 3
+    }
+   ]
+  },
+  {
+   "id": "split-flap",
+   "name": "Split-Flap Board",
+   "category": "text-reveals",
+   "description": "A departure board: every tile flutters through letters and lands on yours, left to right, with real flap halves and a click per landing.",
+   "notes": "Short uppercase lines (up to ~12 characters a row). Good for dates, destinations, launches, 'now boarding' moments.",
+   "duration": 3.14,
+   "formats": [
+    "vertical",
+    "portrait",
+    "square",
+    "landscape"
+   ],
+   "slots": [
+    {
+     "id": "hook",
+     "rank": 7
+    }
+   ]
+  },
+  {
+   "id": "decode",
+   "name": "Decode",
+   "category": "text-reveals",
+   "description": "Letters cycle through random glyphs and lock into place left to right, each landing with a brief flash. Seeded, so it scrambles the same way every time.",
+   "notes": "For tech or AI claims. Keep it under ~30 characters per line.",
+   "duration": 3.5,
+   "formats": [
+    "vertical",
+    "portrait",
+    "square",
+    "landscape"
+   ],
+   "slots": [
+    {
+     "id": "hook",
+     "rank": 6
+    }
+   ]
+  },
+  {
+   "id": "big-number",
+   "name": "Big Number",
+   "category": "numbers",
+   "description": "A huge stat on odometer wheels: digits roll with motion blur, decelerate onto the number, then the unit and the line underneath land.",
+   "notes": "One number per shot, and only real numbers (honesty rule).",
+   "duration": 4.25,
+   "formats": [
+    "vertical",
+    "portrait",
+    "square",
+    "landscape"
+   ],
+   "slots": [
+    {
+     "id": "proof",
+     "rank": 1
+    }
+   ]
+  },
+  {
+   "id": "phone-hero",
+   "name": "Phone Hero",
+   "category": "devices",
+   "description": "A real-feeling phone with thickness, glass and a dynamic island rises and turns to camera, playing your clip, then floats with a slow orbit. One light sweep crosses the glass.",
+   "notes": "The default product shot. Put a captioned or app clip inside; keep the headline to one line.",
+   "duration": 5.5,
+   "formats": [
+    "vertical",
+    "portrait",
+    "square",
+    "landscape"
+   ],
+   "slots": [
+    {
+     "id": "footage",
+     "rank": 0
+    }
+   ]
+  },
+  {
+   "id": "cinematic-still",
+   "name": "Cinematic Still",
+   "category": "media",
+   "description": "Your shot, graded like a film: letterbox bars close in, a slow push and pan drifts across it, and a chapter title rises in the lower third.",
+   "notes": "For story openers and chapter cards. Works with a photo or a slow clip.",
+   "duration": 5.5,
+   "formats": [
+    "vertical",
+    "portrait",
+    "square",
+    "landscape"
+   ],
+   "slots": [
+    {
+     "id": "footage",
+     "rank": 1
+    }
+   ]
+  },
+  {
+   "id": "click-cta",
+   "name": "Click CTA",
+   "category": "overlays",
+   "description": "The call to action, performed: a button springs in, the cursor glides over with a speed ramp, presses it, and it turns into a confirmation.",
+   "notes": "Close a post with it. The URL line is what people will remember: keep it short.",
+   "duration": 4.4,
+   "formats": [
+    "vertical",
+    "portrait",
+    "square",
+    "landscape"
+   ],
+   "slots": [
+    {
+     "id": "cta",
+     "rank": 0
+    }
+   ]
+  },
+  {
+   "id": "light-stage",
+   "name": "Light Stage",
+   "category": "backgrounds",
+   "description": "A lit stage to put anything on: drifting light pools on cream, or a volumetric spotlight in the dark. Seamless enough to loop behind any line.",
+   "notes": "Use as the bed under captions or a single statement. The headline is optional.",
+   "duration": 5,
+   "formats": [
+    "vertical",
+    "portrait",
+    "square",
+    "landscape"
+   ],
+   "slots": [
+    {
+     "id": "body",
+     "rank": 4
+    }
+   ]
+  }
+ ],
+ "slots": [
+  "hook",
+  "body",
+  "list",
+  "proof",
+  "cta",
+  "footage"
+ ],
+ "recipes": {
+  "classic": {
+   "mode": "generate",
+   "slots": [
+    "hook",
+    "body",
+    "proof",
+    "cta"
+   ]
+  },
+  "how-to": {
+   "mode": "generate",
+   "slots": [
+    "hook",
+    "list",
+    "cta"
+   ]
+  },
+  "proof-first": {
+   "mode": "generate",
+   "slots": [
+    "proof",
+    "body",
+    "cta"
+   ]
+  },
+  "show-and-tell": {
+   "mode": "generate",
+   "slots": [
+    "hook",
+    "body",
+    "list",
+    "cta"
+   ]
+  },
+  "statement": {
+   "mode": "generate",
+   "slots": [
+    "hook",
+    "body",
+    "cta"
+   ]
+  },
+  "feature-reel": {
+   "mode": "edit",
+   "slots": [
+    "hook",
+    "footage",
+    "proof",
+    "cta"
+   ]
+  },
+  "clip-first": {
+   "mode": "edit",
+   "slots": [
+    "footage",
+    "body",
+    "cta"
+   ]
+  },
+  "demo": {
+   "mode": "edit",
+   "slots": [
+    "hook",
+    "footage",
+    "cta"
+   ]
+  }
+ },
+ "flows": [
+  {
+   "from": "hook-strike",
+   "to": "checklist",
+   "w": 1
+  },
+  {
+   "from": "hook-strike",
+   "to": "four-steps",
+   "w": 1
+  },
+  {
+   "from": "hook-strike",
+   "to": "char-cascade",
+   "w": 1
+  },
+  {
+   "from": "hook-strike",
+   "to": "image-type",
+   "w": 1
+  },
+  {
+   "from": "hook-strike",
+   "to": "word-rotator",
+   "w": 1
+  },
+  {
+   "from": "hook-strike",
+   "to": "focus-pull",
+   "w": 1
+  },
+  {
+   "from": "hook-strike",
+   "to": "light-sweep",
+   "w": 1
+  },
+  {
+   "from": "hook-strike",
+   "to": "mask-rise",
+   "w": 1
+  },
+  {
+   "from": "hook-strike",
+   "to": "bar-wipe",
+   "w": 1
+  },
+  {
+   "from": "hook-strike",
+   "to": "phone-hero",
+   "w": 1
+  },
+  {
+   "from": "hook-strike",
+   "to": "cinematic-still",
+   "w": 1
+  },
+  {
+   "from": "hook-strike",
+   "to": "light-stage",
+   "w": 1
+  },
+  {
+   "from": "stat-trio",
+   "to": "now-live",
+   "w": 0.9
+  },
+  {
+   "from": "stat-trio",
+   "to": "char-cascade",
+   "w": 1
+  },
+  {
+   "from": "stat-trio",
+   "to": "word-rotator",
+   "w": 1
+  },
+  {
+   "from": "stat-trio",
+   "to": "focus-pull",
+   "w": 1
+  },
+  {
+   "from": "stat-trio",
+   "to": "light-sweep",
+   "w": 1
+  },
+  {
+   "from": "stat-trio",
+   "to": "mask-rise",
+   "w": 1
+  },
+  {
+   "from": "stat-trio",
+   "to": "click-cta",
+   "w": 0.9
+  },
+  {
+   "from": "stat-trio",
+   "to": "light-stage",
+   "w": 1
+  },
+  {
+   "from": "checklist",
+   "to": "now-live",
+   "w": 0.9
+  },
+  {
+   "from": "checklist",
+   "to": "char-cascade",
+   "w": 1
+  },
+  {
+   "from": "checklist",
+   "to": "word-rotator",
+   "w": 1
+  },
+  {
+   "from": "checklist",
+   "to": "focus-pull",
+   "w": 1
+  },
+  {
+   "from": "checklist",
+   "to": "light-sweep",
+   "w": 1
+  },
+  {
+   "from": "checklist",
+   "to": "mask-rise",
+   "w": 1
+  },
+  {
+   "from": "checklist",
+   "to": "click-cta",
+   "w": 0.9
+  },
+  {
+   "from": "checklist",
+   "to": "light-stage",
+   "w": 1
+  },
+  {
+   "from": "four-steps",
+   "to": "now-live",
+   "w": 0.9
+  },
+  {
+   "from": "four-steps",
+   "to": "click-cta",
+   "w": 0.9
+  },
+  {
+   "from": "beat-slam",
+   "to": "checklist",
+   "w": 1
+  },
+  {
+   "from": "beat-slam",
+   "to": "four-steps",
+   "w": 1
+  },
+  {
+   "from": "beat-slam",
+   "to": "char-cascade",
+   "w": 2.5
+  },
+  {
+   "from": "beat-slam",
+   "to": "image-type",
+   "w": 2.5
+  },
+  {
+   "from": "beat-slam",
+   "to": "word-rotator",
+   "w": 2.5
+  },
+  {
+   "from": "beat-slam",
+   "to": "focus-pull",
+   "w": 0.75
+  },
+  {
+   "from": "beat-slam",
+   "to": "light-sweep",
+   "w": 0.75
+  },
+  {
+   "from": "beat-slam",
+   "to": "mask-rise",
+   "w": 0.75
+  },
+  {
+   "from": "beat-slam",
+   "to": "bar-wipe",
+   "w": 0.75
+  },
+  {
+   "from": "beat-slam",
+   "to": "phone-hero",
+   "w": 0.8
+  },
+  {
+   "from": "beat-slam",
+   "to": "cinematic-still",
+   "w": 0.8
+  },
+  {
+   "from": "beat-slam",
+   "to": "light-stage",
+   "w": 1
+  },
+  {
+   "from": "kinetic-stack",
+   "to": "checklist",
+   "w": 1
+  },
+  {
+   "from": "kinetic-stack",
+   "to": "four-steps",
+   "w": 1
+  },
+  {
+   "from": "kinetic-stack",
+   "to": "char-cascade",
+   "w": 2.5
+  },
+  {
+   "from": "kinetic-stack",
+   "to": "image-type",
+   "w": 2.5
+  },
+  {
+   "from": "kinetic-stack",
+   "to": "word-rotator",
+   "w": 2.5
+  },
+  {
+   "from": "kinetic-stack",
+   "to": "focus-pull",
+   "w": 0.75
+  },
+  {
+   "from": "kinetic-stack",
+   "to": "light-sweep",
+   "w": 0.75
+  },
+  {
+   "from": "kinetic-stack",
+   "to": "mask-rise",
+   "w": 0.75
+  },
+  {
+   "from": "kinetic-stack",
+   "to": "bar-wipe",
+   "w": 0.75
+  },
+  {
+   "from": "kinetic-stack",
+   "to": "phone-hero",
+   "w": 0.8
+  },
+  {
+   "from": "kinetic-stack",
+   "to": "cinematic-still",
+   "w": 0.8
+  },
+  {
+   "from": "kinetic-stack",
+   "to": "light-stage",
+   "w": 1
+  },
+  {
+   "from": "type-marquee",
+   "to": "checklist",
+   "w": 1
+  },
+  {
+   "from": "type-marquee",
+   "to": "four-steps",
+   "w": 1
+  },
+  {
+   "from": "type-marquee",
+   "to": "char-cascade",
+   "w": 2.5
+  },
+  {
+   "from": "type-marquee",
+   "to": "image-type",
+   "w": 2.5
+  },
+  {
+   "from": "type-marquee",
+   "to": "word-rotator",
+   "w": 2.5
+  },
+  {
+   "from": "type-marquee",
+   "to": "focus-pull",
+   "w": 0.75
+  },
+  {
+   "from": "type-marquee",
+   "to": "light-sweep",
+   "w": 0.75
+  },
+  {
+   "from": "type-marquee",
+   "to": "mask-rise",
+   "w": 0.75
+  },
+  {
+   "from": "type-marquee",
+   "to": "bar-wipe",
+   "w": 0.75
+  },
+  {
+   "from": "type-marquee",
+   "to": "phone-hero",
+   "w": 0.8
+  },
+  {
+   "from": "type-marquee",
+   "to": "cinematic-still",
+   "w": 0.8
+  },
+  {
+   "from": "type-marquee",
+   "to": "light-stage",
+   "w": 1
+  },
+  {
+   "from": "char-cascade",
+   "to": "stat-trio",
+   "w": 1
+  },
+  {
+   "from": "char-cascade",
+   "to": "checklist",
+   "w": 1
+  },
+  {
+   "from": "char-cascade",
+   "to": "four-steps",
+   "w": 1
+  },
+  {
+   "from": "char-cascade",
+   "to": "now-live",
+   "w": 0.9
+  },
+  {
+   "from": "char-cascade",
+   "to": "image-type",
+   "w": 2.5
+  },
+  {
+   "from": "char-cascade",
+   "to": "word-rotator",
+   "w": 2.5
+  },
+  {
+   "from": "char-cascade",
+   "to": "focus-pull",
+   "w": 0.75
+  },
+  {
+   "from": "char-cascade",
+   "to": "light-sweep",
+   "w": 0.75
+  },
+  {
+   "from": "char-cascade",
+   "to": "mask-rise",
+   "w": 0.75
+  },
+  {
+   "from": "char-cascade",
+   "to": "bar-wipe",
+   "w": 0.75
+  },
+  {
+   "from": "char-cascade",
+   "to": "big-number",
+   "w": 0.75
+  },
+  {
+   "from": "char-cascade",
+   "to": "phone-hero",
+   "w": 0.8
+  },
+  {
+   "from": "char-cascade",
+   "to": "cinematic-still",
+   "w": 0.8
+  },
+  {
+   "from": "char-cascade",
+   "to": "click-cta",
+   "w": 0.9
+  },
+  {
+   "from": "char-cascade",
+   "to": "light-stage",
+   "w": 1
+  },
+  {
+   "from": "image-type",
+   "to": "stat-trio",
+   "w": 1
+  },
+  {
+   "from": "image-type",
+   "to": "checklist",
+   "w": 1
+  },
+  {
+   "from": "image-type",
+   "to": "now-live",
+   "w": 0.9
+  },
+  {
+   "from": "image-type",
+   "to": "char-cascade",
+   "w": 2.5
+  },
+  {
+   "from": "image-type",
+   "to": "word-rotator",
+   "w": 2.5
+  },
+  {
+   "from": "image-type",
+   "to": "focus-pull",
+   "w": 0.75
+  },
+  {
+   "from": "image-type",
+   "to": "light-sweep",
+   "w": 0.75
+  },
+  {
+   "from": "image-type",
+   "to": "mask-rise",
+   "w": 0.75
+  },
+  {
+   "from": "image-type",
+   "to": "big-number",
+   "w": 0.75
+  },
+  {
+   "from": "image-type",
+   "to": "click-cta",
+   "w": 0.9
+  },
+  {
+   "from": "image-type",
+   "to": "light-stage",
+   "w": 1
+  },
+  {
+   "from": "word-rotator",
+   "to": "stat-trio",
+   "w": 1
+  },
+  {
+   "from": "word-rotator",
+   "to": "checklist",
+   "w": 1
+  },
+  {
+   "from": "word-rotator",
+   "to": "four-steps",
+   "w": 1
+  },
+  {
+   "from": "word-rotator",
+   "to": "now-live",
+   "w": 0.9
+  },
+  {
+   "from": "word-rotator",
+   "to": "char-cascade",
+   "w": 2.5
+  },
+  {
+   "from": "word-rotator",
+   "to": "image-type",
+   "w": 2.5
+  },
+  {
+   "from": "word-rotator",
+   "to": "focus-pull",
+   "w": 0.75
+  },
+  {
+   "from": "word-rotator",
+   "to": "light-sweep",
+   "w": 0.75
+  },
+  {
+   "from": "word-rotator",
+   "to": "mask-rise",
+   "w": 0.75
+  },
+  {
+   "from": "word-rotator",
+   "to": "bar-wipe",
+   "w": 0.75
+  },
+  {
+   "from": "word-rotator",
+   "to": "big-number",
+   "w": 0.75
+  },
+  {
+   "from": "word-rotator",
+   "to": "phone-hero",
+   "w": 0.8
+  },
+  {
+   "from": "word-rotator",
+   "to": "cinematic-still",
+   "w": 0.8
+  },
+  {
+   "from": "word-rotator",
+   "to": "click-cta",
+   "w": 0.9
+  },
+  {
+   "from": "word-rotator",
+   "to": "light-stage",
+   "w": 1
+  },
+  {
+   "from": "echo-stack",
+   "to": "checklist",
+   "w": 1
+  },
+  {
+   "from": "echo-stack",
+   "to": "four-steps",
+   "w": 1
+  },
+  {
+   "from": "echo-stack",
+   "to": "char-cascade",
+   "w": 2.5
+  },
+  {
+   "from": "echo-stack",
+   "to": "image-type",
+   "w": 2.5
+  },
+  {
+   "from": "echo-stack",
+   "to": "word-rotator",
+   "w": 2.5
+  },
+  {
+   "from": "echo-stack",
+   "to": "focus-pull",
+   "w": 0.75
+  },
+  {
+   "from": "echo-stack",
+   "to": "light-sweep",
+   "w": 0.75
+  },
+  {
+   "from": "echo-stack",
+   "to": "mask-rise",
+   "w": 0.75
+  },
+  {
+   "from": "echo-stack",
+   "to": "bar-wipe",
+   "w": 0.75
+  },
+  {
+   "from": "echo-stack",
+   "to": "phone-hero",
+   "w": 0.8
+  },
+  {
+   "from": "echo-stack",
+   "to": "cinematic-still",
+   "w": 0.8
+  },
+  {
+   "from": "echo-stack",
+   "to": "light-stage",
+   "w": 1
+  },
+  {
+   "from": "focus-pull",
+   "to": "stat-trio",
+   "w": 1
+  },
+  {
+   "from": "focus-pull",
+   "to": "checklist",
+   "w": 1
+  },
+  {
+   "from": "focus-pull",
+   "to": "four-steps",
+   "w": 1
+  },
+  {
+   "from": "focus-pull",
+   "to": "now-live",
+   "w": 0.9
+  },
+  {
+   "from": "focus-pull",
+   "to": "mask-rise",
+   "w": 1.8
+  },
+  {
+   "from": "focus-pull",
+   "to": "bar-wipe",
+   "w": 1.8
+  },
+  {
+   "from": "focus-pull",
+   "to": "big-number",
+   "w": 1
+  },
+  {
+   "from": "focus-pull",
+   "to": "click-cta",
+   "w": 0.9
+  },
+  {
+   "from": "light-sweep",
+   "to": "stat-trio",
+   "w": 1
+  },
+  {
+   "from": "light-sweep",
+   "to": "checklist",
+   "w": 1
+  },
+  {
+   "from": "light-sweep",
+   "to": "four-steps",
+   "w": 1
+  },
+  {
+   "from": "light-sweep",
+   "to": "now-live",
+   "w": 0.9
+  },
+  {
+   "from": "light-sweep",
+   "to": "mask-rise",
+   "w": 1.8
+  },
+  {
+   "from": "light-sweep",
+   "to": "bar-wipe",
+   "w": 1.8
+  },
+  {
+   "from": "light-sweep",
+   "to": "big-number",
+   "w": 1
+  },
+  {
+   "from": "light-sweep",
+   "to": "click-cta",
+   "w": 0.9
+  },
+  {
+   "from": "mask-rise",
+   "to": "stat-trio",
+   "w": 1
+  },
+  {
+   "from": "mask-rise",
+   "to": "checklist",
+   "w": 1
+  },
+  {
+   "from": "mask-rise",
+   "to": "four-steps",
+   "w": 1
+  },
+  {
+   "from": "mask-rise",
+   "to": "now-live",
+   "w": 0.9
+  },
+  {
+   "from": "mask-rise",
+   "to": "bar-wipe",
+   "w": 1.8
+  },
+  {
+   "from": "mask-rise",
+   "to": "big-number",
+   "w": 1
+  },
+  {
+   "from": "mask-rise",
+   "to": "click-cta",
+   "w": 0.9
+  },
+  {
+   "from": "bar-wipe",
+   "to": "now-live",
+   "w": 0.9
+  },
+  {
+   "from": "bar-wipe",
+   "to": "click-cta",
+   "w": 0.9
+  },
+  {
+   "from": "split-flap",
+   "to": "checklist",
+   "w": 1
+  },
+  {
+   "from": "split-flap",
+   "to": "four-steps",
+   "w": 1
+  },
+  {
+   "from": "split-flap",
+   "to": "char-cascade",
+   "w": 1
+  },
+  {
+   "from": "split-flap",
+   "to": "image-type",
+   "w": 1
+  },
+  {
+   "from": "split-flap",
+   "to": "word-rotator",
+   "w": 1
+  },
+  {
+   "from": "split-flap",
+   "to": "focus-pull",
+   "w": 1.8
+  },
+  {
+   "from": "split-flap",
+   "to": "light-sweep",
+   "w": 1.8
+  },
+  {
+   "from": "split-flap",
+   "to": "mask-rise",
+   "w": 1.8
+  },
+  {
+   "from": "split-flap",
+   "to": "bar-wipe",
+   "w": 1.8
+  },
+  {
+   "from": "split-flap",
+   "to": "phone-hero",
+   "w": 1
+  },
+  {
+   "from": "split-flap",
+   "to": "cinematic-still",
+   "w": 1
+  },
+  {
+   "from": "split-flap",
+   "to": "light-stage",
+   "w": 1
+  },
+  {
+   "from": "decode",
+   "to": "checklist",
+   "w": 1
+  },
+  {
+   "from": "decode",
+   "to": "four-steps",
+   "w": 1
+  },
+  {
+   "from": "decode",
+   "to": "char-cascade",
+   "w": 1
+  },
+  {
+   "from": "decode",
+   "to": "image-type",
+   "w": 1
+  },
+  {
+   "from": "decode",
+   "to": "word-rotator",
+   "w": 1
+  },
+  {
+   "from": "decode",
+   "to": "focus-pull",
+   "w": 1.8
+  },
+  {
+   "from": "decode",
+   "to": "light-sweep",
+   "w": 1.8
+  },
+  {
+   "from": "decode",
+   "to": "mask-rise",
+   "w": 1.8
+  },
+  {
+   "from": "decode",
+   "to": "bar-wipe",
+   "w": 1.8
+  },
+  {
+   "from": "decode",
+   "to": "phone-hero",
+   "w": 1
+  },
+  {
+   "from": "decode",
+   "to": "cinematic-still",
+   "w": 1
+  },
+  {
+   "from": "decode",
+   "to": "light-stage",
+   "w": 1
+  },
+  {
+   "from": "big-number",
+   "to": "now-live",
+   "w": 0.9
+  },
+  {
+   "from": "big-number",
+   "to": "char-cascade",
+   "w": 1
+  },
+  {
+   "from": "big-number",
+   "to": "word-rotator",
+   "w": 1
+  },
+  {
+   "from": "big-number",
+   "to": "focus-pull",
+   "w": 1
+  },
+  {
+   "from": "big-number",
+   "to": "light-sweep",
+   "w": 1
+  },
+  {
+   "from": "big-number",
+   "to": "mask-rise",
+   "w": 1
+  },
+  {
+   "from": "big-number",
+   "to": "click-cta",
+   "w": 0.9
+  },
+  {
+   "from": "big-number",
+   "to": "light-stage",
+   "w": 1
+  },
+  {
+   "from": "phone-hero",
+   "to": "stat-trio",
+   "w": 1
+  },
+  {
+   "from": "phone-hero",
+   "to": "checklist",
+   "w": 1
+  },
+  {
+   "from": "phone-hero",
+   "to": "now-live",
+   "w": 0.9
+  },
+  {
+   "from": "phone-hero",
+   "to": "char-cascade",
+   "w": 1
+  },
+  {
+   "from": "phone-hero",
+   "to": "word-rotator",
+   "w": 1
+  },
+  {
+   "from": "phone-hero",
+   "to": "focus-pull",
+   "w": 0.8
+  },
+  {
+   "from": "phone-hero",
+   "to": "light-sweep",
+   "w": 0.8
+  },
+  {
+   "from": "phone-hero",
+   "to": "mask-rise",
+   "w": 0.8
+  },
+  {
+   "from": "phone-hero",
+   "to": "big-number",
+   "w": 1
+  },
+  {
+   "from": "phone-hero",
+   "to": "click-cta",
+   "w": 0.9
+  },
+  {
+   "from": "phone-hero",
+   "to": "light-stage",
+   "w": 1
+  },
+  {
+   "from": "cinematic-still",
+   "to": "stat-trio",
+   "w": 1
+  },
+  {
+   "from": "cinematic-still",
+   "to": "checklist",
+   "w": 1
+  },
+  {
+   "from": "cinematic-still",
+   "to": "now-live",
+   "w": 0.9
+  },
+  {
+   "from": "cinematic-still",
+   "to": "char-cascade",
+   "w": 1
+  },
+  {
+   "from": "cinematic-still",
+   "to": "word-rotator",
+   "w": 1
+  },
+  {
+   "from": "cinematic-still",
+   "to": "focus-pull",
+   "w": 0.8
+  },
+  {
+   "from": "cinematic-still",
+   "to": "light-sweep",
+   "w": 0.8
+  },
+  {
+   "from": "cinematic-still",
+   "to": "mask-rise",
+   "w": 0.8
+  },
+  {
+   "from": "cinematic-still",
+   "to": "big-number",
+   "w": 1
+  },
+  {
+   "from": "cinematic-still",
+   "to": "click-cta",
+   "w": 0.9
+  },
+  {
+   "from": "cinematic-still",
+   "to": "light-stage",
+   "w": 1
+  },
+  {
+   "from": "light-stage",
+   "to": "stat-trio",
+   "w": 1
+  },
+  {
+   "from": "light-stage",
+   "to": "checklist",
+   "w": 1
+  },
+  {
+   "from": "light-stage",
+   "to": "four-steps",
+   "w": 1
+  },
+  {
+   "from": "light-stage",
+   "to": "now-live",
+   "w": 0.9
+  },
+  {
+   "from": "light-stage",
+   "to": "mask-rise",
+   "w": 1
+  },
+  {
+   "from": "light-stage",
+   "to": "bar-wipe",
+   "w": 1
+  },
+  {
+   "from": "light-stage",
+   "to": "big-number",
+   "w": 1
+  },
+  {
+   "from": "light-stage",
+   "to": "click-cta",
+   "w": 0.9
+  }
+ ],
+ "transitions": [
+  {
+   "id": "whip",
+   "name": "Whip pan",
+   "description": "A fast camera whip with real directional motion blur. Drop it between any two clips in a post.",
+   "signature": true
+  },
+  {
+   "id": "zoom",
+   "name": "Zoom through",
+   "description": "The camera flies into the shot and out of the next one. Drop it between any two clips in a post.",
+   "signature": true
+  },
+  {
+   "id": "push",
+   "name": "Push up",
+   "description": "The next shot pushes the current one up and out, with motion blur. Drop it between any two clips in a post.",
+   "signature": true
+  },
+  {
+   "id": "slide",
+   "name": "Card slide",
+   "description": "The next shot slides up over the current one like a card on a stack. Drop it between any two clips in a post.",
+   "signature": true
+  },
+  {
+   "id": "match",
+   "name": "Match grow",
+   "description": "The next shot appears as a card inside this one and grows until it is the frame. The scene becomes the next scene. Drop it between any two clips in a post.",
+   "signature": true
+  },
+  {
+   "id": "recede",
+   "name": "Recede",
+   "description": "This shot shrinks into a card and slides away, revealing the next one already pushing in behind it. Drop it between any two clips in a post.",
+   "signature": true
+  },
+  {
+   "id": "iris",
+   "name": "Iris",
+   "description": "A soft circle opens from the centre onto the next shot. Drop it between any two clips in a post.",
+   "signature": true
+  },
+  {
+   "id": "wipe",
+   "name": "Light wipe",
+   "description": "A diagonal wipe led by a soft band of light. Drop it between any two clips in a post.",
+   "signature": true
+  },
+  {
+   "id": "shutter",
+   "name": "Shutter slices",
+   "description": "Horizontal slices slide across in alternating directions. Drop it between any two clips in a post.",
+   "signature": true
+  },
+  {
+   "id": "flash",
+   "name": "Light flash",
+   "description": "A bloom of light that hides the cut. One per video. Drop it between any two clips in a post.",
+   "signature": true
+  },
+  {
+   "id": "blur",
+   "name": "Blur dissolve",
+   "description": "Out of focus, into focus. Soft and calm. Drop it between any two clips in a post.",
+   "signature": true
+  },
+  {
+   "id": "cut",
+   "name": "Hard cut",
+   "description": "No transition. The cleanest cut there is. Drop it between any two clips in a post.",
+   "signature": false
+  }
+ ],
+ "tracks": [
+  {
+   "id": "evening",
+   "name": "Evening",
+   "mood": "soft",
+   "bpm": 100.79,
+   "beat": 0.396,
+   "starts": [
+    24.208,
+    40.876,
+    57.544,
+    74.213
+   ],
+   "energy": 0.38,
+   "feel": "Bright, Calming, Relaxed",
+   "length": "03:06",
+   "src": "media/music/library/evening.mp3",
+   "credit": "\"Evening\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  },
+  {
+   "id": "almost-bliss",
+   "name": "Almost Bliss",
+   "mood": "soft",
+   "bpm": 90,
+   "beat": 0.162,
+   "starts": [
+    2.828,
+    18.828,
+    34.828,
+    50.828
+   ],
+   "energy": 0.02,
+   "feel": "Bright, Calming, Relaxed",
+   "length": "05:17",
+   "src": "media/music/library/almost-bliss.mp3",
+   "credit": "\"Almost Bliss\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  },
+  {
+   "id": "dreamer",
+   "name": "Dreamer",
+   "mood": "soft",
+   "bpm": 99.98,
+   "beat": 0.018,
+   "starts": [
+    0.018,
+    19.221,
+    38.425
+   ],
+   "energy": 0.05,
+   "feel": "Calming, Relaxed",
+   "length": "03:24",
+   "src": "media/music/library/dreamer.mp3",
+   "credit": "\"Dreamer\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  },
+  {
+   "id": "easy-lemon",
+   "name": "Easy Lemon",
+   "mood": "soft",
+   "bpm": 82,
+   "beat": 0.028,
+   "starts": [
+    93.687
+   ],
+   "energy": 0.26,
+   "feel": "Bright, Calming, Relaxed",
+   "length": "02:06",
+   "src": "media/music/library/easy-lemon.mp3",
+   "credit": "\"Easy Lemon\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  },
+  {
+   "id": "light-thought-var-1",
+   "name": "Light Thought var 1",
+   "mood": "soft",
+   "bpm": 132.99,
+   "beat": 0.014,
+   "starts": [
+    9.037,
+    77.614
+   ],
+   "energy": 0.13,
+   "feel": "Bright, Calming, Relaxed",
+   "length": "02:42",
+   "src": "media/music/library/light-thought-var-1.mp3",
+   "credit": "\"Light Thought var 1\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  },
+  {
+   "id": "screen-saver",
+   "name": "Screen Saver",
+   "mood": "soft",
+   "bpm": 120.02,
+   "beat": 0.247,
+   "starts": [
+    4.247,
+    22.244,
+    40.241,
+    58.238
+   ],
+   "energy": 0.15,
+   "feel": "Calming, Grooving, Relaxed",
+   "length": "03:02",
+   "src": "media/music/library/screen-saver.mp3",
+   "credit": "\"Screen Saver\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  },
+  {
+   "id": "limit-70",
+   "name": "Limit 70",
+   "mood": "soft",
+   "bpm": 102.65,
+   "beat": 0.024,
+   "starts": [
+    37.432,
+    53.799,
+    88.869,
+    105.235
+   ],
+   "energy": 0.15,
+   "feel": "Calming, Grooving, Relaxed",
+   "length": "05:02",
+   "src": "media/music/library/limit-70.mp3",
+   "credit": "\"Limit 70\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  },
+  {
+   "id": "nowhere-land",
+   "name": "Nowhere Land",
+   "mood": "uplifting",
+   "bpm": 119.94,
+   "beat": 0.494,
+   "starts": [
+    0.494,
+    16.502,
+    32.51,
+    48.518
+   ],
+   "energy": 0.68,
+   "feel": "Bright, Uplifting",
+   "length": "02:12",
+   "src": "media/music/library/nowhere-land.mp3",
+   "credit": "\"Nowhere Land\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  },
+  {
+   "id": "montauk-point",
+   "name": "Montauk Point",
+   "mood": "uplifting",
+   "bpm": 117.98,
+   "beat": 0.019,
+   "starts": [
+    81.389,
+    115.971,
+    132.245,
+    148.519
+   ],
+   "energy": 0.16,
+   "feel": "Bright, Bouncy, Uplifting",
+   "length": "03:40",
+   "src": "media/music/library/montauk-point.mp3",
+   "credit": "\"Montauk Point\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  },
+  {
+   "id": "on-my-way",
+   "name": "On My Way",
+   "mood": "uplifting",
+   "bpm": 126.04,
+   "beat": 0.049,
+   "starts": [
+    0.049,
+    17.186,
+    34.324,
+    51.461
+   ],
+   "energy": 0.69,
+   "feel": "Bright, Calming, Grooving",
+   "length": "04:13",
+   "src": "media/music/library/on-my-way.mp3",
+   "credit": "\"On My Way\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  },
+  {
+   "id": "son-of-a-rocket",
+   "name": "Son of a Rocket",
+   "mood": "uplifting",
+   "bpm": 110.02,
+   "beat": 0.044,
+   "starts": [
+    0.044,
+    17.495,
+    34.946,
+    52.398
+   ],
+   "energy": 0.83,
+   "feel": "Bouncy, Uplifting, Grooving",
+   "length": "04:00",
+   "src": "media/music/library/son-of-a-rocket.mp3",
+   "credit": "\"Son of a Rocket\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  },
+  {
+   "id": "electrodoodle",
+   "name": "Electrodoodle",
+   "mood": "uplifting",
+   "bpm": 120.06,
+   "beat": 0.051,
+   "starts": [
+    0.051,
+    18.042,
+    36.033,
+    54.024
+   ],
+   "energy": 0.7,
+   "feel": "Bouncy, Uplifting",
+   "length": "02:46",
+   "src": "media/music/library/electrodoodle.mp3",
+   "credit": "\"Electrodoodle\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  },
+  {
+   "id": "newer-wave",
+   "name": "Newer Wave",
+   "mood": "uplifting",
+   "bpm": 110.02,
+   "beat": 0.035,
+   "starts": [
+    2.216,
+    19.668,
+    52.389,
+    80.748
+   ],
+   "energy": 0.47,
+   "feel": "Grooving, Bright, Uplifting",
+   "length": "02:55",
+   "src": "media/music/library/newer-wave.mp3",
+   "credit": "\"Newer Wave\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  },
+  {
+   "id": "brightly-fancy",
+   "name": "Brightly Fancy",
+   "mood": "uplifting",
+   "bpm": 131.03,
+   "beat": 0.035,
+   "starts": [
+    11.025,
+    27.51,
+    43.995,
+    60.48
+   ],
+   "energy": 0.44,
+   "feel": "Bouncy, Bright, Uplifting",
+   "length": "02:15",
+   "src": "media/music/library/brightly-fancy.mp3",
+   "credit": "\"Brightly Fancy\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  },
+  {
+   "id": "funky-chunk",
+   "name": "Funky Chunk",
+   "mood": "groove",
+   "bpm": 114.99,
+   "beat": 0.019,
+   "starts": [
+    12.542,
+    29.239,
+    45.936,
+    62.633
+   ],
+   "energy": 0.41,
+   "feel": "Bright, Grooving, Uplifting",
+   "length": "03:59",
+   "src": "media/music/library/funky-chunk.mp3",
+   "credit": "\"Funky Chunk\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  },
+  {
+   "id": "got-funk",
+   "name": "Got Funk",
+   "mood": "groove",
+   "bpm": 97.98,
+   "beat": 0.323,
+   "starts": [
+    0.323,
+    17.469,
+    71.358,
+    88.504
+   ],
+   "energy": 0.67,
+   "feel": "Bouncy, Bright, Driving, Grooving",
+   "length": "04:41",
+   "src": "media/music/library/got-funk.mp3",
+   "credit": "\"Got Funk\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  },
+  {
+   "id": "disco-medusae",
+   "name": "Disco Medusae",
+   "mood": "groove",
+   "bpm": 115.03,
+   "beat": 0.052,
+   "starts": [
+    4.225,
+    20.916,
+    37.607,
+    54.298
+   ],
+   "energy": 0.58,
+   "feel": "Bright, Grooving",
+   "length": "03:41",
+   "src": "media/music/library/disco-medusae.mp3",
+   "credit": "\"Disco Medusae\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  },
+  {
+   "id": "loopster",
+   "name": "Loopster",
+   "mood": "groove",
+   "bpm": 108.04,
+   "beat": 0.206,
+   "starts": [
+    0.206
+   ],
+   "energy": 0.16,
+   "feel": "Bright, Grooving, Driving",
+   "length": "03:02",
+   "src": "media/music/library/loopster.mp3",
+   "credit": "\"Loopster\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  },
+  {
+   "id": "backbay-lounge",
+   "name": "Backbay Lounge",
+   "mood": "groove",
+   "bpm": 119.92,
+   "beat": 0.496,
+   "starts": [
+    20.509,
+    52.53,
+    80.549,
+    106.566
+   ],
+   "energy": 0,
+   "feel": "Bright, Grooving, Relaxed",
+   "length": "04:27",
+   "src": "media/music/library/backbay-lounge.mp3",
+   "credit": "\"Backbay Lounge\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  },
+  {
+   "id": "werq",
+   "name": "Werq",
+   "mood": "groove",
+   "bpm": 125.03,
+   "beat": 0.038,
+   "starts": [
+    0.038,
+    17.313,
+    34.589,
+    51.865
+   ],
+   "energy": 0.64,
+   "feel": "Bright, Grooving, Relaxed",
+   "length": "02:42",
+   "src": "media/music/library/werq.mp3",
+   "credit": "\"Werq\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  },
+  {
+   "id": "chill-wave",
+   "name": "Chill Wave",
+   "mood": "groove",
+   "bpm": 99.98,
+   "beat": 0.021,
+   "starts": [
+    2.421,
+    19.224,
+    36.028,
+    52.831
+   ],
+   "energy": 0.69,
+   "feel": "Grooving, Relaxed",
+   "length": "04:00",
+   "src": "media/music/library/chill-wave.mp3",
+   "credit": "\"Chill Wave\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  },
+  {
+   "id": "lobby-time",
+   "name": "Lobby Time",
+   "mood": "groove",
+   "bpm": 127.98,
+   "beat": 0.03,
+   "starts": [
+    1.906,
+    50.663,
+    71.292,
+    88.169
+   ],
+   "energy": 0.24,
+   "feel": "Calming, Grooving, Relaxed",
+   "length": "03:13",
+   "src": "media/music/library/lobby-time.mp3",
+   "credit": "\"Lobby Time\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  },
+  {
+   "id": "raving-energy",
+   "name": "Raving Energy",
+   "mood": "driving",
+   "bpm": 122.02,
+   "beat": 0.036,
+   "starts": [
+    0.036,
+    17.738,
+    35.44,
+    53.142
+   ],
+   "energy": 0.42,
+   "feel": "Bright, Grooving, Driving",
+   "length": "04:28",
+   "src": "media/music/library/raving-energy.mp3",
+   "credit": "\"Raving Energy\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  },
+  {
+   "id": "voxel-revolution",
+   "name": "Voxel Revolution",
+   "mood": "driving",
+   "bpm": 122.02,
+   "beat": 0.033,
+   "starts": [
+    11.834,
+    29.536,
+    47.238,
+    74.775
+   ],
+   "energy": 0.49,
+   "feel": "Grooving, Bright, Bouncy",
+   "length": "02:10",
+   "src": "media/music/library/voxel-revolution.mp3",
+   "credit": "\"Voxel Revolution\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  },
+  {
+   "id": "realizer",
+   "name": "Realizer",
+   "mood": "driving",
+   "bpm": 125.03,
+   "beat": 0.043,
+   "starts": [
+    0.043,
+    17.319,
+    34.595,
+    55.71
+   ],
+   "energy": 0.43,
+   "feel": "Grooving, Bright, Driving",
+   "length": "05:10",
+   "src": "media/music/library/realizer.mp3",
+   "credit": "\"Realizer\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  },
+  {
+   "id": "delightful-d",
+   "name": "Delightful D",
+   "mood": "driving",
+   "bpm": 120,
+   "beat": 0.124,
+   "starts": [
+    0.124,
+    18.124,
+    36.124,
+    58.124
+   ],
+   "energy": 0.83,
+   "feel": "Bright, Driving, Grooving",
+   "length": "03:04",
+   "src": "media/music/library/delightful-d.mp3",
+   "credit": "\"Delightful D\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  },
+  {
+   "id": "getting-it-done",
+   "name": "Getting it Done",
+   "mood": "driving",
+   "bpm": 135.05,
+   "beat": 0.048,
+   "starts": [
+    0.048,
+    17.819,
+    35.59,
+    53.361
+   ],
+   "energy": 0.65,
+   "feel": "Bright, Grooving, Relaxed",
+   "length": "03:30",
+   "src": "media/music/library/getting-it-done.mp3",
+   "credit": "\"Getting it Done\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  },
+  {
+   "id": "nonstop",
+   "name": "Nonstop",
+   "mood": "driving",
+   "bpm": 128.02,
+   "beat": 0.037,
+   "starts": [
+    56.278,
+    73.15,
+    118.143,
+    135.015
+   ],
+   "energy": 0.3,
+   "feel": "Driving, Grooving, Uplifting",
+   "length": "03:11",
+   "src": "media/music/library/nonstop.mp3",
+   "credit": "\"Nonstop\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  },
+  {
+   "id": "super-power-cool-dude",
+   "name": "Super Power Cool Dude",
+   "mood": "driving",
+   "bpm": 110.04,
+   "beat": 0.048,
+   "starts": [
+    0.048,
+    17.497,
+    34.945,
+    52.393
+   ],
+   "energy": 0.35,
+   "feel": "Action, Driving, Uplifting",
+   "length": "03:56",
+   "src": "media/music/library/super-power-cool-dude.mp3",
+   "credit": "\"Super Power Cool Dude\" by Kevin MacLeod (incompetech.com), CC-BY 4.0"
+  }
+ ]
+}
