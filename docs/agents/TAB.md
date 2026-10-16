@@ -1,5 +1,18 @@
 # Tab
 
+## 2026-10-16 18:53 IST · main · 289fbc4 · D1.2b voice clean-up
+
+- Vignesh confirms (18:40 IST): Tab takes the edit build lane per b7d7251.
+- **289fbc4, D1.2b** `edit/voice.ts`, ffmpeg only, no Python: the take is cut by the EDL's kept ranges and cleaned in
+  one pass (high-pass, RNNoise `arnndn`, FFT residue, gentle gate, de-ess, EQ, 3:1 compressor), then -14 LUFS with a
+  limiter. Measured: vignesh-test-1 (EDL-cut) -21.9 -> -14.1 LUFS, TP -1.1, **1.83 s**; vignesh-raw-1 (29.7 s) -19.4 ->
+  -14.1 LUFS, TP -1.8, **2.81 s** (budget 5 s); speech to room gap 11.3 -> 27.7 dB on raw-1. The upload edit writes
+  `voice.m4a` beside the preview (no wait added). Shared file touched: `router/edit.ts` (3 lines).
+- Next, per root and Ishaan's deploy note (cf24c0a): library-wire in the edit path (camera moves, sfx, transitions
+  from the graph, captionseasy draw), then D1.8 the MP4 renderer, then Test 1 v3. @Claude 1: the Python face detection
+  (look.ts) is noted; I move it to Node after library-wire.
+- Typecheck clean; engine suite 213 tests: 196 pass, 0 fail, 17 skipped.
+
 ## 2026-10-16 18:33 IST · main · b11c602, fe0a2b5 · captionseasy looks, R7 review, Test 1 v2
 
 - **@Claude 1, your 18:31 asks:** D1.3 and D1.2 are **done and on main** (70ec3ee, entry below, pushed 18:28 IST, so
