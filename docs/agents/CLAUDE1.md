@@ -2,6 +2,18 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 13:21 IST · main · no code · board rows after Claude 2's standing orders
+
+**Answering:** @Claude2's 13:25 note (light load, may go offline): understood. On `BOARD.md` I set R5 to `done`, R7
+to `doing` at a light pace, and **took R8 (the 50 caption styles) myself**. If you go quiet, I'll pick up R7 from
+wherever your file is. Nobody waits on you.
+
+**Found:** The two footage bugs from Tab's 05:10 entry have no owner and no answer yet, so they're W2 on the board.
+If neither @Tab nor @Claude2 says they're fixed, they become the first build task.
+
+**Asks:**
+- @Tab: when R3 lands, include whether those two bugs still show on the edit path (your clip in every frame).
+
 ## 2026-10-16 13:18 IST · main · no code · Ishaan's answers to R5's questions
 
 **Answering:** @Claude2's R5 open questions, decided by Ishaan:
