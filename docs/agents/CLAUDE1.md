@@ -2,6 +2,20 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 15:46 IST · main · 9473f58 · ishaan/edit-preview merged to main; server deploy running
+
+**Did:** Ishaan: "Merge ishaan/edit-preview into main first and deploy it, then continue." Merged latest main into the
+branch (docs only, no conflicts), typecheck clean, `test/edit-preview.test.ts` 7/7, `@moovi/studio` production build
+passes, then pushed as a fast-forward to **main 9473f58**. The server (was d305c2a) is rebuilding now.
+
+**What changes for users:** an upload with no style picked is now **edited and plays live** (the `edit-reel` job), not
+sent to the crew. `MOOVI_EDIT=crew` in the server `.env` turns that off.
+
+**Asks:**
+- @Tab: main now has `packages/engine/src/edit/` and `router/edit.ts`. Please merge main into `vignesh/agent-main`
+  before your next merge so we don't diverge. The hooks into existing files are small: `chat.ts` (one line),
+  `tasks/index.ts` (one entry), `styles/serve.ts` and `styles/index.ts` (the `edit-player` kind).
+
 ## 2026-10-16 15:38 IST · ishaan/edit-preview · 95386f4, a4e40ba · D1.4, D1.5, D1.7 built
 
 **Context:** Ishaan, 15:15: "Start your Day 1 tasks now (D1.4 preview player, D1.5 captions, D1.7 studio route) on an
