@@ -9,7 +9,8 @@ import type { Command } from '../commands';
 import type { AgentId } from '../events';
 import { activity } from '../live';
 import { startRun } from '../runs';
-import { combinedFilm, secsOf } from './film';
+import { combinedFilm, direct, secsOf } from './film';
+import { styleReel, type ReelInput } from '../tasks/reel';
 
 /**
  * The combined film as an engine job, so the studio's normal path runs it: the brief box's "Auto" style, and (unless
@@ -44,8 +45,41 @@ const DESK: Record<string, { text: string; desk: AgentId }> = {
   cut: { text: 'cutting the film', desk: 'editor' as AgentId },
 };
 
+/**
+ * "Auto" as a live preview (the default; MOOVI_AUTO_RENDER=mp4 makes the mixed MP4 film instead, which wants about
+ * 8 GB and minutes per film): a link goes straight to the style that suits the brief; plain words get a script from
+ * the director first. Either way the result plays live in that style's own browser player, nothing encoded.
+ */
+const DOMAIN = /\b[a-z0-9-]+\.(?:com|io|ai|app|dev|co|org|net|so|xyz|in)\b/i;
+export function autoStyleFor(brief: string, kinds: string[] = []): ReelInput['style'] {
+  const b = brief.toLowerCase(), n = (k: string) => kinds.filter(x => x === k).length;
+  if (/\b(story|fable|tale|history|journey|founder|legend)\b/.test(b) || n('quote') + n('story') >= 3) return 'darkvox';
+  return 'anatomy';
+}
+export function urlStyleFor(brief: string): ReelInput['style'] {
+  const b = brief.toLowerCase();
+  if (/\b(story|fable|tale|history|journey|founder)\b/.test(b)) return 'darkvox';
+  if (/\b(how (it|they) works?|architecture|under the hood|system|product)\b/.test(b)) return 'anatomy';
+  if (/\b(essay|idea|why|metaphor|calm)\b/.test(b)) return 's4';
+  if (/\b(list|steps|explain|explainer|clear|simple)\b/.test(b)) return 's5';
+  return 's1';
+}
+async function autoLive(ctx: Parameters<Handler>[0], brief: string) {
+  const link = brief.match(/https?:\/\/[^\s)]+/)?.[0] ?? (brief.match(DOMAIN) ? `https://${brief.match(DOMAIN)![0]}` : undefined);
+  let reel: ReelInput;
+  if (link) reel = { style: urlStyleFor(brief), url: link };
+  else {
+    await ctx.say('Auto: I write the script first, then pick the style that fits it and play it live.', 'note', undefined, 'moovi');
+    const d = await direct(brief, secsOf(brief), ['darkvox', 'anatomy'], { signal: ctx.signal });
+    const brand = (d.title || brief).replace(/[^\p{L}\p{N} .&'-]/gu, '').trim().split(/\s+/).slice(0, 3).join(' ') || 'Moovi';
+    reel = { style: autoStyleFor(brief, d.beats.map(b => b.kind)), script: d.beats.map(b => b.say.trim()).join('\n'), brand };
+  }
+  return styleReel(Object.create(ctx, { input: { value: () => reel } }) as typeof ctx);
+}
+
 export const combinedReel: Handler = async ctx => {
   const inp = ctx.input<{ brief: string }>();
+  if ((process.env.MOOVI_AUTO_RENDER ?? 'live').trim().toLowerCase() !== 'mp4') return autoLive(ctx, inp.brief);
   const t0 = Date.now();
   const [c] = await ctx.q<{ version: number | null }>(P.chat, { id: ctx.chat });
   const version = (c?.version ?? 0) + 1;
