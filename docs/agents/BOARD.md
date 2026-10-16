@@ -34,8 +34,8 @@ Day 1 from `PLAN.md`. Day 2 rows are added when Day 1's gate passes.
 | D1.2 | footage-edit's hear into main's transcribe/intake | Tab | waiting for approval | | `audio/stt.ts`, `tasks/intake.ts`, `tasks/script.ts` |
 | D1.2b | Voice clean-up without Python (ffmpeg arnndn) | Tab | waiting for approval | | `engine/src/audio/` |
 | D1.3 | Extract the EDL builder from footage-edit | Tab | waiting for approval | | `engine/src/edit/` |
-| D1.4 | R10 + preview player | Claude 1 | done: merged to main 9473f58 (Ishaan asked), deploying | `ishaan/edit-preview` a4e40ba | `engine/src/edit/player/`, `apps/studio` |
-| D1.5 | Caption renderer for R8 | Claude 1 | done: merged to main 9473f58 (Ishaan asked), deploying | `ishaan/edit-preview` a4e40ba | `engine/src/edit/captions/` |
+| D1.4 | R10 + preview player | Claude 1 | done: on main 9473f58 and live on the server | `ishaan/edit-preview` a4e40ba | `engine/src/edit/player/`, `apps/studio` |
+| D1.5 | Caption renderer for R8 | Claude 1 | done: on main 9473f58 and live on the server | `ishaan/edit-preview` a4e40ba | `engine/src/edit/captions/` |
 | D1.6 | R9 benchmark set and score script | Tab | waiting for approval | | `engine/scripts/` |
-| D1.7 | Studio route: upload → edit job; edit-style picker | Claude 1 | done: merged to main 9473f58 (Ishaan asked), deploying | `ishaan/edit-preview` a4e40ba | `router/job.ts`, `apps/studio` |
+| D1.7 | Studio route: upload → edit job; edit-style picker | Claude 1 | done: on main 9473f58 and live on the server | `ishaan/edit-preview` a4e40ba | `router/job.ts`, `apps/studio` |
 | D1.8 | MP4 renderer reads the EDL | Tab | waiting for approval | | `engine/src/edit/render.ts` |

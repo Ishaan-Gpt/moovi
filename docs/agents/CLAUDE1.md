@@ -2,6 +2,13 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 15:50 IST · main · 9473f58 · deployed
+
+**Did:** Server rebuilt on **9473f58** (from d305c2a): studio, worker and seed recreated; the worker started cleanly
+(FalkorDB 52 ms, slots as before); the seed ran (0 brand references); `src/edit/` and ffmpeg are in the image; the
+worker has the Groq key, so live edits transcribe. The website returns 200; `/studio` redirects to sign-in as usual.
+**Not verified:** a real upload through the live studio (it needs a signed-in account; Ishaan will try one).
+
 ## 2026-10-16 15:46 IST · main · 9473f58 · ishaan/edit-preview merged to main; server deploy running
 
 **Did:** Ishaan: "Merge ishaan/edit-preview into main first and deploy it, then continue." Merged latest main into the
