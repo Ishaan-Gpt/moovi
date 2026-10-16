@@ -7,6 +7,7 @@
  */
 import { CAPTION_FONTS, CAPTION_STYLES } from './captions';
 import { EDIT_SRC } from './lib';
+import { TEMPLATES_SRC } from './templates';
 
 const CLIENT = `
 (async () => {
@@ -26,6 +27,9 @@ await Promise.all([ST.font, ST.key].filter(Boolean).map(f => document.fonts.load
 
 /* ── the two decks ── */
 const A = $('va'), B = $('vb'), M = { cuts: [], kicks: 0, firstFrame: null, t0: performance.now() };
+// an EDL that names a template (src/edit/templates) gets its scene components drawn on #tpl above the footage
+const TPL = (E.template && typeof MOOVI_TEMPLATES !== 'undefined' && MOOVI_TEMPLATES[E.template.id]) || null;
+if (TPL) await TPL.init({ E, W, H, canvas: $('tpl'), decks: [A, B] });
 A.src = '/v/' + E.source.file; B.src = '/v/' + E.source.file + '?b';
 const meta = v => v.readyState >= 1 ? Promise.resolve() : new Promise((r, j) => { v.addEventListener('loadedmetadata', r, { once: true }); v.addEventListener('error', () => j(new Error('the clip could not be loaded (' + (v.error && v.error.code) + ')')), { once: true }); });
 await Promise.all([meta(A), meta(B)]);
@@ -80,7 +84,7 @@ function drawCaptions(t) {
 cap.style.top = (EDIT.posY(ST.position) * H) + 'px';
 const FRAME = { full: [0, 0, 1, 1], top_half: [0.04, 0.03, 0.92, 0.44], card_box: [0.12, 0.12, 0.76, 0.34], beside_head: [0.54, 0.16, 0.42, 0.26] };
 function drawInserts(t) {
-  const on = (E.inserts || []).filter(x => t >= x.t0 && t < x.t1);
+  const on = (E.inserts || []).filter(x => t >= x.t0 && t < x.t1 && !(TPL && TPL.owns(x)));
   ins.innerHTML = on.map(x => { const [l, tp, w, h] = FRAME[x.frame] || FRAME.card_box, p = EDIT.easeOut((t - x.t0) / 0.3), q = EDIT.easeOut((x.t1 - t) / 0.25);
     return '<div class="ins" style="left:' + l * W + 'px;top:' + tp * H + 'px;width:' + w * W + 'px;height:' + h * H + 'px;opacity:' + Math.min(p, q).toFixed(2) + ';transform:translateY(' + ((1 - p) * 60).toFixed(0) + 'px)"><b>' + (x.label || x.kind) + '</b><i>' + (x.asset_ref || x.kind) + '</i></div>'; }).join('');
 }
@@ -103,6 +107,7 @@ function draw(t) {
   cur.style.transformOrigin = (f.cx * 100).toFixed(2) + '% ' + (f.cy * 100).toFixed(2) + '%';
   cur.style.transform = 'scale(' + f.scale.toFixed(4) + ')';
   drawCaptions(t); drawInserts(t);
+  if (TPL) { TPL.draw(t, cur, g); cap.style.visibility = TPL.hideCaptions(t) ? 'hidden' : ''; }
   if (!STILL) { $('tl').textContent = t.toFixed(1) + ' / ' + D.toFixed(1); $('s').value = String(Math.round(t / D * 1000)); }
 }
 
@@ -132,7 +137,7 @@ function stop() { playing = false; cur.pause(); nxt.pause(); $('p').textContent 
 $('p').onclick = () => playing ? stop() : start();
 $('s').oninput = async e => { const was = playing; stop(); const t = +e.target.value / 1000 * D; await place(t); draw(t); if (was) start(); };
 
-window.__render = async t => { stop(); await place(t); draw(t); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); };
+window.__render = async t => { stop(); await place(t); if (TPL) await TPL.ready(t); draw(t); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); };
 window.__play = () => start();
 window.__metrics = () => ({ duration: D, shots: S.length, cuts: M.cuts, kicks: M.kicks, firstFrame: M.firstFrame, done: !!window.__done });
 await place(STILL ? +Q.get('t') : 0); draw(STILL ? +Q.get('t') : 0);
@@ -148,6 +153,7 @@ html,body{margin:0;height:100%;background:#111;color:#eee;font:14px system-ui,sa
 #stage{position:absolute;left:0;top:0;overflow:hidden;transform-origin:0 0;background:#000}
 #stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;will-change:transform}
 #stage video.on{opacity:1}
+#tpl{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 #bg{position:absolute;inset:-6%;width:112%;height:112%;filter:blur(28px) saturate(1.1) brightness(.7);display:none}
 #ins{position:absolute;inset:0;pointer-events:none}
 .ins{position:absolute;box-sizing:border-box;border-radius:40px;background:color-mix(in srgb,var(--deep) 92%,transparent);box-shadow:0 24px 80px rgba(0,0,0,.45);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--paper);font:700 54px/1.1 'Inter Tight',sans-serif;text-align:center;padding:40px}
@@ -165,9 +171,9 @@ input[type=range]{flex:1}
 </style></head><body>
 <div id="wrap"><div id="frame" style="position:relative"><div id="stage">
 <canvas id="bg" width="108" height="192"></canvas><video id="va" playsinline preload="auto"></video><video id="vb" playsinline preload="auto" muted></video>
-<div id="ins"></div><div id="cap" class="cap"></div>
+<div id="ins"></div><canvas id="tpl"></canvas><div id="cap" class="cap"></div>
 </div></div></div>
 <div id="bar"><button id="p">Play</button><input id="s" type="range" min="0" max="1000" value="0"><span id="tl">0.0</span></div>
-<script>${EDIT_SRC}\nvar CAPTION_STYLES = ${JSON.stringify(CAPTION_STYLES)};</script>
+<script>${EDIT_SRC}\nvar CAPTION_STYLES = ${JSON.stringify(CAPTION_STYLES)};\n${TEMPLATES_SRC}</script>
 <script>${CLIENT}</script>
 </body></html>`;

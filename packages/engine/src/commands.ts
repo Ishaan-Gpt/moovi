@@ -4,7 +4,7 @@
  */
 export type Command =
   /** a new chat's first brief: make the video */
-  | { type: 'brief'; user: string; project: string; chat: string; text: string; ratio?: 'auto' | '9:16' | '16:9' | '1:1' | '4:5'; uploads: string[]; message: string; style?: { id: 's1' | 's4' | 's5' | 'darkvox' | 'anatomy' | 'combined'; url?: string; script?: string; brand?: string } }
+  | { type: 'brief'; user: string; project: string; chat: string; text: string; ratio?: 'auto' | '9:16' | '16:9' | '1:1' | '4:5'; uploads: string[]; message: string; style?: { id: 's1' | 's4' | 's5' | 'darkvox' | 'anatomy' | 'combined' | 'clip-moment'; url?: string; script?: string; brand?: string } }
   /** a message in a chat (to Moovi, or to an @agent; may refer to the video with @video) */
   | { type: 'message'; user: string; project: string; chat: string; text: string; mentions: string[]; uploads: string[]; message: string }
   /** the answer to a question card */

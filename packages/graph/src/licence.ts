@@ -15,6 +15,8 @@ export const LICENCES = {
   'OFL-1.1': { url: 'https://openfontlicense.org/', ship: true, attribution: false, redistributable: true },
   // stock sites: free to use inside a film, not to ship or re-host the files themselves
   mixkit: { url: 'https://mixkit.co/license/', ship: true, attribution: false, redistributable: false },
+  // Mixkit's other licence: personal, non-commercial use only (no monetized content), so it never ships
+  'mixkit-restricted': { url: 'https://mixkit.co/license/#videoRestricted', ship: false, attribution: false, redistributable: false },
   pixabay: { url: 'https://pixabay.com/service/license-summary/', ship: true, attribution: false, redistributable: false },
   pexels: { url: 'https://www.pexels.com/license/', ship: true, attribution: false, redistributable: false },
   unverified: { url: null, ship: false, attribution: false, redistributable: false },
@@ -35,6 +37,7 @@ export function licenceCode(text: string | null | undefined): LicenceCode {
   if (/\bmit\b|own code/.test(t)) return 'MIT';
   if (/apache/.test(t)) return 'Apache-2.0';
   if (/\bofl\b|open font/.test(t)) return 'OFL-1.1';
+  if (/mixkit/.test(t) && /restricted|personal use/.test(t)) return 'mixkit-restricted';
   if (/mixkit/.test(t)) return 'mixkit';
   if (/pixabay/.test(t)) return 'pixabay';
   if (/pexels/.test(t)) return 'pexels';

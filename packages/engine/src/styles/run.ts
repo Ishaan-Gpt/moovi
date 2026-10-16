@@ -8,7 +8,8 @@ export async function runStyle(style: StyleId, input: RunInput, hooks: Hooks = {
   input = { ...input, signal }; hooks = { ...hooks, signal };
   // the style's memory lives in FalkorDB: read before casting, the film written back after (down = a loud stop)
   const go = async (): Promise<RunResult> => {
-    if (style !== 's1') await loadMemory(style);
+    // clip-moment reads and writes the craft graph itself (footage assets, sfx), and never waits on it
+    if (style !== 's1' && style !== 'clip-moment') await loadMemory(style);
     const r = await play();
     await flushMemory();
     return r;
@@ -20,6 +21,7 @@ export async function runStyle(style: StyleId, input: RunInput, hooks: Hooks = {
       case 's5': return (await import('./s5')).run(input, hooks);
       case 'darkvox': return (await import('./darkvox')).run(input, hooks);
       case 'anatomy': return (await import('./anatomy')).run(input, hooks);
+      case 'clip-moment': return (await import('./clip-moment')).run(input, hooks);
       default: throw new Error(`Unknown style "${String(style)}"`);
     }
   };
