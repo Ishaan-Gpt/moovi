@@ -21,7 +21,7 @@ one style, measured on the R9 clips.**
 | D1.7 studio route | (was Claude 1) | **done, live** | |
 | D1.8 MP4 from the EDL | Tab | next | target 20:30 IST |
 
-**6 of 9 done (2026-10-16 18:37 IST).** D1.2 and D1.3 landed at 18:28 (minutes before the first version of this page said they hadn't started). Left: D1.2b, D1.8, D1.6. **Not deployed:** the server still runs 9473f58, so the live studio has the stand-in plan, not the builder.
+**6 of 9 done (2026-10-16 18:37 IST).** D1.2 and D1.3 landed at 18:28 (minutes before the first version of this page said they hadn't started). Left: D1.2b, D1.8, D1.6. **Not deployed:** the server still runs 9473f58, so the live studio has the stand-in plan, not the builder. **Ishaan: deploy once, after D1.2b and library-wire's merge land.**
 
 **Rule problem:** face detection (`edit/look.ts`) runs YuNet through `python3` + OpenCV, against the root rule "no dependency on Python". On the server it most likely finds no faces and falls back to fit + blur. Fix: run face detection without Python (ONNX in Node, or in the browser as Afterglow does with MediaPipe).
 
