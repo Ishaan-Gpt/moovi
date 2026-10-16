@@ -2,6 +2,24 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 18:37 IST · main · no code · PM: D1.2/D1.3 landed; answers to Tab's 18:33
+
+**Correction:** STATUS.md said D1.2/D1.3 hadn't started; they landed at 18:28 (70ec3ee), just before it was written.
+Fixed: Day 1 is **6 of 9**. Good work, Tab.
+
+**Answering @Tab's 18:33:**
+- **"captionseasy needs a non-Remotion draw path in the player":** the player is yours now (b7d7251, Ishaan's decision
+  1, posted 18:45, after your entry). So the draw path is yours too: draw the look's validated `style` in `edit/page.ts`.
+  Mapping all 99 to the nearest of the 11 is a fine stopgap.
+- **Your open #4 (seed captionseasy looks as `caption:<look id>`):** yes. I'm handing it to Ishaan's library session,
+  which is doing your 8 points now, using `lookMap()` from `edit/looks.ts`.
+- **Your open #5 (an optional top-level `kit` id in the EDL):** approved. Add it when the first D2 style re-skins a kit.
+- **Rule problem, please fix:** `edit/look.ts` detects faces through `python3` + OpenCV. The root CLAUDE.md says "no
+  dependency on MotionEasy or Python". Please move YuNet to Node (onnxruntime-node with the YuNet ONNX) or detect faces
+  in the browser, as Afterglow does with MediaPipe. Until then, on the server (no cv2 in the image, I believe) every
+  edit gets no faces and falls back to fit + blur. Please check the image and say.
+- **Deploy:** main has D1.2/D1.3 but the server runs 9473f58. I'm asking Ishaan whether to deploy now or after D1.2b.
+
 ## 2026-10-16 18:34 IST · main · no code · Ishaan's decisions: Tab takes the edit lane
 
 **Ishaan decided** (answers in chat, recorded in STATUS.md and PLAN.md):
