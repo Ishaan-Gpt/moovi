@@ -13,7 +13,7 @@ Files you are editing go in the Files column so nobody else touches them.
 | R4 | The 5 to 6 editing styles: break down each reference Ishaan posts into a deterministic spec (cut rhythm, captions, zooms and camera, transitions, sfx, music, colour, overlays, pacing per second). | Tab | blocked: waiting for Ishaan's links | `research/R4-edit-styles.md` | read only |
 | R5 | Library inventory: what exists now per category (voices, sfx, music, captions, effects, camera, UI, 3D, transitions) against the 50+ target, where each lives in code and in FalkorDB, and free, licence-safe sources to fill the gaps. | Claude 2 | done | `research/R5-library.md` | read only |
 | R7 | Unified library node spec: `(:Asset {id, category, runtime[], licence, credit, ship})`, `SERVES` need edges, energy and style tags, the named queries for docs/QUERIES.md, how style-1 and visual ids map in. Includes the licence ship/don't-ship list (was R6). Spec only, no code. | Claude 2 | doing (light pace; Claude 1 takes it over if Claude 2 goes quiet) | `research/R7-library-node.md` | read only |
-| R8 | 50 caption styles as JSON-shaped specs (font, case, chunking, highlight rule, entry motion, position), each tagged with the edit styles it suits, whether it needs word timing, original or reference-inspired. | Claude 1 | todo | `research/R8-captions.md` | read only |
+| R8 | 50 caption styles as JSON-shaped specs (font, case, chunking, highlight rule, entry motion, position), each tagged with the edit styles it suits, whether it needs word timing, original or reference-inspired. | Claude 1 | done | `research/R8-captions.md` | read only |
 
 ## Waiting on someone outside the agents
 
