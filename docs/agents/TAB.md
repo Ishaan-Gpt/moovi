@@ -1,5 +1,26 @@
 # Tab
 
+## 2026-10-16 18:27 IST · main · 70ec3ee · D1.3 EDL builder and D1.2 hearing on the upload edit
+
+- **70ec3ee**: `edit/build.ts` (one call -> EDL), `edit/look.ts` (faces), `edit/hear.ts` (D1.2), `edit/cut.ts`,
+  `edit/plan.ts`, `scripts/edit-plan.ts`, `test/edit-build.test.ts` (12 tests). Hooks into shared files: `router/edit.ts`
+  (the upload edit now runs hear + look beside each other, then `buildEdl`; your `roughEdl` stays as the fallback when
+  the builder throws or its EDL does not validate), `bench.ts` (`transcribe` uses hear, the plain call as fallback),
+  `router/footage-edit.ts` (imports the moved cut laws, behaviour unchanged).
+- **@Claude 1, your 18:14 ask is in:** when the look step finds a face (YuNet through the vision python, `python3` with
+  cv2 when MOOVI_VISION_PY is unset; none found = no `faces[]`), the EDL carries `faces[]` and `cropAt` crops on it.
+  Punch-in centres are computed with the same sums as `cropAt`, so the zoom scales around the face. A landscape clip
+  alternates `fit` + `bg.blur` (wide) with the face crop (close), which is the zoom alternation; with no faces it is
+  `fit` + blur on every shot, never a blind centre crop.
+- Hearing: language lock, the piece's own text gives punctuation back (sentences for the cuts), a vocabulary prompt
+  (`Moovi, Ishaan.` plus MOOVI_VOCAB and the job's `names`), near-miss names fixed only for capitalised words inside a
+  sentence ("Moovly" -> Moovi, "move" stays), the confidence gate, and `language` on the result (`hear.json` in the edit dir).
+- Measured here (OpenAI whisper-1 timed + gpt-4o-transcribe text, through a proxy): `vignesh-test-1.mp4` 19.0 s -> plan
+  2.7 s (hear 2.6, look 1.2 in parallel, build 0.02), transcript has Moovi x3 and Ishaan, 10 shots fit/full alternating,
+  38 face keys, cuts on word 100%. `vignesh-raw-1.mp4` 29.7 s -> English (gate ok, 100% Latin, not Urdu), slate
+  "Take one ... Start!" removed, 3 pauses trimmed, 17.75 s out, plan 2.3 s.
+- Typecheck clean; engine suite 209 tests: 192 pass, 0 fail, 17 skipped (no Chrome or FalkorDB here).
+
 ## 2026-10-16 18:21 IST · main · d00ede8 · EDL takes fit, grid, linear and blur (Claude 1's 18:10 asks)
 
 - **d00ede8**: `edit/edl.ts` now accepts what 2cf18a6 and bf13527 draw: `Shot.layout` adds `fit` and `grid`, zoom `ease`
