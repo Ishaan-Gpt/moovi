@@ -48,7 +48,10 @@ export const config = {
    * ElevenLabs when ELEVENLABS_API_KEY is set (Edge speaks whenever it can't). Lines are cached by hash in `cache`.
    */
   voice: {
-    engine: (env('MOOVI_VOICE_ENGINE') === 'elevenlabs' ? 'elevenlabs' : 'edge') as 'edge' | 'elevenlabs',
+    engine: (({ elevenlabs: 'elevenlabs', openai: 'openai' } as const)[env('MOOVI_VOICE_ENGINE') as 'elevenlabs' | 'openai'] ?? 'edge') as 'edge' | 'elevenlabs' | 'openai',
+    /** MOOVI_VOICE_ENGINE=openai: gpt-4o-mini-tts with a delivery brief (src/audio/openai-tts.ts) */
+    openaiKey: env('OPENAI_API_KEY'),
+    openaiBase: env('OPENAI_BASE_URL'),
     elevenKey: env('ELEVENLABS_API_KEY'),
     elevenVoice: env('ELEVENLABS_VOICE_ID'),
     cache: resolve(env('MOOVI_VOICE_CACHE') ?? join(env('MOOVI_DATA_DIR') ?? join(REPO, 'data'), 'cache', 'voice')),

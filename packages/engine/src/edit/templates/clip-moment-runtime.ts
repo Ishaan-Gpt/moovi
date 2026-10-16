@@ -197,6 +197,22 @@ export function clipMomentRuntime(REG: Record<string, unknown>) {
     g.restore();
     if (p.sub) { g.save(); g.globalAlpha = a * prog(t, x.t0 + 0.35, 0.3); text(String(p.sub), DW / 2, cy + s / 2 + 120, font(800, 46, 'Inter Tight'), P.accent!, { align: 'center', spacing: 6 }); g.restore(); }
   }
+  /* ── an app screen in a phone (clip-moment app): rises in on a spring, a slow float, a soft gold glow behind ── */
+  function app(x: any, t: number) {
+    const p = x.params || {}, img = p.image ? imgs[p.image] : null, L = life(t, x.t0, x.t1, 0.45, 0.3), dt = t - x.t0;
+    const pw = 520, ph = 1060, cx = DW / 2, cy = 760, sp = spring(dt), lift = (1 - sp) * 520, fl = Math.sin(dt * 1.4) * 10;
+    g.save(); g.globalAlpha = Math.min(L.in * 1.4, L.out); g.translate(cx, cy + lift + fl); g.rotate(((1 - sp) * 8 + Math.sin(dt * 0.9) * 1.2) * Math.PI / 180);
+    const glow = g.createRadialGradient(0, 0, 60, 0, 0, 760); glow.addColorStop(0, alpha(P.accent2!, 0.32)); glow.addColorStop(1, alpha(P.accent2!, 0)); g.fillStyle = glow; g.fillRect(-DW, -DH / 2, DW * 2, DH);
+    g.shadowColor = 'rgba(0,0,0,0.6)'; g.shadowBlur = 70; rr(-pw / 2, -ph / 2, pw, ph, 86); g.fillStyle = '#0b0b0c'; g.fill(); g.shadowBlur = 0;
+    g.lineWidth = 6; g.strokeStyle = 'rgba(255,255,255,0.22)'; g.stroke();
+    const sx = -pw / 2 + 22, sy = -ph / 2 + 22, sw = pw - 44, sh = ph - 44;
+    g.save(); rr(sx, sy, sw, sh, 66); g.clip(); g.fillStyle = '#111'; g.fillRect(sx, sy, sw, sh);
+    if (img) cover(img, img.naturalWidth, img.naturalHeight, sx, sy, sw, sh);
+    g.restore();
+    rr(-70, -ph / 2 + 40, 140, 38, 19); g.fillStyle = '#000'; g.fill();
+    g.restore();
+    if (p.label) { g.save(); g.globalAlpha = L.out * prog(t, x.t0 + 0.35, 0.3); text(String(p.label), DW / 2, cy + ph / 2 + 76, font(900, 46, 'Inter Tight'), P.accent!, { align: 'center', spacing: 6, glow: alpha(P.accent!, 0.5), blur: 16 }); g.restore(); }
+  }
   const fmt = (v: number, d: number) => v.toFixed(d).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   function stat(x: any, t: number) {
     const L = life(t, x.t0, x.t1, 0.35, 0.25), p = x.params || {}, a = Math.min(L.in * 1.5, L.out);
@@ -287,6 +303,8 @@ export function clipMomentRuntime(REG: Record<string, unknown>) {
     g.globalAlpha = a * 0.09; g.fillStyle = P.accent2!; const off = (dt * 24) % 90;
     for (let yy = -90; yy < DH + 90; yy += 90) for (let xx = -90; xx < DW + 90; xx += 90) { g.beginPath(); g.arc(xx + off, yy + off * 0.5, 5, 0, 6.2832); g.fill(); }
     g.restore();
+    const lg = p.image ? imgs[p.image] : null;
+    if (lg) { const lq = eBack(prog(t, x.t0 + 0.05, 0.5)), s = 300; g.save(); g.globalAlpha = a; g.translate(DW / 2, 360); g.scale(lerp(0.6, 1, lq), lerp(0.6, 1, lq)); g.shadowColor = alpha(P.accent2!, 0.6); g.shadowBlur = 50; g.drawImage(lg, -s / 2, -s / 2 * lg.naturalHeight / lg.naturalWidth * 1, s, s * lg.naturalHeight / lg.naturalWidth); g.restore(); }
     if (p.hero) {
       const hq = eOut(prog(t, x.t0 + 0.1, 0.9)), hv = (p.hero.value || 0) * hq, pulse = 1 + 0.025 * Math.sin(dt * 5);
       g.save(); g.globalAlpha = a; g.translate(DW / 2, 420); g.scale(pulse, pulse);
@@ -444,7 +462,7 @@ export function clipMomentRuntime(REG: Record<string, unknown>) {
     } else if (ty === 'flash') lightLeak(q);
     else if (ty === 'glitch') glitch(v, q);
   }
-  const DRAW: Record<string, (x: any, t: number) => void> = { kicker, flip, headline, source, logo, stat, compare, list, filmstrip, callout, obj3d, end };
+  const DRAW: Record<string, (x: any, t: number) => void> = { kicker, flip, headline, source, logo, stat, compare, list, filmstrip, callout, obj3d, app, end };
 
   /** how much the footage dims and blurs now: the strongest card on screen, eased in and out */
   function dimAt(t: number, grade: string) {
@@ -475,6 +493,23 @@ export function clipMomentRuntime(REG: Record<string, unknown>) {
         const want = (o2.x.params.src_in || 0) + (t - o2.x.t0); if (Math.abs(o2.v.currentTime - want) < 0.02 && o2.v.readyState >= 2) return res();
         const done = () => { o2.v.removeEventListener('seeked', done); res(); }; o2.v.addEventListener('seeked', done); o2.v.currentTime = want; setTimeout(res, 1500);
       })));
+    },
+    /** the band (fractions of frame height) the cards on screen now cover, so the page keeps the caption off them;
+     * null with no card up. Each component's band is its drawn box in design px (1080 x 1920), with a little air. */
+    capAvoid(t: number): { y0: number; y1: number } | null {
+      const B: Record<string, (x: any) => [number, number]> = {
+        kicker: () => [230, 340], flip: () => [590, 1110], source: () => [410, 1110], logo: () => [520, 1300], stat: () => [550, 1260],
+        compare: () => [510, 1290], filmstrip: () => [560, 1180], callout: () => [440, 1450], obj3d: () => [340, 1060], app: () => [220, 1390],
+        list: (x: any) => { const n = Math.max(1, ((x.params && x.params.items) || []).length), h = n * 172 + (n - 1) * 30; return [860 - h / 2 - 20, 860 + h / 2 + 20]; },
+        headline: (x: any) => { const p = x.params || {}, n = Math.max(1, Math.ceil((p.words || []).length / 3)), cy = p.compact ? 560 : 860, h = p.compact ? 150 + n * 130 + (p.sub ? 60 : 0) : Math.min(700, 170 + n * 175); return [cy - h / 2 - 20, cy + h / 2 + 20]; },
+      };
+      let y0 = 9, y1 = -9;
+      for (const x of E.inserts || []) {
+        if (!mine(x) || t < x.t0 - 0.05 || t >= x.t1) continue;
+        const f = B[comp(x)]; if (!f) continue;
+        const [a, b] = f(x); y0 = Math.min(y0, a / 1920); y1 = Math.max(y1, b / 1920);
+      }
+      return y1 > y0 ? { y0, y1 } : null;
     },
     hideCaptions: (t: number) => (E.inserts || []).some((x: any) => mine(x) && x.params && x.params.hide_captions && t >= x.t0 && t < x.t1),
     draw(t: number, cur: HTMLVideoElement, shot: any) {

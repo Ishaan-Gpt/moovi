@@ -2,6 +2,9 @@
  * Clip Moment from the terminal: plain lines (or a planned script JSON) → the live-playable edit (plate + EDL), and with
  * --out an MP4 captured through the edit player's own draw path (window.__render(t), frame by frame) plus a 1 fps sheet.
  *   npx tsx scripts/clip-moment.ts --lines lines.txt --brand BUCKOLOGY --dir data/clip-moment/bus --out bus.mp4
+ *   voice and music: --voice-engine openai --voice onyx --voice-instructions "gym coach, building energy" --gap 0.35
+ *   --music music:ncs-invincible --music-drop 1.6 --music-under 9
+ *   size: 1080 x 1920 by default, --w 720 --h 1280 for a quick preview
  */
 import { readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { spawn } from 'node:child_process';
@@ -21,7 +24,13 @@ const lines = arg('lines') ? readFileSync(arg('lines')!, 'utf8').split('\n').map
 const script = arg('script') ? (JSON.parse(readFileSync(arg('script')!, 'utf8')) as CmScript) : undefined;
 const out = arg('out');
 
-const r = await makeClipMoment({ dir, ...(brand ? { brand } : {}), ...(lines ? { lines } : {}), ...(script ? { script } : {}), ...(arg('voice') ? { voice: arg('voice')! } : {}), log: s => console.log(s) });
+const r = await makeClipMoment({ dir, ...(brand ? { brand } : {}), ...(lines ? { lines } : {}), ...(script ? { script } : {}), ...(arg('voice') ? { voice: arg('voice')! } : {}),
+  ...(arg('voice-engine') ? { voiceEngine: arg('voice-engine') as 'edge' | 'elevenlabs' | 'openai' } : {}), ...(arg('voice-instructions') ? { voiceInstructions: arg('voice-instructions')! } : {}),
+  ...(arg('gap') ? { gap: Number(arg('gap')) } : {}),
+  // the delivered size: 1080 x 1920 unless asked (--w 720 --h 1280 for a quick preview)
+  w: Number(arg('w') ?? 1080), h: Number(arg('h') ?? 1920),
+  ...(arg('music') || arg('music-drop') || arg('music-under') ? { music: { ...(arg('music') ? { id: arg('music')! } : {}), ...(arg('music-drop') ? { dropAt: Number(arg('music-drop')) } : {}), ...(arg('music-under') ? { underVoiceLu: Number(arg('music-under')) } : {}) } } : {}),
+  log: s => console.log(s) });
 for (const w of r.why) console.log('plan:', w);
 console.log('clips:', r.clips.map(c => `${c.beat}:${c.ref} ${c.licence}`).join(', '), '| rejected:', r.rejected.length, '| graph:', r.graph);
 

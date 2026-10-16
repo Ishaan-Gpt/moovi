@@ -27,7 +27,7 @@ export const CM_VERSION = '2';
  * b41 captions: 1 to 3 word caps groups, the lit word yellow). `CmOptions.look` swaps it. */
 export const CM_LOOK = 79;
 
-export const CM_COMPONENTS = ['kicker', 'flip', 'headline', 'source', 'logo', 'stat', 'compare', 'list', 'filmstrip', 'callout', 'obj3d', 'end', 'broll'] as const;
+export const CM_COMPONENTS = ['kicker', 'flip', 'headline', 'source', 'logo', 'stat', 'compare', 'list', 'filmstrip', 'callout', 'obj3d', 'app', 'end', 'broll'] as const;
 export type CmComponent = typeof CM_COMPONENTS[number];
 
 /** Clip Moment's ONE palette (Vignesh, 2026-10-16: "3 4 color ni", not three or four colours): a dark neutral base
@@ -87,6 +87,8 @@ export type CmShow =
   | { kind: 'callout'; labels: string[]; title?: string }
   /** a 3D object from the craft library (`3d:obj-*`, visual runtime), drawn turning in CSS-style 3D with a label */
   | { kind: 'obj3d'; obj: string; label?: string; sub?: string }
+  /** an app screen (an image beside the EDL, e.g. a CSS-made UI) in a phone that rises into frame */
+  | { kind: 'app'; image: string; label?: string }
   | { kind: 'none' };
 
 export interface CmBeat {
@@ -104,6 +106,8 @@ export interface CmBeat {
   broll?: string | string[];
   /** clips this beat cuts between (each part at least 1.4 s) */
   clips?: number;
+  /** Mixkit clips the script names for this beat (id and title), taken before any search; the licence gate still decides */
+  pin?: { ref: string; title: string }[];
   /** library camera moves (`camera:<id>`) for the beat's shots, in order (3D moves on the footage, CSS 3D) */
   camera?: string[];
   /** library camera move for the beat's component entrance (`camera:orbit` turns the card in 3D as it lands) */
@@ -119,11 +123,14 @@ export interface CmScript {
   theme?: CmTheme;
   credit?: string;
   beats: CmBeat[];
-  /** the end card: a question, a call to comment, and optionally a QR image (a file beside the EDL) to the channel */
-  end?: { question: string; cta?: string; qr?: string };
+  /** the end card: a question, a call to comment, and optionally a QR image (a file beside the EDL) to the channel and
+   * the brand's logo image (a file beside the EDL, drawn above the line) */
+  end?: { question: string; cta?: string; qr?: string; logo?: string };
+  /** the drifting gold dust over the whole video (off unless asked) */
+  dust?: boolean;
 }
 
-export interface TimedWord { word: string; t: number; end: number }
+export interface TimedWord { word: string; t: number; end: number; /** the voice line it was spoken in (audio/lines speakLines) */ line?: number }
 export interface CmSource { file: string; duration: number; w: number; h: number; fps: number }
 
 const r3 = (x: number) => Math.round(x * 1000) / 1000;
@@ -148,6 +155,13 @@ export function cmLines(s: CmScript): string[] {
  * where the token counts say it should be (a long pause inside a line cannot steal a boundary far from its place).
  */
 export function splitByLines(words: TimedWord[], lines: string[]): [number, number][] {
+  // the voice says which line each word was spoken in: split there exactly (an expressive read pauses inside a line, and
+  // the widest gap then stole a boundary: the 2026-10-16 Gym Easy cut showed the list one line late)
+  if (words.length && words.every(w => typeof w.line === 'number') && new Set(words.map(w => w.line)).size === lines.length) {
+    const out: [number, number][] = [];
+    for (let li = 0, a = 0; li < lines.length; li++) { let b = a; while (b < words.length && words[b]!.line === li) b++; out.push([a, b]); a = b; }
+    if (out.every(([a, b]) => b > a) && out.at(-1)![1] === words.length) return out;
+  }
   const counts = lines.map(l => l.split(/\s+/).filter(Boolean).length), total = counts.reduce((a, b) => a + b, 0);
   const scale = words.length / Math.max(1, total);
   const cuts: number[] = [];
@@ -208,7 +222,7 @@ export interface CmOptions {
 type Ins = NonNullable<Edl['inserts']>[number] & { params?: Record<string, unknown> };
 export type CmEdl = Edl & { template: { id: string; version: string; brand: string; theme: CmTheme; credit?: string }; inserts: Ins[] };
 
-const KIND: Record<CmComponent, Ins['kind']> = { kicker: 'title', flip: 'number', headline: 'title', source: 'card', logo: 'card', stat: 'number', compare: 'number', list: 'checklist', filmstrip: 'photo', callout: 'card', obj3d: 'card', end: 'title', broll: 'broll' };
+const KIND: Record<CmComponent, Ins['kind']> = { kicker: 'title', flip: 'number', headline: 'title', source: 'card', logo: 'card', stat: 'number', compare: 'number', list: 'checklist', filmstrip: 'photo', callout: 'card', obj3d: 'card', app: 'card', end: 'title', broll: 'broll' };
 
 /** The clip-moment EDL for a script whose voice is already timed (topic mode: the plate runs on the output clock). */
 
@@ -235,6 +249,14 @@ export function pushPunch(t0: number, t1: number, seed = 0): NonNullable<Edl['sh
   return out.sort((a, b) => a.t - b.t);
 }
 
+/** A card that already shows most of its spoken line (60%+ of the words) would only repeat the caption under it:
+ * the caption steps aside while it is up (the words are on screen once, never twice). */
+export function echoes(placed: { text: string }[], lineWords: { text: string }[]): boolean {
+  const n = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const said = lineWords.map(w => n(w.text)).filter(Boolean), shown = new Set(placed.map(p => n(p.text)));
+  return said.length > 0 && said.filter(w => shown.has(w)).length / said.length >= 0.6;
+}
+
 /** the player caption style clip-moment draws with (captions.ts) */
 export const CM_CAPTION = 'cm-gold';
 /** The captionseasy look for an EDL's words (shown on the output clock), mapped onto the player style it draws as. */
@@ -247,8 +269,49 @@ export function cmCaption(e: Pick<Edl, 'words' | 'shots'>, look: number | string
   } catch { return { caption_style_id: CM_CAPTION }; }
 }
 
+
+/* ── variety and calm (Vignesh, 2026-10-16: "the node/network thing came like 10 times", "the moving yellow dot
+ * overlay is annoying", "the whole thing feels overwhelming") ── */
+/** a component type appears at most this many times in one video */
+export const CM_MAX_PER_KIND = 2;
+/** the gold light leak (the moving gold blobs) plays at most this many times, each at most CM_LEAK_MAX_S long */
+export const CM_MAX_LEAKS = 1;
+export const CM_LEAK_MAX_S = 1;
+/** The type a component counts as: its kind (a 3D object, whatever object it shows, is one type: obj3d). */
+export const cmKindOf = (x: CmShow) => x.kind;
+/**
+ * The variety rule on a script: in time order (each beat's show, then its show2), a component whose type already
+ * appeared CM_MAX_PER_KIND times, or that is the same type as the component right before it, becomes 'none' (the
+ * footage breathes there). A kicker is dropped on a beat that carries a card, so at most one overlay sits on the
+ * footage at a time (captions aside). Pure; returns the script and what it changed.
+ */
+export function cmVariety(s: CmScript, max = CM_MAX_PER_KIND): { script: CmScript; dropped: string[] } {
+  const seen = new Map<string, number>(), dropped: string[] = [];
+  let prev: string | null = null;
+  const take = (x: CmShow | undefined, where: string): CmShow | undefined => {
+    if (!x || x.kind === 'none') return x;
+    const k = cmKindOf(x), n = seen.get(k) ?? 0;
+    if (n >= max || k === prev) { dropped.push(`${where}: ${k} ${n >= max ? `(already ${n} times)` : '(same as the one before)'}`); return { kind: 'none' }; }
+    seen.set(k, n + 1); prev = k; return x;
+  };
+  const beats = s.beats.map((b, i) => {
+    const show = take(b.show, `beat ${i + 1}`), show2 = take(b.show2, `beat ${i + 1} second`);
+    const card = (show && show.kind !== 'none') || (show2 && show2.kind !== 'none');
+    const out: CmBeat = { ...b, ...(show ? { show } : {}), ...(show2 ? { show2 } : {}) };
+    if (card && b.kicker) { delete out.kicker; dropped.push(`beat ${i + 1}: kicker (a card is up)`); }
+    return out;
+  });
+  return { script: { ...s, beats }, dropped };
+}
+/** The cuts' transitions with the leak rule: only the first CM_MAX_LEAKS flashes stay (at most CM_LEAK_MAX_S each); the
+ * rest become a zoom blur. */
+export function cmCalmCuts<C extends { type: string; dur: number; rule_id?: string }>(cuts: C[]): C[] {
+  let leaks = 0;
+  return cuts.map(c => c.type !== 'flash' ? c : leaks++ < CM_MAX_LEAKS ? { ...c, dur: Math.min(c.dur, CM_LEAK_MAX_S) } : { ...c, type: 'blur_zoom', dur: 0.45, rule_id: 'cm.tr.transition:visual-zoom-through' });
+}
+
 export function clipMomentEdl(o: CmOptions): CmEdl {
-  const s = o.script, theme: CmTheme = s.theme ?? 'gaming', pal = CM_THEMES[theme];
+  const s = cmVariety(o.script).script, theme: CmTheme = s.theme ?? 'gaming', pal = CM_THEMES[theme];
   const brand = s.brand?.trim() ?? '';
   if (!s.beats.length) throw new Error('clip-moment needs at least one beat');
   const lines = cmLines(s), words = o.words;
@@ -323,7 +386,7 @@ export function clipMomentEdl(o: CmOptions): CmEdl {
         const soon = c0 + 0.18 + j * 0.3;
         return { text: x.text, accent: x.accent, at: r3(k >= 0 ? Math.min(soon, Math.max(c0 + 0.1, lineWords[k]!.src_t0 - 0.04)) : soon) };
       });
-      inserts.push({ t0: c0, t1: c1, kind: KIND.headline, frame: 'card_box', label: show.text.replace(/\*/g, ''), asset_ref: ref, rule_id: show.compact ? 'cm.headline.compact' : 'cm.headline', params: { words: placed, ...(show.compact ? { compact: true } : { hide_captions: true }), ...(show.sub ? { sub: show.sub } : {}) } });
+      inserts.push({ t0: c0, t1: c1, kind: KIND.headline, frame: 'card_box', label: show.text.replace(/\*/g, ''), asset_ref: ref, rule_id: show.compact ? 'cm.headline.compact' : 'cm.headline', params: { words: placed, ...(show.compact ? { compact: true } : {}), ...(!show.compact || echoes(placed, lineWords) ? { hide_captions: true } : {}), ...(show.sub ? { sub: show.sub } : {}) } });
       placed.filter(p => p.accent).forEach(p => sfx.push({ t: p.at, asset_ref: CM_SFX['key-word'], event: 'key-word', rule_id: 'cm.sfx.accent_word' }));
     } else if (show.kind === 'source') {
       inserts.push({ t0: c0, t1: c1, kind: KIND.source, frame: 'card_box', label: show.site, asset_ref: ref, rule_id: 'cm.source', params: { site: show.site.toUpperCase(), date: show.date?.toUpperCase(), title: show.title, lines: show.lines ?? [], highlight: show.highlight ?? 0, hi_at: r3(c0 + Math.min(1.1, len * 0.35)), image: show.image, box: show.box, tag: 'SOURCE' } });
@@ -361,6 +424,9 @@ export function clipMomentEdl(o: CmOptions): CmEdl {
       const labels = show.labels.slice(0, 3), at = labels.map((_, k) => r3(c0 + 0.2 + k * Math.min(0.5, len * 0.22)));
       inserts.push({ t0: c0, t1: c1, kind: KIND.callout, frame: 'full', label: labels.join(' / '), asset_ref: ref, rule_id: 'cm.callout', params: { labels: labels.map(l => l.toUpperCase()), at, ...(show.title ? { title: show.title.toUpperCase() } : {}) } });
       at.forEach(t => sfx.push({ t, asset_ref: CM_SFX['list-item'], event: 'list-item', gain_db: -2, rule_id: 'cm.sfx.callout' }));
+    } else if (show.kind === 'app') {
+      inserts.push({ t0: c0, t1: c1, kind: KIND.app, frame: 'card_box', label: show.label ?? 'app', asset_ref: ref, rule_id: 'cm.app', params: { image: show.image, label: show.label?.toUpperCase() } });
+      sfx.push({ t: r3(c0 + 0.02), asset_ref: CM_SFX['card-in'], event: 'card-in', gain_db: -2, rule_id: 'cm.sfx.card_in' });
     } else if (show.kind === 'obj3d') {
       inserts.push({ t0: c0, t1: c1, kind: KIND.obj3d, frame: 'card_box', label: show.label ?? show.obj, asset_ref: ref, rule_id: 'cm.obj3d', params: { obj: show.obj, label: show.label?.toUpperCase(), sub: show.sub?.toUpperCase() } });
       sfx.push({ t: r3(c0 + 0.05), asset_ref: CM_SFX['thud'], event: 'thud', gain_db: -2, rule_id: 'cm.sfx.obj_impact' });
@@ -384,15 +450,17 @@ export function clipMomentEdl(o: CmOptions): CmEdl {
     const qWords = markedWords(s.end.question), lw = edlWords.slice(wa, wb), used = new Set<number>();
     const placed = qWords.map((x, j) => { const k = lw.findIndex((w, q) => !used.has(q) && norm(w.text) === norm(x.text)); if (k >= 0) used.add(k); return { text: x.text, accent: x.accent, at: r3(k >= 0 ? Math.max(e0 + 0.1, lw[k]!.src_t0 - 0.04) : e0 + 0.15 + j * 0.2) }; });
     const lastQ = placed.at(-1)?.at ?? e0;
-    inserts.push({ t0: e0, t1: D, kind: KIND.end, frame: 'full', label: spoken(s.end.question), asset_ref: `${CM_ID}:end`, rule_id: 'cm.end', params: { words: placed, cta: s.end.cta, ...(brand ? { brand } : {}), brand_at: r3(lastQ + 0.45), ...(s.end.qr ? { qr: s.end.qr } : {}), hide_captions: true } });
+    inserts.push({ t0: e0, t1: D, kind: KIND.end, frame: 'full', label: spoken(s.end.question), asset_ref: `${CM_ID}:end`, rule_id: 'cm.end', params: { words: placed, cta: s.end.cta, ...(brand ? { brand } : {}), brand_at: r3(lastQ + 0.45), ...(s.end.qr ? { qr: s.end.qr } : {}), ...(s.end.logo ? { image: s.end.logo } : {}), hide_captions: true } });
     sfx.push({ t: r3(lastQ + 0.45), asset_ref: CM_SFX['hard-hit'], event: 'hard-hit', gain_db: -3, rule_id: 'cm.sfx.end_hit' });
     sfx.push({ t: r3(lastQ + 0.9), asset_ref: CM_SFX['cta'], event: 'cta', rule_id: 'cm.sfx.cta' });
   }
   // every cut between shots is a library transition, in turn (whip, gold light leak, zoom blur, ...); into the end card a light leak
-  const cuts: NonNullable<Edl['cuts']> = shots.slice(1).map((sh, k) => {
+  const cuts: NonNullable<Edl['cuts']> = cmCalmCuts(shots.slice(1).map((sh, k) => {
     const tr = s.end && k === shots.length - 2 ? CM_TRANSITIONS[1] : CM_TRANSITIONS[k % CM_TRANSITIONS.length]!;
-    return { t: sh.t_in, type: tr.type, dur: tr.type === 'flash' ? 0.6 : 0.45, trigger: 'beat' as const, rule_id: `cm.tr.${tr.ref}` };
-  });
+    // the leak goes into the end card when there is one (the one leak the video gets), else on the first flash cut
+    const ty = tr.type === 'flash' && s.end && k !== shots.length - 2 ? 'blur_zoom' : tr.type;
+    return { t: sh.t_in, type: ty, dur: ty === 'flash' ? 0.6 : 0.45, trigger: 'beat' as const, rule_id: ty === tr.type ? `cm.tr.${tr.ref}` : 'cm.tr.transition:visual-zoom-through' };
+  }));
   sfx.sort((a, b) => a.t - b.t);
   // two sounds closer than 90 ms blur into one: keep the earlier
   const sfxOut = sfx.filter((x, k) => x.t <= D && (k === 0 || x.t - sfx[k - 1]!.t >= 0.09));
@@ -406,7 +474,8 @@ export function clipMomentEdl(o: CmOptions): CmEdl {
     overlays: [
       // the brand pill only when the user gave a brand (no default, never a hard-coded name)
       ...(brand ? [{ t0: 0, t1: D, kind: 'header_strip' as const, text: brand.toUpperCase(), rule_id: 'cm.brand', params: { place: 'top-center' } }] : []),
-      { t0: 0, t1: D, kind: 'grain', rule_id: 'cm.dust', params: { particles: 54, shape: theme === 'gaming' ? 'square' : 'dot' } },
+      // the drifting gold dust is opt-in (s.dust): over footage it read as moving yellow dots (Vignesh, 2026-10-16)
+      ...(s.dust ? [{ t0: 0, t1: D, kind: 'grain' as const, rule_id: 'cm.dust', params: { particles: 54, shape: theme === 'gaming' ? 'square' : 'dot' } }] : []),
       { t0: 0, t1: D, kind: 'vignette', rule_id: 'cm.vignette', params: { strength: 0.6 } },
     ],
     sfx: sfxOut,

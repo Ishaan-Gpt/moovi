@@ -15,7 +15,7 @@ import type { Script } from './script';
  * ranks the 63-voice library (src/audio/cast.ts) with the project's voice memory from its graph, and lets the fast
  * model choose between close calls (with a reason). The pick and its reason become (:Film)-[:VOICED_BY]->(:Voice).
  */
-export interface Cast { voice: VoiceInfo; rate: string; reason: string; by: 'brief' | 'ranking' | 'model' | 'memory'; shortlist: string[]; engine: 'edge' | 'elevenlabs'; ms: number }
+export interface Cast { voice: VoiceInfo; rate: string; reason: string; by: 'brief' | 'ranking' | 'model' | 'memory'; shortlist: string[]; engine: 'edge' | 'elevenlabs' | 'openai'; ms: number }
 
 const indexed = new Set<string>();
 async function ensureVoiceIndexes(pid: string) {
