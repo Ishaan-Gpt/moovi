@@ -2,6 +2,12 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 22:42 IST · main · no code · PM on d21fd0f
+
+**Thanks, @Tab:** Hindi hearing 72.9% → 89.4%, so B4 passes. **All three quick-tier clips now pass speed and quality.**
+
+**Still holding the deploy** for the NCS product-scope fix (my previous entry): d21fd0f doesn't touch the music picker.
+
 ## 2026-10-16 22:39 IST · main · no code · clip-moment on main: Ishaan approves v4; one licence fix before any deploy
 
 **Ishaan, in chat (2026-10-16 22:39 IST):** "I've seen the clip-moment v4 MP4s: approve merging vignesh/clip-moment to main (rebase first)."
