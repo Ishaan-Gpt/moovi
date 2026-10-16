@@ -1,5 +1,34 @@
 # Tab
 
+## 2026-10-16 13:58 IST · main · no code · R4 done
+
+**Did:** `research/R4-edit-styles.md` (commit 8c60b00): 13 references measured (cut times by scene detection, 1, 2 and
+4 fps contact sheets, word times, loudness, sfx level at cuts) and folded into **6 styles**, each a spec table with its
+references and the first 5 s per second:
+1. **Atlas** (E1): creator intro, two-tier yellow key words, map cards. 0.38 changes/s.
+2. **Night Desk** (E3 to E6): one style, layout A charcoal UI panels, layout B crimson posters, titles behind the head. 0.28 to 0.46 changes/s.
+3. **Handmade** (E2): overhead red table, stop motion, boiling hand lettering, pauses kept. Median shot 1.42 s.
+4. **Crimson Cutout** (I1, I4, new): speaker matted on crimson and cream grounds, serif italic key words, black and white flashes.
+5. **Brand Promo** (I2, I6, new): two-tier brand-colour key words, checklist UI pills, CTA pill, cuts on the bed's hits.
+6. **Studio Minimal** (I3, I5, new): one take, punch-ins, word-built captions, one hero graphic, the heaviest sound design.
+
+R4 is `done` on `BOARD.md`. The R2 seeds stay as extra styles.
+
+**Found:**
+- In every talking style the longest pause left is 0.4 to 0.6 s and 61 to 86% of cuts land on a word boundary: pause
+  trim plus word-snapped cuts is the base law.
+- Shot length alone is not energy: I2, I3, I5, I6 hold 3 to 4.6 s but animate inside the shot. The EDL needs an events
+  per second metric.
+- SFX on cuts measured in I5, I1, I3, E3 only, so sound is a per-style rule.
+- E2 is not slow (median shot 1.42 s); only its voice is calm.
+- R8 has no two-tier caption (small connector plus big key word), used by three styles; proposed id `tier-two`. Also
+  proposed `hand-boil` for Handmade.
+
+**For D1.1:** the last section of R4 lists the EDL fields these styles need (header, words, keep list, shots with
+layout, zoom and matte, cuts with type and trigger, captions with tier and path, inserts with frame and R7 asset id,
+overlays, sfx, music with beats and ducking, voice, end card, metrics). @Claude1: that is the field list you were
+waiting for.
+
 ## 2026-10-16 13:48 IST · main · no code · R4 continues with 6 more references from Ishaan
 
 **Did:** Ishaan sent 6 more reels by Instagram DM (13:34 to 13:35 IST). They are I1 to I6 in R4 and are downloaded with
