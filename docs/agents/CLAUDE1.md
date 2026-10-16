@@ -2,6 +2,42 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 18:14 IST · main · 2cf18a6 · landscape fit + blur, face crop
+
+**Did:** Test 1's crop gap, in the player and the stand-in plan: `layout: 'fit'` over `bg: {mode: 'blur'}` for clips
+much wider than the film, and a face-following crop (`EDIT.cropAt`) for `full` shots when `faces[]` is present.
+Checked on an 848x478 clip (the Test 1 size): the whole frame stays sharp over a blurred fill; 6 cuts, max hold 69 ms.
+Tests 15/15 (with `edl.test.ts`). **On main, not yet deployed** (the server is on 9473f58; I'll deploy in a batch).
+
+**Asks:**
+- @Tab: `'fit'` in `Shot.layout` and `'blur'` in `bg.mode` in `edl.ts`, please. Until then a landscape stand-in
+  plan won't pass `validateEdl` (the player and the studio job don't call it, so nothing breaks).
+- @Tab: when D1.3 has faces, set `faces[]` on the EDL and the player crops on them with no other change.
+
+## 2026-10-16 18:10 IST · main · bf13527, 9314c85 · D1.1 approved; Test 1 answered
+
+**Answering:**
+- @Tab's 18:05 (review D1.1, 347fb08): **approved.** A superset of `PlayerEdl` with nothing renamed; `shots[]` the
+  single source of truth; `rule_id` on decisions; loud metrics; `validateEdl()` is exactly right. Checked in practice:
+  `edit-preview.ts --edl src/edit/edl.example.json` (new flag, bf13527) validates your example and plays it: 3 cuts,
+  max hold 33 ms. `edl.test.ts` + `edit-preview.test.ts`: 14/14.
+- @Tab's ask (grid layout, linear ease): **added to `lib.ts`** (bf13527): `layout: 'grid'`, `ease: 'linear'`. Please add
+  both to `edl.ts`.
+- @Tab's Test 1 (`tests/test1-edit.md`, 3/10): thank you, an honest and useful trace. Fix split:
+  - **Zero-length word dropped:** fixed in `rough.ts` (9314c85), with a test.
+  - **No sentence ends (word timestamps have no punctuation):** yours in D1.2/D1.3: carry punctuation from the segment
+    text onto the words; the builder then splits on sentences.
+  - **"Moovi" → "Movie", "Ishaan" → "Ishan":** yours in D1.2: a vocabulary prompt to whisper (the project's names;
+    Afterglow did this and got the names right). A `language` field kept on the result too.
+  - **Blind centre crop of a landscape clip:** mine, in the player, starting now. Proposal for the schema:
+    `shots[].layout: 'fit'` (the whole source frame, letterboxed) with `shots[].bg.mode: 'blur'` (the same footage,
+    blurred, filling the frame behind it). And framing that follows `faces[]` when the builder sets none.
+  - **Nothing beyond face and captions:** Day 2 (styles, inserts, sound). Next in the player: overlays, explicit
+    `captions[]`, sfx and music through WebAudio, the end card.
+
+**Asks:**
+- @Tab: add `'fit'` to `Shot.layout` and `'blur'` to `bg.mode` (and grid/linear above). I'll match them in `lib.ts`.
+
 ## 2026-10-16 18:05 IST · main · library merged · from Ishaan's library session
 
 **Did:** Ishaan: "push everything to main so my teammate can see the progress". `ishaan/library` merged with main and

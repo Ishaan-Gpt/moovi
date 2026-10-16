@@ -30,7 +30,7 @@ Day 1 from `PLAN.md`. Day 2 rows are added when Day 1's gate passes.
 
 | ID | Task | Owner | Status | Branch | Files |
 |---|---|---|---|---|---|
-| D1.1 | EDL schema v0 | Tab drafts, Claude 1 reviews | waiting for approval | | `engine/src/edit/edl.ts` |
+| D1.1 | EDL schema v0 | Tab drafts, Claude 1 reviews | done: approved by Claude 1 (347fb08) | | `engine/src/edit/edl.ts` |
 | D1.2 | footage-edit's hear into main's transcribe/intake | Tab | waiting for approval | | `audio/stt.ts`, `tasks/intake.ts`, `tasks/script.ts` |
 | D1.2b | Voice clean-up without Python (ffmpeg arnndn) | Tab | waiting for approval | | `engine/src/audio/` |
 | D1.3 | Extract the EDL builder from footage-edit | Tab | waiting for approval | | `engine/src/edit/` |

@@ -84,8 +84,21 @@ function drawInserts(t) {
   ins.innerHTML = on.map(x => { const [l, tp, w, h] = FRAME[x.frame] || FRAME.card_box, p = EDIT.easeOut((t - x.t0) / 0.3), q = EDIT.easeOut((x.t1 - t) / 0.25);
     return '<div class="ins" style="left:' + l * W + 'px;top:' + tp * H + 'px;width:' + w * W + 'px;height:' + h * H + 'px;opacity:' + Math.min(p, q).toFixed(2) + ';transform:translateY(' + ((1 - p) * 60).toFixed(0) + 'px)"><b>' + (x.label || x.kind) + '</b><i>' + (x.asset_ref || x.kind) + '</i></div>'; }).join('');
 }
+// the blurred fill behind a 'fit' shot: the visible deck drawn small every frame and blurred by CSS (cheap)
+const bg = $('bg'), bgx = bg.getContext('2d');
+function drawBg(g) {
+  const on = g.bg && g.bg.mode === 'blur';
+  bg.style.display = on ? 'block' : 'none';
+  if (!on || cur.readyState < 2) return;
+  const sw = cur.videoWidth || E.source.w, sh = cur.videoHeight || E.source.h, k = Math.max(bg.width / sw, bg.height / sh);
+  bgx.drawImage(cur, (bg.width - sw * k) / 2, (bg.height - sh * k) / 2, sw * k, sh * k);
+}
 function draw(t) {
   tNow = t;
+  const g = S[EDIT.shotAt(E, t)], fit = g.layout === 'fit';
+  cur.style.objectFit = fit ? 'contain' : 'cover';
+  if (!fit) { const c = EDIT.cropAt(E, t); cur.style.objectPosition = c.px.toFixed(1) + '% ' + c.py.toFixed(1) + '%'; } else cur.style.objectPosition = '50% 50%';
+  drawBg(g);
   const f = EDIT.framingAt(E, t);
   cur.style.transformOrigin = (f.cx * 100).toFixed(2) + '% ' + (f.cy * 100).toFixed(2) + '%';
   cur.style.transform = 'scale(' + f.scale.toFixed(4) + ')';
@@ -135,6 +148,7 @@ html,body{margin:0;height:100%;background:#111;color:#eee;font:14px system-ui,sa
 #stage{position:absolute;left:0;top:0;overflow:hidden;transform-origin:0 0;background:#000}
 #stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;will-change:transform}
 #stage video.on{opacity:1}
+#bg{position:absolute;inset:-6%;width:112%;height:112%;filter:blur(28px) saturate(1.1) brightness(.7);display:none}
 #ins{position:absolute;inset:0;pointer-events:none}
 .ins{position:absolute;box-sizing:border-box;border-radius:40px;background:color-mix(in srgb,var(--deep) 92%,transparent);box-shadow:0 24px 80px rgba(0,0,0,.45);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--paper);font:700 54px/1.1 'Inter Tight',sans-serif;text-align:center;padding:40px}
 .ins i{font:500 26px 'JetBrains Mono',monospace;font-style:normal;opacity:.6}
@@ -150,7 +164,7 @@ button{border:0;border-radius:999px;background:#eee;color:#111;padding:9px 18px;
 input[type=range]{flex:1}
 </style></head><body>
 <div id="wrap"><div id="frame" style="position:relative"><div id="stage">
-<video id="va" playsinline preload="auto"></video><video id="vb" playsinline preload="auto" muted></video>
+<canvas id="bg" width="108" height="192"></canvas><video id="va" playsinline preload="auto"></video><video id="vb" playsinline preload="auto" muted></video>
 <div id="ins"></div><div id="cap" class="cap"></div>
 </div></div></div>
 <div id="bar"><button id="p">Play</button><input id="s" type="range" min="0" max="1000" value="0"><span id="tl">0.0</span></div>

@@ -34,6 +34,9 @@ export function roughEdl(source: PlayerEdl['source'], words: Word[], o: RoughOpt
   // shot boundaries in source time: every keep range starts one; a sentence start or holdMax starts another
   const starts = new Set<number>(keep.map(k => k[0]));
   for (let i = 1; i < ws.length; i++) if (isStop(ws[i - 1]!.word)) starts.add(ws[i]!.t - 0.04);
+  // a clip much wider than the film (landscape into vertical) is shown whole over a blurred fill, not centre-cropped
+  // to a third of its width (Tab's Test 1); with faces, D1.3 can crop on the face instead
+  const out = o.output ?? { w: 1080, h: 1920, fps: 30 }, fit = source.w / source.h > 1.6 * (out.w / out.h);
   const shots: EdlShot[] = []; let t = 0, n = 0;
   for (const [a, b] of keep) {
     const cuts = [...starts].filter(s => s > a + 0.3 && s < b - 0.3).sort((x, y) => x - y);
@@ -44,7 +47,7 @@ export function roughEdl(source: PlayerEdl['source'], words: Word[], o: RoughOpt
       for (let p = 0; p < parts; p++) {
         const src_in = s0 + (s1 - s0) * p / parts, src_out = s0 + (s1 - s0) * (p + 1) / parts, d = src_out - src_in;
         const scale = n % 2 ? punch : 1, cy = 0.4;
-        shots.push({ t_in: +t.toFixed(4), t_out: +(t + d).toFixed(4), src_in: +src_in.toFixed(4), src_out: +src_out.toFixed(4), layout: 'full', framing: { scale, cx: 0.5, cy } });
+        shots.push({ t_in: +t.toFixed(4), t_out: +(t + d).toFixed(4), src_in: +src_in.toFixed(4), src_out: +src_out.toFixed(4), ...(fit ? { layout: 'fit', bg: { mode: 'blur' } } : { layout: 'full' }), framing: { scale, cx: 0.5, cy } });
         t += d; n++;
       }
     }
@@ -54,7 +57,7 @@ export function roughEdl(source: PlayerEdl['source'], words: Word[], o: RoughOpt
   const edlWords: EdlWord[] = ws.map(w => ({ src_t0: w.t, src_t1: w.end, text: w.word, role: /\d/.test(w.word) ? 'number' : isKey(w.word) ? 'key' : 'connector' }));
   return {
     version: '0-rough', style_id: 'rough', seed: 0, source,
-    output: o.output ?? { w: 1080, h: 1920, fps: 30 },
+    output: out,
     palette: o.palette, caption_style_id: o.captionStyle ?? 'punch-duo',
     words: edlWords, shots, inserts: [],
   };
