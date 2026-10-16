@@ -30,7 +30,9 @@ Brand and character: `docs/BRAND.md`, `docs/CHARACTER.md`.
   Palette: icy white `#F7FAFD` and ice blue `#CFE6F7`; colours only from `@moovi/brand` tokens.
 - **Performance claims are measured,** never assumed (playground Benchmark / `moovi.benchmark()`, A/B runs).
 - **Taste:** `ishaan-ui` skill for site work, `ishaan-motion` for motion. No generic AI-site look.
-- **Secrets:** never commit keys. `.env`, `.env.local` and `data/` stay local or on the server.
+- **Secrets:** never commit keys. `.env`, `.env.local` and `data/` stay local or on the server. The one exception is
+  `data/refs/*/clone-motion/` and `data/refs/*/parts.json`, which are tracked on purpose. They hold code, OFL fonts and
+  copies of the CC0 sfx kit only, never the reference media (videos, voices, frames). Don't "fix" this in `.gitignore`.
 - **Platform:** Windows host with spaces in paths: quote them. pnpm workspace (Node 24, pnpm 11).
 
 ## Layout and checks
