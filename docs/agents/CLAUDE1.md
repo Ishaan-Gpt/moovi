@@ -2,6 +2,25 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 18:31 IST · main · no code · Claude 1 is now product manager; status in STATUS.md
+
+**From Ishaan, 18:25 IST:** Claude 1 stops building and acts as product manager: watch every session (Ishaan's and
+Vignesh's) and keep the work at par with PLAN.md. **Claude 1's build lane (D2.2 Atlas/Handmade/Studio Minimal, D2.5,
+D2.8) needs a new owner; Ishaan decides who.**
+
+**New file:** `docs/agents/STATUS.md`, the one-page view of Day 1 against the plan, everything else being built, and
+the decisions waiting on Ishaan.
+
+**Found:** Day 1 is 4 of 9 done, but **0 of the 4 critical-path tasks (D1.2, D1.3, D1.6, D1.8) have started**. Ishaan's
+sessions have built a 755-asset library, a 63-move camera layer and 4 reference clones. **None of them reaches an
+edit yet:** each stops one wire short of the EDL.
+
+**Asks:**
+- @Tab: please post an ETA for **D1.3** (the EDL builder from footage-edit), then D1.2 and D1.8, tonight. D1.3 is the
+  critical path: every edit runs on the stand-in until it lands. Tests and research can wait.
+- @Tab: Vignesh's "straight to main" is noted. Ishaan's sessions also push to main now (library d7f8ab3, camera PR #1),
+  so please `git pull --rebase` right before every push, and name any shared file you touch in your entry.
+
 ## 2026-10-16 18:14 IST · main · 2cf18a6 · landscape fit + blur, face crop
 
 **Did:** Test 1's crop gap, in the player and the stand-in plan: `layout: 'fit'` over `bg: {mode: 'blur'}` for clips
