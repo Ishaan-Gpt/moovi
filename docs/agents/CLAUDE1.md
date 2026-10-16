@@ -2,6 +2,24 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 18:05 IST · main · library merged · from Ishaan's library session
+
+**Did:** Ishaan: "push everything to main so my teammate can see the progress". `ishaan/library` merged with main and
+pushed to main. It contains:
+- The library in FalkorDB (R7): `(:Asset)` nodes with SERVES, FITS, SUITS and IS_A edges, and 755 assets in 10
+  categories. The named queries are in `packages/graph/src/queries/library.ts` and listed in `docs/QUERIES.md`. Seed with
+  `pnpm --filter @moovi/engine library`.
+- References and kits: `(:Reference)-[:HAS_PART]->(:Asset)` and `(:Kit)-[:HAS]->(:Asset)`. Four reels are cloned so far
+  with ishaan-motion: R1 crimson-poster, R2 level-ladder, R3 golden-hand and R4 red-table, in
+  `packages/library/src/kits/` on a shared canvas engine (`kits/motion`: core, type and an sfx kit that plays the
+  engine sfx map). Intake for a new reel is one command, `scripts/ref-intake.ts`.
+- The camera layer's 63 moves are in the graph (`scripts/camera-layer.ts`). Style-1's punch-in is now `camera:pulse`.
+- All of it is written up in `docs/LIBRARY.md` and CLAUDE.md.
+
+**Found:** after a craft-graph reset, `reference` and `camera-layer` must be run again. The clones themselves live in
+`data/refs/`, which is gitignored because the reference videos are not ours.
+**Asks:** @Tab: R7 is on main now; please review its shape against the EDL fields, as you began in your R7 entry.
+
 ## 2026-10-16 15:50 IST · main · 9473f58 · deployed
 
 **Did:** Server rebuilt on **9473f58** (from d305c2a): studio, worker and seed recreated; the worker started cleanly

@@ -1,0 +1,73 @@
+# The library: every reusable piece in one FalkorDB graph
+
+Generation styles, Auto and the editor all draw from one library stored in the craft graph. Each piece is one node, with
+one implementation per runtime. The spec is `docs/agents/research/R7-library-node.md`, and the queries are in
+`docs/QUERIES.md` (section `library`).
+
+## The shape
+
+```
+(:Asset {id:'<category>:<slug>', category, name, about, runtime[], licence, credit, ship, attribution, file,
+         vendored, energy, tags[], params(JSON), impl(JSON runtime→code ref), seed, src})
+  -[:SERVES {w}]->(:Need)          what a beat needs: hook, number, list, compare, cta, calm…
+  -[:FITS {gainDb, first}]->(:Event)  sfx: which edit event it sounds on (engine sfx map)
+  -[:SUITS]->(:EditStyle)          the edit styles it belongs to
+  -[:IS_A]->(:Transition)          a transition's family
+(:Reference {id, url, title})-[:HAS_PART {role, at, note}]->(:Asset)   a video reference broken into parts
+(:Kit {palette, type, motion, frame, src})-[:HAS {role}]->(:Asset)     a look as one re-skinnable unit
+(:Reference)-[:TAUGHT]->(:Kit)
+```
+
+Categories: voice, sfx, music, caption, transition, effect, camera, ui, 3d, insert.
+On 2026-10-16 the graph held **755 assets**: 263 insert, 138 ui, 109 effect, 76 camera, 63 voice, 30 music,
+26 transition, 22 sfx, 15 3d and 13 caption. Voices are not shippable yet because they need their licence checked.
+
+## Commands (FalkorDB must be running: `pnpm falkordb`)
+
+| Command | What it does |
+|---|---|
+| `pnpm --filter @moovi/engine library` | seeds the whole catalogue (`packages/engine/src/library/catalog.ts`) and prints counts; `--counts` only counts |
+| `pnpm --filter @moovi/engine reference ../../data/refs/<id>/parts.json` | adds a reference, its parts and its kit |
+| `pnpm --filter @moovi/engine exec tsx scripts/ref-intake.ts <id> <url>` | one-command intake of a new video reference into `data/refs/<id>/`: download, cuts, contact sheets, 2 fps frames, voice, Whisper word stamps, transcript (about 30 s) |
+| `pnpm --filter @moovi/engine exec tsx scripts/camera-layer.ts <camera-moves.json>` | seeds the camera layer's moves (branch `ishaan/camera-layer`) |
+
+`scripts/reset.ts` re-seeds the library. **After a craft-graph reset, run `reference` again for each reference and
+`camera-layer` too**, because those are not part of the catalogue yet.
+
+## Kits (`packages/library/src/kits/`)
+
+A kit is browser canvas code plus a `kit.json` that holds its palette, type, motion numbers and room. Every kit takes
+a palette, so it can be re-skinned to any brand. Kits carry no brand words.
+
+| Kit | Learned from | Look |
+|---|---|---|
+| `motion/` | shared engine | `core.js` (eases, springs, seeded noise, drift, shutter blur), `type.js` (word-by-word lines, slams), `sfx.js` (plays the engine sfx map, and only where the reference has no sound of its own) |
+| `crimson-poster` | R1 | crimson paper posters, a hero ring, chapter cards that dive into the poster, metal keys and a hand |
+| `level-ladder` | R2 | `world.js`, the shared speaker world (palette-driven `ROOM`, `ROOM.monitor`), neon level orbs, white-grid boards, paper posters |
+| `golden-hand` | R3 | lit metal hook title (Cinzel), a stone hand holding a dial, Grenze Gotisch chapter heads, panels on a dark starry ground |
+| `red-table` | R4 | stickers on a red paper table, boiling marker words, type cards in a selection box, a tall serif word with an eye for a dot, flipbook numbers, a plugin panel, condensed serif captions |
+
+## References cloned so far
+
+Each one is a live canvas clone in `data/refs/<id>/clone-motion/` (gitignored: the reference video is not ours).
+To view one, serve the repo root and open `/data/refs/<id>/clone-motion/`. The parts are in `data/refs/<id>/parts.json`.
+
+| Ref | Reel | Kit | Blind-judge score |
+|---|---|---|---|
+| R1 | instagram.com/p/Ddtf1lUzljq | crimson-poster | 7.2 |
+| R2 | instagram.com/p/DcbCMzoTwhS | level-ladder | 4.8 (below the bar; raise it when next touched) |
+| R3 | instagram.com/p/Dd31rjBznGo | golden-hand | 7.6 (5.0 → 7.6 over six rounds) |
+| R4 | instagram.com/p/DZsVuGdx2cE | red-table | 6.6, compared with R3's sheet at 6.4 by the same judge |
+
+**The quality ratchet.** Every new clone must score above the best previous film. A blind subagent judge scores still
+sheets on typography, composition, craft, fidelity and premium feel. The previous best film's sheet is scored in the
+same round, because different judges calibrate differently. A tie does not ship. The process and the scoreboard live in
+the `ishaan-motion` skill (`references/ratchet.md`), which every video job uses.
+
+## Still open
+
+- `ishaan/library-wire`: generation styles and Auto casting from the library. Another session is working on it; it
+  is not merged.
+- `ishaan/camera-layer` (PR #1): the camera layer's code. Its moves are already in the graph via `camera-layer.ts`.
+- The R2 clone is below the bar. The R1, R3 and R4 clones still use code stand-ins for the speaker and for photo
+  props; real cut-outs would beat them.

@@ -97,7 +97,7 @@ Goal by the end of Day 2: **5–6 edit styles, each one recognisably its own han
 | D2.1 | Style laws over the EDL (R4): **Night Desk** (layouts A and B), **Crimson Cutout**, **Brand Promo** | Tab | each matches its R4 bands (metrics block) on 2 R9 clips |
 | D2.2 | Style laws: **Atlas** (Afterglow's breakdown, ported to TypeScript + ffmpeg, no Python), **Handmade**, **Studio Minimal** | Claude 1 | same bar |
 | D2.3 | The R2 seeds (Punch, Documentary) as extra styles, only if D2.1 and D2.2 are done | whoever finishes first | |
-| D2.4 | **Library in FalkorDB** (R7): vendor the 82 CC0 sfx and the CC BY tracks with credits; seed captions (R8), effects (X1), inserts; cast by need | Tab | the deciding agent queries it; QUERIES.md updated |
+| D2.4 | **Library in FalkorDB** (R7): vendor the 82 CC0 sfx and the CC BY tracks with credits; seed captions (R8), effects (X1), inserts; cast by need. **Built and on main** (`docs/LIBRARY.md`: 755 assets, named queries, reference kits); left: casting by need inside styles and Auto, on `ishaan/library-wire` | Tab | the deciding agent queries it; QUERIES.md updated |
 | D2.5 | **Inserts from the generation styles** (R4b): Style 1 UI and Editorial posters drawn into insert frames in the player | Claude 1 | at least 2 libraries cast into edits |
 | D2.6 | **Sound pass**: sfx map per style (whoosh on moves, hits on key words, risers), bed with ducking, cuts on the beat | Tab | no edit ships silent under the voice |
 | D2.7 | **X1 effects**: at least 8 of the 17 as library moves (5 exist in footage-edit) | Tab 4, Claude 1 4 | each one usable by any style |

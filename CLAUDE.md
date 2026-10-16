@@ -8,7 +8,8 @@ memory, 3D, maps, the visual renderer, the style router). Several AI agents work
 `docs/agents/` (the agent board) before starting, and pull before you push.
 
 **Read first:** `docs/ARCHITECTURE.md`, `docs/STUDIO.md`, `docs/STYLES.md` (styles, not templates),
-`docs/MODELS.md` (any model, bring your own key), `docs/QUERIES.md` (every Cypher query), `docs/DEPLOY.md`.
+`docs/MODELS.md` (any model, bring your own key), `docs/QUERIES.md` (every Cypher query), `docs/DEPLOY.md`,
+`docs/LIBRARY.md` (the asset library in FalkorDB, kits, cloned references).
 Vignesh's systems: `docs/VISUAL.md`, `docs/ROUTER.md`, `docs/VOICE.md`, `docs/3D.md`, `docs/MAPS.md`, `docs/SPEED.md`.
 Brand and character: `docs/BRAND.md`, `docs/CHARACTER.md`.
 
@@ -60,6 +61,22 @@ Brand and character: `docs/BRAND.md`, `docs/CHARACTER.md`.
   the combined MP4 film >12 min with style segments timing out (too heavy for 2 GB).
 - See films on disk: `pnpm --filter @moovi/engine exec tsx scripts/films.ts --port 4200`.
 
+## The library and reference clones
+
+- **One library in the craft graph** (`docs/LIBRARY.md`): 755 `(:Asset)` nodes in 10 categories (voice, sfx, music,
+  caption, transition, effect, camera, ui, 3d, insert). Each node has SERVES need edges, runtime implementations and a
+  licence. Named queries are in `packages/graph/src/queries/library.ts`. Seed the catalogue with
+  `pnpm --filter @moovi/engine library`.
+- **References → kits.** Each Instagram reel Ishaan sends is cloned as a live canvas preview with the `ishaan-motion`
+  skill, broken into parts (`(:Reference)-[:HAS_PART]->(:Asset)`), and saved as a re-skinnable kit in
+  `packages/library/src/kits/`. So far: R1 crimson-poster, R2 level-ladder, R3 golden-hand, R4 red-table, all on
+  the shared engine `kits/motion`. Intake for a new reel is one command, `scripts/ref-intake.ts <id> <url>`.
+- **Quality ratchet:** a new clone ships only when a blind subagent judge scores it strictly above the best previous
+  film, with both scored in the same round. R3 scored 7.6. R4 scored 6.6 against R3's 6.4 in its round.
+- In progress: `ishaan/library-wire` (generation styles and Auto cast from the library) and `ishaan/camera-layer` (PR #1).
+- **Live edit preview** (main 9473f58, live on the server): an uploaded clip is edited and plays live in the studio,
+  with 11 caption styles from R8 (`engine/src/edit/`). See `docs/agents/BOARD.md` D1.4, D1.5 and D1.7.
+
 ## Models and keys
 
 - Server runs `MOOVI_BYOK=optional`: users may skip their key and run on the server's model.
@@ -89,6 +106,7 @@ Brand and character: `docs/BRAND.md`, `docs/CHARACTER.md`.
 
 ## Open items
 
+- After a craft-graph reset, re-run `reference` for each `data/refs/<id>/parts.json` and `camera-layer`.
 - Add the visual renderer as a studio style ("Visual", MP4 in about 2 min on the server).
 - On-screen credits: OpenStreetMap/OpenFreeMap for maps, CC-BY footage, the Kevin MacLeod music bed.
 - Rotate the server's Groq key (it was visible in a process list during testing).
