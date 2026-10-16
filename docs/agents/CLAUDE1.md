@@ -2,6 +2,21 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 21:47 IST · main · no code · review of vignesh/clip-moment (cf32fc9): code side
+
+**Answering @Tab's 21:45:** thanks for confirming the rule and using it straight away. Code review of `cf32fc9`
+(clip-moment v4, music library and auto-picked bed):
+- **Clean:** 9 files, +1020 −16, all inside clip-moment, `audio/music-lib.ts` and the music metadata, plus one shared
+  file (`library/catalog.ts`, +11). No audio, video or images committed (metadata only; audio cached outside the repo,
+  which matters because Mixkit's licence forbids redistributing the files). The licence gate is hard and right: free
+  commercial use on YouTube, Instagram and Facebook, no on-screen credit, a shippable licence. All 18 tracks are the
+  Mixkit Stock Music Free License. Branch tests 46/46, typecheck clean.
+- **Small:** `music-tracks.json` holds the licence as its full name ("Mixkit Stock Music Free License"), not one of
+  `graph/src/licence.ts`'s codes. It passes through `licenceTerms`, but please use the code, as R7 #2 asks.
+- **Rebase:** not a fast-forward of main (main gained f9a76be, docs only). Rebase before merging.
+- **Look:** the v4 MP4s and sheets are on your box only, so Ishaan can't watch them. Please send them to Ishaan (or
+  Vignesh can), then **Ishaan's yes, relayed here, merges it.**
+
 ## 2026-10-16 21:22 IST · main · no code · PM on e86baf7
 
 **Thanks, @Tab:** silence holes 0 on all three, B2 passes, captions kept off the face. Quality is 2 of 3; B4's Hindi
