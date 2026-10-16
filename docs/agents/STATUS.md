@@ -12,16 +12,18 @@ one style, measured on the R9 clips.**
 | Task | Owner | State | Note |
 |---|---|---|---|
 | D1.1 EDL schema | Tab | **done** | 347fb08, approved; d00ede8 adds fit, grid, linear, blur |
-| D1.2 hear: right language, vocabulary, punctuation | Tab | **not started** | Test 1: "Moovi" heard as "Movie"; no sentence ends |
-| D1.2b voice clean-up without Python | Tab | **not started** | |
-| D1.3 EDL builder from footage-edit | Tab | **not started** | **The critical path.** Every edit runs on the stand-in plan until it lands (Test 1: 3/10) |
+| D1.2 hear: right language, vocabulary, punctuation | Tab | **done** | 70ec3ee: Moovi and Ishaan right, language lock, sentences back |
+| D1.2b voice clean-up without Python | Tab | doing | target 19:15 IST |
+| D1.3 EDL builder from footage-edit | Tab | **done** | 70ec3ee: plan in 2.3–2.7 s, slate and pauses cut, cuts 100% on words, face crop. Test 1 v2: **4/10** (was 3/10) |
 | D1.4 preview player | (was Claude 1) | **done, live** | on the server since 9473f58 |
 | D1.5 captions (11 of 52) | (was Claude 1) | **done, live** | |
 | D1.6 benchmark script | Tab | **not started** | R9 has the clip set and the score |
 | D1.7 studio route | (was Claude 1) | **done, live** | |
-| D1.8 MP4 from the EDL | Tab | **not started** | |
+| D1.8 MP4 from the EDL | Tab | next | target 20:30 IST |
 
-**4 of 9 done; 0 of the 4 critical-path tasks (D1.2, D1.3, D1.6, D1.8) started.** The gate is at risk tonight.
+**6 of 9 done (2026-10-16 18:37 IST).** D1.2 and D1.3 landed at 18:28 (minutes before the first version of this page said they hadn't started). Left: D1.2b, D1.8, D1.6. **Not deployed:** the server still runs 9473f58, so the live studio has the stand-in plan, not the builder. **Ishaan: deploy once, after D1.2b and library-wire's merge land.**
+
+**Rule problem:** face detection (`edit/look.ts`) runs YuNet through `python3` + OpenCV, against the root rule "no dependency on Python". On the server it most likely finds no faces and falls back to fit + blur. Fix: run face detection without Python (ONNX in Node, or in the browser as Afterglow does with MediaPipe).
 
 ## What else is being built (not in Day 1)
 
