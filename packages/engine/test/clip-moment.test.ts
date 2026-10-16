@@ -121,10 +121,16 @@ test('clip-moment: a 30 s plan puts a component up every 2 to 3 s (8+ of 5+ kind
   for (const k of ['callout', 'obj3d', 'stat', 'list', 'filmstrip', 'logo']) assert.ok(n.kinds.includes(k), `has ${k}`);
   const e = make();
   const D = e.shots.at(-1)!.t_out, cards = e.inserts.filter(x => String(x.asset_ref).startsWith('clip-moment:') && x.asset_ref !== 'clip-moment:kicker').sort((a, b) => a.t0 - b.t0);
+  // calmer since 2026-10-16 (cmVariety: a type at most twice, never back to back): still a visual change about every
+  // 2 to 3 s, but a cut to new footage counts as one, the footage breathes between cards
+  const changes = [...cards.map(x => x.t0), ...e.shots.map(s => s.t_in)].sort((a, b) => a - b);
   for (let t = 1; t < D - 1; t += 0.5) {
-    const last = cards.filter(x => x.t0 <= t).at(-1);
-    assert.ok(last && (t - last.t0 < 3.2 || last.t1 > t), `a card up or landed within 3 s before ${t.toFixed(1)} s`);
+    const last = changes.filter(x => x <= t).at(-1), up = cards.some(x => x.t0 <= t && x.t1 > t);
+    assert.ok(last !== undefined && (t - last < 3.2 || up), `a card up or a visual change within 3 s before ${t.toFixed(1)} s`);
   }
+  const kinds = new Map<string, number>();
+  for (const x of cards) if (x.asset_ref !== 'clip-moment:end') kinds.set(String(x.asset_ref), (kinds.get(String(x.asset_ref)) ?? 0) + 1);
+  for (const [k, v] of kinds) assert.ok(v <= 2, `${k} ${v} times in one video`);
   const threeD = e.inserts.filter(x => (x as { params?: { enter?: string } }).params?.enter || x.asset_ref === 'clip-moment:obj3d').length
     + e.shots.filter(s => /^camera:(orbit|tilt|rise|drift-left|drift-right|pull-out)$/.test(s.camera?.asset_ref ?? '')).length;
   assert.ok(threeD >= 3, `3D moments ${threeD}`);
@@ -134,8 +140,9 @@ test('clip-moment: a 30 s plan puts a component up every 2 to 3 s (8+ of 5+ kind
 
 test('clip-moment: every component has its sound (whoosh on a chip, pop on a stat, pops on list tiles)', () => {
   const e = make(), ev = (n: string) => (e.sfx ?? []).filter(s => (s as { event?: string }).event === n);
-  const chip = e.inserts.find(x => x.asset_ref === 'clip-moment:kicker')!, stat = e.inserts.find(x => x.asset_ref === 'clip-moment:stat')!;
-  assert.ok(ev('card-in').some(s => Math.abs(s.t - chip.t0) < 0.2), 'a whoosh as the chip lands');
+  const chip = e.inserts.find(x => x.asset_ref === 'clip-moment:kicker'), stat = e.inserts.find(x => x.asset_ref === 'clip-moment:stat')!;
+  // a chip only rides a beat with no card (one overlay at a time); when one is up it lands with a whoosh
+  if (chip) assert.ok(ev('card-in').some(s => Math.abs(s.t - chip.t0) < 0.2), 'a whoosh as the chip lands');
   assert.ok(ev('pop').some(s => s.t > stat.t0 && s.t < stat.t1), 'a pop when the stat lands');
   assert.ok(ev('list-item').length >= 3, 'a pop per list tile');
   const ts = (e.sfx ?? []).map(s => s.t);
