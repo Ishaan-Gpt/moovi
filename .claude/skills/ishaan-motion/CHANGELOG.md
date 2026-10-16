@@ -52,3 +52,8 @@
 ## 1.8.0 (2026-10-16)
 - Footage spans: fetch real b-roll and photos (Moovi's footage finder, scripts/ref-footage.ts) instead of drawing
   stand-ins, which read as paused video (owner note on R4). Rule 0.1's unattended clause now fetches first.
+
+## 1.9.0 (2026-10-16)
+- Reference R5 (night-glass how-to): R5 shipped at 7.0 against R4's sheet at 4.8 in the same round. Taste gains a "Glass and UI" section
+  (live-blur glass, drawn walkthroughs with line icons and a touch dot, removed items turn red). Lessons: the self-check
+  side-by-side before the judge, and check every fetched footage poster.

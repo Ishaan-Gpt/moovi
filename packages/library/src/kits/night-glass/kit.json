@@ -1,0 +1,27 @@
+{
+  "id": "night-glass",
+  "name": "Night Glass",
+  "about": "A talking-head how-to kit: the speaker in front of a real night city (footage, defocused and cooled); floating glass panels (live blur of what is behind) with people cards that count up and audience bars that fill in a magenta gradient; a white card that rises from the hands and dives into a full-screen settings walkthrough driven by a glowing blue touch dot; a country picker whose people grid turns half red; a keypad; a magnifier bubble lifted off the UI; a ruled top-10 card that drops into a phone on the screenshot flash; a glass comment bar that types a word; a DM banner. Heavy italic caps phrase captions at chest height. Learned from reference r5, built with ishaan-motion.",
+  "from": ["ref:r5"],
+  "styles": ["brand-promo", "atlas"],
+  "load": ["../motion/core.js", "../motion/type.js", "../motion/sfx.js", "../motion/footage.js", "../level-ladder/world.js", "inserts.js"],
+  "room": { "monitor": false, "torso": ["#121316", "#1d1e22", "#2a2b30"], "arms": ["#8c5a3c", "#a66c48"], "backdrop": "footageBackdrop (a clip named city)" },
+  "palette": { "ink": "#0d0f14", "glass": "rgba(16,19,28,0.62)", "bar0": "#b43cff", "bar1": "#ff3d9a", "accent": "#2f7bff", "list": "#3557d6", "ui": "#f6f7f9", "uiInk": "#16181d", "removed": "#e0182d" },
+  "type": {
+    "caption": { "family": "Exo 2", "weight": 900, "style": "italic", "licence": "OFL", "use": "phrase captions, caps, about 96 px at chest height" },
+    "card": { "family": "Poppins", "weight": 800, "licence": "OFL", "use": "list card titles; rows at 500" },
+    "ui": { "family": "Inter Tight", "licence": "OFL", "use": "glass panels, counters, the settings UI" }
+  },
+  "motion": {
+    "engine": "kits/motion (ishaan-motion)",
+    "arrive": { "seconds": 0.38, "rise": 40, "fromScale": 0.92, "blur": 10 },
+    "counter": { "seconds": 0.32 },
+    "bars": { "seconds": 0.7, "stagger": 0.09 },
+    "touchDot": { "radius": 44, "pressRing": 0.2, "arc": 30 },
+    "screenSwap": 0.32,
+    "cardDive": { "seconds": 0.45, "to": 2.8, "ease": "hard" }
+  },
+  "sound": "kits/motion/sfx.js: the engine sfx map by event (pop, stat, card-in, slide-out, word, click-ui, scene, cascade, accent, ui-reveal, hard-hit, cta, notify, key-word), added only where the reference has no hit",
+  "frame": { "designW": 1080, "designH": 1920, "captionY": 0.526 },
+  "taste": "Glass panels blur what is really behind them (a drawImage of the canvas under a blur filter), never a flat dark box. Real footage behind the speaker, never a drawn wall, when the reference shoots against a view."
+}

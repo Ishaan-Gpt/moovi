@@ -72,7 +72,7 @@ Brand and character: `docs/BRAND.md`, `docs/CHARACTER.md`.
   `pnpm --filter @moovi/engine library`.
 - **References → kits.** Each Instagram reel Ishaan sends is cloned as a live canvas preview with the `ishaan-motion`
   skill, broken into parts (`(:Reference)-[:HAS_PART]->(:Asset)`), and saved as a re-skinnable kit in
-  `packages/library/src/kits/`. So far: R1 crimson-poster, R2 level-ladder, R3 golden-hand, R4 red-table, all on
+  `packages/library/src/kits/`. So far: R1 crimson-poster, R2 level-ladder, R3 golden-hand, R4 red-table, R5 night-glass, all on
   the shared engine `kits/motion`. Intake for a new reel is one command, `scripts/ref-intake.ts <id> <url>`. Where the
   reference cuts to real footage, `scripts/ref-footage.ts <id> name="query"` fetches it through the footage finder (no
   drawn stand-ins there; they read as paused video).

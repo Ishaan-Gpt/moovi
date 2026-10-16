@@ -31,6 +31,14 @@
 - A hardware/UI card needs density like the real thing: presets, labelled faders, LED keys. A big card with an empty
   middle reads as unfinished.
 
+## Glass and UI (R5)
+- **Glass panels blur what is really behind them**: draw the canvas into the panel's clip under a blur filter, then a
+  dark tint, a top sheen and a 2 px light edge. A flat translucent box reads as a template.
+- A screen-recording walkthrough can be drawn when the UI is generic: real line icons per row (never empty checkboxes),
+  a touch dot with a halo that glides on an arc and rings on taps, screens that slide in on each tap.
+- When a reference marks removed items, keep them visible in the warning colour (red) and let them sink back; fading them
+  out loses the "half your audience" read.
+
 ## Craft
 - Drawn props need material: texture at two scales (coarse mottling + fine grain in overlay), a light direction
   (gradient), edge occlusion (blurred dark inner stroke), a rim light, creases/details, a cast shadow.

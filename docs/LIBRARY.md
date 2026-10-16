@@ -67,6 +67,7 @@ a palette, so it can be re-skinned to any brand. Kits carry no brand words.
 | `level-ladder` | R2 | `world.js`, the shared speaker world (palette-driven `ROOM`, `ROOM.monitor`), neon level orbs, white-grid boards, paper posters |
 | `golden-hand` | R3 | lit metal hook title (Cinzel), a stone hand holding a dial, Grenze Gotisch chapter heads, panels on a dark starry ground |
 | `red-table` | R4 | stickers on a red paper table, boiling marker words, type cards in a selection box, a tall serif word with an eye for a dot, flipbook numbers, a plugin panel, condensed serif captions |
+| `night-glass` | R5 | a speaker before real night-city footage, live-blur glass panels (people cards that count up, audience bars), a card that dives into a settings walkthrough with a touch dot, a crowd that turns half red, a keypad, a magnifier, a ruled list card into a phone, a comment bar, a DM banner, heavy italic caps captions |
 
 ## References cloned so far
 
@@ -81,6 +82,7 @@ server) and open `/data/refs/<id>/clone-motion/`.
 | R2 | instagram.com/p/DcbCMzoTwhS | level-ladder | 4.8 (below the bar; raise it when next touched) |
 | R3 | instagram.com/p/Dd31rjBznGo | golden-hand | 7.6 (5.0 → 7.6 over six rounds) |
 | R4 | instagram.com/p/DZsVuGdx2cE | red-table | 6.6, compared with R3's sheet at 6.4 by the same judge |
+| R5 | instagram.com/p/DY3BjdDSUjg | night-glass | 7.0, compared with R4's sheet at 4.8 by the same judge |
 
 **The quality ratchet.** Every new clone must score above the best previous film. A blind subagent judge scores still
 sheets on typography, composition, craft, fidelity and premium feel. The previous best film's sheet is scored in the

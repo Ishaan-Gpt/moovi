@@ -29,6 +29,9 @@ side-by-side leap check were skipped to go faster, and a font was picked without
 | **R3 v6 (shipped)** | golden-hand | **7.6** | 8 | 7 | 8 | 8 | 7 | **current bar**: lit metal title (additive halo), punchy thumbnail, panel vignette |
 | R4 rounds 1–6 | red-table | 4.2 → 5.4 → 6.2 → 6.4 | | | | | | vs L (the R3 shipped sheet) = 6.4 in the same judge round; 6.4 = equal, not shipped |
 | **R4 round 7 (shipped)** | red-table | **6.6** | 7 | 7 | 6 | 7 | 6 | above L 6.4 (same judge): tall word fills the frame, scribbles inside the margins, card group lower; then the caption moved under the card and the panel face filled |
+| **R5 round 1 (shipped)** | night-glass | **7.0** | 8 | 7 | 6 | 7 | 7 | vs R4's shipped sheet 4.8 **in the same round** (that judge scored R4 lower than R4's own judge did: calibration differs, only same-round comparisons count) |
+
+R5 debts (judge): the settings scroll wants a hard vertical whip blur (40–60 px); the picker card ~20% larger with the crowd centred under its row; a ghost of the outgoing card at the frame edge on the first panel swap.
 
 R4 debts (judge): the stickers (tablet, app icon) are still flat (want bezel highlight, inner shadow, soft drop, +15% scale); the top dashed guide on the tall word barely reads at thumbnail size.
 

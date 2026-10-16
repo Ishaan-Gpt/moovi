@@ -56,6 +56,9 @@ function plane(cam, d, fn) {
   ctx.save(); ctx.translate(fx, fy); ctx.scale(sd, sd); ctx.translate(-fx + cam.ox * d, -fy + cam.oy * d); fn(); ctx.restore();
 }
 function room(t, cam) {
+  // a kit can set ROOM.backdrop(t, cam) to put real footage (a city at night, an office) behind the speaker instead
+  // of the drawn room; it draws in the speaker's own space (1080x1920), the parallax is up to it
+  if (typeof ROOM.backdrop === 'function') { ROOM.backdrop(t, cam); return; }
   // plane 1: wall + the one big soft bloom (the practical lamp), breathing slowly
   plane(cam, 0.35, () => {
     ctx.drawImage(TEX.wall, -120, -200, 1320, 2340);
