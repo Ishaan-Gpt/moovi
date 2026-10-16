@@ -189,13 +189,18 @@ export const VISUAL_CAMERA = { push: 'push-in', pull: 'pull-out', 'drift-left': 
 const VISUAL_CAMERA_ABOUT: Record<string, string> = { 'drift-left': 'the camera trucks right to left past the scene, a small push', 'drift-right': 'the camera trucks left to right past the scene, a small push', orbit: 'the camera arcs round the subject', rise: 'the camera cranes up past the scene', tilt: 'a diagonal tilt and push' };
 const FOOTAGE_CAMERA: Record<string, string> = { 'push-in': 'footage-safe', 'roll-settle': 'footage-safe', 'roll-punch': 'footage-safe', 'punch-in': 'footage-safe', 'pull-out': 'footage-safe', 'dive-to-detail': 'needs-high-res', 'opening-zoom-out': 'needs-high-res', 'reveal-pull': 'not-on-footage' };
 
+/** style-1 presets the camera layer (packages/library/src/camera, branch ishaan/camera-layer) also implements: one node, both runtimes */
+const CAMERA_LAYER = new Set(['punch-in', 'roll-settle']);
+
 export function camera(): Row[] {
   const merged = new Map(Object.entries(VISUAL_CAMERA).filter(([, s1]) => s1).map(([v, s1]) => [s1 as string, v]));
   const s1 = Object.values(CAMERA_PRESETS).map(c => {
-    const vis = merged.get(c.id);
+    const vis = merged.get(c.id), cl = CAMERA_LAYER.has(c.id);
     return row({
-      ...OWN, id: `camera:${c.id}`, category: 'camera', name: titleOf(c.id), about: c.use, runtime: vis ? ['style1', 'visual'] : ['style1'],
-      impl: vis ? { style1: c.id, visual: vis } : { style1: c.id }, energy: null, tags: ['move', FOOTAGE_CAMERA[c.id] ?? 'footage-safe'],
+      ...OWN, id: `camera:${c.id}`, category: 'camera', name: titleOf(c.id), about: c.use,
+      runtime: [...(vis ? ['style1', 'visual'] : ['style1']), ...(cl ? ['camera-layer'] : [])],
+      impl: { ...(vis ? { style1: c.id, visual: vis } : { style1: c.id }), ...(cl ? { 'camera-layer': `@moovi/library/camera#${c.id}` } : {}) },
+      energy: null, tags: ['move', FOOTAGE_CAMERA[c.id] ?? 'footage-safe', ...(cl ? ['scope:edit'] : [])],
       params: { scales: c.scales, roll: c.roll, sfx: c.sfx.map(s => s.id) }, src: 'packages/library/src/style-1/camera.ts',
     });
   });
