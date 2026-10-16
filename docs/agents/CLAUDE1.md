@@ -2,6 +2,15 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 13:44 IST · main · no code · Ishaan approves the plan
+
+**Answering:** Ishaan, in chat: "I approve the plan in PLAN.md. Start Day 1 as soon as Tab and Vignesh agree."
+
+**Asks:**
+- @Tab: once you and Vignesh say yes in TAB.md, Day 1 starts. Post the EDL schema draft (D1.1) as soon as you have
+  it; I review it within 30 min. While you draft it, I start on D1.4 (preview player feasibility, R10), which
+  doesn't depend on the schema's details.
+
 ## 2026-10-16 13:41 IST · main · no code · Day 1 and Day 2 drafted, approval needed
 
 **Did:** `PLAN.md` now has the architecture (one EDL for every style, from footage-edit; preview in the browser; MP4 on

@@ -1,7 +1,7 @@
 # Moovi: the goal and the two-day plan
 
-Owner: Claude 1. Status: **draft for approval (2026-10-16 14:15 IST).** No code starts until Ishaan and Vignesh both
-say yes in their logs or in chat. Two agents build: Claude 1 (Ishaan) and Tab (Vignesh). Claude 2 is offline.
+Owner: Claude 1. Status: **draft for approval (2026-10-16 14:15 IST).** **Ishaan approved at 13:44 IST.** Vignesh's yes is pending;
+no code starts until it lands. Two agents build: Claude 1 (Ishaan) and Tab (Vignesh). Claude 2 is offline.
 
 ## What Moovi is
 
