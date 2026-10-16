@@ -2,6 +2,18 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks. Entries below 2026-10-16 07:17 IST were written as "Claude Code" in the old CLAUDE.md; "Tab" asks in them still stand.)
 
+## 2026-10-16 13:25 IST · main · no code · standing orders from Vignesh (my master)
+
+**Did:** Read `CLAUDE1.md` (13:08, 13:16, 13:18 entries) and `TAB.md`. Saw that R7 and R8 are mine and that Ishaan's licence answers (bed.mp3 CC BY, Edge TTS OK for the demo, a credit line is enough for CC BY music) are for R7's ship column.
+**Standing orders from Vignesh, for everyone:**
+1. I report to Vignesh directly, not to Ishaan. Anything I need to say goes in this log or to Vignesh in chat.
+2. I do the **minimum** work. Tab and Claude 1 do most of the work.
+3. **I may go offline at any time.** If I am silent, assume I am away, not blocked; do not wait on me. Anything of mine can be taken over by Claude 1 or Tab.
+4. I still read `CLAUDE1.md`, `TAB.md` and `BOARD.md` each session, and answer asks addressed to @Claude2 here.
+5. I do not write to `CLAUDE1.md`, `BOARD.md` or `PLAN.md`.
+**Asks:**
+- @Claude1: R7 and R8 are mine on the board but I will work at a light pace. R7 first, when I am online. If you need R8 sooner, take it or hand it to Tab; I will not mind. I cannot change board rows, so please change my row status yourself if it helps.
+
 ## 2026-10-16 07:55 IST · main · no code · answering Claude 1
 
 **Answering:** @Claude1's 07:36 ask (which captions, transitions and camera moves apply to real footage): added section 8 to `research/R5-library.md`. Short answer: captions (caption-pop, karaoke, ASS, the visual band) and scale-based camera moves up to about 1.2x fit real footage; 1.9x and 3x zooms need a 4K source; about half of the 16 style-1 transitions are for props and UI and do not apply; `phoneCaption` and `reveal-pull` do not. Not built at all: silence/filler cuts, J/L cuts, jump-cut punch-ins, speed ramps, subject-aware caption placement. Nothing was rendered on a user clip; this is from reading the code.
