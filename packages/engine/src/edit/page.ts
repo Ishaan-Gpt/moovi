@@ -7,6 +7,7 @@
  */
 import { CAPTION_FONTS, CAPTION_STYLES } from './captions';
 import { EDIT_SRC } from './lib';
+import { INSERT_DRAW_SRC } from './inserts-draw';
 import { TEMPLATES_SRC } from './templates';
 
 const CLIENT = `
@@ -92,11 +93,14 @@ function drawCaptions(t) {
 }
 const CAP_BASE = LK && LK.y !== null ? LK.y : EDIT.posY(ST.position);
 cap.style.top = (CAP_BASE * H) + 'px';
-const FRAME = { full: [0, 0, 1, 1], top_half: [0.04, 0.03, 0.92, 0.44], card_box: [0.12, 0.12, 0.76, 0.34], beside_head: [0.54, 0.16, 0.42, 0.26] };
+const FRAME = { full: [0, 0, 1, 1], top_half: [0.04, 0.03, 0.92, 0.44], card_box: [0.12, 0.12, 0.76, 0.34], beside_head: [0.54, 0.16, 0.42, 0.26], top_band: [0.05, 0.035, 0.9, 0.13] };
 function drawInserts(t) {
   const on = (E.inserts || []).filter(x => t >= x.t0 && t < x.t1 && !(TPL && TPL.owns(x)));
-  ins.innerHTML = on.map(x => { const [l, tp, w, h] = FRAME[x.frame] || FRAME.card_box, p = EDIT.easeOut((t - x.t0) / 0.3), q = EDIT.easeOut((x.t1 - t) / 0.25);
+  // D2.5: an insert cast from the library (edit/inserts.ts) is drawn by its own drawer (edit/inserts-draw.ts); others as the plain box
+  ins.innerHTML = on.map(x => { if (x.params && x.params.draw) return INSERTS.html(x, W, H, t); const [l, tp, w, h] = FRAME[x.frame] || FRAME.card_box, p = EDIT.easeOut((t - x.t0) / 0.3), q = EDIT.easeOut((x.t1 - t) / 0.25);
     return '<div class="ins" style="left:' + l * W + 'px;top:' + tp * H + 'px;width:' + w * W + 'px;height:' + h * H + 'px;opacity:' + Math.min(p, q).toFixed(2) + ';transform:translateY(' + ((1 - p) * 60).toFixed(0) + 'px)"><b>' + (x.label || x.kind) + '</b><i>' + (x.asset_ref || x.kind) + '</i></div>'; }).join('');
+  // a full-frame insert that already says the line: the caption steps aside under it
+  if (!TPL) cap.style.visibility = INSERTS.capHidden(E, t) ? 'hidden' : '';
 }
 // the white of a flash transition (drawn in the overlay layer too, so the MP4 has it)
 const fx = $('fx');
@@ -201,6 +205,6 @@ input[type=range]{flex:1}
 <div id="ins"></div><canvas id="tpl"></canvas><div id="cap" class="cap"></div><div id="fx"></div>
 </div></div></div>
 <div id="bar"><button id="p">Play</button><input id="s" type="range" min="0" max="1000" value="0"><span id="tl">0.0</span></div>
-<script>${EDIT_SRC}\nvar CAPTION_STYLES = ${JSON.stringify(CAPTION_STYLES)};\n${TEMPLATES_SRC}</script>
+<script>${EDIT_SRC}\n${INSERT_DRAW_SRC}\nvar CAPTION_STYLES = ${JSON.stringify(CAPTION_STYLES)};\n${TEMPLATES_SRC}</script>
 <script>${CLIENT}</script>
 </body></html>`;

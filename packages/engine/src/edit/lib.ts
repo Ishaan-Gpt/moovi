@@ -19,7 +19,7 @@ export interface EdlShot {
   framing?: { scale: number; cx: number; cy: number };
   zoom?: EdlZoom[];
 }
-export interface EdlInsert { t0: number; t1: number; kind: string; frame: 'full' | 'top_half' | 'card_box' | 'beside_head'; label?: string; asset_ref?: string }
+export interface EdlInsert { t0: number; t1: number; kind: string; frame: 'full' | 'top_half' | 'card_box' | 'beside_head' | 'top_band'; label?: string; asset_ref?: string; params?: Record<string, unknown> }
 export interface PlayerEdl {
   version: string; style_id: string; seed?: number;
   source: { file: string; duration: number; w: number; h: number; fps: number };

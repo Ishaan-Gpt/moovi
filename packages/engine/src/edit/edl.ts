@@ -94,12 +94,13 @@ export const CaptionEvent = z.object({
 export const Insert = z.object({
   t0: sec, t1: sec,
   kind: z.enum(['broll', 'panel', 'poster', 'ui', 'checklist', 'card', 'title', 'timer', 'number', 'map', 'phone', 'object3d', 'photo']),
-  frame: z.enum(['full', 'top_half', 'card_box', 'beside_head']),
+  frame: z.enum(['full', 'top_half', 'card_box', 'beside_head', 'top_band']),
   label: z.string().optional(), asset_ref: assetRef.optional(),
   need: z.string().optional().describe('the R4b need this insert serves, e.g. "show_number"'),
   query: z.string().optional().describe('stock search words, resolved to a file at render time'),
   side: z.enum(['left', 'right']).optional(), enter: z.string().optional(), exit: z.string().optional(),
   rule_id: ruleId.optional(),
+  params: z.record(z.string(), z.unknown()).optional().describe('what the drawer needs: the words, number, list items or picture (D2.5, edit/inserts.ts)'),
 });
 
 export const Overlay = z.object({

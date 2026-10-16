@@ -8,6 +8,7 @@ import { castEdl, openLibrary, type CastTrace } from './cast';
 import { envelope, pauses, type Word } from './cut';
 import { keepOf, validateEdl } from './edl';
 import { hear, type Heard } from './hear';
+import { castInserts, openInserts, type InsertTrace } from './inserts';
 import { EDIT, type PlayerEdl } from './lib';
 import { lookFaces } from './look';
 import { roughEdl } from './rough';
@@ -44,6 +45,8 @@ export interface PlanInput {
   restore?: boolean;
   /** cast camera moves, sounds and transitions from the library graph per beat (edit/cast.ts; default true) */
   library?: boolean;
+  /** D2.5: cast Style 1 UI cards and Editorial posters into insert frames on the beats that call for one (edit/inserts.ts; default true) */
+  inserts?: boolean;
 }
 export interface Planned {
   edl: PlayerEdl;
@@ -60,6 +63,8 @@ export interface Planned {
   rough: boolean;
   /** the library cast's per-beat trace (cast.json), null when off, rough or it failed */
   cast: CastTrace | null;
+  /** the inserts cast from the generation styles (inserts.json), null when off, rough or it failed */
+  inserts: InsertTrace | null;
   /** why faces are missing, when they are (the look step's own words) */
   lookWhy?: string;
   /** the voice clean-up, running; resolves null when there is no audio or it failed */
@@ -133,6 +138,17 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
       else writeFileSync(join(dir, 'cast.json'), JSON.stringify(cast, null, 1));
     } catch (e) { console.warn(`[edit] library cast: ${String((e as Error).message ?? e).slice(0, 160)}`); cast = null; }
   }
+  // D2.5: Style 1 UI cards and Editorial posters on the beats that call for one, cast from the same graph
+  let ins: InsertTrace | null = null;
+  if (!rough && o.inserts !== false && o.library !== false) {
+    const before = JSON.stringify(edl);
+    try {
+      ins = await castInserts(edl as never, { src: await openInserts() });
+      const bad = validateEdl(edl as never).problems.filter(p => !p.startsWith('version'));
+      if (bad.length) { edl = JSON.parse(before); ins = null; console.warn(`[edit] inserts undone: ${bad.slice(0, 2).join('; ')}`); }
+      else writeFileSync(join(dir, 'inserts.json'), JSON.stringify(ins, null, 1));
+    } catch (e) { edl = JSON.parse(before); console.warn(`[edit] inserts: ${String((e as Error).message ?? e).slice(0, 160)}`); ins = null; }
+  }
   const t = EDIT.timeline(edl);
   if (t.problems.length) throw new Error(`The edit plan is inconsistent: ${t.problems.join('; ')}`);
   writeFileSync(join(dir, 'edl.json'), JSON.stringify(edl, null, 1));
@@ -151,5 +167,5 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
       .then(r => { if (r) { useRestored(dir, r); writeFileSync(join(dir, 'restore.json'), JSON.stringify(r, null, 1)); } return r; })
       .catch(e => { console.warn(`[edit] picture restore: ${String((e as Error).message ?? e).slice(0, 160)}`); return null; })
     : Promise.resolve(null);
-  return { edl, words, ...(language ? { language } : {}), heard, faces: look.faces.length, lap, duration: t.duration, source: { ...source, hasAudio: pr.hasAudio }, rough, cast, ...(look.why ? { lookWhy: look.why } : {}), voice, restore };
+  return { edl, words, ...(language ? { language } : {}), heard, faces: look.faces.length, lap, duration: t.duration, source: { ...source, hasAudio: pr.hasAudio }, rough, cast, inserts: ins, ...(look.why ? { lookWhy: look.why } : {}), voice, restore };
 }
