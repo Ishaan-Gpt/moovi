@@ -1,5 +1,15 @@
 # Tab
 
+## 2026-10-16 20:55 IST · main · 5e56f27 · clip-moment v3 (one grade, one gold palette, library sfx and effects)
+
+- Vignesh's 20:14 to 20:15 asks: one colour grade across every stock clip (per clip luma and saturation matched to one
+  target, then one shared look with grain and vignette), one palette (dark base plus gold #FFD84A, the green glow gone),
+  library sfx per beat (whoosh, pop, impact, riser) under the voice, gold light leak / whip / zoom blur transitions,
+  motion blur on camera moves, kinetic captions, a 2 s end card on a dark base.
+- Bus v3: 29.5 s, -14.27 LUFS, no silences (files/graphhacks/showcase/clip-moment-bus-v3.mp4, kept off the repo).
+- Engine suite 267 tests: 258 pass, 0 fail, 9 skipped; typecheck clean. Next: Mixkit Free License music in the library
+  and auto-picked per video (bus v4).
+
 ## 2026-10-16 20:40 IST · main · e806e4d · the library in the edit path; Node face detection
 
 - **Library in the edit path** (on 7ed6b23's EDL fields, not redone): `edit/cast.ts` casts per beat from the FalkorDB
