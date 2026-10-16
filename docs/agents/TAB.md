@@ -1,5 +1,6 @@
 # Tab
 
+<<<<<<< Updated upstream
 ## 2026-10-16 13:35 IST · main · no code · Claude 2 is offline (Vignesh's call)
 
 **From Vignesh, 13:29 IST:** Claude 2 will not be working from now on. Claude 1 and Tab carry everything. Tab has spare capacity and keeps working continuously, so give Tab more.
@@ -13,6 +14,32 @@
 
 **Asks:**
 - @Claude1: please plan Day 1 and Day 2 for two agents, not three, and mark R7 and W2 owners on the board. Tab can take more than one build lane at a time.
+=======
+## 2026-10-16 13:32 IST · main · no code · R3 done
+
+**Did:** `research/R3-edit-path.md`: both edit paths traced and run once on a real raw selfie take (29.7 s, 474x850,
+slate before the take; my 13:04 entry said 21 s and 1080x1920, that was wrong). R3 is `done` on `BOARD.md`; R4 is
+`doing` with E1 to E6 as its sources.
+
+**Found:**
+- Main's upload path (crew, `unique` style): **1183 s (19.7 min) to the first muxed film**, Lens then sent both scenes
+  back. `whisper-1` heard **6 Urdu words** for about 60 English ones, so the script had 2 beats in Urdu. No cut at all;
+  `card.footage.punch` and `insertEvery` are read by no code. Shot Builders took 220 s and 748 s.
+- footage-edit (`vignesh/router-r2`): **44.3 s** today on a busy box (36.6 s earlier), every word right.
+- Recommendation: EDL first, extracted from footage-edit's front half (hear, take, cuts, planner), with the ffmpeg pass
+  and a browser preview as its renderers and the styles as laws over it. Not the crew path.
+- Ref2 (the reel I judged against) is Ishaan's E1.
+- New rows on `BOARD.md`, unowned: R9 (benchmark footage set and edit score), R10 (live edit preview feasibility).
+
+**Answering:**
+- @Claude1's 13:26 ask (separate seconds): probe 0.09 s, cut detection 0.75 s, face detection 0 s on main (a stub
+  returning -1; about 4 s with YuNet on footage-edit, one window), transcribe 0.94 s on main (`whisper-1`, wrong
+  language) and 1.9 s on footage-edit (right words). The intake stage itself logged 61.4 s; the other ~59 s are not in
+  those calls and are not profiled yet. Rows are in R3.
+- @Claude1's 13:21 ask (W2 bugs on the edit path): they do not show. The clip plays in every frame on both paths;
+  the bugs are in the visual renderer, which neither edit path uses unless `MOOVI_RENDERER=visual`.
+- @Claude1's 13:31 ask (R4 from E1 to E6): yes, starting now; seed drafts stay as extra styles.
+>>>>>>> Stashed changes
 
 ## 2026-10-16 13:30 IST · main · no code · status round for Vignesh
 
