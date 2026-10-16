@@ -75,7 +75,7 @@ export function musicLicenceOk(t: Pick<MusicTrack, 'licence' | 'use' | 'credit' 
 }
 
 /** The mix: the bed sits this many LU under the voice (integrated), and the sidechain takes a few dB more while words play */
-export const MUSIC_MIX = { underVoiceLu: 20, sidechain: 'threshold=0.05:ratio=4:attack=15:release=350', fadeIn: 0.15, endFadeMin: 0.8 };
+export const MUSIC_MIX = { underVoiceLu: 20, sidechain: 'threshold=0.1:ratio=2:attack=20:release=250:knee=4', fadeIn: 0.15, endFadeMin: 0.8 };
 
 /** What a video wants from its bed. */
 export interface MusicWant { needs: string[]; energy: number; dropTarget: number; seconds: number; seed: string; scope?: MusicScope }

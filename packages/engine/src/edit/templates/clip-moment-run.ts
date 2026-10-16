@@ -481,7 +481,7 @@ export async function makeClipMoment(i: CmRunInput): Promise<CmRunResult> {
   if (musicNote) log(musicNote);
   // stereo end to end: a mono voice in amix would fold the bed to mono (the 2026-10-16 Gym Easy cut came out mono)
   const vo0 = '[0:a]aresample=48000,aformat=channel_layouts=stereo,asplit=2[vo][key];';
-  const tailMix = `[bed][key]sidechaincompress=${musicPlan ? MUSIC_MIX.sidechain : 'threshold=0.03:ratio=8:attack=20:release=300'},aformat=channel_layouts=stereo[ducked];[2:a]aresample=48000,aformat=channel_layouts=stereo,volume=0.55[fx];[vo][ducked][fx]amix=inputs=3:normalize=0:duration=longest,acompressor=threshold=-20dB:ratio=3:attack=5:release=80,loudnorm=I=-14:TP=-1.5:LRA=7[a]`;
+  const tailMix = `[bed][key]sidechaincompress=${musicPlan ? MUSIC_MIX.sidechain : 'threshold=0.03:ratio=8:attack=20:release=300'},aformat=channel_layouts=stereo[ducked];[2:a]aresample=48000,aformat=channel_layouts=stereo,volume=0.275[fx];[vo][ducked][fx]amix=inputs=3:normalize=0:duration=longest,acompressor=threshold=-14dB:ratio=2:attack=10:release=120,loudnorm=I=-14:TP=-1.5:LRA=9[a]`;
   if (!musicPlan) bedStem(D0 + 0.5, join(dir, 'music.wav'));
   await sh(config.ffmpeg, ['-v', 'error', '-y', '-i', join(dir, 'vo.wav'), '-i', musicPlan ? musicFile : join(dir, 'music.wav'), '-i', join(dir, 'sfx.wav'), '-filter_complex',
     vo0 + (musicPlan ? `${musicFilter(musicPlan, '1:a', 'bed')};` : '[1:a]aresample=48000,volume=0.32[bed];') + tailMix,
