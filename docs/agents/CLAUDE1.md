@@ -2,6 +2,41 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 15:38 IST · ishaan/edit-preview · 95386f4, a4e40ba · D1.4, D1.5, D1.7 built
+
+**Context:** Ishaan, 15:15: "Start your Day 1 tasks now (D1.4 preview player, D1.5 captions, D1.7 studio route) on an
+ishaan/ branch. Tab's tasks wait for Vignesh." Still no yes from Vignesh, so Tab's Day 1 rows are untouched.
+
+**Did** (all new files under `packages/engine/src/edit/` plus small hooks; not merged to main):
+- **D1.4 player** `edit/page.ts`: plays `<dir>/edl.json` over the user's clip live, nothing encoded. Two video decks
+  with R10's 0.15 s pre-roll; every frame is a pure function of output time (`?t=` stills match playback). Served by
+  the studio's existing preview route as the new `edit-player` kind (`styles/serve.ts`), so the video popup plays it
+  with no studio change.
+- **Shared logic** `edit/lib.ts`: time map (shotAt, srcAt, outOf), framing and zoom easing, caption chunking,
+  highlight and entry, as one self-contained function inlined into the page (like `anatomy/iso.ts`).
+- **D1.5 captions** `edit/captions.ts`: 11 R8 styles as data (punch-slam, punch-duo, kara-block, kara-sweep,
+  clean-keyword, ed-mixed, box-label, kin-type, sub-box, tech-chip, tier-two). Ids work with or without `caption:`.
+  Fonts mapped to the OFL ones already vendored until R8's are added.
+- **D1.7 route** `router/edit.ts`: a brief with a video upload and no style picked starts one `edit-reel` job
+  (probe, hear, plan, publish a live version) instead of the crew. "Like this" or "in the style of" briefs still go to
+  the crew; `MOOVI_EDIT=crew` restores the old path; a caption id named in the brief is used.
+- **Stand-in plan** `edit/rough.ts`: R4's pause trim, a shot per sentence, alternating punch-ins, from word times only.
+  **It's deleted when D1.3 lands.**
+- `scripts/edit-preview.ts <clip> [--measure]` runs it all on any clip.
+
+**Measured** on `data/visual/film.mp4` (26.7 s, voice): **plan ready 3.4 s after the clip** (probe 1.4, transcribe
+2.0, plan 0.0), page ready 1.1 s, first frame 1.2 s, 12 cuts holding at most 33 ms, cut source error −77 to +40 ms.
+Tests: `test/edit-preview.test.ts` 7/7; engine suite 168 pass, 0 fail, 4 skipped (no FalkorDB); typecheck clean.
+**Not run:** the studio job end to end (no FalkorDB or Redis on this machine).
+
+**Asks:**
+- @Tab: when D1.1/D1.3 start, the player reads the subset typed as `PlayerEdl` in `edit/lib.ts` (R4's names: `shots[]`
+  with `t_in/t_out/src_in/src_out/framing/zoom[]`, `words[]` with `src_t0/src_t1/role`, `caption_style_id`,
+  `palette`, `inserts[]`). If your EDL keeps those names, the player plays it as is. `EDIT.timeline()` is the
+  validator; please run it in D1.3's tests.
+- @Tab: if FalkorDB and Redis are up on your box, one end-to-end studio upload on `ishaan/edit-preview` would close
+  D1.7's gap. Post the seconds.
+
 ## 2026-10-16 15:10 IST · main · no code · the library is built (Ishaan's library session)
 
 **Found:** Ishaan started a session to build the library in FalkorDB. It reports (to me; it doesn't write the board):
