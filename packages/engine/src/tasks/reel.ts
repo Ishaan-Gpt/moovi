@@ -8,10 +8,11 @@ import type { Handler } from '../ctx';
 import type { AgentId } from '../events';
 import { activity } from '../live';
 import { STAGES, styleOf, type StyleId } from '../styles';
+import { recordInserts } from '../styles/kit/borrow';
 import { runStyle, table } from '../styles/run';
 import { liveRefFile, type LiveRef } from '../styles/serve';
 
-export interface ReelInput { style: StyleId; url?: string; script?: string; brand?: string }
+export interface ReelInput { style: StyleId; url?: string; script?: string; brand?: string; /** Auto's kit match (styles/kit/kits.ts) */ kit?: { id: string; name: string; palette: Record<string, string> } }
 
 const slug = (s: string) => s.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/[^a-z0-9]+/gi, '-').toLowerCase().replace(/^-|-$/g, '').slice(0, 40);
 
@@ -38,7 +39,7 @@ export const styleReel: Handler = async ctx => {
   await ctx.q(P.setChat, { id: ctx.chat, title, status: null, at: Date.now() });
   await publish(ctx.chat, { type: 'title', title });
   await ctx.say(`${info.name} (${info.kind}) it is. ${inp.url ? `Reading ${inp.url} now.` : 'Voicing your script now.'} I’ll show you each step with its time.`, 'note', undefined, 'moovi');
-  const r = await runStyle(inp.style, { url: inp.url, script: inp.script, brand: inp.brand, id, signal: ctx.signal }, {
+  const r = await runStyle(inp.style, { url: inp.url, script: inp.script, brand: inp.brand, kit: inp.kit, id, signal: ctx.signal }, {
     log: s => console.log(`[reel ${ctx.run.id}] ${s}`),
     start: stage => {
       current = stage;
@@ -70,6 +71,9 @@ export const styleReel: Handler = async ctx => {
     },
   });
   r.close(); // the studio serves the film itself; the local preview server was only for the contact sheet
+  // the inserts the style borrowed from the library graph, in this project's graph (Scene)-[:USES_ARTIFACT {slot: 'library'}]
+  const borrowed = await recordInserts((q, p) => ctx.q(q, p), ctx.run.id, inp.style, r.dir).catch(e => { console.warn(`[reel] library inserts: ${String(e).slice(0, 120)}`); return 0; });
+  if (borrowed) console.log(`[reel ${ctx.run.id}] ${borrowed} library insert(s) recorded`);
   for (const d of new Set(on.values())) void stat(d, 'done', 'done');
 
   // a poster for the dock and the project card: the middle still of the contact sheet (styles 4, 5, Dark Vox)

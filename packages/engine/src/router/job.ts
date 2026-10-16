@@ -11,6 +11,7 @@ import { activity } from '../live';
 import { startRun } from '../runs';
 import { combinedFilm, direct, secsOf } from './film';
 import { styleReel, type ReelInput } from '../tasks/reel';
+import { briefNeeds, matchKit } from '../styles/kit/kits';
 
 /**
  * The combined film as an engine job, so the studio's normal path runs it: the brief box's "Auto" style, and (unless
@@ -73,6 +74,13 @@ async function autoLive(ctx: Parameters<Handler>[0], brief: string) {
     const d = await direct(brief, secsOf(brief), ['darkvox', 'anatomy'], { signal: ctx.signal });
     const brand = (d.title || brief).replace(/[^\p{L}\p{N} .&'-]/gu, '').trim().split(/\s+/).slice(0, 3).join(' ') || 'Moovi';
     reel = { style: autoStyleFor(brief, d.beats.map(b => b.kind)), script: d.beats.map(b => b.say.trim()).join('\n'), brand };
+  }
+  // a kit whose parts serve the brief (the script's lines when there is one): its palette dresses the style's inserts
+  const kit = await matchKit(briefNeeds(reel.script ? reel.script.split('\n') : [brief]));
+  if (kit) {
+    reel = { ...reel, kit: { id: kit.id, name: kit.name, palette: kit.palette } };
+    console.log(`[auto ${ctx.run.id}] kit ${kit.id}: ${kit.covered} of ${kit.of} needs (${kit.hits} part hits)`);
+    await ctx.say(`The brief fits the ${kit.name} kit (${kit.covered} of its ${kit.of} needs): its colours dress the library inserts.`, 'note', { kit: kit.id, covered: kit.covered, of: kit.of }, 'moovi');
   }
   return styleReel(Object.create(ctx, { input: { value: () => reel } }) as typeof ctx);
 }

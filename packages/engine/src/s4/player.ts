@@ -11,6 +11,7 @@ import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, join, normalize, resolve, sep } from 'node:path';
 import { config, REPO } from '../config';
+import { libLayer } from '../styles/kit/liblayer';
 
 const MIME: Record<string, string> = { '.js': 'text/javascript', '.json': 'application/json', '.html': 'text/html', '.png': 'image/png', '.svg': 'image/svg+xml', '.wav': 'audio/wav', '.mp3': 'audio/mpeg', '.woff2': 'font/woff2' };
 
@@ -153,7 +154,8 @@ export const PAGE = `<!doctype html><html><head><meta charset="utf-8"><meta name
 <audio id="a" preload="auto"></audio>
 <script>
 ${CLIENT}
-</script></body></html>`;
+</script>
+<script>${libLayer()}</script></body></html>`;
 
 /** Serve <dir>/film.json with its pictures and audio on the Style 4 player; resolves the page URL. */
 export async function servePlayer(dir: string, port = 0, page: string = PAGE): Promise<{ url: string; close: () => void }> {

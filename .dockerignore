@@ -1,7 +1,11 @@
 **/node_modules
 **/.next
 **/.next-*
-data
+data/*
+# the reference breakdowns seed the library (seedLibraryGraph); their clones and media stay out
+!data/refs
+data/refs/*/*
+!data/refs/*/parts.json
 .env
 .env.local
 .git

@@ -37,6 +37,7 @@ import { isNeed } from '../styles/kit/needs';
 import { CAPTION_STYLES } from '../edit/captions';
 import { lookMap } from '../edit/looks';
 import { listLooks } from 'captionseasy';
+import { CAMERA_MOVES, promptFor } from '@moovi/library/camera';
 import { X1, edlCuts, endCards, fonts, grades, overlays, textures, x1Specs } from './edit-styles';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -101,8 +102,11 @@ export function sfx(): Row[] {
     const meta = ids.map(id => S1_SFX.find(x => x.id === id)).find(Boolean);
     const s0 = map.sounds[ids[0]!]!;
     const events = Object.entries(map.events).flatMap(([event, e]) => {
-      const hits = [...e.sounds.map((id, i) => ({ id, first: i === 0, db: e.level_db })), ...(e.then ? [{ id: e.then.sound, first: false, db: e.then.level_db }] : [])].filter(h => ids.includes(h.id));
-      return hits.length ? [{ event, gainDb: hits[0]!.db, first: hits.some(h => h.first) }] : [];
+      const hits = [...e.sounds.map((id, i) => ({ id, first: i === 0, db: e.level_db, then: false, rank: i })), ...(e.then ? [{ id: e.then.sound, first: false, db: e.then.level_db, then: true, rank: 99 }] : [])].filter(h => ids.includes(h.id));
+      // `then`: the file only follows the event's sound (card-in's thud), never a choice for it; `rank`: its place in the event's rotation;
+      // align / slices: how this event cuts the file (one typing take is keystrokes for `typing`, one burst for `code`)
+      const use = hits.length ? map.sounds[hits[0]!.id]! : null;
+      return hits.length ? [{ event, gainDb: hits[0]!.db, first: hits.some(h => h.first), then: hits.every(h => h.then), rank: Math.min(...hits.map(h => h.rank)), align: use!.align ?? 'start', slices: use!.slices ?? null, sliceLen: use!.slice_len ?? null }] : [];
     });
     const { licence, credit, author, sourceUrl } = sfxLicence(file, credits);
     return row({
@@ -250,6 +254,28 @@ export function camera(): Row[] {
   return [...s1, ...vis];
 }
 
+/**
+ * The camera layer's moves (packages/library/src/camera: 63 moves callable by keyword, each with a gen-AI prompt). A
+ * move the presets above already carry (same id) is not repeated: that node has the camera-layer runtime itself.
+ */
+const MOVE_NEEDS: [RegExp, string[]][] = [
+  [/crash-zoom|fast-zoom|whip|punch|shake|pulse/, ['hook', 'claim', 'speed']], [/slow-zoom-in|dolly-in|push|drone-push|dive-in|ken-burns-in|rack-focus/, ['focus', 'reveal']],
+  [/zoom-out|dolly-out|pull-back|crane-up|earth-zoom|helicopter|dive-out|ken-burns-out/, ['reveal', 'scale', 'global']], [/dolly-zoom/, ['emotion', 'warning']],
+  [/track|follow|chase|truck|slider|drift/, ['flow', 'people']], [/orbit|arc/, ['product', 'reveal']], [/time-lapse/, ['time']],
+  [/handheld|first-person|snorricam|roll/, ['emotion', 'people']], [/infinite-zoom|pass-through/, ['reveal', 'connect']], [/tilt-shift/, ['scale']],
+];
+export function cameraLayer(): Row[] {
+  const have = new Set(camera().map(r => r.id));
+  return CAMERA_MOVES.filter(m => !have.has(`camera:${m.id}`)).map(m => row({
+    ...OWN, id: `camera:${m.id}`, category: 'camera', name: m.name, about: `${m.about} Use: ${m.use} Avoid: ${m.avoid}`,
+    runtime: m.scope === 'gen' ? ['gen-prompt'] : ['camera-layer', 'gen-prompt'],
+    impl: { ...(m.scope === 'gen' ? {} : { 'camera-layer': `@moovi/library/camera#${m.id}` }), 'gen-prompt': promptFor({ move: m.id }) },
+    energy: null, tags: [`scope:${m.scope}`, m.group, m.family, ...(m.dir ? [m.dir] : []), ...m.aliases, 'move'],
+    params: { ...m.defaults, amount: m.amount, scope: m.scope, group: m.group, family: m.family, dir: m.dir ?? null, ref: m.ref, existing: [...m.existing] },
+    src: 'packages/library/src/camera/moves.ts', needs: needsOf([...new Set(MOVE_NEEDS.filter(([r]) => r.test(m.id)).flatMap(([, n]) => n))]),
+  }));
+}
+
 /* ───────────────────────────── ui ───────────────────────────── */
 export function ui(): Row[] {
   const s1 = Object.values(UI).map(u => row({
@@ -317,7 +343,7 @@ export function catalogue(): { seed: string; rows: Row[] }[] {
   const seeds = [
     { seed: 'repo:voice', rows: voices() }, { seed: 'repo:sfx', rows: sfx() }, { seed: 'repo:music', rows: music() },
     { seed: 'repo:caption', rows: captions() }, { seed: 'repo:transition', rows: transitions() }, { seed: 'repo:effect', rows: effects() },
-    { seed: 'repo:camera', rows: camera() }, { seed: 'repo:ui', rows: ui() }, { seed: 'repo:3d', rows: threeD() }, { seed: 'repo:insert', rows: inserts() },
+    { seed: 'repo:camera', rows: [...camera(), ...cameraLayer()] }, { seed: 'repo:ui', rows: ui() }, { seed: 'repo:3d', rows: threeD() }, { seed: 'repo:insert', rows: inserts() },
     { seed: 'repo:grade', rows: grades() }, { seed: 'repo:overlay', rows: overlays() }, { seed: 'repo:end_card', rows: endCards() },
     { seed: 'repo:font', rows: fonts(ROOT) }, { seed: 'repo:texture', rows: textures() },
   ].map(s => ({ ...s, rows: withX1(s.rows) }));

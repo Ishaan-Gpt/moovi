@@ -38,7 +38,7 @@ export interface AssetRow {
   /** where in the code it lives */
   src: string;
   needs?: string[];
-  events?: { event: string; gainDb: number | null; first: boolean }[];
+  events?: { event: string; gainDb: number | null; first: boolean; then?: boolean; rank?: number; align?: string; slices?: string | null; sliceLen?: number | null }[];
   /** edit styles it SUITS; a bare id is weight 1 */
   styles?: (string | { style: string; w: number })[];
   family?: string | null;
@@ -87,7 +87,7 @@ export async function seedLibrary(seeds: LibrarySeed[]) {
   for (const rows of chunk(all.map(assetNode), 200)) await run(g, library.seedAssets, { rows });
   const needs = all.flatMap(r => (r.needs ?? []).map((need, i) => ({ id: r.id, need, w: i + 1 })));
   for (const rows of chunk(needs, 500)) await run(g, library.linkAssetNeeds, { rows });
-  const events = all.flatMap(r => (r.events ?? []).map(e => ({ id: r.id, ...e })));
+  const events = all.flatMap(r => (r.events ?? []).map(e => ({ id: r.id, ...e, then: e.then ?? false, rank: e.rank ?? null, align: e.align ?? null, slices: e.slices ?? null, sliceLen: e.sliceLen ?? null })));
   if (events.length) await run(g, library.linkAssetEvents, { rows: events });
   const styles = all.flatMap(r => (r.styles ?? []).map(s => typeof s === 'string' ? { id: r.id, style: s, w: 1, src: 'row' } : { id: r.id, style: s.style, w: s.w, src: 'row' }));
   for (const rows of chunk(styles, 500)) await run(g, library.linkAssetStyles, { rows });

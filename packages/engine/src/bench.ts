@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import type { Ev, Word } from '@moovi/skills';
 import { config } from './config';
-import { assetsReady, bedFile, bedFrom, bedInfo, sfxStem as mixSfx, type Ev as MixEv } from './audio/mix';
+import { assetsReady, bedFile, bedFrom, bedInfo, castStem, type Ev as MixEv } from './audio/mix';
 import { transcribeWords } from './audio/stt';
 import { hear } from './edit/hear';
 import { speak } from './audio/tts';
@@ -124,7 +124,7 @@ export async function transcribe(src: string, dir: string): Promise<{ words: Wor
 
 export async function sfxStem(dir: string, events: Ev[]): Promise<string> {
   writeJson(join(dir, 'events.json'), events);
-  mixSfx(events as unknown as MixEv[], join(dir, 'sfx.wav'));
+  await castStem(events as unknown as MixEv[], join(dir, 'sfx.wav'), dir); // sounds cast from the library graph (sound.json)
   return join(dir, 'sfx.wav');
 }
 

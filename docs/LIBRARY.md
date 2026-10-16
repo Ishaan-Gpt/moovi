@@ -49,11 +49,10 @@ grade, overlay, font, texture, end_card. On 2026-10-16 (evening) the graph held 
 | `pnpm --filter @moovi/engine reference ../../data/refs/<id>/parts.json` | adds a reference, its parts and its kit |
 | `pnpm --filter @moovi/engine exec tsx scripts/ref-intake.ts <id> <url>` | one-command intake of a new video reference into `data/refs/<id>/`: download, cuts, contact sheets, 2 fps frames, voice, Whisper word stamps, transcript (about 30 s) |
 | `pnpm --filter @moovi/engine exec tsx scripts/ref-footage.ts <id> name="query" …` | real footage for a clone: wherever the reference cuts to b-roll or a photo, the engine footage finder (Mixkit, Commons, Pixabay, Pexels, NASA, Archive) fetches a clip into `data/refs/<id>/footage/` with its licence and credit, and seeds it as an insert asset linked to the reference. A drawn stand-in there reads as a paused video |
-| `pnpm --filter @moovi/engine exec tsx scripts/camera-layer.ts <camera-moves.json>` | seeds the camera layer's moves (branch `ishaan/camera-layer`) |
 
-`scripts/reset.ts` re-seeds the library. **After a craft-graph reset, run `reference` again for each reference and
-`camera-layer` too**, because those are not part of the catalogue yet. Each of these scripts ends by rebuilding the
-cross-seed links (`seedCrossLinks`: event aliases, the six styles' cast, X1 tags).
+`pnpm library`, `scripts/reset.ts` and the server's seed container all run one function (`seedLibraryGraph`): the catalogue (the
+camera layer's moves included), then every reference in the repo (`data/refs/<id>/parts.json` and its kit), then the
+cross-seed links (`seedCrossLinks`: event aliases, the six styles' cast, X1 tags). So the live graph matches the repo.
 After adding a sound, run `scripts/library-measure.ts` so its typed params are measured.
 
 ## Kits (`packages/library/src/kits/`)
@@ -89,10 +88,23 @@ same round, because different judges calibrate differently. A tie does not ship.
 the `ishaan-motion` skill, which every video job uses. The skill is checked in at `.claude/skills/ishaan-motion/`
 (see `references/ratchet.md` and `taste.md`), and it grows after every reference.
 
+## Who reads it
+
+- **Sound, every style.** The mixer casts each event's sfx with `assetsForEvent` (`engine/src/audio/sounds.ts`);
+  map.json keeps only the rules (levels, gaps, follow-ups). Each film gets `sound.json`. FalkorDB down: map.json.
+  Check a film: `pnpm --filter @moovi/engine sounds <film dir>` (compares with the map.json stem).
+- **Inserts, Style 4 and Dark Vox.** On weak beats (improvised, or a low cast score) `assetsServing` (category `ui`,
+  runtime `visual`) picks a 2D card, chart or icon badge; the player draws it with the visual renderer's own code
+  (`styles/kit/borrow.ts`, `liblayer.ts`): an overlay where the beat leaves room, a rack-focus cutaway where it does
+  not, never over the style's type, never a figure or praise the line does not say. Each insert is stored as
+  `(Scene)-[:USES_ARTIFACT {slot: 'library'}]`. `MOOVI_LIBRARY_CAST=0` turns it off; `?nolib` plays a film without.
+- **Auto.** `kitsServing` on the script's needs; a kit covering at least 3 and half of them dresses the inserts in its
+  palette roles (`styles/kit/kits.ts`).
+
 ## Still open
 
-- `ishaan/library-wire`: generation styles and Auto casting from the library. Another session is working on it; it
-  is not merged.
-- The camera layer (`packages/library/src/camera`, 63 moves) is merged; its moves reach the graph via `camera-layer.ts`.
+- Library wiring, for the next pass: Anatomy and Clear Signal do not borrow inserts yet (only Style 4 and Dark Vox); icon
+  badges read plain and the chips card is small inside a cutaway; Editorial frames rarely leave room for an overlay.
+- The camera layer (`packages/library/src/camera`, 63 moves) is merged and part of the catalogue.
 - The R2 clone is below the bar. The R1, R3 and R4 clones still use code stand-ins for the speaker and for photo
   props; real cut-outs would beat them.

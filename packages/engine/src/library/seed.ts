@@ -1,6 +1,7 @@
 import { CRAFT, library, run, seedLibrary } from '@moovi/graph';
 import { catalogue } from './catalog';
 import { X1, eventAliases, styleCast } from './edit-styles';
+import { referenceFiles, seedReference } from './reference';
 
 /**
  * The links that span seeds, run after any seed (catalogue, a reference, the camera layer): the EDL's sfx events as
@@ -19,10 +20,16 @@ export async function seedCrossLinks() {
   return { cast: cast.length, suits, x1Tagged: tagged };
 }
 
-/** Put the whole library (./catalog.ts) into the craft graph. Idempotent; the reset runs it after the craft seed. */
+/**
+ * Put the whole library into the craft graph: the catalogue (./catalog.ts, the camera layer included), then every
+ * reference in the repo (data/refs/<id>/parts.json, with its kit), then the cross-seed links. Idempotent; the reset
+ * and the server's seed container run it, so the live graph matches the repo.
+ */
 export async function seedLibraryGraph() {
   const seeds = catalogue();
   const r = await seedLibrary(seeds);
+  const refs = [];
+  for (const f of referenceFiles()) refs.push((await seedReference(f)).ref);
   const x = await seedCrossLinks();
-  return { ...r, ...x, perCategory: Object.fromEntries(seeds.map(s => [s.seed.replace(/^repo:/, ''), s.rows.length])) };
+  return { ...r, ...x, references: refs, perCategory: Object.fromEntries(seeds.map(s => [s.seed.replace(/^repo:/, ''), s.rows.length])) };
 }

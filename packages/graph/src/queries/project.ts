@@ -362,7 +362,7 @@ ORDER BY scenes DESC
 LIMIT $n`),
 
   /* ───── the visual system: which artifacts a scene uses ───── */
-  useArtifact: q('useArtifact', false, 'The art director puts an artifact in a scene’s slot: (Scene)-[:USES_ARTIFACT {slot}]->(Artifact), with the layout it sits in.', `
+  useArtifact: q('useArtifact', false, 'The art director puts an artifact in a scene’s slot: (Scene)-[:USES_ARTIFACT {slot}]->(Artifact), with the layout it sits in. A live style’s insert borrowed from the library graph is slot `library`, layout = the style.', `
 MATCH (r:Run {id: $run})
 MERGE (s:Scene {id: $scene})
   ON CREATE SET s.i = $i

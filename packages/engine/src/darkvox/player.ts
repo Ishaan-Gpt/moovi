@@ -8,6 +8,7 @@
  * from film.tokens (packages/library/src/dark-vox/tokens.ts). `?t=<s>` renders one still. Nothing is encoded.
  */
 import { servePlayer } from '../s4/player';
+import { libLayer } from '../styles/kit/liblayer';
 import { stageSource } from './stage';
 
 export const PAGE = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dark Vox preview</title>
@@ -250,7 +251,8 @@ sl.oninput = () => { a.currentTime = sl.value / 1000 * dur(); };
 (function loop() { render(a.currentTime); sl.value = Math.round(a.currentTime / dur() * 1000); tl.textContent = a.currentTime.toFixed(1) + ' / ' + dur().toFixed(1); requestAnimationFrame(loop); })();
 window.__ready = true;
 })().catch(e => { document.body.insertAdjacentHTML('beforeend', '<pre style="color:#f66;padding:16px;position:absolute;top:0">' + String(e && e.stack || e) + '</pre>'); window.__error = String(e); });
-</script></body></html>`;
+</script>
+<script>${libLayer()}</script></body></html>`;
 
 /** Serve <dir>/film.json (a Dark Vox film) with its pictures and audio on the Dark Vox player. */
 export const serveDarkVox = (dir: string, port = 0) => servePlayer(dir, port, PAGE);
