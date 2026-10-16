@@ -60,6 +60,32 @@ export function sentences(ws: Word[]): number[] {
  * the pause's start; inside it (longer than quiet_max), the word keeps its longer side. A word a pause covers whole,
  * or one that would shrink under `minWord`, keeps its times. Pure; returns new words in the same order.
  */
+/**
+ * Words the hearing gave no length (t === end: the accurate text laid onto a coarse timing collapses a word onto its
+ * neighbour's edge) get a share of the time around them instead of being dropped: a run of them and its two
+ * neighbours split the span from the word before to the word after by letter count (2 letters at least each). Before
+ * this, "it will edit your videos in 5 minutes" captioned as "it will your in 5 minutes" (B1, Atlas and Handmade).
+ * Pure; words already with a length keep their order and their outer edges.
+ */
+export function spreadZeroWords(ws: Word[]): Word[] {
+  const out = ws.map(w => ({ ...w }));
+  const zero = (w: Word) => !(w.end > w.t) && !!w.word.trim();
+  for (let i = 0; i < out.length; i++) {
+    if (!zero(out[i]!)) continue;
+    let j = i; while (j + 1 < out.length && zero(out[j + 1]!)) j++;
+    const a = i > 0 && !zero(out[i - 1]!) ? i - 1 : i, b = j + 1 < out.length ? j + 1 : j;
+    const t0 = out[a]!.t, t1 = Math.max(out[b]!.end, out[b]!.t);
+    if (t1 - t0 > 0.02) {
+      const span = out.slice(a, b + 1), wt = span.map(w => Math.max(2, w.word.replace(/[^\p{L}\p{N}]/gu, '').length)), tot = wt.reduce((x, y) => x + y, 0);
+      let t = t0;
+      span.forEach((w, k) => { const d = (t1 - t0) * wt[k]! / tot; w.t = +t.toFixed(3); w.end = +(t + d).toFixed(3); t += d; });
+      span[span.length - 1]!.end = +t1.toFixed(3);
+    }
+    i = j;
+  }
+  return out;
+}
+
 export function fitWords(ws: Word[], quiet: [number, number][], quietMax = DEFAULT_LAWS.quiet_max, minWord = 0.06): Word[] {
   const tol = 0.05;
   return ws.map(w0 => {
@@ -151,7 +177,7 @@ export function buildEdl(i: BuildInput): Edl {
   const L: Laws = { ...DEFAULT_LAWS, ...(i.laws ?? {}) }, src = i.source, dur = src.duration;
   const out = i.style?.output ?? { w: 1080, h: 1920, fps: 30, aspect: '9:16' };
   const qs = (i.quiet ?? []).filter(([a, b]) => b > a);
-  const ws = fitWords(i.words.filter(w => w.end > w.t && w.t < dur && w.word.trim()).map(w => ({ ...w, end: Math.min(w.end, dur) })), qs, L.quiet_max).sort((a, b) => a.t - b.t);
+  const ws = fitWords(spreadZeroWords(i.words).filter(w => w.end > w.t && w.t < dur && w.word.trim()).map(w => ({ ...w, end: Math.min(w.end, dur) })), qs, L.quiet_max).sort((a, b) => a.t - b.t);
   const ps = (i.pauses ?? []).filter(([a, b]) => b > a);
   const removed: EdlRemoved[] = [];
 
