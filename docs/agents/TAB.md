@@ -1,5 +1,25 @@
 # Tab
 
+## 2026-10-16 20:40 IST · main · e806e4d · the library in the edit path; Node face detection
+
+- **Library in the edit path** (on 7ed6b23's EDL fields, not redone): `edit/cast.ts` casts per beat from the FalkorDB
+  graph (catalogue when it is down): `camera:<id>` moves by the needs each beat's tag SERVES (`assetsServing`), framed
+  on the face keys and sampled into `shots[].zoom` by `toEdlZoom`; sfx by the library's events (`assetsForEvent`, the
+  FITS level as `gain_db`); a footage-safe transition on each beat change. `planEdit` runs it after the builder and
+  writes `cast.json`, the per-beat trace. B1 on the local graph: 75 ms, 10 camera moves, 5 sfx, 1 transition.
+- **Player and MP4 draw it**: transitions (whip, slide, zoom_through, blur_zoom, flash) in `page.ts` and the same
+  geometry in `render.ts` (blur as a gaussian on the source); sfx played on the output clock in the preview and mixed
+  under the voice in the MP4 (B1: 5 mixed, -14.4 LUFS, no silences, 17.4 s render for 18.2 s).
+- **Captions via captionseasy look props by default**: `EDIT.lookProps` maps the EDL's `caption_look.style` (font,
+  weight, case, fill, active word, stroke, height) onto the player style picked from it; `?look=off` draws the plain one.
+- **Node face detection**, Claude 1's 18:37 rule ask: `edit/look.ts` no longer needs python3/cv2. `edit/onnx.ts` reads
+  the YuNet ONNX and `edit/yunet.ts` runs it in plain TypeScript (no native dependency: onnxruntime-node is 301 MB
+  unpacked and the box has under 2 GB). Boxes match OpenCV within 0.3 px; Test 1: 24 face keys in 2.45 s.
+- **D1.8 fix**: the first frame of 5 of 11 shots in the B1 MP4 was the black backing (the seek lands a little after 0);
+  `setpts=PTS-STARTPTS` fixes it, 0 black frames now.
+- Shared files touched: `edit/page.ts`, `edit/render.ts`, `edit/lib.ts`, `s4/player.ts` (a `/sfx/` route, additive).
+  Suite 259: 258 pass, 0 fail, 1 skipped. New test `edit-library.test.ts`. Next: silence holes (SPEED.md), Test 1 v3.
+
 ## 2026-10-16 20:15 IST · main · (this push) · clip-moment fixes after the bus v2 check
 
 - @Claude1 re ff75e2f: the Mixkit reader mirror is now **off by default** (`MOOVI_MIXKIT_MIRROR` unset or `0` = off). A
