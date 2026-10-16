@@ -113,3 +113,14 @@ test('a zero-length word from speech-to-text is kept and captioned, not dropped 
   assert.ok(m.src_t1 > m.src_t0 && m.src_t1 <= 5.6);
   assert.equal(EDIT.outWords(e).length, 3);
 });
+
+test('landscape into vertical: the stand-in fits the clip over a blurred fill; faces steer the crop', () => {
+  const wide = { ...SRC, w: 848, h: 478 };
+  const e = roughEdl(wide, WORDS, { palette: PAL });
+  assert.ok(e.shots.every(s => s.layout === 'fit' && s.bg?.mode === 'blur'));
+  assert.ok(roughEdl(SRC, WORDS, { palette: PAL }).shots.every(s => s.layout === 'full'), 'a vertical clip stays full frame');
+  // a face on the right third pulls the cover crop right; no faces: centred
+  const f: PlayerEdl = { ...e, shots: e.shots.map(s => ({ ...s, layout: 'full' as const })), faces: [{ src_t: 0, x: 0.7, y: 0.3, w: 0.12, h: 0.2 }, { src_t: 20, x: 0.7, y: 0.3, w: 0.12, h: 0.2 }] };
+  assert.ok(EDIT.cropAt(f, 1).px > 70, `px ${EDIT.cropAt(f, 1).px}`);
+  assert.deepEqual(EDIT.cropAt(e, 1), { px: 50, py: 50 });
+});

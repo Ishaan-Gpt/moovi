@@ -13,7 +13,9 @@ export interface EdlWord { src_t0: number; src_t1: number; text: string; role?: 
 export interface EdlZoom { t: number; scale: number; cx: number; cy: number; ease?: 'out' | 'inout' | 'linear' | 'cut'; dur?: number }
 export interface EdlShot {
   t_in: number; t_out: number; src_in: number; src_out: number;
-  layout?: 'full' | 'split_top' | 'split_bottom' | 'card' | 'pip' | 'grid' | 'full_insert';
+  layout?: 'full' | 'fit' | 'split_top' | 'split_bottom' | 'card' | 'pip' | 'grid' | 'full_insert';
+  /** 'blur': the same footage, blurred, fills the frame behind a 'fit' shot (a landscape clip in a vertical film) */
+  bg?: { mode: 'original' | 'blur' | 'matte_fill' | 'matte_texture'; role?: Role; asset_ref?: string };
   framing?: { scale: number; cx: number; cy: number };
   zoom?: EdlZoom[];
 }
@@ -27,6 +29,8 @@ export interface PlayerEdl {
   words: EdlWord[];
   shots: EdlShot[];
   inserts?: EdlInsert[];
+  /** face boxes in SOURCE time, fractions of the source frame (the look step); the crop follows them */
+  faces?: { src_t: number; x: number; y: number; w: number; h: number }[];
 }
 
 /** R8's caption schema, the part the player draws (docs/agents/research/R8-captions.md). */
@@ -164,7 +168,31 @@ export function editLib() {
   const posY = (p: CaptionStyle['position']) => POS[p] ?? 0.66;
   const caseOf = (s: string, c: string) => c === 'upper' ? s.toUpperCase() : c === 'lower' ? s.toLowerCase() : c === 'title' ? s.replace(/\b\p{L}/gu, m => m.toUpperCase()) : s;
 
-  return { clamp, easeOut, easeInOut, back, timeline, shotAt, srcAt, outOf, framingAt, outWords, chunk, captionAt, entryOf, sizePx, posY, caseOf };
+  /** The face centre at source second `src` (linear between samples), or null when the EDL has no faces. */
+  function faceAt(e: PlayerEdl, src: number): { x: number; y: number } | null {
+    const f = e.faces; if (!f || !f.length) return null;
+    let k = 0; while (k + 1 < f.length && f[k + 1]!.src_t <= src) k++;
+    const a = f[k]!, b = f[k + 1], c = (q: typeof a) => ({ x: q.x + q.w / 2, y: q.y + q.h / 2 });
+    if (!b || src <= a.src_t) return c(a);
+    const u = clamp((src - a.src_t) / Math.max(1e-6, b.src_t - a.src_t)), A = c(a), B = c(b);
+    return { x: A.x + (B.x - A.x) * u, y: A.y + (B.y - A.y) * u };
+  }
+
+  /**
+   * Where a 'full' (cover) shot crops the source, as CSS object-position percentages: centred on the face when the
+   * EDL has faces (the face sits a little above the middle), else centred. A landscape clip in a vertical film shows
+   * about a third of its width, so without this the speaker drifts out of frame.
+   */
+  function cropAt(e: PlayerEdl, t: number): { px: number; py: number } {
+    const sa = e.source.w / e.source.h, oa = e.output.w / e.output.h, f = faceAt(e, srcAt(e, t));
+    if (!f) return { px: 50, py: 50 };
+    const pos = (centre: number, visible: number) => visible >= 1 ? 50 : 100 * clamp((centre - visible / 2) / (1 - visible));
+    // visible fraction of the source along each axis under object-fit: cover
+    const vw = sa > oa ? oa / sa : 1, vh = sa > oa ? 1 : sa / oa;
+    return { px: pos(f.x, vw), py: pos(f.y + 0.08, vh) };
+  }
+
+  return { faceAt, cropAt, clamp, easeOut, easeInOut, back, timeline, shotAt, srcAt, outOf, framingAt, outWords, chunk, captionAt, entryOf, sizePx, posY, caseOf };
 }
 
 export const EDIT = editLib();
