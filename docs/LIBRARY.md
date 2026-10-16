@@ -7,20 +7,39 @@ one implementation per runtime. The spec is `docs/agents/research/R7-library-nod
 ## The shape
 
 ```
-(:Asset {id:'<category>:<slug>', category, name, about, runtime[], licence, credit, ship, attribution, file,
-         vendored, energy, tags[], params(JSON), impl(JSON runtime→code ref), seed, src})
+(:Asset {id:'<category>:<slug>', category, name, about, runtime[], licence (code), licenceUrl, sourceUrl, author, title,
+         credit, ship, attribution, redistributable, file, vendored, sha256, rev, retired, energy, tags[],
+         params(JSON, typed per category), impl(JSON runtime→code ref), seed, src})
   -[:SERVES {w}]->(:Need)          what a beat needs: hook, number, list, compare, cta, calm…
-  -[:FITS {gainDb, first}]->(:Event)  sfx: which edit event it sounds on (engine sfx map)
-  -[:SUITS]->(:EditStyle)          the edit styles it belongs to
+  -[:FITS {gainDb, first}]->(:Event {aliases[]})  sfx: the edit event it sounds on; aliases are the EDL's names
+  -[:SUITS {w, src}]->(:EditStyle) R4's six styles (atlas, night-desk, handmade, crimson-cutout, brand-promo,
+                                   studio-minimal), w 0..1; src 'cast' (the style's list) or 'row' (the asset's own)
   -[:IS_A]->(:Transition)          a transition's family
+  -[:FALLBACK {runtime}]->(:Asset) what to play where this one does not run (a caption look → its browser style)
+(:Asset)-[:REPLACED_BY]->(:Asset)  ids never change once shipped; dropped assets are retired, never deleted
 (:Reference {id, url, title})-[:HAS_PART {role, at, note}]->(:Asset)   a video reference broken into parts
 (:Kit {palette, type, motion, frame, src})-[:HAS {role}]->(:Asset)     a look as one re-skinnable unit
 (:Reference)-[:TAUGHT]->(:Kit)
 ```
 
-Categories: voice, sfx, music, caption, transition, effect, camera, ui, 3d, insert.
-On 2026-10-16 the graph held **755 assets**: 263 insert, 138 ui, 109 effect, 76 camera, 63 voice, 30 music,
-26 transition, 22 sfx, 15 3d and 13 caption. Voices are not shippable yet because they need their licence checked.
+Categories: voice, sfx, music, caption, transition, effect, camera, ui, 3d, insert, and (for the six edit styles)
+grade, overlay, font, texture, end_card. On 2026-10-16 (evening) the graph held **about 950 assets**, among them
+123 captions (the preview's 11 R8 styles, the 99 numbered looks, the kits' own), 39 transitions (one
+`transition:cut-<type>` per EDL cut type), 7 grades, 11 overlays, 5 end cards, 31 fonts and 5 textures.
+
+**Tab's R7 review, how each point landed** (code: `packages/graph/src/{library,licence}.ts`,
+`packages/engine/src/library/{catalog,edit-styles,params,seed}.ts`, tests: `engine/test/library.test.ts`):
+
+| # | Point | What the library does now |
+|---|---|---|
+| 1 | one id everywhere | every id is a valid EDL `asset_ref`; vendored files carry `sha256`, every node a `rev`; a dropped asset is `retired` (kept), a replacement links `REPLACED_BY`; `resolveAsset` follows it |
+| 2 | licence and credit | `licence` is a code (`CC0-1.0`, `CC-BY-4.0`, `MIT`, `OFL-1.1`, `mixkit`, `unverified`, …); `ship`, `attribution`, `redistributable` derive from it; `licenceUrl`, `sourceUrl`, `author`, `title`, `credit`. The bed is CC-BY-4.0 (style-1's "copyrighted-local-only" bed is a different file, not in the library). Edge voices are `unverified`, so they don't ship |
+| 3 | fetched clips | the footage hunter writes every accepted clip as `insert:clip-<provider>-<ref>` (`upsertClipAssets`), as `ref-footage` does for clones |
+| 4 | new categories | grade (ffmpeg + CSS filter per style), overlay (the EDL's 11 kinds), font (R8's 19 OFL + 12), texture, end_card; effects carry `params.kind` (move, overlay, type); all 17 X1 moves are findable (`assetsByX1`), unbuilt ones as spec rows tagged `unbuilt` |
+| 5 | transitions | each of the EDL's 13 cut types is `transition:cut-<type>` with `dur`, `needs_overlap` and a craft family (`transitionForCut` returns it and the family's other implementations) |
+| 6 | vocabularies | SUITS on the six style ids with a weight (`styleCast`); `paper-craft` is now `handmade`; Event names are kept, the EDL's sfx events are aliases (`assetsForEvent` takes either) |
+| 7 | typed params | sfx `dur`, `peak_ms`, `lufs` (measured: `scripts/library-measure.ts` → `assets/library-measure.json`); music `bpm`, `beats`, `dur`, `loop`, `end_button_at`, `mood`; transition `dur`, `needs_overlap`; caption R8's CaptionStyle; voice `lang`, `engine`; zod schemas in `params.ts`, checked by the test |
+| 8 | runtimes, determinism | `browser` (the preview draws it), `ffmpeg` (the MP4 path), `edl` (a contract both read); `FALLBACK` edges; every list query orders by weight or rank, then id |
 
 ## Commands (FalkorDB must be running: `pnpm falkordb`)
 
@@ -33,7 +52,9 @@ On 2026-10-16 the graph held **755 assets**: 263 insert, 138 ui, 109 effect, 76 
 | `pnpm --filter @moovi/engine exec tsx scripts/camera-layer.ts <camera-moves.json>` | seeds the camera layer's moves (branch `ishaan/camera-layer`) |
 
 `scripts/reset.ts` re-seeds the library. **After a craft-graph reset, run `reference` again for each reference and
-`camera-layer` too**, because those are not part of the catalogue yet.
+`camera-layer` too**, because those are not part of the catalogue yet. Each of these scripts ends by rebuilding the
+cross-seed links (`seedCrossLinks`: event aliases, the six styles' cast, X1 tags).
+After adding a sound, run `scripts/library-measure.ts` so its typed params are measured.
 
 ## Kits (`packages/library/src/kits/`)
 

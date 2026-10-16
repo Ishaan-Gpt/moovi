@@ -15,8 +15,13 @@
  *   3d          render3d looks + visual three.js objects
  *   insert      the generation styles' set-ups (Style 1 scenes, Editorial, Clear Signal, Anatomy, Dark Vox):
  *               designed scenes an edit can cut in, cast by need (R4b)
+ *   grade, overlay, end_card, font, texture, the EDL cut types and X1: ./edit-styles.ts (Tab's R7 review)
+ *
+ * Runtimes (Tab's point 8): `browser` = the live edit preview draws it, `ffmpeg` = the MP4 path (the mixer, ASS
+ * captions, footage-edit), `edl` = a contract both renderers read from the EDL; the rest are a style's own runtime.
  */
-import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { AssetRow } from '@moovi/graph';
@@ -29,11 +34,19 @@ import { S5_LIBRARY as S5 } from '../s5/library';
 import { SETUPS as ANATOMY } from '../anatomy/library';
 import { DV_SETUPS as DARKVOX } from '../darkvox/library';
 import { isNeed } from '../styles/kit/needs';
+import { CAPTION_STYLES } from '../edit/captions';
+import { lookMap } from '../edit/looks';
+import { listLooks } from 'captionseasy';
+import { X1, edlCuts, endCards, fonts, grades, overlays, textures, x1Specs } from './edit-styles';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ASSETS = join(here, '../../assets');
+const ROOT = join(here, '../../../..');
 const REPO_ASSETS = 'packages/engine/assets';
 interface CraftTrack { id: string; mood: string; bpm: number; beat: number; starts: number[]; energy: number; feel: string; length: string; src: string; credit: string }
+/** scripts/library-measure.ts: duration, attack peak and loudness of every vendored sound */
+const MEASURE = (() => { try { return JSON.parse(readFileSync(join(ASSETS, 'library-measure.json'), 'utf8')) as Record<string, { dur: number; peak_ms: number; peak_dbfs: number | null; lufs: number | null }>; } catch { return {}; } })();
+const secondsOf = (len: string) => { const m = /^(\d+):(\d{1,2})/.exec(len ?? ''); return m ? Number(m[1]) * 60 + Number(m[2]) : null; };
 const craftTracks = () => (JSON.parse(readFileSync(join(here, '../../../graph/data/craft.json'), 'utf8')) as { tracks: CraftTrack[] }).tracks;
 
 /** The same scrub the reset runs on craft (scripts/reset.ts): no brand or client-film names in the shared graph. */
@@ -55,7 +68,7 @@ export function voices(): Row[] {
     runtime: ['edge-tts'], impl: { 'edge-tts': v.id },
     licence: 'edge-tts (unofficial endpoint)', credit: 'Microsoft Edge neural voice', ship: false, attribution: false, file: null, vendored: false,
     energy: v.energy, tags: [v.lang, v.locale, v.accent, v.gender, v.age, ...v.tone, ...v.use, ...(v.multilingual ? ['multilingual'] : [])],
-    params: { locale: v.locale, lang: v.lang, multilingual: !!v.multilingual }, src: 'packages/engine/src/audio/voices.ts',
+    params: { locale: v.locale, lang: v.lang, engine: 'edge-tts', multilingual: !!v.multilingual }, src: 'packages/engine/src/audio/voices.ts',
   }));
 }
 
@@ -74,9 +87,9 @@ function sfxCredits(): Map<string, { by: string; url: string }> {
 
 function sfxLicence(file: string, credits: Map<string, { by: string; url: string }>) {
   const stem = file.replace(/\.wav$/, ''), c = credits.get(stem) ?? credits.get(stem.replace(/^kenney[-.]/, 'kenney.'));
-  if (/^(fs|kenney)/.test(file)) return { licence: 'CC0 1.0', credit: c ? `${c.by}, ${c.url}` : file.startsWith('kenney') ? 'Kenney (kenney.nl)' : 'freesound.org (CC0)' };
-  if (/^riser|^ui-riser/.test(file)) return { licence: 'MIT (synthesised in this repo, scripts/make-risers.ts)', credit: null };
-  return { licence: 'MIT (synthesised tones)', credit: null };
+  if (/^(fs|kenney)/.test(file)) return { licence: 'CC0-1.0', credit: c ? `${c.by}, ${c.url}` : file.startsWith('kenney') ? 'Kenney (kenney.nl)' : 'freesound.org (CC0)', author: c?.by ?? (file.startsWith('kenney') ? 'Kenney' : null), sourceUrl: c?.url ?? (file.startsWith('kenney') ? 'https://kenney.nl' : 'https://freesound.org') };
+  if (/^riser|^ui-riser/.test(file)) return { licence: 'MIT', credit: null, author: 'Moovi (scripts/make-risers.ts)', sourceUrl: null };
+  return { licence: 'MIT', credit: null, author: 'Moovi (synthesised tones)', sourceUrl: null };
 }
 
 export function sfx(): Row[] {
@@ -91,13 +104,13 @@ export function sfx(): Row[] {
       const hits = [...e.sounds.map((id, i) => ({ id, first: i === 0, db: e.level_db })), ...(e.then ? [{ id: e.then.sound, first: false, db: e.then.level_db }] : [])].filter(h => ids.includes(h.id));
       return hits.length ? [{ event, gainDb: hits[0]!.db, first: hits.some(h => h.first) }] : [];
     });
-    const { licence, credit } = sfxLicence(file, credits);
+    const { licence, credit, author, sourceUrl } = sfxLicence(file, credits);
     return row({
       id: `sfx:${file.replace(/\.wav$/, '').replace(/\./g, '-').toLowerCase()}`, category: 'sfx', name: ids.join(' / '),
-      about: meta?.use ?? `sound ${ids.join(', ')}`, runtime: ['mixer'], impl: { mixer: ids.join(',') },
-      licence, credit, ship: true, attribution: false, file: `${REPO_ASSETS}/sfx/${file}`, vendored: true, energy: null,
+      about: meta?.use ?? `sound ${ids.join(', ')}`, runtime: ['mixer', 'ffmpeg'], impl: { mixer: ids.join(','), ffmpeg: `${REPO_ASSETS}/sfx/${file}` },
+      licence, credit, author, sourceUrl, title: file, file: `${REPO_ASSETS}/sfx/${file}`, vendored: true, energy: null,
       tags: [...new Set([meta?.role ?? 'other', ...(meta?.tags ?? [])])],
-      params: { align: s0.align ?? 'start', slices: s0.slices ?? null, sliceLen: s0.slice_len ?? null, duration: meta?.duration ?? null, peakAt: meta?.peakAt ?? null },
+      params: { align: s0.align ?? 'start', slices: s0.slices ?? null, sliceLen: s0.slice_len ?? null, ...(MEASURE[`sfx/${file}`] ?? { dur: meta?.duration ?? 0, peak_ms: Math.round((meta?.peakAt ?? 0) * 1000), peak_dbfs: null, lufs: null }) },
       src: 'packages/engine/assets/sfx/map.json', events,
     });
   });
@@ -107,16 +120,20 @@ export function sfx(): Row[] {
 export function music(): Row[] {
   const bed = JSON.parse(readFileSync(join(ASSETS, 'music/bed.json'), 'utf8')) as { file: string; start: number; credit: string };
   const rows: Row[] = [row({
+    // the licence settled on the node (Tab's point 2): engine/assets/music/bed.mp3 is Kevin MacLeod's "Funkorama", CC BY 4.0
+    // (bed.json and assets/CREDITS.md agree). style-1/music.ts's 'copyrighted-local-only' is a different file, the
+    // owner's 29.7 s track (MotionEasy's style-1 bed.mp3), which is never vendored and is not in this library.
     id: 'music:funkorama', category: 'music', name: 'Funkorama (excerpt)', about: 'the shipped bed: driving, upbeat, clean funk; enters on a strong beat',
-    runtime: ['mixer'], impl: { mixer: 'bed' }, licence: 'CC BY 4.0', credit: bed.credit, ship: true, attribution: true,
+    runtime: ['mixer', 'ffmpeg'], impl: { mixer: 'bed', ffmpeg: `${REPO_ASSETS}/music/${bed.file}` }, licence: 'CC-BY-4.0', credit: bed.credit,
+    author: 'Kevin MacLeod', title: 'Funkorama', sourceUrl: 'https://incompetech.com',
     file: `${REPO_ASSETS}/music/${bed.file}`, vendored: true, energy: 4, tags: ['driving', 'upbeat', 'clean', 'funk'],
-    params: { bpm: 136, start: bed.start, gainDb: -3 }, src: 'packages/engine/assets/music/bed.json',
+    params: { bpm: 136, start: bed.start, gainDb: -3, dur: MEASURE[`music/${bed.file}`]?.dur ?? null, loop: false, end_button_at: null, mood: ['driving', 'upbeat', 'clean'], beats: [bed.start], lufs: MEASURE[`music/${bed.file}`]?.lufs ?? null }, src: 'packages/engine/assets/music/bed.json',
   })];
   for (const t of craftTracks()) rows.push(row({
     id: `music:${t.id}`, category: 'music', name: t.id.replace(/-/g, ' '), about: `${t.mood} bed: ${t.feel}`,
-    runtime: ['mixer'], impl: { craft: t.id }, licence: 'CC BY 4.0', credit: t.credit, ship: true, attribution: true,
+    runtime: ['mixer', 'ffmpeg'], impl: { craft: t.id }, licence: 'CC-BY-4.0', credit: t.credit, author: t.credit.match(/by ([^(,]+)/)?.[1]?.trim() ?? null, title: t.id.replace(/-/g, ' '), sourceUrl: t.credit.match(/https?:\/\/\S+/)?.[0] ?? null,
     file: t.src, vendored: false, energy: Math.max(1, Math.min(5, Math.round(t.energy * 5))), tags: [t.mood, ...t.feel.toLowerCase().split(/,\s*/)],
-    params: { bpm: t.bpm, beat: t.beat, starts: t.starts, energy: t.energy, length: t.length }, src: 'packages/graph/data/craft.json',
+    params: { bpm: t.bpm, beat: t.beat, starts: t.starts, energy: t.energy, length: t.length, dur: secondsOf(t.length), loop: false, end_button_at: null, mood: [t.mood], beats: t.starts }, src: 'packages/graph/data/craft.json',
   }));
   return rows;
 }
@@ -130,6 +147,23 @@ export function captions(): Row[] {
     row({ ...OWN, id: 'caption:visual-band', category: 'caption', name: 'Visual caption band', about: 'the visual renderer’s caption band: dark ink on its stage, white on a dark scrim when the backdrop is video', runtime: ['visual'], impl: { visual: 'compose.caption' }, energy: 2, tags: ['clean', 'word-timed', 'footage-safe'], params: { invertsOnVideo: true }, src: 'packages/engine/src/visual/page/compose.js' }),
   ];
   const phone: Record<string, string> = { plain: 'plain words on a phone mock’s screen', stroke: 'outlined words on a phone screen (the film default)', box: 'words on a box on a phone screen', hormozi: 'hero word in a coloured box, the chunk swapping on frames, on a phone screen' };
+  // the edit preview's 11 caption styles (R8; what an EDL's caption_style_id carries), drawn by the browser player
+  for (const c of CAPTION_STYLES) rows.push(row({
+    ...OWN, id: `caption:${c.id}`, category: 'caption', name: `${titleOf(c.id)} captions`, about: `${c.family} captions in ${c.font.family}, ${c.font.case}, size ${c.size}; ${c.chunk.mode} chunks, ${c.entry} entry, ${c.position}`,
+    runtime: ['browser'], impl: { browser: c.id }, energy: c.energy, tags: [c.family, 'word-timed', 'footage-safe', 'r8'],
+    params: { ...c } as Record<string, unknown>, src: 'packages/engine/src/edit/captions.ts', fallback: { ffmpeg: 'caption:ass-accent' },
+  }));
+  // the 99 numbered caption looks (Ishaan's look package): stored in the EDL's caption_look; the preview draws the nearest
+  // player style instead, so each look falls back to it in the browser
+  const meta = new Map(listLooks().map(l => [l.id, l]));
+  for (const l of lookMap()) {
+    const m = meta.get(l.id)!;
+    rows.push(row({
+      ...OWN, id: `caption:${l.id}`, category: 'caption', name: `Look ${l.number}: ${m.name}`, about: m.description, runtime: ['look'], impl: { look: String(l.number) },
+      energy: null, tags: ['look', m.section, ...m.tags.map(t => t.toLowerCase())], params: { number: l.number, layout: l.layout, wordsPerCard: m.wordsPerCard, player_style: l.player_style },
+      src: 'packages/engine/src/edit/looks.ts', fallback: { browser: `caption:${l.player_style}` },
+    }));
+  }
   for (const s of PHONE_CAPTION.styles) rows.push(row({ ...OWN, id: `caption:phone-${s}`, category: 'caption', name: `Phone caption, ${s}`, about: phone[s]!, runtime: ['style1'], impl: { style1: `phoneCaption.${s}` }, energy: s === 'hormozi' ? 5 : 3, tags: ['phone-prop', 'not-on-footage'], params: { style: s }, src: 'packages/library/src/style-1/props.ts' }));
   return rows;
 }
@@ -149,14 +183,14 @@ export function transitions(): Row[] {
   const s1 = Object.values(TRANSITIONS).map(t => row({
     ...OWN, id: `transition:${t.id}`, category: 'transition', name: titleOf(t.id), about: t.use, runtime: ['style1'], impl: { style1: t.id }, energy: null,
     tags: [t.kind, NOT_ON_FOOTAGE.has(t.id) ? 'not-on-footage' : t.kind === 'slide' ? 'footage-with-overscan' : 'footage-safe'],
-    params: { kind: t.kind, frames: t.frames, easing: t.easing, push: (t as { push?: number }).push ?? null, sfx: t.sfx.map(s => s.id) },
+    params: { kind: t.kind, frames: t.frames, easing: t.easing, push: (t as { push?: number }).push ?? null, sfx: t.sfx.map(s => s.id), dur: +((t.frames ?? 0) / 30).toFixed(3), needs_overlap: String(t.kind) !== 'cut' && (t.frames ?? 0) > 1 },
     src: 'packages/library/src/style-1/transitions.ts', family: S1_FAMILY[t.id] ?? null,
   }));
   const vis = Object.entries(VISUAL_TRANSITIONS).map(([id, [family, about]]) => row({
     ...OWN, id: `transition:visual-${id}`, category: 'transition', name: `${titleOf(id)} (3D)`, about, runtime: ['visual'], impl: { visual: id }, energy: null,
-    tags: [family, 'footage-safe', 'motion-blur'], params: { seconds: 0.5 }, src: 'packages/engine/src/visual/page/motion.js', family,
+    tags: [family, 'footage-safe', 'motion-blur'], params: { seconds: 0.5, dur: 0.5, needs_overlap: true }, src: 'packages/engine/src/visual/page/motion.js', family,
   }));
-  return [...s1, ...vis];
+  return [...s1, ...vis, ...edlCuts()];
 }
 
 /* ───────────────────────────── effects ───────────────────────────── */
@@ -181,7 +215,8 @@ export function effects(): Row[] {
     ...OWN, id: `effect:${a.id.replace(':', '-')}`, category: 'effect', name: a.name, about: `${a.kind === 'bg' ? 'backdrop' : a.kind}: ${a.name}`, runtime: ['visual'], impl: { visual: a.id }, energy: null,
     tags: [a.kind, ...a.role], params: { cost: a.cost }, src: 'packages/engine/src/visual/artifacts.ts', needs: needsOf(a.needs),
   }));
-  return [...s1, ...text, ...enters, ...idles, ...ambient];
+  const kind = (r: Row) => r.tags.includes('type') ? 'type' : ['particles', 'glow', 'bg'].some(k => r.tags.includes(k)) ? 'overlay' : 'move';
+  return [...s1, ...text, ...enters, ...idles, ...ambient].map(r => ({ ...r, params: { ...r.params, kind: kind(r) } }));
 }
 
 /* ───────────────────────────── camera ───────────────────────────── */
@@ -262,11 +297,32 @@ export function inserts(): Row[] {
   ];
 }
 
+/** sha256 of a vendored file (the exact bytes an EDL pins), memoised */
+const SHA = new Map<string, string | null>();
+function sha256Of(file: string | null) {
+  if (!file) return null;
+  if (!SHA.has(file)) { const p = join(ROOT, file); SHA.set(file, existsSync(p) ? createHash('sha256').update(readFileSync(p)).digest('hex') : null); }
+  return SHA.get(file)!;
+}
+
+/** X1 numbers each catalogue asset implements (by the X1 table's existing ids), as `x1:NN` tags. */
+function withX1(rows: Row[]): Row[] {
+  const by = new Map<string, string[]>();
+  for (const [n, [, , ids]] of Object.entries(X1)) for (const id of ids) by.set(id, [...(by.get(id) ?? []), n]);
+  return rows.map(r => by.has(r.id) ? { ...r, tags: [...new Set([...r.tags, ...by.get(r.id)!.map(n => `x1:${n}`)])] } : r);
+}
+
 /** The whole library, one seed name per source so a reseed retires only what that source dropped. */
 export function catalogue(): { seed: string; rows: Row[] }[] {
-  return [
+  const seeds = [
     { seed: 'repo:voice', rows: voices() }, { seed: 'repo:sfx', rows: sfx() }, { seed: 'repo:music', rows: music() },
     { seed: 'repo:caption', rows: captions() }, { seed: 'repo:transition', rows: transitions() }, { seed: 'repo:effect', rows: effects() },
     { seed: 'repo:camera', rows: camera() }, { seed: 'repo:ui', rows: ui() }, { seed: 'repo:3d', rows: threeD() }, { seed: 'repo:insert', rows: inserts() },
-  ];
+    { seed: 'repo:grade', rows: grades() }, { seed: 'repo:overlay', rows: overlays() }, { seed: 'repo:end_card', rows: endCards() },
+    { seed: 'repo:font', rows: fonts(ROOT) }, { seed: 'repo:texture', rows: textures() },
+  ].map(s => ({ ...s, rows: withX1(s.rows) }));
+  // an X1 move counts as built when a catalogue asset carries its number; the others get a spec row (tag `unbuilt`)
+  const built = new Set(seeds.flatMap(s => s.rows).filter(r => !r.tags.includes('unbuilt')).flatMap(r => r.tags.filter(t => t.startsWith('x1:')).map(t => t.slice(3))));
+  seeds.find(s => s.seed === 'repo:effect')!.rows.push(...x1Specs(built));
+  return seeds.map(s => ({ ...s, rows: s.rows.map(r => r.vendored && r.file ? { ...r, sha256: sha256Of(r.file) } : r) }));
 }

@@ -1,0 +1,140 @@
+{
+ "sfx/fs-147282.wav": {
+  "dur": 0.959,
+  "peak_ms": 537,
+  "peak_dbfs": -1.9,
+  "lufs": -14.9
+ },
+ "sfx/fs-147285.wav": {
+  "dur": 0.669,
+  "peak_ms": 217,
+  "peak_dbfs": -2.4,
+  "lufs": -13.1
+ },
+ "sfx/fs-671917.wav": {
+  "dur": 1.691,
+  "peak_ms": 1553,
+  "peak_dbfs": -0.9,
+  "lufs": -17.1
+ },
+ "sfx/fs.foley.very-fast-typing-short.wav": {
+  "dur": 2.104,
+  "peak_ms": 8,
+  "peak_dbfs": -1.8,
+  "lufs": -29
+ },
+ "sfx/fs.foley.water-drop-splash.wav": {
+  "dur": 1.084,
+  "peak_ms": 611,
+  "peak_dbfs": -1,
+  "lufs": -19.7
+ },
+ "sfx/fs.foley.water-drop.wav": {
+  "dur": 1.583,
+  "peak_ms": 20,
+  "peak_dbfs": -1,
+  "lufs": -21.6
+ },
+ "sfx/fs.impact.punch2.wav": {
+  "dur": 0.352,
+  "peak_ms": 120,
+  "peak_dbfs": -0.3,
+  "lufs": null
+ },
+ "sfx/fs.impact.soft-hit.wav": {
+  "dur": 0.258,
+  "peak_ms": 17,
+  "peak_dbfs": -1,
+  "lufs": null
+ },
+ "sfx/fs.ui.mouse-2-button-fast-click.wav": {
+  "dur": 0.203,
+  "peak_ms": 110,
+  "peak_dbfs": -5.2,
+  "lufs": null
+ },
+ "sfx/fs.ui.pop-4.wav": {
+  "dur": 0.22,
+  "peak_ms": 4,
+  "peak_dbfs": -1.1,
+  "lufs": null
+ },
+ "sfx/fs.ui.pop-9.wav": {
+  "dur": 0.093,
+  "peak_ms": 13,
+  "peak_dbfs": -1,
+  "lufs": null
+ },
+ "sfx/fs.ui.the-best-bubble-pop-sound-fo.wav": {
+  "dur": 0.284,
+  "peak_ms": 21,
+  "peak_dbfs": -0.8,
+  "lufs": null
+ },
+ "sfx/fs.whoosh.swosh-whoosh-air-cut.wav": {
+  "dur": 0.437,
+  "peak_ms": 143,
+  "peak_dbfs": -1,
+  "lufs": -19.1
+ },
+ "sfx/kenney-pluck.wav": {
+  "dur": 0.162,
+  "peak_ms": 0,
+  "peak_dbfs": -4.7,
+  "lufs": null
+ },
+ "sfx/kenney-scratch.wav": {
+  "dur": 0.139,
+  "peak_ms": 20,
+  "peak_dbfs": -2.3,
+  "lufs": null
+ },
+ "sfx/kenney.click.wav": {
+  "dur": 0.091,
+  "peak_ms": 19,
+  "peak_dbfs": -1.8,
+  "lufs": null
+ },
+ "sfx/riser-short.wav": {
+  "dur": 1.4,
+  "peak_ms": 1347,
+  "peak_dbfs": -2.2,
+  "lufs": -16.3
+ },
+ "sfx/riser.wav": {
+  "dur": 3,
+  "peak_ms": 2856,
+  "peak_dbfs": -2.4,
+  "lufs": -15.3
+ },
+ "sfx/tonal.chime.wav": {
+  "dur": 3.9,
+  "peak_ms": 18,
+  "peak_dbfs": -9.7,
+  "lufs": -18.7
+ },
+ "sfx/tonal.notify.wav": {
+  "dur": 2,
+  "peak_ms": 93,
+  "peak_dbfs": -11.6,
+  "lufs": -21.2
+ },
+ "sfx/ui-riser.wav": {
+  "dur": 0.9,
+  "peak_ms": 846,
+  "peak_dbfs": -2.2,
+  "lufs": -17
+ },
+ "sfx/ui.pop.wav": {
+  "dur": 0.32,
+  "peak_ms": 9,
+  "peak_dbfs": -2.5,
+  "lufs": null
+ },
+ "music/bed.mp3": {
+  "dur": 75,
+  "peak_ms": 39874,
+  "peak_dbfs": -2,
+  "lufs": -16.4
+ }
+}

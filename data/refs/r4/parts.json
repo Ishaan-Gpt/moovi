@@ -3,7 +3,7 @@
     "notes": "A red paper table with cut-out stickers and boiling marker labels, design-tool type cards, one tall condensed serif word with an eye for a dot, flipbook numbers, an iPad on the table, a plugin panel, condensed italic serif captions. Clone (ishaan-motion, library sfx where the reference has none): data/refs/r4/clone-motion. Blind judge 6.6 vs the R3 bar's 6.4 in the same round." },
   "kit": { "file": "packages/library/src/kits/red-table/kit.json" },
   "impl": "packages/library/src/kits/red-table/inserts.js",
-  "styles": ["paper-craft", "brand-promo"],
+  "styles": ["handmade", "brand-promo"],
   "parts": [
     { "id": "effect:red-paper-table", "category": "effect", "role": "the ground", "at": 11.05, "name": "Red paper table", "energy": 2,
       "about": "a top-down red paper table with fibre grain and a warm top-left light, drifting slowly: the ground every sticker and prop lands on",

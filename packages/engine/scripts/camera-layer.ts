@@ -5,6 +5,7 @@
 // Until that branch merges and the moves join the catalogue, run this again after a craft-graph reset.
 import { readFileSync } from 'node:fs';
 import { CRAFT, closeMemory, health, library as L, run, seedLibrary, type AssetRow } from '@moovi/graph';
+import { seedCrossLinks } from '../src/library/seed';
 import { camera } from '../src/library/catalog';
 
 interface Move { id: string; name: string; scope: 'edit' | 'coded' | 'gen'; group: string; family: string; dir: string | null; aliases: string[]; ref: string; existing?: string[]; about: string; use: string; avoid: string; params: Record<string, unknown>; prompt: string; code: string }
@@ -30,4 +31,6 @@ const rows: AssetRow[] = moves.filter(m => !catalogue.has(`camera:${m.id}`)).map
 }));
 console.log(JSON.stringify({ moves: moves.length, merged: moves.length - rows.length, ...(await seedLibrary([{ seed: 'camera-layer', rows }])) }));
 console.log(JSON.stringify((await run<{ category: string; n: number }>(CRAFT, L.libraryCounts)).find(r => r.category === 'camera')));
+// the links that span seeds (event aliases, the six styles' cast, X1 tags) are rebuilt after any seed
+console.log('cross-links', await seedCrossLinks());
 await closeMemory();

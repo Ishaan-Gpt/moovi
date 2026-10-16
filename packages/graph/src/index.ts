@@ -6,4 +6,5 @@ export { ensureStylesSchema, ensureCraftSchema, ensureSysSchema, ensureUserSchem
 export { ensureSys, createUserGraph, createProjectGraph } from './tenancy';
 export { ROSTER, DESKS, type AgentId } from '../data/crew';
 export { voice } from './queries';
-export { seedLibrary, type AssetRow, type LibrarySeed } from './library';
+export { seedLibrary, assetNode, ASSET_CATEGORIES, type AssetRow, type AssetCategory, type LibrarySeed } from './library';
+export { LICENCES, licenceCode, licenceTerms, isLicenceCode, type LicenceCode } from './licence';

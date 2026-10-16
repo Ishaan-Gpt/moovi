@@ -2097,7 +2097,9 @@ UNWIND $rows AS r
 MERGE (a:Asset {id: r.id})
 SET a.category = r.category, a.name = r.name, a.about = r.about, a.runtime = r.runtime, a.licence = r.licence,
     a.credit = r.credit, a.ship = r.ship, a.attribution = r.attribution, a.file = r.file, a.vendored = r.vendored,
-    a.energy = r.energy, a.tags = r.tags, a.params = r.params, a.impl = r.impl, a.seed = r.seed, a.src = r.src
+    a.energy = r.energy, a.tags = r.tags, a.params = r.params, a.impl = r.impl, a.seed = r.seed, a.src = r.src,
+    a.licenceUrl = r.licenceUrl, a.sourceUrl = r.sourceUrl, a.author = r.author, a.title = r.title,
+    a.redistributable = r.redistributable, a.sha256 = r.sha256, a.rev = r.rev, a.retired = false
 RETURN count(a) AS assets
 ```
 
@@ -2129,14 +2131,125 @@ RETURN count(f) AS edges
 
 ### `linkAssetStyles` (write)
 
-An asset SUITS an edit style: (Asset)-[:SUITS]->(EditStyle).
+An asset SUITS an edit style with a weight: (Asset)-[:SUITS {w, src}]->(EditStyle). src is "row" (the asset’s own) or "cast" (a style’s cast list); rows for assets not in the graph are skipped.
 
 ```cypher
 UNWIND $rows AS r
 MATCH (a:Asset {id: r.id})
 MERGE (s:EditStyle {id: r.style})
 MERGE (a)-[e:SUITS]->(s)
+SET e.w = r.w, e.src = r.src
 RETURN count(e) AS edges
+```
+
+### `clearStyleCast` (write)
+
+Before re-casting the edit styles: drop every SUITS edge a cast list made.
+
+```cypher
+MATCH (:Asset)-[e:SUITS {src: 'cast'}]->(:EditStyle)
+DELETE e
+RETURN count(e) AS dropped
+```
+
+### `linkReplaced` (write)
+
+A replaced asset points at its replacement: (old)-[:REPLACED_BY]->(new). The old node is kept (retired) so saved EDLs resolve.
+
+```cypher
+UNWIND $rows AS r
+MATCH (n:Asset {id: r.id})
+MERGE (o:Asset {id: r.old})
+ON CREATE SET o.retired = true, o.category = n.category
+MERGE (o)-[e:REPLACED_BY]->(n)
+RETURN count(e) AS edges
+```
+
+### `linkFallbacks` (write)
+
+What to play in a runtime an asset does not run in: (Asset)-[:FALLBACK {runtime}]->(Asset).
+
+```cypher
+UNWIND $rows AS r
+MATCH (a:Asset {id: r.id}), (b:Asset {id: r.to})
+MERGE (a)-[e:FALLBACK {runtime: r.runtime}]->(b)
+RETURN count(e) AS edges
+```
+
+### `resolveAsset` (read-only)
+
+An EDL asset_ref → the asset to play now: itself, or the end of its REPLACED_BY chain; then, for a runtime it lacks, its FALLBACK there.
+
+```cypher
+MATCH (a:Asset {id: $id})
+OPTIONAL MATCH p = (a)-[:REPLACED_BY*1..5]->(n:Asset)
+WITH a, n, p ORDER BY length(p) DESC
+WITH a, collect(n)[0] AS newest
+WITH a, coalesce(newest, a) AS cur
+OPTIONAL MATCH (cur)-[f:FALLBACK {runtime: $runtime}]->(fb:Asset)
+WITH a, cur, fb, ($runtime IS NULL OR $runtime IN cur.runtime) AS runs
+RETURN a.id AS asked, cur.id AS id, CASE WHEN runs OR fb IS NULL THEN cur.id ELSE fb.id END AS play, runs, cur.sha256 AS sha256, cur.rev AS rev
+```
+
+### `linkEventAliases` (write)
+
+The EDL’s sfx event names as aliases on the library’s (:Event) nodes (the names stay; the EDL’s resolve to them).
+
+```cypher
+UNWIND $rows AS r
+MERGE (e:Event {id: r.event})
+SET e.aliases = r.aliases
+RETURN count(e) AS events
+```
+
+### `transitionForCut` (read-only)
+
+An EDL cut type (Cut.type: hard, jump, punch, flash, …) → its transition asset, its family and every other implementation of that family.
+
+```cypher
+MATCH (a:Asset {category: 'transition'})-[:IS_A]->(t:Transition)
+WHERE ('edl-cut:' + $type) IN a.tags AND NOT coalesce(a.retired, false)
+OPTIONAL MATCH (o:Asset)-[:IS_A]->(t)
+WHERE o.id <> a.id AND NOT coalesce(o.retired, false)
+WITH a, t, o ORDER BY o.id
+RETURN a.id AS id, t.id AS family, a.params AS params, collect(o.id) AS alternatives
+```
+
+### `addAssetTags` (write)
+
+Add a tag to assets another seed owns (an X1 number on a camera-layer move); idempotent, missing ids skipped.
+
+```cypher
+UNWIND $rows AS r
+MATCH (a:Asset {id: r.id})
+SET a.tags = CASE WHEN r.tag IN a.tags THEN a.tags ELSE a.tags + r.tag END
+RETURN count(a) AS tagged
+```
+
+### `assetsByX1` (read-only)
+
+The assets that implement one of R4’s X1 moves (01 orbit … 17 glass type), by its two-digit number.
+
+```cypher
+MATCH (a:Asset)
+WHERE ('x1:' + $n) IN a.tags AND NOT coalesce(a.retired, false)
+RETURN a.id AS id, a.category AS category, a.runtime AS runtime, a.params AS params
+ORDER BY a.category, a.id
+```
+
+### `upsertClipAssets` (write)
+
+Stock clips fetched at run time as (:Asset {category: insert, vendored: false}) with source, author and licence, so an EDL insert and the film credits take one path. Never retired by a catalogue reseed.
+
+```cypher
+UNWIND $rows AS r
+MERGE (a:Asset {id: r.id})
+SET a.category = 'insert', a.name = r.name, a.about = r.about, a.runtime = ['browser', 'ffmpeg'], a.licence = r.licence,
+    a.licenceUrl = r.licenceUrl, a.sourceUrl = r.sourceUrl, a.author = r.author, a.title = r.name, a.credit = r.credit,
+    a.ship = r.ship, a.attribution = r.attribution, a.redistributable = r.redistributable, a.file = null, a.vendored = false,
+    a.sha256 = r.sha256, a.rev = r.rev, a.retired = false, a.energy = null, a.tags = r.tags, a.params = r.params,
+    a.impl = r.impl, a.seed = 'footage', a.src = 'packages/engine/src/footage'
+RETURN count(a) AS clips
 ```
 
 ### `linkAssetFamilies` (write)
@@ -2156,7 +2269,7 @@ RETURN count(e) AS edges
 Before a reseed: drop the SERVES / FITS / SUITS / IS_A edges of the seeded assets, so removed tags do not linger.
 
 ```cypher
-MATCH (a:Asset)-[e:SERVES|FITS|SUITS|IS_A]->()
+MATCH (a:Asset)-[e:SERVES|FITS|SUITS|IS_A|FALLBACK]->()
 WHERE a.seed IN $seeds
 DELETE e
 RETURN count(e) AS dropped
@@ -2164,12 +2277,12 @@ RETURN count(e) AS dropped
 
 ### `retireAssets` (write)
 
-Assets a seed no longer lists are removed (a renamed or deleted catalogue entry); assets from a reference breakdown are kept.
+Assets a seed no longer lists are marked retired, never deleted: an EDL that names one still resolves (resolveAsset follows REPLACED_BY). Casting queries skip retired assets.
 
 ```cypher
 MATCH (a:Asset)
-WHERE a.seed = $seed AND NOT a.id IN $ids
-DETACH DELETE a
+WHERE a.seed = $seed AND NOT a.id IN $ids AND NOT coalesce(a.retired, false)
+SET a.retired = true
 RETURN count(a) AS retired
 ```
 
@@ -2178,7 +2291,7 @@ RETURN count(a) AS retired
 The library per category: how many, how many safe to ship, how many have their file in the repo.
 
 ```cypher
-MATCH (a:Asset)
+MATCH (a:Asset) WHERE NOT coalesce(a.retired, false)
 RETURN a.category AS category, count(a) AS n,
        sum(CASE WHEN a.ship THEN 1 ELSE 0 END) AS shippable,
        sum(CASE WHEN a.vendored THEN 1 ELSE 0 END) AS vendored
@@ -2190,7 +2303,7 @@ ORDER BY category
 Categories still under the target count (the plan’s 50+ of each).
 
 ```cypher
-MATCH (a:Asset)
+MATCH (a:Asset) WHERE NOT coalesce(a.retired, false)
 WITH a.category AS category, count(a) AS n
 WHERE n < $target
 RETURN category, n, $target - n AS short
@@ -2203,7 +2316,7 @@ Every asset of one category (optionally only one runtime, only shippable), for a
 
 ```cypher
 MATCH (a:Asset {category: $category})
-WHERE ($runtime IS NULL OR $runtime IN a.runtime) AND (NOT $shipOnly OR a.ship)
+WHERE ($runtime IS NULL OR $runtime IN a.runtime) AND (NOT $shipOnly OR a.ship) AND NOT coalesce(a.retired, false)
 RETURN a.id AS id, a.name AS name, a.about AS about, a.runtime AS runtime, a.energy AS energy, a.tags AS tags, a.params AS params
 ORDER BY a.id
 ```
@@ -2215,7 +2328,7 @@ The deciding agent casts by need: assets of a category that serve the beat’s n
 ```cypher
 UNWIND $needs AS nid
 MATCH (a:Asset {category: $category})-[s:SERVES]->(:Need {id: nid})
-WHERE ($runtime IS NULL OR $runtime IN a.runtime) AND (NOT $shipOnly OR a.ship)
+WHERE ($runtime IS NULL OR $runtime IN a.runtime) AND (NOT $shipOnly OR a.ship) AND NOT coalesce(a.retired, false)
 WITH a, count(*) AS hits, sum(s.w) AS rank
 RETURN a.id AS id, a.name AS name, a.runtime AS runtime, a.energy AS energy, a.params AS params, hits
 ORDER BY hits DESC, rank ASC, a.id
@@ -2224,23 +2337,37 @@ LIMIT $n
 
 ### `assetsForEvent` (read-only)
 
-What plays on a timeline event (an sfx for card-in, a riser for build), first choice first.
+What plays on a timeline event (an sfx for card-in, a riser for build), first choice first. The event may be the library’s name or the EDL’s alias (cut → scene, insert_in → card-in, …).
 
 ```cypher
-MATCH (a:Asset)-[f:FITS]->(:Event {id: $event})
-WHERE ($category IS NULL OR a.category = $category) AND (NOT $shipOnly OR a.ship)
+MATCH (a:Asset)-[f:FITS]->(e:Event)
+WHERE (e.id = $event OR $event IN coalesce(e.aliases, [])) AND ($category IS NULL OR a.category = $category) AND (NOT $shipOnly OR a.ship) AND NOT coalesce(a.retired, false)
 RETURN a.id AS id, a.category AS category, a.file AS file, f.gainDb AS gainDb, f.first AS first, a.params AS params
 ORDER BY f.first DESC, a.id
 ```
 
 ### `assetsForStyle` (read-only)
 
-Everything an edit style may use, per category (its allowed set).
+Everything an edit style may use, per category (its allowed set), strongest weight first, then id.
 
 ```cypher
-MATCH (a:Asset)-[:SUITS]->(:EditStyle {id: $style})
-RETURN a.category AS category, collect(a.id) AS ids
+MATCH (a:Asset)-[s:SUITS]->(:EditStyle {id: $style})
+WHERE NOT coalesce(a.retired, false)
+WITH a, s ORDER BY s.w DESC, a.id
+RETURN a.category AS category, collect(a.id) AS ids, collect(s.w) AS weights
 ORDER BY category
+```
+
+### `styleCast` (read-only)
+
+An edit style’s picks in one category, strongest first (weight, then id): what the EDL builder casts from.
+
+```cypher
+MATCH (a:Asset {category: $category})-[s:SUITS]->(:EditStyle {id: $style})
+WHERE NOT coalesce(a.retired, false) AND ($runtime IS NULL OR $runtime IN a.runtime)
+RETURN a.id AS id, a.name AS name, s.w AS w, a.runtime AS runtime, a.params AS params
+ORDER BY s.w DESC, a.id
+LIMIT $n
 ```
 
 ### `assetById` (read-only)
@@ -2406,7 +2533,7 @@ UNWIND $needs AS nid
 MATCH (k:Kit)-[:HAS]->(a:Asset)-[:SERVES]->(n:Need {id: nid})
 WITH k, count(DISTINCT n) AS covered, count(*) AS hits
 RETURN k.id AS id, k.name AS name, covered, hits
-ORDER BY covered DESC, hits DESC
+ORDER BY covered DESC, hits DESC, k.id
 LIMIT $n
 ```
 
@@ -2417,6 +2544,7 @@ The kits an asset belongs to (where its palette and type come from).
 ```cypher
 MATCH (k:Kit)-[h:HAS]->(:Asset {id: $id})
 RETURN k.id AS kit, h.role AS role
+ORDER BY k.id
 ```
 
 

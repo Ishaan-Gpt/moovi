@@ -9,6 +9,7 @@ import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { CRAFT, closeMemory, health, library, run, seedLibrary, type AssetRow } from '@moovi/graph';
 import { findClipsOrStill, type Clip } from '../src/footage';
+import { clipAssetId } from '../src/footage/graph';
 import { ensureDir } from '../src/bench';
 
 interface Entry { file: string; poster: string | null; query: string; provider: string; title: string; page: string | null; author: string | null; licence: string; licenceUrl: string | null; credit: string; sha: string | null; seconds: number; still: boolean; asset: string }
@@ -31,7 +32,7 @@ for (const a of asks) {
   const file = join(dir, `${a.name}.mp4`), poster = c.poster ? join(dir, `${a.name}.jpg`) : null;
   copyFileSync(c.path, file); if (c.poster && poster) copyFileSync(c.poster, poster);
   manifest[a.name] = { file: `${a.name}.mp4`, poster: poster ? `${a.name}.jpg` : null, query: a.query, provider: c.provider, title: c.title, page: c.page ?? null, author: c.author ?? null,
-    licence: c.licence, licenceUrl: c.licenceUrl ?? null, credit: credit(c), sha: c.sha ?? null, seconds: c.duration ?? seconds, still: !!c.still, asset: `insert:${c.id}` };
+    licence: c.licence, licenceUrl: c.licenceUrl ?? null, credit: credit(c), sha: c.sha ?? null, seconds: c.duration ?? seconds, still: !!c.still, asset: clipAssetId(c) };
   console.log(`✓ ${a.name}: ${c.provider} "${c.title}" (${c.licence}${c.still ? ', still push-in' : ''}) in ${((Date.now() - t0) / 1000).toFixed(1)} s`);
 }
 writeFileSync(manifestFile, JSON.stringify(manifest, null, 1) + '\n');

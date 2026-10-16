@@ -63,9 +63,10 @@ Brand and character: `docs/BRAND.md`, `docs/CHARACTER.md`.
 
 ## The library and reference clones
 
-- **One library in the craft graph** (`docs/LIBRARY.md`): 755 `(:Asset)` nodes in 10 categories (voice, sfx, music,
-  caption, transition, effect, camera, ui, 3d, insert). Each node has SERVES need edges, runtime implementations and a
-  licence. Named queries are in `packages/graph/src/queries/library.ts`. Seed the catalogue with
+- **One library in the craft graph** (`docs/LIBRARY.md`): about 950 `(:Asset)` nodes in 15 categories (voice, sfx, music,
+  caption, transition, effect, camera, ui, 3d, insert, grade, overlay, font, texture, end_card). Each node has SERVES need
+  edges, SUITS {w} to the six edit styles, a licence code (ship and attribution derive from it) and runtime ids.
+  Named queries are in `packages/graph/src/queries/library.ts`. Seed the catalogue with
   `pnpm --filter @moovi/engine library`.
 - **References → kits.** Each Instagram reel Ishaan sends is cloned as a live canvas preview with the `ishaan-motion`
   skill, broken into parts (`(:Reference)-[:HAS_PART]->(:Asset)`), and saved as a re-skinnable kit in
