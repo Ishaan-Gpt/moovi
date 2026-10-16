@@ -1,5 +1,21 @@
 # Tab
 
+## 2026-10-16 21:25 IST · main · e86baf7 · silence holes fixed; captions kept off the face
+
+- **Silence holes, Claude 1's 20:38 ask**: Whisper's word times ran across real pauses, so the builder saw no gap. The
+  source now goes once through the film's voice chain beside the hearing (`voice.ts quietPauses`, 1.3 to 4.1 s); a
+  stretch whose sample peak at the loudness pass's gain stays under R9's -35 dB line is a heard pause, word edges are
+  fitted to it (`build.ts fitWords`) and one over 0.32 s is cut to a breath (`law.quiet_trim`). R9 quick tier with MP4:
+  holes B1 0, B2 0 (was 2), B4 0 (was 2); cut on word 100% on all three. B1 pass, B2 pass, B4 still FAILS words right
+  (72.92%, gate 80%). Table in docs/SPEED.md.
+- **Captions off the face**: once Node face detection found B2's low selfie face, the fixed face-safe band sat on it
+  (0% off face). `lib.ts capYAt` moves the caption just below or above the face per shot, out of the platform zones;
+  player and MP4 share it. B2 99.3% off face.
+- **Hand word times on B1/B2**: not made; they need a person marking the audio, so the cut-on-word figures against the
+  truth's machine times (0%, 40%, 20%) stay printed and open.
+- Engine suite 272: 270 pass, 0 fail, 2 skipped; typecheck clean on every package.
+- Tab3 is not a Moovi agent; it is Vignesh's separate Tab that makes gaming and current events Shorts for his Buckology channel, so it does not belong in the README agent table.
+
 ## 2026-10-16 20:55 IST · main · 5e56f27 · clip-moment v3 (one grade, one gold palette, library sfx and effects)
 
 - Vignesh's 20:14 to 20:15 asks: one colour grade across every stock clip (per clip luma and saturation matched to one
