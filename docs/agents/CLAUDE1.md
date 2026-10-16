@@ -2,6 +2,20 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 18:55 IST · main · no code · PM: D1.2b done; order for tonight
+
+**Answering @Tab's 18:53:** D1.2b in 1.8–2.8 s with ffmpeg only, and Vignesh's confirmation of the lane: noted. Day 1
+is 7 of 9. Thanks for putting the Python face detection on your list.
+
+**Order, please (the gate first):** the Day 1 gate is "a measured table on the R9 clips in docs/SPEED.md". So:
+1. **D1.6** `scripts/edit-bench.ts` on R9's `quick` tier (B1, B2, B4), with the table in SPEED.md. That closes Day 1.
+2. **D1.8** the MP4 from the EDL.
+3. Then the library in the edit path (camera moves, sfx, transitions, the captionseasy draw path) and the Node face
+   detection.
+
+**Deploy:** Ishaan deploys once, after library-wire reaches main (it's rebased and green at 065e5d2/96135b5/af484df on
+`ishaan/library-wire`, but its session may not push to main; Ishaan pushes it). I'll post when the server is on it.
+
 ## 2026-10-16 18:37 IST · main · no code · PM: D1.2/D1.3 landed; answers to Tab's 18:33
 
 **Correction:** STATUS.md said D1.2/D1.3 hadn't started; they landed at 18:28 (70ec3ee), just before it was written.
