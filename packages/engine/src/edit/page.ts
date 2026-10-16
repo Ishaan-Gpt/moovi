@@ -27,12 +27,15 @@ await Promise.all([ST.font, ST.key].filter(Boolean).map(f => document.fonts.load
 
 /* ── the two decks ── */
 const A = $('va'), B = $('vb'), M = { cuts: [], kicks: 0, firstFrame: null, t0: performance.now() };
+// ?layer=over: captions and inserts only, on a transparent page, no video (the MP4 renderer's overlay, edit/render.ts)
+const LAYER = Q.get('layer') === 'over';
 // an EDL that names a template (src/edit/templates) gets its scene components drawn on #tpl above the footage
-const TPL = (E.template && typeof MOOVI_TEMPLATES !== 'undefined' && MOOVI_TEMPLATES[E.template.id]) || null;
+const TPL = (!LAYER && E.template && typeof MOOVI_TEMPLATES !== 'undefined' && MOOVI_TEMPLATES[E.template.id]) || null;
 if (TPL) await TPL.init({ E, W, H, canvas: $('tpl'), decks: [A, B] });
-A.src = '/v/' + E.source.file; B.src = '/v/' + E.source.file + '?b';
+if (LAYER) { for (const el of [document.documentElement, document.body, stage]) el.style.background = 'transparent'; A.remove(); B.remove(); $('bg').style.visibility = 'hidden'; }
+else { A.src = '/v/' + E.source.file; B.src = '/v/' + E.source.file + '?b'; }
 const meta = v => v.readyState >= 1 ? Promise.resolve() : new Promise((r, j) => { v.addEventListener('loadedmetadata', r, { once: true }); v.addEventListener('error', () => j(new Error('the clip could not be loaded (' + (v.error && v.error.code) + ')')), { once: true }); });
-await Promise.all([meta(A), meta(B)]);
+if (!LAYER) await Promise.all([meta(A), meta(B)]);
 let cur = A, nxt = B, si = 0, rolled = false, playing = false, wall0 = 0, base = 0, tNow = 0;
 // a paused element can go idle and never finish a seek: a muted play() kicks the fetch, paused again on seeked (R10)
 const seekTo = (v, t) => new Promise(r => {
@@ -140,6 +143,12 @@ $('s').oninput = async e => { const was = playing; stop(); const t = +e.target.v
 window.__render = async t => { stop(); await place(t); if (TPL) await TPL.ready(t); draw(t); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); };
 window.__play = () => start();
 window.__metrics = () => ({ duration: D, shots: S.length, cuts: M.cuts, kicks: M.kicks, firstFrame: M.firstFrame, done: !!window.__done });
+if (LAYER) {
+  // the overlay layer: the drawn markup is the frame's state, so equal markup means an equal picture
+  window.__over = async t => { drawCaptions(t); drawInserts(t); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); };
+  window.__overKeys = ts => ts.map(t => { drawCaptions(t); drawInserts(t); const c = cap.innerHTML, i = ins.innerHTML; return c || i ? cap.className + c + '|' + i : ''; });
+  window.__ready = true; return;
+}
 await place(STILL ? +Q.get('t') : 0); draw(STILL ? +Q.get('t') : 0);
 window.__ready = true;
 })().catch(e => { document.body.insertAdjacentHTML('beforeend', '<pre style="color:#f66;padding:16px;position:absolute;top:0;white-space:pre-wrap">' + String(e && e.stack || e) + '</pre>'); window.__error = String(e); });
