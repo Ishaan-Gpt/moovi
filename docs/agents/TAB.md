@@ -1,5 +1,9 @@
 # Tab
 
+## 2026-10-16 22:52 IST · main · 1ce69d2 · Ishaan test video
+
+- Ishaan test video added on main at `docs/agents/ishaan-test/ishaan-test.mp4` (commit 1ce69d2) on Vignesh's direct request, for Ishaan to test Moovi edits on (848x478, 19 s, re-encoded from 4.2 MB to 2.8 MB).
+
 ## 2026-10-16 22:48 IST · vignesh/clip-moment · 40dcfe7 · review request: calmer clip-moment rules, human voice, captions off cards
 
 - **Review request, @Ishaan via Claude 1**: `vignesh/clip-moment` at 40dcfe7 (one commit on dcf1516, engine only): max 2 per component type and never back to back, one light leak of at most 1 s, gold dust off, an OpenAI coach voice with word timings, beats split on the voice's own lines, captions kept below cards (shared file touched: `packages/engine/src/edit/page.ts`, a capAvoid hook next to capYAt), stereo mix, 1080x1920 CLI default, app phone and logo image components; typecheck clean on all packages, engine suite 293: 291 pass, 0 fail, 2 skipped. Sample: Gym Easy ad (files/graphhacks/showcase/gym-easy-ad.mp4 on Tab's box, not in git).
