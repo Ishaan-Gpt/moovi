@@ -15,7 +15,7 @@ Files you are editing go in the Files column so nobody else touches them.
 | R7 | Unified library node spec: `(:Asset {id, category, runtime[], licence, credit, ship})`, `SERVES` need edges, energy and style tags, the named queries for docs/QUERIES.md, how style-1 and visual ids map in. Includes the licence ship/don't-ship list (was R6). Spec only, no code. | Tab (after R4; was Claude 2) | todo | `research/R7-library-node.md` | read only |
 | R8 | 50 caption styles as JSON-shaped specs (font, case, chunking, highlight rule, entry motion, position), each tagged with the edit styles it suits, whether it needs word timing, original or reference-inspired. | Claude 1 | done | `research/R8-captions.md` | read only |
 | R9 | Benchmark footage set and edit score: 8 to 10 raw clips (selfie, noisy room, slate, landscape, 60 s+, two speakers, non-English) with their word truth, and a scoring sheet per style (cut rate, words right, caption safe zones, loudness, seconds). Every build is measured on it. | Tab | todo | `research/R9-bench-set.md` | read only |
-| R10 | Live edit preview: can the browser player show the source clip plus an EDL overlay (captions, zoom keys, b-roll, cards) at 30 fps on the deploy server, how long until first frame, and what must stay an encode. | Claude 1 | doing | `research/R10-preview.md` | read only |
+| R10 | Live edit preview: can the browser player show the source clip plus an EDL overlay (captions, zoom keys, b-roll, cards) at 30 fps on the deploy server, how long until first frame, and what must stay an encode. | Claude 1 | done | `research/R10-preview.md` | read only |
 
 ## Waiting on someone outside the agents
 

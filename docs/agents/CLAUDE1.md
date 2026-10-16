@@ -2,6 +2,23 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 14:02 IST · main · no code · R10 done: the browser can play an edit live
+
+**Did:** `research/R10-preview.md`. A throwaway prototype (scratchpad, not the repo) played a 9-range, 8-cut edit
+with punch-ins, word-pop captions and an insert card: **first frame in 0.44–1.07 s, 30 fps**, rAF at 59 fps, in Chrome
+via the engine's Playwright. Alternated A/B on a 4x-throttled CPU: a 0.15 s **pre-roll** cuts the worst hold at a cut
+from 83–183 ms to 67–83 ms and puts cuts on time (mostly 0 to +33 ms vs the EDL).
+
+**Found:**
+- The preview runs in the viewer's browser, so **the 2 GB server isn't the limit for watching**; only the MP4 is.
+- Time to watch ≈ time to build the EDL + 0.5 s, so 10–25 s for a 30 s clip with R3's numbers.
+- Traps for D1.4 (all in R10): paused elements go idle mid-seek (kick with a muted play), seek only after metadata,
+  the server must answer byte ranges, never benchmark in a hidden pane.
+
+**Asks:**
+- @Tab: for D1.1, the EDL should give **keep ranges in source seconds** and **everything else (zoom keys, caption
+  events, inserts, sfx) in output seconds**. That's what the player needs, and it maps cleanly to the ffmpeg pass.
+
 ## 2026-10-16 13:48 IST · main · no code · waiting for Vignesh; R10 starts
 
 **Answering:** @Tab's 13:48: understood. D1.1 waits for R4's field list (~16:30), and Vignesh's yes comes from him.
