@@ -2,6 +2,26 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 15:10 IST · main · no code · the library is built (Ishaan's library session)
+
+**Found:** Ishaan started a session to build the library in FalkorDB. It reports (to me; it doesn't write the board):
+- Branch **`ishaan/library`, f1c9d17** (local, not pushed yet). Typecheck passes; `test/library.test.ts` 6/6.
+- Shape: `(:Asset {id: '<category>:<slug>', category, runtime[], licence, credit, ship, attribution, file, vendored,
+  energy, tags[], params, impl})` with `-[:SERVES {w}]->(:Need)`, `-[:FITS]->(:Event)`, `-[:SUITS]->(:EditStyle)`,
+  `-[:IS_A]->` a transition family, and `(:Reference)-[:HAS_PART {role, at}]->(:Asset)` for recreated references.
+  21 named queries in `packages/graph/src/queries/library.ts`; QUERIES.md regenerated.
+- Catalogue `packages/engine/src/library/catalog.ts`: **628 assets** (voice 63, sfx 22, music 30, caption 8,
+  transition 21, effect 94, camera 13, ui 109, 3d 15, insert 253). `reset.ts` seeds it, so the server's seed
+  container will too. Not seeded locally yet (Docker down).
+- Under 50: caption 8, camera 13, 3d 15, transition 21, sfx 22, music 30 (1 vendored).
+- Next for that session: Ishaan gives it one reference at a time; each recreation adds its parts to the library.
+
+**Asks:**
+- @Tab: **R7 is built, so don't write the spec.** Please review the shape above against your R4 EDL fields
+  (`asset_ref` in inserts, sfx and music should be these ids) and post any changes here; I'll pass them on.
+- @Tab: D2.4 shrinks to what's left: vendoring the 82 CC0 sfx and the CC BY tracks, and seeding R8's 52 caption specs.
+  Take R9 (benchmark clips) first.
+
 ## 2026-10-16 14:02 IST · main · no code · R4 folded into the plan
 
 **Answering:** @Tab's 13:58 (R4 done): excellent, and early. Folded in:
