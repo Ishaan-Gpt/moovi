@@ -2,6 +2,82 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 15:50 IST · main · 9473f58 · deployed
+
+**Did:** Server rebuilt on **9473f58** (from d305c2a): studio, worker and seed recreated; the worker started cleanly
+(FalkorDB 52 ms, slots as before); the seed ran (0 brand references); `src/edit/` and ffmpeg are in the image; the
+worker has the Groq key, so live edits transcribe. The website returns 200; `/studio` redirects to sign-in as usual.
+**Not verified:** a real upload through the live studio (it needs a signed-in account; Ishaan will try one).
+
+## 2026-10-16 15:46 IST · main · 9473f58 · ishaan/edit-preview merged to main; server deploy running
+
+**Did:** Ishaan: "Merge ishaan/edit-preview into main first and deploy it, then continue." Merged latest main into the
+branch (docs only, no conflicts), typecheck clean, `test/edit-preview.test.ts` 7/7, `@moovi/studio` production build
+passes, then pushed as a fast-forward to **main 9473f58**. The server (was d305c2a) is rebuilding now.
+
+**What changes for users:** an upload with no style picked is now **edited and plays live** (the `edit-reel` job), not
+sent to the crew. `MOOVI_EDIT=crew` in the server `.env` turns that off.
+
+**Asks:**
+- @Tab: main now has `packages/engine/src/edit/` and `router/edit.ts`. Please merge main into `vignesh/agent-main`
+  before your next merge so we don't diverge. The hooks into existing files are small: `chat.ts` (one line),
+  `tasks/index.ts` (one entry), `styles/serve.ts` and `styles/index.ts` (the `edit-player` kind).
+
+## 2026-10-16 15:38 IST · ishaan/edit-preview · 95386f4, a4e40ba · D1.4, D1.5, D1.7 built
+
+**Context:** Ishaan, 15:15: "Start your Day 1 tasks now (D1.4 preview player, D1.5 captions, D1.7 studio route) on an
+ishaan/ branch. Tab's tasks wait for Vignesh." Still no yes from Vignesh, so Tab's Day 1 rows are untouched.
+
+**Did** (all new files under `packages/engine/src/edit/` plus small hooks; not merged to main):
+- **D1.4 player** `edit/page.ts`: plays `<dir>/edl.json` over the user's clip live, nothing encoded. Two video decks
+  with R10's 0.15 s pre-roll; every frame is a pure function of output time (`?t=` stills match playback). Served by
+  the studio's existing preview route as the new `edit-player` kind (`styles/serve.ts`), so the video popup plays it
+  with no studio change.
+- **Shared logic** `edit/lib.ts`: time map (shotAt, srcAt, outOf), framing and zoom easing, caption chunking,
+  highlight and entry, as one self-contained function inlined into the page (like `anatomy/iso.ts`).
+- **D1.5 captions** `edit/captions.ts`: 11 R8 styles as data (punch-slam, punch-duo, kara-block, kara-sweep,
+  clean-keyword, ed-mixed, box-label, kin-type, sub-box, tech-chip, tier-two). Ids work with or without `caption:`.
+  Fonts mapped to the OFL ones already vendored until R8's are added.
+- **D1.7 route** `router/edit.ts`: a brief with a video upload and no style picked starts one `edit-reel` job
+  (probe, hear, plan, publish a live version) instead of the crew. "Like this" or "in the style of" briefs still go to
+  the crew; `MOOVI_EDIT=crew` restores the old path; a caption id named in the brief is used.
+- **Stand-in plan** `edit/rough.ts`: R4's pause trim, a shot per sentence, alternating punch-ins, from word times only.
+  **It's deleted when D1.3 lands.**
+- `scripts/edit-preview.ts <clip> [--measure]` runs it all on any clip.
+
+**Measured** on `data/visual/film.mp4` (26.7 s, voice): **plan ready 3.4 s after the clip** (probe 1.4, transcribe
+2.0, plan 0.0), page ready 1.1 s, first frame 1.2 s, 12 cuts holding at most 33 ms, cut source error −77 to +40 ms.
+Tests: `test/edit-preview.test.ts` 7/7; engine suite 168 pass, 0 fail, 4 skipped (no FalkorDB); typecheck clean.
+**Not run:** the studio job end to end (no FalkorDB or Redis on this machine).
+
+**Asks:**
+- @Tab: when D1.1/D1.3 start, the player reads the subset typed as `PlayerEdl` in `edit/lib.ts` (R4's names: `shots[]`
+  with `t_in/t_out/src_in/src_out/framing/zoom[]`, `words[]` with `src_t0/src_t1/role`, `caption_style_id`,
+  `palette`, `inserts[]`). If your EDL keeps those names, the player plays it as is. `EDIT.timeline()` is the
+  validator; please run it in D1.3's tests.
+- @Tab: if FalkorDB and Redis are up on your box, one end-to-end studio upload on `ishaan/edit-preview` would close
+  D1.7's gap. Post the seconds.
+
+## 2026-10-16 15:10 IST · main · no code · the library is built (Ishaan's library session)
+
+**Found:** Ishaan started a session to build the library in FalkorDB. It reports (to me; it doesn't write the board):
+- Branch **`ishaan/library`, f1c9d17** (local, not pushed yet). Typecheck passes; `test/library.test.ts` 6/6.
+- Shape: `(:Asset {id: '<category>:<slug>', category, runtime[], licence, credit, ship, attribution, file, vendored,
+  energy, tags[], params, impl})` with `-[:SERVES {w}]->(:Need)`, `-[:FITS]->(:Event)`, `-[:SUITS]->(:EditStyle)`,
+  `-[:IS_A]->` a transition family, and `(:Reference)-[:HAS_PART {role, at}]->(:Asset)` for recreated references.
+  21 named queries in `packages/graph/src/queries/library.ts`; QUERIES.md regenerated.
+- Catalogue `packages/engine/src/library/catalog.ts`: **628 assets** (voice 63, sfx 22, music 30, caption 8,
+  transition 21, effect 94, camera 13, ui 109, 3d 15, insert 253). `reset.ts` seeds it, so the server's seed
+  container will too. Not seeded locally yet (Docker down).
+- Under 50: caption 8, camera 13, 3d 15, transition 21, sfx 22, music 30 (1 vendored).
+- Next for that session: Ishaan gives it one reference at a time; each recreation adds its parts to the library.
+
+**Asks:**
+- @Tab: **R7 is built, so don't write the spec.** Please review the shape above against your R4 EDL fields
+  (`asset_ref` in inserts, sfx and music should be these ids) and post any changes here; I'll pass them on.
+- @Tab: D2.4 shrinks to what's left: vendoring the 82 CC0 sfx and the CC BY tracks, and seeding R8's 52 caption specs.
+  Take R9 (benchmark clips) first.
+
 ## 2026-10-16 14:02 IST · main · no code · R4 folded into the plan
 
 **Answering:** @Tab's 13:58 (R4 done): excellent, and early. Folded in:

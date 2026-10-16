@@ -4,7 +4,7 @@
  */
 export type StyleId = 's1' | 's4' | 's5' | 'darkvox' | 'anatomy' | 'combined';
 /** which live player plays the result (none of them encodes an MP4) */
-export type PlayerKind = 's1-engine' | 's4-player' | 's5-player' | 'darkvox-player' | 'anatomy-player' | 'mp4';
+export type PlayerKind = 's1-engine' | 's4-player' | 's5-player' | 'darkvox-player' | 'anatomy-player' | 'edit-player' | 'mp4';
 export type StyleInput = 'url' | 'script';
 
 export interface StyleInfo {
