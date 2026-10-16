@@ -53,7 +53,7 @@ export const combinedReel: Handler = async ctx => {
   const title = inp.brief.replace(/,?\s*in \d+\s*(s|sec|seconds)\b.*$/i, '').slice(0, 60);
   await ctx.q(P.setChat, { id: ctx.chat, title, status: null, at: Date.now() });
   await publish(ctx.chat, { type: 'title', title });
-  await ctx.say(`On it: a ${secsOf(inp.brief)} s film. I write the script, then each beat gets the look that fits it (Ishaan’s Style 1, Dark Vox and Anatomy, real footage, the globe, a 3D prop) with Ishaan’s captions over the whole film. Each step shows here with its time.`, 'note', undefined, 'moovi');
+  await ctx.say(`On it: a ${secsOf(inp.brief)} s film. I write the script, then each beat gets the look that fits it (Style 1, Dark Vox and Anatomy, real footage, the globe, a 3D prop) with word-by-word captions over the whole film. Each step shows here with its time.`, 'note', undefined, 'moovi');
   const r = await combinedFilm({
     brief: inp.brief, id: `${ctx.run.id.slice(-8)}`, signal: ctx.signal,
     log: s => console.log(`[combined ${ctx.run.id}] ${s}`),

@@ -52,7 +52,7 @@ export const config = {
     elevenKey: env('ELEVENLABS_API_KEY'),
     elevenVoice: env('ELEVENLABS_VOICE_ID'),
     cache: resolve(env('MOOVI_VOICE_CACHE') ?? join(env('MOOVI_DATA_DIR') ?? join(REPO, 'data'), 'cache', 'voice')),
-    concurrency: num('MOOVI_VOICE_CONCURRENCY', 8),
+    concurrency: num('MOOVI_VOICE_CONCURRENCY', 4),
   },
   /** the browser the render pool drives (system Chrome by default, like MotionEasy's CLI) */
   chrome: { channel: env('MOOVI_CHROME_CHANNEL') ?? 'chrome', path: env('MOOVI_CHROME_PATH') },
@@ -70,7 +70,7 @@ export const config = {
   slots: {
     // model calls wait on the network, not this machine: 8 at once lets every Shot Builder of a 6 to 8 scene film run
     // together while the Asset Hunters finish (4 queued builders behind 13 hunters on the FalkorDB brief)
-    llm: num('MOOVI_SLOTS_LLM', 8),
+    llm: num('MOOVI_SLOTS_LLM', 4),
     cpu: num('MOOVI_SLOTS_CPU', Math.max(2, Math.min(6, cpus().length - 2))),
     render: num('MOOVI_SLOTS_RENDER', renderSlots(cpus().length, gb)),
     chrome: num('MOOVI_SLOTS_CHROME', 3),

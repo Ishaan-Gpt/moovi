@@ -84,14 +84,14 @@ const DirectorOut = {
 /** The director: the beats, each labelled with its kind, its footage, its places and its voice. One model call. */
 export async function direct(brief: string, seconds: number, families: FamilyId[], o: { signal?: AbortSignal; log?: (s: string) => void; objects?: string[] } = {}) {
   const words = Math.round(seconds * 2.55);
-  const palette = families.map(f => `- ${f}: ${FAMILIES[f].name} (${FAMILIES[f].from === 'ishaan' ? 'Ishaan’s style' : 'Vignesh’s engine'}): ${FAMILIES[f].look}. Best for: ${FAMILIES[f].fits.join(', ')}.`).join('\n');
+  const palette = families.map(f => `- ${f}: ${FAMILIES[f].name} (${FAMILIES[f].from === 'ishaan' ? 'a house style' : 'the visual engine'}): ${FAMILIES[f].look}. Best for: ${FAMILIES[f].fits.join(', ')}.`).join('\n');
   return ask({
     agent: 'router:director', tier: 'crew', signal: o.signal, maxTurns: 4, deadlineMs: 60_000,
     system: 'You are the director of Moovi, a short video maker. You write a tight voice-over script as beats and label each beat so the right look draws it. Plain words, concrete nouns, true facts only (round numbers you are sure of), no hype, no exclamation marks, no em dashes or en dashes.',
     prompt: [
       `BRIEF: ${brief}`,
       `LENGTH: ${seconds} s of voice, about ${words} words in total (stay within 8 percent). 6 to 8 beats, each one or two short sentences.`,
-      `THE PALETTE (one film should mix both sides, Ishaan’s styles and Vignesh’s engine):\n${palette}`,
+      `THE PALETTE (one film should mix both: the house styles and the visual engine):\n${palette}`,
       'RULES:',
       '1. Beat 1 is the hook (kind hook): one surprising, concrete line, shown as real footage.',
       '2. Exactly one beat is a quote or line of dialogue from a person in the story (kind quote, voice second). Write it in first person, as that person would say it, without quote marks or a "said" tag; the narrator may set it up in the beat before.',
