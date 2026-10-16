@@ -25,7 +25,7 @@ const stop = (pid?: number) => { if (!pid) return; try { if (process.platform ==
 
 /** The terminal script, as a child process; resolves its timing table, then stops its preview server. */
 function cli(): Promise<{ timings: Record<string, number>; wall: number }> {
-  const script = { s1: 's1url.ts', s4: 's4.ts', s5: 's5.ts', darkvox: 'darkvox.ts', anatomy: 'anatomy.ts' }[style];
+  const script = { s1: 's1url.ts', s4: 's4.ts', s5: 's5.ts', darkvox: 'darkvox.ts', anatomy: 'anatomy.ts', combined: 'combined.ts' }[style];
   const a = style === 's1' ? [url] : ['--url', url];
   const t0 = Date.now();
   return new Promise((res, rej) => {

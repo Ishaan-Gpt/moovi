@@ -62,7 +62,7 @@ export async function run(o: RunInput, h: Hooks = {}): Promise<RunResult> {
   s = Date.now(); C.begin('voice');
   const planP = planFilm({ id, script, lines, slotNeeds, facts, brand: name, line, seed, signal: o.signal, log });
   planP.catch(() => undefined);
-  await tts(dir, 'en-US-AndrewMultilingualNeural', '+0%', { signal: o.signal, log: l => { log(l); h.progress?.(l.slice(0, 60)); } });
+  await tts(dir, o.voice ?? 'en-US-AndrewMultilingualNeural', o.rate ?? '+0%', { signal: o.signal, log: l => { log(l); h.progress?.(l.slice(0, 60)); } });
   const words = JSON.parse(readFileSync(join(dir, 'words.json'), 'utf8')) as Word[];
   lap('voice', s);
   s = Date.now(); C.begin('plan');

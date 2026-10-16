@@ -11,7 +11,8 @@ export function makeClip(url) {
   v.style.cssText = 'position:fixed;left:0;top:0;width:4px;height:4px;opacity:0.02;pointer-events:none;z-index:-1';
   const clip = { v, dur: 0, ok: false, w: 0, h: 0, at: -1 };
   clip.ready = new Promise(res => {
-    const done = ok => { clip.ok = ok && v.videoWidth > 0; clip.dur = v.duration || 0; clip.w = v.videoWidth; clip.h = v.videoHeight; res(clip.ok); };
+    let settled = false;
+    const done = ok => { if (settled) return; settled = true; clip.ok = ok && v.videoWidth > 0; clip.dur = v.duration || 0; clip.w = v.videoWidth; clip.h = v.videoHeight; res(clip.ok); };
     // a recorded WebM has no duration in its header (Infinity): seeking far past the end makes the browser find it
     v.addEventListener('loadedmetadata', () => { if (Number.isFinite(v.duration)) return done(true); const fix = () => { if (!Number.isFinite(v.duration)) return; v.removeEventListener('timeupdate', fix); v.currentTime = 0; done(true); }; v.addEventListener('timeupdate', fix); v.currentTime = 1e7; }, { once: true });
     v.addEventListener('error', () => done(false), { once: true });

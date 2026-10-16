@@ -48,6 +48,7 @@ function page(ref: PreviewRef): string {
     case 's5-player': return S5_PAGE;
     case 'darkvox-player': return DV_PAGE;
     case 'anatomy-player': return AN_PAGE;
+    case 'mp4': return '<!doctype html><p>This version is a finished MP4.</p>';
   }
 }
 
