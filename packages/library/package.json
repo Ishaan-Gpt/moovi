@@ -10,7 +10,8 @@
     "./style-1": "./src/style-1/index.ts",
     "./style-1/templates": "./src/style-1/templates/templates.ts",
     "./dark-vox": "./src/dark-vox/tokens.ts",
-    "./anatomy": "./src/anatomy/tokens.ts"
+    "./anatomy": "./src/anatomy/tokens.ts",
+    "./camera": "./src/camera/index.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",

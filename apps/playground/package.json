@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "@moovi/brand": "workspace:*",
-    "@moovi/character": "workspace:*"
+    "@moovi/character": "workspace:*",
+    "@moovi/library": "workspace:*"
   },
   "devDependencies": {
     "typescript": "5.9.3",
