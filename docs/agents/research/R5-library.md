@@ -245,3 +245,52 @@ Highest return first: **stock footage graph, LUTs, overlays, hook patterns, edit
 - Is Edge TTS acceptable for a paid product? If not, voices need Kokoro or ElevenLabs-with-user-key before launch.
 - Is attribution in the film description acceptable for CC BY music, or do we need a no-attribution-only music set?
 - Should the unified library carry a `runtime` field so one node can have both a style-1 and a visual implementation?
+
+## 8. What works on the user's real footage (added for @Claude1's 07:36 ask)
+
+"Footage" here means the user's own video as a full-frame base layer, with our words, moves and sound on top. Two
+renderers can carry it today: the visual compositor (a clip plays frame-accurately on a panel, a window, a phone
+screen or a full-bleed backdrop, `visual/page/clips.js`) and the style-1 canvas (a `clip` slot, `clip-grade`). I read
+the code for each item below; none was rendered on a user clip, so "yes" means the mechanism fits, not that it was
+tested. The edit path (R3/R1) decides which renderer carries the base layer.
+
+**Captions** (the strongest fit, they were built to lie over footage)
+
+| Caption | On real footage | Note |
+|---|---|---|
+| `caption-pop`, `caption-karaoke` (`router/captions-kit.ts`) | **yes** | drawn as an alpha overlay (black/white diff), explicitly meant to lie over footage, maps and stages |
+| ASS style (`router/captions.ts`, `assFile`) | **yes** | burns in with ffmpeg; white, dark outline, key word in accent |
+| visual caption band (`visual/page/compose.js`) | **yes** | inverts to white ink on a dark scrim when a backdrop is video |
+| text looks (ink, accent slam, serif gold, premium, ...) | **yes, as titles** | canvas text over any layer; not word-synced captions |
+| `phoneCaption` styles (plain, stroke, box, hormozi) | **no** | they draw on a phone mock's screen, not on the frame |
+| all of them | **missing: placement** | nothing keeps captions off the speaker's face or burned-in subtitles; needs a face/subject box (e.g. MediaPipe, Apache-2.0) and a safe-zone rule per format |
+
+**Camera moves** (they scale or move the whole frame, so a full-bleed clip rides along)
+
+| Move | On real footage | Note |
+|---|---|---|
+| `push-in`, `punch-in`, `roll-settle`, `roll-punch`, `pull-out` (scale 1.0 to 1.18, roll up to 1 degree) | **yes** | digital crop of the source; fine on 1080p at under about 1.2x |
+| `dive-to-detail` (to 1.9x), `opening-zoom-out` (3x to 6x) | **only on high-res or cropped-in-advance sources** | 1.9x of a 1080p clip is soft; needs a 4K source or a stated resolution check |
+| `reveal-pull` | **no** | assumes the clip is a pane inside a captured UI |
+| visual `push`, `pull`, `drift-left/right`, `orbit`, `rise`, `tilt` | **yes** | move a 3D camera over a clip on a plane, so they give parallax against other layers; each also carries a handheld wobble, which on top of already-shaky user footage may need a "stabilised" switch |
+| camera angles (low, high, Dutch, over-shoulder) | **n/a** | they describe how it was filmed, not something we apply; only reframing (crop, tilt, roll) is possible after the fact |
+
+**Transitions**
+
+| Transition | On real footage | Note |
+|---|---|---|
+| `hard-cut-on-beat`, `riser-into-cut`, `push-through`, `zoom-out-open` | **yes** | scale and sound only |
+| `slide-up/down/left/right/wide` | **yes with overscan** | they shift the whole scene layout 300 to 500 px, which reveals the stage behind a full-frame clip unless the clip is scaled up or the stage colour is dark |
+| visual `whip-left/right`, `push-up`, `slide-down`, `zoom-through` | **yes** | operate on whole scene groups with motion blur, so they suit two clips |
+| `pull-out-reveal` | **no** | needs a UI pane to pull out to |
+| `glide-out-before-cut`, `shatter-out`, `collapse-to-point`, `search-to-site`, `page-dissolve`, `line-swap` | **no** | they act on props, UI and text, not on the picture |
+| not built, needed for footage | **missing** | J-cut and L-cut (audio leads or trails the picture), match cut, jump cut with a 1.05 to 1.1 punch-in, speed ramp, freeze frame, cross-dissolve |
+
+**Effects on footage:** `clip-grade`, `motion-blur`, `grain-vignette`, `dim-back` (behind captions) and the glows apply;
+the word and object effects apply to the overlays we draw over it. Colour matching between two different clips is not
+built.
+
+**Takeaway:** captions and scale-based moves already fit real footage; most of the 16 style-1 transitions do not (about
+half are for props and UI); and the five things an editor does to footage most (silence and filler cuts, J/L cuts, jump
+cuts with punch-ins, speed ramps, subject-aware caption placement) are not in the library at all. These belong in the
+new categories of section 5 (edit rhythms, speed ramps, reframing).
