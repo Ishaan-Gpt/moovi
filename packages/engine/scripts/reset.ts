@@ -5,6 +5,7 @@
 import { CRAFT, SYS, closeMemory, craft, dropGraph, ensureSys, health, listGraphs, run, seedCraft, seedSignatures, seedStylePackage } from '@moovi/graph';
 import { PACKAGES, SIGNATURES, type StylePackage } from '@moovi/skills';
 import { S1_PRESETS, S1_PRESET_FLOWS } from '@moovi/skills';
+import { seedLibraryGraph } from '../src/library/seed';
 
 /** Brand and client-film names that must never be in craft (the owner's MotionEasy brands and films). */
 const BRAND = /captions ?easy|eegnite|\boped\b|\bce[0-9]?-[0-9]{2}\b|eg-avatar|\bnb-01\b|\beg-01\b|insiderforce/i;
@@ -29,13 +30,14 @@ const seedPkg = (p: StylePackage, extra: Partial<Parameters<typeof seedStylePack
 const s1 = await seedPkg(PACKAGES.s1!, { presets: S1_PRESETS.map(p => ({ ...p, roles: [...p.roles], needs: [...p.needs] })), presetFlows: S1_PRESET_FLOWS });
 const un = await seedPkg(PACKAGES.unique!);
 const sigs = await seedSignatures(SIGNATURES.map(s => ({ ...s, formats: [...s.formats] })));
+const lib = await seedLibraryGraph();
 await ensureSys();
 
 // the scrub check: every craft node's properties, scanned for brand and client-film names
 const rows = await run<{ label: string; id: string; props: Record<string, unknown> }>(CRAFT, craft.allProps);
 const leaks = rows.filter(r => BRAND.test(JSON.stringify(r.props)));
 const counts = await run<{ label: string; n: number }>(CRAFT, craft.counts);
-console.log(JSON.stringify({ craft: c, s1, unique: un, signatures: sigs, counts: Object.fromEntries(counts.map(x => [x.label, x.n])) }, null, 1));
+console.log(JSON.stringify({ craft: c, s1, unique: un, signatures: sigs, library: lib, counts: Object.fromEntries(counts.map(x => [x.label, x.n])) }, null, 1));
 console.log(`graphs now: ${(await listGraphs()).join(', ')}`);
 console.log(`seeded in ${((performance.now() - t0) / 1000).toFixed(1)} s`);
 if (leaks.length) {
