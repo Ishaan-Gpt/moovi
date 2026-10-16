@@ -91,12 +91,14 @@ async function openaiTranscribe(file: string, model: string, prompt: string, tim
 }
 
 /** The accurate transcript (no timings), or null when no such model is reachable. */
-export async function cleanText(audio: string, prompt: string): Promise<string | null> {
+export async function cleanText(audio: string, prompt: string, alt?: string): Promise<string | null> {
   if (!process.env.OPENAI_API_KEY) return null;
-  // asked twice at once (with and without the names prompt): on a noisy take one answer sometimes stops early or comes
-  // back in another script; the longer Latin-script answer wins
+  // asked up to three times at once (with and without the names prompt, and on the clip after its opening piece, where
+  // the set-up talk usually is): on a noisy take one answer sometimes stops early or comes back in another script; the
+  // longer Latin-script answer wins
   const model = process.env.MOOVI_TEXT_MODEL ?? 'gpt-4o-transcribe';
-  const got = await Promise.all([prompt, ''].map(p => openaiTranscribe(audio, model, p, false).then(r => r.text.replace(/[^\u0000-\u024F\u2018-\u201D\s]+[^.?!]*[.?!]?/g, ' ').replace(/\s+/g, ' ').trim()).catch(() => '')));
+  const asks: [string, string][] = [[audio, prompt], [audio, ''], ...(alt ? [[alt, prompt] as [string, string]] : [])];
+  const got = await Promise.all(asks.map(([f, p]) => openaiTranscribe(f, model, p, false).then(r => r.text.replace(/[^\u0000-\u024F\u2018-\u201D\s]+[^.?!]*[.?!]?/g, ' ').replace(/\s+/g, ' ').trim()).catch(() => '')));
   return got.sort((a, b) => b.length - a.length)[0] || null;
 }
 
@@ -364,7 +366,7 @@ body { margin:0; width:540px; height:960px; display:flex; flex-direction:column;
  * card states as transparent frames); ffmpeg only scales and lays them per frame.
  */
 export interface PullBack { seg: number; d: number; list: string[]; plate?: string; bezel?: string; cards?: string[] }
-export const PHONE = { s: 0.56, border: 26 };
+export const PHONE = { s: 0.64, border: 26 };
 
 async function drawPullBack(pb: PullBack, dir: string): Promise<void> {
   mkdirSync(dir, { recursive: true });
@@ -390,12 +392,12 @@ async function drawPullBack(pb: PullBack, dir: string): Promise<void> {
     await p.setViewportSize({ width: 540, height: 960 });
     pb.cards = [];
     for (let n = 1; n <= pb.list.length; n++) {
-      const items = pb.list.slice(0, n).map((t, k) => `<div class="k" style="top:${300 + k * 120}px;left:${k % 2 ? 300 : 286}px;transform:rotate(${k % 2 ? 2.5 : -2.5}deg)">${t}</div>`).join('');
-      const pts = pb.list.slice(0, n).map((_, k) => `${(k % 2 ? 300 : 286) + 8},${300 + k * 120 + 30}`).join(' ');
+      const items = pb.list.slice(0, n).map((t, k) => `<div class="k" style="top:${280 + k * 140}px;left:${k % 2 ? 292 : 276}px;transform:rotate(${k % 2 ? 2.5 : -2.5}deg)">${t}</div>`).join('');
+      const pts = pb.list.slice(0, n).map((_, k) => `${(k % 2 ? 292 : 276) + 8},${280 + k * 140 + 34}`).join(' ');
       await p.setContent(`<html><head><style>${css} body{background:transparent;}
-        .k{position:absolute;width:224px;padding:16px 16px;box-sizing:border-box;border-radius:20px;background:#fff;font-family:B;font-weight:800;font-size:25px;letter-spacing:-.02em;color:#14110F;box-shadow:0 8px 20px rgba(60,40,10,.25);}
+        .k{position:absolute;width:236px;padding:16px 18px;box-sizing:border-box;border-radius:20px;background:#fff;font-family:B;font-weight:800;font-size:30px;line-height:1.05;letter-spacing:-.02em;color:#14110F;box-shadow:0 8px 20px rgba(60,40,10,.25);}
         svg{position:absolute;inset:0}</style></head><body><svg width="540" height="960"><polyline points="${pts}" fill="none" stroke="#E5322D" stroke-width="5" stroke-dasharray="2 10" stroke-linecap="round"/>
-        ${pb.list.slice(0, n).map((_, k) => `<circle cx="${(k % 2 ? 300 : 286) + 8}" cy="${300 + k * 120 + 30}" r="8" fill="#E5322D"/>`).join('')}</svg>${items}</body></html>`);
+        ${pb.list.slice(0, n).map((_, k) => `<circle cx="${(k % 2 ? 292 : 276) + 8}" cy="${280 + k * 140 + 34}" r="8" fill="#E5322D"/>`).join('')}</svg>${items}</body></html>`);
       await p.evaluate('document.fonts.load("800 25px B")');
       const f = join(dir, `list-${n}.png`); await p.screenshot({ path: f, omitBackground: true }); pb.cards.push(f);
     }
@@ -454,6 +456,20 @@ export async function personMasks(video: string, start: number, n: number, dir: 
 }
 
 /** The behind-word picture: a 1080x1920 transparent frame with the word huge at head height. */
+/** A warm light-leak flash (transparent PNG), laid over a few jump cuts for 0.3 s. */
+async function drawLeak(dir: string): Promise<string> {
+  mkdirSync(dir, { recursive: true });
+  const out = join(dir, 'leak.png');
+  const { chromium } = await import('playwright-core');
+  const b = await chromium.launch({ headless: true, ...(config.chrome.path ? { executablePath: config.chrome.path } : { channel: config.chrome.channel }), args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu'] });
+  try {
+    const p = await b.newPage({ viewport: { width: 540, height: 960 }, deviceScaleFactor: 2 });
+    await p.setContent(`<html><body style="margin:0;width:540px;height:960px;background:radial-gradient(ellipse at 85% 20%,rgba(255,170,60,.85) 0%,rgba(255,120,40,.45) 28%,rgba(255,80,40,0) 60%),radial-gradient(ellipse at 10% 90%,rgba(255,210,120,.55) 0%,rgba(255,210,120,0) 45%);"></body></html>`);
+    await p.screenshot({ path: out, omitBackground: true });
+  } finally { await b.close().catch(() => undefined); }
+  return out;
+}
+
 async function drawBehind(word: string, dir: string, y = 560): Promise<string> {
   mkdirSync(dir, { recursive: true });
   const out = join(dir, 'behind.png');
@@ -499,7 +515,12 @@ export async function footageEdit(o: { input: string; out: string; dir: string; 
     await sh(config.ffmpeg, ['-nostdin', '-v', 'error', '-y', '-ss', a.toFixed(3), '-t', (b - a).toFixed(3), '-i', audio, '-c:a', 'libmp3lame', '-b:a', '64k', f]);
     const timed = await timedWords(f, o.dir, prompt);
     return { timed: timed.words.map(w => ({ ...w, t: +(w.t + a).toFixed(3), end: +(w.end + a).toFixed(3) })), by: timed.by };
-  }).concat([cleanText(audio, prompt).then(text => ({ timed: [] as Word[], by: text ?? '' }))])));
+  }).concat([(async () => {
+    let alt: string | undefined;
+    if (pieces.length > 1) { alt = join(o.dir, 'after-opening.mp3'); await sh(config.ffmpeg, ['-nostdin', '-v', 'error', '-y', '-ss', pieces[1]![0].toFixed(3), '-i', audio, '-c:a', 'libmp3lame', '-b:a', '64k', alt]).catch(() => { alt = undefined; }); }
+    const text = await cleanText(audio, prompt, alt);
+    return { timed: [] as Word[], by: text ?? '' };
+  })()])));
   // the accurate text is asked of the whole clip (on short pieces it answers worse: truncated, or the wrong language)
   const text = heard.pop()!.by || null;
   const timed = { words: heard.flatMap(h => h.timed), by: heard[0]?.by ?? 'none' };
@@ -567,6 +588,7 @@ export async function footageEdit(o: { input: string; out: string; dir: string; 
       try { const c = await drawCaptions(capWords, frames, { dir: capDir, keywords, look: 'caption-pop' }); return { c, look: 'CaptionsEasy caption-pop (fallback)', kinetic: false }; } catch { return null; }
     } finally { await closeCaptionsS1().catch(() => undefined); await closeCaptions().catch(() => undefined); }
   });
+  const leakP = lap('leak', () => drawLeak(join(o.dir, 'leak'))).catch(() => null);
   const endP = o.end?.title ? lap('endcard', () => drawEnd(o.end!, join(o.dir, 'end'))).catch(() => null) : Promise.resolve(null);
   // the pull-back: the longest cut after the first (not the one with the word behind him), 2.2 s or more
   const pbSeg = segs.map((sg, i) => ({ i, d: sg.b - sg.a })).filter(x => x.i > 0 && x.d >= 2.2 && x.i !== behind?.seg).sort((a, b) => b.d - a.d)[0];
@@ -592,7 +614,7 @@ export async function footageEdit(o: { input: string; out: string; dir: string; 
     }));
     return cards.filter((c): c is Card => !!c);
   });
-  const [caps, cards, endPng] = await Promise.all([capsP, cardsP, endP, behindP]);
+  const [caps, cards, endPng, , leak] = await Promise.all([capsP, cardsP, endP, behindP, leakP]);
   const END = endPng ? 1.4 : 0, total = outDur + END;
 
   // 3 + 6: frame, cut, overlay and mix in one encode
@@ -611,12 +633,12 @@ export async function footageEdit(o: { input: string; out: string; dir: string; 
       if (pb && pb.seg === i && pb.plate && pb.bezel && pb.cards?.length) {
         // shrink into the phone (0.15 s in, 0.35 s ramp), hold with the list, zoom back out over the last 0.4 s
         const e0 = `clip((t-0.15)/0.35,0,1)*clip((${(d - 0.05).toFixed(3)}-t)/0.4,0,1)`, e = `(${e0})*(${e0})*(3-2*(${e0}))`, S = `(1-${(1 - PHONE.s).toFixed(2)}*${e})`;
-        const X = `(W-w)/2-170*${e}`;
+        const X = `(W-w)/2-150*${e}`;
         parts.push(`[v${i}]trim=${s.a.toFixed(3)}:${s.b.toFixed(3)},setpts=PTS-STARTPTS,${frameOf(i)},scale=w='trunc(1080*${S}/2)*2':h=-2:eval=frame[pf${i}]`);
         ins.push('-loop', '1', '-framerate', '30', '-t', d.toFixed(3), '-i', pb.plate); const pl = nextIn();
         ins.push('-loop', '1', '-framerate', '30', '-t', d.toFixed(3), '-i', pb.bezel); const bz = nextIn();
         parts.push(`[${bz}:v]format=yuva420p,scale=w='trunc(${1080 + 2 * PHONE.border}*${S}/2)*2':h=-2:eval=frame[pz${i}]`);
-        parts.push(`[${pl}:v]format=yuv420p,setsar=1[pp${i}];[pp${i}][pf${i}]overlay=x='${X}':y='(H-h)/2'[pa${i}];[pa${i}][pz${i}]overlay=x='${X}':y='(H-h)/2':enable='between(t,0.16,${(d - 0.06).toFixed(3)})'[pb${i}]`);
+        parts.push(`[${pl}:v]format=yuv420p,setsar=1[pp${i}];[pp${i}][pf${i}]overlay=x='${X}':y='(H-h)/2'[pa${i}];[pa${i}][pz${i}]overlay=x='${X}':y='(H-h)/2':enable='between(t,0.26,${(d - 0.16).toFixed(3)})'[pb${i}]`);
         let last = `pb${i}`; const hold0 = 0.55, step = (d - 0.5 - hold0) / pb.cards.length;
         pb.cards.forEach((f, n) => {
           ins.push('-loop', '1', '-framerate', '30', '-t', d.toFixed(3), '-i', f); const li = nextIn();
@@ -657,6 +679,13 @@ export async function footageEdit(o: { input: string; out: string; dir: string; 
       // slides in from its side over 0.2 s, then holds
       parts.push(`[${cur}][k${k}]overlay=x='${from}+(${xIn}-(${from}))*min(1,(t-${c.at.toFixed(3)})/0.2)':y=${CARD.y}:eof_action=pass:enable='between(t,${c.at.toFixed(3)},${(c.at + c.dur).toFixed(3)})'[o${k}]`);
       cur = `o${k}`; idx++;
+    }
+    // light leaks on the odd cuts (the even ones zoom through)
+    const leakAt = segs.map((_, i) => i).filter(i => i % 2 === 1 && (pull as PullBack | null)?.seg !== i).map(i => segOut(i));
+    for (const [n, t] of (leak ? leakAt : []).entries()) {
+      ins.push('-loop', '1', '-framerate', '30', '-t', '0.45', '-i', leak!); const li = nextIn();
+      parts.push(`[${li}:v]format=yuva420p,fade=t=in:st=0:d=0.1:alpha=1,fade=t=out:st=0.12:d=0.3:alpha=1,setpts=PTS-STARTPTS+${Math.max(0, t - 0.08).toFixed(3)}/TB[lk${n}]`);
+      parts.push(`[${cur}][lk${n}]overlay=0:0:eof_action=pass[lv${n}]`); cur = `lv${n}`;
     }
     if (caps) {
       if (caps.kinetic) ins.push('-framerate', '30', '-i', (caps.c as Kinetic).pattern); else ins.push('-i', join(caps.c.dir, 'captions.mkv'));
