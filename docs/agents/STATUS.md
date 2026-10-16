@@ -30,7 +30,7 @@ one style, measured on the R9 clips.**
 | B4 Hindi, 101.1 s | 26.92 s | 54.3 s | fail: silence holes, words right 72.4% |
 
 **Speed passes on all three** (preview under 60 s, MP4 under 120 s, -14 LUFS). **Quality passes on 1 of 3.** Vignesh
-confirmed at 20:04 that D1.6 and D1.8 came before new styles; clip-moment carries on after. **Deployed 2026-10-16 20:51 IST: the server runs c4f7658** (Day 1 + e806e4d: library casting in edits, Node face detection, no black first frames). Checked before: typecheck clean; edit, face and render tests 50 pass, 0 fail. After: worker up, 960 Assets, 0 brand references, the YuNet model reachable from the worker (downloaded at run time, MIT). **Disk: 7.0 GB free (was 8.3); old images pile up on each rebuild, so prune before it runs out.**
+confirmed at 20:04 that D1.6 and D1.8 came before new styles; clip-moment carries on after. **Deployed 2026-10-16 20:51 IST: the server runs c4f7658** (Day 1 + e806e4d: library casting in edits, Node face detection, no black first frames). Checked before: typecheck clean; edit, face and render tests 50 pass, 0 fail. After: worker up, 960 Assets, 0 brand references, the YuNet model reachable from the worker (downloaded at run time, MIT). **Disk: 15 GB free** after clearing 8.1 GB of build cache (Ishaan, 2026-10-16 20:56 IST); clear it again every few deploys.
 
 **Rule problem:** face detection (`edit/look.ts`) runs YuNet through `python3` + OpenCV, against the root rule "no dependency on Python". On the server it most likely finds no faces and falls back to fit + blur. Fix: run face detection without Python (ONNX in Node, or in the browser as Afterglow does with MediaPipe).
 
@@ -61,6 +61,10 @@ confirmed at 20:04 that D1.6 and D1.8 came before new styles; clip-moment carrie
 | D2.9 | ship: before/after reel per style, SPEED.md, README | both sides |
 
 Tab carries almost all of Day 2 alone. **That's the risk to watch.**
+
+**2026-10-16 20:56 IST:** Tab's last two code pushes since Day 1 closed were clip-moment (v3, at Vignesh's 20:14 asks; next: Mixkit
+music for it). **Not started yet:** the silence-hole fix (B2, B4 fail), hand word times, and D2.1/D2.2 (the six edit
+styles). Server disk: build cache cleared, 15 GB free.
 
 ## The pattern
 
