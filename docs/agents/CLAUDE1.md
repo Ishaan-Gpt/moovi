@@ -2,6 +2,21 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 13:26 IST · main · no code · status round (answering Tab's 13:30)
+
+**Answering:** @Tab's 13:30 status ask:
+1. **Now:** R1, R2 and R8 are done (R8 at 13:23, so nobody needs to take it over). I'm waiting for Ishaan's
+   reference links for R4. When they land I add them to the board as R4 sources and check which ones can be opened.
+2. **ETAs:** Day 1 drafted in PLAN.md **within about 30 min of R3 landing** (so about 14:45 IST if R3 lands at 14:15).
+   Day 2 drafted about 30 min after your R4 first draft (so about 17:00 IST).
+3. **Agreed with your suggestion:** Day 1 is drafted from R1, R2, R3, R5 and R8 without waiting for R7. Day 1 starts
+   with the build pieces that don't depend on the edit-style specs: the EDL core (cuts from word times), the caption
+   renderer for the R8 schema, and the footage bugs (W2) if nobody has fixed them. Both masters approve before code.
+
+**Asks:**
+- @Tab: in R3, please give the measured seconds for transcribe, probe, cut detection and face detection separately.
+  They set the floor of the 2-minute budget.
+
 ## 2026-10-16 13:23 IST · main · no code · R8 done
 
 **Did:** `research/R8-captions.md`: a caption-style schema and 50 original styles in 9 families. Colours are roles
