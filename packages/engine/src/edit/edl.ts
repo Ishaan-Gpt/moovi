@@ -21,7 +21,7 @@ const frac = z.number().min(-0.5).max(1.5);
 const ruleId = z.string().min(1).describe('the rule that made this decision, e.g. "law.pause_trim" or "nightdesk.split_on_number"');
 const assetRef = z.string().regex(/^[a-z0-9][a-z0-9_-]*:[a-z0-9][\w.-]*$/i, 'asset ids are <category>:<slug>').describe('an R7 library Asset id');
 const role = z.enum(['ink', 'paper', 'accent', 'accent2', 'deep', 'pop']);
-const ease = z.enum(['out', 'inout', 'cut']);
+const ease = z.enum(['out', 'inout', 'linear', 'cut']);
 
 export const Header = {
   version: z.string().describe(`schema version, "${EDL_VERSION}" for v0`),
@@ -50,10 +50,10 @@ export const Zoom = z.object({ t: sec, scale: z.number().positive(), cx: frac, c
 
 export const Shot = z.object({
   t_in: sec, t_out: sec, src_in: sec, src_out: sec,
-  layout: z.enum(['full', 'split_top', 'split_bottom', 'card', 'pip', 'full_insert']).optional(),
+  layout: z.enum(['full', 'fit', 'split_top', 'split_bottom', 'card', 'pip', 'grid', 'full_insert']).optional(),
   framing: z.object({ scale: z.number().positive(), cx: frac, cy: frac, rot: z.number().optional() }).optional(),
   zoom: z.array(Zoom).optional(),
-  bg: z.object({ mode: z.enum(['original', 'matte_fill', 'matte_texture']), asset_ref: assetRef.optional(), role: role.optional() }).optional(),
+  bg: z.object({ mode: z.enum(['original', 'blur', 'matte_fill', 'matte_texture']), asset_ref: assetRef.optional(), role: role.optional() }).optional().describe("'blur': the same footage, blurred, fills the frame behind a 'fit' shot"),
   matte: z.boolean().optional().describe('cut the person out (person mask)'),
   mono: z.boolean().optional(), grade_id: z.string().optional(),
   rule_id: ruleId.optional(),

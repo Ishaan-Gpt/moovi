@@ -65,3 +65,17 @@ test('EDL v0: the stand-in rough plan is a valid EDL too', () => {
   const e = roughEdl({ file: 'src.mp4', duration: 4, w: 1080, h: 1920, fps: 30 }, words, { palette: { ink: '#000', paper: '#fff', accent: '#f00', accent2: '#0f0', deep: '#000', pop: '#fff' } });
   assert.deepEqual(validateEdl(e).problems.filter(p => !p.startsWith('version')), []);
 });
+
+test('EDL v0: the player fields Claude 1 added (fit over a blurred fill, grid, linear zoom) validate', () => {
+  const words = [{ word: 'Hello', t: 0.5, end: 0.9 }, { word: 'world.', t: 0.95, end: 1.4 }];
+  // a landscape clip into a vertical film: the stand-in plan emits layout 'fit' with bg 'blur'
+  const e = roughEdl({ file: 'src.mp4', duration: 2, w: 1920, h: 1080, fps: 30 }, words, { palette: { ink: '#000', paper: '#fff', accent: '#f00', accent2: '#0f0', deep: '#000', pop: '#fff' } });
+  assert.equal(e.shots[0]!.layout, 'fit');
+  assert.equal(e.shots[0]!.bg?.mode, 'blur');
+  e.shots[0]!.zoom = [{ t: e.shots[0]!.t_in, scale: 1.1, cx: 0.5, cy: 0.5, ease: 'linear', dur: 0.5 }];
+  assert.deepEqual(validateEdl(e).problems.filter(p => !p.startsWith('version')), []);
+  const g = structuredClone(e); g.shots[0]!.layout = 'grid';
+  assert.deepEqual(validateEdl(g).problems.filter(p => !p.startsWith('version')), []);
+  const bad = structuredClone(e) as unknown as { shots: { layout: string }[] }; bad.shots[0]!.layout = 'mosaic';
+  assert.ok(validateEdl(bad).problems.length > 0);
+});

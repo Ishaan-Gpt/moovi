@@ -205,10 +205,12 @@
       "type": "string",
       "enum": [
        "full",
+       "fit",
        "split_top",
        "split_bottom",
        "card",
        "pip",
+       "grid",
        "full_insert"
       ]
      },
@@ -268,6 +270,7 @@
          "enum": [
           "out",
           "inout",
+          "linear",
           "cut"
          ]
         },
@@ -291,12 +294,14 @@
       }
      },
      "bg": {
+      "description": "'blur': the same footage, blurred, fills the frame behind a 'fit' shot",
       "type": "object",
       "properties": {
        "mode": {
         "type": "string",
         "enum": [
          "original",
+         "blur",
          "matte_fill",
          "matte_texture"
         ]
