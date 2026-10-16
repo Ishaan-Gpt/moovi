@@ -77,4 +77,4 @@ const C = {
   ember: '#ffb070', emberCore: '#fff3dc', gold: '#ffe14a', ice: '#8fe8ff',
   roomTop: '#3d2b21', roomMid: '#2a1d16', roomLow: '#140d09',
 };
-const F = { cond: 'Anton', sans: 'InterTight', serif: 'Serif' };
+const F = { cond: 'Anton', sans: 'InterTight', serif: 'InstrumentSerif' };

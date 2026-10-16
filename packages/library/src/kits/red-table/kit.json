@@ -1,0 +1,111 @@
+{
+  "id": "red-table",
+  "name": "Red Table",
+  "about": "A hand-made tutorial kit: a red paper table where cut-out stickers drop, press and settle and get labelled in boiling marker; hand-drawn marker words that scribble in and out on twos; design-tool type cards with a dashed selection box whose handles drag the word to size; one tall condensed italic serif word filling the frame with an eye as the dot of its i; flipbook numbers that count like pages; an iPad on the table with app screens and a pencil; a black brush card; a cream skeuomorphic plugin panel (knob, faders, pads, presets, LED keys, ANIMATE key) with two letter tiles; condensed italic serif captions. Learned from reference r4, built with ishaan-motion.",
+  "from": [
+    "ref:r4"
+  ],
+  "styles": [
+    "paper-craft",
+    "brand-promo"
+  ],
+  "load": [
+    "../motion/core.js",
+    "../motion/type.js",
+    "../motion/sfx.js",
+    "../level-ladder/world.js",
+    "inserts.js"
+  ],
+  "room": {
+    "monitor": false,
+    "wall": [
+      "#d8d2c8",
+      "#c4bdb2",
+      "#8a8378"
+    ],
+    "light": "rgba(255,248,235,",
+    "torso": [
+      "#b8892a",
+      "#d4a63a",
+      "#e8bf5a"
+    ],
+    "collar": "#a07420",
+    "arms": [
+      "#b8892a",
+      "#d4a63a"
+    ]
+  },
+  "palette": {
+    "table": "#c4262c",
+    "tableDeep": "#7a1015",
+    "paper": "#f3eee4",
+    "ink": "#151515",
+    "white": "#f7f6f2",
+    "accent": "#ff4a1a",
+    "panel": [
+      "#f2e9d6",
+      "#d9ccb2"
+    ]
+  },
+  "type": {
+    "display": {
+      "family": "Instrument Serif",
+      "style": "italic",
+      "licence": "OFL",
+      "use": "the tall word (scale 0.78 x 2.02) and captions (0.74 x 1.12); load it under the family name InstrumentSerif, never 'Serif'"
+    },
+    "marker": {
+      "family": "Permanent Marker",
+      "licence": "Apache 2.0 (Google Fonts)",
+      "use": "scribbled words, boil on twos"
+    },
+    "hand": {
+      "family": "Gochi Hand",
+      "licence": "OFL",
+      "use": "small hand labels on the table"
+    },
+    "card": {
+      "family": "Archivo Black",
+      "licence": "OFL",
+      "use": "type cards in a selection box"
+    },
+    "label": {
+      "family": "Barlow Condensed",
+      "weight": 300,
+      "licence": "OFL",
+      "use": "number labels, subtitles"
+    }
+  },
+  "motion": {
+    "engine": "kits/motion (ishaan-motion)",
+    "sticker": {
+      "drop": 0.42,
+      "pressAt": 0.36,
+      "from": 700
+    },
+    "scribble": {
+      "boilFps": 12,
+      "leadIn": 0.2
+    },
+    "boxWord": {
+      "s0": 0.55,
+      "dur": 0.5,
+      "boxOff": 1.2
+    },
+    "tallWord": {
+      "settle": 0.45,
+      "from": 1.18
+    }
+  },
+  "sound": "kits/motion/sfx.js: the engine sfx map by event (key-word, pop, hard-hit, stat, word), added only where the reference has no hit",
+  "frame": {
+    "designW": 1080,
+    "designH": 1920,
+    "captionY": {
+      "table": 0.9,
+      "full": 0.885,
+      "underCard": 0.935
+    }
+  },
+  "taste": "Keep scribbled words inside a measured max width (1380 design px at sx 0.72); captions never sit on a card, move them under it."
+}

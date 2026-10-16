@@ -75,10 +75,12 @@ function room(t, cam) {
       const y = [640, 800, 960][i % 3], x = 780 + rand(i + 5) * 320, h = 30 + rand(i + 9) * 70, w = 18 + rand(i + 13) * 50;
       ctx.fillStyle = rand(i + 21) > 0.7 ? '#5a4232' : '#140d09'; ctx.fillRect(x, y - h, w, h);
     }
-    ctx.fillStyle = '#0d0a08'; ctx.fillRect(-40, 840, 330, 200);
-    const scr = ctx.createLinearGradient(0, 850, 0, 1030); scr.addColorStop(0, '#1d2a38'); scr.addColorStop(1, '#0f1720');
-    ctx.fillStyle = scr; ctx.fillRect(-28, 852, 306, 176);
-    ctx.fillStyle = 'rgba(140,180,220,0.06)'; ctx.fillRect(-28, 852, 306, 60);
+    if (ROOM.monitor !== false) { // a kit can leave the monitor out (it reads as a black box behind big words)
+      ctx.fillStyle = '#0d0a08'; ctx.fillRect(-40, 840, 330, 200);
+      const scr = ctx.createLinearGradient(0, 850, 0, 1030); scr.addColorStop(0, '#1d2a38'); scr.addColorStop(1, '#0f1720');
+      ctx.fillStyle = scr; ctx.fillRect(-28, 852, 306, 176);
+      ctx.fillStyle = 'rgba(140,180,220,0.06)'; ctx.fillRect(-28, 852, 306, 60);
+    }
   });
   // plane 3: the chair back behind the figure
   plane(cam, 0.8, () => {
