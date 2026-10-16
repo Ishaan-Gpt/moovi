@@ -28,3 +28,9 @@ The recorder is about 2 to 4 times faster but drops and repeats frames whenever 
 
 - Stock footage: Mixkit, Pixabay (Pixabay Content License), Wikimedia Commons, NASA, Internet Archive; licences are kept on every clip.
 - 3D models and HDRIs: [Poly Haven](https://polyhaven.com), CC0, fetched at render time into `<data>/cache/polyhaven/` (1k files, never committed). Thanks to Poly Haven and its artists.
+
+## Footage edit (the user's own clip)
+
+`src/router/footage-edit.ts` edits a raw talking clip into a reel (CLI: `pnpm --filter @moovi/engine exec tsx scripts/footage-edit.ts <in.mp4> <out.mp4> [workdir] [names] [fixes json] [kinetic|ce04]`).
+Stages, timed in `report.json`: hear (whisper-1 per pause-split piece, gpt-4o-transcribe on the whole clip for the words, aligned), cut (take window after the slate, pauses from the loudness envelope), captions (`kinetic.ts`, or Ishaan's I'm your caption with `ce04`), cards and the list for the phone pull-back (one model call, clips from the free footage sources), text behind the speaker (`MOOVI_VISION_PY`: a python with onnxruntime and opencv; the U2-Net-p mask model is fetched into `~/.cache/moovi`), end card, one encode. Environment: `OPENAI_API_KEY` (and `MOOVI_OPENAI_BASE` for a proxy), the engine's usual model key for the card planner. Text is drawn in the browser, so an ffmpeg without `drawtext` works.
+

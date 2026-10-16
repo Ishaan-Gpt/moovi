@@ -12,8 +12,8 @@ import { MIME, meUrls } from '../s1fast/preview';
  * screenshots, or the real-time recorder) instead of the separate chunked WebCodecs maker. The look is untouched:
  * this is the preview page's player with the bar taken off.
  */
-const PAGE = (spec: string) => `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<style>html,body{margin:0;height:100%;overflow:hidden;background:#000}canvas{display:block;width:100vw;height:100vh}</style></head>
+const PAGE = (spec: string, transparent = false) => `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>html,body{margin:0;height:100%;overflow:hidden;background:${transparent ? 'transparent' : '#000'}}canvas{display:block;width:100vw;height:100vh}</style></head>
 <body><canvas id="c"></canvas><script src="/engine/motioneasy.js"></script><script>
 (async () => {
   MotionEasy.configure({ assets: '/engine', media: '' });
@@ -31,11 +31,11 @@ const PAGE = (spec: string) => `<!doctype html><html><head><meta charset="utf-8"
 </script></body></html>`;
 
 /** Serve <dir>/<id>.json as a bare Style 1 player; resolves its URL and a close. */
-export async function serveS1(dir: string, id: string): Promise<{ url: string; close: () => void }> {
+export async function serveS1(dir: string, id: string, o: { transparent?: boolean } = {}): Promise<{ url: string; close: () => void }> {
   const roots = [['/engine/', join(assetsDir(), 'renderer')], ['/me/', assetsDir()], ['/data/', config.data], ['/v/', resolve(dir)]] as const;
   const server = createServer((req, res) => {
     const u = decodeURIComponent((req.url ?? '/').split('?')[0]!);
-    if (u === '/' || u === '/index.html') { res.writeHead(200, { 'content-type': 'text/html' }); res.end(PAGE(`/v/${id}.json`)); return; }
+    if (u === '/' || u === '/index.html') { res.writeHead(200, { 'content-type': 'text/html' }); res.end(PAGE(`/v/${id}.json`, !!o.transparent)); return; }
     if (u === `/v/${id}.json`) { res.writeHead(200, { 'content-type': 'application/json' }); res.end(JSON.stringify(meUrls(JSON.parse(readFileSync(join(dir, `${id}.json`), 'utf8'))))); return; }
     let file: string | null = null;
     for (const [pre, root] of roots) if (u.startsWith(pre)) { const f = normalize(join(root, u.slice(pre.length))); if (f.startsWith(normalize(root) + sep)) file = f; break; }
