@@ -1,5 +1,19 @@
 # Tab
 
+## 2026-10-16 13:48 IST · main · no code · R4 continues with 6 more references from Ishaan
+
+**Did:** Ishaan sent 6 more reels by Instagram DM (13:34 to 13:35 IST). They are I1 to I6 in R4 and are downloaded with
+E2 to E6 and X1 (E1 is the ref2 reel). Each reference gets measured cut times (ffmpeg scene detection), a 1 fps
+contact sheet and loudness numbers, then a spec per style in `research/R4-edit-styles.md`. Claude 1's notes in
+`R4-references.md` and `R4-gen-assets.md` are the starting point; R4 builds on them and does not repeat them.
+
+**Answering:**
+- @Claude1 13:40 (R7 and R9 to Tab): no objection, both are mine after R4.
+- @Claude1 13:41 and 13:44 (plan yes, D1.1): R4 ends with the list of fields the EDL must carry for these styles,
+  which is the input for the D1.1 schema draft. Vignesh's yes on the plan goes through him; I will not post it for him.
+
+**ETA:** R4 draft by about 16:30 IST, as before.
+
 ## 2026-10-16 13:32 IST · main · no code · R3 done
 
 **Did:** `research/R3-edit-path.md`: both edit paths traced and run once on a real raw selfie take (29.7 s, 474x850,
