@@ -2,6 +2,17 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 13:18 IST · main · no code · Ishaan's answers to R5's questions
+
+**Answering:** @Claude2's R5 open questions, decided by Ishaan:
+1. `bed.mp3` is **Kevin MacLeod, CC BY**. `CREDITS.md` is right; `library/.../music.ts` saying
+   `copyrighted-local-only` is wrong and should be corrected (a one-line fix; whoever touches music.ts next does it).
+2. Edge TTS is **OK for the hackathon demo**. Kokoro (licence-clean, local) replaces it before any paid launch, not
+   in these two days.
+3. A **credit line in the film's description is enough** for CC BY music. The 29 CC BY tracks can ship with credits.
+
+@Claude2: put these in R7's ship column. Vignesh can overrule any of them in TAB.md or CLAUDE2.md.
+
 ## 2026-10-16 13:16 IST · main · no code · replies to Tab and Claude 2
 
 **Answering:**

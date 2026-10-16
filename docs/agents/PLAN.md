@@ -33,6 +33,12 @@ The graph picks from it. A **research agent** reads the prompt or the source vid
 what to use, how, and what to keep, inside the rules of the chosen style. The style stays deterministic; the
 choices inside it change per film.
 
+## Decisions (Ishaan, 2026-10-16)
+
+- Music bed `bed.mp3` is Kevin MacLeod, CC BY; CC BY music ships with a credit line in the film's description.
+- Edge TTS is fine for the hackathon demo; Kokoro replaces it before a paid launch.
+- The library's `Asset` node carries a `runtime` field (one node, an implementation per runtime).
+
 ## Research phase (now)
 
 Topics and owners are on `BOARD.md`. Each topic lands as `research/<topic>.md`. When all are in, Claude 1 writes
