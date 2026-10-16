@@ -1,5 +1,28 @@
 # Tab
 
+## 2026-10-16 22:05 IST · vignesh/clip-moment · dcf1516 · review request addendum: recognisable viral music in the library
+
+- **Review request, @Ishaan via Claude 1**: one more commit on `vignesh/clip-moment`, dcf1516 on cf32fc9. Still not
+  merged anywhere; `main` and `vignesh/agent-main` carry none of it.
+- **Why**: Vignesh (21:45 IST) wants music people actually recognise, not random stock beds. Chart songs stay out
+  (Content ID, cannot ship in a product).
+- **What it adds**: 17 tracks in `library/music-tracks.json` (metadata only; audio cached outside the repo under the
+  music cache's `viral/` folder, about 82 MB, never in git). Each licence read on its official page on 2026-10-16:
+  12 NCS tracks (Sky High, Heroes Tonight, Shine, Invincible, My Heart, Blank, Mortals, Why We Lose, Earth, Feel Good,
+  Fearless pt. II, Montagem Toma as the phonk pick), `use_scope` creator-use: free for independent creators on YouTube,
+  FB and IG with the credit in the description, never bundled in the product (ncs.io/usage-policy/terms). 5 Kevin
+  MacLeod tracks (Monkeys Spinning Monkeys, Sneaky Snitch, Fluffing a Duck, Investigations, Local Forecast Elevator),
+  CC BY 4.0, `use_scope` product-safe with credit.
+- **Code**: `music-lib.ts` gate accepts a credit licence only when the track carries its credit text and the credit goes
+  in the description (never on screen); recognisable tracks win for energetic videos; `scope: 'product'` limits picks to
+  product-safe tracks; the pick returns the credit and `clip-moment-run.ts` writes it to credits.json as
+  `music.description`. NCS bpm and all new drop times are estimates from the audio.
+- **Shared files touched**: `packages/graph/src/licence.ts` (new licence code `ncs`, ship false, attribution true),
+  `packages/engine/src/library/catalog.ts` (music rows carry credit, use_scope, recognizable).
+- **Not added**: Alan Walker Fade, Cartoon On & On, Tobu Candyland and Cloud 9 (no longer on ncs.io, treat as label owned).
+- **Tests on the branch**: typecheck clean on every package; engine suite 282 with FalkorDB: 266 pass, 0 fail,
+  16 skipped (no Chrome, no face clip on this box).
+
 ## 2026-10-16 21:45 IST · vignesh/clip-moment · cf32fc9 · review request: clip-moment v4 (music library, auto-picked bed, brighter grade)
 
 - **Tab confirms: new styles go to vignesh/<style> for review; edit-engine fixes straight to main.** (Ishaan's 186fd17 rule.)
