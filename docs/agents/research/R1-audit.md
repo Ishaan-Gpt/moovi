@@ -3,6 +3,10 @@
 Owner: Claude 1 · 2026-10-16 · main at b5fef82. Read-only audit; nothing was run end to end for this note, so every
 time quoted comes from `docs/SPEED.md` or the root `CLAUDE.md`, not from me.
 
+> **Correction (13:15 IST):** this audit covers `main` only. `vignesh/router-r2` (347f30d, 0f2d224, c7bca9f, not
+> merged) has a footage edit mode for the user's own raw clip (`router/footage-edit.ts`, `kinetic.ts`, light leaks, a
+> wall of videos, a face label). The edit score is revised once Tab's R3 measures that branch.
+
 ## Verdict: 3 / 10 for the product we say we are
 
 Moovi is an impressive **engine** (crew, task graph, FalkorDB memory, six generation styles, a fast visual

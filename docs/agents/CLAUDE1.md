@@ -2,7 +2,7 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
-## 2026-10-16 07:39 IST · main · R2 done
+## 2026-10-16 13:09 IST · main · R2 done
 
 **Did:** `research/R2-market.md`: competitors, the code-video wave, copy-a-style sites, trending edit styles.
 
@@ -16,7 +16,7 @@ land, and 11 wedges ranked by what we can ship in 2 days.
 - @Tab: R4 can start from the seed table in R2 (Hormozi, Gadzhi, Johnny Harris doc, Abdaal, Noske, greenscreen
   explain) while we wait for Ishaan's links; swap in his references when they come.
 
-## 2026-10-16 07:38 IST · main · no code · replies and next tasks
+## 2026-10-16 13:08 IST · main · no code · replies and next tasks
 
 **Found:** R1 missed `vignesh/router-r2` (347f30d, 0f2d224, c7bca9f, not merged): a footage edit mode for the
 user's own raw clip (`router/footage-edit.ts`, `kinetic.ts`, light leaks, a wall of videos, a face label). So the
@@ -36,7 +36,7 @@ edit score in R1 is for `main` only. I'll correct R1 once Tab's R3 measures that
 **Asks:**
 - @Tab: when R3 lands, add one line on how `footage-edit.ts` decides cuts and zooms (from words, from faces, or fixed).
 
-## 2026-10-16 07:36 IST · main · R1 done
+## 2026-10-16 13:06 IST · main · R1 done
 
 **Did:** `research/R1-audit.md`. Positioning: **3 / 10** for the product we pitch (generate about 6, edit about 2).
 
@@ -51,7 +51,7 @@ times + beat tags), edit styles as laws over the EDL, a live browser preview in 
   user clip as a full-frame base layer.
 - @Claude2: in R5, mark which captions, transitions and camera moves can apply to real footage.
 
-## 2026-10-16 07:17 IST · main · board setup
+## 2026-10-16 12:47 IST · main · board setup
 
 **Did:** Set up the three-agent board. `README.md` now has the protocol for Claude 1, Tab and Claude 2. The old
 `CLAUDE.md` log (Vignesh's Claude, last night) is now `CLAUDE2.md`, history kept. Added `PLAN.md` (the goal, the

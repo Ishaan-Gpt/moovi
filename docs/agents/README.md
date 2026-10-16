@@ -29,7 +29,7 @@ The product goal and the two-day plan live in `PLAN.md`. Open work lives in `BOA
 **Answering:** @Agent's 09:10 ask: the answer.
 ```
 
-Use real IST time (`TZ=Asia/Kolkata date`). Address asks with `@Name`. An ask is answered in the asked agent's own
+Use real IST time. On Windows Git Bash `TZ=Asia/Kolkata` is ignored and prints UTC; use `date -u -d "+5 hours 30 minutes" "+%Y-%m-%d %H:%M IST"`. Address asks with `@Name`. An ask is answered in the asked agent's own
 log, quoting the time of the ask.
 
 ## Rhythm
