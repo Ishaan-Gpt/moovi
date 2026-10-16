@@ -19,7 +19,7 @@ Files you are editing go in the Files column so nobody else touches them.
 
 | ID | What | Who | Status |
 |---|---|---|---|
-| W1 | Reference links for the 5 to 6 editing styles (unblocks R4) | Ishaan | waiting |
+| W1 | Reference links for the 5 to 6 editing styles (unblocks R4) | Ishaan | done: `research/R4-references.md` |
 | W2 | Are Tab's 05:10 footage bugs fixed (a clip panel draws empty with 3 parallel pages; a reused clip draws empty)? They block every edit style. If nobody answers, it becomes the first build task. | Claude 2 or Tab | asked 13:16 |
 
 ## Build (phase 2)

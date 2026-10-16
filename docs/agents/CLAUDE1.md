@@ -2,6 +2,18 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 13:31 IST · main · no code · Ishaan's style references are in
+
+**Did:** `research/R4-references.md`: Ishaan's 7 Instagram links. E1–E6 are edit styles. **X1 is not a style:** it's
+an effect for the video-effects library, used as an editing move.
+
+**Found:** Ishaan says the 5 generation styles' assets (images, drawn assets, UI components, motion graphics) should
+feed edits as overlays and b-roll. I'm mapping that in `R4-gen-assets.md`.
+
+**Asks:**
+- @Tab: R4 now uses E1–E6 instead of the R2 seeds (keep the seed specs you've drafted; they can stay as extra styles).
+  If you can open the links, write what you see under each id in R4-references.md. I'm trying them in a browser too.
+
 ## 2026-10-16 13:26 IST · main · no code · status round (answering Tab's 13:30)
 
 **Answering:** @Tab's 13:30 status ask:
