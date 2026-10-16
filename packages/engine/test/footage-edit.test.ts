@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { align, fixWords, mapTime, segments, splitAt, takeWindow } from '../src/router/footage-edit';
+import { agreement, align, fixWords, freeOf, mapTime, nameFix, pickText, pw, segments, splitAt, takeWindow } from '../src/router/footage-edit';
+import { camAt, cornerExprs, FULL, project, WALL } from '../src/router/wall';
 import { layout } from '../src/router/kinetic';
 
 const W = (word: string, t: number, end: number) => ({ word, t, end });
@@ -39,4 +40,43 @@ test('kinetic words: a key term is one huge line, glue words are serif', () => {
   const ws = [{ word: 'completely', start: 0, end: 0.4 }, { word: 'After Effects', start: 0.4, end: 1 }, { word: 'type', start: 1, end: 1.2 }];
   const lines = layout(ws, new Set(['after effects']));
   assert.deepEqual(lines.map(l => l.words.map(w => w.kind)), [['bold'], ['key'], ['bold']]);
+});
+
+test('kinetic words: small words ride with the next word and never stand alone on a line', () => {
+  const ws = ['it', 'will', 'edit', 'your', 'videos'].map((w, i) => ({ word: w, start: i * 0.2, end: i * 0.2 + 0.2 }));
+  const lines = layout(ws, new Set(['videos']));
+  for (const l of lines) assert.ok(l.words.some(w => w.kind !== 'serif'), JSON.stringify(lines));
+  assert.deepEqual(lines.at(-1)!.words.map(w => [w.w, w.kind]), [['your', 'serif'], ['videos', 'key']]);
+});
+
+test('footage edit: the brief names are matched by sound, two-word terms by their second word', () => {
+  const out = nameFix([W('which', 0, 1), W('is', 1, 2), W('Moviez,', 2, 3), W('your', 3, 4), W('software', 4, 5), W('media', 5, 6)], ['Moovi', 'social media']);
+  assert.deepEqual(out.map(w => w.word), ['which', 'is', 'Moovi,', 'your', 'social', 'media']);
+});
+
+test('footage edit: the accurate text that agrees with the timed words wins over a longer one that drifted', () => {
+  const timed = 'we are building the world first ai video editor which is moovi'.split(' ').map((w, i) => W(w, i, i + 1));
+  const good = 'We are building the world\'s first AI video editor, which is Moovi.';
+  const drift = 'Okay so this one is take one of mine and we will edit ours too then start talking about something else for a while longer.';
+  assert.ok(agreement(good, timed) > agreement(drift, timed));
+  assert.equal(pickText([drift, good], timed), good);
+  assert.equal(pickText([drift], timed), null);
+});
+
+test('footage edit: free stretches between busy shots, and piecewise curves of t', () => {
+  assert.deepEqual(freeOf([[3, 5], [8, 10]], 1.5, 15), [[1.5, 3], [5, 8], [10, 15]]);
+  const e = pw([{ t: 0, v: 10 }, { t: 1, v: 20 }, { t: 2, v: 0 }]);
+  const at = (t: number) => Function('t', 'gte', 'lt', 'min', `return ${e}`)(t, (a: number, b: number) => +(a >= b), (a: number, b: number) => +(a < b), Math.min) as number;
+  assert.equal(at(0.5), 15); assert.equal(at(1.5), 10); assert.equal(at(3), 0);
+});
+
+test('wall of videos: the shot opens and closes with the live tile filling the frame', () => {
+  for (const p of [0, 1]) {
+    const c = camAt(p);
+    assert.ok(Math.abs(c.s - FULL) < 1e-6 && c.yaw === 0 && c.px === 0);
+    const tl = project(c, WALL.W / 2 - WALL.tw / 2, WALL.H / 2 - WALL.th / 2), br = project(c, WALL.W / 2 + WALL.tw / 2, WALL.H / 2 + WALL.th / 2);
+    assert.ok(Math.abs(tl[0]) < 1 && Math.abs(tl[1]) < 1 && Math.abs(br[0] - 1080) < 1 && Math.abs(br[1] - 1920) < 1, `${tl} ${br}`);
+  }
+  const mid = camAt(0.5); assert.ok(mid.s < 2 && Math.abs(mid.yaw) > 5);
+  assert.equal(cornerExprs(60).length, 8);
 });

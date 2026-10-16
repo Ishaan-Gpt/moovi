@@ -18,7 +18,7 @@ const GLUE = new Set(['a', 'an', 'the', 'of', 'to', 'in', 'on', 'at', 'by', 'for
 const bare = (w: string) => w.toLowerCase().replace(/[^a-z0-9' ]/g, '').trim();
 const clean = (w: string) => w.replace(/[“”"]/g, '').replace(/[,;:.!?]+$/, '');
 
-export interface Kinetic { dir: string; top: number; height: number; frames: number; drawn: number; ms: number; pattern: string }
+export interface Kinetic { dir: string; top: number; height: number; frames: number; drawn: number; ms: number; pattern: string; list?: string }
 export interface KLine { words: { w: string; i: number; kind: 'key' | 'bold' | 'serif' }[] }
 
 /** One phrase as lines: the key word on its own huge line, the rest in lines of up to 3 words around it. */
@@ -37,19 +37,28 @@ export function layout(ws: CapWord[], keys: Set<string>): KLine[] {
     let best = -1; ws.forEach((w, i) => { if (!GLUE.has(bare(w.word)) && (best < 0 || bare(w.word).length > bare(ws[best]!.word).length)) best = i; });
     if (best >= 0 && bare(ws[best]!.word).length >= 5) span = [best, best + 1];
   }
-  const lines: KLine[] = []; let cur: KLine = { words: [] };
+  // small words never stand alone: each run of glue words rides with the word after it ("to your", "and edits"), a
+  // trailing run with the word before it; the glue right before the key word sits small in front of it on its line
+  type W = KLine['words'][number];
+  const lines: KLine[] = [], chunks: W[][] = []; let pend: W[] = [], lead: W[] = [];
+  const flush = () => { if (pend.length) { if (chunks.length) chunks.at(-1)!.push(...pend); else chunks.push(pend); pend = []; } };
+  const pack = () => {
+    flush(); let cur: W[] = [];
+    for (const c of chunks.splice(0)) { if (cur.length && cur.length + c.length > 3) { lines.push({ words: cur }); cur = []; } cur.push(...c); }
+    if (cur.length) lines.push({ words: cur });
+  };
   ws.forEach((w, i) => {
     if (i >= span[0] && i < span[1]) {
-      if (cur.words.length) { lines.push(cur); cur = { words: [] }; }
-      if (i === span[0]) lines.push({ words: [] });
+      if (i === span[0]) { lead = pend; pend = []; pack(); lines.push({ words: lead }); }
       lines.at(-1)!.words.push({ w: clean(w.word), i, kind: 'key' });
       return;
     }
-    cur.words.push({ w: clean(w.word), i, kind: GLUE.has(bare(w.word)) ? 'serif' : 'bold' });
-    if (cur.words.length >= 3) { lines.push(cur); cur = { words: [] }; }
+    const glue = GLUE.has(bare(w.word)), x: W = { w: clean(w.word), i, kind: glue ? 'serif' : 'bold' };
+    if (glue) { pend.push(x); return; }
+    chunks.push([...pend, x]); pend = [];
   });
-  if (cur.words.length) lines.push(cur);
-  return lines;
+  pack();
+  return lines.filter(l => l.words.length);
 }
 
 /** The repo's own fonts as @font-face rules with inline data (a page set from a string cannot load file:// fonts): A = Anton, B = Bricolage Grotesque, S = Instrument Serif italic. */
@@ -67,7 +76,7 @@ html,body { margin:0; background:transparent; width:540px; overflow:hidden; }
 .l { display:flex; gap:9px; align-items:baseline; justify-content:center; line-height:.92; white-space:nowrap; }
 .w { display:inline-block; transform-origin:50% 70%; color:#fff; text-shadow:0 2px 10px rgba(0,0,0,.55), 0 0 2px rgba(0,0,0,.6); }
 .bold { font-family:B; font-weight:800; font-size:56px; letter-spacing:-0.03em; }
-.serif { font-family:S; font-style:italic; font-size:58px; }
+.serif { font-family:S; font-style:italic; font-size:42px; opacity:.92; }
 .key { font-family:A; text-transform:uppercase; color:#FFD60A; letter-spacing:0.005em; }
 </style></head><body><div id="st"></div><script>
 window.show = (lines, starts, t) => {
@@ -76,7 +85,7 @@ window.show = (lines, starts, t) => {
     const d = document.createElement('div'); d.className = 'l';
     for (const w of l.words) {
       const s = document.createElement('span'); s.className = 'w ' + w.kind; s.textContent = w.w;
-      if (w.kind === 'key') { const n = l.words.reduce((a, x) => a + x.w.length + 1, 0); s.style.fontSize = Math.min(150, Math.floor(510 / Math.max(3, n * 0.5))) + 'px'; }
+      if (w.kind === 'key') { const n = l.words.filter(x => x.kind === 'key').reduce((a, x) => a + x.w.length + 1, 0) + l.words.filter(x => x.kind !== 'key').reduce((a, x) => a + x.w.length * 0.35, 0); s.style.fontSize = Math.min(150, Math.floor(510 / Math.max(3, n * 0.5))) + 'px'; }
       const k = (t - starts[w.i]) / 0.13; // 0..1 over 4 frames
       if (k < 0) s.style.opacity = '0';
       else if (k < 1) { const e = 1 - Math.pow(1 - k, 3); s.style.opacity = String(Math.min(1, k * 1.6)); s.style.transform = 'scale(' + (0.55 + 0.55 * e - (k > 0.7 ? (k - 0.7) * 0.33 : 0)) + ')'; }
@@ -105,7 +114,15 @@ export async function drawKinetic(ws: CapWord[], frames: number, o: { dir: strin
     if (t) { toks.push({ word: ws.slice(i, i + t.length).map(w => w.word).join(' '), start: ws[i]!.start, end: ws[i + t.length - 1]!.end }); i += t.length; }
     else toks.push(ws[i++]!);
   }
+  // a phrase of one small word ("and", "to") never shows alone: it joins the phrase after it (or before, at the end)
   const ps = phrases(toks, 4, 24);
+  for (let i = 0; i < ps.length; i++) {
+    const p = ps[i]!;
+    if (ps.length < 2 || p.words.length > 1 || !(GLUE.has(bare(p.words[0]!.word)) || bare(p.words[0]!.word).length <= 2)) continue;
+    const n = i + 1 < ps.length ? ps[i + 1]! : ps[i - 1]!;
+    if (i + 1 < ps.length) { n.words.unshift(...p.words); n.s = p.s; } else { n.words.push(...p.words); n.e = p.e; }
+    ps.splice(i--, 1);
+  }
   // which state each frame shows: (phrase, time quantised to the pops) or nothing
   const plan: string[] = [], jobs = new Map<string, { p: number; t: number }>();
   for (let f = 0; f < frames; f++) {
@@ -133,5 +150,10 @@ export async function drawKinetic(ws: CapWord[], frames: number, o: { dir: strin
   }));
   writeFileSync(join(o.dir, 'd', 'empty.png'), PNG.clear(1080, height));
   plan.forEach((id, f) => symlinkSync(join(o.dir, 'd', `${id || 'empty'}.png`), join(o.dir, 's', `f${String(f).padStart(5, '0')}.png`)));
-  return { dir: o.dir, top, height, frames, drawn: list.length, ms: Date.now() - t0, pattern: join(o.dir, 's', 'f%05d.png') };
+  // the same frames as a concat list, one entry per run of equal frames: each drawn picture is decoded once in the encode
+  const runs: [string, number][] = [];
+  for (const id of plan) { const k = id || 'empty'; if (runs.at(-1)?.[0] === k) runs.at(-1)![1]++; else runs.push([k, 1]); }
+  const cat = ['ffconcat version 1.0', ...runs.flatMap(([k, n]) => [`file '${join(o.dir, 'd', `${k}.png`)}'`, `duration ${(n / fps).toFixed(5)}`]), `file '${join(o.dir, 'd', `${runs.at(-1)?.[0] ?? 'empty'}.png`)}'`];
+  writeFileSync(join(o.dir, 'list.ffconcat'), cat.join('\n') + '\n');
+  return { dir: o.dir, top, height, frames, drawn: list.length, ms: Date.now() - t0, pattern: join(o.dir, 's', 'f%05d.png'), list: join(o.dir, 'list.ffconcat') };
 }
