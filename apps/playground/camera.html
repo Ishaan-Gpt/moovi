@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Moovi camera layer</title>
+</head>
+<body>
+  <aside class="side">
+    <header>
+      <h1>Camera layer</h1>
+      <p>Say a move. Moovi films it in code, and writes the same move for a gen-AI video model.</p>
+    </header>
+    <form id="say" autocomplete="off">
+      <input id="phrase" spellcheck="false" value="dolly zoom in, ramp up" aria-label="Camera direction" />
+      <button>Play</button>
+    </form>
+    <div id="calls" class="calls" aria-live="polite"></div>
+    <div class="examples" id="examples"></div>
+    <nav id="moves" class="moves" aria-label="Every move"></nav>
+  </aside>
+
+  <main class="main">
+    <section class="view" aria-label="Live preview (CSS 3D in the DOM)">
+      <div id="viewport" class="viewport">
+        <div id="world" class="world"></div>
+        <div id="tiltshift" class="tiltshift"></div>
+        <div class="hud"><span id="hudMove"></span><span id="hudTime"></span></div>
+      </div>
+      <div class="transport">
+        <button id="playBtn" aria-label="Play or pause">Pause</button>
+        <input id="scrub" type="range" min="0" max="1000" value="0" aria-label="Time" />
+        <label><input id="loop" type="checkbox" checked /> loop</label>
+      </div>
+    </section>
+
+    <section class="info">
+      <div class="panel">
+        <h2>Top view</h2>
+        <canvas id="plan" width="560" height="420"></canvas>
+      </div>
+      <div class="panel">
+        <h2>Ease</h2>
+        <canvas id="curve" width="560" height="120"></canvas>
+      </div>
+      <div class="panel">
+        <h2>State</h2>
+        <pre id="state"></pre>
+      </div>
+      <div class="panel">
+        <h2>Move</h2>
+        <div id="about" class="about"></div>
+      </div>
+      <div class="panel">
+        <h2>Gen-AI prompt <button id="copy" class="copy">Copy</button></h2>
+        <pre id="prompt" class="prompt"></pre>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="/src/camera.ts"></script>
+</body>
+</html>

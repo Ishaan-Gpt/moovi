@@ -56,6 +56,9 @@ importers:
       '@moovi/character':
         specifier: workspace:*
         version: link:../../packages/character
+      '@moovi/library':
+        specifier: workspace:*
+        version: link:../../packages/library
     devDependencies:
       typescript:
         specifier: 5.9.3
