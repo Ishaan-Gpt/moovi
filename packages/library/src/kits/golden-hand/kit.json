@@ -2,13 +2,90 @@
   "id": "golden-hand",
   "name": "Golden Hand",
   "about": "A talking-head list kit: a gold blackletter hook title with glowing skill tiles; a moss-stone hand that rises over the speaker holding a dial with a white bevelled star, the chapters gathering round it in blackletter as the dial turns; a dark starry ground for top panels (a Master File folder with a cursor click, bullet lists with software chips, website cards, a premium-pricing text card, bad-vs-good thumbnail cards with hand labels, an icon flow, people icons, a mind-map that draws its branches); a phone b-roll with stacked words; a black comment card. Learned from reference r3, built with ishaan-motion.",
-  "from": ["ref:r3"],
-  "styles": ["night-desk", "brand-promo"],
-  "load": ["../motion/core.js", "../motion/type.js", "../motion/sfx.js", "../level-ladder/world.js", "../level-ladder/inserts.js", "inserts.js"],
-  "room": { "wall": ["#5a544e", "#46403a", "#1e1a16"], "light": "rgba(255,244,225,", "torso": ["#0f0f11", "#1d1d21", "#2c2c31"] },
-  "palette": { "deep": "#16100c", "accent": "#e8b04a", "accentHot": "#fff0c8", "accent2": "#6b6a3a", "accentMid": "#3a3a1e", "paper": "#f2ede0", "folder": "#e8b84a", "ink": "#0b0705" },
-  "type": { "display": { "family": "UnifrakturCook", "weight": 700, "licence": "OFL (Google Fonts)" }, "condensed": { "family": "Anton" }, "text": { "family": "InterTight", "weight": 800 } },
-  "motion": { "engine": "kits/motion (ishaan-motion)", "handRise": 0.45, "dialDive": { "seconds": 0.5, "from": 0.55, "to": 1.05 }, "dialTurn": 0.6, "panelWipe": 0.32 },
+  "from": [
+    "ref:r3"
+  ],
+  "styles": [
+    "night-desk",
+    "brand-promo"
+  ],
+  "load": [
+    "../motion/core.js",
+    "../motion/type.js",
+    "../motion/sfx.js",
+    "../level-ladder/world.js",
+    "../level-ladder/inserts.js",
+    "inserts.js"
+  ],
+  "room": {
+    "wall": [
+      "#5a544e",
+      "#46403a",
+      "#1e1a16"
+    ],
+    "light": "rgba(255,244,225,",
+    "torso": [
+      "#0f0f11",
+      "#1d1d21",
+      "#2c2c31"
+    ]
+  },
+  "palette": {
+    "deep": "#16100c",
+    "accent": "#e8b04a",
+    "accentHot": "#fff0c8",
+    "accent2": "#6b6a3a",
+    "accentMid": "#3a3a1e",
+    "paper": "#f2ede0",
+    "folder": "#e8b84a",
+    "ink": "#0b0705"
+  },
+  "type": {
+    "hook": {
+      "family": "Cinzel",
+      "weight": 900,
+      "licence": "OFL (Google Fonts)",
+      "finish": "metal: dark bevel + top light + 5-stop gold heat gradient + warm bloom"
+    },
+    "display": {
+      "family": "Grenze Gotisch",
+      "weight": 800,
+      "licence": "OFL",
+      "use": "chapter heads and captions >= 44 px"
+    },
+    "label": {
+      "family": "Grenze",
+      "weight": 600,
+      "licence": "OFL",
+      "use": "small labels"
+    },
+    "condensed": {
+      "family": "Anton"
+    },
+    "text": {
+      "family": "InterTight",
+      "weight": 800
+    }
+  },
+  "motion": {
+    "engine": "kits/motion (ishaan-motion)",
+    "handRise": 0.45,
+    "dialDive": {
+      "seconds": 0.5,
+      "from": 0.55,
+      "to": 1.05
+    },
+    "dialTurn": 0.6,
+    "panelWipe": 0.32
+  },
   "sound": "kits/motion/sfx.js: the engine sfx map by event (card-in, scene, stat, list-item, click-ui, pop, key-word, cascade, hard-hit, cta), added only where the reference has no hit",
-  "frame": { "designW": 1080, "designH": 1920, "captionY": { "full": 0.64, "split": 0.52 } }
+  "frame": {
+    "designW": 1080,
+    "designH": 1920,
+    "captionY": {
+      "full": 0.64,
+      "split": 0.52
+    }
+  },
+  "taste": "Never full Fraktur (UnifrakturCook) for readable text: rejected by the owner and the blind judge."
 }
