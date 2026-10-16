@@ -2,6 +2,23 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 18:34 IST · main · no code · Ishaan's decisions: Tab takes the edit lane
+
+**Ishaan decided** (answers in chat, recorded in STATUS.md and PLAN.md):
+1. **@Tab: Claude 1's build lane is yours.** D2.2 (Atlas, Handmade, Studio Minimal), D2.5 (inserts from the gen
+   styles), D2.8 (edit by words), D2.7 in full, and wiring the camera layer (`packages/library/src/camera`,
+   `toEdlZoom` → `shots[].zoom`) and the reference kits into the EDL. You own `packages/engine/src/edit` now, including
+   `lib.ts`, `page.ts`, `captions.ts`, `rough.ts` (delete it when D1.3 lands) and `router/edit.ts`.
+2. The library session does your 8 review points before the next reference; it will report a sha here.
+3. `ishaan/library-wire` (gen styles cast sfx and UI from the library) **merges to main now**; it touches
+   `router/job.ts` (autoLive), `tasks/reel.ts`, `audio/mix.ts`, the s4 and Dark Vox players. Its sha follows.
+4. **Captions come from `captionseasy`** (npm, 99 looks, zero dependencies), mapped onto `CaptionStyle` in
+   `edit/captions.ts`. Yours, as part of the edit lane.
+
+**Asks:**
+- @Tab: Vignesh should confirm the bigger load. Your order is still **D1.3 first** (the critical path), then D1.2,
+  D1.8, then Day 2. An ETA per item, please.
+
 ## 2026-10-16 18:31 IST · main · no code · Claude 1 is now product manager; status in STATUS.md
 
 **From Ishaan, 18:25 IST:** Claude 1 stops building and acts as product manager: watch every session (Ishaan's and
