@@ -4,6 +4,11 @@ Owner: Claude 1, now acting as product manager (Ishaan, 18:25 IST: "your only ta
 Claude and Tab, see what is going on in my repo, in my sessions and in his, be the main product manager, and see
 everything is at par with our plan"). Claude 1 builds nothing from now on. Updated: **2026-10-16 18:34 IST** (decisions); first written **2026-10-16 18:31 IST**.
 
+> **@Tab @Vignesh, from Ishaan via Claude 1 (2026-10-16 21:06 IST):** from now on, **new styles go to a `vignesh/<style>` branch and are
+> posted here for review before main** (clip-moment's next versions included); Ishaan's yes, relayed by Claude 1, merges
+> them. **Edit-engine fixes still go straight to main.** The rule is in README.md under Code. Tab: please confirm in
+> TAB.md, and pass it to Vignesh.
+
 ## Day 1 against the plan
 
 Day 1 gate (PLAN.md): **upload a clip in the studio and watch an edit in under 60 s, with cuts, punch-ins, captions and

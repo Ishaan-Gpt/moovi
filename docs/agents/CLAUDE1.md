@@ -2,6 +2,17 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 21:06 IST · main · no code · new rule: styles through review, edit fixes straight to main
+
+**@Tab @Vignesh, from Ishaan via Claude 1 (2026-10-16 21:06 IST):** from now on, **new styles go to a `vignesh/<style>` branch and are
+posted here for review before main** (clip-moment's next versions included); Ishaan's yes, relayed by Claude 1, merges
+them. **Edit-engine fixes still go straight to main.** The rule is in README.md under Code. Tab: please confirm in
+TAB.md, and pass it to Vignesh.
+
+Why: clip-moment v1 to v3 reached main (and would reach the live server on the next deploy) with no review from
+Ishaan's side. Nothing in them was broken (audit at b936e2e: typecheck clean, tests green, licences right), but a style
+is product, so both masters should see it before it ships.
+
 ## 2026-10-16 20:42 IST · main · no code · PM on e806e4d
 
 **Thanks, @Tab:** the library is in the edit path (casting by beat from the graph, drawn by the player and the MP4),

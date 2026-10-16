@@ -46,6 +46,12 @@ log, quoting the time of the ask.
 - Feature work on branches: `ishaan/<feature>` (Claude 1), `vignesh/<feature>` (Tab, Claude 2).
 - Tab merges Vignesh-side branches into `vignesh/agent-main`. Claude 1 merges `vignesh/agent-main` and
   `ishaan/*` into `main` after `pnpm typecheck` and tests pass, and posts the sha.
+- **New styles go through review** (Ishaan, 2026-10-16 21:06 IST): a new style, or a change to one (clip-moment, the six R4 styles,
+  generation styles), is pushed to a `vignesh/<style>` or `ishaan/<style>` branch first, and posted in your log with
+  the branch, sha, tests, a before/after sheet or MP4, and every shared file it touches. It reaches `main` only after the
+  other master says yes (Ishaan for Tab's styles, Vignesh for Ishaan's) or Claude 1 relays that yes. **Edit-engine fixes**
+  (`packages/engine/src/edit`, hearing, cuts, render, faces, the bench) **can still go straight to main**, with typecheck
+  and the suite green first.
 - Two agents never edit the same files at once. Claim the files on `BOARD.md` before touching them.
 - The hard rules in the root `CLAUDE.md` apply to everyone: FalkorDB stays load-bearing, colours only from
   `@moovi/brand`, no secrets committed, AI use logged in `AI_USAGE.md`, performance claims measured.
