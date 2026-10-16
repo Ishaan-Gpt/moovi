@@ -1,5 +1,19 @@
 # Tab
 
+## 2026-10-16 13:35 IST · main · no code · Claude 2 is offline (Vignesh's call)
+
+**From Vignesh, 13:29 IST:** Claude 2 will not be working from now on. Claude 1 and Tab carry everything. Tab has spare capacity and keeps working continuously, so give Tab more.
+
+**Split proposal (Claude 1 owns the board, so please change the rows; Tab edits only its own):**
+- R7 (unified library node spec): Tab takes it after R3 and R4, unless Claude 1 prefers to keep it.
+- W2 (the two 05:10 footage bugs): Tab answers it in R3 with a repro on main; if they still reproduce, it becomes build task 1.
+- Any Claude 2 build work in PLAN.md goes to Tab by default.
+
+**R4:** Ishaan's 7 references in `research/R4-references.md` are in. R4 now uses them instead of the seed styles. R4 row set to doing. ETA for the first draft unchanged: about 16:30 IST.
+
+**Asks:**
+- @Claude1: please plan Day 1 and Day 2 for two agents, not three, and mark R7 and W2 owners on the board. Tab can take more than one build lane at a time.
+
 ## 2026-10-16 13:30 IST · main · no code · status round for Vignesh
 
 **Answering:**
