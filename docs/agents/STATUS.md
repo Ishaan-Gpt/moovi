@@ -30,7 +30,7 @@ one style, measured on the R9 clips.**
 | B4 Hindi, 101.1 s | 26.92 s | 54.3 s | fail: silence holes, words right 72.4% |
 
 **Speed passes on all three** (preview under 60 s, MP4 under 120 s, -14 LUFS). **Quality passes on 1 of 3.** Vignesh
-confirmed at 20:04 that D1.6 and D1.8 came before new styles; clip-moment carries on after. **Deployed 2026-10-16 20:38 IST: the server runs 6adb95e**, with all of Day 1, the full library (960 Assets) and the Mixkit mirror off by default. Checked before: typecheck clean, engine suite 252: 243 pass, 0 fail; studio build passes. After: worker up, 0 brand references, 8.3 GB free. Still no python3 there, so no faces until look.ts moves to Node.
+confirmed at 20:04 that D1.6 and D1.8 came before new styles; clip-moment carries on after. **Deployed 2026-10-16 20:51 IST: the server runs c4f7658** (Day 1 + e806e4d: library casting in edits, Node face detection, no black first frames). Checked before: typecheck clean; edit, face and render tests 50 pass, 0 fail. After: worker up, 960 Assets, 0 brand references, the YuNet model reachable from the worker (downloaded at run time, MIT). **Disk: 7.0 GB free (was 8.3); old images pile up on each rebuild, so prune before it runs out.**
 
 **Rule problem:** face detection (`edit/look.ts`) runs YuNet through `python3` + OpenCV, against the root rule "no dependency on Python". On the server it most likely finds no faces and falls back to fit + blur. Fix: run face detection without Python (ONNX in Node, or in the browser as Afterglow does with MediaPipe).
 
@@ -43,7 +43,7 @@ confirmed at 20:04 that D1.6 and D1.8 came before new styles; clip-moment carrie
 | Reference clones (R1–R4 = E3, …) with the ishaan-motion canvas engine | Ishaan's clone sessions | data/ (not in git) + b348efc | code yes, R1 A/B clone no | **no**: standalone canvas pages, their own timing tables |
 | Generation styles and Auto cast sfx from the library | Ishaan's library-wire session | ishaan/library-wire, 1 local commit + 16 open files | no | n/a: **generation, which the plan put out of scope for these two days**; it touches `router/job.ts` (shared with Vignesh's combined film) |
 | CaptionsEasy npm (99 caption looks) | Ishaan's CaptionsEasy session | separate repo | n/a | no; an option for Moovi's captions |
-| Live server | | 65-2-223-240.sslip.io | runs **6adb95e** (2026-10-16 20:38 IST), Day 1 complete (2026-10-16 19:16 IST) | up to date with main |
+| Live server | | 65-2-223-240.sslip.io | runs **c4f7658** (2026-10-16 20:51 IST), Day 1 + library casting + faces (2026-10-16 19:16 IST) | up to date with main |
 
 | **clip-moment** (Buckology Shorts look: stock clips, stat cards, 3D) | Tab, at Vignesh's ask (18:26–19:10) | main f1aad34 | yes | n/a: **a new generation style**, out of scope in PLAN.md; D1.6 and D1.8 still not started (2026-10-16 19:51 IST) |
 
@@ -53,7 +53,7 @@ confirmed at 20:04 that D1.6 and D1.8 came before new styles; clip-moment carrie
 |---|---|---|
 | D2.1 + D2.2 | the six R4 styles as laws over the EDL | Tab |
 | D2.4 | library in the edit path (camera, sfx, transitions per beat, captionseasy draw) | Tab · **done** e806e4d (2026-10-16 20:42 IST): B1 cast 10 moves, 5 sfx, 1 transition in 75 ms; player and MP4 draw them |
-| — | face detection in Node (rule fix) | Tab · **done** e806e4d: YuNet in plain TypeScript, no python3; **not deployed yet** |
+| — | face detection in Node (rule fix) | Tab · **done** e806e4d, **live** |
 | — | the silence-hole fix B2/B4 fail on | Tab |
 | D2.5 | inserts from the gen styles | Tab |
 | D2.6 | sound pass | Tab |
