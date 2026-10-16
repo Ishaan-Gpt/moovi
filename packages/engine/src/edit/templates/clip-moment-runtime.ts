@@ -32,7 +32,7 @@ export function clipMomentRuntime(REG: Record<string, unknown>) {
   /** frosted glass: dark translucent fill, thin light border, a top sheen, a glow in the theme colour */
   function glass(x: number, y: number, w: number, h: number, r: number, a = 1, glow = 0.35) {
     g.save(); g.globalAlpha *= a;
-    g.shadowColor = alpha(P.accent2!, glow); g.shadowBlur = 50; rr(x, y, w, h, r); g.fillStyle = 'rgba(10,12,11,0.70)'; g.fill(); g.shadowBlur = 0;
+    g.shadowColor = alpha(P.accent2!, glow); g.shadowBlur = 50; rr(x, y, w, h, r); g.fillStyle = 'rgba(11,11,11,0.70)'; g.fill(); g.shadowBlur = 0;
     const sh = g.createLinearGradient(0, y, 0, y + h); sh.addColorStop(0, 'rgba(255,255,255,0.10)'); sh.addColorStop(0.4, 'rgba(255,255,255,0.02)'); sh.addColorStop(1, 'rgba(255,255,255,0)');
     g.fillStyle = sh; g.fill(); g.lineWidth = 2; g.strokeStyle = 'rgba(255,255,255,0.16)'; g.stroke(); g.restore();
   }
@@ -89,7 +89,7 @@ export function clipMomentRuntime(REG: Record<string, unknown>) {
     const f = font(800, 38, 'Inter Tight'), w = measure(s, f, 4) + 104, h = 80, y = 246;
     const dx = (1 - eBack(L.in)) * -260 - (1 - L.out) * 80;
     g.save(); g.globalAlpha = Math.min(L.in * 1.6, L.out); g.translate(dx, 0);
-    rr(60, y, w, h, 14); g.fillStyle = 'rgba(8,10,8,0.82)'; g.fill(); g.lineWidth = 3; g.strokeStyle = P.accent!; g.stroke();
+    rr(60, y, w, h, 14); g.fillStyle = 'rgba(9,9,9,0.82)'; g.fill(); g.lineWidth = 3; g.strokeStyle = P.accent!; g.stroke();
     const pulse = 0.7 + 0.3 * Math.sin(t * 6);
     g.beginPath(); g.arc(100, y + h / 2, 10 * pulse + 3, 0, 6.2832); g.fillStyle = P.accent2!; g.shadowColor = P.accent2!; g.shadowBlur = 18; g.fill(); g.shadowBlur = 0;
     text(s, 130, y + 54, f, P.accent!, { spacing: 4 });
@@ -154,7 +154,7 @@ export function clipMomentRuntime(REG: Record<string, unknown>) {
     // the source chip above the card
     const chip = [p.site, p.date].filter(Boolean).join('  \u00b7  '), cf = font(800, 30, 'Inter Tight'), cwid = measure(chip, cf, 3) + 90;
     g.save(); g.globalAlpha = a * prog(t, x.t0 + 0.15, 0.3);
-    rr((DW - cwid) / 2, y0 - 118, cwid, 66, 33); g.fillStyle = 'rgba(8,10,8,0.85)'; g.fill(); g.lineWidth = 2; g.strokeStyle = alpha(P.accent2!, 0.6); g.stroke();
+    rr((DW - cwid) / 2, y0 - 118, cwid, 66, 33); g.fillStyle = 'rgba(9,9,9,0.85)'; g.fill(); g.lineWidth = 2; g.strokeStyle = alpha(P.accent2!, 0.6); g.stroke();
     g.beginPath(); g.arc((DW - cwid) / 2 + 34, y0 - 85, 9, 0, 6.2832); g.fillStyle = P.accent2!; g.fill();
     text(chip, (DW - cwid) / 2 + 58, y0 - 74, cf, '#ffffff', { spacing: 3 }); g.restore();
     g.save(); g.globalAlpha = a; g.translate(DW / 2, y0 + ch / 2); g.rotate(rot * Math.PI / 180); g.scale(push * lerp(0.9, 1, eOut(L.in)), push * lerp(0.9, 1, eOut(L.in))); g.translate(-DW / 2, -(y0 + ch / 2));
@@ -188,7 +188,7 @@ export function clipMomentRuntime(REG: Record<string, unknown>) {
     const sp = spring(dt), rot = (1 - sp) * -14 + Math.sin(dt * 1.3) * 3.5, a = Math.min(L.in * 1.6, L.out), sk = Math.sin(dt * 1.1) * 0.07;
     g.save(); g.globalAlpha = a; g.translate(DW / 2, cy); g.rotate(rot * Math.PI / 180); g.transform(1, sk * 0.3, sk, 1, 0, 0); g.scale(lerp(0.55, 1, sp), lerp(0.55, 1, sp));
     g.shadowColor = P.accent2!; g.shadowBlur = 80 + 30 * Math.sin(dt * 3); rr(-s / 2, -s / 2, s, s, 80);
-    const gr = g.createLinearGradient(-s / 2, -s / 2, s / 2, s / 2); gr.addColorStop(0, '#1d211e'); gr.addColorStop(1, '#030403'); g.fillStyle = gr; g.fill(); g.shadowBlur = 0;
+    const gr = g.createLinearGradient(-s / 2, -s / 2, s / 2, s / 2); gr.addColorStop(0, '#1e1d1b'); gr.addColorStop(1, '#040404'); g.fillStyle = gr; g.fill(); g.shadowBlur = 0;
     g.lineWidth = 5; g.strokeStyle = alpha(P.accent2!, 0.9); g.stroke();
     const img = p.image ? imgs[p.image] : null;
     if (img) g.drawImage(img, -s * 0.34, -s * 0.34, s * 0.68, s * 0.68);
@@ -280,8 +280,11 @@ export function clipMomentRuntime(REG: Record<string, unknown>) {
   function end(x: any, t: number) {
     const p = x.params || {}, dt = t - x.t0, a = prog(t, x.t0, 0.4);
     // full screen in the look's colours, a drifting dot pattern over it
-    g.save(); g.globalAlpha = a * 0.88; const bgr = g.createLinearGradient(0, 0, DW, DH); bgr.addColorStop(0, P.deep!); bgr.addColorStop(1, alpha(P.accent2!, 0.35)); g.fillStyle = P.deep!; g.fillRect(0, 0, DW, DH); g.fillStyle = bgr; g.fillRect(0, 0, DW, DH);
-    g.globalAlpha = a * 0.16; g.fillStyle = P.accent2!; const off = (dt * 24) % 90;
+    // v3: a dark neutral base with one soft gold glow behind the question and fine gold rules (the one palette, no flat colour wash)
+    g.save(); g.globalAlpha = a * 0.95; g.fillStyle = P.deep!; g.fillRect(0, 0, DW, DH);
+    const glow = g.createRadialGradient(DW / 2, 740, 40, DW / 2, 740, 900); glow.addColorStop(0, alpha(P.accent2!, 0.26 + 0.06 * Math.sin(dt * 3))); glow.addColorStop(0.55, alpha(P.accent2!, 0.07)); glow.addColorStop(1, alpha(P.accent2!, 0)); g.fillStyle = glow; g.fillRect(0, 0, DW, DH);
+    g.fillStyle = alpha(P.accent!, 0.85); const rw = DW * 0.6 * eOut(prog(t, x.t0, 0.5)); g.fillRect((DW - rw) / 2, 250, rw, 4); g.fillRect((DW - rw) / 2, 1230, rw, 4);
+    g.globalAlpha = a * 0.09; g.fillStyle = P.accent2!; const off = (dt * 24) % 90;
     for (let yy = -90; yy < DH + 90; yy += 90) for (let xx = -90; xx < DW + 90; xx += 90) { g.beginPath(); g.arc(xx + off, yy + off * 0.5, 5, 0, 6.2832); g.fill(); }
     g.restore();
     if (p.hero) {
@@ -405,6 +408,42 @@ export function clipMomentRuntime(REG: Record<string, unknown>) {
     'camera:drift-right': u => 'perspective(1500px) translateX(' + lerp(-45, 45, u).toFixed(1) + 'px) rotateY(-4deg) scale(1.14)',
     'camera:pull-out': u => 'perspective(1500px) translateZ(' + lerp(160, 0, eOut(u)).toFixed(1) + 'px)',
   };
+  /** how far each camera move has travelled at u, in design pixels (degrees count 22 px): its speed is the motion blur */
+  const CAMV: Record<string, (u: number) => number> = {
+    'camera:orbit': u => lerp(-9, 9, eInOut(u)) * 22, 'camera:tilt': u => lerp(8, -5, eInOut(u)) * 22,
+    'camera:rise': u => lerp(50, -50, eInOut(u)), 'camera:drift-left': u => lerp(45, -45, u), 'camera:drift-right': u => lerp(-45, 45, u),
+    'camera:pull-out': u => lerp(160, 0, eOut(u)),
+  };
+  /** the frame as the footage shows it (cover), offset and scaled about the centre, at an alpha: a ghost for motion trails */
+  function ghost(v: HTMLVideoElement, dx: number, s: number, a: number) {
+    const vw = v.videoWidth, vh = v.videoHeight; if (!vw || a <= 0.004) return;
+    g.save(); g.globalAlpha = a; g.translate(DW / 2 + dx, DH / 2); g.scale(s, s); cover(v, vw, vh, -DW / 2, -DH / 2, DW, DH); g.restore();
+  }
+  /** a gold light leak (clip-moment:light-leak): two soft gold blooms sweeping across the frame in screen blend */
+  function lightLeak(q: number) {
+    const a = Math.pow(Math.sin(Math.PI * clamp(q)), 0.8);
+    if (a <= 0.01) return;
+    g.save(); g.globalCompositeOperation = 'screen';
+    const blob = (x: number, y: number, r: number, col: string, k2: number) => { const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, alpha(col, k2 * a)); gr.addColorStop(0.45, alpha(col, 0.45 * k2 * a)); gr.addColorStop(1, alpha(col, 0)); g.fillStyle = gr; g.fillRect(0, 0, DW, DH); };
+    blob(lerp(-260, 1340, q), 560, 980, P.accent2!, 0.85);
+    blob(lerp(1300, -200, q), 1420, 760, P.accent!, 0.6);
+    blob(lerp(200, 880, q), 980, 360, '#ffffff', 0.35);
+    g.restore();
+  }
+  /** the cut's own drawing on the canvas: ghost trails for the whip, zoom ghosts for the zoom blur, the leak, the slices */
+  function transition(ty: string, v: HTMLVideoElement, q: number, cut: any) {
+    const e = 1 - eOut(q);
+    if (ty === 'whip') {
+      const dir = /right/.test(String(cut && cut.rule_id)) ? -1 : 1;
+      for (let j = 1; j <= 4; j++) ghost(v, dir * DW * 0.18 * e * (1 + j * 0.3), 1 + 0.42 * e, 0.2 * e);
+      // a gold streak along the whip
+      g.save(); g.globalAlpha = 0.55 * e; const gr = g.createLinearGradient(0, 0, DW, 0); gr.addColorStop(0, alpha(P.accent2!, 0)); gr.addColorStop(0.5, alpha(P.accent!, 0.9)); gr.addColorStop(1, alpha(P.accent2!, 0));
+      g.fillStyle = gr; g.fillRect(0, DH * 0.48 - 3 - 40 * e, DW, 6); g.fillRect(0, DH * 0.53 + 40 * e, DW, 3); g.restore();
+    } else if (ty === 'blur_zoom' || ty === 'zoom_through') {
+      for (let j = 1; j <= 3; j++) ghost(v, 0, 1 + (ty === 'blur_zoom' ? 0.07 : 0.05) * j * e, 0.16 * e);
+    } else if (ty === 'flash') lightLeak(q);
+    else if (ty === 'glitch') glitch(v, q);
+  }
   const DRAW: Record<string, (x: any, t: number) => void> = { kicker, flip, headline, source, logo, stat, compare, list, filmstrip, callout, obj3d, end };
 
   /** how much the footage dims and blurs now: the strongest card on screen, eased in and out */
@@ -441,17 +480,34 @@ export function clipMomentRuntime(REG: Record<string, unknown>) {
     draw(t: number, cur: HTMLVideoElement, shot: any) {
       const grade = (shot && shot.grade_id) || 'cm-clear', d = dimAt(t, grade), hard = grade === 'cm-dim';
       for (const v of decks) if (v !== cur) v.style.filter = '';
-      // full bleed and sharp (the footage is the picture); a card darkens it a little, 'cm-dim' also blurs it
-      cur.style.filter = 'blur(' + (hard ? d * 11 : 0).toFixed(1) + 'px) brightness(' + (0.96 - d * (hard ? 0.5 : 0.3)).toFixed(3) + ') saturate(' + (1.12 + d * 0.1).toFixed(2) + ') contrast(1.05)';
-      // the cut itself: zoomcut (1.4 to 1, exponential out) or glitch (three slices sliding in), 0.42 s, alternating
-      const si = (E.shots || []).indexOf(shot), dc = shot ? t - shot.t_in : 9, TR = 0.42;
-      if (si > 0 && dc < TR && si % 2 === 1) cur.style.transform += ' scale(' + (1 + 0.4 * Math.pow(2, -10 * dc / TR)).toFixed(4) + ')';
-      // the shot's 3D library camera move (camera:orbit, tilt, rise, drift, pull-out): CSS 3D on the footage
+      // the cut itself: the EDL's cuts[] name a library transition per shot (whip, gold light leak, zoom blur, push
+      // through, glitch); an EDL without cuts alternates zoomcut and glitch as before
+      const si = (E.shots || []).indexOf(shot), dc = shot ? t - shot.t_in : 9;
+      const cut = si > 0 ? (E.cuts || []).find((c: any) => Math.abs(c.t - shot.t_in) < 0.06) : null;
+      const ty: string = cut ? String(cut.type) : si > 0 ? (si % 2 === 1 ? 'zoom_through' : 'glitch') : '';
+      const TR = cut && cut.dur ? +cut.dur : 0.42, q = si > 0 && dc < TR ? clamp(dc / TR) : -1, e = q >= 0 ? 1 - eOut(q) : 0;
+      let tf = '', blurPx = 0, lift = 0;
+      if (q >= 0) {
+        if (ty === 'zoom_through') { tf = ' scale(' + (1 + 0.4 * Math.pow(2, -10 * q)).toFixed(4) + ')'; blurPx = 7 * e; }
+        else if (ty === 'whip') { const dir = /right/.test(String(cut && cut.rule_id)) ? -1 : 1; tf = ' translateX(' + (dir * 18 * e).toFixed(2) + '%) scale(' + (1 + 0.42 * e).toFixed(4) + ')'; blurPx = 20 * e; }
+        else if (ty === 'blur_zoom') { tf = ' scale(' + (1 + 0.28 * e).toFixed(4) + ')'; blurPx = 14 * e; }
+        else if (ty === 'flash') { tf = ' scale(' + (1 + 0.08 * e).toFixed(4) + ')'; lift = 0.35 * Math.sin(Math.PI * q); }
+      }
+      cur.style.transform += tf;
+      // the shot's 3D library camera move (camera:orbit, tilt, rise, drift, pull-out): CSS 3D on the footage, with a
+      // motion blur that follows how fast the move is going right now (effect:motion-blur)
       const cam = shot && shot.camera && CAM3D[shot.camera.asset_ref];
-      if (cam) { const u = clamp((t - shot.t_in) / Math.max(0.1, shot.t_out - shot.t_in)); cur.style.transform = cam(u) + ' ' + cur.style.transform; }
+      if (cam) {
+        const len = Math.max(0.1, shot.t_out - shot.t_in), u = clamp((t - shot.t_in) / len);
+        cur.style.transform = cam(u) + ' ' + cur.style.transform;
+        const mv = CAMV[shot.camera.asset_ref], du = 1 / 30 / len;
+        if (mv) blurPx += Math.min(2.4, Math.abs(mv(clamp(u + du)) - mv(u)) * 0.45);
+      }
+      // full bleed and sharp (the footage is the picture); a card darkens it a little, 'cm-dim' also blurs it
+      cur.style.filter = 'blur(' + ((hard ? d * 11 : 0) + blurPx * k).toFixed(2) + 'px) brightness(' + (0.96 - d * (hard ? 0.5 : 0.3) + lift).toFixed(3) + ') saturate(' + (1.12 + d * 0.1).toFixed(2) + ') contrast(1.05)';
       g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, W, H); g.setTransform(k, 0, 0, k, 0, 0);
       const ov = E.overlays || [];
-      if (si > 0 && dc < TR && si % 2 === 0 && cur.readyState >= 2) glitch(cur, dc / TR);
+      if (q >= 0 && cur.readyState >= 2) transition(ty, cur, q, cut);
       const vg = ov.find((o2: any) => o2.kind === 'vignette'); vignette(vg ? (vg.params && vg.params.strength) || 0.6 : 0.6);
       for (const x of E.inserts || []) if (x.kind === 'broll' && t >= x.t0 && t < x.t1 && x.params && !x.params.baked) broll(x, t);
       const du = ov.find((o2: any) => o2.kind === 'grain' && o2.params && o2.params.particles); if (du) dust(t, du.params.particles, du.params.shape || 'dot');

@@ -45,7 +45,7 @@ export interface CaptionStyle {
   chunk: { mode: 'word' | '2w' | '3w' | 'phrase' | 'line'; maxChars: number; breakOnPause: number };
   look: { fill: Role; stroke?: { px: number; role: Role }; shadow?: 'soft' | 'hard' | 'long' | '3d' | 'glow'; box?: 'pill' | 'block' | 'per-word' | 'underline' | 'chip' };
   highlight: { rule: 'current' | 'keyword' | 'number' | 'none'; treat: 'colour' | 'scale' | 'box' | 'underline' | 'weight'; role?: Role };
-  entry: 'pop' | 'stamp' | 'slide-up' | 'fade' | 'blur-in' | 'typewriter' | 'none';
+  entry: 'pop' | 'stamp' | 'slide-up' | 'fade' | 'blur-in' | 'typewriter' | 'kinetic' | 'none';
   position: 'lower' | 'center' | 'upper' | 'face-safe' | 'chest';
   /** a second font for key words (the two-tier styles: a small connector over a big key word) */
   key?: { family: string; weight: number; case: 'upper' | 'as-is'; size: 'S' | 'M' | 'L' | 'XL' | 'XXL'; role: Role; italic?: boolean; /** the key word sits on its own line under the connector */ line?: boolean };
@@ -140,7 +140,7 @@ export function editLib() {
     let k = -1;
     for (let i = 0; i < chunks.length; i++) { if (chunks[i]!.t0 - 0.04 <= t && t < chunks[i]!.t1 + 0.12) { k = i; } if (chunks[i]!.t0 > t) break; }
     if (k < 0) return null;
-    const entryDur = st.entry === 'stamp' ? 0.14 : st.entry === 'pop' ? 0.2 : st.entry === 'none' ? 0 : 0.18;
+    const entryDur = st.entry === 'stamp' ? 0.14 : st.entry === 'pop' ? 0.2 : st.entry === 'kinetic' ? 0.24 : st.entry === 'none' ? 0 : 0.18;
     const all = st.chunk.mode === 'line' || st.entry === 'none';
     const out = chunks[k]!.words.map(i => {
       const w = words[i]!, start = all ? chunks[k]!.t0 : w.t0;
@@ -157,6 +157,8 @@ export function editLib() {
   function entryOf(st: CaptionStyle, p: number): [number, number, number, number] {
     switch (st.entry) {
       case 'pop': return [0.55 + 0.45 * back(p), 0, clamp(p * 3), 0];
+      // kinetic (clip-moment v3, after the library's effect:word-slam): each word springs up from below, out of a blur
+      case 'kinetic': return [0.62 + 0.38 * back(p), 34 * (1 - easeOut(p)), clamp(p * 3), 9 * (1 - easeOut(p))];
       case 'stamp': return [1.35 - 0.35 * easeOut(p), 0, clamp(p * 4), 0];
       case 'slide-up': return [1, 28 * (1 - easeOut(p)), clamp(p * 2), 0];
       case 'blur-in': return [1, 0, clamp(p * 1.5), 12 * (1 - easeOut(p))];

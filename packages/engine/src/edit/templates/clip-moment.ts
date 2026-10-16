@@ -30,15 +30,43 @@ export const CM_LOOK = 79;
 export const CM_COMPONENTS = ['kicker', 'flip', 'headline', 'source', 'logo', 'stat', 'compare', 'list', 'filmstrip', 'callout', 'obj3d', 'end', 'broll'] as const;
 export type CmComponent = typeof CM_COMPONENTS[number];
 
-/** Colour themes picked from the content (never navy). accent = the gold accent word, accent2 = the theme glow. */
-/** pop is the caption accent word's gold (#FFC93C, the 'cm-gold' caption style's key role), the same in every theme */
-export const CM_THEMES = {
-  gaming: { ink: '#050605', paper: '#ffffff', accent: '#ffd84a', accent2: '#7cff4f', deep: '#07100a', pop: '#ffc93c' },
-  tech: { ink: '#050606', paper: '#ffffff', accent: '#ffd84a', accent2: '#38e8cf', deep: '#061010', pop: '#ffc93c' },
-  money: { ink: '#060504', paper: '#ffffff', accent: '#ffd84a', accent2: '#ffae3b', deep: '#110c05', pop: '#ffc93c' },
-  space: { ink: '#050407', paper: '#ffffff', accent: '#ffd84a', accent2: '#b46bff', deep: '#0d0812', pop: '#ffc93c' },
-  crimson: { ink: '#060404', paper: '#ffffff', accent: '#ffd84a', accent2: '#ff4b4b', deep: '#120606', pop: '#ffc93c' },
-} as const;
+/** Clip Moment's ONE palette (Vignesh, 2026-10-16: "3 4 color ni", not three or four colours): a dark neutral base
+ * plus a single yellow/gold accent family. accent = the spoken word yellow (#FFD84A), accent2 = the glow gold on cards,
+ * 3D objects, transitions and the end card, pop = the caption accent word's gold (#FFC93C, the 'cm-gold' key role). */
+export const CM_PALETTE = { ink: '#060606', paper: '#ffffff', accent: '#ffd84a', accent2: '#f2b51d', deep: '#0c0b0a', pop: '#ffc93c' } as const;
+/** the gold family every coloured pixel a component draws comes from (with neutrals: black, white and greys) */
+export const CM_GOLDS = ['#ffd84a', '#ffc93c', '#f2b51d', '#b8860b', '#3a2a00'] as const;
+/** The theme names stay (plans and callers name them), and every one is the one palette: no theme brings another accent. */
+export const CM_THEMES = { gaming: CM_PALETTE, tech: CM_PALETTE, money: CM_PALETTE, space: CM_PALETTE, crimson: CM_PALETTE } as const;
+/** Is a CSS colour inside the palette: a neutral (channels within 10 of each other) or a gold (hue 36 to 54 degrees, saturated)? */
+export function cmColourOk(css: string): boolean {
+  const s = css.trim().toLowerCase();
+  if (s === 'transparent') return true;
+  let r: number, g: number, b: number;
+  const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/.exec(s), fn = /^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/.exec(s);
+  if (hex) { const h = hex[1]!.length === 3 ? hex[1]!.split('').map(x => x + x).join('') : hex[1]!; r = parseInt(h.slice(0, 2), 16); g = parseInt(h.slice(2, 4), 16); b = parseInt(h.slice(4, 6), 16); }
+  else if (fn) { r = +fn[1]!; g = +fn[2]!; b = +fn[3]!; }
+  else return false;
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+  if (mx - mn <= 10) return true;
+  if (mx !== r) return false;
+  const hue = 60 * (g - b) / (mx - mn);
+  return hue >= 36 && hue <= 54 && (mx - mn) / mx >= 0.45;
+}
+/** seconds after the last word (the end card holds about 2 s in all, never 4) */
+export const CM_TAIL = 0.8;
+/** the end card's longest hold, seconds */
+export const CM_END_MAX = 2;
+/** The transitions between shots, in turn, with the library asset each draws (light leak and glitch are this template's
+ * own code, gold only). Every transition gets a whoosh. */
+export const CM_TRANSITIONS = [
+  { type: 'whip', ref: 'transition:visual-whip-left' },
+  { type: 'flash', ref: 'clip-moment:light-leak' },
+  { type: 'blur_zoom', ref: 'transition:visual-zoom-through' },
+  { type: 'whip', ref: 'transition:visual-whip-right' },
+  { type: 'glitch', ref: 'clip-moment:glitch' },
+  { type: 'zoom_through', ref: 'transition:push-through' },
+] as const;
 export type CmTheme = keyof typeof CM_THEMES;
 
 export type CmIcon = 'film' | 'box' | 'deal' | 'chart' | 'coin' | 'globe' | 'play' | 'cart' | 'star' | 'chip' | 'phone' | 'people';
@@ -110,7 +138,8 @@ export const spoken = (line: string) => line.replace(/\*/g, '').replace(/\s+/g, 
 /** Every line the voice speaks, in order: one per beat, then the end question and call. */
 export function cmLines(s: CmScript): string[] {
   const lines = s.beats.map(b => spoken(b.say));
-  if (s.end) lines.push(spoken([s.end.question, s.end.cta].filter(Boolean).join(' ')));
+  // v3: only the question is spoken (the CTA stays on the end card as text), so the end card holds about 2 s, not 4
+  if (s.end) lines.push(spoken(s.end.question));
   return lines;
 }
 
@@ -154,6 +183,8 @@ export const CM_SFX = {
   'click-ui': 'sfx:fs-ui-mouse-2-button-fast-click', 'key-word': 'sfx:fs-ui-mouse-2-button-fast-click', 'page-turn': 'sfx:fs-147282',
   'ui-reveal': 'sfx:ui-riser', 'hard-hit': 'sfx:fs-impact-punch2', build: 'sfx:riser', pop: 'sfx:ui-pop', 'list-item': 'sfx:fs-ui-pop-4',
   'paper-pop': 'sfx:fs-ui-pop-9', cta: 'sfx:fs-foley-water-drop-splash',
+  // v3: an impact on every 3D moment, a riser into the end card
+  thud: 'sfx:fs-impact-soft-hit', 'big-build': 'sfx:riser',
 } as const;
 export type CmSfxEvent = keyof typeof CM_SFX;
 export interface CmSfx { t: number; asset_ref: string; event: CmSfxEvent; gain_db?: number; rule_id: string }
@@ -223,7 +254,7 @@ export function clipMomentEdl(o: CmOptions): CmEdl {
   const lines = cmLines(s), words = o.words;
   if (!words.length) throw new Error('clip-moment needs timed voice words');
   const spans = splitByLines(words, lines);
-  const D = r3(Math.min(o.source.duration, (words.at(-1)!.end) + (o.tail ?? 1.6)));
+  const D = r3(Math.min(o.source.duration, (words.at(-1)!.end) + (o.tail ?? CM_TAIL)));
   // beat i runs from just before its first word to just before the next beat's first word
   const bt = spans.map(([a], i) => i === 0 ? 0 : r3(Math.max(0, words[a]!.t - 0.18)));
   const starts = bt, ends = bt.map((_, i) => i + 1 < bt.length ? bt[i + 1]! : D);
@@ -332,15 +363,23 @@ export function clipMomentEdl(o: CmOptions): CmEdl {
       at.forEach(t => sfx.push({ t, asset_ref: CM_SFX['list-item'], event: 'list-item', gain_db: -2, rule_id: 'cm.sfx.callout' }));
     } else if (show.kind === 'obj3d') {
       inserts.push({ t0: c0, t1: c1, kind: KIND.obj3d, frame: 'card_box', label: show.label ?? show.obj, asset_ref: ref, rule_id: 'cm.obj3d', params: { obj: show.obj, label: show.label?.toUpperCase(), sub: show.sub?.toUpperCase() } });
-      sfx.push({ t: r3(c0 + 0.05), asset_ref: CM_SFX['ui-reveal'], event: 'ui-reveal', gain_db: -3, rule_id: 'cm.sfx.obj_in' });
+      sfx.push({ t: r3(c0 + 0.05), asset_ref: CM_SFX['thud'], event: 'thud', gain_db: -2, rule_id: 'cm.sfx.obj_impact' });
     }
     // the entrance's library camera move (3D: the card turns in as it lands), on the component this window placed
     const placedIns = inserts[before];
     if (enter && placedIns) placedIns.params = { ...(placedIns.params ?? {}), enter };
+    // a 3D turn lands with an impact (library sfx via assetsForEvent 'thud')
+    // (once per moment: a component that already lands on an impact, an obj3d or a logo hit, gets no second one)
+    if (enter && placedIns) {
+      const land = r3(placedIns.t0 + 0.55);
+      if (!sfx.some(x => (x.event === 'thud' || x.event === 'hard-hit') && x.t >= land - 0.6 && x.t <= land + 0.1)) sfx.push({ t: land, asset_ref: CM_SFX['thud'], event: 'thud', gain_db: -5, rule_id: 'cm.sfx.turn_land' });
+    }
     }
   }
   if (s.end) {
-    const i = nBeats - 1, t0 = starts[i]!, e0 = r3(t0 + 0.1);
+    const i = nBeats - 1, t0 = starts[i]!, e0 = r3(Math.max(t0 + 0.1, D - CM_END_MAX));
+    // a riser into the end card (its end lands on the card), library sfx via assetsForEvent 'big-build'
+    sfx.push({ t: e0, asset_ref: CM_SFX['big-build'], event: 'big-build', gain_db: 4, rule_id: 'cm.sfx.end_riser' });
     const [wa, wb] = spans[i]!;
     const qWords = markedWords(s.end.question), lw = edlWords.slice(wa, wb), used = new Set<number>();
     const placed = qWords.map((x, j) => { const k = lw.findIndex((w, q) => !used.has(q) && norm(w.text) === norm(x.text)); if (k >= 0) used.add(k); return { text: x.text, accent: x.accent, at: r3(k >= 0 ? Math.max(e0 + 0.1, lw[k]!.src_t0 - 0.04) : e0 + 0.15 + j * 0.2) }; });
@@ -349,6 +388,11 @@ export function clipMomentEdl(o: CmOptions): CmEdl {
     sfx.push({ t: r3(lastQ + 0.45), asset_ref: CM_SFX['hard-hit'], event: 'hard-hit', gain_db: -3, rule_id: 'cm.sfx.end_hit' });
     sfx.push({ t: r3(lastQ + 0.9), asset_ref: CM_SFX['cta'], event: 'cta', rule_id: 'cm.sfx.cta' });
   }
+  // every cut between shots is a library transition, in turn (whip, gold light leak, zoom blur, ...); into the end card a light leak
+  const cuts: NonNullable<Edl['cuts']> = shots.slice(1).map((sh, k) => {
+    const tr = s.end && k === shots.length - 2 ? CM_TRANSITIONS[1] : CM_TRANSITIONS[k % CM_TRANSITIONS.length]!;
+    return { t: sh.t_in, type: tr.type, dur: tr.type === 'flash' ? 0.6 : 0.45, trigger: 'beat' as const, rule_id: `cm.tr.${tr.ref}` };
+  });
   sfx.sort((a, b) => a.t - b.t);
   // two sounds closer than 90 ms blur into one: keep the earlier
   const sfxOut = sfx.filter((x, k) => x.t <= D && (k === 0 || x.t - sfx[k - 1]!.t >= 0.09));
@@ -358,7 +402,7 @@ export function clipMomentEdl(o: CmOptions): CmEdl {
     output: { ...(o.output ?? { w: 1080, h: 1920, fps: 30 }), aspect: '9:16' },
     palette: { ...pal }, caption_style_id: 'punch-duo',
     template: { id: CM_ID, version: CM_VERSION, brand, theme, ...(s.credit ? { credit: s.credit.toUpperCase() } : {}) },
-    words: edlWords, shots, inserts, beats,
+    words: edlWords, shots, inserts, beats, cuts,
     overlays: [
       // the brand pill only when the user gave a brand (no default, never a hard-coded name)
       ...(brand ? [{ t0: 0, t1: D, kind: 'header_strip' as const, text: brand.toUpperCase(), rule_id: 'cm.brand', params: { place: 'top-center' } }] : []),

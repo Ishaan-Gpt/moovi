@@ -8,8 +8,9 @@ import { checkClip, clipId, fetchClip, rank, type Clip, type ClipCandidate } fro
 import { clipAssetId } from '../../footage/graph';
 import { mixkit } from '../../footage/sources';
 import { validateEdl } from '../edl';
-import { clipMomentEdl, cmLines, plateSpans, spoken, type CmEdl, type CmScript, type CmTheme, type TimedWord } from './clip-moment';
+import { clipMomentEdl, cmLines, plateSpans, spoken, CM_PALETTE, CM_TAIL, CM_TRANSITIONS, type CmEdl, type CmScript, type CmTheme, type TimedWord } from './clip-moment';
 import { cmPlan, cmTopic, mixkitLicence, CM_CAMERAS } from './clip-moment-plan';
+import { gradeClips, spreadOf, CM_FINISH_CHAIN, CM_GRADE, CM_GRADE_IDS, CM_LOOK_CHAIN, type ClipGrade } from './clip-moment-grade';
 
 /**
  * Clip Moment's topic path, end to end and fast: plan the lines by content → voice → one licence-checked Mixkit clip
@@ -376,6 +377,16 @@ export async function makeClipMoment(i: CmRunInput): Promise<CmRunResult> {
   // a beat cuts between as many clips as it got (never the same clip twice)
   script = { ...script, beats: script.beats.map((b, k) => ({ ...b, clips: Math.max(1, clips[k]!.length) })) };
 
+  // the grade (Vignesh, 2026-10-16: "keep the colour consistent"): every clip measured and brought to one mean luma and
+  // saturation, then the one shared look; the filmstrip stills and the plate both use it (clip-moment-grade.ts)
+  const allClips = clips.flat();
+  const grades = await gradeClips(allClips.map(c => ({ file: c.path!, ss: 0.4, t: Math.min(4, Math.max(1, (c.duration ?? CM_SECONDS) - 0.6)) })));
+  const gradeOf = new Map<string, ClipGrade>(allClips.map((c, k) => [c.path!, grades[k]!]));
+  // the first second is a strong shot: the opening beat starts on its clip that shows the topic, brightest first
+  const topicWord = ((topic ?? '').toLowerCase().match(/[a-z]+/g) ?? []).find(w => w.length > 2) ?? '';
+  if ((clips[0]?.length ?? 0) > 1) clips[0]!.sort((a, b) => Number(!!topicWord && b.title.toLowerCase().includes(topicWord)) - Number(!!topicWord && a.title.toLowerCase().includes(topicWord)) || gradeOf.get(b.path!)!.raw.luma - gradeOf.get(a.path!)!.raw.luma);
+  lap('grade');
+
   // the library casts the 3D: camera moves for the shots and component entrances, 3D objects for ideas (graph down: the
   // plan's own library ids, said so in the trace)
   const lib = g ? await g.cast3d(script).catch(e => ({ script: script!, notes: [`graph cast failed: ${(e as Error).message.slice(0, 80)}`] })) : { script, notes: ['graph down: the plan\'s library ids'] };
@@ -387,27 +398,28 @@ export async function makeClipMoment(i: CmRunInput): Promise<CmRunResult> {
     const src = clips.flatMap((c, k) => (k !== fs ? c.slice(0, 1) : [])).slice(-3);
     stills[fs] = await Promise.all(src.map(async (c, k) => {
       const f = `still-${k + 1}.jpg`;
-      await sh(config.ffmpeg, ['-v', 'error', '-y', '-ss', '1.2', '-i', c.path!, '-frames:v', '1', '-vf', 'scale=480:-2', '-q:v', '4', join(dir, f)], { timeout: 20_000 });
+      await sh(config.ffmpeg, ['-v', 'error', '-y', '-ss', '1.2', '-i', c.path!, '-frames:v', '1', '-vf', `scale=480:-2,${gradeOf.get(c.path!)?.chain ?? CM_LOOK_CHAIN}`, '-q:v', '4', join(dir, f)], { timeout: 20_000 });
       return f;
     }));
   }
   lap('cast');
 
   // 3. the EDL on a placeholder source, for the shot spans; then the plate is built to exactly those spans
-  const D0 = r3(words.at(-1)!.end + 1.6);
+  const D0 = r3(words.at(-1)!.end + CM_TAIL);
   const pre = clipMomentEdl({ script, words, stills, source: { file: 'plate.mp4', duration: D0, w: W, h: H, fps: 30 }, output: { w: W, h: H, fps: 30 }, ...(i.look !== undefined ? { look: i.look } : {}) });
   const spans = plateSpans(pre);
   const beatOf = (t0: number) => Math.max(0, pre.beats!.findIndex(b => t0 >= b.t0 - 1e-3 && t0 < b.t1 - 1e-3));
   const parts: string[] = [], inputs: string[] = [], partOf = new Map<number, number>();
   spans.forEach((s, k) => {
-    const bi = beatOf(s.t0), n = partOf.get(bi) ?? 0, mine = clips[Math.min(bi, clips.length - 1)] ?? [], c = mine[n % Math.max(1, mine.length)], len = Math.max(0.1, s.t1 - s.t0);
+    // the end card's span has no clip of its own: a dark graphic under the card (never the last beat's clip again)
+    const bi = beatOf(s.t0), n = partOf.get(bi) ?? 0, mine = bi >= clips.length ? [] : clips[bi] ?? [], c = mine[n % Math.max(1, mine.length)], len = Math.max(0.1, s.t1 - s.t0);
     partOf.set(bi, n + 1);
     // no licence-clean clip that matches: a dark graphic scene under the beat's cards (never a wrong clip)
-    if (!c) inputs.push('-f', 'lavfi', '-t', len.toFixed(3), '-i', `color=c=0x0b1418:s=${W}x${H}:r=30`);
+    if (!c) inputs.push('-f', 'lavfi', '-t', len.toFixed(3), '-i', `color=c=0x0c0b0a:s=${W}x${H}:r=30`);
     else inputs.push('-stream_loop', '-1', '-ss', '0.4', '-t', len.toFixed(3), '-i', c.path!);
-    parts.push(`[${k}:v]scale=${W}:${H}:force_original_aspect_ratio=increase,crop=${W}:${H},setsar=1,fps=30,eq=brightness=0.03:saturation=1.15,huesaturation=saturation=-0.85:colors=b+c,trim=duration=${len.toFixed(3)},setpts=PTS-STARTPTS[v${k}]`);
+    parts.push(`[${k}:v]scale=${W}:${H}:force_original_aspect_ratio=increase,crop=${W}:${H},setsar=1,fps=30,format=yuv420p,${(c && gradeOf.get(c.path!)?.chain) || CM_LOOK_CHAIN},trim=duration=${len.toFixed(3)},setpts=PTS-STARTPTS[v${k}]`);
   });
-  const vf = `${parts.join(';')};${spans.map((_, k) => `[v${k}]`).join('')}concat=n=${spans.length}:v=1:a=0,format=yuv420p[v]`;
+  const vf = `${parts.join(';')};${spans.map((_, k) => `[v${k}]`).join('')}concat=n=${spans.length}:v=1:a=0,${CM_FINISH_CHAIN},format=yuv420p[v]`;
 
   // 4. audio: voice + the sfx the EDL places + the bed, ducked under the voice, -14 LUFS
   // the sfx are cast from the library graph like every style's (audio/mix castStem → assetsForEvent; map.json if down)
@@ -443,7 +455,14 @@ export async function makeClipMoment(i: CmRunInput): Promise<CmRunResult> {
     tb.library = [...(b.camera ?? []).slice(0, Math.max(1, b.clips ?? 1)), ...(b.enter ? [b.enter] : []), ...[b.show, b.show2].flatMap(s => (s?.kind === 'obj3d' ? [s.obj] : []))];
   });
   const threeD = comps.filter(x => (x as { params?: { enter?: string } }).params?.enter || x.asset_ref === 'clip-moment:obj3d').length + edl.shots.filter(s => /camera:(orbit|tilt|rise|drift-left|drift-right|pull-out)/.test(s.camera?.asset_ref ?? '')).length;
-  writeFileSync(join(dir, 'trace.json'), JSON.stringify({ topic, library: lib.notes, components: comps.length, kinds: [...new Set(comps.map(x => String(x.asset_ref).slice(12)))], threeD, mixkit: mixkitBreaker(), beats: trace }, null, 1));
+  const gradeTrace = {
+    ids: CM_GRADE_IDS, target: { luma: CM_GRADE.luma, sat: CM_GRADE.sat }, look: CM_LOOK_CHAIN, finish: CM_FINISH_CHAIN,
+    clips: allClips.map(c => { const q = gradeOf.get(c.path!)!; return { ref: c.ref, title: c.title, raw: q.raw, after: q.after, gamma: q.gamma, sat: q.sat }; }),
+    spread: { raw: spreadOf(grades.map(q => q.raw)), after: spreadOf(grades.map(q => q.after)) },
+  };
+  const transitions = (edl.cuts ?? []).map(c => ({ t: c.t, type: c.type, ref: String(c.rule_id).replace(/^cm\.tr\./, '') }));
+  const sfxTrace = (edl.sfx ?? []).map(s => ({ t: s.t, event: String((s as { event?: string }).event ?? ''), ref: s.asset_ref, rule: s.rule_id }));
+  writeFileSync(join(dir, 'trace.json'), JSON.stringify({ topic, library: lib.notes, components: comps.length, kinds: [...new Set(comps.map(x => String(x.asset_ref).slice(12)))], threeD, palette: CM_PALETTE, grade: gradeTrace, transitions, transitionKinds: CM_TRANSITIONS.map(x => x.ref), sfx: sfxTrace, sound: sfxIds, mixkit: mixkitBreaker(), beats: trace }, null, 1));
   let graph = 'off';
   if (g) {
     const verdictsNow = readVerdicts();
