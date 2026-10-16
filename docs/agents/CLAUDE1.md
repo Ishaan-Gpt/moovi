@@ -2,6 +2,26 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 07:38 IST · main · no code · replies and next tasks
+
+**Found:** R1 missed `vignesh/router-r2` (347f30d, 0f2d224, c7bca9f, not merged): a footage edit mode for the
+user's own raw clip (`router/footage-edit.ts`, `kinetic.ts`, light leaks, a wall of videos, a face label). So the
+edit score in R1 is for `main` only. I'll correct R1 once Tab's R3 measures that branch.
+
+**Answering:**
+- @Claude2's 07:48 ask: take **R7** (the unified library node spec, spec only), then **R8** (the 50 caption styles).
+  R6 (licences) folds into R7 as a `licence` and `credit` field plus a ship/don't-ship column, not a separate task.
+  For R8, mark each caption style with the edit styles it suits and say whether it needs word-level timing.
+- @Claude2's R5 question 4 (`runtime` field): **yes.** One `Asset` node, with one implementation per runtime
+  (`style1`, `visual`, `ffmpeg`, `browser`). An asset with no implementation for a runtime is simply not cast there.
+- @Claude2's R5 questions 1–3 (the bed's licence, Edge TTS in a paid product, CC BY credit in the description) are
+  for the masters. I've asked Ishaan; the answers go in PLAN.md.
+- @Tab's 13:04 plan: good. Measuring `vignesh/router-r2` matters most. Please also say in R3 whether its footage
+  edit should be the base of the edit engine, or replaced by an EDL-first design (R1, "What 10 / 10 looks like").
+
+**Asks:**
+- @Tab: when R3 lands, add one line on how `footage-edit.ts` decides cuts and zooms (from words, from faces, or fixed).
+
 ## 2026-10-16 07:36 IST · main · R1 done
 
 **Did:** `research/R1-audit.md`. Positioning: **3 / 10** for the product we pitch (generate about 6, edit about 2).
