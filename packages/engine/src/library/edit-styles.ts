@@ -11,7 +11,7 @@
  *   X1          R4's 17 named moves, findable by number (tag `x1:NN`, query assetsByX1)
  *   cast        each style's picks with a weight (SUITS {w}); ids from other seeds are skipped if absent
  */
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { AssetRow } from '@moovi/graph';
 import { SFX_EVENT_TO_MAP } from '../edit/edl';
@@ -61,12 +61,29 @@ const GRADES: [id: string, about: string, ffmpeg: string, css: string, styles: [
   ['bright-brand', 'bright and clean, natural skin, the brand colour kept saturated', 'eq=brightness=0.02:saturation=1.08:contrast=1.02', 'brightness(1.03) saturate(1.08) contrast(1.02)', [['brand-promo', 1]]],
   ['teal-shadows', 'cinematic: green and teal in the shadows, warm skin', 'colorbalance=rs=-0.05:gs=0.02:bs=0.06:rh=0.04:bh=-0.03,eq=contrast=1.06', 'contrast(1.06) saturate(0.95) hue-rotate(-6deg)', [['studio-minimal', 1]]],
 ];
+/** Ishaan's own grades from the grader (kits/motion/grade-presets.json): the exact shader in the browser, its LUT in ffmpeg */
+function ownerGrades(): Row[] {
+  const presets = JSON.parse(readFileSync(join(import.meta.dirname, '../../../library/src/kits/motion/grade-presets.json'), 'utf8')) as Record<string, { by: string; about: string; settings: Record<string, number> }>;
+  return Object.entries(presets).map(([id, p]) => {
+    const s = p.settings;
+    // the colour part as its 3D LUT (scripts/grade-lut.ts), the spatial part as ffmpeg filters: the chain edit/restore.ts
+    // bakes into every upload (the LUT path is relative to the repo root)
+    const ff = `lut3d=file=packages/library/src/kits/motion/luts/${id}.cube:interp=tetrahedral,cas=strength=${Math.min(0.9, 0.15 + s.sharpen! / 200).toFixed(2)},vignette=angle=${(Math.PI / (7 - s.vignette! / 25)).toFixed(3)},noise=alls=${Math.max(1, Math.round(s.grain! * 0.55))}:allf=t`;
+    return {
+      ...OWN, id: `grade:${id}`, category: 'grade' as const, name: `${id.replace(/-/g, ' ')} grade`, about: `${p.about} (${p.by})`, runtime: ['browser', 'ffmpeg'],
+      impl: { browser: `packages/library/src/kits/motion/grade.js#${id}`, ffmpeg: ff }, energy: null, tags: ['grade', 'owner', 'exact-in-browser'],
+      params: { ...s, ffmpeg: ff, css: 'kits/motion/grade.js' }, src: 'packages/library/src/kits/motion/grade-presets.json',
+      styles: EDIT_STYLES.map(style => ({ style, w: 0.9 })),
+    };
+  });
+}
+
 export function grades(): Row[] {
-  return GRADES.map(([id, about, ff, css, st]) => ({
+  return [...ownerGrades(), ...GRADES.map(([id, about, ff, css, st]) => ({
     ...OWN, id: `grade:${id}`, category: 'grade', name: `${id.replace(/-/g, ' ')} grade`, about, runtime: ['ffmpeg', 'browser'],
     impl: { ffmpeg: ff, browser: css }, energy: null, tags: ['grade', ...(css.startsWith('grayscale') ? ['preview-approximate'] : [])],
     params: { ffmpeg: ff, css }, src: 'packages/engine/src/library/edit-styles.ts', styles: st.map(([style, w]) => ({ style, w })),
-  }));
+  } as Row))];
 }
 
 /* ───── point 4: overlays (edl.ts Overlay.kind) ───── */

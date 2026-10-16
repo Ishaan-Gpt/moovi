@@ -20,7 +20,8 @@ Brand and character: `docs/BRAND.md`, `docs/CHARACTER.md`.
   Log AI use in `AI_USAGE.md` as you go.
 - **Moovi everywhere.** Packages `@moovi/*`, settings `MOOVI_*`. Never reintroduce "ContentEasy" or `CE_*`.
   **No dependency on MotionEasy or Python:** everything a film needs is in `packages/engine/assets` (renderer bundle,
-  fonts, CC0 sound kit, CC-BY music bed; see its CREDITS.md). User-facing text says "Moovi", not people's names.
+  fonts, CC0 sound kit, the owner's Style 1 sound pack in `assets/sfx-style1`, CC-BY music bed; see its CREDITS.md).
+  User-facing text says "Moovi", not people's names.
 - **Styles, not templates.** A style is a visual language with a large library of set-ups, cast per beat for the
   content, plus improvisation; two films from one site must differ.
 - **Any model, equal quality.** Every user can bring their own key (Gemini, Groq, OpenAI, Anthropic, OpenRouter, …);
@@ -85,6 +86,13 @@ Brand and character: `docs/BRAND.md`, `docs/CHARACTER.md`.
   `ref-intake`. The `ishaan-motion` skill is checked in at `.claude/skills/ishaan-motion/` (mirror of Ishaan's copy).
 - **Live edit preview** (main 9473f58, live on the server): an uploaded clip is edited and plays live in the studio,
   with 11 caption styles from R8 (`engine/src/edit/`). See `docs/agents/BOARD.md` D1.4, D1.5 and D1.7.
+- **Upload picture pass** (`engine/src/edit/restore.ts`, beside the voice clean-up in `planEdit`): every upload gets the
+  owner's grade baked in (natural-punch as an exact 3D LUT exported from the grade shader by `scripts/grade-lut.ts`, in
+  `library/src/kits/motion/luts/`); a weak clip (short side under 900 px or a starved bitrate) is also deblocked, cleaned,
+  upscaled to 1080 and sharpened. `edl.json` then points at `hd.mp4`. Measured: the 848x478 WhatsApp test clip in 58 s on 2 threads.
+- **Style 1 sound** (`engine/src/audio/style1.ts`): MotionEasy's sfx_mix.py and tl_make.py ported to TypeScript. Events →
+  one SFX stem by the owner's rules (onset slices, cascades, min-gap by priority, jitter, peak ceiling, risers ending on
+  the cut, max 2 punches), then voice -18 LUFS, bed 3 LU under, stem +6 dB, no ducking, master -14 LUFS through alimiter.
 
 ## Models and keys
 

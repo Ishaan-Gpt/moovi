@@ -11,13 +11,16 @@ import { hear, type Heard } from './hear';
 import { EDIT, type PlayerEdl } from './lib';
 import { lookFaces } from './look';
 import { roughEdl } from './rough';
+import { ownerGrade, restoreVideo, useRestored, type Restored } from './restore';
 import { cleanVoice, quietPauses, type CleanVoice } from './voice';
 
 /**
  * The upload edit's plan stage, one function: probe, look (faces) beside hear (D1.2), the EDL (D1.3), and the voice
  * clean-up (D1.2b) started beside the preview. The studio's edit job (router/edit.ts) and the bench
  * (scripts/edit-bench.ts) both call this, so the bench measures the same path the studio runs, never a shortcut.
- * Writes src.<ext>, words.json, hear.json and edl.json into `dir`; voice.m4a and voice.json when the clean-up ends.
+ * Writes src.<ext>, words.json, hear.json and edl.json into `dir`; voice.m4a and voice.json when the clean-up ends; for a
+ * weak clip (low resolution or a starved bitrate) hd.mp4 and restore.json when the picture restore ends, and edl.json
+ * then points at hd.mp4.
  */
 export interface PlanInput {
   /** the uploaded clip on disk */
@@ -37,6 +40,8 @@ export interface PlanInput {
   onNote?: (text: string) => unknown;
   /** start the voice clean-up (default true) */
   voice?: boolean;
+  /** start the picture restore for a weak clip (edit/restore.ts; default true) */
+  restore?: boolean;
   /** cast camera moves, sounds and transitions from the library graph per beat (edit/cast.ts; default true) */
   library?: boolean;
 }
@@ -59,6 +64,8 @@ export interface Planned {
   lookWhy?: string;
   /** the voice clean-up, running; resolves null when there is no audio or it failed */
   voice: Promise<CleanVoice | null>;
+  /** the picture restore, running; resolves null when the clip did not need it or it failed */
+  restore: Promise<Restored | null>;
 }
 
 export const EDIT_PALETTE = () => ({ ink: color.ink, paper: color.surface, accent: color.ice, accent2: color.frostMid, deep: color.ink, pop: color.iceWhite });
@@ -136,5 +143,13 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
       .then(v => { writeFileSync(join(dir, 'voice.json'), JSON.stringify(v, null, 1)); return v; })
       .catch(e => { console.warn(`[edit] voice clean-up: ${String((e as Error).message ?? e).slice(0, 160)}`); return null; })
     : Promise.resolve(null);
-  return { edl, words, ...(language ? { language } : {}), heard, faces: look.faces.length, lap, duration: t.duration, source: { ...source, hasAudio: pr.hasAudio }, rough, cast, ...(look.why ? { lookWhy: look.why } : {}), voice };
+  // the picture pass beside it (edit/restore.ts): every clip gets the owner's grade baked in (its exact LUT), and a weak
+  // clip is also deblocked, cleaned, upscaled to 1080 and sharpened; edl.json then points at hd.mp4 (the preview's next
+  // load and every render). The zoom cap above stays on the original resolution.
+  const restore: Promise<Restored | null> = o.restore !== false
+    ? restoreVideo(join(dir, file), join(dir, 'hd.mp4'), { w: source.w, h: source.h, fps: source.fps, duration: pr.duration }, { grade: ownerGrade() ?? undefined })
+      .then(r => { if (r) { useRestored(dir, r); writeFileSync(join(dir, 'restore.json'), JSON.stringify(r, null, 1)); } return r; })
+      .catch(e => { console.warn(`[edit] picture restore: ${String((e as Error).message ?? e).slice(0, 160)}`); return null; })
+    : Promise.resolve(null);
+  return { edl, words, ...(language ? { language } : {}), heard, faces: look.faces.length, lap, duration: t.duration, source: { ...source, hasAudio: pr.hasAudio }, rough, cast, ...(look.why ? { lookWhy: look.why } : {}), voice, restore };
 }

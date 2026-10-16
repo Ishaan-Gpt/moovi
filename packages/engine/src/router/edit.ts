@@ -61,7 +61,10 @@ export const editReel: Handler = async ctx => {
   // probe, look, hear, plan, and the voice clean-up started beside the preview: one function, the bench runs it too
   const plan = await planEdit({ path: u.path, dir, name: u.name, signal: ctx.signal, onStage: step, onDone: done, onNote: text => ctx.activity('note', text),
     ...(inp.caption ? { caption: inp.caption } : {}), ...(inp.names?.length ? { names: inp.names } : {}) });
-  const { edl, words, lap } = plan, pr = { duration: plan.source.duration, width: plan.source.w, height: plan.source.h };
+  void plan.restore.then(r => r && ctx.activity('note', r.restored
+    ? `cleaned and upscaled your clip from ${r.from.w}x${r.from.h} to ${r.to.w}x${r.to.h}${r.graded ? ', graded' : ''} (${r.seconds} s)`
+    : `graded your clip (${r.seconds} s)`));
+  const { edl, words, lap } = plan, pr ={ duration: plan.source.duration, width: plan.source.w, height: plan.source.h };
   const t = { duration: plan.duration };
 
   // it plays now: the edit preview player through the studio's preview route, like the live styles

@@ -1,0 +1,28 @@
+{
+ "natural-punch": {
+  "by": "Ishaan (grader, 2026-10-16)",
+  "about": "natural, warm and punchy: the room keeps its colour; depth from deeper shadows and blacks with highlights up and whites held; vibrance with full skin protection; crisp sharpen, strong vignette, light grain",
+  "settings": {
+   "exposure": 0.24,
+   "contrast": 23,
+   "highlights": 28,
+   "shadows": -34,
+   "whites": -22,
+   "blacks": -35,
+   "temp": -4,
+   "tint": -9,
+   "vibrance": 10,
+   "saturation": 0,
+   "skin": 100,
+   "shHue": 317,
+   "shSat": 0,
+   "hiHue": 0,
+   "hiSat": 0,
+   "balance": -14,
+   "clarity": 3,
+   "sharpen": 31,
+   "vignette": 44,
+   "grain": 11
+  }
+ }
+}

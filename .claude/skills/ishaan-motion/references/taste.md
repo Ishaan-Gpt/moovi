@@ -45,3 +45,14 @@
 - Hands: tapered fingers (wider at the base), knuckle creases, a palm that reads; never sausages.
 - If a prop is a photo in the reference (people, thumbnails, b-roll), ask for a cut-out (rule 0.1); a code
   silhouette is a labelled stand-in, never the final.
+
+## Editing a real person's video (owner, 2026-10-16)
+- Never copy one reference wholesale; cast per beat from every reference and the catalogue, adapted to this video's palette and content.
+- A component that isn't polished doesn't ship: a soft or haloed cut-out across the whole video reads worse than the original wall. Use background replacement only where its edge quality passes, and only for a span that earns it.
+- Always grade: exposure, white balance, contrast curve, skin protected; low-res sources get a careful sharpen and grain, never a plastic upscale.
+
+## Grading (owner's own grade, 2026-10-16; preset kits/motion/grade-presets.json "natural-punch")
+- Never neutralise a room's colour: a warm wall stays warm (temp -4, not a full white balance). My auto-neutral grade was rejected as "very bad".
+- Depth comes from the bottom end: shadows -34, blacks -35, contrast +23; highlights +28 but whites -22 so skin and wall never blow out.
+- Colour: vibrance +10 with skin protect 100, saturation 0. Finish: sharpen 31, clarity 3, vignette 44, grain 11, exposure +0.24.
+- The grade runs as one shared WebGL shader (kits/motion/grade.js) in the grader and every preview, so the owner's grade is reproduced exactly.
