@@ -6,8 +6,8 @@
  * Needs nothing but ffmpeg (to decode the bed's mp3).
  */
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { basename, join, resolve } from 'node:path';
 import { config } from '../config';
 import { mono, readWav, writeWav, type Pcm } from './wav';
 
@@ -43,7 +43,7 @@ const parts = new Map<string, Part[]>();
 /** A sound's usable parts: onset slices (typing), or the whole sound trimmed of near-silence at both ends. */
 function load(key: string, s: SoundSpec): Part[] {
   const hit = parts.get(key); if (hit) return hit;
-  const y = mono(readWav(join(SFX(), s.file)), SR);
+  const y = mono(readWav(resolve(SFX(), s.file)), SR); // a map.json file is relative to sfx/; a graph-cast one is absolute
   let out: Float32Array[];
   if (s.slices === 'onsets') {
     const on = [...onsets(y, SR), y.length], cap = Math.round((s.slice_len ?? 1) * SR), m = absMax(y);
@@ -58,9 +58,12 @@ function load(key: string, s: SoundSpec): Part[] {
   return ps;
 }
 
-/** The SFX stem for a film's events, written as a WAV; returns how many events sounded. */
-export function sfxStem(events: Ev[], outPath: string, seed = 1): number {
-  const M = sfxMap(), E = M.events, R = M.rules, rnd = rng(seed);
+/**
+ * The SFX stem for a film's events, written as a WAV; returns how many events sounded. `M` is the map it plays: map.json
+ * itself, or map.json's rules with the sounds the library graph cast (./sounds.ts castSounds). `used` counts each sound.
+ */
+export function sfxStem(events: Ev[], outPath: string, seed = 1, M: SfxMap = sfxMap(), used?: Map<string, number>): number {
+  const E = M.events, R = M.rules, rnd = rng(seed);
   const flat: Ev[] = [];
   for (const ev of events) {
     if (!E[ev.event]) continue; // an event this kit has no sound for is silent, never an error
@@ -70,7 +73,8 @@ export function sfxStem(events: Ev[], outPath: string, seed = 1): number {
     } else flat.push(ev);
   }
   const prio = new Map(R.priority.map((k, i) => [k, i]));
-  const sustained = new Set(Object.entries(M.sounds).filter(([k, s]) => s.align === 'end' || k === 'ui-riser' || k === 'fast-typing').map(([k]) => k));
+  const longFiles = new Set(['ui-riser', 'fast-typing'].flatMap(k => (M.sounds[k] ? [basename(M.sounds[k]!.file)] : []))); // held sounds, by file (a graph-cast key is the asset id)
+  const sustained = new Set(Object.entries(M.sounds).filter(([, s]) => s.align === 'end' || longFiles.has(basename(s.file))).map(([k]) => k));
   const kept: Ev[] = [], taken = new Map<string, number[]>();
   for (const ev of [...flat].sort((a, b) => (prio.get(a.event) ?? 99) - (prio.get(b.event) ?? 99) || a.t - b.t)) {
     const snd = ev.sound ?? E[ev.event]!.sounds[0]!, same = taken.get(ev.event) ?? [];
@@ -86,6 +90,7 @@ export function sfxStem(events: Ev[], outPath: string, seed = 1): number {
     const k = prev && choices.includes(prev) && choices.length > 1 ? choices[(choices.indexOf(prev) + 1) % choices.length]! : choices[0]!;
     last.set(ev.event, k);
     const spec = M.sounds[k]; if (!spec) continue;
+    used?.set(k, (used.get(k) ?? 0) + 1);
     const ps = load(k, spec); let pi = Math.floor(rnd() * ps.length);
     if (ps.length > 1 && last.get(`${k}#`) === pi) pi = (pi + 1) % ps.length;
     last.set(`${k}#`, pi);
@@ -128,11 +133,30 @@ export function bedFrom(file: string, start: number, seconds: number, outPath: s
   return outPath;
 }
 
-/** Both stems into a film's dir (sfx.wav, music.wav), as the old Python mixer did. */
-export function stems(events: Ev[], dir: string, seconds: number, seed = 1) {
-  const hits = sfxStem(events, join(dir, 'sfx.wav'), seed);
+/**
+ * Both stems into a film's dir (sfx.wav, music.wav), as the old Python mixer did. The sfx are cast from the library
+ * graph (./sounds.ts); the dir gets sound.json with what was cast and what sounded.
+ */
+export async function stems(events: Ev[], dir: string, seconds: number, seed = 1) {
+  const { hits } = await castStem(events, join(dir, 'sfx.wav'), dir, seed);
   const bed = bedStem(seconds, join(dir, 'music.wav'));
   return { hits, credit: bed.credit };
+}
+
+/** uses per asset, most first (two keys of one asset add up) */
+const tally = (used: Map<string, number>, asset: Record<string, string>) => {
+  const n = new Map<string, number>(); for (const [k, c] of used) n.set(asset[k] ?? k, (n.get(asset[k] ?? k) ?? 0) + c);
+  return Object.fromEntries([...n].sort((a, b) => b[1] - a[1]));
+};
+
+/** The SFX stem with its sounds cast from the graph; writes `<dir>/sound.json` (source, cast per event, uses per asset). */
+export async function castStem(events: Ev[], outPath: string, dir: string, seed = 1) {
+  const { castSounds } = await import('./sounds');
+  const cast = await castSounds(events), used = new Map<string, number>();
+  const hits = sfxStem(events, outPath, seed, cast.map, used);
+  const report = { source: cast.source, ...(cast.why ? { why: cast.why } : {}), graphMs: cast.ms, events: cast.events, then: cast.then, named: cast.named, sounded: tally(used, cast.asset), hits };
+  writeFileSync(join(dir, 'sound.json'), JSON.stringify(report, null, 1));
+  return { hits, cast: report };
 }
 export const assetsReady = () => existsSync(join(SFX(), 'map.json')) && existsSync(join(MUSIC(), 'bed.json'));
 

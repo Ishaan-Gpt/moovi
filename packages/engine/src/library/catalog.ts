@@ -88,8 +88,11 @@ export function sfx(): Row[] {
     const meta = ids.map(id => S1_SFX.find(x => x.id === id)).find(Boolean);
     const s0 = map.sounds[ids[0]!]!;
     const events = Object.entries(map.events).flatMap(([event, e]) => {
-      const hits = [...e.sounds.map((id, i) => ({ id, first: i === 0, db: e.level_db })), ...(e.then ? [{ id: e.then.sound, first: false, db: e.then.level_db }] : [])].filter(h => ids.includes(h.id));
-      return hits.length ? [{ event, gainDb: hits[0]!.db, first: hits.some(h => h.first) }] : [];
+      const hits = [...e.sounds.map((id, i) => ({ id, first: i === 0, db: e.level_db, then: false, rank: i })), ...(e.then ? [{ id: e.then.sound, first: false, db: e.then.level_db, then: true, rank: 99 }] : [])].filter(h => ids.includes(h.id));
+      // `then`: the file only follows the event's sound (card-in's thud), never a choice for it; `rank`: its place in the event's rotation;
+      // align / slices: how this event cuts the file (one typing take is keystrokes for `typing`, one burst for `code`)
+      const use = hits.length ? map.sounds[hits[0]!.id]! : null;
+      return hits.length ? [{ event, gainDb: hits[0]!.db, first: hits.some(h => h.first), then: hits.every(h => h.then), rank: Math.min(...hits.map(h => h.rank)), align: use!.align ?? 'start', slices: use!.slices ?? null, sliceLen: use!.slice_len ?? null }] : [];
     });
     const { licence, credit } = sfxLicence(file, credits);
     return row({

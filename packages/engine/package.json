@@ -29,6 +29,7 @@
     "style-bench": "tsx --env-file-if-exists=../../.env.local scripts/style-bench.ts",
     "voices": "tsx --env-file-if-exists=../../.env.local scripts/voices.ts",
     "library": "tsx --env-file-if-exists=../../.env.local scripts/library.ts",
+    "sounds": "tsx --env-file-if-exists=../../.env.local scripts/sounds.ts",
     "reference": "tsx --env-file-if-exists=../../.env.local scripts/reference.ts",
     "combined": "tsx --env-file-if-exists=../../.env.local scripts/combined.ts"
   },

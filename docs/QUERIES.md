@@ -2116,14 +2116,14 @@ RETURN count(s) AS edges
 
 ### `linkAssetEvents` (write)
 
-An asset FITS a timeline event (an sfx on card-in, a riser on build): (Asset)-[:FITS {gainDb}]->(Event).
+An asset FITS a timeline event (an sfx on card-in, a riser on build): (Asset)-[:FITS {gainDb, first, rank, then, align, slices, sliceLen}]->(Event); `rank` = its place in the event’s rotation, `then` = it only follows the event’s sound, never stands in for it; align / slices = how this event cuts the file.
 
 ```cypher
 UNWIND $rows AS r
 MATCH (a:Asset {id: r.id})
 MERGE (e:Event {id: r.event})
 MERGE (a)-[f:FITS]->(e)
-SET f.gainDb = r.gainDb, f.first = r.first
+SET f.gainDb = r.gainDb, f.first = r.first, f.rank = r.rank, f.then = r.then, f.align = r.align, f.slices = r.slices, f.sliceLen = r.sliceLen
 RETURN count(f) AS edges
 ```
 
@@ -2204,7 +2204,7 @@ Every asset of one category (optionally only one runtime, only shippable), for a
 ```cypher
 MATCH (a:Asset {category: $category})
 WHERE ($runtime IS NULL OR $runtime IN a.runtime) AND (NOT $shipOnly OR a.ship)
-RETURN a.id AS id, a.name AS name, a.about AS about, a.runtime AS runtime, a.energy AS energy, a.tags AS tags, a.params AS params
+RETURN a.id AS id, a.name AS name, a.about AS about, a.runtime AS runtime, a.energy AS energy, a.tags AS tags, a.params AS params, a.impl AS impl, a.file AS file
 ORDER BY a.id
 ```
 
@@ -2224,13 +2224,13 @@ LIMIT $n
 
 ### `assetsForEvent` (read-only)
 
-What plays on a timeline event (an sfx for card-in, a riser for build), first choice first.
+What plays on a timeline event (an sfx for card-in, a riser for build), first choice first; `then` rows are the follow-up sound, not a choice. The mixer casts every film’s sfx with this.
 
 ```cypher
 MATCH (a:Asset)-[f:FITS]->(:Event {id: $event})
 WHERE ($category IS NULL OR a.category = $category) AND (NOT $shipOnly OR a.ship)
-RETURN a.id AS id, a.category AS category, a.file AS file, f.gainDb AS gainDb, f.first AS first, a.params AS params
-ORDER BY f.first DESC, a.id
+RETURN a.id AS id, a.category AS category, a.file AS file, f.gainDb AS gainDb, f.first AS first, coalesce(f.then, false) AS then, f.align AS align, f.slices AS slices, f.sliceLen AS sliceLen, a.impl AS impl, a.params AS params
+ORDER BY f.first DESC, coalesce(f.rank, 99), a.id
 ```
 
 ### `assetsForStyle` (read-only)
