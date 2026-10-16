@@ -4,11 +4,6 @@ Owner: Claude 1, now acting as product manager (Ishaan, 18:25 IST: "your only ta
 Claude and Tab, see what is going on in my repo, in my sessions and in his, be the main product manager, and see
 everything is at par with our plan"). Claude 1 builds nothing from now on. Updated: **2026-10-16 18:34 IST** (decisions); first written **2026-10-16 18:31 IST**.
 
-> **@Vignesh, from Ishaan via Claude 1 (2026-10-16 19:53 IST):** please put **D1.6 (the bench on R9's quick tier, the table in
-> docs/SPEED.md) and D1.8 (the MP4 from the EDL) ahead of any new style** for Tab. They close Day 1's edit gate, and
-> Ishaan's next deploy (with the full library) waits for them. clip-moment can carry on after. Tab: please pass this to
-> Vignesh and post his answer in TAB.md.
-
 ## Day 1 against the plan
 
 Day 1 gate (PLAN.md): **upload a clip in the studio and watch an edit in under 60 s, with cuts, punch-ins, captions and
@@ -22,11 +17,20 @@ one style, measured on the R9 clips.**
 | D1.3 EDL builder from footage-edit | Tab | **done** | 70ec3ee: plan in 2.3–2.7 s, slate and pauses cut, cuts 100% on words, face crop. Test 1 v2: **4/10** (was 3/10) |
 | D1.4 preview player | (was Claude 1) | **done, live** | on the server since 9473f58 |
 | D1.5 captions (11 of 52) | (was Claude 1) | **done, live** | |
-| D1.6 benchmark script | Tab | **not started** | R9 has the clip set and the score |
+| D1.6 benchmark script | Tab | **done** | 0f184b4: R9 quick tier, table in docs/SPEED.md; found and fixed 2 hearing bugs |
 | D1.7 studio route | (was Claude 1) | **done, live** | |
-| D1.8 MP4 from the EDL | Tab | next | target 20:30 IST |
+| D1.8 MP4 from the EDL | Tab | **done** | d4239fd: deterministic (framemd5 equal), same geometry as the player |
 
-**7 of 9 done (2026-10-16 18:55 IST).** Left: **D1.6** (the bench, which the gate needs) and **D1.8** (MP4). **Deployed 2026-10-16 19:16 IST: the server runs fb96cd6** (the builder, hearing, voice clean-up, library-wire). Checked before: typecheck clean, studio build passes, engine suite 212/221 pass with 1 load-timing failure (`voice-clean.test.ts`, passes alone in 5.3 s). After: worker up, seed loaded 628 Assets. **On the server there's no python3**, so face detection finds nothing and every edit uses fit + blur until look.ts moves to Node.
+**Day 1: 9 of 9 done (2026-10-16 20:38 IST).** Gate, measured by D1.6 on R9's quick tier:
+
+| Clip | Preview ready | MP4 | Quality |
+|---|---|---|---|
+| B1 Vignesh's selfie, 29.7 s | 4.75 s | 17.2 s | **pass** |
+| B2 two-person selfie, 34.1 s | 3.78 s | 34.3 s | fail: silence holes (Whisper's word times run over pauses) |
+| B4 Hindi, 101.1 s | 26.92 s | 54.3 s | fail: silence holes, words right 72.4% |
+
+**Speed passes on all three** (preview under 60 s, MP4 under 120 s, -14 LUFS). **Quality passes on 1 of 3.** Vignesh
+confirmed at 20:04 that D1.6 and D1.8 came before new styles; clip-moment carries on after. **Deployed 2026-10-16 20:38 IST: the server runs 6adb95e**, with all of Day 1, the full library (960 Assets) and the Mixkit mirror off by default. Checked before: typecheck clean, engine suite 252: 243 pass, 0 fail; studio build passes. After: worker up, 0 brand references, 8.3 GB free. Still no python3 there, so no faces until look.ts moves to Node.
 
 **Rule problem:** face detection (`edit/look.ts`) runs YuNet through `python3` + OpenCV, against the root rule "no dependency on Python". On the server it most likely finds no faces and falls back to fit + blur. Fix: run face detection without Python (ONNX in Node, or in the browser as Afterglow does with MediaPipe).
 
@@ -39,9 +43,24 @@ one style, measured on the R9 clips.**
 | Reference clones (R1–R4 = E3, …) with the ishaan-motion canvas engine | Ishaan's clone sessions | data/ (not in git) + b348efc | code yes, R1 A/B clone no | **no**: standalone canvas pages, their own timing tables |
 | Generation styles and Auto cast sfx from the library | Ishaan's library-wire session | ishaan/library-wire, 1 local commit + 16 open files | no | n/a: **generation, which the plan put out of scope for these two days**; it touches `router/job.ts` (shared with Vignesh's combined film) |
 | CaptionsEasy npm (99 caption looks) | Ishaan's CaptionsEasy session | separate repo | n/a | no; an option for Moovi's captions |
-| Live server | | 65-2-223-240.sslip.io | next deploy: **once, after D1.6 and D1.8** (Ishaan), with the full library · runs **fb96cd6** (2026-10-16 19:16 IST) | up to date with main |
+| Live server | | 65-2-223-240.sslip.io | runs **6adb95e** (2026-10-16 20:38 IST), Day 1 complete (2026-10-16 19:16 IST) | up to date with main |
 
 | **clip-moment** (Buckology Shorts look: stock clips, stat cards, 3D) | Tab, at Vignesh's ask (18:26–19:10) | main f1aad34 | yes | n/a: **a new generation style**, out of scope in PLAN.md; D1.6 and D1.8 still not started (2026-10-16 19:51 IST) |
+
+## Day 2 to track (owners per PLAN.md after Ishaan's decisions)
+
+| # | Task | Owner |
+|---|---|---|
+| D2.1 + D2.2 | the six R4 styles as laws over the EDL | Tab |
+| D2.4 | library in the edit path (camera, sfx, transitions per beat, captionseasy draw) | Tab (next) |
+| — | face detection in Node (rule fix; no faces on the server today) | Tab (next) |
+| — | the silence-hole fix B2/B4 fail on | Tab |
+| D2.5 | inserts from the gen styles | Tab |
+| D2.6 | sound pass | Tab |
+| D2.8 | edit by words | Tab |
+| D2.9 | ship: before/after reel per style, SPEED.md, README | both sides |
+
+Tab carries almost all of Day 2 alone. **That's the risk to watch.**
 
 ## The pattern
 

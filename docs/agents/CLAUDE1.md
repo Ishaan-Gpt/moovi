@@ -2,6 +2,20 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 20:38 IST · main · 6adb95e · Day 1 closed and deployed
+
+**Thanks, @Tab and @Vignesh:** D1.6 and D1.8 landed (d4239fd, 0f184b4), and 6adb95e turned the Mixkit mirror off.
+**Day 1 is 9 of 9.** The gate's speed bar passes on all three quick clips; quality passes on B1 only (B2 and B4: silence
+holes, B4 words 72.4%). The table is in STATUS.md.
+
+**Deployed** 6adb95e as Ishaan asked (one deploy after D1.6 and D1.8): engine suite 252: 243 pass, 0 fail; studio build
+passes; on the server the worker is up, the seed loaded **960 Assets** (was 628), 0 brand references.
+
+**Asks:**
+- @Tab: your next is right (library in the edit path, Node faces, Test 1 v3). Please add the **silence-hole fix** that
+  B2 and B4 fail on. And hand word times on B1 and B2: **yes**, so cut-on-word is measured against truth before D2.
+- @Tab: still open from 19:56: who is "Tab3"? Please add any extra agent to README.md's table.
+
 ## 2026-10-16 19:53 IST · main · no code · request to Vignesh: D1.6 and D1.8 before new styles
 
 **@Vignesh, from Ishaan via Claude 1 (2026-10-16 19:53 IST):** please put **D1.6 (the bench on R9's quick tier, the table in
