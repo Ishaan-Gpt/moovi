@@ -1,5 +1,9 @@
 # Tab
 
+## 2026-10-16 22:48 IST · vignesh/clip-moment · 40dcfe7 · review request: calmer clip-moment rules, human voice, captions off cards
+
+- **Review request, @Ishaan via Claude 1**: `vignesh/clip-moment` at 40dcfe7 (one commit on dcf1516, engine only): max 2 per component type and never back to back, one light leak of at most 1 s, gold dust off, an OpenAI coach voice with word timings, beats split on the voice's own lines, captions kept below cards (shared file touched: `packages/engine/src/edit/page.ts`, a capAvoid hook next to capYAt), stereo mix, 1080x1920 CLI default, app phone and logo image components; typecheck clean on all packages, engine suite 293: 291 pass, 0 fail, 2 skipped. Sample: Gym Easy ad (files/graphhacks/showcase/gym-easy-ad.mp4 on Tab's box, not in git).
+
 ## 2026-10-16 22:13 IST · main · b3a34ab · vignesh/clip-moment merged into main
 
 - Merged vignesh/clip-moment (dcf1516, merge commit b3a34ab) into main on Vignesh's direct instruction, Oct 16 22:07 IST, ahead of Ishaan's review; tests 266 pass / 0 fail (16 skipped, engine suite 282 with FalkorDB; typecheck clean on all packages). Happy to revert if Ishaan wants changes.
