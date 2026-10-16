@@ -243,6 +243,23 @@ export function cmComponentCount(s: CmScript): { n: number; kinds: string[] } {
   return { n: ks.length, kinds: [...new Set(ks)] };
 }
 
+/**
+ * Subject guards (root's review of bus v3: the gearbox beat showed a bicycle cassette, the doors beat a shoe). A line
+ * about one of these vehicle parts only takes a clip whose title shows that part on a vehicle; anything else (and the
+ * look-alikes named in `reject`) is refused, and with nothing left the beat becomes a graphic scene (its 3D or diagram
+ * component on the graded base), never a wrong clip.
+ */
+export const CM_CLIP_GUARDS: { id: string; line: RegExp; need: RegExp; reject: RegExp }[] = [
+  { id: 'gearbox', line: /\b(gearbox|gearboxes|transmission|gear ?shift|clutch)\b/i, need: /\b(gearbox|transmission|gear ?(shift|stick|lever|knob)|shifting gears?|changing gears?)\b/i, reject: /\b(bicycle|bike|bikes|cycling|cyclist|cassette|chain ?ring|clock|watch)\b/i },
+  { id: 'doors', line: /\bdoors?\b/i, need: /\b(bus|buses|tram|trolleybus|coach)\b[^.]*\bdoors?\b|\bdoors?\b[^.]*\b(bus|buses|tram|trolleybus|coach)\b/i, reject: /\b(shoes?|feet|foot|legs?|sneakers?|boots?|heels?)\b/i },
+];
+/** May this clip (by its title) play under this line? Lines no guard names take any clip the scorer accepts. */
+export function cmClipFits(line: string, title: string): boolean {
+  const said = line.replace(/\*/g, '');
+  for (const gd of CM_CLIP_GUARDS) if (gd.line.test(said) && (!gd.need.test(title) || gd.reject.test(title))) return false;
+  return true;
+}
+
 /** Mixkit clip page → its licence: only the Mixkit Stock Video Free License may ship (many clips are personal use only). */
 export function mixkitLicence(html: string): 'free' | 'restricted' | 'unknown' {
   const t = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');

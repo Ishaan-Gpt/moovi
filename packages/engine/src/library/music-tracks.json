@@ -1,0 +1,672 @@
+{
+ "about": "Background music for the library (category music). Metadata only: the audio is fetched from fileUrl into a local cache (MOOVI_MUSIC_CACHE, default ~/.cache/moovi/music), never committed. Licence gate: only tracks whose licence allows free commercial use on YouTube, Instagram and Facebook with no attribution on screen. Mixkit Stock Music Free License (read 2026-10-16 at https://mixkit.co/license/modal/musicFree): commercial and non-commercial use, any web or social media platform, no attribution; not allowed: CDs/DVDs, TV/radio, video games, remixing into a music-only track, claiming or registering on a rights management service. bpm, dropAt and hookAt are measured from the audio (onset autocorrelation, loudness rise); genre and mood come from Mixkit's genre and tag pages plus the measured loudness, not from hand auditioning.",
+ "measuredAt": "2026-10-16",
+ "tracks": [
+  {
+   "id": "music:mixkit-need-for-speed",
+   "title": "Need for speed",
+   "artist": "Arulo",
+   "source": "mixkit",
+   "mixkitId": 369,
+   "fileUrl": "https://assets.mixkit.co/music/369/369.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/hip-hop/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "upbeat-trap",
+   "mixkitGenre": "Trap",
+   "mood": [
+    "hype",
+    "confident",
+    "driving"
+   ],
+   "energy": 5,
+   "bpm": 92.3,
+   "hasDrop": true,
+   "dropAt": 12.0,
+   "hookAt": 12.0,
+   "dur": 97.8,
+   "needs": [
+    "hook",
+    "speed",
+    "build",
+    "success"
+   ]
+  },
+  {
+   "id": "music:mixkit-head-bang",
+   "title": "Head Bang",
+   "artist": "Arulo",
+   "source": "mixkit",
+   "mixkitId": 357,
+   "fileUrl": "https://assets.mixkit.co/music/357/357.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/hip-hop/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "upbeat-trap",
+   "mixkitGenre": "Trap",
+   "mood": [
+    "hype",
+    "aggressive"
+   ],
+   "energy": 5,
+   "bpm": 73.8,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": null,
+   "dur": 97.3,
+   "needs": [
+    "hook",
+    "speed",
+    "build",
+    "success"
+   ]
+  },
+  {
+   "id": "music:mixkit-sparta",
+   "title": "Sparta",
+   "artist": "Arulo",
+   "source": "mixkit",
+   "mixkitId": 370,
+   "fileUrl": "https://assets.mixkit.co/music/370/370.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/hip-hop/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "upbeat-trap",
+   "mixkitGenre": "Trap",
+   "mood": [
+    "epic",
+    "aggressive",
+    "confident"
+   ],
+   "energy": 4,
+   "bpm": 95.7,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": null,
+   "dur": 104.0,
+   "needs": [
+    "hook",
+    "speed",
+    "build",
+    "success"
+   ]
+  },
+  {
+   "id": "music:mixkit-thunder",
+   "title": "Thunder",
+   "artist": "Arulo",
+   "source": "mixkit",
+   "mixkitId": 318,
+   "fileUrl": "https://assets.mixkit.co/music/318/318.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/hip-hop/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "dark-trap",
+   "mixkitGenre": "Hip Hop",
+   "mood": [
+    "dark",
+    "tense",
+    "aggressive"
+   ],
+   "energy": 4,
+   "bpm": 95.7,
+   "hasDrop": true,
+   "dropAt": 20.2,
+   "hookAt": 20.2,
+   "dur": 101.2,
+   "needs": [
+    "hook",
+    "stakes",
+    "warning",
+    "chaos",
+    "build"
+   ]
+  },
+  {
+   "id": "music:mixkit-greed",
+   "title": "Greed",
+   "artist": "Arulo",
+   "source": "mixkit",
+   "mixkitId": 404,
+   "fileUrl": "https://assets.mixkit.co/music/404/404.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/tag/trap/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "dark-trap",
+   "mixkitGenre": "Trap",
+   "mood": [
+    "dark",
+    "confident"
+   ],
+   "energy": 4,
+   "bpm": 99.4,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": null,
+   "dur": 96.0,
+   "needs": [
+    "hook",
+    "stakes",
+    "warning",
+    "chaos",
+    "build"
+   ]
+  },
+  {
+   "id": "music:mixkit-trap-electro-vibes",
+   "title": "Trap Electro Vibes",
+   "artist": "Alejandro Magaña (A. M.)",
+   "source": "mixkit",
+   "mixkitId": 126,
+   "fileUrl": "https://assets.mixkit.co/music/126/126.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/electronic/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "upbeat-trap",
+   "mixkitGenre": "Electronic",
+   "mood": [
+    "hype",
+    "playful",
+    "driving"
+   ],
+   "energy": 5,
+   "bpm": 184.6,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": 3.05,
+   "dur": 115.8,
+   "needs": [
+    "hook",
+    "speed",
+    "build",
+    "success"
+   ]
+  },
+  {
+   "id": "music:mixkit-acid-party",
+   "title": "Acid Party",
+   "artist": "Arulo",
+   "source": "mixkit",
+   "mixkitId": 420,
+   "fileUrl": "https://assets.mixkit.co/music/420/420.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/hip-hop/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "electronic",
+   "mixkitGenre": "Trap",
+   "mood": [
+    "hype",
+    "playful"
+   ],
+   "energy": 4,
+   "bpm": 152.0,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": null,
+   "dur": 100.8,
+   "needs": [
+    "speed",
+    "build",
+    "idea",
+    "ai",
+    "data"
+   ]
+  },
+  {
+   "id": "music:mixkit-golden-storm",
+   "title": "Golden Storm",
+   "artist": "Diego Nava",
+   "source": "mixkit",
+   "mixkitId": 470,
+   "fileUrl": "https://assets.mixkit.co/music/470/470.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/tag/corporate/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "electronic",
+   "mixkitGenre": "EDM",
+   "mood": [
+    "uplifting",
+    "hype"
+   ],
+   "energy": 5,
+   "bpm": 129.2,
+   "hasDrop": true,
+   "dropAt": 15.05,
+   "hookAt": 15.05,
+   "dur": 95.5,
+   "needs": [
+    "speed",
+    "build",
+    "idea",
+    "ai",
+    "data"
+   ]
+  },
+  {
+   "id": "music:mixkit-rising-sun",
+   "title": "Rising Sun",
+   "artist": "Diego Nava",
+   "source": "mixkit",
+   "mixkitId": 523,
+   "fileUrl": "https://assets.mixkit.co/music/523/523.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/tag/cinematic/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "electronic",
+   "mixkitGenre": "EDM",
+   "mood": [
+    "uplifting",
+    "bright"
+   ],
+   "energy": 4,
+   "bpm": 112.3,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": null,
+   "dur": 91.7,
+   "needs": [
+    "speed",
+    "build",
+    "idea",
+    "ai",
+    "data"
+   ]
+  },
+  {
+   "id": "music:mixkit-drum-and-bass-vibes",
+   "title": "Drum and Bass Vibes",
+   "artist": "Lily J",
+   "source": "mixkit",
+   "mixkitId": 719,
+   "fileUrl": "https://assets.mixkit.co/music/719/719.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/electronic/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "electronic",
+   "mixkitGenre": "Electronic",
+   "mood": [
+    "driving",
+    "tense",
+    "hype"
+   ],
+   "energy": 5,
+   "bpm": 117.5,
+   "hasDrop": true,
+   "dropAt": 21.85,
+   "hookAt": 21.85,
+   "dur": 96.0,
+   "needs": [
+    "speed",
+    "build",
+    "idea",
+    "ai",
+    "data"
+   ]
+  },
+  {
+   "id": "music:mixkit-motivating-mornings",
+   "title": "Motivating Mornings",
+   "artist": "Ahjay Stelino",
+   "source": "mixkit",
+   "mixkitId": 33,
+   "fileUrl": "https://assets.mixkit.co/music/33/33.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/tag/corporate/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "corporate-upbeat",
+   "mixkitGenre": "Corporate Music",
+   "mood": [
+    "uplifting",
+    "bright",
+    "confident"
+   ],
+   "energy": 3,
+   "bpm": 80.7,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": 3.95,
+   "dur": 96.2,
+   "needs": [
+    "benefit",
+    "success",
+    "process",
+    "learn",
+    "idea"
+   ]
+  },
+  {
+   "id": "music:mixkit-running-out-of-time",
+   "title": "Running Out of Time",
+   "artist": "Ahjay Stelino",
+   "source": "mixkit",
+   "mixkitId": 77,
+   "fileUrl": "https://assets.mixkit.co/music/77/77.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/tag/corporate/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "corporate-upbeat",
+   "mixkitGenre": "Corporate Music",
+   "mood": [
+    "driving",
+    "tense",
+    "uplifting"
+   ],
+   "energy": 4,
+   "bpm": 129.2,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": 1.85,
+   "dur": 96.5,
+   "needs": [
+    "benefit",
+    "success",
+    "process",
+    "learn",
+    "idea"
+   ]
+  },
+  {
+   "id": "music:mixkit-close-up",
+   "title": "Close Up",
+   "artist": "Michael Ramir C.",
+   "source": "mixkit",
+   "mixkitId": 1167,
+   "fileUrl": "https://assets.mixkit.co/music/1167/1167.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/tag/corporate/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "corporate-upbeat",
+   "mixkitGenre": "Corporate Music",
+   "mood": [
+    "confident",
+    "smooth"
+   ],
+   "energy": 3,
+   "bpm": 103.4,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": null,
+   "dur": 95.1,
+   "needs": [
+    "benefit",
+    "success",
+    "process",
+    "learn",
+    "idea"
+   ]
+  },
+  {
+   "id": "music:mixkit-sweet-september",
+   "title": "Sweet September",
+   "artist": "Arulo",
+   "source": "mixkit",
+   "mixkitId": 282,
+   "fileUrl": "https://assets.mixkit.co/music/282/282.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/hip-hop/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "lofi",
+   "mixkitGenre": "Hip Hop",
+   "mood": [
+    "chill",
+    "warm"
+   ],
+   "energy": 2,
+   "bpm": 152.0,
+   "hasDrop": true,
+   "dropAt": 37.9,
+   "hookAt": 37.9,
+   "dur": 98.7,
+   "needs": [
+    "calm",
+    "focus",
+    "learn"
+   ]
+  },
+  {
+   "id": "music:mixkit-sleepy-cat",
+   "title": "Sleepy Cat",
+   "artist": "Alejandro Magaña (A. M.)",
+   "source": "mixkit",
+   "mixkitId": 135,
+   "fileUrl": "https://assets.mixkit.co/music/135/135.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/tag/lo-fi/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "lofi",
+   "mixkitGenre": "Chillout",
+   "mood": [
+    "chill",
+    "calm"
+   ],
+   "energy": 1,
+   "bpm": 136.0,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": null,
+   "dur": 119.2,
+   "needs": [
+    "calm",
+    "focus",
+    "learn"
+   ]
+  },
+  {
+   "id": "music:mixkit-epical-drums-01",
+   "title": "Epical Drums 01",
+   "artist": "Grigoriy Nuzhny",
+   "source": "mixkit",
+   "mixkitId": 676,
+   "fileUrl": "https://assets.mixkit.co/music/676/676.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/tag/cinematic/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "cinematic",
+   "mixkitGenre": "Sound Elements",
+   "mood": [
+    "epic",
+    "tense"
+   ],
+   "energy": 4,
+   "bpm": 143.6,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": 1.65,
+   "dur": 105.9,
+   "needs": [
+    "emotion",
+    "reveal",
+    "stakes",
+    "build",
+    "scale"
+   ]
+  },
+  {
+   "id": "music:mixkit-lifes-a-movie",
+   "title": "Life's a Movie",
+   "artist": "Arulo",
+   "source": "mixkit",
+   "mixkitId": 322,
+   "fileUrl": "https://assets.mixkit.co/music/322/322.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/tag/epic/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "cinematic",
+   "mixkitGenre": "Film Score",
+   "mood": [
+    "epic",
+    "emotional"
+   ],
+   "energy": 3,
+   "bpm": 103.4,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": null,
+   "dur": 121.2,
+   "needs": [
+    "emotion",
+    "reveal",
+    "stakes",
+    "build",
+    "scale"
+   ]
+  },
+  {
+   "id": "music:mixkit-i-wont-surrender",
+   "title": "I Won't surrender",
+   "artist": "Michael Ramir C.",
+   "source": "mixkit",
+   "mixkitId": 846,
+   "fileUrl": "https://assets.mixkit.co/music/846/846.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/tag/cinematic/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "cinematic",
+   "mixkitGenre": "Film Score",
+   "mood": [
+    "epic",
+    "emotional",
+    "tense"
+   ],
+   "energy": 3,
+   "bpm": 112.3,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": null,
+   "dur": 114.4,
+   "needs": [
+    "emotion",
+    "reveal",
+    "stakes",
+    "build",
+    "scale"
+   ]
+  }
+ ]
+}
