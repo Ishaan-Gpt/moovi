@@ -474,8 +474,10 @@ export async function makeClipMoment(i: CmRunInput): Promise<CmRunResult> {
   if (problems.length) throw new Error(`clip-moment EDL: ${problems.slice(0, 3).join('; ')}`);
   writeFileSync(join(dir, 'edl.json'), JSON.stringify(edl));
   const picks: CmClipPick[] = clips.flatMap((cs, k) => cs.map(c => ({ beat: k + 1, query: c.query, id: clipId(c), ref: c.ref, title: c.title, page: c.page, licence: c.licence, file: c.path!, score: c.score })));
-  // credits stay off screen (the free licence needs none): here and on the Asset nodes
-  writeFileSync(join(dir, 'credits.json'), JSON.stringify({ footage: picks.map(({ file: _f, ...p }) => p), rejected, voice, sfx: sfxIds }, null, 1));
+  // credits stay off screen: here and on the Asset nodes; a music licence that asks for a credit (NCS, CC BY) gets it in
+  // the video description, so the exact text rides here as music.description
+  const music = musicPick ? { id: musicPick.track.id, title: musicPick.track.title, artist: musicPick.track.artist, licence: musicPick.track.licence, use_scope: musicPick.useScope, description: musicPick.credit } : null;
+  writeFileSync(join(dir, 'credits.json'), JSON.stringify({ footage: picks.map(({ file: _f, ...p }) => p), rejected, voice, sfx: sfxIds, music }, null, 1));
   // the trace: per line, what was searched, what was checked (score, licence) and picked, its components and 3D ids
   const comps = edl.inserts.filter(x => String(x.asset_ref ?? '').startsWith('clip-moment:'));
   script.beats.forEach((b, k) => {

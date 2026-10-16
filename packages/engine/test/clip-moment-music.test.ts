@@ -19,10 +19,13 @@ const BUS = [
   'Would you drive one?',
 ];
 
+const MIXKIT = MUSIC_TRACKS.filter(t => t.source === 'mixkit');
+const VIRAL = MUSIC_TRACKS.filter(t => t.source !== 'mixkit');
+
 test('music library: at least 12 Mixkit tracks across the Shorts genres, metadata only, every one through the licence gate', () => {
-  assert.ok(MUSIC_TRACKS.length >= 12, `${MUSIC_TRACKS.length} tracks`);
-  assert.ok(new Set(MUSIC_TRACKS.map(t => t.genre)).size >= 5);
-  for (const t of MUSIC_TRACKS) {
+  assert.ok(MIXKIT.length >= 12, `${MIXKIT.length} tracks`);
+  assert.ok(new Set(MIXKIT.map(t => t.genre)).size >= 5);
+  for (const t of MIXKIT) {
     assert.ok(musicLicenceOk(t), `${t.id} fails the gate`);
     assert.equal(licenceTerms(t.licence).code, 'mixkit');
     assert.match(t.fileUrl, /^https:\/\/assets\.mixkit\.co\/music\/\d+\/\d+\.mp3$/);
@@ -30,7 +33,7 @@ test('music library: at least 12 Mixkit tracks across the Shorts genres, metadat
     if (t.hasDrop) assert.ok(t.dropAt !== null && t.dropAt > 0 && t.dropAt < t.dur);
   }
   const rows = music().filter(r => r.id.startsWith('music:mixkit-'));
-  assert.equal(rows.length, MUSIC_TRACKS.length);
+  assert.equal(rows.length, MIXKIT.length);
   for (const r of rows) {
     assert.equal(r.file, null, 'no audio in the repo');
     assert.equal(r.vendored, false);
@@ -56,7 +59,7 @@ test('music pick: a plan with a music slot gets one track, it passes the gate, a
   assert.ok(a, 'a track is picked');
   assert.ok(musicLicenceOk(a!.track));
   assert.equal(a!.track.id, b!.track.id);
-  assert.ok(a!.hits > 0 && a!.why.includes('Mixkit Stock Music Free License'));
+  assert.ok(a!.hits > 0 && a!.why.includes(a!.track.licence));
   // the graph's assetsServing hits drive the pick when the graph answers
   const only = MUSIC_TRACKS.find(t => t.genre === 'cinematic')!;
   const g = pickMusic(want, new Map([[only.id, 5]]));
@@ -92,4 +95,56 @@ test('music mix: rendered through ffmpeg, the bed measures about 20 LU under the
     const bl = await lufsOf(bed, { start: 0.5, dur: 10 });
     assert.ok(vl! - bl! >= 18 && vl! - bl! <= 22.5, `voice ${vl} LUFS, bed ${bl} LUFS`);
   } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+// viral additions (Vignesh 2026-10-16 21:45 IST: "use that viral music which actually people recognize")
+test('viral music: 10 to 20 recognisable NCS and Kevin MacLeod tracks, each with its credit for the description, a scope and a cached file name', () => {
+  assert.ok(VIRAL.length >= 10 && VIRAL.length <= 20, `${VIRAL.length} viral tracks`);
+  assert.ok(VIRAL.filter(t => t.recognizable).length >= 10);
+  assert.ok(VIRAL.some(t => t.genre === 'phonk'), 'a phonk track');
+  for (const t of VIRAL) {
+    assert.ok(musicLicenceOk(t), `${t.id} fails the creator gate`);
+    const squash = (x: string) => x.toLowerCase().replace(/[^a-z0-9]/g, '');
+    assert.ok(t.credit && squash(t.credit).includes(squash(t.title.split(' (')[0]!)), `${t.id} credit names the song`);
+    assert.equal(t.use.attributionPlace, 'description'); assert.equal(t.use.onScreen, false);
+    assert.match(t.cacheFile ?? '', /^viral\/[a-z0-9-]+\.mp3$/);
+    assert.ok(t.use_scope === 'creator-use' || t.use_scope === 'product-safe');
+    if (t.source === 'ncs') {
+      assert.equal(licenceTerms(t.licence).code, 'ncs');
+      assert.equal(t.use_scope, 'creator-use');
+      assert.match(t.sourceUrl, /^https:\/\/ncs\.io\//);
+      assert.equal(musicLicenceOk(t, 'product'), false, `${t.id}: NCS never ships inside the product`);
+    } else {
+      assert.equal(licenceTerms(t.licence).code, 'CC-BY-4.0');
+      assert.equal(t.use_scope, 'product-safe');
+      assert.ok(musicLicenceOk(t, 'product'), `${t.id} is product-safe`);
+    }
+  }
+  // songs no longer on ncs.io are label owned now: never in the library
+  for (const bad of [/\bfade\b/i, /on & on/i, /candyland/i, /cloud 9/i]) assert.ok(!MUSIC_TRACKS.some(t => bad.test(t.title)), String(bad));
+  const rows = music().filter(r => VIRAL.some(t => t.id === r.id));
+  assert.equal(rows.length, VIRAL.length);
+  for (const r of rows) { assert.equal(r.file, null, 'no audio in the repo'); assert.ok(r.credit, `${r.id} carries its credit`); assert.ok('use_scope' in r.params); }
+});
+
+test('viral music gate: a credit licence passes only with its credit text placed in the description', () => {
+  const t = VIRAL.find(x => x.source === 'ncs')!;
+  assert.equal(musicLicenceOk({ ...t, credit: null }), false);
+  assert.equal(musicLicenceOk({ ...t, use: { ...t.use, attributionPlace: undefined } }), false);
+  assert.equal(musicLicenceOk({ ...t, use: { ...t.use, onScreen: true } }), false);
+  assert.equal(licenceTerms('NCS (NoCopyrightSounds) Usage Policy').ship, false);
+});
+
+test('viral music pick: an energetic video gets a recognisable track and its credit; a product build gets product-safe tracks only', () => {
+  const want = { ...musicWant({ lines: BUS, seconds: 30, dropTarget: 4.2 }), energy: 5 };
+  const a = pickMusic(want);
+  assert.ok(a && a.track.recognizable, `picked ${a?.track.id}`);
+  assert.ok(a!.credit && a!.credit.length > 10, 'the credit comes back for the description');
+  // a bus explainer has no product-safe bed that serves it (null = the vendored CC BY bed); a funny one does
+  assert.ok(pickMusic({ ...want, scope: 'product' }) === null || pickMusic({ ...want, scope: 'product' })!.useScope === 'product-safe');
+  const funny = musicWant({ lines: ['This weird meme machine is silly.', 'Nobody knows why it works.'], seconds: 20, dropTarget: 3, scope: 'product' });
+  const p = pickMusic(funny);
+  assert.ok(p, 'a product build still gets a bed');
+  assert.equal(p!.useScope, 'product-safe');
+  for (const t of MUSIC_TRACKS.filter(x => musicLicenceOk(x, 'product'))) assert.equal(t.source === 'ncs', false);
 });
