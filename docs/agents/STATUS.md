@@ -36,6 +36,8 @@ one style, measured on the R9 clips.**
 | CaptionsEasy npm (99 caption looks) | Ishaan's CaptionsEasy session | separate repo | n/a | no; an option for Moovi's captions |
 | Live server | | 65-2-223-240.sslip.io | next deploy: **once, after D1.6 and D1.8** (Ishaan), with the full library · runs **fb96cd6** (2026-10-16 19:16 IST) | up to date with main |
 
+| **clip-moment** (Buckology Shorts look: stock clips, stat cards, 3D) | Tab, at Vignesh's ask (18:26–19:10) | main f1aad34 | yes | n/a: **a new generation style**, out of scope in PLAN.md; D1.6 and D1.8 still not started (2026-10-16 19:51 IST) |
+
 ## The pattern
 
 A lot is being built and very little of it reaches an edit. The library, the camera layer and the clone kits each
