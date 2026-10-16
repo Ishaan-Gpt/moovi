@@ -1,0 +1,433 @@
+{
+ "version": "0.1",
+ "style_id": "night-desk",
+ "style_variant": "B",
+ "seed": 7,
+ "rules_version": "r4-2026-10-16",
+ "source": {
+  "file": "src.mp4",
+  "id": "example",
+  "duration": 10.0,
+  "w": 1080,
+  "h": 1920,
+  "fps": 30
+ },
+ "output": {
+  "w": 1080,
+  "h": 1920,
+  "fps": 30,
+  "aspect": "9:16"
+ },
+ "palette": {
+  "ink": "#0b0b0f",
+  "paper": "#f4f1ea",
+  "accent": "#e8c547",
+  "accent2": "#7aa7ff",
+  "deep": "#15151c",
+  "pop": "#ffffff"
+ },
+ "caption_style_id": "caption:punch-duo",
+ "laws": {
+  "pause_max": 0.4,
+  "pause_keep": 0.18,
+  "hold_max": 2.6,
+  "snap_ms": 100
+ },
+ "words": [
+  {
+   "src_t0": 1.2,
+   "src_t1": 1.55,
+   "text": "Moovi",
+   "line_id": 0,
+   "conf": 0.97,
+   "role": "title"
+  },
+  {
+   "src_t0": 1.58,
+   "src_t1": 1.9,
+   "text": "edits",
+   "line_id": 0,
+   "conf": 0.97,
+   "role": "connector"
+  },
+  {
+   "src_t0": 1.92,
+   "src_t1": 2.05,
+   "text": "your",
+   "line_id": 0,
+   "conf": 0.97,
+   "role": "connector"
+  },
+  {
+   "src_t0": 2.08,
+   "src_t1": 2.35,
+   "text": "raw",
+   "line_id": 0,
+   "conf": 0.97,
+   "role": "key"
+  },
+  {
+   "src_t0": 2.38,
+   "src_t1": 2.7,
+   "text": "clip",
+   "line_id": 0,
+   "conf": 0.97,
+   "role": "connector"
+  },
+  {
+   "src_t0": 2.72,
+   "src_t1": 2.8,
+   "text": "in",
+   "line_id": 0,
+   "conf": 0.97,
+   "role": "connector"
+  },
+  {
+   "src_t0": 2.84,
+   "src_t1": 3.1,
+   "text": "under",
+   "line_id": 0,
+   "conf": 0.97,
+   "role": "connector"
+  },
+  {
+   "src_t0": 3.14,
+   "src_t1": 3.4,
+   "text": "two",
+   "line_id": 0,
+   "conf": 0.97,
+   "role": "number"
+  },
+  {
+   "src_t0": 3.42,
+   "src_t1": 3.95,
+   "text": "minutes.",
+   "line_id": 0,
+   "conf": 0.97,
+   "role": "connector"
+  },
+  {
+   "src_t0": 5.1,
+   "src_t1": 5.2,
+   "text": "It",
+   "line_id": 1,
+   "conf": 0.97,
+   "role": "connector"
+  },
+  {
+   "src_t0": 5.24,
+   "src_t1": 5.5,
+   "text": "cuts",
+   "line_id": 1,
+   "conf": 0.97,
+   "role": "key"
+  },
+  {
+   "src_t0": 5.54,
+   "src_t1": 5.8,
+   "text": "every",
+   "line_id": 1,
+   "conf": 0.97,
+   "role": "connector"
+  },
+  {
+   "src_t0": 5.84,
+   "src_t1": 6.3,
+   "text": "pause,",
+   "line_id": 1,
+   "conf": 0.97,
+   "role": "connector"
+  },
+  {
+   "src_t0": 6.9,
+   "src_t1": 7.2,
+   "text": "um,",
+   "line_id": 1,
+   "conf": 0.97,
+   "role": "connector"
+  },
+  {
+   "src_t0": 7.6,
+   "src_t1": 7.72,
+   "text": "and",
+   "line_id": 1,
+   "conf": 0.97,
+   "role": "connector"
+  },
+  {
+   "src_t0": 7.76,
+   "src_t1": 8.1,
+   "text": "snaps",
+   "line_id": 1,
+   "conf": 0.97,
+   "role": "key"
+  },
+  {
+   "src_t0": 8.14,
+   "src_t1": 8.4,
+   "text": "cuts",
+   "line_id": 1,
+   "conf": 0.97,
+   "role": "connector"
+  },
+  {
+   "src_t0": 8.44,
+   "src_t1": 8.52,
+   "text": "to",
+   "line_id": 1,
+   "conf": 0.97,
+   "role": "connector"
+  },
+  {
+   "src_t0": 8.56,
+   "src_t1": 9.1,
+   "text": "words.",
+   "line_id": 1,
+   "conf": 0.97,
+   "role": "connector"
+  }
+ ],
+ "shots": [
+  {
+   "t_in": 0,
+   "t_out": 1.5,
+   "src_in": 1.11,
+   "src_out": 2.61,
+   "layout": "full",
+   "framing": {
+    "scale": 1,
+    "cx": 0.5,
+    "cy": 0.42
+   },
+   "zoom": [
+    {
+     "t": 0.0,
+     "scale": 1.04,
+     "cx": 0.5,
+     "cy": 0.42,
+     "ease": "inout",
+     "dur": 1.5,
+     "rule_id": "law.slow_push"
+    }
+   ],
+   "rule_id": "law.take_start"
+  },
+  {
+   "t_in": 1.5,
+   "t_out": 2.93,
+   "src_in": 2.61,
+   "src_out": 4.04,
+   "layout": "full",
+   "framing": {
+    "scale": 1.12,
+    "cx": 0.5,
+    "cy": 0.38
+   },
+   "rule_id": "law.hold_max"
+  },
+  {
+   "t_in": 2.93,
+   "t_out": 4.31,
+   "src_in": 5.01,
+   "src_out": 6.39,
+   "layout": "full",
+   "framing": {
+    "scale": 1,
+    "cx": 0.5,
+    "cy": 0.42
+   },
+   "rule_id": "law.sentence_new_framing"
+  },
+  {
+   "t_in": 4.31,
+   "t_out": 5.99,
+   "src_in": 7.51,
+   "src_out": 9.19,
+   "layout": "full",
+   "framing": {
+    "scale": 1.12,
+    "cx": 0.5,
+    "cy": 0.38
+   },
+   "zoom": [
+    {
+     "t": 4.62,
+     "scale": 1.2,
+     "cx": 0.5,
+     "cy": 0.36,
+     "ease": "out",
+     "dur": 0.25,
+     "rule_id": "law.punch_on_key"
+    }
+   ],
+   "rule_id": "law.pause_trim"
+  }
+ ],
+ "removed": [
+  {
+   "src_in": 0,
+   "src_out": 1.11,
+   "reason": "pre_roll",
+   "rule_id": "law.take_window"
+  },
+  {
+   "src_in": 4.04,
+   "src_out": 5.01,
+   "reason": "pause_trim",
+   "rule_id": "law.pause_trim"
+  },
+  {
+   "src_in": 6.39,
+   "src_out": 7.51,
+   "reason": "filler",
+   "text": "um,",
+   "rule_id": "law.filler"
+  },
+  {
+   "src_in": 9.19,
+   "src_out": 10.0,
+   "reason": "tail",
+   "rule_id": "law.take_window"
+  }
+ ],
+ "cuts": [
+  {
+   "t": 1.5,
+   "type": "punch",
+   "trigger": "hold_max",
+   "rule_id": "law.hold_max"
+  },
+  {
+   "t": 2.93,
+   "type": "jump",
+   "trigger": "sentence",
+   "rule_id": "law.sentence_new_framing"
+  },
+  {
+   "t": 4.31,
+   "type": "jump",
+   "trigger": "filler",
+   "rule_id": "law.filler"
+  }
+ ],
+ "beats": [
+  {
+   "t0": 0,
+   "t1": 2.93,
+   "word_idx": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "tag": "hook"
+  },
+  {
+   "t0": 2.93,
+   "t1": 5.99,
+   "word_idx": [
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18
+   ],
+   "tag": "claim",
+   "need": "show_process"
+  }
+ ],
+ "inserts": [
+  {
+   "t0": 3.1,
+   "t1": 4.2,
+   "kind": "broll",
+   "frame": "beside_head",
+   "query": "film editing timeline",
+   "side": "right",
+   "need": "show_process",
+   "enter": "slide",
+   "exit": "fade",
+   "rule_id": "nightdesk.insert_on_claim"
+  }
+ ],
+ "overlays": [
+  {
+   "t0": 0,
+   "t1": 5.99,
+   "kind": "grain",
+   "params": {
+    "amount": 0.06
+   },
+   "rule_id": "nightdesk.grain"
+  }
+ ],
+ "sfx": [
+  {
+   "t": 1.5,
+   "asset_ref": "sfx:whoosh-soft",
+   "event": "cut",
+   "gain_db": -6,
+   "rule_id": "sound.whoosh_on_punch"
+  },
+  {
+   "t": 3.1,
+   "asset_ref": "sfx:pop",
+   "event": "insert_in",
+   "gain_db": -8,
+   "rule_id": "sound.pop_on_insert"
+  }
+ ],
+ "music": {
+  "asset_ref": "music:funkorama",
+  "offset": 12,
+  "gain_db": -21,
+  "duck": {
+   "db": -8,
+   "attack_ms": 60,
+   "release_ms": 300
+  },
+  "end": "fade",
+  "fade": 1.5,
+  "credit": "\"Funkorama\" Kevin MacLeod (incompetech.com), CC BY 4.0",
+  "rule_id": "sound.bed_under_voice"
+ },
+ "voice": {
+  "clean": "arnndn",
+  "target_lufs": -14,
+  "true_peak": -1
+ },
+ "end": {
+  "kind": "cta_comment",
+  "t0": 5.2,
+  "title": "Comment EDIT",
+  "rule_id": "nightdesk.end_cta"
+ },
+ "faces": [
+  {
+   "src_t": 1.11,
+   "x": 0.33,
+   "y": 0.18,
+   "w": 0.34,
+   "h": 0.2,
+   "conf": 0.93
+  },
+  {
+   "src_t": 5.01,
+   "x": 0.34,
+   "y": 0.19,
+   "w": 0.33,
+   "h": 0.2,
+   "conf": 0.95
+  }
+ ]
+}
