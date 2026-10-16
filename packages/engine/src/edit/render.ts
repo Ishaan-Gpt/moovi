@@ -50,6 +50,22 @@ export function shotFrames(e: PlayerEdl, fps: number): { a: number; b: number; s
   return e.shots.map(s => ({ a: Math.round(s.t_in * fps), b: Math.round(s.t_out * fps), src: s.src_in })).filter(r => r.b > r.a);
 }
 
+/**
+ * A shot's frame range split where the scaled picture's size changes (a punch-in key, a zooming transition). ffmpeg
+ * 5.1 and the engine's 7.0 keep the scale filter's output size once the graph is configured: a sendcmd that changes w and h mid-stream
+ * is accepted and ignored, so the picture kept its old size while the overlay moved it (sm-v1, 2026-10-16: a 1.35x
+ * punch-in drawn at 1x, shifted up 408 px over a black band). Each run renders with one fixed size; only the overlay
+ * position changes inside it.
+ */
+export function sizeRuns(e: PlayerEdl, r: { a: number; b: number }, fps: number, w: number, h: number): { a: number; b: number }[] {
+  const out: { a: number; b: number }[] = []; let last = '';
+  for (let j = r.a; j < r.b; j++) {
+    const p = placeAt(e, (j + 0.5) / fps, w, h), k = `${p.sw}x${p.sh}`;
+    if (k !== last || !out.length) { out.push({ a: j, b: j + 1 }); last = k; } else out[out.length - 1]!.b = j + 1;
+  }
+  return out;
+}
+
 /** The sendcmd script for one shot: a scale size and an overlay position per output frame, on the shot's own clock. */
 export function shotCommands(e: PlayerEdl, r: { a: number; b: number }, fps: number, w: number, h: number): string {
   const lines: string[] = []; let last = ''; const blurs = shotBlurs(e, r, fps, w, h);
@@ -123,10 +139,10 @@ export async function renderEdl(o: RenderOpts): Promise<RenderResult> {
   const voiceP = existsSync(voiceFile) && statSync(voiceFile).size > 1000 ? Promise.resolve(voiceFile)
     : cleanVoice(src, voiceFile, { dir: o.dir, keep: keepOf(e as never) }).then(() => voiceFile).catch(() => null);
 
-  // 1. picture, per shot
-  const ranges = shotFrames(e, fps);
+  // 1. picture, per shot, in runs of one picture size (sizeRuns): a run inside a shot seeks to its own source second
+  const ranges = shotFrames(e, fps).flatMap(r => sizeRuns(e, r, fps, W, H).map(x => ({ ...x, seek: r.src + (x.a - r.a) / fps })));
   const pic = pool(ranges, o.jobs ?? 3, async (r, i) => {
-    const g = e.shots.find(s => Math.round(s.t_in * fps) === r.a)!, n = r.b - r.a, cmd = join(tmp, `s${i}.cmd`);
+    const n = r.b - r.a, cmd = join(tmp, `s${i}.cmd`);
     writeFileSync(cmd, shotCommands(e, r, fps, W, H));
     const p0 = placeAt(e, (r.a + 0.5) / fps, W, H);
     const bg = p0.fit
@@ -135,8 +151,10 @@ export async function renderEdl(o: RenderOpts): Promise<RenderResult> {
     // setpts: a seek lands the first decoded frame a little after 0, so without it the shot's first frame was the black
     // backing (5 black frames at cuts in the D1.8 B1 render); the blur runs on the source frame (a fixed size) before the per-frame scale, at the sigma that lands as the player's
     const blur = shotBlurs(e, r, fps, W, H) ? `gblur@b=sigma=${srcSigma(e, p0)},` : '';
-    const graph = `${bg};[0:v]setpts=PTS-STARTPTS,fps=${fps},sendcmd=f='${cmd.replace(/'/g, "\\'")}',${blur}scale@z=w=${p0.sw}:h=${p0.sh}:flags=bicubic,format=yuv420p[fg];[bg][fg]overlay@o=x=${p0.x}:y=${p0.y}:eof_action=pass:shortest=0[v]`;
-    await run(ff, ['-v', 'error', '-y', '-ss', g.src_in.toFixed(4), '-i', src, '-filter_complex', graph, '-map', '[v]', '-frames:v', String(n), '-an',
+    // tpad (bounded: an endless pad keeps ffmpeg 7 running after -frames:v): the run always has its n frames, so a
+    // source that ends a few frames early holds its last frame instead of shortening the picture
+    const graph = `${bg};[0:v]setpts=PTS-STARTPTS,fps=${fps},tpad=stop_mode=clone:stop=${n},sendcmd=f='${cmd.replace(/'/g, "\\'")}',${blur}scale@z=w=${p0.sw}:h=${p0.sh}:flags=bicubic,format=yuv420p[fg];[bg][fg]overlay@o=x=${p0.x}:y=${p0.y}:eof_action=pass:shortest=0[v]`;
+    await run(ff, ['-v', 'error', '-y', '-ss', r.seek.toFixed(4), '-i', src, '-filter_complex', graph, '-map', '[v]', '-frames:v', String(n), '-an',
       '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '12', '-g', String(fps), '-pix_fmt', 'yuv420p', '-threads', '2', join(tmp, `s${i}.mp4`)]);
   });
 
@@ -177,10 +195,13 @@ export async function renderEdl(o: RenderOpts): Promise<RenderResult> {
   const mixed = sx.count > 0;
   const audio = !mixed ? '' : `;${sx.filter};${voice ? '[2:a]aformat=sample_rates=48000:channel_layouts=stereo[vo];[vo]' : ''}${Array.from({ length: sx.count }, (_, i) => `[x${i}]`).join('')}amix=inputs=${sx.count + nV}:normalize=0:duration=${voice ? 'first' : 'longest'},alimiter=limit=0.89:level=false[a]`;
   sfxCount = sx.count;
+  // -reinit_filter 0 on the overlay frames: a fully opaque frame (the black logo end card) screenshots as an rgb24 PNG
+  // among rgba ones, and ffmpeg 7 rebuilt the graph on that format change and lost 39 frames (sm-v1/v2: the film
+  // stopped 1.3 s before its voice, the end card never shown); format=rgba below converts every frame instead
   writeFileSync(join(tmp, 'shots.txt'), ranges.map((_, i) => `file 's${i}.mp4'`).join('\n') + '\n');
-  await run(ff, ['-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', join(tmp, 'shots.txt'), '-framerate', String(fps), '-i', join(tmp, 'ov', '%06d.png'),
-    ...(voice ? ['-i', voice] : []), ...sx.inputs, '-filter_complex', `[0:v]setpts=N/${fps}/TB[p];[1:v]format=rgba[c];[p][c]overlay=0:0:eof_action=pass,format=yuv420p[v]${audio}`,
-    '-map', '[v]', ...(mixed ? ['-map', '[a]', '-c:a', 'aac', '-b:a', '160k'] : voice ? ['-map', '2:a', '-c:a', 'aac', '-b:a', '160k'] : []), '-t', (N / fps).toFixed(4), '-r', String(fps),
+  await run(ff, ['-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', join(tmp, 'shots.txt'), '-framerate', String(fps), '-reinit_filter', '0', '-i', join(tmp, 'ov', '%06d.png'),
+    ...(voice ? ['-i', voice] : []), ...sx.inputs, '-filter_complex', `[0:v]setpts=N/${fps}/TB,tpad=stop_mode=clone:stop=${fps * 2}[p];[1:v]format=rgba[c];[p][c]overlay=0:0:eof_action=pass,format=yuv420p[v]${audio}`,
+    '-map', '[v]', ...(mixed ? ['-map', '[a]', '-c:a', 'aac', '-b:a', '160k'] : voice ? ['-map', '2:a', '-c:a', 'aac', '-b:a', '160k'] : []), '-t', (N / fps).toFixed(4), '-frames:v', String(N), '-r', String(fps),
     '-c:v', 'libx264', '-preset', 'veryfast', '-crf', String(o.crf ?? 20), '-pix_fmt', 'yuv420p', '-movflags', '+faststart', o.out]);
   lap('encode');
   if (!o.keepTemp) rmSync(tmp, { recursive: true, force: true });
