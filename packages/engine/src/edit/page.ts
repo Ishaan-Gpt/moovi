@@ -73,6 +73,8 @@ function drawCaptions(t) {
     chunkKey = k; cap.innerHTML = '';
     cap.className = 'cap box-' + (ST.look.box || 'none');
     if (c) for (const w of c.words) { const el = document.createElement('span'); el.className = 'w'; el.textContent = EDIT.caseOf(w.text, w.key && ST.key ? ST.key.case : LK ? LK.casing : ST.font.case); styleWord(el, w); cap.appendChild(el); }
+    // a long key word never runs off the frame: its size comes down to fit (D2.2, FLABBERGASTING at XL)
+    for (const el of cap.children) { const mw = W - 150; if (el.offsetWidth > mw) { const fs = parseFloat(getComputedStyle(el).fontSize); el.style.fontSize = Math.floor(fs * mw / el.offsetWidth) + 'px'; } }
   }
   if (!c) return;
   const fill = LK && LK.fill ? LK.fill : 'var(--' + ST.look.fill + ')', hiRole = LK && (LK.hi.bg || LK.hi.color) ? (LK.hi.bg || LK.hi.color) : 'var(--' + (ST.highlight.role || 'accent') + ')';
@@ -114,7 +116,8 @@ function styleInsert(x, t) {
   const p = EDIT.easeOut((t - x.t0) / 0.28), q = EDIT.easeOut((x.t1 - t) / 0.22), o = Math.min(p, q).toFixed(2), L = esc(x.label || '');
   if (SID === 'atlas') {
     const right = x.side === 'right', dx = ((1 - p) * (right ? 1 : -1) * W * 0.6).toFixed(0);
-    return '<div class="a-card" style="' + (right ? 'right:' : 'left:') + (W * 0.05).toFixed(0) + 'px;top:' + (H * 0.2).toFixed(0) + 'px;opacity:' + o + ';transform:translateX(' + dx + 'px) rotate(' + (right ? 2 : -2) + 'deg)"><b>' + L + '</b><span class="pill">' + esc(x.kind) + '</span></div>';
+    const [big, pill] = String(x.label || '').split('|'), fs = Math.min(150, Math.max(64, Math.floor(W * 0.46 / Math.max(3, String(big).length) * 1.2)));
+    return '<div class="a-card" style="' + (right ? 'right:' : 'left:') + (W * 0.05).toFixed(0) + 'px;top:' + (H * 0.16).toFixed(0) + 'px;opacity:' + o + ';transform:translateX(' + dx + 'px) rotate(' + (right ? 2 : -2) + 'deg)"><b style="font-size:' + fs + 'px">' + esc(big) + '</b>' + (pill ? '<span class="pill">' + esc(pill) + '</span>' : '') + '</div>';
   }
   if (SID === 'handmade') {
     const s = (0.6 + 0.4 * EDIT.easeOut((t - x.t0) / 0.16)).toFixed(3), r = (jitter(Math.floor(t * 12), 3) * 3).toFixed(2);
@@ -241,9 +244,9 @@ html,body{margin:0;height:100%;background:#111;color:#eee;font:14px system-ui,sa
 #sty .gr{position:absolute;left:0;top:0}
 #sty .dd{position:absolute;left:0;top:0}
 #sty .dd path{fill:none;stroke:#fff;stroke-width:9;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
-#sty .a-card{position:absolute;width:46%;min-height:300px;padding:44px 34px 30px;box-sizing:border-box;border-radius:44px;background:#fff;box-shadow:0 30px 80px rgba(0,0,0,.35);display:flex;flex-direction:column;align-items:flex-start;gap:22px}
-#sty .a-card b{font:900 78px/0.95 'Archivo',sans-serif;color:#141414;text-transform:uppercase;letter-spacing:-.02em;word-break:break-word}
-#sty .a-card .pill{font:700 28px 'Inter',sans-serif;color:#141414;background:var(--accent);border-radius:999px;padding:10px 24px;text-transform:lowercase}
+#sty .a-card{position:absolute;width:54%;min-height:260px;padding:46px 40px 36px;box-sizing:border-box;border-radius:44px;background:#fff;box-shadow:0 30px 80px rgba(0,0,0,.35);display:flex;flex-direction:column;align-items:flex-start;gap:22px}
+#sty .a-card b{font:900 78px/0.95 'Archivo',sans-serif;color:#141414;text-transform:uppercase;letter-spacing:-.02em;white-space:nowrap}
+#sty .a-card .pill{font:700 40px 'Inter',sans-serif;color:#141414;background:var(--accent);border-radius:999px;padding:10px 24px;text-transform:lowercase}
 #sty .h-card{position:absolute;left:50%;top:40%;min-width:52%;max-width:80%;padding:70px 64px;box-sizing:border-box;background:#fbfaf6;box-shadow:0 18px 50px rgba(0,0,0,.28);text-align:center}
 #sty .h-card b{font:italic 400 120px/1 'Instrument Serif',serif;color:#1a1110}
 #sty .h-card .c{position:absolute;width:44px;height:44px;border:0 dotted #1a1110}

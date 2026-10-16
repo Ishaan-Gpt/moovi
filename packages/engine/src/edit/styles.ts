@@ -44,7 +44,7 @@ export const STYLE_LAWS: Record<D22Style, StyleLaw> = {
     // R4 measured a 2.05 s median and a 4.5 s p90: splitting runs over 2.8 s lands the median near 2 on one take
     laws: { hold_max: 2.8, punch: 1.16, push: 1, min_shot: 0.8 },
     bands: { changes_per_s: [0.25, 0.8], median_shot: [1.2, 3.4], max_hold: [0, 4.6], max_gap: [0, 0.5] },
-    caption: 'tier-two', palette: { accent: '#FFD23F', paper: '#FFFFFF', deep: '#141414' },
+    caption: 'atlas-two', palette: { accent: '#FFD23F', paper: '#FFFFFF', deep: '#141414' },
     grade: 'grade:warm-clean', camera: 'static', sfx: { insert_in: 'card-in' }, end: 'name',
   },
   handmade: {
@@ -135,7 +135,9 @@ export function applyStyle(e: Edl, id: D22Style, o: StyleOpts = {}): Edl {
     let last = -9;
     for (const w of keyish) {
       if (w.role === 'key' || w.t0 < 1.2 || w.t0 - last < 3.5 || w.t0 + 1.8 > dur - 0.3) continue;
-      inserts.push({ t0: r4(w.t0), t1: r4(Math.min(dur - 0.05, w.t0 + 1.8)), kind: 'card', frame: 'beside_head', label: w.text.replace(/[.,!?;:]+$/, ''), side: (inserts.length % 2 ? 'right' : 'left'), enter: 'slide', rule_id: rule('card_on_named_thing') });
+      // a number card carries the word it counts as its pill ("5 | styles"); a name stands alone
+      const nx = ow[w.i + 1] ?? ow.find(x => x.i > w.i), unit = w.role === 'number' && nx && /^\p{L}{3,}$/u.test(bare(nx.text)) ? `|${nx.text.replace(/[.,!?;:]+$/, '').toLowerCase()}` : '';
+      inserts.push({ t0: r4(w.t0), t1: r4(Math.min(dur - 0.05, w.t0 + 1.8)), kind: 'card', frame: 'beside_head', label: w.text.replace(/[.,!?;:]+$/, '') + unit, side: (inserts.length % 2 ? 'right' : 'left'), enter: 'slide', rule_id: rule('card_on_named_thing') });
       last = w.t0;
     }
     const hook = beats.find(b => b.tag === 'hook');

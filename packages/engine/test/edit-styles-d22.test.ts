@@ -59,7 +59,8 @@ test('D2.2 Atlas: cards beside the head on names and numbers, a sunburst on the 
   for (let k = 1; k < e.inserts!.length; k++) assert.ok(e.inserts![k]!.t0 - e.inserts![k - 1]!.t0 >= 3.5);
   assert.equal(e.overlays?.[0]?.kind, 'sunburst');
   assert.equal(e.end?.kind, 'name'); assert.equal(e.end?.title, '@vignesh');
-  assert.equal(e.caption_style_id, 'tier-two');
+  assert.equal(e.caption_style_id, 'atlas-two');
+  assert.ok(e.inserts!.some(i => /^\d+\|[a-z]+$/.test(i.label!)), JSON.stringify(e.inserts!.map(i => i.label)));
 });
 
 test('D2.2 Handmade: lowercase serif term cards, doodles not over cards, comment-WORD sticker', () => {
