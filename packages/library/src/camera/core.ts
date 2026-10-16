@@ -24,6 +24,10 @@ export interface CamState {
   focusBand: number;
   /** time-lapse: how fast the scene's own animation should run (1 = real time) */
   timeScale: number;
+  /** rack focus: the depth (world z) that is sharp */
+  focusZ: number;
+  /** rack focus: blur per unit of depth away from focusZ (0 = everything sharp); see `depthBlur` */
+  dof: number;
 }
 
 export const REST: CamState = Object.freeze({
@@ -34,6 +38,8 @@ export const REST: CamState = Object.freeze({
   subject: Object.freeze({ x: 0, y: 0, z: 0 }),
   focusBand: 0,
   timeScale: 1,
+  focusZ: 0,
+  dof: 0,
 }) as CamState;
 
 export const v3 = (x = 0, y = 0, z = 0): Vec3 => ({ x, y, z });
@@ -48,6 +54,7 @@ export function cam(base: CamState, o: Partial<CamState> = {}): CamState {
   return {
     pos: { ...(o.pos ?? base.pos) }, target: { ...(o.target ?? base.target) }, subject: { ...(o.subject ?? base.subject) },
     fov: o.fov ?? base.fov, roll: o.roll ?? base.roll, focusBand: o.focusBand ?? base.focusBand, timeScale: o.timeScale ?? base.timeScale,
+    focusZ: o.focusZ ?? base.focusZ, dof: o.dof ?? base.dof,
   };
 }
 
@@ -65,6 +72,10 @@ export const EASES = {
   smooth: (u: number) => (u < 0.5 ? 4 * u * u * u : 1 - (-2 * u + 2) ** 3 / 2),
   snap: (u: number) => (u >= 1 ? 1 : 1 - 2 ** (-10 * u)),
   whip: (u: number) => (u < 0.5 ? 16 * u ** 5 : 1 - (-2 * u + 2) ** 5 / 2),
+  /** lands a touch past the mark and settles back (back-out): a jelly, Moovi-touched landing */
+  overshoot: (u: number) => 1 + 2.70158 * (u - 1) ** 3 + 1.70158 * (u - 1) ** 2,
+  /** no motion at all: jumps to the end on the first frame (the editor's jump-cut punch-in) */
+  cut: (u: number) => (u > 0 ? 1 : 0),
 } as const satisfies Record<string, (u: number) => number>;
 export type EaseId = keyof typeof EASES;
 
@@ -107,6 +118,18 @@ export function frame2d(s: CamState, z = 0, carried = false): { scale: number; c
   const h = 2 * restDepth * Math.tan((REST.fov / 2) * RAD);
   const scale = Number.isFinite(along) ? (restDepth / along) * (Math.tan((REST.fov / 2) * RAD) / Math.tan((s.fov / 2) * RAD)) : 0;
   return { scale, cx: (hit.x - off.x) / h, cy: -(hit.y - off.y) / h, roll: s.roll };
+}
+
+/** Rack focus: blur (px on an H px frame) for a layer at depth `z`, from how far it sits from the focused depth. */
+export const depthBlur = (s: CamState, z: number, H = 1920) => s.dof * Math.abs(z - s.focusZ) * (H / 1920);
+
+/**
+ * A point of the current frame (x, y in 0..1 of its width and height, 0.5/0.5 = centre) as a world point on the plane
+ * the camera looks at. Moves that aim somewhere ("dive to the top left", "reframe on the logo") use this.
+ */
+export function framePoint(s: CamState, at: readonly [number, number], aspect = 9 / 16): Vec3 {
+  const d = len(sub(s.target, s.pos)), h = 2 * d * Math.tan((s.fov / 2) * RAD);
+  return { x: s.target.x + (at[0] - 0.5) * h * aspect, y: s.target.y - (at[1] - 0.5) * h, z: s.target.z };
 }
 
 /** A style-1 `CamKey` for frame `f` on a W×H canvas (scale, the layout point at the frame centre, roll). */

@@ -1,7 +1,7 @@
 import { strict as assert } from 'node:assert';
 import { test } from 'node:test';
 import {
-  CAMERA_MOVES, EASES, REST, applyToThree, cameraAt, cameraTrack, cssCamera, frame2d, len, orientation, parseCamera, promptFor,
+  CAMERA_MOVES, EASES, REST, applyToThree, cameraAt, cameraMove, cameraTrack, cssCamera, depthBlur, editorMoves, frame2d, len, orientation, parseCamera, promptFor, toEdlZoom,
   resolveCall, sub, toCamKey, trackDuration, type ThreeCameraLike,
 } from '../src/camera/index';
 
@@ -135,4 +135,61 @@ test('adapters: CSS, style-1 key, three.js', () => {
   applyToThree(three, REST, 2);
   assert.deepEqual(calls, ['pos 0,0,20', 'look 0,0,0', 'roll 0', 'proj']);
   assert.equal(three.fov, 40);
+});
+
+test('scopes: every move says where it plays; the editor list is flat-frame safe', () => {
+  const by = (s: string) => CAMERA_MOVES.filter(m => m.scope === s).map(m => m.id);
+  assert.equal(by('edit').length + by('coded').length + by('gen').length, CAMERA_MOVES.length);
+  assert.ok(by('gen').includes('tracking') && by('gen').includes('time-lapse'));
+  assert.ok(by('coded').includes('orbit-cw') && by('coded').includes('dolly-zoom-in'));
+  // an edit move never needs depth: on a flat frame it is a pure scale / slide / roll (the frame stays square to the lens)
+  for (const m of editorMoves()) {
+    const d = resolveCall({ move: m.id }).duration;
+    for (const u of [0.3, 0.7, 1]) {
+      const s = cameraAt({ move: m.id }, d * u);
+      if (m.id.startsWith('pan') || m.id.startsWith('whip') || m.id.startsWith('tilt') || m.id === 'handheld' || m.id === 'shake' || m.id === 'tilt-shift') continue;
+      assert.ok(Math.abs(s.pos.z - s.target.z - 10) < 1e-9 || m.id === 'tilt-shift', `${m.id} moved in depth`);
+    }
+  }
+  assert.deepEqual(cameraMove('dive-in')!.existing, ['style-1 dive-to-detail']);
+});
+
+test('editor moves: punch holds, pulse returns, dive aims, roll covers its corners, rack focus moves the sharp plane', () => {
+  assert.ok(Math.abs(frame2d(cameraAt({ move: 'punch-in' }, 0.01)).scale - 1.15) < 1e-9, 'punch is a cut');
+  assert.ok(Math.abs(frame2d(cameraTrack([{ move: 'punch-in' }], 5)).scale - 1.15) < 1e-9, 'punch holds');
+  assert.ok(frame2d(cameraAt({ move: 'pulse' }, 0.13)).scale > 1.05);
+  assert.ok(Math.abs(frame2d(cameraAt({ move: 'pulse' }, 0.6)).scale - 1) < 1e-9);
+  const d = frame2d(cameraAt({ move: 'dive-in', at: [0.25, 0.25] }, 1.2));
+  assert.ok(d.cx < 0 && d.cy < 0 && Math.abs(d.scale - 1.9) < 1e-9, JSON.stringify(d));
+  const r = cameraAt({ move: 'roll-right' }, 1.2);
+  assert.equal(r.roll, 8); assert.ok(frame2d(r).scale > 1.2);
+  assert.ok(cameraAt({ move: 'rack-focus-out' }, 1.2).focusZ === -9 && depthBlur(cameraAt({ move: 'rack-focus-out' }, 1.2), -9) === 0);
+  assert.ok(depthBlur(cameraAt({ move: 'rack-focus-out' }, 1.2), 0) > 0);
+  const sh = cameraAt({ move: 'shake', seed: 1 }, 0.4);
+  assert.ok(Math.abs(sh.pos.x) < 1e-9 && Math.abs(sh.roll) < 1e-9, 'shake dies out');
+});
+
+test('toEdlZoom: a dive becomes editor framing keys; a held punch is one key', () => {
+  const k = toEdlZoom([{ move: 'dive-in', at: [0.25, 0.25] }], { t0: 2 });
+  assert.equal(k[0]!.t, 2);
+  const last = k[k.length - 1]!;
+  assert.ok(Math.abs(last.scale - 1.9) < 1e-3 && last.cx < 0.5 && last.cy < 0.42, JSON.stringify(last));
+  const p = toEdlZoom([{ move: 'punch-in' }]);
+  assert.equal(p.filter(x => Math.abs(x.scale - 1.15) < 1e-6).length, 1);
+  assert.equal(p[p.length - 1]!.ease, 'cut');
+});
+
+test('parser: editor words, aim points and scope', () => {
+  const p = (s: string) => parseCamera(s).calls;
+  assert.deepEqual(p('dive to the top left'), [{ move: 'dive-in', at: [0.3, 0.3] }]);
+  assert.deepEqual(p('punch in'), [{ move: 'punch-in' }]);
+  assert.deepEqual(p('ken burns toward the right, 8s'), [{ move: 'ken-burns-in', duration: 8, at: [0.7, 0.5] }]);
+  assert.deepEqual(p('dutch angle left'), [{ move: 'roll-left' }]);
+  assert.deepEqual(p('pulse, bouncy'), [{ move: 'pulse', ease: 'overshoot' }]);
+  assert.deepEqual(p('impact shake'), [{ move: 'shake' }]);
+  assert.deepEqual(p('rack focus'), [{ move: 'rack-focus-out' }]);
+  const r = parseCamera('tracking shot then punch in then orbit left', { scope: 'edit' });
+  assert.deepEqual(r.calls, [{ move: 'punch-in' }]);
+  assert.deepEqual(r.outOfScope, ['tracking', 'orbit-cw']);
+  assert.deepEqual(parseCamera('orbit left then chase', { scope: 'coded' }).outOfScope, ['chase']);
 });

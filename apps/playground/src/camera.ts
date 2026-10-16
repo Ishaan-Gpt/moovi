@@ -2,7 +2,7 @@ import './camera.css';
 import { color } from '@moovi/brand';
 import {
   CAMERA_MOVES, EASES, REST, cameraTrack, cssCamera, frame2d, frameAt, orientation, parseCamera, promptFor, resolveCall,
-  restFrameHeight, toCamKey, trackDuration, type CamState, type CameraCall, type CameraGroup,
+  depthBlur, restFrameHeight, toCamKey, trackDuration, type CamState, type CameraCall, type CameraGroup, type CameraScope,
 } from '@moovi/library/camera';
 
 /**
@@ -67,6 +67,8 @@ function render(s: CamState) {
     const o = l.carried ? s.subject : { x: 0, y: 0, z: 0 };
     l.el.style.width = `${w}px`; l.el.style.height = `${h}px`;
     l.el.style.transform = `translate3d(${(l.x + o.x) * u}px,${-(l.y + o.y) * u}px,${(l.z + o.z) * u}px)${l.rx ? ` rotateX(${l.rx}deg)` : ''} translate(-50%,-50%)`;
+    const db = l.rx ? 0 : depthBlur(s, l.z + o.z, H);
+    l.el.style.filter = db > 0.3 ? `blur(${Math.min(16, db).toFixed(1)}px)` : '';
   }
   hero.style.fontSize = `${0.22 * u}px`;
   // motion blur from how far the frame centre moved in one frame (whips, crash zooms)
@@ -109,7 +111,8 @@ function renderCalls() {
 function renderInfo() {
   $('about').innerHTML = calls.map(c => {
     const m = resolveCall(c).m;
-    return `<h3>${m.name} <code>${m.id}</code> <em>${m.ref}</em></h3><p><b>How:</b> ${m.about}</p><p><b>Use:</b> ${m.use}</p><p><b>Avoid:</b> ${m.avoid}</p><p class="aka">${m.aliases.map(a => `<span>${a}</span>`).join('')}</p>`;
+    return `<h3>${m.name} <code>${m.id}</code> <em>${m.ref}</em> <span class="badge scope-${m.scope}">${SCOPES[m.scope]}</span></h3>` +
+      (m.existing.length ? `<p><b>Already in Moovi:</b> ${m.existing.join('; ')}</p>` : '') + `<p><b>How:</b> ${m.about}</p><p><b>Use:</b> ${m.use}</p><p><b>Avoid:</b> ${m.avoid}</p><p class="aka">${m.aliases.map(a => `<span>${a}</span>`).join('')}</p>`;
   }).join('');
   $('prompt').textContent = calls.map(promptFor).join('\n\n');
 }
@@ -185,21 +188,39 @@ function drawCurveHead(total: number) {
 }
 
 // ── move list and examples ──
-const GROUPS: Record<CameraGroup, string> = { 'pan-tilt': 'Pan / tilt', 'zoom-lens': 'Zoom / lens', 'dolly-track': 'Dolly / track', physical: 'Physical moves', 'drone-crane': 'Drone / crane', human: 'Human camera', special: 'Specials' };
+const GROUPS: Record<CameraGroup, string> = { edit: 'Editor moves', 'pan-tilt': 'Pan / tilt', 'zoom-lens': 'Zoom / lens', 'dolly-track': 'Dolly / track', physical: 'Physical moves', 'drone-crane': 'Drone / crane', human: 'Human camera', special: 'Specials' };
+const SCOPES: Record<CameraScope | 'all', string> = { all: 'All', edit: 'Editor', coded: '3D sets', gen: 'Gen-AI only' };
+let scope: CameraScope | 'all' = 'all';
 const nav = $('moves');
-for (const [g, label] of Object.entries(GROUPS)) {
-  const list = CAMERA_MOVES.filter(m => m.group === g);
-  const sec = document.createElement('section');
-  sec.innerHTML = `<h4>${label} <span>${list.length}</span></h4>`;
-  for (const m of list) {
+function renderMoves() {
+  nav.innerHTML = '';
+  const filter = document.createElement('div');
+  filter.className = 'scopes';
+  for (const [s, label] of Object.entries(SCOPES)) {
+    const n = s === 'all' ? CAMERA_MOVES.length : CAMERA_MOVES.filter(m => m.scope === s).length;
     const b = document.createElement('button');
-    b.textContent = m.name; b.title = m.use;
-    b.addEventListener('click', () => setCalls([{ move: m.id }], m.name.toLowerCase()));
-    sec.append(b);
+    b.innerHTML = `${label} <span>${n}</span>`; b.setAttribute('aria-pressed', String(s === scope));
+    b.addEventListener('click', () => { scope = s as CameraScope | 'all'; renderMoves(); });
+    filter.append(b);
   }
-  nav.append(sec);
+  nav.append(filter);
+  for (const [g, label] of Object.entries(GROUPS)) {
+    const list = CAMERA_MOVES.filter(m => m.group === g && (scope === 'all' || m.scope === scope));
+    if (!list.length) continue;
+    const sec = document.createElement('section');
+    sec.innerHTML = `<h4>${label} <span>${list.length}</span></h4>`;
+    for (const m of list) {
+      const b = document.createElement('button');
+      b.className = `scope-${m.scope}`;
+      b.textContent = m.name; b.title = `${SCOPES[m.scope]} · ${m.use}`;
+      b.addEventListener('click', () => setCalls([{ move: m.id }], m.name.toLowerCase()));
+      sec.append(b);
+    }
+    nav.append(sec);
+  }
 }
-for (const ex of ['dolly zoom in, ramp up', 'orbit left slow', 'crash zoom', 'whip pan right then slow zoom in', 'subtle arc right 2.5s, linear', 'truck left then crane up', 'handheld, 6s', 'push past', 'earth zoom out', 'time lapse']) {
+renderMoves();
+for (const ex of ['dolly zoom in, ramp up', 'orbit left slow', 'crash zoom', 'punch in then pulse, bouncy', 'dive to the top left', 'ken burns toward the right', 'impact shake', 'rack focus', 'whip pan right then slow zoom in', 'dutch angle left', 'earth zoom out']) {
   const b = document.createElement('button');
   b.textContent = ex;
   b.addEventListener('click', () => play(ex));

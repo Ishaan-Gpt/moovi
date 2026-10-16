@@ -1,4 +1,4 @@
-import { EASES, REST, cam, clamp01, frame2d, type CamState, type EaseId } from './core';
+import { EASES, REST, cam, clamp01, frame2d, framePoint, type CamState, type EaseId } from './core';
 import { CAMERA_MOVES, cameraMove, type CameraMove } from './moves';
 
 /**
@@ -17,6 +17,10 @@ export interface CameraCall {
   amount?: number;
   /** seed for handheld noise (default 0) */
   seed?: number;
+  /** a point of the frame the move aims at, [x, y] in 0..1 of its width and height (dive, reframe, Ken Burns, punch) */
+  at?: readonly [number, number];
+  /** frame width / height for `at` (default 9 / 16) */
+  aspect?: number;
 }
 
 export interface ResolvedCall { m: CameraMove; duration: number; ease: EaseId; k: number; a: number; seed: number }
@@ -33,7 +37,8 @@ export function resolveCall(c: CameraCall): ResolvedCall {
 /** The camera state `t` seconds into one call (clamped to the call's length), starting from `base`. */
 export function cameraAt(call: CameraCall, t: number, base: CamState = REST): CamState {
   const r = resolveCall(call), tt = Math.max(0, Math.min(t, r.duration)), u = clamp01(tt / r.duration);
-  return r.m.at(base, EASES[r.ease](u), { a: r.a, k: r.k, t: tt, u, dur: r.duration, seed: r.seed });
+  const at = framePoint(base, call.at ?? [0.5, 0.5], call.aspect);
+  return r.m.at(base, EASES[r.ease](u), { a: r.a, k: r.k, t: tt, u, dur: r.duration, seed: r.seed, at });
 }
 
 /** Total length of a sequence of calls, seconds. */
@@ -65,6 +70,36 @@ export function frameAt(calls: readonly CameraCall[], t: number, fps = 30, base:
   return { ...a, blurX: a.cx - b.cx, blurY: a.cy - b.cy, blurZoom: Math.log(a.scale / b.scale) };
 }
 
+/** The video editor's framing key (structurally `EdlZoom` in packages/engine/src/edit/lib.ts). */
+export interface EdlZoomKey { t: number; scale: number; cx: number; cy: number; ease?: 'out' | 'inout' | 'cut'; dur?: number }
+
+/**
+ * A camera track as the editor's zoom keys on a shot: sampled `rate` times a second from output time `t0`, each key easing
+ * in over one step, so any `edit`-scope move (punch, pulse, dive, Ken Burns, shake, pans as slides) plays in the editor's
+ * player unchanged. `framing` is the shot's base framing (source fractions, the editor's default 1 / 0.5 / 0.42);
+ * `source` is the source frame's width / height. Assumes scale 1 fits the source height to the output height, as the
+ * editor's 9:16 crop does. Roll is not in EdlZoom: a rolled move keeps only its zoom.
+ */
+export function toEdlZoom(calls: readonly CameraCall[], o: { t0?: number; framing?: { scale: number; cx: number; cy: number }; source?: number; rate?: number } = {}): EdlZoomKey[] {
+  const t0 = o.t0 ?? 0, base = o.framing ?? { scale: 1, cx: 0.5, cy: 0.42 }, src = o.source ?? 9 / 16, rate = o.rate ?? 15;
+  const total = trackDuration(calls), n = Math.max(1, Math.ceil(total * rate)), step = total / n;
+  const keys: EdlZoomKey[] = [];
+  for (let i = 0; i <= n; i++) {
+    const t = i * step, f = frame2d(cameraTrack(calls, t)), r = calls.length ? resolveCall(calls[Math.min(calls.length - 1, callIndexAt(calls, t))]!) : null;
+    const scale = base.scale * (f.scale || 1);
+    const cut = r?.ease === 'cut';
+    keys.push({ t: +(t0 + t).toFixed(4), scale: +scale.toFixed(4), cx: +(base.cx + (f.cx / base.scale) / src).toFixed(4), cy: +(base.cy + f.cy / base.scale).toFixed(4), ease: cut ? 'cut' : 'inout', dur: cut ? 0 : +step.toFixed(4) });
+  }
+  // drop keys that change nothing (a held punch is one key, not fifteen)
+  return keys.filter((k, i) => i === 0 || k.scale !== keys[i - 1]!.scale || k.cx !== keys[i - 1]!.cx || k.cy !== keys[i - 1]!.cy);
+}
+
+function callIndexAt(calls: readonly CameraCall[], t: number): number {
+  let s = 0;
+  for (let i = 0; i < calls.length; i++) { s += resolveCall(calls[i]!).duration; if (t < s) return i; }
+  return calls.length - 1;
+}
+
 // ── the gen-AI side of the same keyword ──
 
 const EASE_WORDS: Record<EaseId, string> = {
@@ -74,7 +109,16 @@ const EASE_WORDS: Record<EaseId, string> = {
   smooth: 'easing in and out',
   snap: 'hitting fast and stopping dead',
   whip: 'with a sudden, blurred middle',
+  overshoot: 'landing slightly past the mark and settling back',
+  cut: 'as an instant cut, no visible motion',
 };
+
+/** "the upper left of the frame" for an aim point, or '' when it is the centre. */
+function placeWords(at: readonly [number, number] | undefined): string {
+  if (!at) return '';
+  const h = at[0] < 0.4 ? 'left' : at[0] > 0.6 ? 'right' : '', v = at[1] < 0.4 ? 'upper' : at[1] > 0.6 ? 'lower' : '';
+  return h || v ? ` toward the ${[v, h].filter(Boolean).join(' ') || 'centre'} of the frame` : '';
+}
 
 /**
  * The generative-video prompt for a call (Kling, Runway, Veo, Seedance, Higgsfield, ...): the camera instruction only,
@@ -85,7 +129,7 @@ export function promptFor(call: CameraCall): string {
   const size = r.k < 0.75 ? 'subtle, ' : r.k > 1.3 ? 'pronounced, ' : '';
   const full = r.m.family === 'orbit' && r.a >= 300 ? ', a full 360-degree circle' : '';
   const speed = r.ease === r.m.defaults.ease ? p.speed : `${p.speed}, ${EASE_WORDS[r.ease]}`;
-  return `Camera: ${size}${p.name}${full}. Movement: ${p.motion}. Speed: ${speed}, about ${+r.duration.toFixed(1)} s. Framing: ${p.framing}. End: ${p.end}.`;
+  return `Camera: ${size}${p.name}${full}${placeWords(call.at)}. Movement: ${p.motion}. Speed: ${speed}, about ${+r.duration.toFixed(1)} s. Framing: ${p.framing}. End: ${p.end}.`;
 }
 
 /** A whole gen-AI brief: the camera calls (in order), then the scene, kept in separate sections. */
@@ -99,7 +143,10 @@ export function buildPrompt(o: { calls: readonly CameraCall[]; subject?: string;
   ].join('\n');
 }
 
-/** A compact menu of every move for a director model's prompt (small models included): one line each. */
+/**
+ * A compact menu for a director model's prompt (small models included): one line each. Pass `editorMoves()` for the
+ * video editor, `codedMoves()` for coded 3D styles, or the whole list when the target is a gen-AI video model.
+ */
 export function cameraMenu(moves: readonly CameraMove[] = CAMERA_MOVES): string {
   return moves.map(m => `${m.id}: ${m.use}`).join('\n');
 }

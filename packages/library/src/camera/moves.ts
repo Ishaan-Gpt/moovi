@@ -1,4 +1,4 @@
-import { cam, lerp, lerpLog, len, sub, wobble, type CamState, type EaseId, type Vec3 } from './core';
+import { EASES, cam, lerp, lerpLog, len, sub, wobble, type CamState, type EaseId, type Vec3 } from './core';
 
 /**
  * The camera move library: every movement on aicameramovements.com (46 shots in 7 groups, studied 2026-10-16) plus the
@@ -8,10 +8,24 @@ import { cam, lerp, lerpLog, len, sub, wobble, type CamState, type EaseId, type 
  * Shape rules so a flat 2D layout never shows its edge: "in" moves start on the base framing and travel; "out" moves
  * start tight and END on the base framing; lateral moves are centred on it (from -a/2 to +a/2). The exceptions that
  * leave the base on purpose (earth zoom out, infinite zoom, pass-through, the tracking family) say so in `avoid`.
+ *
+ * Beyond the site: the dolly zoom, and the moves an editor needs that a gen-AI catalogue never lists (the "edit" group:
+ * punch-in/out, beat pulse, impact shake, drift, dive and reframe to a point, Ken Burns, roll, roll-settle, rack focus).
+ * Every move says where it can play (`scope`) and which camera code already in the repo does the same thing (`existing`).
  */
 
-export type CameraGroup = 'pan-tilt' | 'zoom-lens' | 'dolly-track' | 'physical' | 'drone-crane' | 'human' | 'special';
+export type CameraGroup = 'pan-tilt' | 'zoom-lens' | 'dolly-track' | 'physical' | 'drone-crane' | 'human' | 'special' | 'edit';
 export type Dir = 'in' | 'out' | 'left' | 'right' | 'up' | 'down' | 'cw' | 'ccw';
+/**
+ * Where a move can really play:
+ * - `edit`: on a flat frame (the video editor's footage, any 2D layout): it is a crop, zoom, slide, roll or blur, so it
+ *   maps onto the editor's `{ scale, cx, cy }` framing keys (`toEdlZoom`) and style-1 `CamKey`s.
+ * - `coded`: needs depth Moovi builds itself (a layered set in CSS 3D, three.js, the maps renderer): on flat footage it
+ *   would only degrade to a zoom or a slide, so the editor should not offer it.
+ * - `gen`: needs a world that moves on its own or is filmed from where we cannot go (a walking subject, a car, the sky,
+ *   time passing): only a gen-AI video model (or real footage) can give it. Its prompt is still useful.
+ */
+export type CameraScope = 'edit' | 'coded' | 'gen';
 
 export interface MoveCtx {
   /** the move's magnitude after intensity: `amount.value × intensity`, or the caller's own amount */
@@ -24,6 +38,8 @@ export interface MoveCtx {
   u: number;
   dur: number;
   seed: number;
+  /** the frame point the call aims at (`CameraCall.at`), as a world point on the base's target plane */
+  at: Vec3;
 }
 
 export interface CameraMove {
@@ -49,6 +65,10 @@ export interface CameraMove {
   /** our own gen-AI prompt wording, assembled by `promptFor` with the call's speed and timing */
   prompt: { name: string; motion: string; speed: string; framing: string; end: string };
   at(base: CamState, p: number, c: MoveCtx): CamState;
+  /** where it can play (see `CameraScope`) */
+  scope: CameraScope;
+  /** camera code that already existed in the repo and does the same job (style-1 presets, the visual renderer, Dark Vox) */
+  existing: readonly string[];
 }
 
 // ── geometry on a base state ──
@@ -86,6 +106,14 @@ function shake(s: CamState, t: number, seed: number, amp: number, rollDeg: numbe
   const aim = { x: wobble(T, seed, 2) * amp * 0.6, y: wobble(T, seed, 3) * amp * 0.5, z: 0 };
   return cam(s, { pos: add(s.pos, o), target: add(s.target, aim), roll: s.roll + wobble(T, seed, 4) * rollDeg });
 }
+/** Slide camera and target together toward a world point by share u (flat-frame exact: the plane stays square to the lens). */
+const aim = (s: CamState, at: Vec3, u: number) => shift(s, { x: (at.x - s.target.x) * u, y: (at.y - s.target.y) * u });
+/** Roll the picture by `deg` (positive = clockwise), zooming just enough to keep a 9:16 frame's corners covered. */
+function rollTo(s: CamState, deg: number): CamState {
+  const r = Math.abs(deg) * RAD;
+  return zoom(cam(s, { roll: s.roll + deg }), Math.cos(r) + (16 / 9) * Math.sin(r));
+}
+const EASE_SNAP = EASES.snap, EASE_SMOOTH = EASES.smooth;
 /** Footsteps: a vertical bob and a smaller sway at a walking cadence. */
 const steps = (t: number, hz: number, amp: number) => ({ x: Math.sin(t * Math.PI * hz) * amp * 0.5, y: -Math.abs(Math.sin(t * Math.PI * hz)) * amp, z: 0 });
 
@@ -93,17 +121,18 @@ const sign = (dir: Dir | undefined) => (dir === 'left' || dir === 'down' || dir 
 
 // ── the catalogue ──
 
-type Def = Omit<CameraMove, 'family' | 'dir'> & { family?: string; dir?: Dir };
-const M = (d: Def): CameraMove => ({ ...d, family: d.family ?? d.id, dir: d.dir });
+type Entry = Omit<CameraMove, 'scope' | 'existing'>;
+type Def = Omit<Entry, 'family' | 'dir'> & { family?: string; dir?: Dir };
+const M = (d: Def): Entry => ({ ...d, family: d.family ?? d.id, dir: d.dir });
 
 /** Build a left/right (or in/out, up/down, cw/ccw) pair from one definition. */
-function pair(family: string, dirs: [Dir, Dir], make: (dir: Dir, s: 1 | -1) => Omit<Def, 'family' | 'dir'>): CameraMove[] {
+function pair(family: string, dirs: [Dir, Dir], make: (dir: Dir, s: 1 | -1) => Omit<Def, 'family' | 'dir'>): Entry[] {
   return dirs.map(dir => { const d = make(dir, sign(dir) as 1 | -1); return M({ ...d, family, dir }); });
 }
 
 const word = (d: Dir) => ({ in: 'in', out: 'out', left: 'left', right: 'right', up: 'up', down: 'down', cw: 'clockwise', ccw: 'counterclockwise' })[d];
 
-export const CAMERA_MOVES: readonly CameraMove[] = [
+const ENTRIES: readonly Entry[] = [
   // ── Pan / Tilt ──
   M({
     id: 'static', name: 'Static shot', group: 'pan-tilt', ref: 'SHOT 01', aliases: ['locked off', 'locked-off', 'static', 'hold', 'tripod', 'still camera', 'no camera movement'],
@@ -167,7 +196,7 @@ export const CAMERA_MOVES: readonly CameraMove[] = [
   })),
   ...pair('crash-zoom', ['in', 'out'], (dir, s) => ({
     id: `crash-zoom-${dir}`, name: `Crash zoom ${dir}`, group: 'zoom-lens', ref: dir === 'in' ? 'SHOT 07A' : 'SHOT 07B',
-    aliases: [`crash zoom ${dir}`, `snap zoom ${dir}`, `smash zoom ${dir}`, ...(dir === 'in' ? ['punch in', 'punch-in', 'zoom punch'] : ['punch out'])],
+    aliases: [`crash zoom ${dir}`, `snap zoom ${dir}`, `smash zoom ${dir}`, ...(dir === 'in' ? ['meme zoom', 'dramatic zoom'] : [])],
     about: 'A near-instant zoom that hits like a sound effect: the lens slams to its new focal length and stops dead.',
     use: dir === 'in' ? 'Shock, comedy, emphasis on a key word; the meme zoom. Pair with a hit sound.' : 'A comic or dramatic "pull away": the reaction, the absurd scale of the situation.',
     avoid: 'Brand films that should feel calm; more than one per 10 s; a subject that is not centred (it will fly off).',
@@ -434,7 +463,147 @@ export const CAMERA_MOVES: readonly CameraMove[] = [
     prompt: { name: 'pass-through camera move', motion: 'glide forward into a visible object, surface or opening and continue through it', speed: 'a smooth, centred glide', framing: 'the opening or surface stays centred as the crossing point', end: 'arrive inside the space revealed beyond it' },
     at: (b, p, c) => { const d0 = len(sub(b.target, b.pos)); const s1 = dolly(b, d0 * c.a * p); return cam(s1, { target: { x: s1.target.x, y: s1.target.y, z: Math.min(s1.target.z, s1.pos.z - 1) } }); },
   }),
+
+  // ── Edit: what an editor needs that a gen-AI catalogue never lists (all flat-frame safe) ──
+  ...pair('punch', ['in', 'out'], (dir, s) => ({
+    id: `punch-${dir}`, name: `Punch ${dir}`, group: 'edit', ref: 'editor grammar (R4 edit styles: 115-140 % punch-ins on word boundaries)',
+    aliases: dir === 'in' ? ['punch in', 'jump zoom', 'jump cut zoom', 'cut in', 'tighten', 'punch'] : ['punch out', 'cut out', 'back to wide', 'release'],
+    about: dir === 'in' ? 'An instant reframe tighter (no visible motion), aimed at a point if given; it holds until the next call. The talking-head editor\'s basic cut.' : 'Jumps from a tight reframe back to the base framing in one frame.',
+    use: dir === 'in' ? 'On a word boundary to mark a key word or a new thought; alternate with punch out so a single take feels like two cameras.' : 'Resets after a punch in; the next thought, or a breath.',
+    avoid: 'Two punches inside one second; punching past ~1.4x on low-resolution footage (it goes soft).',
+    defaults: { duration: 0.1, ease: 'cut', intensity: 1 }, amount: { value: 1.15, unit: 'x', what: 'zoom factor' },
+    prompt: { name: dir === 'in' ? 'hard cut to a tighter framing (punch in)' : 'hard cut back to the wider framing', motion: 'no camera move: the shot jumps to a new framing in a single cut', speed: 'instant', framing: 'same angle and subject, only the framing changes', end: dir === 'in' ? 'hold the tighter frame' : 'hold the wide frame' },
+    at: (b, p, c) => (s > 0 ? zoom(aim(b, c.at, p), lerpLog(1, c.a, p)) : zoom(aim(b, c.at, 1 - p), lerpLog(c.a, 1, p))),
+  })),
+  M({
+    id: 'pulse', name: 'Beat pulse', group: 'edit', ref: 'style-1 punch-in (1.0 → 1.06 on the key word → 1.02)',
+    aliases: ['pulse', 'beat pulse', 'zoom bump', 'bump', 'zoom pulse', 'punch and settle', 'beat zoom'],
+    about: 'A quick push in that lands on the beat and eases back to the framing: a heartbeat of the camera. The shape is fixed (fast attack, slow release); the ease only shapes the release.',
+    use: 'Music beats, a spoken key word, a number landing; adds energy without leaving the shot.',
+    avoid: 'Every beat (it becomes a throb); calm or sincere moments.',
+    defaults: { duration: 0.6, ease: 'smooth', intensity: 1 }, amount: { value: 1.06, unit: 'x', what: 'peak zoom factor' },
+    prompt: { name: 'quick zoom pulse on the beat', motion: 'a small, fast push in that springs back to the original framing', speed: 'a sharp hit then a soft release', framing: 'the subject stays centred', end: 'back on the original framing' },
+    at: (b, _p, c) => { const atk = 0.22, q = c.u < atk ? EASE_SNAP(c.u / atk) : 1 - EASE_SMOOTH((c.u - atk) / (1 - atk)); return zoom(aim(b, c.at, q), lerpLog(1, c.a, q)); },
+  }),
+  M({
+    id: 'shake', name: 'Impact shake', group: 'edit', ref: 'editor grammar (R4: slight shake on stamps)',
+    aliases: ['shake', 'camera shake', 'impact', 'impact shake', 'screen shake', 'hit shake', 'rumble', 'jolt'],
+    about: 'A short, decaying jolt of position and roll, as if something heavy just landed; deterministic noise, so every render matches.',
+    use: 'A stamp, a slam, a bass drop, a bold claim landing; pair with an impact sound.',
+    avoid: 'Text that must be read during the shake; more than one per beat; calm brands.',
+    defaults: { duration: 0.4, ease: 'linear', intensity: 1 }, amount: { value: 0.08, unit: 'units', what: 'shake amplitude' },
+    prompt: { name: 'sharp camera shake on impact', motion: 'the frame jolts as if hit, then steadies', speed: 'a violent first frame that dies away in a fraction of a second', framing: 'the subject stays in frame', end: 'settle back to a steady frame' },
+    at: (b, _p, c) => { const d = (1 - c.u) ** 2; return zoom(shake(b, c.t, c.seed, c.a * d, 2.5 * c.k * d, 9), 1 + 0.6 * c.a * d); },
+  }),
+  M({
+    id: 'drift', name: 'Drift', group: 'edit', ref: 'style-1 creep (+2.5 %/s after the last key) / Dark Vox drift (+1.5 %/s)',
+    aliases: ['drift', 'creep', 'breathe', 'idle drift', 'float', 'subtle push', 'keep alive', 'living camera'],
+    about: 'A barely visible, constant push with a slow float: the frame is alive without anything happening.',
+    use: 'Under every held shot so nothing is ever dead still (Moovi law: every scene moves); talking heads, held titles, product stills.',
+    avoid: 'When a deliberate lock-off is the joke or the point.',
+    defaults: { duration: 3, ease: 'linear', intensity: 1 }, amount: { value: 1.04, unit: 'x', what: 'zoom over the move' },
+    prompt: { name: 'very slow, almost imperceptible push in', motion: 'the camera creeps forward and floats very slightly', speed: 'extremely slow and constant', framing: 'the composition barely changes', end: 'a hair tighter than it began' },
+    at: (b, p, c) => { const s1 = shift(b, { x: Math.sin(c.t * 0.7) * 0.02 * c.k, y: Math.sin(c.t * 0.9 + 1) * 0.015 * c.k }); return zoom(s1, lerpLog(1, c.a, p)); },
+  }),
+  ...pair('dive', ['in', 'out'], (dir, s) => ({
+    id: `dive-${dir}`, name: `Dive ${dir}`, group: 'edit', ref: 'style-1 dive-to-detail (wide → 1.9x on a detail)',
+    aliases: dir === 'in' ? ['dive in', 'dive to detail', 'zoom to', 'zoom into', 'zoom to point', 'push to detail', 'focus on detail'] : ['dive out', 'zoom out from detail', 'back out of detail'],
+    about: dir === 'in' ? 'Zooms in while sliding toward a point of the frame (`at`), so an off-centre detail ends up centred and big.' : 'Starts tight on a point of the frame and pulls back out to the full framing.',
+    use: dir === 'in' ? 'Show the one thing that matters inside a busy frame: a number on a dashboard, a repo name, a face in a crowd.' : 'Answers "and where is that?": from the detail back to the whole.',
+    avoid: 'A detail too small for the source resolution at the end scale; when the detail is already centred (use a zoom).',
+    defaults: { duration: 1.2, ease: 'smooth', intensity: 1 }, amount: { value: 1.9, unit: 'x', what: 'zoom factor' },
+    prompt: { name: dir === 'in' ? 'push in onto a detail' : 'pull back from a detail', motion: dir === 'in' ? 'the camera glides toward one small detail in the frame and fills the frame with it' : 'start close on a small detail and glide back to reveal the whole frame', speed: 'smooth and purposeful', framing: dir === 'in' ? 'the detail moves to the centre as it grows' : 'the detail stays the anchor as the surroundings return', end: dir === 'in' ? 'hold the detail large and centred' : 'end on the full, original framing' },
+    at: (b, p, c) => { const u = s > 0 ? p : 1 - p; return zoom(aim(b, c.at, u), lerpLog(1, c.a, u)); },
+  })),
+  M({
+    id: 'reframe', name: 'Reframe', group: 'edit', ref: 'editor framing keys (EdlZoom: scale, cx, cy)',
+    aliases: ['reframe', 'reframe on', 'move to', 'pan to', 'slide to', 'recentre', 'recenter', 'frame on'],
+    about: 'Glides the frame so a point (`at`) becomes the centre, with an optional change of size (amount, default none).',
+    use: 'Follow the action inside a wide shot: from the speaker to the screen, from one card to the next.',
+    avoid: 'Jumps of more than half a frame (cut instead); when the point leaves the source (it shows the edge).',
+    defaults: { duration: 0.8, ease: 'smooth', intensity: 1 }, amount: { value: 1, unit: 'x', what: 'zoom factor at the end' },
+    prompt: { name: 'smooth reframe', motion: 'the camera glides sideways and up or down to centre a new point of interest', speed: 'smooth and quick', framing: 'the new point of interest settles in the centre', end: 'hold the new framing' },
+    at: (b, p, c) => zoom(aim(b, c.at, p), lerpLog(1, c.a, p)),
+  }),
+  ...pair('ken-burns', ['in', 'out'], (dir, s) => ({
+    id: `ken-burns-${dir}`, name: `Ken Burns ${dir}`, group: 'edit', ref: 'film grammar (stills animation)',
+    aliases: dir === 'in' ? ['ken burns', 'ken burns in', 'pan and zoom', 'photo zoom', 'still push'] : ['ken burns out', 'photo pull out'],
+    about: `A slow, steady zoom ${dir} that also slides toward (or away from) a point of the image: the classic way to bring a still photo to life.`,
+    use: 'Photos, screenshots, documents, maps and any still in an edit; nostalgic, documentary, considered.',
+    avoid: 'Video that already moves a lot; fast-paced cuts (it needs a few seconds).',
+    defaults: { duration: 6, ease: 'linear', intensity: 1 }, amount: { value: 1.18, unit: 'x', what: 'zoom factor' },
+    prompt: { name: `slow Ken Burns ${dir === 'in' ? 'push in' : 'pull out'} on a still image`, motion: `slowly zoom ${dir} while drifting across the image`, speed: 'slow, even and continuous', framing: 'the key area of the image stays in view throughout', end: `finish ${dir === 'in' ? 'closer on the key area' : 'on the whole image'}` },
+    at: (b, p, c) => { const u = s > 0 ? p : 1 - p; return zoom(aim(b, c.at, u * 0.6), lerpLog(1, c.a, u)); },
+  })),
+  ...pair('roll', ['right', 'left'], (dir, s) => ({
+    id: `roll-${dir}`, name: `Roll ${dir} (Dutch)`, group: 'edit', ref: 'film grammar (Dutch angle)',
+    aliases: [`roll ${dir}`, `dutch ${dir}`, `dutch angle ${dir}`, `cant ${dir}`, ...(dir === 'right' ? ['dutch angle', 'dutch tilt', 'canted angle', 'roll'] : [])],
+    about: `Rotates the picture around its centre (${dir === 'right' ? 'clockwise' : 'counterclockwise'}) into a canted horizon, zooming just enough to keep the corners covered.`,
+    use: 'Unease, tension, something is off; a playful tilt on a meme beat.',
+    avoid: 'Long holds (it tires); clean product and brand shots.',
+    defaults: { duration: 1.2, ease: 'smooth', intensity: 1 }, amount: { value: 8, unit: 'deg', what: 'roll angle' },
+    prompt: { name: `camera rolls into a Dutch angle to the ${dir}`, motion: `the camera rotates around its lens axis so the horizon tilts ${dir === 'right' ? 'down to the right' : 'down to the left'}`, speed: 'smooth', framing: 'the subject stays centred in the canted frame', end: 'hold the tilted horizon' },
+    at: (b, p, c) => rollTo(b, s * c.a * p),
+  })),
+  M({
+    id: 'roll-settle', name: 'Roll settle', group: 'edit', ref: 'style-1 roll-settle (1.1x at -1° → 1.0 level)',
+    aliases: ['roll settle', 'settle', 'level out', 'straighten', 'handheld settle'],
+    about: 'Opens a touch tight with a slight roll, then levels out and widens to the framing, as if an operator just found the shot.',
+    use: 'The first shot of a beat; a human, cinematic way in instead of a hard static start.',
+    avoid: 'Back to back on every shot (pick it for openings).',
+    defaults: { duration: 1, ease: 'ramp-down', intensity: 1 }, amount: { value: 1.2, unit: 'deg', what: 'starting roll' },
+    prompt: { name: 'slightly tilted frame that levels out', motion: 'start a little close with a small tilt, then straighten and ease back', speed: 'a quick settle that slows to rest', framing: 'the subject stays centred', end: 'a level, composed frame' },
+    at: (b, p, c) => zoom(cam(b, { roll: b.roll - c.a * (1 - p) }), lerpLog(1 + 0.1 * c.k, 1, p)),
+  }),
+  ...pair('rack-focus', ['out', 'in'], (dir, s) => ({
+    id: `rack-focus-${dir}`, name: `Rack focus ${dir === 'out' ? 'to background' : 'to subject'}`, group: 'edit', ref: 'film grammar (focus pull)',
+    aliases: dir === 'out' ? ['rack focus', 'rack focus out', 'focus pull', 'pull focus', 'rack focus to background', 'focus to background', 'shift focus back'] : ['rack focus in', 'rack focus to subject', 'focus to subject', 'focus to foreground', 'shift focus forward'],
+    about: `The camera stays still while the sharp plane slides ${dir === 'out' ? 'from the subject to the background' : 'from the background back to the subject'}; layers blur by their distance from it (\`depthBlur\`).`,
+    use: 'Moves attention without moving the frame: from a person to what they are looking at, from a product to its context.',
+    avoid: 'Flat footage (a filmed shot cannot be refocused: this needs layers Moovi builds); scenes with only one depth.',
+    defaults: { duration: 1.2, ease: 'smooth', intensity: 1 }, amount: { value: 9, unit: 'units', what: 'depth travelled by the focus' },
+    prompt: { name: `rack focus ${dir === 'out' ? 'from the subject to the background' : 'from the background to the subject'}`, motion: 'the camera holds still while the focus shifts between depths', speed: 'a smooth focus pull', framing: 'the composition does not change; only what is sharp does', end: `the ${dir === 'out' ? 'background' : 'subject'} is sharp and the rest soft` },
+    at: (b, p, c) => cam(b, { focusZ: s > 0 ? -c.a * (1 - p) : -c.a * p, dof: 1.4 * c.k }),
+  })),
 ];
+
+/** Where each move can play (see `CameraScope`). Anything not listed is `edit`. */
+const CODED = ['dolly-zoom-in', 'dolly-zoom-out', 'dolly-in', 'dolly-out', 'push-past', 'slider-left', 'slider-right', 'arc-left', 'arc-right', 'orbit-cw', 'orbit-ccw',
+  'crane-up', 'crane-down', 'drone-push-in', 'drone-pull-back', 'infinite-zoom', 'earth-zoom-out', 'pass-through', 'rack-focus-in', 'rack-focus-out'];
+const GEN = ['tracking', 'follow', 'reverse-tracking', 'side-tracking', 'low-tracking', 'vehicle-tracking', 'chase', 'snorricam', 'helicopter', 'first-person', 'time-lapse'];
+
+/** Camera code that already existed in the repo and does the same job (so nobody builds it twice). */
+const EXISTING: Record<string, readonly string[]> = {
+  static: ['darkvox hold'],
+  'slow-zoom-out': ['style-1 push-in (1.05 → 1.0: named a push, but in scale it settles outward)', 'style-1 reveal-pull', 'darkvox pull (1.55 → 1.0)'],
+  'crash-zoom-out': ['style-1 opening-zoom-out (4x, exponential)', 'darkvox punch (1.13 → 1.0 in 0.42 s)'],
+  'dolly-in': ['visual push'],
+  'dolly-out': ['visual pull'],
+  'truck-left': ['visual drift-left', 'darkvox slide (a fast truck with blur)'],
+  'truck-right': ['visual drift-right', 'darkvox slide (a fast truck with blur)'],
+  'arc-left': ['visual orbit (a ±12.6° arc)'],
+  'arc-right': ['visual orbit (a ±12.6° arc)'],
+  'pedestal-up': ['visual rise', 'darkvox rise (with a 1° roll settling)'],
+  'tilt-up': ['visual tilt (a diagonal slide)'],
+  'tilt-down': ['visual tilt (a diagonal slide)'],
+  handheld: ['visual hand-held wobble (on every visual camera)'],
+  'pass-through': ['darkvox portal and zoom-through cut', 'visual zoom-through transition'],
+  'punch-in': ['editor rough cut (every other shot framed at 1.12)', 'darkvox reframe (mid-shot punch to 1.2)'],
+  'punch-out': ['editor rough cut (every other shot back at 1.0)'],
+  pulse: ['style-1 punch-in', 'style-1 roll-punch (pulse + roll-settle)'],
+  drift: ['style-1 creep after the last key (+2.5 %/s)', 'darkvox drift (+1.5 %/s)'],
+  'dive-in': ['style-1 dive-to-detail'],
+  reframe: ['editor framing keys (EdlZoom)'],
+  'roll-settle': ['style-1 roll-settle', 'style-1 pull-out (its roll)'],
+};
+
+export const CAMERA_MOVES: readonly CameraMove[] = ENTRIES.map(m => ({
+  ...m, scope: GEN.includes(m.id) ? 'gen' : CODED.includes(m.id) ? 'coded' : 'edit', existing: EXISTING[m.id] ?? [],
+}));
+
+/** The moves a flat-frame editor can render (scope `edit`), and the ones for coded 3D scenes too. */
+export const editorMoves = () => CAMERA_MOVES.filter(m => m.scope === 'edit');
+export const codedMoves = () => CAMERA_MOVES.filter(m => m.scope !== 'gen');
 
 export const CAMERA_MOVE_IDS = CAMERA_MOVES.map(m => m.id);
 const BY_ID = new Map(CAMERA_MOVES.map(m => [m.id, m]));
