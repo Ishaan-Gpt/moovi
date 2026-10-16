@@ -199,7 +199,8 @@ export function editLib() {
   const ACRONYMS = /^(ai|api|ui|ux|ceo|cto|cfo|gpu|cpu|usa|uk|eu|tv|pc|ios|sdk|llm|nba|nfl|ipl|url|faq|diy|nasa|ev|ipo|seo|pdf|vr)$/;
   const isAcronym = (w: string) => { const b = w.replace(/[^\p{L}]/gu, ''); return b.length >= 2 && (ACRONYMS.test(b.toLowerCase()) || (b.length <= 5 && b === b.toUpperCase() && b !== b.toLowerCase())); };
   const keepAcronyms = (s: string, f: (p: string) => string) => s.split(/(\s+)/).map(p => isAcronym(p) ? p.toUpperCase() : f(p)).join('');
-  const caseOf = (s: string, c: string) => c === 'upper' ? s.toUpperCase() : c === 'lower' ? keepAcronyms(s, p => p.toLowerCase()) : c === 'title' ? keepAcronyms(s, p => p.replace(/\b\p{L}/gu, m => m.toUpperCase())) : s;
+  /** `proper`: a named thing (role 'title': Ishaan, Moovi) keeps its capital in a lower cased caption or card */
+  const caseOf = (s: string, c: string, proper = false) => c === 'upper' ? s.toUpperCase() : c === 'lower' ? keepAcronyms(s, p => proper ? p.charAt(0).toUpperCase() + p.slice(1).toLowerCase() : p.toLowerCase()) : c === 'title' ? keepAcronyms(s, p => p.replace(/\b\p{L}/gu, m => m.toUpperCase())) : s;
 
   /** The words the caption layer draws: the edit's words less those a style card already shows (style_laws.caption_hide). */
   function captionWords(e: PlayerEdl): Omit<OutWord, 'chunk'>[] {

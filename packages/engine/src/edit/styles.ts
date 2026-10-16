@@ -152,7 +152,8 @@ export function applyStyle(e: Edl, id: D22Style, o: StyleOpts = {}): Edl {
       if (w.t0 < 0.8 || w.t0 - last < 4 || w.t0 + 1.4 > dur - 0.3) continue;
       // a number card carries the word it counts ("5 minutes"); the caption drops what the card shows while it is up
       const nx = ow[w.i + 1] ?? ow.find(x => x.i > w.i), unit = w.role === 'number' && nx && /^\p{L}{3,}$/u.test(bare(nx.text)) ? nx : null;
-      const label = (w.text.replace(/[.,!?;:]+$/, '') + (unit ? ' ' + unit.text.replace(/[.,!?;:]+$/, '') : '')).toLowerCase();
+      // lower case like the subtitle, but a named thing keeps its capital ("Ishaan", not "ishaan")
+      const label = EDIT.caseOf(w.text.replace(/[.,!?;:]+$/, '') + (unit ? ' ' + unit.text.replace(/[.,!?;:]+$/, '') : ''), 'lower', w.role === 'title');
       inserts.push({ t0: r4(w.t0), t1: r4(w.t0 + 1.4), kind: 'card', frame: 'card_box', label, enter: 'pop', rule_id: rule('term_card') });
       hide.push(w.i); if (unit) hide.push(unit.i);
       last = w.t0;

@@ -72,7 +72,7 @@ function drawCaptions(t) {
   if (k !== chunkKey) {
     chunkKey = k; cap.innerHTML = '';
     cap.className = 'cap box-' + (ST.look.box || 'none');
-    if (c) for (const w of c.words) { const el = document.createElement('span'); el.className = 'w'; el.textContent = EDIT.caseOf(w.text, w.key && ST.key ? ST.key.case : LK ? LK.casing : ST.font.case); styleWord(el, w); cap.appendChild(el); }
+    if (c) for (const w of c.words) { const el = document.createElement('span'); el.className = 'w'; el.textContent = EDIT.caseOf(w.text, w.key && ST.key ? ST.key.case : LK ? LK.casing : ST.font.case, !!(CW.words[w.i] && CW.words[w.i].role === 'title')); styleWord(el, w); cap.appendChild(el); }
     // a long key word never runs off the frame: its size comes down to fit (D2.2, FLABBERGASTING at XL)
     for (const el of cap.children) { const mw = W - 150; if (el.offsetWidth > mw) { const fs = parseFloat(getComputedStyle(el).fontSize); el.style.fontSize = Math.floor(fs * mw / el.offsetWidth) + 'px'; } }
   }

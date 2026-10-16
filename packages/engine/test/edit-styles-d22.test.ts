@@ -66,7 +66,8 @@ test('D2.2 Atlas: cards beside the head on names and numbers, a sunburst on the 
 test('D2.2 Handmade: lowercase serif term cards, doodles not over cards, comment-WORD sticker', () => {
   const e = styledEdl(input, 'handmade');
   assert.equal(e.caption_style_id, 'ed-serif');
-  assert.ok(e.inserts!.length >= 1 && e.inserts!.every(i => i.label === i.label!.toLowerCase()));
+  // lower case cards; a named thing keeps only its first capital (v4: 'Ishaan', not 'ishaan')
+  assert.ok(e.inserts!.length >= 1 && e.inserts!.every(i => i.label!.slice(1) === i.label!.slice(1).toLowerCase()));
   for (const d of e.overlays!.filter(o => o.kind === 'doodle')) assert.ok(!e.inserts!.some(i => d.t0 < i.t1 && d.t1 > i.t0));
   assert.equal(e.end?.kind, 'cta_comment'); assert.equal(e.end?.title, 'comment');
 });
@@ -182,7 +183,7 @@ test('D2.2 Handmade: a number term card carries its unit and the caption drops w
   const num = e.inserts!.find(i => /^\d/.test(i.label!));
   if (num) assert.match(num.label!, /^\d+ [a-z]+$/);
   // every card's words are hidden from the caption layer, and only those
-  const shown = new Set(e.inserts!.flatMap(i => i.label!.split(' ')));
+  const shown = new Set(e.inserts!.flatMap(i => i.label!.toLowerCase().split(' ')));
   assert.ok(hide.length >= e.inserts!.length);
   for (const k of hide) assert.ok(shown.has(ow[k]!.text.toLowerCase().replace(/[.,!?;:]+$/, '')), ow[k]!.text);
   assert.equal(EDIT.captionWords(e).length, ow.length - hide.length);
@@ -197,7 +198,7 @@ test('D2.2 Handmade: the comment word is the named thing the take is about, not 
 
 test('D2.2 Handmade captions: ed-serif at L with an outline, no lone word; the term card moves off the face', () => {
   const st = CAPTION_STYLES.find(s => s.id === 'ed-serif')!;
-  assert.equal(st.size, 'XL'); assert.ok(st.look.stroke && st.chunk.minWords === 2 && st.chunk.together);
+  assert.equal(st.size, 'XXL'); assert.ok(st.look.stroke && st.chunk.minWords === 2 && st.chunk.together && st.chunk.maxWords === 5);
   const e = styledEdl(input, 'handmade');
   const { chunks } = EDIT.chunk(EDIT.captionWords(e), st);
   assert.ok(chunks.filter(c => c.words.length < 2).length <= 1);
@@ -212,4 +213,17 @@ test('D2.2 Handmade: the comment word skips the speaker introducing themselves a
   const ow = EDIT.outWords(e), titles = ow.filter(w => w.role === 'title').map(w => w.text);
   assert.ok(titles.includes('Ishaan') && titles.includes('Effects'), JSON.stringify(titles));
   assert.equal(e.end!.line, 'MOOVI', JSON.stringify(titles));
+});
+
+test('D2.2 Handmade v4: a named thing keeps its capital in the lower case subtitle and on its term card', () => {
+  assert.equal(EDIT.caseOf('Ishaan,', 'lower', true), 'Ishaan,');
+  assert.equal(EDIT.caseOf('moovi.', 'lower', true), 'Moovi.');
+  assert.equal(EDIT.caseOf('Hello', 'lower'), 'hello');
+  assert.equal(EDIT.caseOf('AI', 'lower', false), 'AI');
+  const e = styledEdl(input, 'handmade');
+  const labels = (e.inserts ?? []).map(i => i.label ?? '');
+  assert.ok(labels.some(l => l === 'Moovi' || l === 'Bangalore' || l === 'Ishaan'), JSON.stringify(labels));
+  for (const l of labels) if (/^\d/.test(l)) assert.equal(l, l.toLowerCase());
+  // the player passes the word's role to caseOf
+  assert.match(PAGE, /EDIT\.caseOf\(w\.text, [^;]*CW\.words\[w\.i\]\.role === 'title'/);
 });
