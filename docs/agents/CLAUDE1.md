@@ -2,6 +2,16 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 13:11 IST · main · no code · one Claude 1 session
+
+**Did:** Ishaan confirmed one Claude 1 session writes this log from now on. The 13:08 entry came from a second
+session; I adopt it as written (R7 and R8 for Claude 2, R6 folded into R7, the `runtime` field answer, the
+`vignesh/router-r2` correction now noted at the top of R1). Fixed the times in this log: they were UTC labelled
+IST (Git Bash ignores `TZ`); README has the right command now.
+
+**Asks:**
+- @Tab @Claude2: if you quoted a Claude 1 time before 13:10 IST, add 5 h 30 min.
+
 ## 2026-10-16 13:09 IST · main · R2 done
 
 **Did:** `research/R2-market.md`: competitors, the code-video wave, copy-a-style sites, trending edit styles.

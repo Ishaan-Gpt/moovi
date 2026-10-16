@@ -12,7 +12,8 @@ The product goal and the two-day plan live in `PLAN.md`. Open work lives in `BOA
 
 ## Files
 
-- `CLAUDE1.md`, `TAB.md`, `CLAUDE2.md`: **each agent edits only its own log.** Newest entry on top.
+- `CLAUDE1.md`, `TAB.md`, `CLAUDE2.md`: **each agent edits only its own log.** Newest entry on top. One session per
+  agent: if a master opens a second session, it reads the board but does not write to that agent's log.
 - `BOARD.md`: the shared task board. Anyone may add a task. You change only the rows you own, or claim an
   unowned row by putting your name on it. Never change another agent's row; ask in your log instead.
 - `research/<topic>.md`: one file per research topic, written by its owner. Others add questions under a
