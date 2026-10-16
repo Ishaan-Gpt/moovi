@@ -77,11 +77,11 @@ export const editReel: Handler = async ctx => {
   const lookP = lookFaces(u.path, pr.duration);
   await step('hear', 'timing every word');
   // D1.2: language-locked, in pieces, the accurate text laid on, and a confidence gate (edit/hear.ts)
-  let words: Word[] = [];
+  let words: Word[] = [], language: string | undefined;
   if (pr.hasAudio && sttAvailable()) {
     // the vocabulary prompt: Moovi, Ishaan, MOOVI_VOCAB and the project's own names (inp.names)
     const h = await hear(u.path, dir, { signal: ctx.signal, ...(inp.names?.length ? { names: inp.names } : {}) });
-    words = h.words;
+    words = h.words; language = h.language;
     writeFileSync(join(dir, 'hear.json'), JSON.stringify({ language: h.language, lang: h.lang, detected: h.detected, by: h.by, prompt: h.prompt, gate: h.gate, pieces: h.pieces, timings: h.timings }, null, 1));
     if (!h.gate.ok) await ctx.activity('note', `the transcript may be off (${h.gate.reasons.join('; ')}), so check the captions`);
   } else if (pr.hasAudio) await ctx.activity('note', 'no speech-to-text key, so no cuts or captions from words this time');
@@ -96,7 +96,7 @@ export const editReel: Handler = async ctx => {
   const source = { file, duration: pr.duration, w: pr.width ?? 1080, h: pr.height ?? 1920, fps: pr.fps ?? 30 };
   let edl: PlayerEdl;
   try {
-    const e = buildEdl({ source, words, pauses: ps, palette, ...(look.faces.length ? { faces: look.faces } : {}), style: { id: 'base', caption: inp.caption ?? 'punch-duo' } });
+    const e = buildEdl({ source, words, pauses: ps, palette, ...(look.faces.length ? { faces: look.faces } : {}), style: { id: 'base', ...(inp.caption ? { caption: inp.caption } : {}) }, ...(language ? { language } : {}) });
     const bad = validateEdl(e).problems.filter(p => !p.startsWith('version'));
     if (bad.length) throw new Error(bad.slice(0, 3).join('; '));
     edl = e;

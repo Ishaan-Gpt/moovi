@@ -1,6 +1,7 @@
 import { EDL_VERSION, metricsOf, type Edl, type EdlBeat, type EdlCut, type EdlRemoved } from './edl';
 import { bare, CUES, FILLERS, OPENERS, keywordsOf, takeWindow, type Word } from './cut';
-import type { EdlShot, EdlWord, Palette } from './lib';
+import { EDIT, type EdlShot, type EdlWord, type Palette } from './lib';
+import { pickLook, type CaptionLook } from './looks';
 
 /**
  * D1.3: the EDL builder, extracted from footage-edit (router/footage-edit.ts). Pure: the same words, pauses, faces,
@@ -31,7 +32,10 @@ export interface BuildInput {
   faces?: Face[];
   /** beat tags from the one model call, by sentence index; missing sentences are tagged by rule */
   tags?: Record<number, EdlBeat['tag']>;
-  style?: { id?: string; variant?: string; caption?: string; output?: Edl['output'] };
+  /** caption: a player caption style id; look: a captionseasy look number or id (else the style's own) */
+  style?: { id?: string; variant?: string; caption?: string; look?: number | string; output?: Edl['output'] };
+  /** the transcript's language (hear's `language`), stored in the caption look */
+  language?: string;
   palette: Palette;
   laws?: Partial<Laws>;
   seed?: number;
@@ -209,6 +213,11 @@ export function buildEdl(i: BuildInput): Edl {
     return { src_t0: r4(w.t), src_t1: r4(w.end), text: w.word, role, line_id: sent[k]!, ...(w.p !== undefined ? { conf: Math.max(0, Math.min(1, w.p)) } : {}) };
   });
   const tmp: Edl = { version: EDL_VERSION, style_id: i.style?.id ?? 'base', source: src, output: out, palette: i.palette, caption_style_id: i.style?.caption ?? 'punch-duo', words, shots };
+  // the captionseasy look: picked per style (or asked for), validated for the words as shown; the player draws its
+  // nearest style unless a caption style was asked for
+  let look: CaptionLook | null = null;
+  try { look = pickLook(EDIT.outWords(tmp), { style: i.style?.id, ...(i.style?.look !== undefined ? { look: i.style.look } : {}), ...(i.language ? { language: i.language } : {}) }); } catch { look = null; }
+  if (look && !i.style?.caption) tmp.caption_style_id = look.player_style;
   const beats: EdlBeat[] = [];
   const outOf = (s: number) => { for (const g of shots) if (s >= g.src_in - 1e-6 && s <= g.src_out + 1e-6) return g.t_in + (s - g.src_in); return null; };
   const ids = [...new Set(sent)];
@@ -231,6 +240,7 @@ export function buildEdl(i: BuildInput): Edl {
     removed: removed.sort((a, b) => a.src_in - b.src_in), cuts, beats, inserts: [],
     voice: { clean: 'arnndn', target_lufs: -14, true_peak: -1 },
     ...(faces.length ? { faces } : {}),
+    ...(look ? { caption_look: look } : {}),
   };
   edl.metrics = metricsOf(edl, L.snap_ms);
   return edl;

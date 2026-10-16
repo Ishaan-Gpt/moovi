@@ -129,6 +129,71 @@
    "type": "string",
    "description": "R8 caption style id (with or without \"caption:\")"
   },
+  "caption_look": {
+   "description": "the captionseasy look (number and id are permanent) with its validated props",
+   "type": "object",
+   "properties": {
+    "number": {
+     "type": "integer",
+     "minimum": -9007199254740991,
+     "maximum": 9007199254740991
+    },
+    "id": {
+     "type": "string"
+    },
+    "name": {
+     "type": "string"
+    },
+    "player_style": {
+     "type": "string",
+     "description": "the nearest of the preview player's caption styles (what caption_style_id carries when no style was asked for)"
+    },
+    "style": {
+     "type": "object",
+     "propertyNames": {
+      "type": "string"
+     },
+     "additionalProperties": {},
+     "description": "the full CaptionStyle captionseasy validated"
+    },
+    "settings": {
+     "type": "object",
+     "propertyNames": {
+      "type": "string"
+     },
+     "additionalProperties": {},
+     "description": "captionseasy pacing settings"
+    },
+    "overrides": {
+     "type": "object",
+     "propertyNames": {
+      "type": "string"
+     },
+     "additionalProperties": {}
+    },
+    "warnings": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "rule_id": {
+     "type": "string",
+     "minLength": 1,
+     "description": "the rule that made this decision, e.g. \"law.pause_trim\" or \"nightdesk.split_on_number\""
+    }
+   },
+   "required": [
+    "number",
+    "id",
+    "name",
+    "player_style",
+    "style",
+    "settings",
+    "rule_id"
+   ],
+   "additionalProperties": false
+  },
   "words": {
    "type": "array",
    "items": {

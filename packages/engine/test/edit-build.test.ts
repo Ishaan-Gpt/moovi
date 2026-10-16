@@ -5,6 +5,8 @@ import { validateEdl } from '../src/edit/edl';
 import { EDIT } from '../src/edit/lib';
 import { align, gate, nameFix, langCode, lockLanguage, vocabPrompt, vocabulary } from '../src/edit/hear';
 import { smoothFaces } from '../src/edit/look';
+import { lookMap, pickLook, playerStyleFor, STYLE_LOOKS } from '../src/edit/looks';
+import { CAPTION_STYLES } from '../src/edit/captions';
 import { faceCentre } from '../src/edit/build';
 
 const W = (word: string, t: number, end: number) => ({ word, t, end });
@@ -135,4 +137,24 @@ test('hear: names heard a near way are written right, common words are left alon
   const ws = [W('we', 0, 0.1), W('are', 0.1, 0.2), W('introducing', 0.2, 0.6), W('Moovly.', 0.6, 0.9), W('Now', 1, 1.1), W('Moovly', 1.1, 1.4), W('is', 1.4, 1.5), W('Ishan', 1.5, 1.8), W('and', 1.8, 1.9), W('Moves', 2, 2.2), W('it.', 2.2, 2.4), W('we', 2.5, 2.6), W('move', 2.6, 2.8)];
   const out = nameFix(ws, ['Moovi', 'Ishaan']).map(w => w.word);
   assert.deepEqual(out, ['we', 'are', 'introducing', 'Moovi.', 'Now', 'Moovi', 'is', 'Ishaan', 'and', 'Moves', 'it.', 'we', 'move']);
+});
+
+test('captionseasy: the builder stores a validated look and the player draws its nearest style', () => {
+  const e = build();
+  assert.equal(e.caption_look?.number, STYLE_LOOKS.base);
+  assert.equal(e.caption_look?.id, 'hormozi_box');
+  assert.equal(e.caption_style_id, e.caption_look?.player_style);
+  assert.ok(typeof e.caption_look?.style.templateId === 'string');
+  assert.deepEqual(validateEdl(e).problems.filter(p => !p.startsWith('version')), []);
+  // an asked-for caption style wins for the player; the look is still stored
+  const asked = buildEdl({ source, words: take, pauses, palette, style: { caption: 'kara-sweep', look: 'karaoke_pill' } });
+  assert.equal(asked.caption_style_id, 'kara-sweep');
+  assert.equal(asked.caption_look?.id, 'karaoke_pill');
+  assert.throws(() => pickLook([{ text: 'hi', t0: 0, t1: 0.3 }], { look: 'no_such_look' }));
+  // every one of the 99 looks maps onto a style the player has
+  const ids = new Set(CAPTION_STYLES.map(s => s.id)), all = lookMap();
+  assert.equal(all.length, 99);
+  assert.ok(all.every(l => ids.has(l.player_style)));
+  assert.equal(playerStyleFor({ layout: 'karaoke-pill', tags: ['Pill'], wordsPerCard: 3 }), 'kara-block');
+  assert.equal(playerStyleFor({ layout: 'word', tags: ['One word'], wordsPerCard: 1 }), 'punch-slam');
 });

@@ -37,6 +37,13 @@ export const Header = {
   output: z.object({ w: z.number().int().positive(), h: z.number().int().positive(), fps: z.number().positive(), aspect: z.string().optional().describe('9:16, 1:1, 16:9, 4:5') }),
   palette: z.object({ ink: z.string(), paper: z.string(), accent: z.string(), accent2: z.string(), deep: z.string(), pop: z.string() }),
   caption_style_id: z.string().describe('R8 caption style id (with or without "caption:")'),
+  caption_look: z.object({
+    number: z.number().int(), id: z.string(), name: z.string(),
+    player_style: z.string().describe('the nearest of the preview player\'s caption styles (what caption_style_id carries when no style was asked for)'),
+    style: z.record(z.string(), z.unknown()).describe('the full CaptionStyle captionseasy validated'),
+    settings: z.record(z.string(), z.unknown()).describe('captionseasy pacing settings'),
+    overrides: z.record(z.string(), z.unknown()).optional(), warnings: z.array(z.string()).optional(), rule_id: ruleId,
+  }).optional().describe('the captionseasy look (number and id are permanent) with its validated props'),
 };
 
 export const Word = z.object({
