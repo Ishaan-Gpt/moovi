@@ -1,23 +1,14 @@
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, mkdirSync, writeFileSync } from 'node:fs';
-import { extname, join } from 'node:path';
-import { color } from '@moovi/brand';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { project as P, run as runQ, SYS, sys as S } from '@moovi/graph';
-import { sttAvailable } from '../audio/stt';
-import { probe } from '../bench';
 import { publish } from '../bus';
 import type { Command } from '../commands';
 import { config } from '../config';
 import type { Handler } from '../ctx';
 import { CAPTION_STYLES } from '../edit/captions';
-import { EDIT, type PlayerEdl } from '../edit/lib';
-import { buildEdl } from '../edit/build';
-import { envelope, pauses, type Word } from '../edit/cut';
-import { keepOf, validateEdl } from '../edit/edl';
-import { hear } from '../edit/hear';
-import { lookFaces } from '../edit/look';
-import { roughEdl } from '../edit/rough';
-import { cleanVoice } from '../edit/voice';
+import { planEdit } from '../edit/job';
+import { EDIT } from '../edit/lib';
 import { activity } from '../live';
 import { startRun } from '../runs';
 import { liveRefFile, type LiveRef } from '../styles/serve';
@@ -61,61 +52,17 @@ export const editReel: Handler = async ctx => {
   const inp = ctx.input<{ upload: string; caption?: string; names?: string[] }>();
   const [u] = (await ctx.q<Upload>(P.uploads, { chat: ctx.chat })).filter(x => x.id === inp.upload);
   if (!u) throw new Error('The clip to edit is missing');
-  const t0 = Date.now(), lap: Record<string, number> = {}; let tl = t0;
+  const t0 = Date.now();
   const step = async (stage: string, text: string) => { await publish(ctx.chat, { type: 'status', agent: 'editor', state: 'working', text, task: `${ctx.task.id}:editor` }).catch(() => undefined); void activity(ctx.chat, 'editor', ctx.task.id, 'start', text, { scope: stage }); };
-  const done = (stage: string) => { lap[stage] = +((Date.now() - tl) / 1000).toFixed(2); tl = Date.now(); void activity(ctx.chat, 'editor', ctx.task.id, 'done', `${stage} · ${lap[stage]!.toFixed(1)} s`, { ms: Math.round(lap[stage]! * 1000), scope: stage }); };
+  const done = (stage: string, s: number) => { void activity(ctx.chat, 'editor', ctx.task.id, 'done', `${stage} · ${s.toFixed(1)} s`, { ms: Math.round(s * 1000), scope: stage }); };
 
   await ctx.say(`I’ll edit ${u.name}: cut the pauses, punch in on each new thought and caption every word. It plays live as soon as the plan is ready.`, 'note', undefined, 'moovi');
-  const dir = join(ctx.dir, 'edit'); mkdirSync(dir, { recursive: true });
-  const file = `src${extname(u.name).toLowerCase() || '.mp4'}`;
-  await step('probe', 'measuring your clip');
-  copyFileSync(u.path, join(dir, file));
-  const pr = await probe(u.path);
-  if (!pr.hasVideo) throw new Error(`${u.name} has no video stream`);
-  done('probe');
-
-  // D1.3 look: the speaker's face, beside the hearing (edit/look.ts; [] without a vision python), for crop and punch-ins
-  const lookP = lookFaces(u.path, pr.duration);
-  await step('hear', 'timing every word');
-  // D1.2: language-locked, in pieces, the accurate text laid on, and a confidence gate (edit/hear.ts)
-  let words: Word[] = [], language: string | undefined;
-  if (pr.hasAudio && sttAvailable()) {
-    // the vocabulary prompt: Moovi, Ishaan, MOOVI_VOCAB and the project's own names (inp.names)
-    const h = await hear(u.path, dir, { signal: ctx.signal, ...(inp.names?.length ? { names: inp.names } : {}) });
-    words = h.words; language = h.language;
-    writeFileSync(join(dir, 'hear.json'), JSON.stringify({ language: h.language, lang: h.lang, detected: h.detected, by: h.by, prompt: h.prompt, gate: h.gate, pieces: h.pieces, timings: h.timings }, null, 1));
-    if (!h.gate.ok) await ctx.activity('note', `the transcript may be off (${h.gate.reasons.join('; ')}), so check the captions`);
-  } else if (pr.hasAudio) await ctx.activity('note', 'no speech-to-text key, so no cuts or captions from words this time');
-  writeFileSync(join(dir, 'words.json'), JSON.stringify(words, null, 1));
-  done('hear');
-
-  await step('plan', 'planning the cuts');
-  const palette = { ink: color.ink, paper: color.surface, accent: color.ice, accent2: color.frostMid, deep: color.ink, pop: color.iceWhite };
-  // D1.3: the EDL builder (edit/build.ts): take window, pause and filler cuts snapped to words, a framing per sentence
-  const ps = pr.hasAudio ? pauses(await envelope(u.path)) : [];
-  const look = await lookP;
-  const source = { file, duration: pr.duration, w: pr.width ?? 1080, h: pr.height ?? 1920, fps: pr.fps ?? 30 };
-  let edl: PlayerEdl;
-  try {
-    const e = buildEdl({ source, words, pauses: ps, palette, ...(look.faces.length ? { faces: look.faces } : {}), style: { id: 'base', ...(inp.caption ? { caption: inp.caption } : {}) }, ...(language ? { language } : {}) });
-    const bad = validateEdl(e).problems.filter(p => !p.startsWith('version'));
-    if (bad.length) throw new Error(bad.slice(0, 3).join('; '));
-    edl = e;
-  } catch (e) {
-    // the builder is new: if it throws or its EDL does not validate, the stand-in plan (rough.ts) still gives an edit
-    console.warn(`[edit] builder failed, rough plan instead: ${String((e as Error).message ?? e).slice(0, 200)}`);
-    await ctx.activity('note', 'the full edit planner hit a problem, so this is the simple cut');
-    edl = roughEdl(source, words.map(w => ({ word: w.word, t: w.t, end: w.end })), { palette, captionStyle: inp.caption ?? 'punch-duo' });
-  }
-  const t = EDIT.timeline(edl);
-  if (t.problems.length) throw new Error(`The edit plan is inconsistent: ${t.problems.join('; ')}`);
-  writeFileSync(join(dir, 'edl.json'), JSON.stringify(edl, null, 1));
-  done('plan');
-  // D1.2b: the voice cleaned on the film's clock (edit/voice.ts), beside the preview (it does not hold the first frame);
-  // the MP4 export (D1.8) takes voice.m4a when it is there
-  if (pr.hasAudio) void cleanVoice(join(dir, file), join(dir, 'voice.m4a'), { dir, keep: keepOf(edl) })
-    .then(v => writeFileSync(join(dir, 'voice.json'), JSON.stringify(v, null, 1)))
-    .catch(e => console.warn(`[edit] voice clean-up: ${String((e as Error).message ?? e).slice(0, 160)}`));
+  const dir = join(ctx.dir, 'edit');
+  // probe, look, hear, plan, and the voice clean-up started beside the preview: one function, the bench runs it too
+  const plan = await planEdit({ path: u.path, dir, name: u.name, signal: ctx.signal, onStage: step, onDone: done, onNote: text => ctx.activity('note', text),
+    ...(inp.caption ? { caption: inp.caption } : {}), ...(inp.names?.length ? { names: inp.names } : {}) });
+  const { edl, words, lap } = plan, pr = { duration: plan.source.duration, width: plan.source.w, height: plan.source.h };
+  const t = { duration: plan.duration };
 
   // it plays now: the edit preview player through the studio's preview route, like the live styles
   const [c] = await ctx.q<{ version: number | null }>(P.chat, { id: ctx.chat });

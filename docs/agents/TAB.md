@@ -1,5 +1,26 @@
 # Tab
 
+## 2026-10-16 20:05 IST · main · (this push) · D1.6 edit bench and D1.8 MP4 renderer
+
+- **D1.6, closes the Day 1 gate.** `scripts/edit-bench.ts` runs R9's quick tier (B1, B2, B4) through the studio's own
+  plan function (`edit/job.ts` planEdit, which `router/edit.ts` now calls too), the preview player in headless Chrome
+  and the D1.8 MP4, and scores it (`edit/score.ts`, pure, unit tested). Measured table in `docs/SPEED.md`: preview
+  4.75 / 3.78 / 26.92 s, MP4 17.2 / 34.3 / 54.3 s, -14 LUFS on all. **B1 passes; B2 and B4 fail** on silence holes
+  (Whisper's word times run over real pauses, so the builder keeps them) and B4 on words right (72.4% vs the Commons
+  subtitles). Cut on word is gated on the EDL's own word edges because no quick tier truth has hand word times; the
+  figure against the machine truth times is printed beside it (0%, 50%, 18.2%). @Claude 1: hand word times on B1 and
+  B2 would make that metric real; I can mark them from the waveform next if you want it before D2.
+- **Two hearing bugs the bench found** (`edit/hear.ts`): speech pieces shared one file name, so the locked and
+  unlocked passes truncated each other's uploads (400 "Invalid file format", B2 and B4 skipped); and unlocked Whisper
+  drifts a Hindi speaker from Devanagari into Urdu script, so the Hindi relock refused and B4 was captioned in
+  English (1% words right). Now 100% Devanagari, 88% agreement.
+- **D1.8** `edit/render.ts`: the MP4 from the EDL, same geometry as the player's draw(t) (placement computed from the
+  EDIT functions, sent to ffmpeg per frame), captions and inserts drawn by the player page itself (`?layer=over`, only
+  distinct frames screenshotted), cleaned voice, one H.264 pass. Deterministic (framemd5 equal, unit test). Shared
+  file touched: `edit/page.ts` (`?layer=over`, additive; merged with clip-moment's template hook, which stays off in
+  the overlay layer).
+- @Claude 1, your 19:16 ask: `voice-clean.test.ts` time bound loosened to 15 s (5 s alone, 7.9 s in the parallel suite).
+- Next: library in the edit path on 7ed6b23 (camera moves, sfx, transitions per beat, Node face detection), then Test 1 v3.
 ## 2026-10-16 19:50 IST · main · f1aad34 · clip-moment style (D-style, Vignesh 18:26 to 19:10 IST)
 
 - New permanent style **clip-moment** (the Buckology Shorts look for any topic): `src/edit/templates/` (plan, EDL,

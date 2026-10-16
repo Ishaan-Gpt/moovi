@@ -55,3 +55,58 @@ The two 368 s and 381 s visual runs overlapped full test suites on the same CPUs
 3. Research: 16 to 64 s, mostly page capture and the scroll recording.
 
 The live studio reaches a playable preview in under 90 s because it never encodes a file; the local visual path delivers a mastered mp4 in about 3.5 minutes on a quiet box.
+
+
+## Upload edit bench (D1.6, R9 quick tier)
+
+`packages/engine/scripts/edit-bench.ts --tier quick --mp4` runs each R9 clip (docs/agents/research/R9-benchmark-set.md)
+through the same plan function the studio's edit job runs (`src/edit/job.ts` planEdit), opens the edit preview player in
+headless Chrome for the first painted frame and the caption and face boxes, renders the MP4 from the EDL (D1.8,
+`src/edit/render.ts`) and scores it (`src/edit/score.ts`). Style: base. 720x1280, 30 fps.
+
+Commit 743bbdd plus this change · box 4 CPU, 8 GB, no GPU (software GL) · shared (another engineer's clip-moment
+renders ran beside it) · 16/10/2026, 19:57 IST · tier quick
+
+| Clip | Source s | Style | Preview s | MP4 s | Words right | Lang | Pauses left (max) | Cut on word | LUFS / TP | Captions off face | Band | Result |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| B1 | 29.69 | base | 4.75 | 17.17 | 57.75% (machine truth, not gated) | en ok | 0 (0.24 s) | 100% of 3; vs machine truth times 0% | -14.1 / -1.8 (mp4) | 100% | in | pass |
+| B2 | 34.08 | base | 3.78 | 34.33 | 90.7% (machine truth, not gated) | en ok | 0 (0.38 s) | 100% of 2; vs machine truth times 50% | -13.9 / -2.1 (mp4) | 100% (no faces found) | in | FAIL: 2 silence holes in the MP4 |
+| B4 | 101.1 | base | 26.92 | 54.27 | 72.4% | hi ok | 0 (0.36 s) | 100% of 11; vs machine truth times 18.2% | -13.9 / -2.1 (mp4) | 100% | in | FAIL: words 72.4%; 2 silence holes in the MP4 |
+
+Stages (s):
+
+- B1 stages (s): probe 0.12 · hear 3.61 · plan 0.18 · to plan 3.91 · deterministic true · slate kept 0 · truth: machine: gpt-4o-transcribe on whisper-1 word times, in pieces; checked by none (machine) · caption styles 11
+- B2 stages (s): probe 0.11 · hear 2.89 · plan 0.26 · to plan 3.27 · deterministic true · slate kept 0 · truth: machine: gpt-4o-transcribe on whisper-1 word times, in pieces; checked by none (machine) · caption styles 11
+- B4 stages (s): probe 0.13 · hear 24.51 · plan 0.29 · to plan 24.94 · deterministic true · slate kept 0 · truth: commons-timedtext-hi on whisper-1 word times, in pieces; checked by Commons subtitle authors (text); times machine · caption styles 11
+
+How to read it, honestly:
+
+- **Preview s** is upload accepted to the first painted frame of the edit preview (plan plus the player). B4 is a
+  101 s clip; its hearing takes 24.5 s because the default English lock translated the Hindi speaker and the clip is
+  heard a second time, locked to Hindi (below).
+- **MP4 s** is the D1.8 render, on a box shared with another render. Budget: 120 s for a 30 s clip.
+- **Words right** has no hand truth yet. B1 and B2 are scored against a machine transcript (gpt-4o-transcribe text on
+  whisper-1 word times), so they are printed and not gated; B1's machine text is worse than the edit's own hearing
+  (it heard "Ishaan" as "Vishal" and "Moovi" as "movies"), which is why B1 shows 57.75%. B4 is scored against the
+  Commons Hindi subtitles and gated: **72.4%, failing** the 80% line. The subtitles carry the speaker's English words
+  with Hindi glosses in brackets ("university (विश्वविद्यालय)"), which costs some of that, not all.
+- **Cut on word** is the R9 snap law (within 100 ms of a word edge, none inside a word). No quick tier clip has hand
+  word times: every truth's times are whisper-1's, no better than the hearing they would check (B1: whisper-1 stretched
+  "and" from 22.78 to 23.52 s across the pause the edit trims). So the gate is against the EDL's own word edges, and
+  the figure against the truth's machine times is printed beside it (0%, 50%, 18.2%). That second figure is the open
+  question, not a pass: it needs hand word times on B1 and B2.
+- **Silence holes: failing on B2 and B4** (2 each): stretches under -35 dB longer than 0.4 s inside one shot, where
+  Whisper's word times run across a real pause, so the builder sees no gap to trim. Next: trim from the audio's own
+  pauses as well as the word gaps.
+- Loudness is -14 LUFS plus or minus 0.1 on all three; true peak at or under -1.8 dBTP. Every EDL is byte equal when
+  built twice (deterministic). B2 found no face (the second speaker turns), so its captions are judged without one.
+
+Fixed on the way (both made B2 and B4 skip or mis-hear in the first runs):
+
+1. Speech pieces shared one file name per process: the locked and the unlocked hearing pass (and two clips in one
+   process) cut pieces at once, so one ffmpeg truncated a piece another request was uploading, and the speech API
+   answered 400 "Invalid file format". Each run now names its own pieces.
+2. Unlocked Whisper starts a Hindi speaker in Devanagari and drifts into Urdu script piece by piece (B4: 172 Devanagari
+   letters, 296 Arabic, reported "hindi"), so the Hindi relock refused it and the edit captioned an English
+   translation (1% words right). Hindi now counts both scripts (and needs some Devanagari), and the clip is heard
+   again locked to Hindi: 100% Devanagari, 88% agreement with the accurate transcript.

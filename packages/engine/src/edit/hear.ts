@@ -210,6 +210,25 @@ export interface Heard { words: Word[]; /** the locked language */ lang: string;
 const ff = (args: string[]) => new Promise<void>((res, rej) => execFile(config.ffmpeg, ['-nostdin', '-v', 'error', '-y', ...args], { timeout: 60_000, killSignal: 'SIGKILL' }, e => e ? rej(e) : res()));
 
 /** Hear a clip: language-locked timed words in pieces, the accurate text laid on, the gate. `audio` is any audio or video file. */
+/**
+ * Re-lock from the default English to what an unlocked pass heard, or null to keep English. Only when the unlocked
+ * pass names a language other than English that is not written in Arabic script (R3: an Indian-accented English take
+ * was misread as Urdu; an Urdu speaker names the language in the brief or MOOVI_STT_LANG), most of its letters are in
+ * that language's script, and it heard at least a third as many words as the English pass (a translation runs longer). Pure, unit tested.
+ */
+export function relock(reported: string, heard: Word[], english: Word[]): string | null {
+  const code = langCode(reported, heard);
+  if (!code || code === 'en' || code === 'ur' || code === 'ar' || !SCRIPT[code]) return null;
+  const letters = [...heard.map(w => w.word).join('')].filter(c => /\p{L}/u.test(c));
+  // Hindi and Urdu are one spoken language: unlocked Whisper starts a Hindi speaker in Devanagari and drifts into Urdu
+  // script piece by piece (R9's B4: 172 Devanagari, 296 Arabic letters, reported "hindi"), so for Hindi both count
+  const own = code === 'hi' ? (c: string) => SCRIPT.hi!.test(c) || /\p{Script=Arabic}/u.test(c) : (c: string) => SCRIPT[code]!.test(c);
+  if (!letters.length || letters.filter(own).length / letters.length < 0.6) return null;
+  if (code === 'hi' && !letters.some(c => SCRIPT.hi!.test(c))) return null;
+  return heard.length >= 0.35 * english.length ? code : null;
+}
+
+let pieceRun = 0;
 export async function hear(audio: string, dir: string, o: HearOpts = {}): Promise<Heard> {
   const timings: Record<string, number> = {}; let tl = Date.now();
   const lap = (k: string) => { timings[k] = +((Date.now() - tl) / 1000).toFixed(3); tl = Date.now(); };
@@ -224,11 +243,13 @@ export async function hear(audio: string, dir: string, o: HearOpts = {}): Promis
   lap('prepare');
   const files: string[] = [mp3];
   try {
-    const timedRun = async (l: string | undefined) => {
+    const timedRun = async (l: string | undefined, pr: string = prompt) => {
       const parts = await Promise.all(cuts.map(async ([a, b], k) => {
-        const f = cuts.length === 1 ? mp3 : join(dir, `hear-piece-${process.pid}-${k}.mp3`);
+        // a name per run: the locked and the unlocked pass (and other clips in one process) cut pieces at once, and a
+        // shared name let one ffmpeg truncate a piece another upload was reading (R9 bench: 400 "Invalid file format")
+        const f = cuts.length === 1 ? mp3 : join(dir, `hear-piece-${process.pid}-${++pieceRun}-${k}.mp3`);
         if (f !== mp3) { await ff(['-ss', a.toFixed(3), '-t', (b - a).toFixed(3), '-i', mp3, '-c:a', 'libmp3lame', '-b:a', '64k', f]); files.push(f); }
-        const r = await whisper(f, tk, { ...(l ? { lang: l } : {}), prompt, timed: true, ...(o.signal ? { signal: o.signal } : {}) });
+        const r = await whisper(f, tk, { ...(l ? { lang: l } : {}), prompt: pr, timed: true, ...(o.signal ? { signal: o.signal } : {}) });
         // the piece's own text carries the punctuation its timed words lack (Groq's Whisper words have none): laid on
         // per piece, so sentence ends survive even when no accurate-text model is available
         const ws = r.text && /[.!?,]/.test(r.text) ? align(r.words, r.text) : r.words;
@@ -238,11 +259,27 @@ export async function hear(audio: string, dir: string, o: HearOpts = {}): Promis
     };
     const tx = textKey();
     const textRun = tx ? Promise.all([prompt, ''].filter((p, i, a) => a.indexOf(p) === i).map(p => whisper(mp3, { provider: 'openai', key: tx }, { lang, prompt: p, timed: false, model: process.env.MOOVI_TEXT_MODEL ?? 'gpt-4o-transcribe', ...(o.signal ? { signal: o.signal } : {}) }).then(r => r.text).catch(() => ''))) : Promise.resolve([] as string[]);
-    const [locked, texts] = await Promise.all([timedRun(lang), textRun]);
+    // no language named (no brief script, no MOOVI_STT_LANG): the English lock translates a Hindi speaker into fluent
+    // English that passes every gate (R9's B4), so an unlocked pass runs beside it and may re-lock (relock below); it
+    // gets no vocabulary prompt (the English names pulled a Hindi piece into a few garbled words)
+    let probeErr: string | null = null;
+    const byDefault = !o.lang && !process.env.MOOVI_STT_LANG?.trim() && lang === 'en';
+    const [locked, texts, probe] = await Promise.all([timedRun(lang), textRun, byDefault ? timedRun(undefined, '').catch(err => { probeErr = String((err as Error)?.message ?? err).slice(0, 200); return null; }) : Promise.resolve(null)]);
     lap('timed+text');
     const pickFor = (ws: Word[]) => pickText(texts.filter(Boolean), ws);
     let words = locked.words, text = pickFor(words), detected = locked.language, by = `${tk.provider} ${MODEL[tk.provider]}, locked to ${lang}, ${cuts.length} piece${cuts.length > 1 ? 's' : ''}`;
-    let g = gate(words, voiced, lang, text);
+    if (byDefault && !probe) by += `, the unlocked pass failed (${probeErr})`;
+    let g = gate(words, voiced, lang, text), relocked: string | null = null;
+    const re = probe ? relock(probe.language, probe.words, words) : null;
+    if (probe && re) {
+      // heard in its own language: the accurate text again in that language (the English one was a translation)
+      const t2 = tx ? await whisper(mp3, { provider: 'openai', key: tx }, { lang: re, timed: false, model: process.env.MOOVI_TEXT_MODEL ?? 'gpt-4o-transcribe', ...(o.signal ? { signal: o.signal } : {}) }).then(r => r.text).catch(() => '') : '';
+      // the timed words again, locked to that language: the unlocked pass may drift script between pieces
+      const again = await timedRun(re, '').catch(() => null), ws = again?.words.length ? again.words : probe.words;
+      words = ws; text = t2 ? pickText([t2], ws) : null; g = gate(words, voiced, re, text); detected = probe.language; relocked = re;
+      by = `${tk.provider} ${MODEL[tk.provider]}, no language named, heard as ${re} (the English lock translated it), ${cuts.length} piece${cuts.length > 1 ? 's' : ''}`;
+      lap('relock');
+    }
     if (!g.ok) {
       // the lock may be wrong (a Hindi speaker with an English brief): one unlocked try, the better gate wins
       const free = await timedRun(undefined).catch(() => null);
@@ -258,7 +295,7 @@ export async function hear(audio: string, dir: string, o: HearOpts = {}): Promis
     if (o.fixes) words = fixWords(words, o.fixes);
     if (names.length) words = nameFix(words, names);
     lap('align');
-    const language = by.includes(', unlocked') ? langCode(detected, words) ?? lang : lang;
-    return { words, lang, language, detected, by, text, gate: g, pieces: cuts.length, prompt, timings };
+    const language = relocked ?? (by.includes(', unlocked') ? langCode(detected, words) ?? lang : lang);
+    return { words, lang: relocked ?? lang, language, detected, by, text, gate: g, pieces: cuts.length, prompt, timings };
   } finally { for (const f of files) rmSync(f, { force: true }); }
 }
