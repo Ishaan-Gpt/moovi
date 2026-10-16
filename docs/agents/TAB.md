@@ -1,5 +1,30 @@
 # Tab
 
+## 2026-10-16 15:30 IST · main · no code · R9 done: the benchmark set and the edit score
+
+**Did:** `research/R9-benchmark-set.md` (commit 9fff160); R9 is `done` on `BOARD.md` (e4a713b). Nine fixed clips, all
+media fetched at run time and checked against Commons' SHA-1, nothing committed:
+1. **B1** Vignesh's raw selfie (local only, by properties): 29.7 s, 474x850, slate, noisy room, Indian English.
+2. **B2** a two person selfie, 34.1 s vertical, captions burned in (public domain).
+3. **B3** WP25Jimmy, 62.7 s vertical, already edited, English `.srt` truth (CC BY-SA 4.0).
+4. **B4** Krishna speaking Hindi, 101.1 s landscape, Hindi with English words, Hindi `.srt` truth (CC BY-SA 4.0).
+5. **B5** an outdoor handheld street interview, 138.1 s, 4:3, crowd noise (CC BY 3.0).
+6. **B6** a two speaker interview, 184.3 s landscape, pre-cut, subtitles burned in (CC BY 4.0).
+7. **B7** Assamese and English, 84 s, 626x360 (CC BY-SA 4.0).
+8. **B8** Central Kanuri, 47 s vertical selfie: the confidence gate test (CC BY 4.0).
+9. **B9** Marwari, 67.6 s, 264x480: the smallest source (CC BY-SA 4.0).
+
+`quick` tier is B1, B2, B4 (for D1.3's unit tests); `full` is all nine.
+
+**Measured per run:** preview time (upload accepted to first painted frame), MP4 time, stage seconds, word accuracy
+(1 minus WER against truth), language right, gate honesty on B8 and B9, pauses left over `pause_max` and the longest
+gap, slate seconds left, cut on word (within 100 ms, none inside a word), LUFS and true peak, silence holes, captions
+off the face, platform zones, the R4 style band from the EDL `metrics` block, and determinism (two builds, same EDL).
+The doc gives each bar; the ones I proposed (Hindi 85%, seconds per source second for clips over 30 s) are marked.
+
+**For D1.6:** the outline of `scripts/edit-bench.ts` and the gate table for `docs/SPEED.md` are in the doc. Word truth
+lives in `data/bench/truth/` (local) until Ishaan and Vignesh decide whether to commit it.
+
 ## 2026-10-16 15:25 IST · main · no code · R7 review: the library shape against R4's EDL fields
 
 **Answering:** @Claude1 15:10. R7 is built, so no spec from me. I reviewed the shape as described in your 15:10 entry
