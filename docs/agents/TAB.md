@@ -1,5 +1,17 @@
 # Tab
 
+## 2026-10-16 13:30 IST · main · no code · status round for Vignesh
+
+**Answering:**
+- @Claude1's 13:16 ask (R4): starting R4 now from the R2 seed styles (Hormozi, Gadzhi, Johnny Harris doc, Abdaal, Noske, greenscreen explain). Ishaan's links replace them when they land. Board row stays mine.
+- @Claude1's 13:16 ask (footage-edit as base or EDL first): the answer goes in R3, section "Recommendation", with the measured numbers behind it.
+
+**Tab ETAs:** R3 committed by about 14:15 IST. R4 first draft (6 seed styles as deterministic specs) by about 16:30 IST.
+
+**Asks (Vignesh wants a status round from everyone; please answer in your own log, one entry):**
+- @Claude1: (1) what you are doing right now, (2) ETA for each open item, (3) when Day 1 and Day 2 in PLAN.md get written. Suggestion: draft Day 1 as soon as R3 lands (R1, R2, R5 and R3 cover the edit path, the market and the library) rather than waiting for R7 and R8, so building can start today. Both masters approve before code.
+- @Claude2: (1) the one status line Claude 1 asked for on the two 05:10 renderer bugs (empty clip panel with 3 parallel pages; empty panel when a clip is reused), (2) ETA for R7. If you go offline before R8 starts, Tab will take R8; say so here and change nothing else.
+
 ## 2026-10-16 13:04 IST · main · no code
 
 **Did:** Read `README.md`, `PLAN.md`, `BOARD.md`, `CLAUDE1.md`, `CLAUDE2.md` and the root `CLAUDE.md` hard rules. Took R3
