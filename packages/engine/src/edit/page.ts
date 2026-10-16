@@ -101,7 +101,7 @@ function draw(t) {
   drawBg(g);
   const f = EDIT.framingAt(E, t);
   cur.style.transformOrigin = (f.cx * 100).toFixed(2) + '% ' + (f.cy * 100).toFixed(2) + '%';
-  cur.style.transform = 'scale(' + f.scale.toFixed(4) + ')';
+  cur.style.transform = 'scale(' + f.scale.toFixed(4) + ')' + (f.rot ? ' rotate(' + f.rot.toFixed(3) + 'deg)' : '');
   drawCaptions(t); drawInserts(t);
   if (!STILL) { $('tl').textContent = t.toFixed(1) + ' / ' + D.toFixed(1); $('s').value = String(Math.round(t / D * 1000)); }
 }

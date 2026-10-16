@@ -1,11 +1,12 @@
 import type { Word } from '../audio/tts';
+import { shotCamera } from './camera';
 import type { EdlShot, EdlWord, Palette, PlayerEdl } from './lib';
 
 /**
  * A STAND-IN edit plan, so the preview player and the studio route run before D1.3 lands (Tab extracts the real EDL
  * builder from footage-edit; this file goes when it does). It applies only R4's shared laws, from word times alone:
  * pauses over `pauseMax` trimmed to `pauseKeep`, a new shot at each sentence and at least every `holdMax`, an
- * alternating punch-in, and key words by a crude rule (numbers, long words). No model call, no faces, no inserts.
+ * alternating punch-in (named camera-layer moves, camera.ts), and key words by a crude rule (numbers, long words). No model call, no faces, no inserts.
  */
 export type { Word };
 export interface RoughOpts { pauseMax?: number; pauseKeep?: number; holdMax?: number; punch?: number; captionStyle?: string; palette: Palette; output?: { w: number; h: number; fps: number } }
@@ -46,8 +47,8 @@ export function roughEdl(source: PlayerEdl['source'], words: Word[], o: RoughOpt
       const s0 = edges[i]!, s1 = edges[i + 1]!, parts = Math.max(1, Math.ceil((s1 - s0) / holdMax));
       for (let p = 0; p < parts; p++) {
         const src_in = s0 + (s1 - s0) * p / parts, src_out = s0 + (s1 - s0) * (p + 1) / parts, d = src_out - src_in;
-        const scale = n % 2 ? punch : 1, cy = 0.4;
-        shots.push({ t_in: +t.toFixed(4), t_out: +(t + d).toFixed(4), src_in: +src_in.toFixed(4), src_out: +src_out.toFixed(4), ...(fit ? { layout: 'fit', bg: { mode: 'blur' } } : { layout: 'full' }), framing: { scale, cx: 0.5, cy } });
+        const c = shotCamera({ t_in: t, t_out: t + d, base: { scale: 1, cx: 0.5, cy: 0.4 }, punch: n % 2 === 1, afterPunch: n % 2 === 0 && n > 0, first: n === 0, punchScale: punch, push: 1.04, words: [], lastPulse: -9, lastDive: -9, aspect: out.w / out.h });
+        shots.push({ t_in: +t.toFixed(4), t_out: +(t + d).toFixed(4), src_in: +src_in.toFixed(4), src_out: +src_out.toFixed(4), ...(fit ? { layout: 'fit', bg: { mode: 'blur' } } : { layout: 'full' }), framing: c.framing, ...(c.zoom ? { zoom: c.zoom } : {}), ...(c.camera ? { camera: c.camera } : {}) });
         t += d; n++;
       }
     }

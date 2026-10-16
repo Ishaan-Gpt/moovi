@@ -10,14 +10,17 @@ export type Role = 'ink' | 'paper' | 'accent' | 'accent2' | 'deep' | 'pop';
 export type Palette = Record<Role, string>;
 
 export interface EdlWord { src_t0: number; src_t1: number; text: string; role?: 'connector' | 'key' | 'number' | 'title'; line_id?: number }
-export interface EdlZoom { t: number; scale: number; cx: number; cy: number; ease?: 'out' | 'inout' | 'linear' | 'cut'; dur?: number }
+/** a framing key; `rot` = roll in degrees, clockwise (the camera layer's roll-left/right, roll-settle, shake) */
+export interface EdlZoom { t: number; scale: number; cx: number; cy: number; ease?: 'out' | 'inout' | 'linear' | 'cut'; dur?: number; rot?: number }
 export interface EdlShot {
   t_in: number; t_out: number; src_in: number; src_out: number;
   layout?: 'full' | 'fit' | 'split_top' | 'split_bottom' | 'card' | 'pip' | 'grid' | 'full_insert';
   /** 'blur': the same footage, blurred, fills the frame behind a 'fit' shot (a landscape clip in a vertical film) */
   bg?: { mode: 'original' | 'blur' | 'matte_fill' | 'matte_texture'; role?: Role; asset_ref?: string };
-  framing?: { scale: number; cx: number; cy: number };
+  framing?: { scale: number; cx: number; cy: number; rot?: number };
   zoom?: EdlZoom[];
+  /** the named camera move this shot plays (camera:<move id>, @moovi/library/camera); its keys are in `zoom` */
+  camera?: { asset_ref: string; t?: number; dur?: number; params?: Record<string, unknown>; rule_id?: string };
 }
 export interface EdlInsert { t0: number; t1: number; kind: string; frame: 'full' | 'top_half' | 'card_box' | 'beside_head'; label?: string; asset_ref?: string }
 export interface PlayerEdl {
@@ -91,14 +94,15 @@ export function editLib() {
     return null;
   }
 
-  /** The framing at output time t: the shot's base framing, then its zoom keys eased in (output-timed). */
-  function framingAt(e: PlayerEdl, t: number): { scale: number; cx: number; cy: number } {
+  /** The framing at output time t: the shot's base framing, then its zoom keys eased in (output-timed); rot = roll, degrees. */
+  function framingAt(e: PlayerEdl, t: number): { scale: number; cx: number; cy: number; rot: number } {
     const g = e.shots[shotAt(e, t)]!, base = g.framing ?? { scale: 1, cx: 0.5, cy: 0.42 };
-    let cur = { ...base };
+    let cur = { scale: base.scale, cx: base.cx, cy: base.cy, rot: base.rot ?? 0 };
     for (const z of g.zoom ?? []) {
       if (t < z.t) break;
       const d = z.ease === 'cut' ? 0 : (z.dur ?? 0.25), a = d ? (z.ease === 'inout' ? easeInOut : z.ease === 'linear' ? clamp : easeOut)((t - z.t) / d) : 1;
-      cur = { scale: cur.scale + (z.scale - cur.scale) * a, cx: cur.cx + (z.cx - cur.cx) * a, cy: cur.cy + (z.cy - cur.cy) * a };
+      const r = z.rot ?? cur.rot;
+      cur = { scale: cur.scale + (z.scale - cur.scale) * a, cx: cur.cx + (z.cx - cur.cx) * a, cy: cur.cy + (z.cy - cur.cy) * a, rot: cur.rot + (r - cur.rot) * a };
     }
     return cur;
   }

@@ -71,14 +71,14 @@ export function frameAt(calls: readonly CameraCall[], t: number, fps = 30, base:
 }
 
 /** The video editor's framing key (structurally `EdlZoom` in packages/engine/src/edit/lib.ts). */
-export interface EdlZoomKey { t: number; scale: number; cx: number; cy: number; ease?: 'out' | 'inout' | 'cut'; dur?: number }
+export interface EdlZoomKey { t: number; scale: number; cx: number; cy: number; ease?: 'out' | 'inout' | 'cut'; dur?: number; /** roll, degrees clockwise (only on keys of a rolled move) */ rot?: number }
 
 /**
  * A camera track as the editor's zoom keys on a shot: sampled `rate` times a second from output time `t0`, each key easing
  * in over one step, so any `edit`-scope move (punch, pulse, dive, Ken Burns, shake, pans as slides) plays in the editor's
  * player unchanged. `framing` is the shot's base framing (source fractions, the editor's default 1 / 0.5 / 0.42);
  * `source` is the source frame's width / height. Assumes scale 1 fits the source height to the output height, as the
- * editor's 9:16 crop does. Roll is not in EdlZoom: a rolled move keeps only its zoom.
+ * editor's 9:16 crop does. A rolled move (roll-left/right, roll-settle, shake) carries its roll as `rot` on every key.
  */
 export function toEdlZoom(calls: readonly CameraCall[], o: { t0?: number; framing?: { scale: number; cx: number; cy: number }; source?: number; rate?: number } = {}): EdlZoomKey[] {
   const t0 = o.t0 ?? 0, base = o.framing ?? { scale: 1, cx: 0.5, cy: 0.42 }, src = o.source ?? 9 / 16, rate = o.rate ?? 15;
@@ -88,10 +88,12 @@ export function toEdlZoom(calls: readonly CameraCall[], o: { t0?: number; framin
     const t = i * step, f = frame2d(cameraTrack(calls, t)), r = calls.length ? resolveCall(calls[Math.min(calls.length - 1, callIndexAt(calls, t))]!) : null;
     const scale = base.scale * (f.scale || 1);
     const cut = r?.ease === 'cut';
-    keys.push({ t: +(t0 + t).toFixed(4), scale: +scale.toFixed(4), cx: +(base.cx + (f.cx / base.scale) / src).toFixed(4), cy: +(base.cy + f.cy / base.scale).toFixed(4), ease: cut ? 'cut' : 'inout', dur: cut ? 0 : +step.toFixed(4) });
+    keys.push({ t: +(t0 + t).toFixed(4), scale: +scale.toFixed(4), cx: +(base.cx + (f.cx / base.scale) / src).toFixed(4), cy: +(base.cy + f.cy / base.scale).toFixed(4), ease: cut ? 'cut' : 'inout', dur: cut ? 0 : +step.toFixed(4), rot: +f.roll.toFixed(3) });
   }
+  // roll only on the keys of a rolled track (every other move keeps the plain zoom key)
+  if (keys.every(k => !k.rot)) for (const k of keys) delete k.rot;
   // drop keys that change nothing (a held punch is one key, not fifteen)
-  return keys.filter((k, i) => i === 0 || k.scale !== keys[i - 1]!.scale || k.cx !== keys[i - 1]!.cx || k.cy !== keys[i - 1]!.cy);
+  return keys.filter((k, i) => i === 0 || k.scale !== keys[i - 1]!.scale || k.cx !== keys[i - 1]!.cx || k.cy !== keys[i - 1]!.cy || k.rot !== keys[i - 1]!.rot);
 }
 
 function callIndexAt(calls: readonly CameraCall[], t: number): number {

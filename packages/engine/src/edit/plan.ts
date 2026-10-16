@@ -7,6 +7,7 @@ import { config } from '../config';
 import { ask } from '../runtime';
 import { buildEdl, sentences, type BuildInput, type Face, type Laws } from './build';
 import { envelope, pauses, type Word } from './cut';
+import { EDIT_CAMERA_MENU, EDIT_MOVE_IDS } from './camera';
 import { lookFaces } from './look';
 import { validateEdl, type Edl, type EdlBeat } from './edl';
 import type { Palette } from './lib';
@@ -14,7 +15,7 @@ import type { Palette } from './lib';
 /**
  * Plan an edit of one clip: the media work around the pure builder (build.ts). Probe, one 16 kHz mono read of the
  * voice, its loudness pauses, the words (given, or heard by `hear`), beat tags from ONE fast model call (optional; rule
- * tags otherwise), then `buildEdl` and `validateEdl`. Every stage is timed; nothing here renders or encodes.
+ * tags and rule camera moves otherwise; the same call picks a camera move per sentence from the camera layer's menu), then `buildEdl` and `validateEdl`. Every stage is timed; nothing here renders or encodes.
  */
 export interface PlanOpts {
   input: string; dir: string; palette: Palette;
@@ -23,7 +24,7 @@ export interface PlanOpts {
   /** face keys when known; else the look step finds them (unless `look` is false) */
   faces?: Face[];
   look?: boolean;
-  /** ask the model for beat tags (one call, fast tier, 12 s budget); false keeps the rule tags */
+  /** ask the model for beat tags and camera moves (one call, fast tier, 12 s budget); false keeps the rule tags and moves */
   tag?: boolean;
   style?: BuildInput['style']; laws?: Partial<Laws>; seed?: number; signal?: AbortSignal;
   /** the clip's own file name inside the edit folder (the player resolves `source.file` against the EDL's folder) */
@@ -35,19 +36,22 @@ const run = (args: string[]) => new Promise<void>((res, rej) => execFile(config.
 
 export const TAGS = ['hook', 'claim', 'number', 'list', 'story', 'quote', 'name', 'cta', 'aside'] as const satisfies readonly EdlBeat['tag'][];
 
-/** One model call: a tag per sentence (what a style may show for it). Null when no model answers in time. */
-export async function tagBeats(lines: string[], signal?: AbortSignal): Promise<Record<number, EdlBeat['tag']> | null> {
-  if (!lines.length) return {};
+/**
+ * One model call: a tag per sentence (what a style may show for it) and, optionally, a camera move for it from the
+ * camera layer's edit menu (camera.ts). Null when no model answers in time.
+ */
+export async function tagBeats(lines: string[], signal?: AbortSignal): Promise<{ tags: Record<number, EdlBeat['tag']>; camera: Record<number, string> } | null> {
+  if (!lines.length) return { tags: {}, camera: {} };
   try {
     const a = await ask({
       agent: 'edit:beats', tier: 'fast', maxTurns: 1, deadlineMs: 12_000, ...(signal ? { signal } : {}),
-      system: 'You tag each sentence of a person talking to camera with what it does in the video, so an editor knows what to show: hook (the opening that grabs), claim (a statement or promise), number (a figure, price, time or count matters), list (names several items), story (something that happened), quote (repeats someone), name (introduces a product, person or place), cta (asks the viewer to act), aside (a filler remark). One tag per sentence, by its index.',
+      system: 'You tag each sentence of a person talking to camera with what it does in the video, so an editor knows what to show: hook (the opening that grabs), claim (a statement or promise), number (a figure, price, time or count matters), list (names several items), story (something that happened), quote (repeats someone), name (introduces a product, person or place), cta (asks the viewer to act), aside (a filler remark). One tag per sentence, by its index. For a sentence that deserves a camera move, also name one move id from this menu (leave it out to let the editor choose; most sentences need none):\n' + EDIT_CAMERA_MENU,
       prompt: lines.map((l, i) => `${i}: ${l}`).join('\n'),
-      schema: { tags: z.array(z.object({ i: z.number().int(), tag: z.enum(TAGS) })) },
+      schema: { tags: z.array(z.object({ i: z.number().int(), tag: z.enum(TAGS), camera: z.enum(EDIT_MOVE_IDS as [string, ...string[]]).optional() })) },
     });
-    const out: Record<number, EdlBeat['tag']> = {};
-    for (const t of a.tags) if (t.i >= 0 && t.i < lines.length) out[t.i] = t.tag;
-    return out;
+    const tags: Record<number, EdlBeat['tag']> = {}, camera: Record<number, string> = {};
+    for (const t of a.tags) if (t.i >= 0 && t.i < lines.length) { tags[t.i] = t.tag; if (t.camera) camera[t.i] = t.camera; }
+    return { tags, camera };
   } catch { return null; }
 }
 
@@ -71,15 +75,16 @@ export async function planEdit(o: PlanOpts): Promise<Plan> {
   lap('hear');
   const look = await lookP;
   timings.look = look.seconds; tl = Date.now();
-  let tags: Record<number, EdlBeat['tag']> | undefined;
+  let tags: Record<number, EdlBeat['tag']> | undefined, camera: Record<number, string> | undefined;
   if (o.tag && words.length) {
     const ids = sentences(words), lines: string[] = [];
     words.forEach((w, k) => { lines[ids[k]!] = `${lines[ids[k]!] ?? ''} ${w.word}`.trim(); });
-    tags = (await tagBeats(lines, o.signal)) ?? undefined;
+    const r = await tagBeats(lines, o.signal);
+    if (r) { tags = r.tags; camera = r.camera; }
   }
   lap('tags');
   const source = { file: o.file ?? 'src.mp4', duration: pr.duration, w: pr.width ?? 1080, h: pr.height ?? 1920, fps: pr.fps ?? 30 };
-  const edl = buildEdl({ source, words, pauses: ps, palette: o.palette, ...(look.faces.length ? { faces: look.faces } : {}), ...(tags ? { tags } : {}), ...(o.style ? { style: o.style } : {}), ...(o.laws ? { laws: o.laws } : {}), ...(o.seed !== undefined ? { seed: o.seed } : {}) });
+  const edl = buildEdl({ source, words, pauses: ps, palette: o.palette, ...(look.faces.length ? { faces: look.faces } : {}), ...(tags ? { tags } : {}), ...(camera ? { camera } : {}), ...(o.style ? { style: o.style } : {}), ...(o.laws ? { laws: o.laws } : {}), ...(o.seed !== undefined ? { seed: o.seed } : {}) });
   const { problems } = validateEdl(edl);
   lap('build');
   timings.total = +((Date.now() - t0) / 1000).toFixed(3);

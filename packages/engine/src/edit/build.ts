@@ -2,6 +2,7 @@ import { EDL_VERSION, metricsOf, type Edl, type EdlBeat, type EdlCut, type EdlRe
 import { bare, CUES, FILLERS, OPENERS, keywordsOf, takeWindow, type Word } from './cut';
 import { EDIT, type EdlShot, type EdlWord, type Palette } from './lib';
 import { pickLook, type CaptionLook } from './looks';
+import { shotCamera } from './camera';
 
 /**
  * D1.3: the EDL builder, extracted from footage-edit (router/footage-edit.ts). Pure: the same words, pauses, faces,
@@ -13,7 +14,8 @@ import { pickLook, type CaptionLook } from './looks';
  *  3. snap: no cut lands inside a kept word, and every cut sits within `snap_ms` of a word edge;
  *  4. shots: a new framing at each jump cut, each new sentence, and before `hold_max`; framings alternate full and a
  *     punch-in centred on the face (`faces[]` from the look step goes into the EDL, so the player crops on it), with a
- *     slow push inside long shots; a landscape clip is shown whole over a blurred fill, alternating with the face
+ *     camera move from the camera layer on top (camera.ts: a pulse on a number or key word, a drift on a long hold, a
+ *     dive-in on a detail word, a roll-settle to open, or the move a model picked for the sentence); a landscape clip is shown whole over a blurred fill, alternating with the face
  *     close-up when a face is known;
  *  5. words with roles (key words, numbers, names), sentence ids, and beat tags (given by the one model call, else
  *     by rule); `removed[]`, `cuts[]` and `metrics` with the rule behind every decision.
@@ -30,6 +32,8 @@ export interface BuildInput {
   /** loudness pauses in source seconds (cut.ts `pauses`), relative to the clip's own noise floor; may be empty */
   pauses?: [number, number][];
   faces?: Face[];
+  /** camera moves from the one model call (EDIT_MOVE_IDS ids), by sentence index; missing sentences get the rule's move */
+  camera?: Record<number, string>;
   /** beat tags from the one model call, by sentence index; missing sentences are tagged by rule */
   tags?: Record<number, EdlBeat['tag']>;
   /** caption: a player caption style id; look: a captionseasy look number or id (else the style's own) */
@@ -158,6 +162,8 @@ export function buildEdl(i: BuildInput): Edl {
   let t = 0, n = 0;
   const faces = [...(i.faces ?? [])].sort((a, b) => a.src_t - b.src_t);
   const wide = src.w / src.h > 1.6 * (out.w / out.h);
+  const keys = new Set(keywordsOf(keptWords)), roleOf = (w: Word) => { const b = bare(w.word); return /\d/.test(b) ? 'number' : keys.has(b) ? 'key' : 'connector'; };
+  let lastPulse = -9, lastDive = -9, prevPunch = false; const picked = new Set<number>();
   const faceAt = (s: number) => faces.length ? faces.reduce((b, f) => Math.abs(f.src_t - s) < Math.abs(b.src_t - s) ? f : b) : undefined;
   pieces.forEach((p, pk) => {
     const inWords = keptWords.filter(w => w.t >= p.a - 0.01 && w.end <= p.b + 0.01);
@@ -183,7 +189,7 @@ export function buildEdl(i: BuildInput): Edl {
     for (let k = 0; k + 1 < cutsIn.length; k++) {
       const a = cutsIn[k]!, b = cutsIn[k + 1]!, d = b - a;
       const punch = n % 2 === 1, face = faceAt((a + b) / 2), f = faceCentre(face, src, out);
-      const shot: EdlShot & { rule_id?: string } = { t_in: r4(t), t_out: r4(t + d), src_in: r4(a), src_out: r4(b) };
+      const shot: EdlShot & { rule_id?: string; camera?: Edl['shots'][number]['camera'] } = { t_in: r4(t), t_out: r4(t + d), src_in: r4(a), src_out: r4(b) };
       let scale: number, cx = r4(f.cx), cy = r4(f.cy);
       if (wide && !(punch && face)) {
         // a landscape clip in a vertical film: shown whole over its own blurred fill (2cf18a6); with a face, every
@@ -194,8 +200,19 @@ export function buildEdl(i: BuildInput): Edl {
         shot.layout = 'full';
         scale = punch && !wide ? L.punch : 1;
       }
-      shot.framing = { scale, cx, cy };
-      if (d >= 1.6) (shot as { zoom?: unknown }).zoom = [{ t: r4(t), scale: r4(scale * L.push), cx, cy, ease: 'inout', dur: r4(d), rule_id: 'law.slow_push' }];
+      // the camera: the punch (or its release) and one motion move, all named camera-layer moves (camera.ts)
+      const sw = inWords.filter(w => w.t >= a - 0.01 && w.t < b);
+      const sid = sw.length ? sentOf.get(sw[0]!) : undefined, opens = sw.length > 0 && (k > 0 ? edges[k - 1]!.trig === 'sentence' : true);
+      const pick = sid !== undefined && opens && !picked.has(sid) ? i.camera?.[sid] : undefined;
+      if (pick && sid !== undefined) picked.add(sid);
+      const c = shotCamera({ t_in: t, t_out: t + d, base: { scale: 1, cx, cy }, punch: scale !== 1, afterPunch: prevPunch, first: shots.length === 0, punchScale: L.punch, push: L.push,
+        words: sw.map(w => ({ t: t + (w.t - a), text: w.word, role: roleOf(w) })), lastPulse, lastDive, aspect: out.w / out.h, ...(pick ? { pick } : {}) });
+      shot.framing = c.framing;
+      if (c.zoom) shot.zoom = c.zoom;
+      if (c.camera) shot.camera = c.camera;
+      if (c.pulsed !== undefined) lastPulse = c.pulsed;
+      if (c.dived !== undefined) lastDive = c.dived;
+      prevPunch = c.punched;
       const trig: EdlCut['trigger'] | null = k > 0 ? edges[k - 1]!.trig : pk > 0 ? (removed.find(r => Math.abs(r.src_out - a) < 1e-3)?.reason === 'filler' ? 'filler' : 'pause') : null;
       shot.rule_id = trig === null ? 'law.take_start' : trig === 'sentence' ? 'law.sentence_new_framing' : trig === 'hold_max' ? 'law.hold_max' : trig === 'filler' ? 'law.filler' : 'law.pause_trim';
       if (trig) cuts.push({ t: r4(t), type: k > 0 ? 'punch' : 'jump', trigger: trig, rule_id: shot.rule_id });
@@ -206,7 +223,6 @@ export function buildEdl(i: BuildInput): Edl {
   if (!shots.length) shots.push({ t_in: 0, t_out: r4(dur), src_in: 0, src_out: r4(dur), ...(wide ? { layout: 'fit' as const, bg: { mode: 'blur' as const } } : { layout: 'full' as const }), framing: { scale: 1, cx: 0.5, cy: 0.42 } });
 
   // 5. words, roles, beats
-  const keys = new Set(keywordsOf(keptWords));
   const words: (EdlWord & { conf?: number })[] = ws.map((w, k) => {
     const b = bare(w.word);
     const role: EdlWord['role'] = /\d/.test(b) ? 'number' : keys.has(b) ? (/^[A-Z]/.test(w.word) && k > 0 && !isStop(ws[k - 1]!.word) ? 'title' : 'key') : 'connector';

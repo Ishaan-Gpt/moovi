@@ -53,7 +53,7 @@ export const Word = z.object({
   speaker: z.number().int().optional(), conf: z.number().min(0).max(1).optional(),
 });
 
-export const Zoom = z.object({ t: sec, scale: z.number().positive(), cx: frac, cy: frac, ease: ease.optional(), dur: sec.optional(), rule_id: ruleId.optional() });
+export const Zoom = z.object({ t: sec, scale: z.number().positive(), cx: frac, cy: frac, ease: ease.optional(), dur: sec.optional(), rot: z.number().optional().describe('roll, degrees clockwise (a rolled camera move)'), rule_id: ruleId.optional() });
 
 export const Shot = z.object({
   t_in: sec, t_out: sec, src_in: sec, src_out: sec,

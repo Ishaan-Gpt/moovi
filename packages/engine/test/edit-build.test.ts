@@ -8,6 +8,7 @@ import { smoothFaces } from '../src/edit/look';
 import { lookMap, pickLook, playerStyleFor, STYLE_LOOKS } from '../src/edit/looks';
 import { CAPTION_STYLES } from '../src/edit/captions';
 import { faceCentre } from '../src/edit/build';
+import { EDIT_CAMERA_MENU, EDIT_MOVE_IDS, shotCamera, type ShotCameraIn } from '../src/edit/camera';
 
 const W = (word: string, t: number, end: number) => ({ word, t, end });
 const palette = { ink: '#000', paper: '#fff', accent: '#f00', accent2: '#0f0', deep: '#000', pop: '#fff' };
@@ -47,10 +48,23 @@ test('edit builder: pauses keep a breath, no gap over pause_max, cuts on word ed
   assert.ok(Math.abs(f.src_in - 5.79) < 1e-6 && Math.abs(f.src_out - 7.31) < 1e-6, JSON.stringify(f));
 });
 
-test('edit builder: framings alternate full and punch-in, long shots get a slow push, every cut is named', () => {
+test('edit builder: framings alternate full and punch-in, every shot names its camera move, every cut is named', () => {
   const e = build();
-  e.shots.forEach((s, i) => assert.equal(s.framing!.scale, i % 2 ? DEFAULT_LAWS.punch : 1));
-  assert.ok(e.shots.filter(s => s.t_out - s.t_in >= 1.6).every(s => s.zoom?.length === 1));
+  // the first shot opens on a roll-settle (1.1x, rolled, settling to the wide); after it, wide and punch-in alternate
+  assert.equal(e.shots[0]!.camera!.asset_ref, 'camera:roll-settle');
+  assert.ok(e.shots[0]!.framing!.rot! < 0 && e.shots[0]!.zoom!.at(-1)!.scale === 1 && e.shots[0]!.zoom!.at(-1)!.rot === 0);
+  e.shots.slice(1).forEach((s, i) => assert.equal(s.framing!.scale, i % 2 ? 1 : DEFAULT_LAWS.punch));
+  // every move is a camera-layer edit move, and its zoom keys carry its rule
+  const ids = new Set(EDIT_MOVE_IDS);
+  for (const s of e.shots) {
+    assert.ok(s.camera && ids.has(s.camera.asset_ref.replace(/^camera:/, '')), JSON.stringify(s.camera));
+    assert.ok((s.zoom ?? []).every(z => z.rule_id === s.camera!.rule_id && z.t >= s.t_in - 1e-6 && z.t <= s.t_out + 1e-6));
+  }
+  // long holds drift (to push x, the old slow push); a punched shot that ends names its release on the next one
+  for (const s of e.shots.slice(1).filter(s => s.t_out - s.t_in >= 1.6)) {
+    assert.equal(s.camera!.asset_ref, 'camera:drift');
+    assert.ok(Math.abs(s.zoom!.at(-1)!.scale / s.framing!.scale - DEFAULT_LAWS.push) < 0.002);
+  }
   assert.equal(e.cuts!.length, e.shots.length - 1);
   assert.ok(e.cuts!.some(c => c.type === 'jump' && c.trigger === 'filler'));
 });
@@ -157,4 +171,37 @@ test('captionseasy: the builder stores a validated look and the player draws its
   assert.ok(all.every(l => ids.has(l.player_style)));
   assert.equal(playerStyleFor({ layout: 'karaoke-pill', tags: ['Pill'], wordsPerCard: 3 }), 'kara-block');
   assert.equal(playerStyleFor({ layout: 'word', tags: ['One word'], wordsPerCard: 1 }), 'punch-slam');
+});
+
+test('edit camera: rules pick named moves (pulse on a number, dive on a detail word, punch release), a model pick wins', () => {
+  const base: ShotCameraIn = { t_in: 10, t_out: 11.4, base: { scale: 1, cx: 0.5, cy: 0.42 }, punch: false, afterPunch: false, first: false, punchScale: 1.12, push: 1.04, words: [], lastPulse: -9, lastDive: -9, aspect: 9 / 16 };
+  const num = shotCamera({ ...base, words: [{ t: 10.3, text: '40%', role: 'number' }] });
+  assert.equal(num.camera!.asset_ref, 'camera:pulse'); assert.equal(num.pulsed, 10.3);
+  assert.ok(num.zoom![0]!.t === 10.3 && Math.max(...num.zoom!.map(z => z.scale)) > 1.05 && num.zoom!.at(-1)!.scale === 1);
+  const dive = shotCamera({ ...base, words: [{ t: 10.2, text: 'Look', role: 'connector' }] });
+  assert.equal(dive.camera!.asset_ref, 'camera:dive-in');
+  assert.ok(dive.zoom!.at(-1)!.scale <= 1.4 && dive.zoom!.at(-1)!.scale > 1.3);
+  const rel = shotCamera({ ...base, afterPunch: true });
+  assert.equal(rel.camera!.asset_ref, 'camera:punch-out'); assert.equal(rel.zoom, undefined);
+  const punched = shotCamera({ ...base, punch: true });
+  assert.equal(punched.framing.scale, 1.12); assert.equal(punched.camera!.asset_ref, 'camera:punch-in');
+  // a model's pick replaces the rule's move; a zoom out is lifted so the cover crop never shows an edge
+  const out = shotCamera({ ...base, words: [{ t: 10.3, text: '40%', role: 'number' }], pick: 'slow-zoom-out' });
+  assert.equal(out.camera!.asset_ref, 'camera:slow-zoom-out'); assert.equal(out.camera!.rule_id, 'camera.model_pick');
+  assert.ok(out.zoom!.every(z => z.scale >= 1 - 1e-9) && out.framing.scale > 1);
+  // a rolled move keeps its roll in the keys
+  const roll = shotCamera({ ...base, pick: 'roll-right' });
+  assert.ok(roll.zoom!.at(-1)!.rot! > 7);
+  assert.equal(shotCamera({ ...base, pick: 'tracking' }).camera, undefined); // not an edit move: ignored
+  assert.ok(EDIT_CAMERA_MENU.includes('punch-in:') && !EDIT_CAMERA_MENU.includes('rack-focus'));
+});
+
+test('edit camera: the player draws the roll and eases the keys of a named move', () => {
+  const e = build(), s = e.shots[0]!;
+  const f0 = EDIT.framingAt(e, 0), f1 = EDIT.framingAt(e, s.t_out - 0.01);
+  assert.ok(f0.rot < -1 && Math.abs(f0.scale - 1.1) < 1e-6, JSON.stringify(f0));
+  assert.ok(Math.abs(f1.rot) < 0.01 && Math.abs(f1.scale - 1) < 0.01, JSON.stringify(f1));
+  const m = buildEdl({ source, words: take, pauses, palette, camera: { 1: 'roll-left' } });
+  assert.ok(m.shots.some(x => x.camera?.asset_ref === 'camera:roll-left' && x.camera.rule_id === 'camera.model_pick'));
+  assert.deepEqual(validateEdl(m).problems, []);
 });
