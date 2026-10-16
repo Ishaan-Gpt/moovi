@@ -32,9 +32,9 @@ export const CAPTION_STYLES: CaptionStyle[] = [
   { id: 'kin-type', family: 'kinetic', energy: 3, font: { family: 'JetBrains Mono', weight: 500, case: 'as-is', tracking: 0 }, size: 'M',
     chunk: { mode: 'phrase', maxChars: 22, breakOnPause: 0.5 }, look: { fill: 'paper', shadow: 'soft' },
     highlight: { rule: 'none', treat: 'colour' }, entry: 'typewriter', position: 'lower' },
-  // D2.2 Atlas (R4 style 1): tier-two with readable connectors (M) and a heavy condensed key word, 1 to 3 words a group
+  // D2.2 Atlas (R4 style 1): tier-two with readable connectors (M) and a heavy condensed key word, 2 to 4 words a group (a lone word joins its neighbour)
   { id: 'atlas-two', family: 'punch', energy: 4, font: { family: 'Inter', weight: 700, case: 'lower', tracking: -0.01 }, size: 'M',
-    chunk: { mode: '3w', maxChars: 22, breakOnPause: 0.45 }, look: { fill: 'paper', shadow: 'soft' },
+    chunk: { mode: '3w', maxChars: 22, breakOnPause: 0.45, minWords: 2, maxWords: 4, together: true }, look: { fill: 'paper', shadow: 'soft' },
     highlight: { rule: 'keyword', treat: 'colour', role: 'accent' }, entry: 'pop', position: 'chest',
     key: { family: 'Anton', weight: 400, case: 'upper', size: 'XL', role: 'accent', line: true } },
   // D2.2 Handmade (R4 style 3): a serif italic lowercase subtitle, bottom centre, a phrase at a time (R8 ed-serif)

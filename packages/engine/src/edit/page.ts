@@ -16,7 +16,7 @@ const E = await (await fetch('/v/edl.json', { cache: 'no-store' })).json();
 const TL = EDIT.timeline(E); if (TL.problems.length) throw new Error('EDL: ' + TL.problems.join('; '));
 const D = TL.duration, W = E.output.w, H = E.output.h, S = E.shots;
 const ST = CAPTION_STYLES.find(s => s.id === String(E.caption_style_id).replace(/^caption:/, '')) || CAPTION_STYLES[0];
-const CW = EDIT.chunk(EDIT.outWords(E), ST);
+const CW = EDIT.chunk(EDIT.captionWords(E), ST);
 // the captionseasy look's own props, when the player style was picked from that look (edit/looks.ts; EDIT.lookProps)
 const LK = E.caption_look && E.caption_look.player_style === String(E.caption_style_id).replace(/^caption:/, '') && Q.get('look') !== 'off' ? EDIT.lookProps(E.caption_look.style, W) : null;
 const $ = id => document.getElementById(id), stage = $('stage'), cap = $('cap'), ins = $('ins');

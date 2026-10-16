@@ -35,6 +35,8 @@ export interface PlayerEdl {
   sfx?: { t: number; asset_ref: string; event: string; gain_db?: number; file?: string }[];
   /** face boxes in SOURCE time, fractions of the source frame (the look step); the crop follows them */
   faces?: { src_t: number; x: number; y: number; w: number; h: number }[];
+  /** the D2.2 style layer's notes (edit/styles.ts); caption_hide: outWords indexes a card already shows (the caption drops them) */
+  style_laws?: { caption_hide?: number[] } & Record<string, unknown>;
 }
 
 /** R8's caption schema, the part the player draws (docs/agents/research/R8-captions.md). */
@@ -42,7 +44,9 @@ export interface CaptionStyle {
   id: string; family: string; energy: number;
   font: { family: string; weight: number; case: 'upper' | 'title' | 'as-is' | 'lower'; tracking: number; italic?: boolean };
   size: 'S' | 'M' | 'L' | 'XL' | 'XXL';
-  chunk: { mode: 'word' | '2w' | '3w' | 'phrase' | 'line'; maxChars: number; breakOnPause: number };
+  /** minWords/maxWords (D2.2 Atlas): a chunk shorter than minWords joins a neighbour (same sentence first, gap at most 1 s) while the
+   * pair stays inside maxWords words and maxChars + 8 characters, so no lone small word stands as a caption */
+  chunk: { mode: 'word' | '2w' | '3w' | 'phrase' | 'line'; maxChars: number; breakOnPause: number; minWords?: number; maxWords?: number; /** the chunk's words enter together (the key word still lights when spoken) */ together?: boolean };
   look: { fill: Role; stroke?: { px: number; role: Role }; shadow?: 'soft' | 'hard' | 'long' | '3d' | 'glow'; box?: 'pill' | 'block' | 'per-word' | 'underline' | 'chip' };
   highlight: { rule: 'current' | 'keyword' | 'number' | 'none'; treat: 'colour' | 'scale' | 'box' | 'underline' | 'weight'; role?: Role };
   entry: 'pop' | 'stamp' | 'slide-up' | 'fade' | 'blur-in' | 'typewriter' | 'kinetic' | 'none';
@@ -130,6 +134,25 @@ export function editLib() {
       cur.words.push(i); cur.t1 = w.t1; chars += w.text.length + 1;
       words.push({ ...w, chunk: chunks.length - 1 });
     });
+    // no lone short chunk: it joins its neighbour (same sentence first, then across a full stop), inside maxWords and maxChars + 8
+    const minW = st.chunk.minWords ?? 1;
+    if (minW > 1) {
+      const maxW = Math.max(minW, st.chunk.maxWords ?? Math.max(per === 99 ? 4 : per, minW)), maxCh = maxC + 8;
+      const len = (c: Chunk) => c.words.reduce((n, i) => n + ws[i]!.text.length + 1, 0);
+      const ends = (c: Chunk) => /[.!?]$/.test(ws[c.words[c.words.length - 1]!]!.text);
+      for (const across of [false, true]) {
+        for (let k = 0; k < chunks.length; k++) {
+          const c = chunks[k]!; if (c.words.length >= minW) continue;
+          const prev = chunks[k - 1], next = chunks[k + 1];
+          const gN = next ? next.t0 - c.t1 : 9, gP = prev ? c.t0 - prev.t1 : 9;
+          const okN = !!next && next.words.length + c.words.length <= maxW && len(next) + len(c) <= maxCh && gN <= 1 && (across || !ends(c));
+          const okP = !!prev && prev.words.length + c.words.length <= maxW && len(prev) + len(c) <= maxCh && gP <= 1 && (across || !ends(prev));
+          if (okN && (!okP || gN <= gP)) { next!.words = [...c.words, ...next!.words]; next!.t0 = c.t0; chunks.splice(k, 1); k--; }
+          else if (okP) { prev!.words.push(...c.words); prev!.t1 = c.t1; chunks.splice(k, 1); k--; }
+        }
+      }
+      chunks.forEach((c, j) => { for (const i of c.words) words[i]!.chunk = j; });
+    }
     // a chunk stays up until the next one starts when the gap is short (no flicker between chunks)
     for (let i = 0; i + 1 < chunks.length; i++) if (chunks[i + 1]!.t0 - chunks[i]!.t1 < 0.5) chunks[i]!.t1 = chunks[i + 1]!.t0;
     return { words, chunks };
@@ -141,7 +164,7 @@ export function editLib() {
     for (let i = 0; i < chunks.length; i++) { if (chunks[i]!.t0 - 0.04 <= t && t < chunks[i]!.t1 + 0.12) { k = i; } if (chunks[i]!.t0 > t) break; }
     if (k < 0) return null;
     const entryDur = st.entry === 'stamp' ? 0.14 : st.entry === 'pop' ? 0.2 : st.entry === 'kinetic' ? 0.24 : st.entry === 'none' ? 0 : 0.18;
-    const all = st.chunk.mode === 'line' || st.entry === 'none';
+    const all = st.chunk.mode === 'line' || st.entry === 'none' || !!st.chunk.together;
     const out = chunks[k]!.words.map(i => {
       const w = words[i]!, start = all ? chunks[k]!.t0 : w.t0;
       const isKey = w.role === 'key' || w.role === 'number' || w.role === 'title';
@@ -172,7 +195,17 @@ export function editLib() {
   /** Where the caption block's centre sits, as a fraction of frame height (face-safe uses the chest band until faces are in the EDL). */
   const POS = { upper: 0.2, center: 0.46, chest: 0.66, 'face-safe': 0.66, lower: 0.74 } as const;
   const posY = (p: CaptionStyle['position']) => POS[p] ?? 0.66;
-  const caseOf = (s: string, c: string) => c === 'upper' ? s.toUpperCase() : c === 'lower' ? s.toLowerCase() : c === 'title' ? s.replace(/\b\p{L}/gu, m => m.toUpperCase()) : s;
+  /** an acronym keeps its capitals in a lower or title cased caption ("AI", not "ai"): a known one, or one the transcript wrote in capitals */
+  const ACRONYMS = /^(ai|api|ui|ux|ceo|cto|cfo|gpu|cpu|usa|uk|eu|tv|pc|ios|sdk|llm|nba|nfl|ipl|url|faq|diy|nasa|ev|ipo|seo|pdf|vr)$/;
+  const isAcronym = (w: string) => { const b = w.replace(/[^\p{L}]/gu, ''); return b.length >= 2 && (ACRONYMS.test(b.toLowerCase()) || (b.length <= 5 && b === b.toUpperCase() && b !== b.toLowerCase())); };
+  const keepAcronyms = (s: string, f: (p: string) => string) => s.split(/(\s+)/).map(p => isAcronym(p) ? p.toUpperCase() : f(p)).join('');
+  const caseOf = (s: string, c: string) => c === 'upper' ? s.toUpperCase() : c === 'lower' ? keepAcronyms(s, p => p.toLowerCase()) : c === 'title' ? keepAcronyms(s, p => p.replace(/\b\p{L}/gu, m => m.toUpperCase())) : s;
+
+  /** The words the caption layer draws: the edit's words less those a style card already shows (style_laws.caption_hide). */
+  function captionWords(e: PlayerEdl): Omit<OutWord, 'chunk'>[] {
+    const hide = new Set(e.style_laws?.caption_hide ?? []);
+    return outWords(e).filter((_, i) => !hide.has(i));
+  }
 
   /** The face centre at source second `src` (linear between samples), or null when the EDL has no faces. */
   function faceAt(e: PlayerEdl, src: number): { x: number; y: number } | null {
@@ -288,7 +321,7 @@ export function editLib() {
       fill: s.fill && s.fill.type === 'solid' && s.fill.color ? String(s.fill.color) : null, hi, stroke: st, shadow: Array.isArray(s.shadows) && s.shadows.length > 0, y };
   }
 
-  return { lookProps, transitionAt, faceAt, faceBoxAt, faceOutAt, capYAt, cropAt, clamp, easeOut, easeInOut, back, timeline, shotAt, srcAt, outOf, framingAt, outWords, chunk, captionAt, entryOf, sizePx, posY, caseOf };
+  return { lookProps, transitionAt, faceAt, faceBoxAt, faceOutAt, capYAt, cropAt, clamp, easeOut, easeInOut, back, timeline, shotAt, srcAt, outOf, framingAt, outWords, captionWords, chunk, captionAt, entryOf, sizePx, posY, caseOf, isAcronym };
 }
 
 export const EDIT = editLib();

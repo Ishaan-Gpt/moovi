@@ -101,3 +101,76 @@ test('D2.2 the player draws the style layer in both the preview and the MP4 over
   assert.match(PAGE, /drawStyle\(t\); await/);
   assert.match(PAGE, /'\|' \+ y : ''/);
 });
+
+test('D2.2 Atlas: a number card and the caption never say the same number twice', () => {
+  const e = styledEdl(input, 'atlas', { name: '@vignesh' });
+  const ow = EDIT.outWords(e), hide = (e as { style_laws?: { caption_hide?: number[] } }).style_laws?.caption_hide ?? [];
+  const num = e.inserts!.find(i => /^\d+\|/.test(i.label!))!;
+  assert.ok(num, JSON.stringify(e.inserts!.map(i => i.label)));
+  const [n, unit] = num.label!.split('|');
+  const cw = EDIT.captionWords(e);
+  // the number and its unit are gone from the caption layer; every other word is still there, in order
+  assert.ok(hide.length >= 2);
+  assert.ok(!cw.some(w => Math.abs(w.t0 - num.t0) < 2 && (w.text.replace(/[^\p{L}\p{N}]/gu, '') === n || w.text.toLowerCase().replace(/[^\p{L}]/gu, '') === unit)));
+  assert.equal(cw.length, ow.length - hide.length);
+  // and the player draws from those words
+  assert.match(PAGE, /EDIT\.chunk\(EDIT\.captionWords\(E\), ST\)/);
+});
+
+test('D2.2 Atlas captions: 2 to 4 words a chunk, no lone small word', () => {
+  const st = CAPTION_STYLES.find(s => s.id === 'atlas-two')!;
+  const e = styledEdl(input, 'atlas');
+  const { chunks, words } = EDIT.chunk(EDIT.captionWords(e), st);
+  const lone = chunks.filter(c => c.words.length < 2);
+  // a lone word survives only where it cannot join anyone (a gap over 1 s on both sides)
+  for (const c of lone) {
+    const k = chunks.indexOf(c), p = chunks[k - 1], n = chunks[k + 1];
+    assert.ok((!p || c.t0 - p.t1 > 1 || p.words.length >= 4) && (!n || n.t0 - c.t1 > 1 || n.words.length >= 4), JSON.stringify(c.words.map(i => words[i]!.text)));
+  }
+  assert.ok(chunks.every(c => c.words.length <= 4));
+  assert.ok(chunks.length > 0 && lone.length <= 1, `${lone.length} lone chunks`);
+  // the words keep their chunk numbers after a merge
+  chunks.forEach((c, j) => c.words.forEach(i => assert.equal(words[i]!.chunk, j)));
+});
+
+test('D2.2 lone-word merge: "thank" joins "you so much", a full stop is respected first', () => {
+  const st = { ...CAPTION_STYLES.find(s => s.id === 'atlas-two')!, chunk: { mode: '3w' as const, maxChars: 22, breakOnPause: 0.45, minWords: 2, maxWords: 4 } };
+  const mk = (xs: [string, number][]) => xs.map(([text, t0]) => ({ text, t0, t1: t0 + 0.25, role: 'connector' }));
+  // "it works." then a 0.6 s pause breaks "thank" off as its own chunk under the plain 3w rule
+  const ws = mk([['it', 0], ['really', 0.3], ['works.', 0.6], ['thank', 1.5], ['you', 2.3], ['so', 2.6], ['much.', 2.9]]);
+  const plain = EDIT.chunk(ws, { ...st, chunk: { mode: '3w', maxChars: 22, breakOnPause: 0.45 } });
+  assert.ok(plain.chunks.some(c => c.words.length === 1));
+  const { chunks } = EDIT.chunk(ws, st);
+  assert.deepEqual(chunks.map(c => c.words), [[0, 1, 2], [3, 4, 5, 6]]);
+  assert.ok(chunks.every(c => c.words.length >= 2 && c.words.length <= 4));
+  // without minWords nothing changes (other styles keep their chunking)
+  assert.deepEqual(EDIT.chunk(ws, { ...st, chunk: { mode: '3w', maxChars: 22, breakOnPause: 0.45 } }).chunks.map(c => c.words), plain.chunks.map(c => c.words));
+});
+
+test('captions keep acronyms in capitals: "AI" in a lowercase caption, not "ai"', () => {
+  assert.equal(EDIT.caseOf('AI', 'lower'), 'AI');
+  assert.equal(EDIT.caseOf('ai', 'lower'), 'AI');
+  assert.equal(EDIT.caseOf('ai,', 'lower'), 'AI,');
+  assert.equal(EDIT.caseOf('Thank', 'lower'), 'thank');
+  assert.equal(EDIT.caseOf('I', 'lower'), 'i');
+  assert.equal(EDIT.caseOf('the api docs', 'title'), 'The API Docs');
+  assert.equal(EDIT.caseOf('ai', 'upper'), 'AI');
+  assert.equal(EDIT.caseOf('ai', 'as-is'), 'ai');
+  assert.ok(!EDIT.isAcronym('hello') && EDIT.isAcronym('GPU') && EDIT.isAcronym('nasa'));
+});
+
+test('D2.2 Atlas captions enter as a whole chunk (no lone first word on screen); the key word lights when spoken', () => {
+  const st = CAPTION_STYLES.find(s => s.id === 'atlas-two')!;
+  assert.equal(st.chunk.together, true);
+  const ws = [{ text: 'which', t0: 0, t1: 0.2, role: 'connector' }, { text: 'is', t0: 0.25, t1: 0.4, role: 'connector' }, { text: 'Moovi.', t0: 0.45, t1: 0.9, role: 'key' }];
+  const { words, chunks } = EDIT.chunk(ws, st);
+  assert.equal(chunks.length, 1);
+  const at = EDIT.captionAt(words, chunks, st, 0.05)!;
+  assert.ok(at.words.every(w => w.on), 'all three words are up at the chunk start');
+  assert.ok(!at.words[2]!.hot, 'the key word is not lit before it is said');
+  assert.ok(EDIT.captionAt(words, chunks, st, 0.5)!.words[2]!.hot);
+  // a style without the flag still reveals word by word
+  const pw = CAPTION_STYLES.find(s => s.id === 'punch-duo')!;
+  const c2 = EDIT.chunk(ws.slice(0, 2), pw);
+  assert.ok(!EDIT.captionAt(c2.words, c2.chunks, pw, 0.05)!.words[1]!.on);
+});

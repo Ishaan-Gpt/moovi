@@ -131,6 +131,7 @@ export function applyStyle(e: Edl, id: D22Style, o: StyleOpts = {}): Edl {
   const inserts: NonNullable<Edl['inserts']> = [], overlays: NonNullable<Edl['overlays']> = [], sfx: NonNullable<Edl['sfx']> = [];
   const beats = out.beats ?? [];
   const keyish = ow.filter(w => w.role === 'title' || w.role === 'number' || w.role === 'key');
+  const hide: number[] = [];
   if (id === 'atlas') {
     let last = -9;
     for (const w of keyish) {
@@ -139,6 +140,8 @@ export function applyStyle(e: Edl, id: D22Style, o: StyleOpts = {}): Edl {
       const nx = ow[w.i + 1] ?? ow.find(x => x.i > w.i), unit = w.role === 'number' && nx && /^\p{L}{3,}$/u.test(bare(nx.text)) ? `|${nx.text.replace(/[.,!?;:]+$/, '').toLowerCase()}` : '';
       inserts.push({ t0: r4(w.t0), t1: r4(Math.min(dur - 0.05, w.t0 + 1.8)), kind: 'card', frame: 'beside_head', label: w.text.replace(/[.,!?;:]+$/, '') + unit, side: (inserts.length % 2 ? 'right' : 'left'), enter: 'slide', rule_id: rule('card_on_named_thing') });
       last = w.t0;
+      // the card says the number (and its unit) once: the caption drops those words while it is up ("5 minutes" never twice)
+      if (w.role === 'number') { hide.push(w.i); if (unit && nx) hide.push(nx.i); }
     }
     const hook = beats.find(b => b.tag === 'hook');
     if (hook) overlays.push({ t0: r4(hook.t0), t1: r4(Math.min(hook.t1, hook.t0 + 3)), kind: 'sunburst', rule_id: rule('sunburst_on_hook') });
@@ -186,7 +189,7 @@ export function applyStyle(e: Edl, id: D22Style, o: StyleOpts = {}): Edl {
   out.inserts = inserts.sort((a, b) => a.t0 - b.t0);
   out.overlays = overlays.sort((a, b) => a.t0 - b.t0);
   out.sfx = sfx.sort((a, b) => a.t - b.t);
-  (out as { style_laws?: unknown }).style_laws = { id, grade: grade ?? null, about: s.about };
+  (out as { style_laws?: unknown }).style_laws = { id, grade: grade ?? null, about: s.about, ...(hide.length ? { caption_hide: hide } : {}) };
   out.metrics = metricsOf(out, out.laws?.snap_ms ?? 100);
   return out;
 }
