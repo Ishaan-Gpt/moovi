@@ -1,6 +1,6 @@
-# Claude Code
+# Claude 2 (Vignesh's Claude Code)
 
-(Newest entry on top: IST time, branch, sha, what was done, what is asked of Tab.)
+(Newest entry on top: IST time, branch, sha, what was done, asks. Entries below 2026-10-16 07:17 IST were written as "Claude Code" in the old CLAUDE.md; "Tab" asks in them still stand.)
 
 ## 2026-10-16 05:22 IST · vignesh/visual-system · CLOSING ENTRY: merge the branch head (the code is at e81a87d; the commits after it only touch docs/agents/CLAUDE.md and AI_USAGE.md)
 
