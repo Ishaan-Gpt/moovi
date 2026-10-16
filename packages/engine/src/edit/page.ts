@@ -121,7 +121,10 @@ function styleInsert(x, t) {
   }
   if (SID === 'handmade') {
     const s = (0.6 + 0.4 * EDIT.easeOut((t - x.t0) / 0.16)).toFixed(3), r = (jitter(Math.floor(t * 12), 3) * 3).toFixed(2);
-    return '<div class="h-card" style="opacity:' + o + ';transform:translate(-50%,-50%) scale(' + s + ') rotate(' + r + 'deg)"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i><b>' + L + '</b></div>';
+    // kept off the face: the card's centre goes to the first of its places (40%, 24%, 56%, 18% of the height) that clears the face in this shot
+    const fo = EDIT.faceOutAt(E, t), half = 0.085, clear = y => !fo || y + half < fo.y0 - 0.01 || y - half > fo.y1 + 0.01;
+    const cy = [0.40, 0.24, 0.56, 0.18].find(clear) ?? 0.40;
+    return '<div class="h-card" style="top:' + (cy * 100).toFixed(1) + '%;opacity:' + o + ';transform:translate(-50%,-50%) scale(' + s + ') rotate(' + r + 'deg)"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i><b>' + L + '</b></div>';
   }
   const s = (0.7 + 0.3 * EDIT.easeOut((t - x.t0) / 0.2)).toFixed(3), fl = 0.85 + 0.15 * (Math.floor(t * 20) % 3 === 0 ? 0 : 1);
   return '<div class="m-num" style="opacity:' + (Math.min(p, q) * fl).toFixed(2) + ';transform:translate(-50%,-50%) scale(' + s + ')"><b>' + L + '</b></div>';

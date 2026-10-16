@@ -174,3 +174,42 @@ test('D2.2 Atlas captions enter as a whole chunk (no lone first word on screen);
   const c2 = EDIT.chunk(ws.slice(0, 2), pw);
   assert.ok(!EDIT.captionAt(c2.words, c2.chunks, pw, 0.05)!.words[1]!.on);
 });
+
+test('D2.2 Handmade: a number term card carries its unit and the caption drops what the card shows', () => {
+  const e = styledEdl(input, 'handmade');
+  const hide = (e as { style_laws?: { caption_hide?: number[] } }).style_laws?.caption_hide ?? [];
+  const ow = EDIT.outWords(e);
+  const num = e.inserts!.find(i => /^\d/.test(i.label!));
+  if (num) assert.match(num.label!, /^\d+ [a-z]+$/);
+  // every card's words are hidden from the caption layer, and only those
+  const shown = new Set(e.inserts!.flatMap(i => i.label!.split(' ')));
+  assert.ok(hide.length >= e.inserts!.length);
+  for (const k of hide) assert.ok(shown.has(ow[k]!.text.toLowerCase().replace(/[.,!?;:]+$/, '')), ow[k]!.text);
+  assert.equal(EDIT.captionWords(e).length, ow.length - hide.length);
+});
+
+test('D2.2 Handmade: the comment word is the named thing the take is about, not a number or a filler', () => {
+  const e = styledEdl(input, 'handmade');
+  assert.equal(e.end?.kind, 'cta_comment');
+  assert.ok(!/^\d/.test(e.end!.line!) && e.end!.line!.length > 3);
+  assert.equal(e.end!.line, e.end!.line!.toUpperCase());
+});
+
+test('D2.2 Handmade captions: ed-serif at L with an outline, no lone word; the term card moves off the face', () => {
+  const st = CAPTION_STYLES.find(s => s.id === 'ed-serif')!;
+  assert.equal(st.size, 'XL'); assert.ok(st.look.stroke && st.chunk.minWords === 2 && st.chunk.together);
+  const e = styledEdl(input, 'handmade');
+  const { chunks } = EDIT.chunk(EDIT.captionWords(e), st);
+  assert.ok(chunks.filter(c => c.words.length < 2).length <= 1);
+  assert.match(PAGE, /EDIT\.faceOutAt\(E, t\), half = 0\.085/);
+});
+
+test('D2.2 Handmade: the comment word skips the speaker introducing themselves and a two-word name', () => {
+  const words: { word: string; t: number; end: number }[] = []; let t = 0.4;
+  for (const w of 'Hello guys this is Ishaan and we built Moovi. It cuts like After Effects in minutes and Moovi is free.'.split(' ')) { words.push({ word: w, t: +t.toFixed(3), end: +(t + 0.3).toFixed(3) }); t += 0.38; }
+  const src = { ...source, duration: +(t + 0.5).toFixed(3) };
+  const e = styledEdl({ ...input, source: src, words, tags: {} }, 'handmade');
+  const ow = EDIT.outWords(e), titles = ow.filter(w => w.role === 'title').map(w => w.text);
+  assert.ok(titles.includes('Ishaan') && titles.includes('Effects'), JSON.stringify(titles));
+  assert.equal(e.end!.line, 'MOOVI', JSON.stringify(titles));
+});

@@ -150,7 +150,11 @@ export function applyStyle(e: Edl, id: D22Style, o: StyleOpts = {}): Edl {
     for (const w of keyish) {
       const b = bare(w.text); if (!b || seen.has(b)) continue; seen.add(b);
       if (w.t0 < 0.8 || w.t0 - last < 4 || w.t0 + 1.4 > dur - 0.3) continue;
-      inserts.push({ t0: r4(w.t0), t1: r4(w.t0 + 1.4), kind: 'card', frame: 'card_box', label: w.text.replace(/[.,!?;:]+$/, '').toLowerCase(), enter: 'pop', rule_id: rule('term_card') });
+      // a number card carries the word it counts ("5 minutes"); the caption drops what the card shows while it is up
+      const nx = ow[w.i + 1] ?? ow.find(x => x.i > w.i), unit = w.role === 'number' && nx && /^\p{L}{3,}$/u.test(bare(nx.text)) ? nx : null;
+      const label = (w.text.replace(/[.,!?;:]+$/, '') + (unit ? ' ' + unit.text.replace(/[.,!?;:]+$/, '') : '')).toLowerCase();
+      inserts.push({ t0: r4(w.t0), t1: r4(w.t0 + 1.4), kind: 'card', frame: 'card_box', label, enter: 'pop', rule_id: rule('term_card') });
+      hide.push(w.i); if (unit) hide.push(unit.i);
       last = w.t0;
     }
     let lastD = -9;
@@ -173,8 +177,15 @@ export function applyStyle(e: Edl, id: D22Style, o: StyleOpts = {}): Edl {
   // the end card: the last 1.6 s, over the speaker's last words
   const endAt = r4(Math.max(0, dur - 1.6));
   if (s.end === 'cta_comment') {
-    const key = keyish.map(w => bare(w.text)).filter(x => x.length > 3);
-    const word = key.length ? key.reduce((a, b) => key.filter(x => x === b).length > key.filter(x => x === a).length ? b : a) : 'yes';
+    // the comment word: a named thing first (the product the take is about), then the most said key word; a tie goes to
+    // the later one (a take names its speaker first and its subject after: "this is Ishaan ... which is Moovi")
+    // not the speaker's own name ("this is Ishaan", "I'm ...") and not half of a two-word name ("After Effects")
+    const intro = (w: typeof ow[number]) => /^(this|i'?m|am|name|name's|called)$/.test(bare(ow[w.i - 1]?.text ?? '')) || (bare(ow[w.i - 1]?.text ?? '') === 'is' && /^(this|name|it)$/.test(bare(ow[w.i - 2]?.text ?? '')));
+    const pair = (w: typeof ow[number]) => [ow[w.i - 1], ow[w.i + 1]].some(x => x && x.role === 'title' && !/[.,!?;:]$/.test((x.i < w.i ? x : w).text));
+    const pool = (r: string[]) => keyish.filter(w => r.includes(w.role) && !(w.role === 'title' && (intro(w) || pair(w)))).map(w => bare(w.text)).filter(x => x.length > 3 && !/^\d/.test(x));
+    const key = pool(['title']).length ? pool(['title']) : pool(['key', 'number']);
+    const cnt = (x: string) => key.filter(y => y === x).length;
+    const word = key.length ? key.reduce((a, b) => cnt(b) >= cnt(a) ? b : a) : 'yes';
     out.end = { kind: 'cta_comment', t0: endAt, title: 'comment', line: word.toUpperCase(), rule_id: rule('end_comment_word') };
   } else if (o.name) out.end = { kind: s.end, t0: endAt, title: o.name, rule_id: rule(`end_${s.end}`) };
   else delete out.end;
