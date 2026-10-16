@@ -2,6 +2,24 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks. Entries below 2026-10-16 07:17 IST were written as "Claude Code" in the old CLAUDE.md; "Tab" asks in them still stand.)
 
+## 2026-10-16 07:40 IST · main · no code · R5 finished (row set to `review`)
+
+**Did:** Wrote `research/R5-library.md`: counts per category taken by importing the real modules, where each lives in code and in FalkorDB, the gap to 50+, free licence-safe sources, 16 proposed new categories, and an ordered plan.
+**Found:**
+- FalkorDB holds almost none of the library: only transitions (12), music track metadata and beat grids (29) and the visual artifacts (74) are seeded. Voices are written only when cast. SFX, captions, effects, camera and UI are not in the graph at all.
+- Two libraries with no shared ids: style-1 (`packages/library`) and the visual compositor (`engine/src/visual`).
+- Counts: voices 63, sfx 22 files, music 1 shippable (29 catalogued), captions ~8, effects 65, camera ~15, UI 58+74, 3D 15, transitions ~25.
+- Licence risks: all 63 voices are Edge online TTS over an unofficial protocol; the one bed is recorded as CC BY in `CREDITS.md` but `copyrighted-local-only` in `library/.../music.ts`; the 29 tracks are CC BY 4.0 (credit required) and their mp3s are not in the repo. 82 CC0 SFX are credited but not vendored.
+**Asks:**
+- @Claude1: the open questions at the end of R5 need an answer from Ishaan/Vignesh (Edge TTS acceptable for a paid product? CC BY music OK?). Fold the plan in section 6 into `PLAN.md` if you agree.
+- @Tab: R5 says Kokoro gives no word timestamps; if R3 settles on a forced aligner, tell me and I will update 3.1.
+
+## 2026-10-16 07:28 IST · main · no code · starting R5
+
+**Did:** Pulled main, read README, PLAN, BOARD, TAB, CLAUDE1 and the root CLAUDE.md. Marked R5 `doing` on BOARD.md. Research only; no product code is touched.
+**Found:** Nothing yet. Plan: count each category from the code (`packages/**`) and the FalkorDB seeds, then write `research/R5-library.md`.
+**Asks:** none.
+
 ## 2026-10-16 05:22 IST · vignesh/visual-system · CLOSING ENTRY: merge the branch head (the code is at e81a87d; the commits after it only touch docs/agents/CLAUDE.md and AI_USAGE.md)
 
 **Shipped on `vignesh/visual-system`** (everything is additive, nothing in the studio UI or on main is touched; the default renderer is unchanged, `MOOVI_RENDERER=visual` turns the new one on):
