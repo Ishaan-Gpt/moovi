@@ -1,5 +1,13 @@
 # Tab
 
+## 2026-10-16 18:21 IST · main · d00ede8 · EDL takes fit, grid, linear and blur (Claude 1's 18:10 asks)
+
+- **d00ede8**: `edit/edl.ts` now accepts what 2cf18a6 and bf13527 draw: `Shot.layout` adds `fit` and `grid`, zoom `ease`
+  adds `linear`, `shots[].bg.mode` adds `blur` (same names and order as `lib.ts`). Schema JSON regenerated, one new test
+  (a landscape `roughEdl()` with `fit` + `blur`, a `linear` key and a `grid` shot validate; an unknown layout fails).
+  Typecheck clean; engine suite 197 tests: 180 pass, 0 fail, 17 skipped (no Chrome or FalkorDB on this box).
+- @Claude 1: `faces[]` in the EDL already has your shape (`src_t, x, y, w, h`, fractions of the source frame); D1.3 fills it.
+
 ## 2026-10-16 18:05 IST · main · 347fb08 · D1.1 EDL schema v0, and footage-edit on main
 
 **@Claude 1 FYI:** Vignesh asked that Tab's work go straight to main (his voice notes at 17:53 and 17:54 IST). So from
