@@ -1,6 +1,8 @@
 // The two worlds: the warm room (speaker stand-in, 5 parallax planes) and the crimson poster (paper, keys, props).
 // Everything is drawn in code; textures are generated once from seeded noise so frames are deterministic.
 'use strict';
+/** the speaker's room and clothes, set per kit before buildTextures() (R2 olive room by default) */
+let ROOM = { wall: ['#262816', '#34361d', '#13130b'], light: 'rgba(170,220,60,', torso: ['#3a2c22', '#56432f', '#6e5640'], collar: '#33261d', arms: ['#3a2c22', '#56432f'] };
 
 /* ───────────── speech: mouth and hands follow the word timings, not the audio analyser (pure function of t) ───────────── */
 let WORDS = [];
@@ -39,7 +41,7 @@ function buildTextures() {
   TEX.crimson = c;
   // the room's back wall, once (a soft warm plaster with a lamp pool)
   const r = makeCanvas(1080, 1920), q = r.getContext('2d');
-  const wall = q.createLinearGradient(0, 0, 0, 1920); wall.addColorStop(0, '#262816'); wall.addColorStop(0.5, '#34361d'); wall.addColorStop(1, '#13130b');
+  const wall = q.createLinearGradient(0, 0, 0, 1920); wall.addColorStop(0, ROOM.wall[0]); wall.addColorStop(0.5, ROOM.wall[1]); wall.addColorStop(1, ROOM.wall[2]);
   q.fillStyle = wall; q.fillRect(0, 0, 1080, 1920);
   const rd = q.getImageData(0, 0, 1080, 1920), rp = rd.data;
   for (let i = 0, n = 0; i < rp.length; i += 4, n++) { const v = (rand(n + 77) - 0.5) * 9; rp[i] += v; rp[i + 1] += v; rp[i + 2] += v; }
@@ -61,7 +63,7 @@ function room(t, cam) {
     const lamp = ctx.createRadialGradient(860, 420, 10, 860, 420, 820 * br);
     lamp.addColorStop(0, 'rgba(255,196,130,0.34)'); lamp.addColorStop(0.4, 'rgba(255,160,90,0.12)'); lamp.addColorStop(1, 'rgba(255,160,90,0)');
     ctx.fillStyle = lamp; ctx.fillRect(-200, -300, 1500, 1700);
-    const gl = ctx.createRadialGradient(140, 300, 10, 140, 300, 900); gl.addColorStop(0, 'rgba(170,220,60,0.30)'); gl.addColorStop(1, 'rgba(170,220,60,0)'); ctx.fillStyle = gl; ctx.fillRect(-200, -300, 1500, 1700);
+    const gl = ctx.createRadialGradient(140, 300, 10, 140, 300, 900); gl.addColorStop(0, ROOM.light + '0.30)'); gl.addColorStop(1, ROOM.light + '0)'); ctx.fillStyle = gl; ctx.fillRect(-200, -300, 1500, 1700);
     // a dark framed print on the wall (stand-in for the reference's wall piece)
     ctx.fillStyle = 'rgba(10,6,4,0.55)'; ctx.fillRect(330, 560, 420, 120);
   });
@@ -139,7 +141,7 @@ function figure(t, cam) {
   plane(cam, 1, () => {
     // torso: olive knit, lit from the lamp side (right), rim light on the shoulders
     const tx = 540 + sway * 0.6;
-    const tg = ctx.createLinearGradient(tx - 330, 0, tx + 330, 0); tg.addColorStop(0, '#3a2c22'); tg.addColorStop(0.65, '#56432f'); tg.addColorStop(1, '#6e5640');
+    const tg = ctx.createLinearGradient(tx - 330, 0, tx + 330, 0); tg.addColorStop(0, ROOM.torso[0]); tg.addColorStop(0.65, ROOM.torso[1]); tg.addColorStop(1, ROOM.torso[2]);
     ctx.fillStyle = tg; ctx.beginPath();
     ctx.moveTo(tx - 420, 1920); ctx.lineTo(tx - 400, 1300); ctx.bezierCurveTo(tx - 380, 1080, tx - 220, 1000, tx, 995); ctx.bezierCurveTo(tx + 220, 1000, tx + 380, 1080, tx + 400, 1300); ctx.lineTo(tx + 420, 1920); ctx.closePath(); ctx.fill();
     // knit texture: faint vertical ribs
@@ -148,7 +150,7 @@ function figure(t, cam) {
     ctx.restore();
     ctx.strokeStyle = 'rgba(255,200,140,0.32)'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(tx + 160, 1008); ctx.bezierCurveTo(tx + 300, 1040, tx + 390, 1130, tx + 400, 1300); ctx.stroke();
     // polo collar + pin
-    ctx.fillStyle = '#33261d'; ctx.beginPath(); ctx.moveTo(tx - 110, 1000); ctx.lineTo(tx - 20, 1110); ctx.lineTo(tx, 1090); ctx.lineTo(tx + 20, 1110); ctx.lineTo(tx + 110, 1000); ctx.lineTo(tx + 60, 992); ctx.lineTo(tx, 1060); ctx.lineTo(tx - 60, 992); ctx.fill();
+    ctx.fillStyle = ROOM.collar; ctx.beginPath(); ctx.moveTo(tx - 110, 1000); ctx.lineTo(tx - 20, 1110); ctx.lineTo(tx, 1090); ctx.lineTo(tx + 20, 1110); ctx.lineTo(tx + 110, 1000); ctx.lineTo(tx + 60, 992); ctx.lineTo(tx, 1060); ctx.lineTo(tx - 60, 992); ctx.fill();
     ctx.fillStyle = '#d9d4c8'; ctx.beginPath(); ctx.arc(tx + 40, 1180, 9, 0, 7); ctx.fill();
     // neck + head (head centre ~y 760 so the big words can sit behind it)
     const hx = 540 + sway, hy = 760 + nod;
@@ -188,7 +190,7 @@ function figure(t, cam) {
       const gx = 540 + side * (210 + noise(t * 0.9, side + 10) * 90 * (0.3 + en)) + sway * 0.5;
       const gy = 1480 - (0.25 + en * 0.75) * (120 + noise(t * 1.1, side + 20) * 110) - Math.max(0, noise(t * 1.7, side + 30)) * 80 * en;
       const ex = 540 + side * 330, ey = 1760;
-      ctx.strokeStyle = side < 0 ? '#3a2c22' : '#56432f'; ctx.lineWidth = 120; ctx.lineCap = 'round';
+      ctx.strokeStyle = side < 0 ? ROOM.arms[0] : ROOM.arms[1]; ctx.lineWidth = 120; ctx.lineCap = 'round';
       ctx.beginPath(); ctx.moveTo(ex, 1960); ctx.quadraticCurveTo(ex + side * 30, ey, gx, gy + 60); ctx.stroke();
       const hg = ctx.createRadialGradient(gx + 20, gy - 20, 10, gx, gy, 110); hg.addColorStop(0, '#b47c56'); hg.addColorStop(1, '#6f452e');
       const rot = side * 0.5 + noise(t * 0.8, side + 40) * 0.5, spread = 0.12 + en * 0.25;
