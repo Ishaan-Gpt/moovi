@@ -18,6 +18,7 @@ function speaker(t, blur = 0) {
   speakerScene(t, cam, [0, 0, W, H], null); if (blur) ctx.restore();
 }
 function plant(t) {
+  if (footage(t, 'plant', 0, 0, W, H, { at: 6.67, zoom: 1.04 + 0.02 * prog(t, 6.67, 4.4), grade: 'brightness(0.62) saturate(0.85) contrast(1.08)' })) return;
   const g = ctx.createLinearGradient(0, 0, 1080, 1920); g.addColorStop(0, '#5d5a4e'); g.addColorStop(1, '#2a2722'); ctx.fillStyle = g; ctx.fillRect(0, 0, 1080, 1920);
   ctx.save(); ctx.translate(noise(t * 0.3, 5) * 12, 0);
   for (let i = 0; i < 16; i++) { ctx.save(); ctx.translate(300 + rand(i) * 500, 200 + rand(i + 3) * 700); ctx.rotate(rand(i + 5) * 3); const lg = ctx.createLinearGradient(0, -240, 0, 240); lg.addColorStop(0, '#0d1a0e'); lg.addColorStop(1, '#2c3b22'); ctx.fillStyle = lg; ctx.beginPath(); ctx.ellipse(0, 0, 60, 260, 0, 0, 7); ctx.fill(); ctx.restore(); }
@@ -102,7 +103,9 @@ function caption(t, y) {
 const NOCAP = [[0, 4.13], [6.67, 11.05], [27.36, 28.65], [55.6, 57.0], [80.71, 86.88], [104.06, 999], [36.24, 41.6]];
 
 function segAt(t) { return SEG.find(s => t >= s.t0 && t < s.t1) ?? SEG[SEG.length - 1]; }
+let TNOW = 0;
 function frame(t) {
+  TNOW = t;
   ctx = main; ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.filter = 'none'; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
   const s = segAt(t); ctx.save(); s.d(t, s); ctx.restore();
   // cut in on motion: the first 0.12 s of a table shot settles a 3% push
@@ -115,7 +118,7 @@ let AC = null, SK = null, NATIVE = 0, ADDED = 0; const fired = new Set();
 async function ensureAudio() { if (AC) return; AC = new AudioContext(); const src = AC.createMediaElementSource(audio); src.connect(AC.destination); SK = await sfxKit(AC, { base: '/packages/engine/assets/sfx/' }); await SK.analyse('../voice.mp3'); CUES.forEach(([a]) => { if (SK.nativeHas(a)) NATIVE++; }); console.log(`sfx: ${CUES.length} cues; the reference already has a hit at ${NATIVE}; the library adds the rest`); }
 let playing = false;
 const playBtn = document.getElementById('play'), seek = document.getElementById('seek'), tEl = document.getElementById('t'), cmp = document.getElementById('cmp');
-playBtn.onclick = async () => { await ensureAudio(); await AC.resume(); if (playing) { audio.pause(); vid.pause(); } else { await audio.play(); if (cmp.checked) { vid.currentTime = audio.currentTime; vid.play(); } } playing = !playing; playBtn.textContent = playing ? 'Pause' : 'Play'; };
+playBtn.onclick = async () => { await ensureAudio(); await AC.resume(); if (playing) { audio.pause(); vid.pause(); } else { await audio.play(); if (cmp.checked) { vid.currentTime = audio.currentTime; vid.play(); } } playing = !playing; FOOT_LIVE = playing; playBtn.textContent = playing ? 'Pause' : 'Play'; };
 seek.oninput = () => { audio.currentTime = +seek.value; vid.currentTime = +seek.value; fired.clear(); CUES.forEach(([a], i) => { if (a < +seek.value) fired.add(i); }); };
 cmp.onchange = () => { document.body.classList.toggle('cmp', cmp.checked); vid.currentTime = audio.currentTime; if (playing && cmp.checked) vid.play(); };
 audio.onended = () => { playing = false; playBtn.textContent = 'Play'; };
@@ -128,6 +131,7 @@ window.renderAt = t => frame(t);
   WORDS.forEach(w => { if (!(w.end > w.t)) w.end = w.t + 0.2; });
   // R4's room: a bright apartment, a mustard tee
   ROOM = { monitor: false, wall: ['#d8d2c8', '#c4bdb2', '#8a8378'], light: 'rgba(255,248,235,', torso: ['#b8892a', '#d4a63a', '#e8bf5a'], collar: '#a07420', arms: ['#b8892a', '#d4a63a'] };
+  await loadFootage('../footage/'); // real b-roll (scripts/ref-footage.ts) where the reference cuts to footage
   buildTextures(); buildTextures2(); buildTextures4(); buildEdit();
   const q = new URLSearchParams(location.search); if (q.has('t')) audio.currentTime = +q.get('t');
   loop();

@@ -70,7 +70,9 @@ Brand and character: `docs/BRAND.md`, `docs/CHARACTER.md`.
 - **References → kits.** Each Instagram reel Ishaan sends is cloned as a live canvas preview with the `ishaan-motion`
   skill, broken into parts (`(:Reference)-[:HAS_PART]->(:Asset)`), and saved as a re-skinnable kit in
   `packages/library/src/kits/`. So far: R1 crimson-poster, R2 level-ladder, R3 golden-hand, R4 red-table, all on
-  the shared engine `kits/motion`. Intake for a new reel is one command, `scripts/ref-intake.ts <id> <url>`.
+  the shared engine `kits/motion`. Intake for a new reel is one command, `scripts/ref-intake.ts <id> <url>`. Where the
+  reference cuts to real footage, `scripts/ref-footage.ts <id> name="query"` fetches it through the footage finder (no
+  drawn stand-ins there; they read as paused video).
 - **Quality ratchet:** a new clone ships only when a blind subagent judge scores it strictly above the best previous
   film, with both scored in the same round. R3 scored 7.6. R4 scored 6.6 against R3's 6.4 in its round.
 - The camera layer (63 moves callable by keyword, `packages/library/src/camera`) is merged. Still in progress:

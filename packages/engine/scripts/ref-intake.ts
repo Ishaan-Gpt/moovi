@@ -39,3 +39,7 @@ const info = existsSync(join(dir, 'ref.info.json')) ? JSON.parse(readFileSync(jo
 console.log(JSON.stringify({ id, seconds: +seconds.toFixed(2), size: `${probe.streams[0]?.width}x${probe.streams[0]?.height}`, fps: probe.streams[0]?.r_frame_rate, cuts: cuts.length, perSecond: +(cuts.length / seconds).toFixed(2), words: words.length, by: info.uploader ?? null, sheets: Math.ceil(seconds / 24) }, null, 1));
 console.log(lines.join('\n'));
 
+console.log(`\nNext: read the sheets and mark every span that shows real footage (b-roll, a photo, a clip on a card or inside a
+device). Fetch each one before building, so nothing is a frozen stand-in:
+  pnpm --filter @moovi/engine exec tsx --env-file-if-exists=../../.env.local scripts/ref-footage.ts ${id} name="what it shows" …
+and draw it with footage(t, name, …) from kits/motion/footage.js.`);

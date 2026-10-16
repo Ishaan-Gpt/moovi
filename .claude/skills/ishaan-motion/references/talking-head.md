@@ -32,6 +32,13 @@ Write it as data: `{ t0, t1, k, p(panel), tr(entry transition), n, label }`.
 - Without real footage, a stand-in speaker needs 3–5 parallax planes (wall + one big practical-lamp bloom, shelves,
   chair, figure, desk edge) moving by depth with the camera. Mouth and hands follow the word stamps (pure function of t).
 
+## Footage spans: fetch, never freeze (learned 2026-10-16, reference R4)
+At intake, mark every span where the reference shows real footage: b-roll behind words, a photo or clip on a card, a
+video inside a tablet or phone, a plant or a hand. Fetch each one with `scripts/ref-footage.ts <id> name="query"`
+(Mixkit, Commons, Pixabay, Pexels, NASA, Archive; ranked, judged, a still push-in when nothing moves; every clip lands in
+the graph as an insert asset with its licence and credit). Draw it with `footage(t, name, x, y, w, h, {at, grade})`.
+Grade footage that sits under white words (about brightness 0.6). Drawn stand-ins in these spans made R4 look paused.
+
 ## Captions (the base layer)
 - Chunk the transcript: **≤ 3 words, ≤ 14 characters**, break on a pause > 0.28 s and after punctuation; a chunk
   lives until the next one starts, at most 1.6 s.

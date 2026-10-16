@@ -48,3 +48,7 @@
 - Reference R4 (red-table tutorial): the ratchet now requires **strictly above** the previous best sheet **in the same
   judge round**. Taste: never name a font family "Serif"; the tall condensed serif hero word with an eye for the dot;
   marker lettering inside measured widths; captions never touch a card; dense hardware cards.
+
+## 1.8.0 (2026-10-16)
+- Footage spans: fetch real b-roll and photos (Moovi's footage finder, scripts/ref-footage.ts) instead of drawing
+  stand-ins, which read as paused video (owner note on R4). Rule 0.1's unattended clause now fetches first.

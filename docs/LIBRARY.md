@@ -29,6 +29,7 @@ On 2026-10-16 the graph held **755 assets**: 263 insert, 138 ui, 109 effect, 76 
 | `pnpm --filter @moovi/engine library` | seeds the whole catalogue (`packages/engine/src/library/catalog.ts`) and prints counts; `--counts` only counts |
 | `pnpm --filter @moovi/engine reference ../../data/refs/<id>/parts.json` | adds a reference, its parts and its kit |
 | `pnpm --filter @moovi/engine exec tsx scripts/ref-intake.ts <id> <url>` | one-command intake of a new video reference into `data/refs/<id>/`: download, cuts, contact sheets, 2 fps frames, voice, Whisper word stamps, transcript (about 30 s) |
+| `pnpm --filter @moovi/engine exec tsx scripts/ref-footage.ts <id> name="query" …` | real footage for a clone: wherever the reference cuts to b-roll or a photo, the engine footage finder (Mixkit, Commons, Pixabay, Pexels, NASA, Archive) fetches a clip into `data/refs/<id>/footage/` with its licence and credit, and seeds it as an insert asset linked to the reference. A drawn stand-in there reads as a paused video |
 | `pnpm --filter @moovi/engine exec tsx scripts/camera-layer.ts <camera-moves.json>` | seeds the camera layer's moves (branch `ishaan/camera-layer`) |
 
 `scripts/reset.ts` re-seeds the library. **After a craft-graph reset, run `reference` again for each reference and
@@ -41,7 +42,7 @@ a palette, so it can be re-skinned to any brand. Kits carry no brand words.
 
 | Kit | Learned from | Look |
 |---|---|---|
-| `motion/` | shared engine | `core.js` (eases, springs, seeded noise, drift, shutter blur), `type.js` (word-by-word lines, slams), `sfx.js` (plays the engine sfx map, and only where the reference has no sound of its own) |
+| `motion/` | shared engine | `core.js` (eases, springs, seeded noise, drift, shutter blur), `type.js` (word-by-word lines, slams), `footage.js` (plays fetched clips, deterministic by t), `sfx.js` (plays the engine sfx map, and only where the reference has no sound of its own) |
 | `crimson-poster` | R1 | crimson paper posters, a hero ring, chapter cards that dive into the poster, metal keys and a hand |
 | `level-ladder` | R2 | `world.js`, the shared speaker world (palette-driven `ROOM`, `ROOM.monitor`), neon level orbs, white-grid boards, paper posters |
 | `golden-hand` | R3 | lit metal hook title (Cinzel), a stone hand holding a dial, Grenze Gotisch chapter heads, panels on a dark starry ground |
