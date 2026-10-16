@@ -64,40 +64,56 @@ through the same plan function the studio's edit job runs (`src/edit/job.ts` pla
 headless Chrome for the first painted frame and the caption and face boxes, renders the MP4 from the EDL (D1.8,
 `src/edit/render.ts`) and scores it (`src/edit/score.ts`). Style: base. 720x1280, 30 fps.
 
-Commit 743bbdd plus this change · box 4 CPU, 8 GB, no GPU (software GL) · shared (another engineer's clip-moment
-renders ran beside it) · 16/10/2026, 19:57 IST · tier quick
+Commit c4f7658 plus the silence-hole fix (this change) · box 4 CPU, 8 GB, no GPU (software GL) · shared (another
+engineer's clip-moment work and test suites ran beside it) · 16/10/2026, 21:15 IST · tier quick
 
 | Clip | Source s | Style | Preview s | MP4 s | Words right | Lang | Pauses left (max) | Cut on word | LUFS / TP | Captions off face | Band | Result |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| B1 | 29.69 | base | 4.75 | 17.17 | 57.75% (machine truth, not gated) | en ok | 0 (0.24 s) | 100% of 3; vs machine truth times 0% | -14.1 / -1.8 (mp4) | 100% | in | pass |
-| B2 | 34.08 | base | 3.78 | 34.33 | 90.7% (machine truth, not gated) | en ok | 0 (0.38 s) | 100% of 2; vs machine truth times 50% | -13.9 / -2.1 (mp4) | 100% (no faces found) | in | FAIL: 2 silence holes in the MP4 |
-| B4 | 101.1 | base | 26.92 | 54.27 | 72.4% | hi ok | 0 (0.36 s) | 100% of 11; vs machine truth times 18.2% | -13.9 / -2.1 (mp4) | 100% | in | FAIL: words 72.4%; 2 silence holes in the MP4 |
+| B1 | 29.69 | base | 18.64 | 19.23 | 57.75% (machine truth, not gated) | en ok | 0 (0.24 s) | 100% of 3; vs machine truth times 0% | -14 / -3 (mp4) | 100% | in | pass |
+| B2 | 34.08 | base | 6.91 | 31.21 | 89.15% (machine truth, not gated) | en ok | 0 (0.36 s) | 100% of 5; vs machine truth times 40% | -13.9 / -4.5 (mp4) | 99.3% | in | pass |
+| B4 | 101.1 | base | 29.58 | 67.51 | 72.92% | hi ok | 0 (0.18 s) | 100% of 20; vs machine truth times 20% | -13.9 / -2.2 (mp4) | 100% | in | FAIL: words 72.92% |
 
 Stages (s):
 
-- B1 stages (s): probe 0.12 · hear 3.61 · plan 0.18 · to plan 3.91 · deterministic true · slate kept 0 · truth: machine: gpt-4o-transcribe on whisper-1 word times, in pieces; checked by none (machine) · caption styles 11
-- B2 stages (s): probe 0.11 · hear 2.89 · plan 0.26 · to plan 3.27 · deterministic true · slate kept 0 · truth: machine: gpt-4o-transcribe on whisper-1 word times, in pieces; checked by none (machine) · caption styles 11
-- B4 stages (s): probe 0.13 · hear 24.51 · plan 0.29 · to plan 24.94 · deterministic true · slate kept 0 · truth: commons-timedtext-hi on whisper-1 word times, in pieces; checked by Commons subtitle authors (text); times machine · caption styles 11
+- B1 stages (s): probe 0.04 · hear 17.51 · plan 0.25 · to plan 17.81 · deterministic true · faces 19 · library graph 120 ms: 10 camera moves, 6 sfx (6 mixed), 1 transitions · slate kept 0 · truth: machine: gpt-4o-transcribe on whisper-1 word times, in pieces; checked by none (machine) · caption styles 12
+- B2 stages (s): probe 0.05 · hear 5.46 · plan 0.68 · to plan 6.2 · deterministic true · faces 27 · library graph 98 ms: 19 camera moves, 12 sfx (12 mixed), 9 transitions · slate kept 0 · truth: machine: gpt-4o-transcribe on whisper-1 word times, in pieces; checked by none (machine) · caption styles 12
+- B4 stages (s): probe 0.09 · hear 27.31 · plan 0.26 · to plan 27.68 · deterministic true · faces 28 · library graph 71 ms: 37 camera moves, 14 sfx (14 mixed), 0 transitions · slate kept 0 · truth: commons-timedtext-hi on whisper-1 word times, in pieces; checked by Commons subtitle authors (text); times machine · caption styles 12
+
+The 19:57 IST run before this fix, for comparison: silence holes B1 0, B2 2, B4 2; B2 found no face then (captions
+judged without one); preview 4.75 / 3.78 / 26.92 s; MP4 17.17 / 34.33 / 54.27 s.
 
 How to read it, honestly:
 
 - **Preview s** is upload accepted to the first painted frame of the edit preview (plan plus the player). B4 is a
-  101 s clip; its hearing takes 24.5 s because the default English lock translated the Hindi speaker and the clip is
+  101 s clip; its hearing takes 27.3 s in this run because the default English lock translated the Hindi speaker and the clip is
   heard a second time, locked to Hindi (below).
 - **MP4 s** is the D1.8 render, on a box shared with another render. Budget: 120 s for a 30 s clip.
 - **Words right** has no hand truth yet. B1 and B2 are scored against a machine transcript (gpt-4o-transcribe text on
   whisper-1 word times), so they are printed and not gated; B1's machine text is worse than the edit's own hearing
   (it heard "Ishaan" as "Vishal" and "Moovi" as "movies"), which is why B1 shows 57.75%. B4 is scored against the
-  Commons Hindi subtitles and gated: **72.4%, failing** the 80% line. The subtitles carry the speaker's English words
+  Commons Hindi subtitles and gated: **72.92%, failing** the 80% line. The subtitles carry the speaker's English words
   with Hindi glosses in brackets ("university (विश्वविद्यालय)"), which costs some of that, not all.
 - **Cut on word** is the R9 snap law (within 100 ms of a word edge, none inside a word). No quick tier clip has hand
   word times: every truth's times are whisper-1's, no better than the hearing they would check (B1: whisper-1 stretched
   "and" from 22.78 to 23.52 s across the pause the edit trims). So the gate is against the EDL's own word edges, and
-  the figure against the truth's machine times is printed beside it (0%, 50%, 18.2%). That second figure is the open
+  the figure against the truth's machine times is printed beside it (0%, 40%, 20%). That second figure is the open
   question, not a pass: it needs hand word times on B1 and B2.
-- **Silence holes: failing on B2 and B4** (2 each): stretches under -35 dB longer than 0.4 s inside one shot, where
-  Whisper's word times run across a real pause, so the builder sees no gap to trim. Next: trim from the audio's own
-  pauses as well as the word gaps.
+- **Silence holes: 0 on all three** (were 2 on B2 and 2 on B4). Whisper's word times ran across real pauses (B2: "visit"
+  22.05 to 22.44 s and "striking" 22.44 to 23.03 s over a pause heard from 22.24 to 22.76 s), so the builder saw no gap.
+  Now the source goes once through the film's own voice chain (`voice.ts quietPauses`, beside the hearing: 1.3 s on B1,
+  1.4 s on B2, 4.1 s on B4), every stretch whose sample peak at the loudness pass's gain stays under the R9 line
+  (-35 dB, 3 dB margin; a blip under 0.1 s between two quiet stretches is bridged) is a heard pause, word edges are
+  fitted to them (`build.ts fitWords`), and a heard pause over 0.32 s is cut to the usual breath of air
+  (`law.quiet_trim`). Cut on word stays 100% against the EDL's (fitted) word edges. The films got shorter: B2 32.6 s and B4
+  67.5 s, against 33.4 s and 70.7 s rebuilt from the same heard words without the fix.
+- **Captions off face: B2 99.3%** (one run earlier today it read 0%: once Node face detection found B2's low selfie
+  face, y 0.50 to 0.82 of the frame, the "face-safe" place was still a fixed chest band right on it). Captions now move
+  per shot just below or above the face when the style's place would cover it, out of the platform zones
+  (`lib.ts capYAt`); the player and the MP4 overlay share it.
+- **Words right: B4 still failing** at 72.92% (gate 80%), unchanged by this fix. B1's preview is 18.6 s this run
+  because its hearing took 17.5 s (the speech API was slow; 3.6 to 5 s in the runs before).
+- **Hand word times on B1 and B2: not made.** Every truth's times are still whisper-1's, so the "vs machine truth
+  times" figures (0%, 40%, 20%) remain the open question; a person has to mark them against the audio.
 - Loudness is -14 LUFS plus or minus 0.1 on all three; true peak at or under -1.8 dBTP. Every EDL is byte equal when
   built twice (deterministic). B2 found no face (the second speaker turns), so its captions are judged without one.
 

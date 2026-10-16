@@ -7,6 +7,7 @@ import { config } from '../config';
 import { ask } from '../runtime';
 import { buildEdl, sentences, type BuildInput, type Face, type Laws } from './build';
 import { envelope, pauses, type Word } from './cut';
+import { quietPauses } from './voice';
 import { lookFaces } from './look';
 import { validateEdl, type Edl, type EdlBeat } from './edl';
 import type { Palette } from './lib';
@@ -67,9 +68,10 @@ export async function planEdit(o: PlanOpts): Promise<Plan> {
   lap('loudness');
   // the look step runs beside the hearing (separate processes, no shared work); its own clock is `look`
   const lookP = o.faces || o.look === false ? Promise.resolve({ faces: o.faces ?? [], seconds: 0, why: o.faces ? 'given' : 'off' }) : lookFaces(o.input, pr.duration);
+  const quietP = pr.hasAudio ? quietPauses(o.input, { dir: o.dir }) : Promise.resolve(null);
   const words = o.words ?? (pr.hasAudio && o.hear ? await o.hear(audio, o.dir) : []);
   lap('hear');
-  const look = await lookP;
+  const look = await lookP, quiet = await quietP;
   timings.look = look.seconds; tl = Date.now();
   let tags: Record<number, EdlBeat['tag']> | undefined;
   if (o.tag && words.length) {
@@ -79,7 +81,7 @@ export async function planEdit(o: PlanOpts): Promise<Plan> {
   }
   lap('tags');
   const source = { file: o.file ?? 'src.mp4', duration: pr.duration, w: pr.width ?? 1080, h: pr.height ?? 1920, fps: pr.fps ?? 30 };
-  const edl = buildEdl({ source, words, pauses: ps, palette: o.palette, ...(look.faces.length ? { faces: look.faces } : {}), ...(tags ? { tags } : {}), ...(o.style ? { style: o.style } : {}), ...(o.laws ? { laws: o.laws } : {}), ...(o.seed !== undefined ? { seed: o.seed } : {}) });
+  const edl = buildEdl({ source, words, pauses: ps, ...(quiet ? { quiet: quiet.pauses } : {}), palette: o.palette, ...(look.faces.length ? { faces: look.faces } : {}), ...(tags ? { tags } : {}), ...(o.style ? { style: o.style } : {}), ...(o.laws ? { laws: o.laws } : {}), ...(o.seed !== undefined ? { seed: o.seed } : {}) });
   const { problems } = validateEdl(edl);
   lap('build');
   timings.total = +((Date.now() - t0) / 1000).toFixed(3);

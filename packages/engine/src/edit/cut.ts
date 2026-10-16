@@ -40,6 +40,31 @@ export function pauses(env: { db: Float32Array; hop: number }, min = 0.3, k = 0.
   return out;
 }
 
+/**
+ * Quiet by sample peak: stretches where every 20 ms frame's peak (dBFS, `peakDb`) stays under `th`, at least `min`
+ * long. The R9 silence line (ffmpeg silencedetect) is a peak test too: a stretch is a hole only if no sample in it
+ * crosses the line, so a frame's RMS would call soft speech quiet that the line still hears. Two quiet stretches a
+ * short blip apart (at most `bridge` s of frames under th + `blip` dB: a click, the gate opening on room noise that the
+ * film's own pass, cut and gated again, does not keep) count as one.
+ */
+export function quietRuns(peakDb: Float32Array, hop: number, th: number, min = 0.3, bridge = 0.1, blip = 10): [number, number][] {
+  const runs: [number, number][] = [];
+  for (let i = 0; i < peakDb.length;) {
+    if (peakDb[i]! >= th) { i++; continue; }
+    let j = i; while (j < peakDb.length && peakDb[j]! < th) j++;
+    const last = runs.at(-1);
+    let joined = false;
+    if (last && (i - last[1]) * hop <= bridge + 1e-9) {
+      let ok = true; for (let k = last[1]; k < i; k++) if (peakDb[k]! >= th + blip) { ok = false; break; }
+      if (ok) { last[1] = j; joined = true; }
+    }
+    if (!joined) runs.push([i, j]);
+    i = j;
+  }
+  const r3 = (x: number) => Math.round(x * 1000) / 1000;
+  return runs.filter(([a, b]) => (b - a) * hop >= min - 1e-9).map(([a, b]) => [r3(a * hop), r3(b * hop)]);
+}
+
 /** Pieces of about `target` seconds, cut in the middle of pauses (never shorter than 3 s, never longer than 16 s if a pause allows). */
 export function splitAt(ps: [number, number][], duration: number, target = 10): [number, number][] {
   const out: [number, number][] = []; let a = 0;

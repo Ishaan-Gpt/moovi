@@ -34,7 +34,7 @@ import { lookFaces } from '../src/edit/look';
 import { PAGE } from '../src/edit/page';
 import { renderEdl } from '../src/edit/render';
 import { cutOnWord, pausesLeft, scriptCheck, slateKept, stable, wordsRight, zones, type FrameBoxes, type Truth } from '../src/edit/score';
-import { loudness } from '../src/edit/voice';
+import { loudness, quietPauses } from '../src/edit/voice';
 import { servePlayer } from '../src/s4/player';
 
 interface Clip { id: string; tier: 'quick' | 'full'; page?: string; local_env?: string; file: string; sha1: string | null; duration: number; w: number; h: number; lang: string; speakers: number; licence: string; credit: string; truth: string }
@@ -213,7 +213,8 @@ async function runClip(c: Clip, path: string, truth: Truth | null): Promise<Row>
   try {
     const ps = plan.source.hasAudio ? pauses(await envelope(path)) : [];
     const look = await lookFaces(path, plan.source.duration);
-    const again = buildEdl({ source: e.source as never, words: JSON.parse(readFileSync(join(dir, 'words.json'), 'utf8')) as Word[], pauses: ps, palette: EDIT_PALETTE(), ...(look.faces.length ? { faces: look.faces } : {}), style: { id: 'base' }, ...(plan.language ? { language: plan.language } : {}) });
+    const quiet = plan.source.hasAudio ? await quietPauses(path, { dir }) : null;
+    const again = buildEdl({ source: e.source as never, words: JSON.parse(readFileSync(join(dir, 'words.json'), 'utf8')) as Word[], pauses: ps, ...(quiet ? { quiet: quiet.pauses } : {}), palette: EDIT_PALETTE(), ...(look.faces.length ? { faces: look.faces } : {}), style: { id: 'base' }, ...(plan.language ? { language: plan.language } : {}) });
     // and the library cast on it again (camera moves, sfx, transitions per beat), as the plan stage does
     if (plan.cast) await castEdl(again, { lib: await openLibrary(), maxZoom: castMaxZoom(e.source) });
     deterministic = stable(again) === stable(e);

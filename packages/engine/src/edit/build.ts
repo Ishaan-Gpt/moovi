@@ -18,8 +18,8 @@ import { pickLook, type CaptionLook } from './looks';
  *  5. words with roles (key words, numbers, names), sentence ids, and beat tags (given by the one model call, else
  *     by rule); `removed[]`, `cuts[]` and `metrics` with the rule behind every decision.
  */
-export interface Laws { pause_max: number; pause_keep: number; hold_max: number; snap_ms: number; punch: number; push: number; min_shot: number }
-export const DEFAULT_LAWS: Laws = { pause_max: 0.4, pause_keep: 0.18, hold_max: 2.6, snap_ms: 100, punch: 1.12, push: 1.04, min_shot: 0.6 };
+export interface Laws { pause_max: number; pause_keep: number; hold_max: number; snap_ms: number; punch: number; push: number; min_shot: number; /** a heard pause (the cleaned voice under the silence line) longer than this is trimmed to pause_keep: under pause_max, so the air left plus a word's soft edge stays under R9's 0.4 s hole */ quiet_max: number }
+export const DEFAULT_LAWS: Laws = { pause_max: 0.4, pause_keep: 0.18, hold_max: 2.6, snap_ms: 100, punch: 1.12, push: 1.04, min_shot: 0.6, quiet_max: 0.32 };
 export const RULES_VERSION = 'r4-2026-10-16';
 
 export interface Face { src_t: number; x: number; y: number; w: number; h: number; conf?: number }
@@ -29,6 +29,9 @@ export interface BuildInput {
   words: Word[];
   /** loudness pauses in source seconds (cut.ts `pauses`), relative to the clip's own noise floor; may be empty */
   pauses?: [number, number][];
+  /** heard pauses in source seconds (voice.ts `quietPauses`: the cleaned voice under the R9 silence line); word edges
+   *  are fitted to them (`fitWords`) and each one over quiet_max is trimmed; may be empty */
+  quiet?: [number, number][];
   faces?: Face[];
   /** beat tags from the one model call, by sentence index; missing sentences are tagged by rule */
   tags?: Record<number, EdlBeat['tag']>;
@@ -50,8 +53,33 @@ export function sentences(ws: Word[]): number[] {
   let k = 0; return ws.map(w => { const id = k; if (isStop(w.word)) k++; return id; });
 }
 
+/**
+ * Word edges fitted to heard pauses: Whisper's word times run across real pauses (B2: "visit" 22.05 to 22.44 and
+ * "striking" 22.44 to 23.03 s over a pause heard from 22.24 to 22.76 s), so the builder sees no gap to trim and the
+ * film keeps a silence hole. A pause over a word's head moves its start to the pause's end; over its tail, its end to
+ * the pause's start; inside it (longer than quiet_max), the word keeps its longer side. A word a pause covers whole,
+ * or one that would shrink under `minWord`, keeps its times. Pure; returns new words in the same order.
+ */
+export function fitWords(ws: Word[], quiet: [number, number][], quietMax = DEFAULT_LAWS.quiet_max, minWord = 0.06): Word[] {
+  const tol = 0.05;
+  return ws.map(w0 => {
+    let w = { ...w0 };
+    for (const [p0, p1] of quiet) {
+      if (p1 <= w.t + 1e-3 || p0 >= w.end - 1e-3) continue;
+      const head = p0 <= w.t + tol, tail = p1 >= w.end - tol;
+      if (head && tail) continue;
+      let next = w;
+      if (head) next = { ...w, t: p1 };
+      else if (tail) next = { ...w, end: p0 };
+      else if (p1 - p0 > quietMax) next = p0 - w.t >= w.end - p1 ? { ...w, end: p0 } : { ...w, t: p1 };
+      if (next.end - next.t >= minWord) w = next;
+    }
+    return w;
+  });
+}
+
 /** Holes to cut, in source seconds, each with its reason; merged and sorted. */
-export function holesOf(ws: Word[], ps: [number, number][], take: { a: number; b: number }, L: Laws): { a: number; b: number; reason: EdlRemoved['reason']; text?: string; rule: string }[] {
+export function holesOf(ws: Word[], ps: [number, number][], take: { a: number; b: number }, L: Laws, quiet: [number, number][] = []): { a: number; b: number; reason: EdlRemoved['reason']; text?: string; rule: string }[] {
   const airOut = L.pause_keep / 2, airIn = L.pause_keep / 2, out: { a: number; b: number; reason: EdlRemoved['reason']; text?: string; rule: string }[] = [];
   const isFill = (w: Word) => FILLERS.has(bare(w.word));
   const speech = ws.filter(w => !isFill(w));
@@ -66,6 +94,12 @@ export function holesOf(ws: Word[], ps: [number, number][], take: { a: number; b
     const inside = speech.filter(w => w.end > p0 + 0.05 && w.t < p1 - 0.05);
     if (inside.length) continue;
     out.push({ a: p0 + airOut, b: p1 - airIn, reason: 'pause_trim', rule: 'law.pause_trim' });
+  }
+  // heard pauses (the cleaned voice under the silence line) over quiet_max, where no word is: a breath of air kept
+  for (const [p0, p1] of quiet) {
+    if (p1 - p0 <= L.quiet_max) continue;
+    if (speech.some(w => w.end > p0 + 0.02 && w.t < p1 - 0.02)) continue;
+    out.push({ a: p0 + airOut, b: p1 - airIn, reason: 'pause_trim', rule: 'law.quiet_trim' });
   }
   // fillers, with the air around them down to a breath
   ws.forEach((w, i) => {
@@ -116,7 +150,8 @@ export function faceCentre(f: Face | undefined, src: Edl['source'], out: Edl['ou
 export function buildEdl(i: BuildInput): Edl {
   const L: Laws = { ...DEFAULT_LAWS, ...(i.laws ?? {}) }, src = i.source, dur = src.duration;
   const out = i.style?.output ?? { w: 1080, h: 1920, fps: 30, aspect: '9:16' };
-  const ws = i.words.filter(w => w.end > w.t && w.t < dur && w.word.trim()).map(w => ({ ...w, end: Math.min(w.end, dur) })).sort((a, b) => a.t - b.t);
+  const qs = (i.quiet ?? []).filter(([a, b]) => b > a);
+  const ws = fitWords(i.words.filter(w => w.end > w.t && w.t < dur && w.word.trim()).map(w => ({ ...w, end: Math.min(w.end, dur) })), qs, L.quiet_max).sort((a, b) => a.t - b.t);
   const ps = (i.pauses ?? []).filter(([a, b]) => b > a);
   const removed: EdlRemoved[] = [];
 
@@ -138,7 +173,7 @@ export function buildEdl(i: BuildInput): Edl {
 
   // 2 + 3. holes, snapped out of words
   const keptWords = ws.filter(w => w.t >= take.a - 0.01 && w.end <= take.b + 0.01 && !FILLERS.has(bare(w.word)));
-  const holes = holesOf(ws, ps, take, L);
+  const holes = holesOf(ws, ps, take, L, qs);
   snapHoles(holes, keptWords);
   const segs: { a: number; b: number }[] = []; let cur = take.a;
   for (const h of holes) { if (h.b - h.a <= 0.04) continue; if (h.a > cur) segs.push({ a: cur, b: h.a }); cur = Math.max(cur, h.b); }

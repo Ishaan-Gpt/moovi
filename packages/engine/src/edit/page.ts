@@ -87,8 +87,11 @@ function drawCaptions(t) {
     el.style.filter = bl > 0.2 ? 'blur(' + bl.toFixed(1) + 'px)' : '';
     if (ST.entry === 'typewriter') { const full = EDIT.caseOf(w.text, ST.font.case); el.textContent = w.on ? full.slice(0, Math.ceil(full.length * w.p)) : ''; }
   });
+  // kept off the face (lib capYAt): the style's place when it clears the face in this shot, else just below or above it
+  cap.style.top = (EDIT.capYAt(E, t, CAP_BASE, Math.max(0.03, cap.offsetHeight / H / 2)) * H).toFixed(1) + 'px';
 }
-cap.style.top = ((LK && LK.y !== null ? LK.y : EDIT.posY(ST.position)) * H) + 'px';
+const CAP_BASE = LK && LK.y !== null ? LK.y : EDIT.posY(ST.position);
+cap.style.top = (CAP_BASE * H) + 'px';
 const FRAME = { full: [0, 0, 1, 1], top_half: [0.04, 0.03, 0.92, 0.44], card_box: [0.12, 0.12, 0.76, 0.34], beside_head: [0.54, 0.16, 0.42, 0.26] };
 function drawInserts(t) {
   const on = (E.inserts || []).filter(x => t >= x.t0 && t < x.t1 && !(TPL && TPL.owns(x)));

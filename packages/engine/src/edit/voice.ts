@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { config } from '../config';
+import { quietRuns } from './cut';
 
 /**
  * D1.2b, the voice clean-up: the speaker's track made broadcast-clean with ffmpeg alone (no Python). The chain:
@@ -90,4 +91,31 @@ export async function cleanVoice(input: string, out: string, o: { target?: numbe
     const after = await loudness(out);
     return { file: out, seconds: +((Date.now() - t0) / 1000).toFixed(2), denoise: rnn ? 'arnndn' : 'afftdn', before: { lufs: before.lufs }, after, gain_db: +g.toFixed(2) };
   } finally { rmSync(wav, { force: true }); rmSync(tmp, { force: true }); }
+}
+
+export interface Quiet { pauses: [number, number][]; gain_db: number; threshold_db: number; seconds: number; denoise: 'arnndn' | 'afftdn' }
+
+/**
+ * The pauses a listener hears in the film: the source run once through the same clean chain the film's voice gets
+ * (VOICE_CHAIN), the loudness pass's gain to `target` estimated from it, then every stretch whose sample peak at that
+ * gain stays under the R9 silence line (-35 dB) plus `margin` dB (3 dB: the film's loudness pass searches past this
+ * estimate when its limiter shaves peaks, B4 measured +1.6 dB), at least `min` s long (cut.ts `quietRuns`). Whisper
+ * stretches word times across real pauses (B2: "striking" 22.44 to 23.03 s over a 0.5 s pause), so the builder fits
+ * word edges to these and trims them (build.ts `fitWords`). Source seconds; null when ffmpeg cannot read the audio.
+ */
+export async function quietPauses(input: string, o: { dir: string; target?: number; line?: number; margin?: number; min?: number }): Promise<Quiet | null> {
+  const t0 = Date.now(), target = o.target ?? -14, line = o.line ?? -35, margin = o.margin ?? 3;
+  mkdirSync(o.dir, { recursive: true });
+  const wav = join(o.dir, `quiet-${process.pid}-${Date.now()}.wav`);
+  const rnn = await rnnModel();
+  try {
+    await ff(['-v', 'error', '-y', '-i', input, '-vn', '-af', VOICE_CHAIN(rnn), '-ar', '16000', '-ac', '1', '-c:a', 'pcm_f32le', wav]);
+    const l = await loudness(wav);
+    if (!Number.isFinite(l.lufs)) return null;
+    const gain = Math.min(24, target - l.lufs), th = line + margin - gain;
+    const buf = await new Promise<Buffer>((res, rej) => execFile(config.ffmpeg, ['-nostdin', '-v', 'error', '-i', wav, '-f', 'f32le', '-ac', '1', '-ar', '16000', '-'], { encoding: 'buffer', maxBuffer: 512e6, timeout: 60_000, killSignal: 'SIGKILL' }, (e, out) => e ? rej(e) : res(out)));
+    const x = new Float32Array(buf.buffer.slice(buf.byteOffset, buf.byteOffset + Math.floor(buf.length / 4) * 4)), hop = 320, n = Math.floor(x.length / hop), pk = new Float32Array(n);
+    for (let i = 0; i < n; i++) { let m = 0; for (let k = 0; k < hop; k++) { const a = Math.abs(x[i * hop + k]!); if (a > m) m = a; } pk[i] = 20 * Math.log10(m + 1e-9); }
+    return { pauses: quietRuns(pk, hop / 16000, th, o.min ?? 0.3), gain_db: +gain.toFixed(2), threshold_db: +th.toFixed(2), seconds: +((Date.now() - t0) / 1000).toFixed(2), denoise: rnn ? 'arnndn' : 'afftdn' };
+  } catch { return null; } finally { rmSync(wav, { force: true }); }
 }

@@ -184,6 +184,53 @@ export function editLib() {
     return { x: A.x + (B.x - A.x) * u, y: A.y + (B.y - A.y) * u };
   }
 
+  /** The face box at source second `src` (linear between samples, source fractions), or null when the EDL has no faces. */
+  function faceBoxAt(e: PlayerEdl, src: number): { x: number; y: number; w: number; h: number } | null {
+    const f = e.faces; if (!f || !f.length) return null;
+    let k = 0; while (k + 1 < f.length && f[k + 1]!.src_t <= src) k++;
+    const a = f[k]!, b = f[k + 1];
+    if (!b || src <= a.src_t) return { x: a.x, y: a.y, w: a.w, h: a.h };
+    const u = clamp((src - a.src_t) / Math.max(1e-6, b.src_t - a.src_t)), m = (p: number, q: number) => p + (q - p) * u;
+    return { x: m(a.x, b.x), y: m(a.y, b.y), w: m(a.w, b.w), h: m(a.h, b.h) };
+  }
+
+  /**
+   * Where the face sits in the OUTPUT frame over the whole shot at output time t (fractions): the source face box
+   * through the shot's crop (object-fit cover on cropAt) and its framing scale about the framing centre, sampled at
+   * five points of the shot and joined, so the caption decision holds for the shot. Null for a 'fit' shot or no faces.
+   */
+  function faceOutAt(e: PlayerEdl, t: number): { y0: number; y1: number; x0: number; x1: number } | null {
+    const g = e.shots[shotAt(e, t)]!;
+    if (!e.faces || !e.faces.length || g.layout === 'fit') return null;
+    const sa = e.source.w / e.source.h, oa = e.output.w / e.output.h, vw = sa > oa ? oa / sa : 1, vh = sa > oa ? 1 : sa / oa;
+    let box: { y0: number; y1: number; x0: number; x1: number } | null = null;
+    for (let i = 0; i < 5; i++) {
+      const tt = g.t_in + (g.t_out - g.t_in) * (i / 4) * 0.999, f = faceBoxAt(e, srcAt(e, tt)); if (!f) continue;
+      const c = cropAt(e, tt), fr = framingAt(e, tt), offX = (1 - vw) * c.px / 100, offY = (1 - vh) * c.py / 100;
+      const ox = (x: number) => fr.cx + ((x - offX) / vw - fr.cx) * fr.scale, oy = (y: number) => fr.cy + ((y - offY) / vh - fr.cy) * fr.scale;
+      const b = { x0: ox(f.x), x1: ox(f.x + f.w), y0: oy(f.y), y1: oy(f.y + f.h) };
+      box = box ? { x0: Math.min(box.x0, b.x0), x1: Math.max(box.x1, b.x1), y0: Math.min(box.y0, b.y0), y1: Math.max(box.y1, b.y1) } : b;
+    }
+    return box && box.x1 > 0 && box.x0 < 1 && box.y1 > 0 && box.y0 < 1 ? box : null;
+  }
+
+  /**
+   * The caption block's centre (fraction of frame height) at output time t, kept off the face: the style's own
+   * `base` when the block (half height `half`) clears the face in this shot, else just below or above the face,
+   * whichever is nearer `base` and stays out of the platform zones (top 8%, bottom 15%); with neither free, the one
+   * that covers the least face. R9 asks for captions off the face in 98% of frames.
+   */
+  function capYAt(e: PlayerEdl, t: number, base: number, half: number): number {
+    const f = faceOutAt(e, t), pad = 0.012; if (!f) return base;
+    const lo = 0.08 + half + pad, hi = 0.85 - half - pad;
+    const cover = (y: number) => Math.max(0, Math.min(y + half, f.y1) - Math.max(y - half, f.y0));
+    if (cover(base) <= 0) return base;
+    const opts = [f.y1 + half + pad, f.y0 - half - pad].filter(y => y >= lo && y <= hi).sort((a, b) => Math.abs(a - base) - Math.abs(b - base));
+    if (opts.length) return opts[0]!;
+    const clamped = [lo, hi, base].sort((a, b) => cover(a) - cover(b) || Math.abs(a - base) - Math.abs(b - base));
+    return clamped[0]!;
+  }
+
   /**
    * Where a 'full' (cover) shot crops the source, as CSS object-position percentages: centred on the face when the
    * EDL has faces (the face sits a little above the middle), else centred. A landscape clip in a vertical film shows
@@ -241,7 +288,7 @@ export function editLib() {
       fill: s.fill && s.fill.type === 'solid' && s.fill.color ? String(s.fill.color) : null, hi, stroke: st, shadow: Array.isArray(s.shadows) && s.shadows.length > 0, y };
   }
 
-  return { lookProps, transitionAt, faceAt, cropAt, clamp, easeOut, easeInOut, back, timeline, shotAt, srcAt, outOf, framingAt, outWords, chunk, captionAt, entryOf, sizePx, posY, caseOf };
+  return { lookProps, transitionAt, faceAt, faceBoxAt, faceOutAt, capYAt, cropAt, clamp, easeOut, easeInOut, back, timeline, shotAt, srcAt, outOf, framingAt, outWords, chunk, captionAt, entryOf, sizePx, posY, caseOf };
 }
 
 export const EDIT = editLib();

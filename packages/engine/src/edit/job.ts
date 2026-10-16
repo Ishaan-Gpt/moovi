@@ -11,7 +11,7 @@ import { hear, type Heard } from './hear';
 import { EDIT, type PlayerEdl } from './lib';
 import { lookFaces } from './look';
 import { roughEdl } from './rough';
-import { cleanVoice, type CleanVoice } from './voice';
+import { cleanVoice, quietPauses, type CleanVoice } from './voice';
 
 /**
  * The upload edit's plan stage, one function: probe, look (faces) beside hear (D1.2), the EDL (D1.3), and the voice
@@ -79,6 +79,8 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
 
   // D1.3 look: the speaker's face, beside the hearing (edit/look.ts; [] without a face detector), for crop and punch-ins
   const lookP = lookFaces(o.path, pr.duration);
+  // the heard pauses (voice.ts quietPauses) beside the hearing: Whisper's word edges get fitted to them in the builder
+  const quietP = pr.hasAudio ? quietPauses(o.path, { dir }) : Promise.resolve(null);
   await o.onStage?.('hear', 'timing every word');
   // D1.2: language-locked, in pieces, the accurate text laid on, and a confidence gate (edit/hear.ts)
   let words: Word[] = [], language: string | undefined, heard: Heard | null = null;
@@ -96,11 +98,12 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
   const palette = EDIT_PALETTE();
   // D1.3: the EDL builder (edit/build.ts): take window, pause and filler cuts snapped to words, a framing per sentence
   const ps = pr.hasAudio ? pauses(await envelope(o.path)) : [];
-  const look = await lookP;
+  const look = await lookP, quiet = await quietP;
+  if (quiet) writeFileSync(join(dir, 'quiet.json'), JSON.stringify(quiet, null, 1));
   const source = { file, duration: pr.duration, w: pr.width ?? 1080, h: pr.height ?? 1920, fps: pr.fps ?? 30 };
   let edl: PlayerEdl, rough = false;
   try {
-    const e = buildEdl({ source, words, pauses: ps, palette, ...(look.faces.length ? { faces: look.faces } : {}), style: { id: 'base', ...(o.caption ? { caption: o.caption } : {}) }, ...(language ? { language } : {}) });
+    const e = buildEdl({ source, words, pauses: ps, ...(quiet ? { quiet: quiet.pauses } : {}), palette, ...(look.faces.length ? { faces: look.faces } : {}), style: { id: 'base', ...(o.caption ? { caption: o.caption } : {}) }, ...(language ? { language } : {}) });
     const bad = validateEdl(e).problems.filter(p => !p.startsWith('version'));
     if (bad.length) throw new Error(bad.slice(0, 3).join('; '));
     edl = e;
