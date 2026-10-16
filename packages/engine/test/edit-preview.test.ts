@@ -81,3 +81,26 @@ test('every caption style is complete and the page carries the shared code', () 
   assert.deepEqual(B.timeline(e), EDIT.timeline(e));
   assert.ok(PAGE.includes('var EDIT =') && PAGE.includes('CAPTION_STYLES') && PAGE.includes('/v/edl.json'));
 });
+
+test('routing: a video upload with no style is edited; references, picked styles and images are not', async () => {
+  const { editTarget } = await import('../src/router/edit');
+  const ups = [{ id: 'u1', name: 'me.mp4', path: '/x/me.mp4', mime: 'video/mp4' }, { id: 'u2', name: 'logo.png', path: '/x/logo.png', mime: 'image/png' }];
+  assert.deepEqual(editTarget({ text: 'make this a reel', uploads: ['u1'] }, ups, true), { upload: 'u1' });
+  assert.deepEqual(editTarget({ text: 'edit it with tier-two captions', uploads: ['u1'] }, ups, true), { upload: 'u1', caption: 'tier-two' });
+  assert.equal(editTarget({ text: 'make one like this video', uploads: ['u1'] }, ups, true), null);
+  assert.equal(editTarget({ text: 'make something in the style of this', uploads: ['u1'] }, ups, true), null);
+  assert.equal(editTarget({ text: 'logo reel', uploads: ['u2'] }, ups, true), null);
+  assert.equal(editTarget({ text: 'x', uploads: ['u1'], style: { id: 's1' } }, ups, true), null);
+  assert.equal(editTarget({ text: 'x', uploads: ['u1'] }, ups, false), null, 'MOOVI_EDIT=crew');
+});
+
+test('the studio preview route serves the edit page with its paths under the prefix', async () => {
+  const { previewFile } = await import('../src/styles/serve');
+  const base = '/studio/api/projects/p1/preview/c00000000000000/1';
+  const out = previewFile({ player: 'edit-player', dir: '.', id: 'edit-x' }, '', base);
+  assert.equal(out.status, 200);
+  const html = 'body' in out ? out.body : '';
+  assert.ok(html.includes(`${base}/v/edl.json`), 'the plan is fetched under the prefix');
+  assert.ok(html.includes(`'${base}/v/'`), 'the clip is loaded under the prefix');
+  assert.ok(html.includes(`url(${base}/engine/fonts/`), 'fonts load under the prefix');
+});
