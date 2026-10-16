@@ -117,7 +117,7 @@ export function itemsOf(text: string, keys: string[]): string[] {
 }
 
 /** Spoken padding a card never sets. */
-const PAD = new Set('hello hey hi guys okay ok so well um uh like going gonna because also actually basically literally right yeah thing things stuff kind sort start'.split(' '));
+const PAD = new Set('hello hey hi guys okay ok so well um uh like going gonna because also actually basically literally right yeah thing things stuff kind sort start thank thanks please'.split(' '));
 const weak = (w: string) => STOP.has(w.toLowerCase()) || PAD.has(w.toLowerCase());
 
 /**

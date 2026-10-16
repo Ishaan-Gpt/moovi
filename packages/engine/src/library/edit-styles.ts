@@ -163,18 +163,34 @@ export const X1: Record<string, [name: string, about: string, existing: string[]
   '04': ['frame break', 'the frame breaks into a grid of tiles (face-grid collage, tile-grid reveal)', []],
   '05': ['digital zoom', 'digital punch-ins of 115 to 140% on word boundaries', ['camera:punch-in', 'camera:punch-out', 'camera:pulse']],
   '06': ['phone mockup', 'the shot inside a phone mockup', []],
-  '07': ['checklist', 'numbered checklist pills that stack', []],
-  '08': ['headline wall', 'a wall of headlines', []],
+  '07': ['checklist', 'numbered checklist pills that stack', ['insert:s1-list-steps']],
+  '08': ['headline wall', 'a wall of headlines', ['effect:x1-08-headline-wall']],
   '09': ['zoom-through cut', 'the camera flies through one shot into the next', ['transition:visual-zoom-through']],
-  '10': ['chart grow', 'a chart that grows on its number', []],
+  '10': ['chart grow', 'a chart that grows on its number', ['insert:s1-stat-reveal']],
   '11': ['pull-back reveal', 'pull back to reveal the shot inside a frame', ['transition:pull-out-reveal']],
   '12': ['green screen', 'the speaker matted onto a new ground', []],
-  '13': ['paper cut', 'a torn-paper cut or reveal', []],
-  '14': ['doodle boil', 'hand-drawn doodles and words that boil on twos', ['effect:boiling-marker-words']],
+  '13': ['paper cut', 'a torn-paper cut or reveal', ['effect:x1-13-paper-cut']],
+  '14': ['doodle boil', 'hand-drawn doodles and words that boil on twos', ['effect:boiling-marker-words', 'effect:x1-14-doodle-boil']],
   '15': ['vertigo', 'a dolly zoom', ['camera:dolly-zoom-in', 'camera:dolly-zoom-out']],
-  '16': ['cover story', 'a magazine cover header strip as section tabs', []],
-  '17': ['glass type', 'type set in glass', []],
+  '16': ['cover story', 'a magazine cover header strip as section tabs', ['effect:x1-16-cover-story']],
+  '17': ['glass type', 'type set in glass', ['effect:x1-17-glass-type']],
 };
+/** D2.7: the X1 moves the edit player and the MP4 overlay draw on any footage (edit/moves.ts, edit/inserts-draw.ts). */
+export const X1_EDIT_ROWS: [n: string, slug: string, about: string, needs: string[]][] = [
+  ['08', 'headline-wall', 'a full-frame wall of headline cards; the line\'s own headline slams in the middle', ['claim', 'hook', 'proof']],
+  ['13', 'paper-cut', 'a torn sheet of paper sweeps up across a cut, covers it and tears away', ['flow', 'reveal']],
+  ['14', 'doodle-boil', 'the key word with a marker ring and an arrow, every line boiling on twos', ['focus', 'claim', 'cta']],
+  ['16', 'cover-story', 'a magazine header strip whose section tabs are the edit\'s beats, the current one lit', ['hook', 'brand', 'flow']],
+  ['17', 'glass-type', 'the key word on a slab of glass that tips up into place, a sheen across it', ['claim', 'reveal', 'focus']],
+];
+export function x1EditRows(): Row[] {
+  return X1_EDIT_ROWS.map(([n, slug, about, needs]) => ({
+    ...OWN, id: `effect:x1-${n}-${slug}`, category: 'effect', name: `X1 ${n} ${X1[n]![0]}`, about,
+    runtime: ['edl', 'browser'], impl: { edl: `x1-${n}` }, energy: null, tags: [`x1:${n}`, 'move', 'footage-safe'], params: { kind: 'move', x1: n },
+    src: 'packages/engine/src/edit/moves.ts', needs,
+  }));
+}
+
 /** X1 moves with nothing implementing them: a spec row, so assetsByX1 finds every number (tag `unbuilt`). */
 export function x1Specs(implemented: Set<string>): Row[] {
   return Object.entries(X1).filter(([n]) => !implemented.has(n)).map(([n, [name, about]]) => ({

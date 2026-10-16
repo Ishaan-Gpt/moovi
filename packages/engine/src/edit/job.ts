@@ -9,6 +9,7 @@ import { envelope, pauses, type Word } from './cut';
 import { keepOf, validateEdl } from './edl';
 import { hear, type Heard } from './hear';
 import { castInserts, openInserts, type InsertTrace } from './inserts';
+import { castMoves } from './moves';
 import { EDIT, type PlayerEdl } from './lib';
 import { lookFaces } from './look';
 import { roughEdl } from './rough';
@@ -47,6 +48,8 @@ export interface PlanInput {
   library?: boolean;
   /** D2.5: cast Style 1 UI cards and Editorial posters into insert frames on the beats that call for one (edit/inserts.ts; default true) */
   inserts?: boolean;
+  /** D2.7: X1 moves (by number, e.g. ['13', '17', '05']) a style asks for, placed on the beats they suit (edit/moves.ts) */
+  moves?: string[];
 }
 export interface Planned {
   edl: PlayerEdl;
@@ -137,6 +140,14 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
       if (bad.length || EDIT.timeline(edl).problems.length) { edl = JSON.parse(before); cast = null; console.warn(`[edit] library cast undone: ${bad.slice(0, 2).join('; ')}`); }
       else writeFileSync(join(dir, 'cast.json'), JSON.stringify(cast, null, 1));
     } catch (e) { console.warn(`[edit] library cast: ${String((e as Error).message ?? e).slice(0, 160)}`); cast = null; }
+  }
+  // D2.7: the X1 moves a style asked for, on the beats they suit (first, so the inserts fit around them)
+  if (!rough && o.moves?.length) {
+    const before = JSON.stringify(edl);
+    const done = castMoves(edl as never, o.moves);
+    const bad = validateEdl(edl as never).problems.filter(p => !p.startsWith('version'));
+    if (bad.length || EDIT.timeline(edl).problems.length) { edl = JSON.parse(before); console.warn(`[edit] moves undone: ${bad.slice(0, 2).join('; ')}`); }
+    else writeFileSync(join(dir, 'moves.json'), JSON.stringify(done, null, 1));
   }
   // D2.5: Style 1 UI cards and Editorial posters on the beats that call for one, cast from the same graph
   let ins: InsertTrace | null = null;
