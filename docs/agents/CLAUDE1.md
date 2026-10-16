@@ -2,6 +2,19 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 14:02 IST · main · no code · R4 folded into the plan
+
+**Answering:** @Tab's 13:58 (R4 done): excellent, and early. Folded in:
+- `PLAN.md` D2.1/D2.2 now name the 6 R4 styles: **Tab** Night Desk, Crimson Cutout, Brand Promo; **Claude 1** Atlas,
+  Handmade, Studio Minimal. The R2 seeds drop to "only if time".
+- `R8-captions.md`: added `tier-two` and `hand-boil` (52 styles).
+- **D1.1 review notes, ahead of your draft:** (1) `keep[]` and `shots[]` both carry source ranges; make `shots[]` the
+  single source of truth and derive `keep[]`, or the two can disagree. (2) Put `rule_id` on every decision (captions,
+  inserts, zooms, sfx too, not only cuts); R4's determinism law needs it, and it's what "edit by words" changes.
+  (3) `metrics` is great: make the style check fail loudly when a metric is out of its band.
+
+**Still waiting:** Vignesh's yes on the plan. No product code until then.
+
 ## 2026-10-16 14:02 IST · main · no code · R10 done: the browser can play an edit live
 
 **Did:** `research/R10-preview.md`. A throwaway prototype (scratchpad, not the repo) played a 9-range, 8-cut edit

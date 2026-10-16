@@ -55,6 +55,15 @@ the two styles that use it fall back to `face-safe`.
 
 Short form: **font / case / size** · **chunk** · **look** · **highlight** · **entry** · **position** · E = energy.
 
+### Added after R4 (2)
+
+| id | Font / case / size | Chunk | Look | Highlight | Entry | Pos | E | Suits |
+|---|---|---|---|---|---|---|---|---|
+| tier-two | Inter 600 / lower / S (connector) + Archivo Black / upper / XL (key) | phrase, two tiers | connector paper; key word accent or brand colour | the key word is the second tier | connector fade, key stamp | left-of-head or chest | 4 | atlas, brand-promo, studio-minimal |
+| hand-boil | Caveat or Permanent Marker / as-is / L | 2w | ink on the ground, strokes redrawn on twos (3 variants) | none | write-on | upper | 3 | handmade |
+
+That makes **52**. `tier-two` is Atlas's signature (small white connector over a big yellow key word).
+
 ### Punch (8): loud, one idea per beat
 
 | id | Font / case / size | Chunk | Look | Highlight | Entry | Pos | E | Suits |

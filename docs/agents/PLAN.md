@@ -54,7 +54,9 @@ brief  ─▶ beat tags (ONE model call)              ─┘        ▲         
                                                          style laws (R4) + library cast (FalkorDB, R5/R7/R8)
 ```
 
-- **One EDL for every style:** keep ranges, cuts, zoom keys, reframe path, caption events (R8 style id), insert slots
+- **The 6 edit styles (R4):** Atlas, Night Desk (A split / B story), Handmade, Crimson Cutout, Brand Promo, Studio
+  Minimal. Shared laws in R4: pause trim to 0.18 s, cuts snapped to words, a new framing per sentence, -14 LUFS.
+- **One EDL for every style** (fields: R4's last section): keep ranges, cuts, zoom keys, reframe path, caption events (R8 style id), insert slots
   (R4b: frame, need, set-up), sfx hits, music and ducking, grade.
 - **Base:** Vignesh's footage-edit on `vignesh/router-r2` (44 s per edit, right words) split into `edl.ts` plus
   renderers, as R3 recommends. Not the crew path (19.7 min). Afterglow (E1) becomes the Atlas style over the EDL.
@@ -92,9 +94,9 @@ Goal by the end of Day 2: **5–6 edit styles, each one recognisably its own han
 
 | # | Task | Owner | Done when |
 |---|---|---|---|
-| D2.1 | Style laws over the EDL: **Night Desk A** (split explainer) and **Night Desk B** (story with inserts) | Tab | R4 spec → code; two R9 clips each look like E3–E6 |
-| D2.2 | Style laws: **Atlas** (from Afterglow's breakdown, ported to TypeScript + ffmpeg, no Python) and **Handmade** (E2) | Claude 1 | same bar against E1, E2 |
-| D2.3 | Two more from the seeds (**Punch** à la Hormozi, **Documentary**) | whoever finishes first | |
+| D2.1 | Style laws over the EDL (R4): **Night Desk** (layouts A and B), **Crimson Cutout**, **Brand Promo** | Tab | each matches its R4 bands (metrics block) on 2 R9 clips |
+| D2.2 | Style laws: **Atlas** (Afterglow's breakdown, ported to TypeScript + ffmpeg, no Python), **Handmade**, **Studio Minimal** | Claude 1 | same bar |
+| D2.3 | The R2 seeds (Punch, Documentary) as extra styles, only if D2.1 and D2.2 are done | whoever finishes first | |
 | D2.4 | **Library in FalkorDB** (R7): vendor the 82 CC0 sfx and the CC BY tracks with credits; seed captions (R8), effects (X1), inserts; cast by need | Tab | the deciding agent queries it; QUERIES.md updated |
 | D2.5 | **Inserts from the generation styles** (R4b): Style 1 UI and Editorial posters drawn into insert frames in the player | Claude 1 | at least 2 libraries cast into edits |
 | D2.6 | **Sound pass**: sfx map per style (whoosh on moves, hits on key words, risers), bed with ducking, cuts on the beat | Tab | no edit ships silent under the voice |
