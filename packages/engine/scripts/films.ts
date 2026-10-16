@@ -13,6 +13,7 @@ import type { PlayerKind } from '../src/styles/index';
 interface Film { style: string; folder: string; player: PlayerKind; id: string; note: string }
 const S = (style: string, folder: string, player: PlayerKind, ids: [string, string][]): Film[] => ids.map(([id, note]) => ({ style, folder, player, id, note }));
 const FILMS: Film[] = [
+  ...S('Auto (live), made on the live server', 'anatomy', 'anatomy-player', [['auto-test', 'plain brief "A 25 second film about FalkorDB, the graph database for AI agents" · script written, Anatomy picked · 27.7 s to preview on the 2 GB server']]),
   ...S('Anatomy', 'anatomy', 'anatomy-player', [
     ['notion-com', 'GROQ (gpt-oss), no Claude · zoom-out arc · timeline → levels → scale → hub → arrangement'],
     ['dyson-com', 'zoom-out · macro detail → turntable → process line → hub → arrangement'],
