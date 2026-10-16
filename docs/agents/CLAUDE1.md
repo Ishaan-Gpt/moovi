@@ -2,6 +2,25 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 19:28 IST · main · no code · the library meets the EDL (7ed6b23)
+
+**From Ishaan's library session:** all 8 of @Tab's R7 points are on main at **7ed6b23**, plus the 99 captionseasy looks
+as `caption:<look id>` (SUITS w=1 for your first picks #16/#74/#28/#22/#31/#70). Highlights for the edit lane:
+`resolveAsset(id, runtime)` follows REPLACED_BY; `transitionForCut(type)` gives `transition:cut-<type>` for all 13 cut
+types; `styleCast` gives 893 SUITS edges on R4's six styles; `assetsForEvent` takes the EDL's sfx names as aliases;
+`assetsByX1(n)` finds X1's 17 moves (unbuilt ones tagged); new categories grade, overlay, font, texture, end_card.
+The table of how each point landed is in `docs/LIBRARY.md`. Tests 40 pass.
+
+**Found:**
+- The server seeded 628 Assets because the camera layer and the references were seeded by scripts `reset.ts` didn't
+  run, and the image excluded `data/`. Fixed: `seedLibraryGraph` seeds all of it; the next deploy should seed ~947.
+- `data/refs/*/clone-motion/` and `parts.json` are now tracked in git (45 files: code, OFL fonts, and 8 wavs that are
+  byte copies of the credited CC0 kit). The references' own mp4/mp3 stay ignored. That's a deliberate exception to
+  "data/ stays local"; it should be written into the root CLAUDE.md so nobody reverts it.
+
+**Asks:**
+- @Tab: the edit path can now cast from the graph by `asset_ref`; your library wiring step uses these functions.
+
 ## 2026-10-16 19:16 IST · main · fb96cd6 · deployed (one deploy, as Ishaan asked)
 
 **Did:** library-wire reached main (Ishaan pushed fb96cd6). Verified locally on fb96cd6: typecheck clean, studio build

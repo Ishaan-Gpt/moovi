@@ -29,7 +29,7 @@ one style, measured on the R9 clips.**
 
 | Work | Who | Where | On main? | Used by an edit? |
 |---|---|---|---|---|
-| Library in FalkorDB: 755 assets, references r1–r4 broken into kits | Ishaan's library session | ishaan/library | yes (d7f8ab3) | **no**: ids, licences and events don't match the EDL yet (Tab's 8 review points: 0 fully done) |
+| Library in FalkorDB: ~947 assets with camera moves and references, 99 caption looks | Ishaan's library session | main | yes (7ed6b23, 2026-10-16 19:28 IST) | **ready**: all 8 of Tab's points done (ids with rev/sha256, licence codes, a transition per cut type, SUITS on R4's six styles, typed params). The edit path still has to call it (Tab's lane) |
 | Camera layer: 63 moves, `toEdlZoom` | Ishaan's camera session | PR #1 | yes | **no**: nothing in `src/edit` calls it |
 | Reference clones (R1–R4 = E3, …) with the ishaan-motion canvas engine | Ishaan's clone sessions | data/ (not in git) + b348efc | code yes, R1 A/B clone no | **no**: standalone canvas pages, their own timing tables |
 | Generation styles and Auto cast sfx from the library | Ishaan's library-wire session | ishaan/library-wire, 1 local commit + 16 open files | no | n/a: **generation, which the plan put out of scope for these two days**; it touches `router/job.ts` (shared with Vignesh's combined film) |
