@@ -7,6 +7,7 @@ import { bedStem, castStem, sfxStem, type Ev } from '../../audio/mix';
 import { fetchMusic, lufsOf, musicFilter, musicMixPlan, musicWant, pickMusic, MUSIC_MIX, MUSIC_TRACKS, type MusicMixPlan, type MusicPick } from '../../audio/music-lib';
 import { checkClip, clipId, fetchClip, rank, type Clip, type ClipCandidate } from '../../footage';
 import { clipAssetId } from '../../footage/graph';
+import type { MusicScope } from '../../audio/music-lib';
 import { mixkit } from '../../footage/sources';
 import { validateEdl } from '../edl';
 import { clipMomentEdl, cmLines, markedWords, plateSpans, spoken, CM_END_MAX, CM_PALETTE, CM_TAIL, CM_TRANSITIONS, type CmEdl, type CmScript, type CmTheme, type TimedWord } from './clip-moment';
@@ -45,6 +46,17 @@ export interface CmRunInput {
   /** music: a library track by id (still licence-gated), the drop's time in the video, how far under the voice (LU) */
   music?: { id?: string; dropAt?: number; underVoiceLu?: number };
   signal?: AbortSignal;
+  /**
+   * Whose video this is, for the music licence: 'product' (default; every studio, worker and Auto run) takes
+   * product-safe tracks only; 'creator' (NCS allowed, credit in the description) is for our own channel runs from the
+   * terminal.
+   */
+  musicScope?: MusicScope;
+}
+
+/** The music want for a clip-moment run: from its lines, in the run's music scope (product unless asked). Pure. */
+export function cmMusicWant(i: Pick<CmRunInput, 'musicScope'>, o: { lines: string[]; seconds: number; dropTarget: number; seed: string }): ReturnType<typeof musicWant> {
+  return musicWant({ ...o, scope: i.musicScope ?? 'product' });
 }
 
 export interface CmClipPick { beat: number; query: string; id: string; ref: string; title: string; page: string; licence: string; file: string; score?: number; why?: string }
@@ -463,7 +475,7 @@ export async function makeClipMoment(i: CmRunInput): Promise<CmRunResult> {
   const dropTarget = r3(i.music?.dropAt ?? (grid ? words[hookWord]?.t : undefined) ?? firstThud ?? (pre.cuts ?? [])[0]?.t ?? 3);
   let musicPick: MusicPick | null = null, musicPlan: MusicMixPlan | null = null, musicFile = '', musicNote = '', voiceLufs: number | null = null, musicLufs: number | null = null;
   try {
-    const want = musicWant({ lines, seconds: D0, dropTarget, seed: topic ?? lines[0] ?? 'clip-moment' });
+    const want = cmMusicWant(i, { lines, seconds: D0, dropTarget, seed: topic ?? lines[0] ?? 'clip-moment' });
     const hits = g ? await g.music(want.needs).catch(() => null) : null;
     // a track named by the caller (the library id) is still licence-gated; else the graph's pick
     const named = i.music?.id ? MUSIC_TRACKS.filter(t => t.id === i.music!.id) : null;

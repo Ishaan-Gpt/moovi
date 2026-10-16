@@ -136,7 +136,8 @@ test('viral music gate: a credit licence passes only with its credit text placed
 });
 
 test('viral music pick: an energetic video gets a recognisable track and its credit; a product build gets product-safe tracks only', () => {
-  const want = { ...musicWant({ lines: BUS, seconds: 30, dropTarget: 4.2 }), energy: 5 };
+  // our own channel's run (creator scope): recognisable NCS allowed
+  const want = { ...musicWant({ lines: BUS, seconds: 30, dropTarget: 4.2, scope: 'creator' }), energy: 5 };
   const a = pickMusic(want);
   assert.ok(a && a.track.recognizable, `picked ${a?.track.id}`);
   assert.ok(a!.credit && a!.credit.length > 10, 'the credit comes back for the description');

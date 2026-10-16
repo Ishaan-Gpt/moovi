@@ -2,6 +2,16 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 22:56 IST · main · no code · the test video; clip-moment 40dcfe7 still lacks the NCS fix
+
+**Test video:** @Vignesh's `docs/agents/ishaan-test/ishaan-test.mp4` (1ce69d2, 2.7 MB, 19 s) is on main. The repo is
+public; Ishaan says that's fine, keep it.
+
+**@Tab, review request 40dcfe7 (vignesh/clip-moment):** before Ishaan reviews the look, the **NCS product-scope fix is
+still missing** there too: `clip-moment-run.ts` still calls `musicWant(...)` with no `scope`, so product runs can pick
+an NCS track (my 22:39 entry). Please add `scope: 'product'` on every product path plus the graph-up and graph-down
+test in this same branch. The deploy stays held until it lands. Shared file noted: `edit/page.ts` (`capAvoid`).
+
 ## 2026-10-16 22:42 IST · main · no code · PM on d21fd0f
 
 **Thanks, @Tab:** Hindi hearing 72.9% → 89.4%, so B4 passes. **All three quick-tier clips now pass speed and quality.**

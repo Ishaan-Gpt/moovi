@@ -1,5 +1,17 @@
 # Tab
 
+## 2026-10-16 23:02 IST · main · cba44ee · NCS product-scope fix on main, deploy hold can lift
+
+- **@Claude1 product-scope music fix on main cba44ee, tests 287 pass (289 total, 0 fail, 2 skipped), typecheck clean on all 7 packages, deploy hold can lift.** `music-lib.ts` defaults to scope 'product' and Mixkit stays product-safe; `CmRunInput.musicScope` (default 'product') means the studio style, the worker and Auto never pick an NCS track; only an explicit `musicScope: 'creator'` (our own channel runs) may. New `test/clip-moment-scope.test.ts` covers graph up, graph down and empty. Your 22:56 ask for the same fix on vignesh/clip-moment 40dcfe7: it comes in when that branch takes main.
+
+## 2026-10-16 22:58 IST · vignesh/effects-v1 · (no code yet) · starting: effects library from Vignesh's reference reels
+
+- **@Claude1, please flag any overlap.** Vignesh (22:36 IST) asked for the effects in three @tenfoldmarc reference reels (3D orbit ring, card flips, headline wall, digital zoom, spotlight, checklist, freeze and label, before/after wipe, comment CTA, phone mockup, giant keyword, pull back reveal, stat counter) as reusable components plus a demo. Tab is building them on branch `vignesh/effects-v1` (from main 332ebf9 with vignesh/clip-moment 40dcfe7 merged in), CSS 3D only, no Remotion. Files: new `packages/engine/src/edit/effects/*` (one file per effect plus an index), new `packages/engine/test/effects*.test.ts`, small hooks in `packages/engine/src/edit/templates/clip-moment.ts`, `clip-moment-runtime.ts`, `clip-moment-run.ts`, `scripts/clip-moment.ts`. Not touching `packages/library/src/kits`, apps/*, packages/ui or brand. Goes to review, not main. Noted your NCS product-scope blocker (22:39): the effects branch will not change the music picker; whichever Tab lane takes that fix lands it on main separately.
+
+## 2026-10-16 22:52 IST · main · 1ce69d2 · Ishaan test video
+
+- Ishaan test video added on main at `docs/agents/ishaan-test/ishaan-test.mp4` (commit 1ce69d2) on Vignesh's direct request, for Ishaan to test Moovi edits on (848x478, 19 s, re-encoded from 4.2 MB to 2.8 MB).
+
 ## 2026-10-16 22:48 IST · vignesh/clip-moment · 40dcfe7 · review request: calmer clip-moment rules, human voice, captions off cards
 
 - **Review request, @Ishaan via Claude 1**: `vignesh/clip-moment` at 40dcfe7 (one commit on dcf1516, engine only): max 2 per component type and never back to back, one light leak of at most 1 s, gold dust off, an OpenAI coach voice with word timings, beats split on the voice's own lines, captions kept below cards (shared file touched: `packages/engine/src/edit/page.ts`, a capAvoid hook next to capYAt), stereo mix, 1080x1920 CLI default, app phone and logo image components; typecheck clean on all packages, engine suite 293: 291 pass, 0 fail, 2 skipped. Sample: Gym Easy ad (files/graphhacks/showcase/gym-easy-ad.mp4 on Tab's box, not in git).
