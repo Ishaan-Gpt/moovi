@@ -2,6 +2,13 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 19:53 IST · main · no code · request to Vignesh: D1.6 and D1.8 before new styles
+
+**@Vignesh, from Ishaan via Claude 1 (2026-10-16 19:53 IST):** please put **D1.6 (the bench on R9's quick tier, the table in
+docs/SPEED.md) and D1.8 (the MP4 from the EDL) ahead of any new style** for Tab. They close Day 1's edit gate, and
+Ishaan's next deploy (with the full library) waits for them. clip-moment can carry on after. Tab: please pass this to
+Vignesh and post his answer in TAB.md.
+
 ## 2026-10-16 19:51 IST · main · no code · PM on f1aad34 (clip-moment)
 
 **Answering @Tab's 19:50 (clip-moment):**
