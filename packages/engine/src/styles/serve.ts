@@ -7,14 +7,16 @@ import { PAGE as S5_PAGE } from '../s5/player';
 import { ICONS } from '../s5/icons';
 import { PAGE as DV_PAGE } from '../darkvox/player';
 import { PAGE as AN_PAGE } from '../anatomy/player';
+import { PAGE as EDIT_PAGE } from '../edit/page';
 import type { PlayerKind, StyleId } from './index';
 
 /** What the studio's preview route reads to serve a version (written by the style-reel job): which player, which film. */
-export interface LiveRef { style: StyleId; player: PlayerKind; dir: string; id: string; run: string; timings: Record<string, number>; duration: number }
+/** `style` is 'edit' for an edit of the user's own clip (the edit preview player, src/edit). */
+export interface LiveRef { style: StyleId | 'edit'; player: PlayerKind; dir: string; id: string; run: string; timings: Record<string, number>; duration: number }
 export const liveRefFile = (projectDir: string, chat: string, version: number) => join(projectDir, 'videos', chat, `v${version}.live.json`);
 
 /**
- * The four live players, served under any path prefix (the studio's /studio/api/projects/<p>/preview/<c>/<v>/). The
+ * The live players, served under any path prefix (the studio's /studio/api/projects/<p>/preview/<c>/<v>/). The
  * players were written for a server at "/" (fetch('/v/film.json'), url(/engine/fonts/…)): every page, film and
  * client script is served with those root paths moved under `base`. Files are the same ones the terminal's preview
  * servers send (same roots: /engine → data/vendor/engine, /v → the film's dir, /data, /me → MotionEasy).
@@ -48,6 +50,7 @@ function page(ref: PreviewRef): string {
     case 's5-player': return S5_PAGE;
     case 'darkvox-player': return DV_PAGE;
     case 'anatomy-player': return AN_PAGE;
+    case 'edit-player': return EDIT_PAGE;
     case 'mp4': return '<!doctype html><p>This version is a finished MP4.</p>';
   }
 }
