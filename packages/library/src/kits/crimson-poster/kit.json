@@ -1,0 +1,38 @@
+{
+  "id": "crimson-poster",
+  "name": "Crimson Poster",
+  "about": "A talking-head explainer kit: speaker in a warm low-key room, crimson paper posters as inserts (full frame, top-half panel, chapter cards with one lit key), key words in a condensed face, some behind the head, white chest captions. Learned from reference r1.",
+  "from": ["ref:r1"],
+  "styles": ["night-desk"],
+  "palette": {
+    "deep": "#3a0306",
+    "accent": "#c4161f",
+    "accentMid": "#8e0c13",
+    "accent2": "#ffe14a",
+    "pop": "#ff5a2a",
+    "glow": "#ff8a1a",
+    "gold": "#ffe0a0",
+    "warm": "#ffd2a4",
+    "cool": "#8fe8ff",
+    "lobe": "#4a7aff",
+    "ink": "#121212",
+    "paper": "#ffffff",
+    "metal": "#e9e9ee",
+    "skin": "#7b4a30"
+  },
+  "type": {
+    "display": { "family": "Anton", "weight": 400, "case": "upper" },
+    "text": { "family": "InterTight", "weight": 800 },
+    "label": { "family": "InterTight", "weight": 700 }
+  },
+  "motion": {
+    "pop": { "seconds": 0.14, "ease": "back", "from": 0.85 },
+    "land": { "seconds": 0.18, "ease": "out5", "from": 1.2 },
+    "title": { "seconds": 0.25, "ease": "out5", "from": 1.25 },
+    "panelDrop": { "seconds": 0.3, "ease": "out5" },
+    "cardIn": { "seconds": 0.4, "ease": "out5", "blurFrom": 36, "blurTo": 16, "flashSeconds": 0.08 },
+    "type": { "secondsPerLine": 0.9 },
+    "stagger": 0.18
+  },
+  "frame": { "designW": 1080, "designH": 1920, "captionY": { "full": 0.61, "split": 0.51 }, "panelSplit": 0.5 }
+}

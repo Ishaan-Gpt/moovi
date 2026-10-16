@@ -154,4 +154,54 @@ MATCH (r:Reference)
 OPTIONAL MATCH (r)-[:HAS_PART]->(a:Asset)
 RETURN r.id AS id, r.title AS title, r.url AS url, count(a) AS parts
 ORDER BY r.added`),
+
+  /* ───── kits: a look as one unit (palette roles, type roles, motion tokens) and the parts that make it ───── */
+  seedKit: q('seedKit', false, 'A kit: one look as a unit. Palette, type and motion are JSON tokens; every part reads only these roles, so a brand palette re-skins the whole kit.', `
+MERGE (k:Kit {id: $id})
+SET k.name = $name, k.about = $about, k.palette = $palette, k.type = $type, k.motion = $motion, k.frame = $frame, k.src = $src
+RETURN k.id AS id`),
+
+  linkKitParts: q('linkKitParts', false, 'The parts of a kit: (Kit)-[:HAS {role}]->(Asset). Re-linking replaces the role.', `
+UNWIND $rows AS r
+MATCH (k:Kit {id: $kit}), (a:Asset {id: r.id})
+MERGE (k)-[h:HAS]->(a)
+SET h.role = r.role
+RETURN count(h) AS parts`),
+
+  linkKitStyles: q('linkKitStyles', false, 'A kit SUITS an edit style.', `
+UNWIND $styles AS sid
+MATCH (k:Kit {id: $kit})
+MERGE (s:EditStyle {id: sid})
+MERGE (k)-[e:SUITS]->(s)
+RETURN count(e) AS edges`),
+
+  referenceTaught: q('referenceTaught', false, 'A reference taught a kit: (Reference)-[:TAUGHT]->(Kit).', `
+MATCH (r:Reference {id: $ref}), (k:Kit {id: $kit})
+MERGE (r)-[t:TAUGHT]->(k)
+RETURN count(t) AS taught`),
+
+  kits: q('kits', true, 'Every kit, how many parts it has and the edit styles it suits.', `
+MATCH (k:Kit)
+OPTIONAL MATCH (k)-[:HAS]->(a:Asset)
+OPTIONAL MATCH (k)-[:SUITS]->(s:EditStyle)
+RETURN k.id AS id, k.name AS name, k.about AS about, count(DISTINCT a) AS parts, collect(DISTINCT s.id) AS styles
+ORDER BY k.id`),
+
+  kitParts: q('kitParts', true, 'A kit with its tokens and every part (to render with it, or re-skin it with a brand palette).', `
+MATCH (k:Kit {id: $kit})
+OPTIONAL MATCH (k)-[h:HAS]->(a:Asset)
+RETURN k.palette AS palette, k.type AS type, k.motion AS motion, k.frame AS frame, k.src AS src,
+       collect({id: a.id, category: a.category, role: h.role, impl: a.impl, params: a.params}) AS parts`),
+
+  kitsServing: q('kitsServing', true, 'Kits ranked for a brief: how many of the beat needs their parts serve (distinct needs first, then part hits).', `
+UNWIND $needs AS nid
+MATCH (k:Kit)-[:HAS]->(a:Asset)-[:SERVES]->(n:Need {id: nid})
+WITH k, count(DISTINCT n) AS covered, count(*) AS hits
+RETURN k.id AS id, k.name AS name, covered, hits
+ORDER BY covered DESC, hits DESC
+LIMIT $n`),
+
+  assetKits: q('assetKits', true, 'The kits an asset belongs to (where its palette and type come from).', `
+MATCH (k:Kit)-[h:HAS]->(:Asset {id: $id})
+RETURN k.id AS kit, h.role AS role`),
 };

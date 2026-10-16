@@ -27,6 +27,7 @@ The ones the product stands on:
 | Never the same clip twice, credits for every clip | `clipSeen`, `useClip`, `clipCredits` | `(:Clip)-[:FROM]->(:Source)-[:UNDER]->(:Licence)`, `(:Clip)-[:USED_IN]->(:Scene)` |
 | Every fact has a page and a proof shot | `factProof`, `claimEvidence` | path Claim → Fact → Page / Screenshot |
 | One library, cast by need | `seedAssets`, `assetsServing`, `assetsForEvent`, `libraryCounts` | `(:Asset)-[:SERVES]->(:Need)`, `-[:FITS]->(:Event)`, `-[:SUITS]->(:EditStyle)`, `-[:IS_A]->(:Transition)` |
+| A look as one re-skinnable unit | `seedKit`, `kitParts`, `kitsServing` | `(:Kit {palette, type, motion})-[:HAS]->(:Asset)`, `(:Reference)-[:TAUGHT]->(:Kit)` |
 | A reference becomes parts | `addReference`, `addReferenceParts`, `referenceParts` | `(:Reference)-[:HAS_PART {role, at}]->(:Asset)` |
 
 ## craft (style knowledge, shared)
@@ -2327,6 +2328,95 @@ MATCH (r:Reference)
 OPTIONAL MATCH (r)-[:HAS_PART]->(a:Asset)
 RETURN r.id AS id, r.title AS title, r.url AS url, count(a) AS parts
 ORDER BY r.added
+```
+
+### `seedKit` (write)
+
+A kit: one look as a unit. Palette, type and motion are JSON tokens; every part reads only these roles, so a brand palette re-skins the whole kit.
+
+```cypher
+MERGE (k:Kit {id: $id})
+SET k.name = $name, k.about = $about, k.palette = $palette, k.type = $type, k.motion = $motion, k.frame = $frame, k.src = $src
+RETURN k.id AS id
+```
+
+### `linkKitParts` (write)
+
+The parts of a kit: (Kit)-[:HAS {role}]->(Asset). Re-linking replaces the role.
+
+```cypher
+UNWIND $rows AS r
+MATCH (k:Kit {id: $kit}), (a:Asset {id: r.id})
+MERGE (k)-[h:HAS]->(a)
+SET h.role = r.role
+RETURN count(h) AS parts
+```
+
+### `linkKitStyles` (write)
+
+A kit SUITS an edit style.
+
+```cypher
+UNWIND $styles AS sid
+MATCH (k:Kit {id: $kit})
+MERGE (s:EditStyle {id: sid})
+MERGE (k)-[e:SUITS]->(s)
+RETURN count(e) AS edges
+```
+
+### `referenceTaught` (write)
+
+A reference taught a kit: (Reference)-[:TAUGHT]->(Kit).
+
+```cypher
+MATCH (r:Reference {id: $ref}), (k:Kit {id: $kit})
+MERGE (r)-[t:TAUGHT]->(k)
+RETURN count(t) AS taught
+```
+
+### `kits` (read-only)
+
+Every kit, how many parts it has and the edit styles it suits.
+
+```cypher
+MATCH (k:Kit)
+OPTIONAL MATCH (k)-[:HAS]->(a:Asset)
+OPTIONAL MATCH (k)-[:SUITS]->(s:EditStyle)
+RETURN k.id AS id, k.name AS name, k.about AS about, count(DISTINCT a) AS parts, collect(DISTINCT s.id) AS styles
+ORDER BY k.id
+```
+
+### `kitParts` (read-only)
+
+A kit with its tokens and every part (to render with it, or re-skin it with a brand palette).
+
+```cypher
+MATCH (k:Kit {id: $kit})
+OPTIONAL MATCH (k)-[h:HAS]->(a:Asset)
+RETURN k.palette AS palette, k.type AS type, k.motion AS motion, k.frame AS frame, k.src AS src,
+       collect({id: a.id, category: a.category, role: h.role, impl: a.impl, params: a.params}) AS parts
+```
+
+### `kitsServing` (read-only)
+
+Kits ranked for a brief: how many of the beat needs their parts serve (distinct needs first, then part hits).
+
+```cypher
+UNWIND $needs AS nid
+MATCH (k:Kit)-[:HAS]->(a:Asset)-[:SERVES]->(n:Need {id: nid})
+WITH k, count(DISTINCT n) AS covered, count(*) AS hits
+RETURN k.id AS id, k.name AS name, covered, hits
+ORDER BY covered DESC, hits DESC
+LIMIT $n
+```
+
+### `assetKits` (read-only)
+
+The kits an asset belongs to (where its palette and type come from).
+
+```cypher
+MATCH (k:Kit)-[h:HAS]->(:Asset {id: $id})
+RETURN k.id AS kit, h.role AS role
 ```
 
 

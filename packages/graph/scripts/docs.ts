@@ -39,6 +39,7 @@ The ones the product stands on:
 | Never the same clip twice, credits for every clip | \`clipSeen\`, \`useClip\`, \`clipCredits\` | \`(:Clip)-[:FROM]->(:Source)-[:UNDER]->(:Licence)\`, \`(:Clip)-[:USED_IN]->(:Scene)\` |
 | Every fact has a page and a proof shot | \`factProof\`, \`claimEvidence\` | path Claim → Fact → Page / Screenshot |
 | One library, cast by need | \`seedAssets\`, \`assetsServing\`, \`assetsForEvent\`, \`libraryCounts\` | \`(:Asset)-[:SERVES]->(:Need)\`, \`-[:FITS]->(:Event)\`, \`-[:SUITS]->(:EditStyle)\`, \`-[:IS_A]->(:Transition)\` |
+| A look as one re-skinnable unit | \`seedKit\`, \`kitParts\`, \`kitsServing\` | \`(:Kit {palette, type, motion})-[:HAS]->(:Asset)\`, \`(:Reference)-[:TAUGHT]->(:Kit)\` |
 | A reference becomes parts | \`addReference\`, \`addReferenceParts\`, \`referenceParts\` | \`(:Reference)-[:HAS_PART {role, at}]->(:Asset)\` |
 
 ${section('craft (style knowledge, shared)', groups[0]!)}

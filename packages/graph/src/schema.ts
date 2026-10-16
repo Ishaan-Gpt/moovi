@@ -7,7 +7,7 @@ import { write } from './client';
 const LABELS = {
   craft: ['Component', 'Slot', 'Recipe', 'Transition', 'Track', 'Beat', 'Style', 'Law', 'Check', 'Skill', 'SkillSection',
     'StyleSignature', 'Stage', 'Deck', 'Card', 'Film', 'Preset', 'Artifact', 'Need', 'Layout',
-    'Asset', 'Event', 'EditStyle', 'Reference'],
+    'Asset', 'Event', 'EditStyle', 'Reference', 'Kit'],
   sys: ['User', 'Project', 'Place'],
   user: ['User', 'Lesson', 'Preference', 'AssetUse', 'VideoRef', 'PresetRef', 'Feedback', 'Film', 'Scene', 'Run'],
   project: ['Project', 'Agent', 'Chat', 'Message', 'Upload', 'Video', 'Run', 'Task', 'Source', 'Fact', 'Claim', 'Scene',
