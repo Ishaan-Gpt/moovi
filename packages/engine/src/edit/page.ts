@@ -8,6 +8,7 @@
 import { CAPTION_FONTS, CAPTION_STYLES } from './captions';
 import { EDIT_SRC } from './lib';
 import { TEMPLATES_SRC } from './templates';
+import { LOOKDRAW_SRC } from './lookdraw';
 
 const CLIENT = `
 (async () => {
@@ -85,6 +86,9 @@ function drawCaptions(t) {
   });
 }
 cap.style.top = (EDIT.posY(ST.position) * H) + 'px';
+// the EDL's captionseasy look, drawn for real (edit/lookdraw.ts); ?look=off shows the nearest player style instead
+const LK = (E.caption_look && E.caption_look.style && Q.get('look') !== 'off' && typeof CAPTION_LOOK !== 'undefined') ? CAPTION_LOOK.init(E, W, H, cap, EDIT) : null;
+if (LK) await LK.ready;
 const FRAME = { full: [0, 0, 1, 1], top_half: [0.04, 0.03, 0.92, 0.44], card_box: [0.12, 0.12, 0.76, 0.34], beside_head: [0.54, 0.16, 0.42, 0.26] };
 function drawInserts(t) {
   const on = (E.inserts || []).filter(x => t >= x.t0 && t < x.t1 && !(TPL && TPL.owns(x)));
@@ -109,7 +113,8 @@ function draw(t) {
   const f = EDIT.framingAt(E, t);
   cur.style.transformOrigin = (f.cx * 100).toFixed(2) + '% ' + (f.cy * 100).toFixed(2) + '%';
   cur.style.transform = 'scale(' + f.scale.toFixed(4) + ')';
-  drawCaptions(t); drawInserts(t);
+  if (LK) LK.draw(t); else drawCaptions(t);
+  drawInserts(t);
   if (TPL) { TPL.draw(t, cur, g); cap.style.visibility = TPL.hideCaptions(t) ? 'hidden' : ''; }
   if (!STILL) { $('tl').textContent = t.toFixed(1) + ' / ' + D.toFixed(1); $('s').value = String(Math.round(t / D * 1000)); }
 }
@@ -183,6 +188,7 @@ input[type=range]{flex:1}
 <div id="ins"></div><canvas id="tpl"></canvas><div id="cap" class="cap"></div>
 </div></div></div>
 <div id="bar"><button id="p">Play</button><input id="s" type="range" min="0" max="1000" value="0"><span id="tl">0.0</span></div>
-<script>${EDIT_SRC}\nvar CAPTION_STYLES = ${JSON.stringify(CAPTION_STYLES)};\n${TEMPLATES_SRC}</script>
+<script>${EDIT_SRC}\nvar CAPTION_STYLES = ${JSON.stringify(CAPTION_STYLES)};\n${TEMPLATES_SRC}
+${LOOKDRAW_SRC}</script>
 <script>${CLIENT}</script>
 </body></html>`;

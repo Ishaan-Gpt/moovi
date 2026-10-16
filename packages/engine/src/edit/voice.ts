@@ -15,7 +15,9 @@ import { config } from '../config';
 const RNN_URL = 'https://raw.githubusercontent.com/GregorR/rnnoise-models/master/somnolent-hogwash-2018-09-01/sh.rnnn';
 export const VOICE_CHAIN = (rnn: string | null) => [
   'highpass=f=80',
-  ...(rnn ? [`arnndn=m=${rnn.replace(/[:\\']/g, m => '\\' + m)}:mix=1`] : []),
+  // the model path quoted, with forward slashes and the drive colon escaped: a Windows path (C:\Users\...) broke the
+  // filter parser with backslash escaping, and the whole clean-up failed
+  ...(rnn ? [`arnndn=m='${rnn.replace(/\\/g, '/').replace(/'/g, '').replace(/:/g, '\\:')}':mix=1`] : []),
   `afftdn=nf=${rnn ? -30 : -25}:tn=1`,
   // a gentle downward gate between words (at most 10 dB): measured on vignesh-raw-1 the speech to room gap goes 25 to 34 dB
   'agate=threshold=0.01:ratio=2:range=0.3:attack=5:release=150',

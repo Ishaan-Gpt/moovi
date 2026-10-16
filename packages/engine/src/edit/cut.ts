@@ -62,7 +62,14 @@ export function splitAt(ps: [number, number][], duration: number, target = 10): 
 export function takeWindow(ws: Word[], ps: [number, number][], duration: number): { a: number; b: number; why: string } {
   let a = 0, why = 'no pre-roll';
   ws.forEach((w, i) => { const nx = ws[i + 1]; if (CUES.has(bare(w.word)) && w.t < duration * 0.5 && (!nx || nx.t - w.end > 0.7)) { a = Math.max(a, w.end); why = `after the slate cue "${w.word}"`; } });
-  for (const [p0, p1] of ps) if (p0 < duration * 0.4 && p1 - p0 >= 1.0 && p1 > a) { a = p1; why = 'after the set-up talk (last long pause in the opening)'; }
+  for (const [p0, p1] of ps) {
+    if (!(p0 < duration * 0.4 && p1 - p0 >= 1.0 && p1 > a)) continue;
+    // a finished sentence before the pause is content (an edited video's hook), not set-up talk: 4+ words that end
+    // on sentence punctuation (. ? ! or the Devanagari danda) keep their place
+    const before = ws.filter(w => w.t >= a && w.t < p0); // by start: a last word often runs a few ms into the pause
+    if (before.length >= 4 && /[.?!।]$/.test(before.at(-1)!.word.trim())) continue;
+    a = p1; why = 'after the set-up talk (last long pause in the opening)';
+  }
   // the take starts on the first speech after that point
   a = Math.max(0, a - 0.06);
   const real = ws.filter(w => !(w.end - w.t > 1.2 && (w.p ?? 1) < 0.2));
