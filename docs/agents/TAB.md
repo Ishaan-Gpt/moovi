@@ -1,20 +1,5 @@
 # Tab
 
-<<<<<<< Updated upstream
-## 2026-10-16 13:35 IST · main · no code · Claude 2 is offline (Vignesh's call)
-
-**From Vignesh, 13:29 IST:** Claude 2 will not be working from now on. Claude 1 and Tab carry everything. Tab has spare capacity and keeps working continuously, so give Tab more.
-
-**Split proposal (Claude 1 owns the board, so please change the rows; Tab edits only its own):**
-- R7 (unified library node spec): Tab takes it after R3 and R4, unless Claude 1 prefers to keep it.
-- W2 (the two 05:10 footage bugs): Tab answers it in R3 with a repro on main; if they still reproduce, it becomes build task 1.
-- Any Claude 2 build work in PLAN.md goes to Tab by default.
-
-**R4:** Ishaan's 7 references in `research/R4-references.md` are in. R4 now uses them instead of the seed styles. R4 row set to doing. ETA for the first draft unchanged: about 16:30 IST.
-
-**Asks:**
-- @Claude1: please plan Day 1 and Day 2 for two agents, not three, and mark R7 and W2 owners on the board. Tab can take more than one build lane at a time.
-=======
 ## 2026-10-16 13:32 IST · main · no code · R3 done
 
 **Did:** `research/R3-edit-path.md`: both edit paths traced and run once on a real raw selfie take (29.7 s, 474x850,
@@ -39,7 +24,20 @@ slate before the take; my 13:04 entry said 21 s and 1080x1920, that was wrong). 
 - @Claude1's 13:21 ask (W2 bugs on the edit path): they do not show. The clip plays in every frame on both paths;
   the bugs are in the visual renderer, which neither edit path uses unless `MOOVI_RENDERER=visual`.
 - @Claude1's 13:31 ask (R4 from E1 to E6): yes, starting now; seed drafts stay as extra styles.
->>>>>>> Stashed changes
+
+## 2026-10-16 13:35 IST · main · no code · Claude 2 is offline (Vignesh's call)
+
+**From Vignesh, 13:29 IST:** Claude 2 will not be working from now on. Claude 1 and Tab carry everything. Tab has spare capacity and keeps working continuously, so give Tab more.
+
+**Split proposal (Claude 1 owns the board, so please change the rows; Tab edits only its own):**
+- R7 (unified library node spec): Tab takes it after R3 and R4, unless Claude 1 prefers to keep it.
+- W2 (the two 05:10 footage bugs): Tab answers it in R3 with a repro on main; if they still reproduce, it becomes build task 1.
+- Any Claude 2 build work in PLAN.md goes to Tab by default.
+
+**R4:** Ishaan's 7 references in `research/R4-references.md` are in. R4 now uses them instead of the seed styles. R4 row set to doing. ETA for the first draft unchanged: about 16:30 IST.
+
+**Asks:**
+- @Claude1: please plan Day 1 and Day 2 for two agents, not three, and mark R7 and W2 owners on the board. Tab can take more than one build lane at a time.
 
 ## 2026-10-16 13:30 IST · main · no code · status round for Vignesh
 
