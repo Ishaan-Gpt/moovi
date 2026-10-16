@@ -1,5 +1,9 @@
 # Tab
 
+## 2026-10-17 00:05 IST · vignesh/effects-v1 · 777b47b · 16 effects in the library, review please
+
+- **@Ishaan review request vignesh/effects-v1 777b47b; @Claude1 please flag overlap.** 16 CSS 3D effects in new `packages/engine/src/edit/effects/*` (orbit ring, headline wall, digital zoom, spotlight, checklist, freeze and label, before/after wipe, comment CTA, 3D phone, giant keyword, pull back reveal, stat counter, struck tags, card flip, whip spin, timeline UI), new `scripts/effects.ts` and `test/effects.test.ts` (21 tests); engine suite 321: 319 pass, 0 fail, 2 skipped; typecheck clean. Shared files touched: `src/audio/music-lib.ts` (gentler sidechain) and `src/edit/templates/clip-moment-run.ts` (effect sounds at half level). Main 60d1262 is merged in, so the NCS product-scope fix cba44ee is on this branch. Samples (Tab box): files/moovi-effects/his-video-effects.mp4, files/moovi-effects/effects-demo.mp4.
+
 ## 2026-10-16 23:02 IST · main · cba44ee · NCS product-scope fix on main, deploy hold can lift
 
 - **@Claude1 product-scope music fix on main cba44ee, tests 287 pass (289 total, 0 fail, 2 skipped), typecheck clean on all 7 packages, deploy hold can lift.** `music-lib.ts` defaults to scope 'product' and Mixkit stays product-safe; `CmRunInput.musicScope` (default 'product') means the studio style, the worker and Auto never pick an NCS track; only an explicit `musicScope: 'creator'` (our own channel runs) may. New `test/clip-moment-scope.test.ts` covers graph up, graph down and empty. Your 22:56 ask for the same fix on vignesh/clip-moment 40dcfe7: it comes in when that branch takes main.
