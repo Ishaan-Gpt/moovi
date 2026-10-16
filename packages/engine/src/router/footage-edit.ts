@@ -32,8 +32,8 @@ import { wallFilter } from './wall';
  * pan, zoom through, orbit, frame break, punch-ins with light flashes), a wall of videos fly-through (wall.ts), the
  * phone pull-back with a list, the product name behind the speaker's head, a face-tracking label, an animated end card.
  */
-export interface Word { word: string; t: number; end: number; p?: number }
-export interface Seg { a: number; b: number; zoom: number }
+import type { Word, Seg } from '../edit/cut';
+export type { Word, Seg };
 export interface FootageEditReport {
   input: string; out: string; duration: number; sourceDuration: number; transcript: string; heard: string;
   removed: { words: string[]; why: string }[]; words: Word[]; segs: Seg[]; cards: Card[]; captions: string; keywords: string[];
@@ -112,192 +112,14 @@ export async function cleanTexts(audio: string, prompt: string, alt?: string, mo
   return got.filter(Boolean);
 }
 
-/** How many words of `text` agree with the timed words, in order (longest common subsequence on bare words). */
-export function agreement(text: string, timed: Word[]): number {
-  const A = text.split(/\s+/).map(bare).filter(Boolean), T = timed.map(w => bare(w.word));
-  let prev = new Int16Array(T.length + 1);
-  for (const a of A) { const cur = new Int16Array(T.length + 1); for (let j = 0; j < T.length; j++) cur[j + 1] = a === T[j] ? prev[j]! + 1 : Math.max(prev[j + 1]!, cur[j]!); prev = cur; }
-  return prev[T.length]!;
-}
-
-/**
- * The accurate text to trust: the answer that agrees with the most timed words (a wrong-language or drifting answer
- * agrees with few), longer on a tie; none when even the best agrees with under a third of what was timed.
- */
-export function pickText(cands: string[], timed: Word[]): string | null {
-  const scored = cands.map(c => ({ c, a: agreement(c, timed) })).sort((x, y) => y.a - x.a || y.c.length - x.c.length);
-  return scored[0] && scored[0].a >= Math.max(3, timed.length / 3) ? scored[0].c : null;
-}
-
-/**
- * The brief's own names (the hint), heard any near way ("Moviez", "Movies", "Moovie" for "Moovi"): a word whose sound
- * key (lower case, doubled letters collapsed, a trailing s, z or e dropped) matches the name's is written as the name.
- */
-export function nameFix(ws: Word[], names: string[]): Word[] {
-  const key = (w: string) => bare(w).replace(/(.)\1+/g, '$1').replace(/[sz]$/, '').replace(/e$/, '');
-  const ks = names.filter(n => /^[A-Za-z][\w']{2,}$/.test(n)).map(n => ({ n, k: key(n) })).filter(x => x.k.length >= 3);
-  const out = ws.map(w => { const hit = ks.find(x => key(w.word) === x.k && bare(w.word) !== bare(x.n)); return hit ? { ...w, word: hit.n + (w.word.match(/[.,!?;:]+$/)?.[0] ?? '') } : w; });
-  // a two-word term heard with its first word wrong ("software media" for "social media"): the second word matches, the
-  // first starts with the same letter and is about as long
-  for (const t of names.map(n => n.split(/\s+/)).filter(t => t.length === 2)) {
-    const [a, b] = t.map(bare) as [string, string];
-    for (let i = 0; i + 1 < out.length; i++) {
-      const x = bare(out[i]!.word), y = bare(out[i + 1]!.word);
-      if (y === b && x !== a && x[0] === a[0] && Math.abs(x.length - a.length) <= 3 && !/[.,!?;:]$/.test(out[i]!.word)) out[i] = { ...out[i]!, word: t[0]! };
-    }
-  }
-  return out;
-}
-
-/** Apply the brief's corrections ("movies" -> "Moovi", "software media" -> "social media"), keeping each word's punctuation and timing. */
-export function fixWords(ws: Word[], fixes: Record<string, string>): Word[] {
-  const out = ws.map(w => ({ ...w }));
-  for (const [from, to] of Object.entries(fixes)) {
-    const f = from.toLowerCase().split(/\s+/).map(bare), t = to.split(/\s+/);
-    for (let i = 0; i + f.length <= out.length; i++) {
-      if (!f.every((x, k) => bare(out[i + k]!.word) === x)) continue;
-      const tail = out[i + f.length - 1]!.word.match(/[.,!?;:]+$/)?.[0] ?? '';
-      t.forEach((x, k) => { if (k < f.length) out[i + k]!.word = x + (k === t.length - 1 ? tail : ''); });
-      if (t.length < f.length) { out[i + t.length - 1]!.end = out[i + f.length - 1]!.end; out.splice(i + t.length, f.length - t.length); }
-    }
-  }
-  return out;
-}
-
-/**
- * Lay the accurate words onto the timed ones: a longest-common-subsequence match on bare words anchors the shared
- * words; each run of accurate words between two anchors takes the time span of the timed words between them (or of the
- * gap), split by length. Timed words with no counterpart are kept (they are said; the accurate model may skip a slate).
- */
-export function align(timed: Word[], text: string): Word[] {
-  const acc = text.split(/\s+/).filter(Boolean);
-  const A = acc.map(bare), T = timed.map(w => bare(w.word));
-  const n = A.length, m = T.length, L = Array.from({ length: n + 1 }, () => new Int16Array(m + 1));
-  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) L[i]![j] = A[i] === T[j] && A[i] ? L[i + 1]![j + 1]! + 1 : Math.max(L[i + 1]![j]!, L[i]![j + 1]!);
-  const pairs: [number, number][] = [];
-  for (let i = 0, j = 0; i < n && j < m;) { if (A[i] === T[j] && A[i]) { pairs.push([i, j]); i++; j++; } else if (L[i + 1]![j]! >= L[i]![j + 1]!) i++; else j++; }
-  if (pairs.length < Math.max(2, acc.length * 0.3) || acc.length < timed.length * 0.6) return timed; // too different, or the text stopped early
-  const out: Word[] = [];
-  const anchors: [number, number][] = [[-1, -1], ...pairs, [n, m]];
-  for (let k = 0; k < anchors.length - 1; k++) {
-    const [i0, j0] = anchors[k]!, [i1, j1] = anchors[k + 1]!;
-    if (i0 >= 0) out.push({ ...timed[j0]!, word: acc[i0]! });
-    const accRun = acc.slice(i0 + 1, i1), tRun = timed.slice(j0 + 1, j1);
-    if (!accRun.length) {
-      // timed-only words the accurate text skipped: a run longer than a stray word is speech, keep it
-      if (k === 0 || k === anchors.length - 2 || tRun.length > 2) out.push(...tRun);
-      continue;
-    }
-    const s = tRun.length ? tRun[0]!.t : (j0 >= 0 ? timed[j0]!.end : Math.max(0, (timed[j1]?.t ?? 0) - 0.3 * accRun.length));
-    const e = tRun.length ? tRun.at(-1)!.end : (j1 < m ? timed[j1]!.t : s + 0.3 * accRun.length);
-    if (k === 0 && tRun.length > accRun.length + 2) { out.push(...tRun); continue; } // a pre-roll the accurate model skipped
-    const tot = accRun.reduce((a, w) => a + w.length + 1, 0); let c = s;
-    for (const w of accRun) { const d = (e - s) * (w.length + 1) / tot; out.push({ word: w, t: +c.toFixed(3), end: +(c + d).toFixed(3) }); c += d; }
-  }
-  return out;
-}
+import { agreement, pickText, nameFix, fixWords, align } from '../edit/hear';
+export { agreement, pickText, nameFix, fixWords, align };
 
 // ---------- 2. cut ----------
-const CUES = new Set(['start', 'action', 'rolling', 'go', 'ready', 'okay', 'ok']);
-const FILLERS = new Set(['um', 'uh', 'erm', 'uhm', 'hmm', 'mm', 'ah', 'er']);
-const OPENERS = new Set(['and', 'so', 'okay', 'ok', 'alright', 'well']);
+import { CUES, FILLERS, OPENERS, envelope, pauses, splitAt, takeWindow, segments, mapTime, keywordsOf } from '../edit/cut';
+export { envelope, pauses, splitAt, takeWindow, segments, mapTime, keywordsOf };
+void CUES; void OPENERS;
 
-/** Loudness every 20 ms (dBFS) from 8 kHz mono PCM. */
-export async function envelope(audio: string): Promise<{ db: Float32Array; hop: number }> {
-  const buf = await new Promise<Buffer>((res, rej) => execFile(config.ffmpeg, ['-nostdin', '-v', 'error', '-i', audio, '-ac', '1', '-ar', '8000', '-f', 's16le', '-'], { encoding: 'buffer', maxBuffer: 256e6, timeout: 60_000 }, (e, out) => e ? rej(e) : res(out)));
-  const x = new Int16Array(buf.buffer, buf.byteOffset, Math.floor(buf.length / 2)), hop = 160, n = Math.floor(x.length / hop), db = new Float32Array(n);
-  for (let i = 0; i < n; i++) { let s = 0; for (let k = 0; k < hop; k++) { const v = x[i * hop + k]! / 32768; s += v * v; } db[i] = 10 * Math.log10(s / hop + 1e-10); }
-  return { db, hop: hop / 8000 };
-}
-
-/**
- * Pauses: stretches quieter than the clip's own floor-to-speech range allows (outdoor takes never fall silent, so
- * the threshold is relative: 30% of the way from the 15th to the 90th loudness percentile), at least `min` long.
- */
-export function pauses(env: { db: Float32Array; hop: number }, min = 0.3, k = 0.3): [number, number][] {
-  const sorted = Float32Array.from(env.db).sort(), q = (p: number) => sorted[Math.floor(p * (sorted.length - 1))]!;
-  const th = q(0.15) + k * (q(0.9) - q(0.15)), out: [number, number][] = [];
-  for (let i = 0; i < env.db.length;) {
-    if (env.db[i]! >= th) { i++; continue; }
-    let j = i; while (j < env.db.length && env.db[j]! < th) j++;
-    if ((j - i) * env.hop >= min) out.push([i * env.hop, j * env.hop]);
-    i = j;
-  }
-  return out;
-}
-
-/** Pieces of about `target` seconds, cut in the middle of pauses (never shorter than 3 s, never longer than 16 s if a pause allows). */
-export function splitAt(ps: [number, number][], duration: number, target = 10): [number, number][] {
-  const out: [number, number][] = []; let a = 0;
-  const mids = ps.filter(([x, y]) => y - x >= 0.35).map(([x, y]) => (x + y) / 2);
-  while (duration - a > target * 1.5) {
-    const ok = mids.filter(m => m - a >= 3 && m - a <= 16 && duration - m >= 3);
-    if (!ok.length) break;
-    const m = ok.sort((x, y) => Math.abs(x - a - target) - Math.abs(y - a - target))[0]!;
-    out.push([a, m]); a = m;
-  }
-  out.push([a, duration]);
-  return out;
-}
-
-/**
- * The take: a raw clip often opens with set-up talk and a slate ("start?", "start!"). The take begins after the last
- * slate cue followed by a pause, or after the last long pause (over 1 s) in the first 40% of the clip; it ends after
- * the last real word (a stretched, unsure last word is a transcription ghost).
- */
-export function takeWindow(ws: Word[], ps: [number, number][], duration: number): { a: number; b: number; why: string } {
-  let a = 0, why = 'no pre-roll';
-  ws.forEach((w, i) => { const nx = ws[i + 1]; if (CUES.has(bare(w.word)) && w.t < duration * 0.5 && (!nx || nx.t - w.end > 0.7)) { a = Math.max(a, w.end); why = `after the slate cue "${w.word}"`; } });
-  for (const [p0, p1] of ps) if (p0 < duration * 0.4 && p1 - p0 >= 1.0 && p1 > a) { a = p1; why = 'after the set-up talk (last long pause in the opening)'; }
-  // the take starts on the first speech after that point
-  a = Math.max(0, a - 0.06);
-  const real = ws.filter(w => !(w.end - w.t > 1.2 && (w.p ?? 1) < 0.2));
-  const last = real.filter(w => w.t >= a).at(-1);
-  const b = Math.min(duration, (last?.end ?? duration) + 0.3);
-  return { a, b, why };
-}
-
-/** Jump cuts: the take minus every pause (cut down to a breath of air either side) and every filler word. */
-export function segments(take: { a: number; b: number }, ps: [number, number][], fillers: [number, number][], airIn = 0.08, airOut = 0.1): Seg[] {
-  const holes = [...ps.map(([p0, p1]) => [p0 + airOut, p1 - airIn] as [number, number]), ...fillers].filter(([x, y]) => y - x > 0.06).sort((x, y) => x[0] - y[0]);
-  const segs: Seg[] = []; let cur = take.a;
-  for (const [h0, h1] of holes) {
-    if (h1 <= cur || h0 >= take.b) continue;
-    if (h0 > cur) segs.push({ a: cur, b: Math.min(h0, take.b), zoom: 1 });
-    cur = Math.max(cur, h1);
-  }
-  if (cur < take.b) segs.push({ a: cur, b: take.b, zoom: 1 });
-  const out = segs.filter(s => s.b - s.a > 0.12);
-  // alternate the punch-in so every jump cut reads as a cut
-  out.forEach((s, i) => { s.zoom = i % 2 ? 1.12 : 1.0; });
-  return out;
-}
-
-/** A source time mapped to the edited film's time; a time inside a cut snaps to the next kept piece (null outside the take). */
-export function mapTime(segs: Seg[], t: number): number | null {
-  let off = 0;
-  for (const s of segs) {
-    if (t < s.a - 1e-3) return off; // inside a cut: the start of the next piece
-    if (t <= s.b + 1e-3) return off + Math.min(t, s.b) - s.a;
-    off += s.b - s.a;
-  }
-  return null;
-}
-
-/** Key words for the gold accent: names, numbers and the longest word of each sentence. */
-export function keywordsOf(ws: Word[]): string[] {
-  const keys = new Set<string>(); let sent: Word[] = [];
-  const flush = () => { const long = sent.filter(w => bare(w.word).length >= 7).sort((a, b) => bare(b.word).length - bare(a.word).length)[0]; if (long) keys.add(bare(long.word)); sent = []; };
-  const STOP = new Set(['we', 'i', 'you', 'it', 'the', 'and', 'this', 'that', 'a', 'so', 'thank']);
-  ws.forEach((w, i) => {
-    const b = bare(w.word);
-    if (STOP.has(b)) { sent.push(w); if (/[.!?]$/.test(w.word)) flush(); return; }
-    if (/\d/.test(b) || (i > 0 && /^[A-Z][a-z]/.test(w.word) && !/[.!?]$/.test(ws[i - 1]!.word) && b !== 'i')) keys.add(b);
-    sent.push(w); if (/[.!?]$/.test(w.word)) flush();
-  });
-  flush();
-  return [...keys].filter(Boolean);
-}
 
 // ---------- 5. cards ----------
 /**

@@ -5,6 +5,7 @@ import type { Ev, Word } from '@moovi/skills';
 import { config } from './config';
 import { assetsReady, bedFile, bedFrom, bedInfo, sfxStem as mixSfx, type Ev as MixEv } from './audio/mix';
 import { transcribeWords } from './audio/stt';
+import { hear } from './edit/hear';
 import { speak } from './audio/tts';
 import { readWav, writeWav } from './audio/wav';
 
@@ -113,7 +114,8 @@ export async function transcribe(src: string, dir: string): Promise<{ words: Wor
   ensureDir(dir);
   const wav = join(dir, 'vo.wav');
   await sh(config.ffmpeg, ['-v', 'error', '-y', '-i', src, '-vn', '-ac', '1', '-ar', '44100', wav], { timeout: 300_000 });
-  const words = await transcribeWords(wav, dir);
+  // D1.2: the language-locked hear (edit/hear.ts: pieces, accurate text, confidence gate); the plain call is the fallback
+  const words: Word[] = await hear(wav, dir).then(h => h.words.map(w => ({ word: w.word, t: w.t, end: w.end })), () => transcribeWords(wav, dir));
   writeJson(join(dir, 'words.json'), words);
   return { words, seconds: (await probe(wav)).duration, wav };
 }

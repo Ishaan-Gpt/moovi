@@ -3,14 +3,19 @@ import { copyFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
 import { color } from '@moovi/brand';
 import { project as P, run as runQ, SYS, sys as S } from '@moovi/graph';
-import { sttAvailable, transcribeWords } from '../audio/stt';
+import { sttAvailable } from '../audio/stt';
 import { probe } from '../bench';
 import { publish } from '../bus';
 import type { Command } from '../commands';
 import { config } from '../config';
 import type { Handler } from '../ctx';
 import { CAPTION_STYLES } from '../edit/captions';
-import { EDIT } from '../edit/lib';
+import { EDIT, type PlayerEdl } from '../edit/lib';
+import { buildEdl } from '../edit/build';
+import { envelope, pauses, type Word } from '../edit/cut';
+import { validateEdl } from '../edit/edl';
+import { hear } from '../edit/hear';
+import { lookFaces } from '../edit/look';
 import { roughEdl } from '../edit/rough';
 import { activity } from '../live';
 import { startRun } from '../runs';
@@ -19,8 +24,8 @@ import { liveRefFile, type LiveRef } from '../styles/serve';
 /**
  * Your own clip in, an edit playing live out: an upload with no style picked is EDITED (not sent to the crew, which
  * took 19.7 min on R3's clip and transcribed it as Urdu). One job: probe, hear, plan, and the edit preview player
- * plays the plan over the clip in the browser, nothing encoded. The plan is the stand-in (../edit/rough.ts) until
- * D1.3's EDL builder lands. MOOVI_EDIT=crew keeps the old crew path; a brief that asks to copy a video's style
+ * plays the plan over the clip in the browser, nothing encoded. The plan is D1.3's EDL builder (../edit/build.ts);
+ * the words come from D1.2's hear (../edit/hear.ts, language-locked). MOOVI_EDIT=crew keeps the old crew path; a brief that asks to copy a video's style
  * ("like this", "in the style of") still goes to the crew's reference path.
  */
 export const EDIT_KIND = 'edit-reel';
@@ -52,7 +57,7 @@ export async function routeEdit(cmd: Brief, uploads: Upload[]): Promise<boolean>
 }
 
 export const editReel: Handler = async ctx => {
-  const inp = ctx.input<{ upload: string; caption?: string }>();
+  const inp = ctx.input<{ upload: string; caption?: string; names?: string[] }>();
   const [u] = (await ctx.q<Upload>(P.uploads, { chat: ctx.chat })).filter(x => x.id === inp.upload);
   if (!u) throw new Error('The clip to edit is missing');
   const t0 = Date.now(), lap: Record<string, number> = {}; let tl = t0;
@@ -68,16 +73,39 @@ export const editReel: Handler = async ctx => {
   if (!pr.hasVideo) throw new Error(`${u.name} has no video stream`);
   done('probe');
 
+  // D1.3 look: the speaker's face, beside the hearing (edit/look.ts; [] without a vision python), for crop and punch-ins
+  const lookP = lookFaces(u.path, pr.duration);
   await step('hear', 'timing every word');
-  let words: Awaited<ReturnType<typeof transcribeWords>> = [];
-  if (pr.hasAudio && sttAvailable()) words = await transcribeWords(u.path, dir, { signal: ctx.signal });
-  else if (pr.hasAudio) await ctx.activity('note', 'no speech-to-text key, so no cuts or captions from words this time');
+  // D1.2: language-locked, in pieces, the accurate text laid on, and a confidence gate (edit/hear.ts)
+  let words: Word[] = [];
+  if (pr.hasAudio && sttAvailable()) {
+    // the vocabulary prompt: Moovi, Ishaan, MOOVI_VOCAB and the project's own names (inp.names)
+    const h = await hear(u.path, dir, { signal: ctx.signal, ...(inp.names?.length ? { names: inp.names } : {}) });
+    words = h.words;
+    writeFileSync(join(dir, 'hear.json'), JSON.stringify({ language: h.language, lang: h.lang, detected: h.detected, by: h.by, prompt: h.prompt, gate: h.gate, pieces: h.pieces, timings: h.timings }, null, 1));
+    if (!h.gate.ok) await ctx.activity('note', `the transcript may be off (${h.gate.reasons.join('; ')}), so check the captions`);
+  } else if (pr.hasAudio) await ctx.activity('note', 'no speech-to-text key, so no cuts or captions from words this time');
   writeFileSync(join(dir, 'words.json'), JSON.stringify(words, null, 1));
   done('hear');
 
   await step('plan', 'planning the cuts');
   const palette = { ink: color.ink, paper: color.surface, accent: color.ice, accent2: color.frostMid, deep: color.ink, pop: color.iceWhite };
-  const edl = roughEdl({ file, duration: pr.duration, w: pr.width ?? 1080, h: pr.height ?? 1920, fps: pr.fps ?? 30 }, words, { palette, captionStyle: inp.caption ?? 'punch-duo' });
+  // D1.3: the EDL builder (edit/build.ts): take window, pause and filler cuts snapped to words, a framing per sentence
+  const ps = pr.hasAudio ? pauses(await envelope(u.path)) : [];
+  const look = await lookP;
+  const source = { file, duration: pr.duration, w: pr.width ?? 1080, h: pr.height ?? 1920, fps: pr.fps ?? 30 };
+  let edl: PlayerEdl;
+  try {
+    const e = buildEdl({ source, words, pauses: ps, palette, ...(look.faces.length ? { faces: look.faces } : {}), style: { id: 'base', caption: inp.caption ?? 'punch-duo' } });
+    const bad = validateEdl(e).problems.filter(p => !p.startsWith('version'));
+    if (bad.length) throw new Error(bad.slice(0, 3).join('; '));
+    edl = e;
+  } catch (e) {
+    // the builder is new: if it throws or its EDL does not validate, the stand-in plan (rough.ts) still gives an edit
+    console.warn(`[edit] builder failed, rough plan instead: ${String((e as Error).message ?? e).slice(0, 200)}`);
+    await ctx.activity('note', 'the full edit planner hit a problem, so this is the simple cut');
+    edl = roughEdl(source, words.map(w => ({ word: w.word, t: w.t, end: w.end })), { palette, captionStyle: inp.caption ?? 'punch-duo' });
+  }
   const t = EDIT.timeline(edl);
   if (t.problems.length) throw new Error(`The edit plan is inconsistent: ${t.problems.join('; ')}`);
   writeFileSync(join(dir, 'edl.json'), JSON.stringify(edl, null, 1));
