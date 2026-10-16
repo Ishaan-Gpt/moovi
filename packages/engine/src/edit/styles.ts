@@ -58,7 +58,7 @@ export const STYLE_LAWS: Record<D22Style, StyleLaw> = {
     id: 'studio-minimal', about: 'one seated take: wide and close per sentence, digital punch-ins on word edges, one hero graphic per section, hits on every punch',
     laws: { hold_max: 5, punch: 1.3, push: 1, min_shot: 1.6 },
     bands: { changes_per_s: [0.18, 0.7], median_shot: [1.6, 5.1], max_hold: [0, 5.1], max_gap: [0, 0.6] },
-    caption: 'tier-two', palette: { accent: '#FF8A1F', paper: '#FFFFFF', deep: '#0B0B0B', pop: '#FF3B30' },
+    caption: 'sm-two', palette: { accent: '#FF8A1F', paper: '#FFFFFF', deep: '#0B0B0B', pop: '#FF3B30' },
     grade: 'grade:teal-shadows', camera: 'punch', sfx: { cut: 'hard-hit', number_hit: 'stat', riser: 'build', flash: 'accent' }, end: 'logo',
   },
 };
@@ -170,6 +170,8 @@ export function applyStyle(e: Edl, id: D22Style, o: StyleOpts = {}): Edl {
       if (!n || n.t0 - last < 6 || n.t0 + 1.6 > dur - 0.3) continue;
       inserts.push({ t0: r4(n.t0), t1: r4(n.t0 + 1.6), kind: 'number', frame: 'card_box', label: n.text.replace(/[.,!?;:]+$/, ''), need: 'show_number', enter: 'pop', rule_id: rule('hero_number') });
       last = n.t0;
+      // the hero card says the number once: the caption drops it while the card is up
+      hide.push(n.i);
     }
     overlays.push({ t0: 0, t1: r4(dur), kind: 'grain', params: { amount: 0.06 }, rule_id: rule('grain') });
   }

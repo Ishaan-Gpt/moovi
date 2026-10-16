@@ -187,6 +187,8 @@ function draw(t) {
   cur.style.transform = (x.dx || x.dy ? 'translate(' + (x.dx * W).toFixed(1) + 'px,' + (x.dy * H).toFixed(1) + 'px) ' : '') + 'scale(' + (f.scale * x.zoom).toFixed(4) + ')';
   cur.style.filter = ((x.blur > 0.5 ? 'blur(' + (x.blur * W / 1080).toFixed(1) + 'px) ' : '') + GRADE).trim();
   drawCaptions(t); drawInserts(t); drawFx(t); drawStyle(t);
+  // the logo end card is a black card: no caption over it (sm-v1: 'YEP,' drawn across '@VIGNESH')
+  cap.style.visibility = E.end && E.end.kind === 'logo' && t >= E.end.t0 ? 'hidden' : '';
   if (TPL) { TPL.draw(t, cur, g); cap.style.visibility = TPL.hideCaptions(t) ? 'hidden' : ''; }
   if (!STILL) { $('tl').textContent = t.toFixed(1) + ' / ' + D.toFixed(1); $('s').value = String(Math.round(t / D * 1000)); }
 }
