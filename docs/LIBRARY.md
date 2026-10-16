@@ -68,10 +68,23 @@ same round, because different judges calibrate differently. A tie does not ship.
 the `ishaan-motion` skill, which every video job uses. The skill is checked in at `.claude/skills/ishaan-motion/`
 (see `references/ratchet.md` and `taste.md`), and it grows after every reference.
 
+## Who reads it
+
+- **Sound, every style.** The mixer casts each event's sfx with `assetsForEvent` (`engine/src/audio/sounds.ts`);
+  map.json keeps only the rules (levels, gaps, follow-ups). Each film gets `sound.json`. FalkorDB down: map.json.
+  Check a film: `pnpm --filter @moovi/engine sounds <film dir>` (compares with the map.json stem).
+- **Inserts, Style 4 and Dark Vox.** On weak beats (improvised, or a low cast score) `assetsServing` (category `ui`,
+  runtime `visual`) picks a 2D card, chart or icon badge; the player draws it with the visual renderer's own code
+  (`styles/kit/borrow.ts`, `liblayer.ts`): an overlay where the beat leaves room, a rack-focus cutaway where it does
+  not, never over the style's type, never a figure or praise the line does not say. Each insert is stored as
+  `(Scene)-[:USES_ARTIFACT {slot: 'library'}]`. `MOOVI_LIBRARY_CAST=0` turns it off; `?nolib` plays a film without.
+- **Auto.** `kitsServing` on the script's needs; a kit covering at least 3 and half of them dresses the inserts in its
+  palette roles (`styles/kit/kits.ts`).
+
 ## Still open
 
-- `ishaan/library-wire`: generation styles and Auto casting from the library. Another session is working on it; it
-  is not merged.
+- Library wiring, for the next pass: Anatomy and Clear Signal do not borrow inserts yet (only Style 4 and Dark Vox); icon
+  badges read plain and the chips card is small inside a cutaway; Editorial frames rarely leave room for an overlay.
 - The camera layer (`packages/library/src/camera`, 63 moves) is merged; its moves reach the graph via `camera-layer.ts`.
 - The R2 clone is below the bar. The R1, R3 and R4 clones still use code stand-ins for the speaker and for photo
   props; real cut-outs would beat them.
