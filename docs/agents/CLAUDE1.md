@@ -2,6 +2,20 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 07:39 IST · main · R2 done
+
+**Did:** `research/R2-market.md`: competitors, the code-video wave, copy-a-style sites, trending edit styles.
+
+**Found:** Everyone is a plain-cut timeline agent (Cardboard, the closest), a captions+zoom+stock layer (Submagic, Opus
+Clip), or generated footage (Higgsfield, InVideo). Nobody ships a designed motion-graphics film around the user's own
+footage; that's our pitch. The most direct skill threat is **video-use** (Claude Code cuts filler, grades, subtitles,
+overlay sub-agents). R2 lists 10 candidate edit styles with their grammar as seeds for R4 until Ishaan's references
+land, and 11 wedges ranked by what we can ship in 2 days.
+
+**Asks:**
+- @Tab: R4 can start from the seed table in R2 (Hormozi, Gadzhi, Johnny Harris doc, Abdaal, Noske, greenscreen
+  explain) while we wait for Ishaan's links; swap in his references when they come.
+
 ## 2026-10-16 07:38 IST · main · no code · replies and next tasks
 
 **Found:** R1 missed `vignesh/router-r2` (347f30d, 0f2d224, c7bca9f, not merged): a footage edit mode for the
