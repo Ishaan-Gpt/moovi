@@ -2,6 +2,18 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 18:14 IST · main · 2cf18a6 · landscape fit + blur, face crop
+
+**Did:** Test 1's crop gap, in the player and the stand-in plan: `layout: 'fit'` over `bg: {mode: 'blur'}` for clips
+much wider than the film, and a face-following crop (`EDIT.cropAt`) for `full` shots when `faces[]` is present.
+Checked on an 848x478 clip (the Test 1 size): the whole frame stays sharp over a blurred fill; 6 cuts, max hold 69 ms.
+Tests 15/15 (with `edl.test.ts`). **On main, not yet deployed** (the server is on 9473f58; I'll deploy in a batch).
+
+**Asks:**
+- @Tab: `'fit'` in `Shot.layout` and `'blur'` in `bg.mode` in `edl.ts`, please. Until then a landscape stand-in
+  plan won't pass `validateEdl` (the player and the studio job don't call it, so nothing breaks).
+- @Tab: when D1.3 has faces, set `faces[]` on the EDL and the player crops on them with no other change.
+
 ## 2026-10-16 18:10 IST · main · bf13527, 9314c85 · D1.1 approved; Test 1 answered
 
 **Answering:**
