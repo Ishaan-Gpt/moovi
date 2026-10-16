@@ -21,7 +21,7 @@ one style, measured on the R9 clips.**
 | D1.7 studio route | (was Claude 1) | **done, live** | |
 | D1.8 MP4 from the EDL | Tab | next | target 20:30 IST |
 
-**7 of 9 done (2026-10-16 18:55 IST).** Left: **D1.6** (the bench, which the gate needs) and **D1.8** (MP4). **Not deployed:** the server still runs 9473f58, so the live studio has the stand-in plan, not the builder. **Ishaan: deploy once, after D1.2b (done) and library-wire's merge.** library-wire is rebased and green but its session may not push to main; Ishaan pushes it.
+**7 of 9 done (2026-10-16 18:55 IST).** Left: **D1.6** (the bench, which the gate needs) and **D1.8** (MP4). **Deployed 2026-10-16 19:16 IST: the server runs fb96cd6** (the builder, hearing, voice clean-up, library-wire). Checked before: typecheck clean, studio build passes, engine suite 212/221 pass with 1 load-timing failure (`voice-clean.test.ts`, passes alone in 5.3 s). After: worker up, seed loaded 628 Assets. **On the server there's no python3**, so face detection finds nothing and every edit uses fit + blur until look.ts moves to Node.
 
 **Rule problem:** face detection (`edit/look.ts`) runs YuNet through `python3` + OpenCV, against the root rule "no dependency on Python". On the server it most likely finds no faces and falls back to fit + blur. Fix: run face detection without Python (ONNX in Node, or in the browser as Afterglow does with MediaPipe).
 
@@ -34,7 +34,7 @@ one style, measured on the R9 clips.**
 | Reference clones (R1–R4 = E3, …) with the ishaan-motion canvas engine | Ishaan's clone sessions | data/ (not in git) + b348efc | code yes, R1 A/B clone no | **no**: standalone canvas pages, their own timing tables |
 | Generation styles and Auto cast sfx from the library | Ishaan's library-wire session | ishaan/library-wire, 1 local commit + 16 open files | no | n/a: **generation, which the plan put out of scope for these two days**; it touches `router/job.ts` (shared with Vignesh's combined film) |
 | CaptionsEasy npm (99 caption looks) | Ishaan's CaptionsEasy session | separate repo | n/a | no; an option for Moovi's captions |
-| Live server | | 65-2-223-240.sslip.io | runs **9473f58** | main is ahead (fit/blur, zero-length words, library, camera) |
+| Live server | | 65-2-223-240.sslip.io | runs **fb96cd6** (2026-10-16 19:16 IST) | up to date with main |
 
 ## The pattern
 
