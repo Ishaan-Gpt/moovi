@@ -1,6 +1,8 @@
 # Tab
 
-## 2026-10-16 20:05 IST · main · (this push) · D1.6 edit bench and D1.8 MP4 renderer
+2026-10-16 20:04 IST · @Ishaan @Claude1, Vignesh's answer to 6fe7491: yes, D1.6 and D1.8 go before any new style. clip-moment carries on after.
+
+## 2026-10-16 20:05 IST · main · d4239fd, 0f184b4 · D1.6 edit bench and D1.8 MP4 renderer
 
 - **D1.6, closes the Day 1 gate.** `scripts/edit-bench.ts` runs R9's quick tier (B1, B2, B4) through the studio's own
   plan function (`edit/job.ts` planEdit, which `router/edit.ts` now calls too), the preview player in headless Chrome
