@@ -16,8 +16,9 @@
  * NCS classics and Kevin MacLeod's meme beds, each verified on its official page (research in Tab's
  * files/research/viral-music-library.md). Each track has a use_scope: "creator-use" (fine in our own YouTube, Facebook
  * and Instagram videos, never bundled in the product: NCS) or "product-safe" (may ship inside Moovi with its credit:
- * CC BY 4.0). A product build asks pickMusic for scope 'product' and gets product-safe tracks only; our own videos
- * default to 'creator'. Their audio sits in the cache's viral/ folder (cacheFile), untouched, never in git.
+ * CC BY 4.0, and Mixkit by the library's ship rule). Every pick is scope 'product' (product-safe tracks only) unless
+ * the caller names 'creator': only our own channel runs from the terminal do (scripts/clip-moment.ts --scope creator).
+ * Their audio sits in the cache's viral/ folder (cacheFile), untouched, never in git.
  */
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -51,11 +52,14 @@ const here = dirname(fileURLToPath(import.meta.url));
 export const MUSIC_TRACKS: MusicTrack[] = (JSON.parse(readFileSync(join(here, '../library/music-tracks.json'), 'utf8')) as { tracks: MusicTrack[] }).tracks;
 export const musicTrack = (id: string) => MUSIC_TRACKS.find(t => t.id === id) ?? null;
 
-/** A track's scope: as stated on the track, else derived (a shippable, redistributable licence is product-safe). */
+/**
+ * A track's scope: as stated on the track, else the library's own ship rule (licenceTerms().ship, the same rule the
+ * graph's shipOnly queries serve the product with). Mixkit's free licence ships (it was the product's bed before the
+ * viral tracks came in); NCS does not (its tracks state creator-use).
+ */
 export function useScopeOf(t: Pick<MusicTrack, 'licence' | 'use_scope'>): UseScope {
   if (t.use_scope) return t.use_scope;
-  const L = licenceTerms(t.licence);
-  return L.ship && L.redistributable ? 'product-safe' : 'creator-use';
+  return licenceTerms(t.licence).ship ? 'product-safe' : 'creator-use';
 }
 
 /**
@@ -100,7 +104,7 @@ export function musicWant(o: { lines: string[]; seconds: number; dropTarget: num
   for (const [re, ns] of WORDS) if (re.test(text)) for (const n of ns) if (!needs.includes(n)) needs.push(n);
   const wps = o.wordsPerSecond ?? text.split(/\s+/).filter(Boolean).length / Math.max(1, o.seconds);
   const energy = wps >= 2.8 ? 5 : wps >= 2.2 ? 4 : 3;
-  return { needs, energy, dropTarget: o.dropTarget, seconds: o.seconds, seed: o.seed ?? text.slice(0, 80), scope: o.scope ?? 'creator' };
+  return { needs, energy, dropTarget: o.dropTarget, seconds: o.seconds, seed: o.seed ?? text.slice(0, 80), scope: o.scope ?? 'product' };
 }
 
 const hash01 = (s: string) => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0) / 4294967296; };
@@ -121,7 +125,9 @@ export const RECOGNIZABLE_BONUS = { energetic: 4, calm: 1.5 };
  * videos get different beds but the same video always gets the same one.
  */
 export function pickMusic(want: MusicWant, graphHits?: Map<string, number> | null, pool: MusicTrack[] = MUSIC_TRACKS): MusicPick | null {
-  const scope = want.scope ?? 'creator';
+  // product unless asked: a pick the server makes for a user's video is the product bundling the track (Claude 1,
+  // 2026-10-16 22:39 IST); 'creator' (NCS allowed, credit in the description) only for our own channel runs
+  const scope = want.scope ?? 'product';
   const ok = pool.filter(t => musicLicenceOk(t, scope));
   const scored = ok.map(t => {
     const hits = graphHits ? graphHits.get(t.id) ?? 0 : t.needs.filter(n => want.needs.includes(n)).length;
