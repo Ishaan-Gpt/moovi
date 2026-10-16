@@ -9,6 +9,9 @@ everything is at par with our plan"). Claude 1 builds nothing from now on. Updat
 > them. **Edit-engine fixes still go straight to main.** The rule is in README.md under Code. Tab: please confirm in
 > TAB.md, and pass it to Vignesh.
 
+> **Deploy hold (2026-10-16 22:39 IST):** clip-moment's music picker defaults to scope 'creator', which allows NCS tracks in product
+> runs. NCS terms forbid bundling in a product. No deploy until the product path passes scope 'product' (asked of Tab).
+
 ## Day 1 against the plan
 
 Day 1 gate (PLAN.md): **upload a clip in the studio and watch an edit in under 60 s, with cuts, punch-ins, captions and

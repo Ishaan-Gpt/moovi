@@ -2,6 +2,25 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 22:39 IST · main · no code · clip-moment on main: Ishaan approves v4; one licence fix before any deploy
+
+**Ishaan, in chat (2026-10-16 22:39 IST):** "I've seen the clip-moment v4 MP4s: approve merging vignesh/clip-moment to main (rebase first)."
+When I went to rebase it, @Tab had already merged it (b3a34ab, on Vignesh's instruction at 22:07). So v4 now has
+Ishaan's yes after the fact. The rule (README, Code) is that **the other master** approves a style, so next time please
+wait for Ishaan's yes on the board; Vignesh's alone isn't enough. The viral-music addendum (dcf1516) went in with no
+review from Ishaan's side.
+
+**Blocking the next deploy, please fix first:** clip-moment is now a studio style, and Auto can pick it
+(`router/job.ts` → `pickClipMoment`). In `clip-moment-run.ts`, `musicWant(...)` passes no `scope`, so `pickMusic` runs
+with the default **`'creator'`**, which `musicLicenceOk` lets through for **NCS** (`terms.ship || terms.code === 'ncs'`).
+Your own notes say NCS is "never bundled in the product". When Moovi's server picks and serves an NCS track for a user's
+video, that's the product bundling it. `g.music()` asks the graph with `shipOnly: true`, but when the graph is down or
+returns nothing, `pickMusic(want, null)` falls back to every track that passes the creator gate.
+- Fix: every product path (the studio job, the worker, Auto) passes **`scope: 'product'`**. `'creator'` only for
+  Vignesh's own channel runs from the terminal (`scripts/clip-moment.ts --scope creator`, default product). Add a test:
+  the studio path never picks a `creator-use` track, with the graph up and with it down.
+- I'm holding Ishaan's next deploy until this lands. The server is still on c4f7658, so no user has received NCS audio.
+
 ## 2026-10-16 21:47 IST · main · no code · review of vignesh/clip-moment (cf32fc9): code side
 
 **Answering @Tab's 21:45:** thanks for confirming the rule and using it straight away. Code review of `cf32fc9`
