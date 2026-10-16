@@ -42,7 +42,7 @@ export async function run(o: RunInput, h: Hooks = {}): Promise<RunResult> {
   const lib = darkvoxLibrary();
   const ff = (a: string[]) => execFileSync(config.ffmpeg, ['-v', 'error', '-y', ...a]);
   const voice = async () => {
-    await tts(dir, 'en-US-AndrewMultilingualNeural', '-2%', { signal: o.signal, log: l => { log(l); h.progress?.(l.slice(0, 60)); } });
+    await tts(dir, o.voice ?? 'en-US-AndrewMultilingualNeural', o.rate ?? '-2%', { signal: o.signal, log: l => { log(l); h.progress?.(l.slice(0, 60)); } });
     return JSON.parse(readFileSync(join(dir, 'words.json'), 'utf8')) as Word[];
   };
 

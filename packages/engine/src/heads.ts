@@ -8,7 +8,7 @@ const HEAD: Record<string, string | ((n: number | null) => string)> = {
   voice: 'recording the voice', transcribe: 'listening', card: 'designing the look', study: 'studying the reference',
   board: 'boarding the shots', asset: 'finding an asset', build: n => (n === null ? 'building a scene' : `building scene ${n + 1}`),
   assemble: 'assembling', render: 'rendering', sound: 'mixing the sound', mux: 'finishing', review: 'reviewing',
-  deliver: 'delivering', keep: 'remembering', talk: 'thinking', 'style-reel': 'directing',
+  deliver: 'delivering', keep: 'remembering', talk: 'thinking', 'style-reel': 'directing', 'combined-reel': 'directing',
 };
 const GROUP: Record<string, string> = { build: 'building scenes', asset: 'finding assets', render: 'rendering', research: 'researching' };
 

@@ -2,9 +2,9 @@
  * The style registry: the live-preview styles the studio and the terminal both run. Pure data (the studio's
  * browser code imports it); the runners live in ./run.ts and the preview server in ./serve.ts.
  */
-export type StyleId = 's1' | 's4' | 's5' | 'darkvox' | 'anatomy';
+export type StyleId = 's1' | 's4' | 's5' | 'darkvox' | 'anatomy' | 'combined';
 /** which live player plays the result (none of them encodes an MP4) */
-export type PlayerKind = 's1-engine' | 's4-player' | 's5-player' | 'darkvox-player' | 'anatomy-player';
+export type PlayerKind = 's1-engine' | 's4-player' | 's5-player' | 'darkvox-player' | 'anatomy-player' | 'mp4';
 export type StyleInput = 'url' | 'script';
 
 export interface StyleInfo {
@@ -29,6 +29,7 @@ export const STYLES: StyleInfo[] = [
   { id: 's5', name: 'Clear Signal', kind: 'Style 5', description: 'A clean kinetic explainer on white paper: words on the voice, one accent, drawn pictograms.', inputs: ['url'], player: 's5-player', cli: 'scripts/s5.ts --url <url>', folder: 's5' },
   { id: 'darkvox', name: 'Dark Vox', kind: 'Night stage', description: 'A deep cinematic fable on a lit paper-theatre stage at night.', inputs: ['url', 'script'], player: 'darkvox-player', cli: 'scripts/darkvox.ts --url <url> | --script <file>', folder: 'darkvox' },
   { id: 'anatomy', name: 'Anatomy', kind: 'Isometric', description: 'Your product or system as a detailed isometric technical drawing that builds itself on the voice: parts land, lift apart and get named.', inputs: ['url', 'script'], player: 'anatomy-player', cli: 'scripts/anatomy.ts --url <url> | --script <file>', folder: 'anatomy' },
+  { id: 'combined', name: 'Auto', kind: 'Moovi mix', description: 'Any brief as a finished film: Moovi writes it and gives each beat the look that fits (Style 1, Dark Vox, Anatomy, real footage, a globe, a 3D prop) under Ishaan’s captions.', inputs: ['script', 'url'], player: 'mp4', cli: 'scripts/combined.ts "<brief>"', folder: 'combined' },
 ];
 
 export const styleOf = (id: string): StyleInfo | undefined => STYLES.find(s => s.id === id);
