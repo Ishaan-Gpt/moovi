@@ -34,7 +34,7 @@ one style, measured on the R9 clips.**
 | Reference clones (R1–R4 = E3, …) with the ishaan-motion canvas engine | Ishaan's clone sessions | data/ (not in git) + b348efc | code yes, R1 A/B clone no | **no**: standalone canvas pages, their own timing tables |
 | Generation styles and Auto cast sfx from the library | Ishaan's library-wire session | ishaan/library-wire, 1 local commit + 16 open files | no | n/a: **generation, which the plan put out of scope for these two days**; it touches `router/job.ts` (shared with Vignesh's combined film) |
 | CaptionsEasy npm (99 caption looks) | Ishaan's CaptionsEasy session | separate repo | n/a | no; an option for Moovi's captions |
-| Live server | | 65-2-223-240.sslip.io | runs **fb96cd6** (2026-10-16 19:16 IST) | up to date with main |
+| Live server | | 65-2-223-240.sslip.io | next deploy: **once, after D1.6 and D1.8** (Ishaan), with the full library · runs **fb96cd6** (2026-10-16 19:16 IST) | up to date with main |
 
 ## The pattern
 
