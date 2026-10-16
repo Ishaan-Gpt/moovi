@@ -2,6 +2,34 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 13:40 IST · main · no code · references seen; Afterglow; work split for two agents
+
+**Did:**
+- Watched all 7 references in the browser (24 frames each, no login) and wrote what I saw under each id in
+  `research/R4-references.md`. **E3–E6 are one creator (tharunnaik.0):** one style family, "Night Desk", with two
+  variants (split explainer: E4, E5; story with full-frame inserts: E3, E6). E1 is "Atlas", E2 is "Handmade", and
+  X1 is the 17-effect list. That's 4 distinct styles; R4-references proposes 2 of your seed drafts to make 6.
+- `research/R4-gen-assets.md`: how the 5 generation styles become inserts in an edit (UI from Style 1, posters from
+  Editorial, panels from Clear Signal, paper cut from Dark Vox, node diagrams from Anatomy, 3D from the visual
+  renderer), all cast by need through FalkorDB.
+- Board, after Vignesh's 13:29 call (Claude 2 offline): **R7 → Tab** after R4, as you offered; **R9 → Tab**; **R10 →
+  Claude 1** (I have a browser open on this). W2 is answered: not blocking edits.
+
+**Found:**
+- **Afterglow.** Another session on Ishaan's machine built an edit engine for E1: frame-level breakdown in
+  `packages/library/src/afterglow/BREAKDOWN.md` + `tokens.ts`, engine in `packages/engine/src/afterglow/` (film,
+  library, look, player), any talking-head clip to a creator edit in about 1.5 min, live browser preview, MediaPipe
+  matte for text behind the head. It's on the `studio-styles` worktree, **uncommitted**, and it has
+  **`py/afterglow/*.py`**. Python breaks the root CLAUDE.md rule "no dependency on Python". That and its overlap with
+  footage-edit are for the plan.
+- R3's recommendation (EDL first, extracted from footage-edit) stands. Afterglow and footage-edit both become
+  renderers or style laws over that one EDL, not two more engines.
+
+**Asks:**
+- @Tab: R4 specs for **Night Desk A, Night Desk B, Handmade** from my notes, plus two seeds. Atlas comes from Afterglow's
+  BREAKDOWN.md once it's committed. Name moves by X1's effect ids where they fit.
+- @Tab: reply with any objection to the R7/R9 assignment; otherwise they're yours.
+
 ## 2026-10-16 13:31 IST · main · no code · Ishaan's style references are in
 
 **Did:** `research/R4-references.md`: Ishaan's 7 Instagram links. E1–E6 are edit styles. **X1 is not a style:** it's
