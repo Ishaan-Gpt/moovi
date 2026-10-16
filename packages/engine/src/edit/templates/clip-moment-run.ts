@@ -53,16 +53,16 @@ const readVerdicts = (): Record<string, { v: 'free' | 'restricted' | 'unknown'; 
 /**
  * Every Mixkit page request (searches and licence pages) goes through one pace: at most 2 at once, CM_MIXKIT_GAP ms
  * apart. Mixkit sits behind Cloudflare and answers a busy client with 429 or a "Just a moment" challenge; the first one
- * opens a breaker for CM_MIXKIT_COOL s. While it is open (and for the request that tripped it) the same public page is
- * read through a reader mirror (MOOVI_MIXKIT_MIRROR, default https://r.jina.ai/, raw HTML back), so the page's own
- * words still decide the licence. Mirror off ("0") or down: the request answers 429 and the licence stays unknown,
- * which the gate rejects.
+ * opens a breaker for CM_MIXKIT_COOL s. While it is open the run backs off and decides from cached verdicts; a clip with
+ * no cached verdict stays unknown, which the gate rejects (the line takes its next clip or a graphic scene). A reader
+ * mirror is OFF by default (Claude 1, 2026-10-16: honour Mixkit's rate limit, do not route around it); setting
+ * MOOVI_MIXKIT_MIRROR to a reader URL (for example https://r.jina.ai/) turns it back on for local experiments only.
  */
 export const CM_MIXKIT_GAP = 350;
 /** the gate's clocks: an unknown verdict is not asked again for this long; a run's footage search stops starting new searches and checks after fetchBudgetMs */
 export const CM_GATE = { unknownRetryMs: 120_000, fetchBudgetMs: 13_000 };
 export const CM_MIXKIT_COOL = 90;
-const MIRROR = (() => { const m = process.env.MOOVI_MIXKIT_MIRROR?.trim(); return m === '0' ? '' : m || 'https://r.jina.ai/'; })();
+const MIRROR = (() => { const m = process.env.MOOVI_MIXKIT_MIRROR?.trim(); return m && m !== '0' ? m : ''; })();
 let mxOpenUntil = 0, mxLast = 0, mxTrips = 0, mxMirrored = 0;
 const mxGate = limiter(2), mirrorGate = limiter(6);
 const walled = (status: number, body: string) => status === 429 || status === 403 || status === 503 || /<title>Just a moment/i.test(body);

@@ -43,6 +43,12 @@ export const CAPTION_STYLES: CaptionStyle[] = [
     chunk: { mode: 'phrase', maxChars: 26, breakOnPause: 0.45 }, look: { fill: 'paper', shadow: 'soft' },
     highlight: { rule: 'keyword', treat: 'colour', role: 'accent' }, entry: 'fade', position: 'chest',
     key: { family: 'Archivo', weight: 900, case: 'upper', size: 'XL', role: 'accent', line: true } },
+  // added for clip-moment (Tab, 2026-10-16): Inter 900 caps in 1 to 3 word groups, the spoken word in the accent
+  // (#FFD84A), the line's accent word in a gold italic serif (clip-moment's palette sets 'pop' to gold #FFC93C; Instrument Serif is the bundled serif)
+  { id: 'cm-gold', family: 'punch', energy: 5, font: { family: 'Inter', weight: 900, case: 'upper', tracking: 0 }, size: 'L',
+    chunk: { mode: '3w', maxChars: 18, breakOnPause: 0.5 }, look: { fill: 'paper', stroke: { px: 5, role: 'ink' }, shadow: 'soft' },
+    highlight: { rule: 'current', treat: 'colour', role: 'accent' }, entry: 'pop', position: 'face-safe',
+    key: { family: 'Instrument Serif', weight: 400, case: 'upper', size: 'XL', role: 'pop', italic: true } },
 ];
 
 /** By R8 slug or by library id (`caption:<slug>`, the form an EDL holds). */

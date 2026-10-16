@@ -2,12 +2,13 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { validateEdl } from '../src/edit/edl';
 import { CLIP_MOMENT_SRC, clipMomentRuntime } from '../src/edit/templates/clip-moment-runtime';
-import { clipMomentEdl, dressEdl, plateSpans, pushPunch, CM_ID, CM_LOOK, CM_PUNCH, type CmScript, type TimedWord } from '../src/edit/templates/clip-moment';
+import { clipMomentEdl, dressEdl, plateSpans, pushPunch, CM_CAPTION, CM_ID, CM_LOOK, CM_PUNCH, type CmScript, type TimedWord } from '../src/edit/templates/clip-moment';
 import { accentLine, calloutLabels, cmComponentCount, cmPlan, cmQueries, cmTopic, isMechanism, mixkitLicence, numbersIn, pickClipMoment, showFor } from '../src/edit/templates/clip-moment-plan';
 import { clipScore, CM_MIN_SCORE, footageNeeds } from '../src/edit/templates/clip-moment-run';
 import { autoPickFor } from '../src/router/job';
 import { TEMPLATES_SRC } from '../src/edit/templates';
 import { PAGE } from '../src/edit/page';
+import { captionStyle } from '../src/edit/captions';
 
 // a voice stand-in: each word 0.32 s, a 0.4 s breath between lines
 function speak(lines: string[]): TimedWord[] {
@@ -70,6 +71,19 @@ test('clip-moment: the EDL is valid, deterministic and holds no framing still fo
   assert.equal(a.caption_look?.number, CM_LOOK, 'captions come from captionseasy by default');
   assert.equal(a.shots.length, 13, 'two clips per long line (6 beats) and the end');
   assert.ok(plateSpans(a).filter(s => s.query).length >= 12);
+});
+
+test('clip-moment: captions draw as cm-gold (Inter 900 caps, spoken word #FFD84A, accent word gold italic serif)', () => {
+  const a = make(), st = captionStyle(a.caption_style_id);
+  assert.equal(a.caption_style_id, CM_CAPTION);
+  assert.equal(st.id, 'cm-gold');
+  assert.equal(st.font.family, 'Inter'); assert.equal(st.font.weight, 900); assert.equal(st.font.case, 'upper');
+  assert.equal(st.chunk.mode, '3w', '1 to 3 word groups');
+  assert.deepEqual([st.highlight.rule, st.highlight.role], ['current', 'accent']);
+  assert.equal(a.palette.accent.toLowerCase(), '#ffd84a');
+  assert.ok(st.key?.italic && /serif/i.test(st.key.family), 'the accent word is an italic serif');
+  assert.equal(a.palette[st.key!.role].toLowerCase(), '#ffc93c', 'in gold');
+  assert.ok(a.words.some(w => w.role === 'key'), 'the line accent word is marked key');
 });
 
 test('clip-moment: the brand is a parameter, never in the runtime', () => {

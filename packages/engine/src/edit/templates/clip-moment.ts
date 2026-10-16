@@ -31,12 +31,13 @@ export const CM_COMPONENTS = ['kicker', 'flip', 'headline', 'source', 'logo', 's
 export type CmComponent = typeof CM_COMPONENTS[number];
 
 /** Colour themes picked from the content (never navy). accent = the gold accent word, accent2 = the theme glow. */
+/** pop is the caption accent word's gold (#FFC93C, the 'cm-gold' caption style's key role), the same in every theme */
 export const CM_THEMES = {
-  gaming: { ink: '#050605', paper: '#ffffff', accent: '#ffd84a', accent2: '#7cff4f', deep: '#07100a', pop: '#3ddc84' },
-  tech: { ink: '#050606', paper: '#ffffff', accent: '#ffd84a', accent2: '#38e8cf', deep: '#061010', pop: '#7af0e0' },
-  money: { ink: '#060504', paper: '#ffffff', accent: '#ffd84a', accent2: '#ffae3b', deep: '#110c05', pop: '#ffe08a' },
-  space: { ink: '#050407', paper: '#ffffff', accent: '#ffd84a', accent2: '#b46bff', deep: '#0d0812', pop: '#d6b0ff' },
-  crimson: { ink: '#060404', paper: '#ffffff', accent: '#ffd84a', accent2: '#ff4b4b', deep: '#120606', pop: '#ff9a7a' },
+  gaming: { ink: '#050605', paper: '#ffffff', accent: '#ffd84a', accent2: '#7cff4f', deep: '#07100a', pop: '#ffc93c' },
+  tech: { ink: '#050606', paper: '#ffffff', accent: '#ffd84a', accent2: '#38e8cf', deep: '#061010', pop: '#ffc93c' },
+  money: { ink: '#060504', paper: '#ffffff', accent: '#ffd84a', accent2: '#ffae3b', deep: '#110c05', pop: '#ffc93c' },
+  space: { ink: '#050407', paper: '#ffffff', accent: '#ffd84a', accent2: '#b46bff', deep: '#0d0812', pop: '#ffc93c' },
+  crimson: { ink: '#060404', paper: '#ffffff', accent: '#ffd84a', accent2: '#ff4b4b', deep: '#120606', pop: '#ffc93c' },
 } as const;
 export type CmTheme = keyof typeof CM_THEMES;
 
@@ -203,12 +204,16 @@ export function pushPunch(t0: number, t1: number, seed = 0): NonNullable<Edl['sh
   return out.sort((a, b) => a.t - b.t);
 }
 
+/** the player caption style clip-moment draws with (captions.ts) */
+export const CM_CAPTION = 'cm-gold';
 /** The captionseasy look for an EDL's words (shown on the output clock), mapped onto the player style it draws as. */
 export function cmCaption(e: Pick<Edl, 'words' | 'shots'>, look: number | string = CM_LOOK): { caption_style_id: string; caption_look?: CaptionLook } {
   try {
     const l = pickLook(EDIT.outWords(e as Edl), { look });
-    return { caption_style_id: l.player_style, caption_look: l };
-  } catch { return { caption_style_id: 'punch-duo' }; }
+    // the captionseasy look stays the stored look; the player draws it as 'cm-gold' (Inter 900 caps, the spoken word
+    // yellow, the line's accent word gold italic serif), the clip-moment caption spec
+    return { caption_style_id: CM_CAPTION, caption_look: l };
+  } catch { return { caption_style_id: CM_CAPTION }; }
 }
 
 export function clipMomentEdl(o: CmOptions): CmEdl {

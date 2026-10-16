@@ -28,7 +28,9 @@ console.log('clips:', r.clips.map(c => `${c.beat}:${c.ref} ${c.licence}`).join('
 if (out) {
   const t0 = Date.now(), e = r.edl, D = EDIT.timeline(e).duration, fps = 30, n = Math.round(D * fps);
   const ff = spawn(config.ffmpeg, ['-v', 'error', '-y', '-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'mjpeg', '-i', '-', '-i', join(dir, 'master.m4a'),
-    '-map', '0:v', '-map', '1:a', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '21', '-pix_fmt', 'yuv420p', '-c:a', 'copy', '-shortest', '-movflags', '+faststart', out], { stdio: ['pipe', 'inherit', 'inherit'] });
+    '-map', '0:v', '-map', '1:a', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '21', '-pix_fmt', 'yuv420p',
+    // the mix can end a beat before the EDL (the end card holds on silence): pad it, cut both at the EDL's length
+    '-af', 'apad', '-c:a', 'aac', '-b:a', '192k', '-t', D.toFixed(3), '-movflags', '+faststart', out], { stdio: ['pipe', 'inherit', 'inherit'] });
   let closed = false;
   const done = new Promise<number>(res => ff.on('close', c => { closed = true; res(c ?? 1); }));
   ff.stdin.on('error', () => { closed = true; });
@@ -42,7 +44,8 @@ if (out) {
     for (let k = 0; k < n && !closed; k++) {
       await page.evaluate(`window.__render(${(k / fps).toFixed(4)})`);
       const jpg = await page.screenshot({ type: 'jpeg', quality: 90 });
-      if (!ff.stdin.write(jpg)) await new Promise(res => { ff.stdin.once('drain', res); ff.once('close', res); });
+      // wait for drain, or for ffmpeg to have exited (done stays resolved, so an exit before this line cannot hang it)
+      if (!ff.stdin.write(jpg) && !closed) await Promise.race([new Promise(res => ff.stdin.once('drain', res)), done]);
     }
   } finally { ff.stdin.end(); await b.close(); srv.close(); }
   const code = await done;

@@ -1,5 +1,18 @@
 # Tab
 
+## 2026-10-16 20:15 IST · main · (this push) · clip-moment fixes after the bus v2 check
+
+- @Claude1 re ff75e2f: the Mixkit reader mirror is now **off by default** (`MOOVI_MIXKIT_MIRROR` unset or `0` = off). A
+  429 opens the breaker, the run backs off and decides from cached verdicts; an uncached clip stays unknown and the gate
+  rejects it. Test `clip-moment-mirror.test.ts` (no host but mixkit.co is asked). Bus v2 was rendered with it off.
+- Captions: clip-moment draws as a new player caption style **`cm-gold`** (`edit/captions.ts`, one additive entry):
+  Inter 900 caps in 1 to 3 word groups, the spoken word in the accent #FFD84A, the line's accent word (role key) in a
+  gold italic serif (palette `pop` = #FFC93C in every clip-moment theme). The serif is the bundled Instrument Serif
+  italic (Playfair is not vendored). The captionseasy look 79 stays the stored `caption_look`.
+- `scripts/clip-moment.ts`: the capture loop could hang after ffmpeg exited (drain wait), and `-shortest` cut the end
+  card to the audio; now it races drain against exit and pads the audio to the EDL length.
+- Shared file touched (additive): `edit/captions.ts`. Bus v2: 31.8 s, render 109.5 s, plate 9.7 s, fetch 3.2 s (warm).
+
 2026-10-16 20:04 IST · @Ishaan @Claude1, Vignesh's answer to 6fe7491: yes, D1.6 and D1.8 go before any new style. clip-moment carries on after.
 
 ## 2026-10-16 20:05 IST · main · d4239fd, 0f184b4 · D1.6 edit bench and D1.8 MP4 renderer
