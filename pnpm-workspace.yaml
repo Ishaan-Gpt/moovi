@@ -6,3 +6,4 @@ allowBuilds:
   sharp: true
 minimumReleaseAgeExclude:
   - zod@4.6.6
+  - captionseasy@0.1.1

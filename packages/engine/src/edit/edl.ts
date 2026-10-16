@@ -37,6 +37,13 @@ export const Header = {
   output: z.object({ w: z.number().int().positive(), h: z.number().int().positive(), fps: z.number().positive(), aspect: z.string().optional().describe('9:16, 1:1, 16:9, 4:5') }),
   palette: z.object({ ink: z.string(), paper: z.string(), accent: z.string(), accent2: z.string(), deep: z.string(), pop: z.string() }),
   caption_style_id: z.string().describe('R8 caption style id (with or without "caption:")'),
+  caption_look: z.object({
+    number: z.number().int(), id: z.string(), name: z.string(),
+    player_style: z.string().describe('the nearest of the preview player\'s caption styles (what caption_style_id carries when no style was asked for)'),
+    style: z.record(z.string(), z.unknown()).describe('the full CaptionStyle captionseasy validated'),
+    settings: z.record(z.string(), z.unknown()).describe('captionseasy pacing settings'),
+    overrides: z.record(z.string(), z.unknown()).optional(), warnings: z.array(z.string()).optional(), rule_id: ruleId,
+  }).optional().describe('the captionseasy look (number and id are permanent) with its validated props'),
 };
 
 export const Word = z.object({
@@ -53,6 +60,8 @@ export const Shot = z.object({
   layout: z.enum(['full', 'fit', 'split_top', 'split_bottom', 'card', 'pip', 'grid', 'full_insert']).optional(),
   framing: z.object({ scale: z.number().positive(), cx: frac, cy: frac, rot: z.number().optional() }).optional(),
   zoom: z.array(Zoom).optional(),
+  camera: z.object({ asset_ref: assetRef.describe('camera:<move id>, an R7 camera move (edit-scope moves on user footage)'), t: sec.optional(), dur: sec.optional(), params: z.record(z.string(), z.unknown()).optional(), rule_id: ruleId.optional() })
+    .optional().describe('a named library camera move on this shot; zoom keys stay the numbers the player draws'),
   bg: z.object({ mode: z.enum(['original', 'blur', 'matte_fill', 'matte_texture']), asset_ref: assetRef.optional(), role: role.optional() }).optional().describe("'blur': the same footage, blurred, fills the frame behind a 'fit' shot"),
   matte: z.boolean().optional().describe('cut the person out (person mask)'),
   mono: z.boolean().optional(), grade_id: z.string().optional(),
@@ -99,9 +108,16 @@ export const Overlay = z.object({
   asset_ref: assetRef.optional(), text: z.string().optional(), params: z.record(z.string(), z.unknown()).optional(), rule_id: ruleId,
 });
 
+/** R7: the engine sfx map's events, the names of the library's (:Event) nodes that sfx assets FIT. */
+export const SFX_MAP_EVENTS = ['word', 'key-word', 'list-item', 'pop', 'cascade', 'bubble', 'card-in', 'slide-out', 'scene', 'hard-hit', 'stat', 'notify', 'accent', 'click-ui', 'code', 'ui-reveal', 'build', 'big-build', 'cta', 'page-turn', 'riffle', 'paper-pop', 'thud', 'tear'] as const;
+/** The EDL's own sfx events and the library event each one sounds as (for the (:Event) query). */
+export const SFX_EVENT_TO_MAP: Record<string, (typeof SFX_MAP_EVENTS)[number]> = { cut: 'scene', insert_in: 'card-in', title_in: 'hard-hit', flash: 'accent', stamp: 'thud', ui_click: 'click-ui', number_hit: 'stat', whoosh: 'slide-out', riser: 'build', end: 'cta' };
+
 export const Sfx = z.object({
   t: sec, asset_ref: assetRef,
-  event: z.enum(['cut', 'insert_in', 'title_in', 'flash', 'stamp', 'ui_click', 'number_hit', 'whoosh', 'riser', 'end']),
+  event: z.enum(['cut', 'insert_in', 'title_in', 'flash', 'stamp', 'ui_click', 'number_hit', 'whoosh', 'riser', 'end',
+    // the library's (:Event) names, which the engine sfx map and R7's FITS edges use (assets/sfx/map.json)
+    ...SFX_MAP_EVENTS]),
   gain_db: z.number().optional(), rule_id: ruleId,
 });
 

@@ -2,7 +2,7 @@
 
 Owner: Claude 1, now acting as product manager (Ishaan, 18:25 IST: "your only task is to communicate with Vignesh's
 Claude and Tab, see what is going on in my repo, in my sessions and in his, be the main product manager, and see
-everything is at par with our plan"). Claude 1 builds nothing from now on. Updated: **2026-10-16 18:31 IST**.
+everything is at par with our plan"). Claude 1 builds nothing from now on. Updated: **2026-10-16 18:34 IST** (decisions); first written **2026-10-16 18:31 IST**.
 
 ## Day 1 against the plan
 
@@ -42,19 +42,18 @@ works only if **everything flows through the EDL**: the builder (D1.3) writes it
 `asset_ref`s, the camera layer writes its zoom keys, kits become inserts and overlays, and the player and the MP4
 read it.
 
-## Decisions needed from Ishaan
+## Decisions (Ishaan, 2026-10-16 18:34 IST)
 
-1. **Who builds Claude 1's Day 2 lane** (Atlas, Handmade, Studio Minimal, inserts from the gen styles, edit by words)
-   now that Claude 1 is PM. Suggested: one new "edit integrator" session that owns `packages/engine/src/edit`.
-2. **Library session priority:** Tab's EDL-compatibility points (about 3 h for #1, #2, #5, #6, #8) before the next
-   reference (R5). Suggested: yes, or the library can't be used by any edit.
-3. **library-wire** (gen styles casting from the library): park it, or merge only after Tab checks `router/job.ts`.
-   Suggested: park until Day 1's gate passes.
-4. **Kits and clones:** they should render as EDL inserts and overlays inside the edit player, not as a separate
-   canvas renderer. Suggested: the integrator owns this.
-5. **Captions:** take looks from `captionseasy` (99, zero dependencies) instead of hand-building R8's remaining 41.
-6. **One reference id map.** The clone sessions' R1–R4 are not the board's E1–E6 (R1 = E3), and the library's
-   `paper-craft` isn't R4's `handmade`. Suggested: the board's ids win; the library renames.
+1. **Claude 1's build lane goes to Tab**: D2.2 (Atlas, Handmade, Studio Minimal), D2.5 (inserts from the gen styles),
+   D2.8 (edit by words), plus wiring the camera layer (\`toEdlZoom\`) and the kits into the EDL. Tab now owns all of
+   \`packages/engine/src/edit\`.
+2. **The library session does Tab's 8 points before R5** (ids and revs, licence codes, a transition per cut type, SUITS
+   on R4's six styles, EDL event names, typed params). \`paper-craft\` is renamed \`handmade\`.
+3. **library-wire merges now** (Ishaan overrode the PM's park suggestion): rebased on main, full suite green, shared files
+   named.
+4. **Captions come from \`captionseasy\`** (99 looks) mapped onto the player's caption schema, instead of hand-building
+   R8's remaining 41. Owner: Tab (part of the edit lane).
+5. Open: one reference id map (the board's E/I ids win over the clone sessions' R1–R4).
 
 ## Asks of Tab (also in CLAUDE1.md)
 

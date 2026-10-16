@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
-import { asPlayerEdl, checkMetrics, edlJsonSchema, keepOf, metricsOf, validateEdl, type Edl } from '../src/edit/edl';
+import { SFX_EVENT_TO_MAP, SFX_MAP_EVENTS, asPlayerEdl, checkMetrics, edlJsonSchema, keepOf, metricsOf, validateEdl, type Edl } from '../src/edit/edl';
 import { EDIT } from '../src/edit/lib';
 import { roughEdl } from '../src/edit/rough';
 
@@ -78,4 +78,16 @@ test('EDL v0: the player fields Claude 1 added (fit over a blurred fill, grid, l
   assert.deepEqual(validateEdl(g).problems.filter(p => !p.startsWith('version')), []);
   const bad = structuredClone(e) as unknown as { shots: { layout: string }[] }; bad.shots[0]!.layout = 'mosaic';
   assert.ok(validateEdl(bad).problems.length > 0);
+});
+
+test('EDL v0 and the R7 library: sfx take the library event names, a shot can name a camera move', () => {
+  const { edl } = validateEdl(example);
+  const e = structuredClone(edl!);
+  e.sfx![0]!.event = 'stat'; e.sfx![0]!.asset_ref = 'sfx:fs-ui-pop-4';
+  e.shots[0]!.camera = { asset_ref: 'camera:slow-zoom-in', t: e.shots[0]!.t_in, dur: 1, rule_id: 'style.camera' };
+  assert.deepEqual(validateEdl(e).problems, []);
+  // every EDL event names a library event
+  for (const v of Object.values(SFX_EVENT_TO_MAP)) assert.ok((SFX_MAP_EVENTS as readonly string[]).includes(v));
+  const bad = structuredClone(e); bad.shots[0]!.camera!.asset_ref = 'slow-zoom-in';
+  assert.ok(validateEdl(bad).problems.some(p => p.includes('<category>:<slug>')));
 });

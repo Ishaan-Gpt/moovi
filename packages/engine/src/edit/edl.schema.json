@@ -129,6 +129,71 @@
    "type": "string",
    "description": "R8 caption style id (with or without \"caption:\")"
   },
+  "caption_look": {
+   "description": "the captionseasy look (number and id are permanent) with its validated props",
+   "type": "object",
+   "properties": {
+    "number": {
+     "type": "integer",
+     "minimum": -9007199254740991,
+     "maximum": 9007199254740991
+    },
+    "id": {
+     "type": "string"
+    },
+    "name": {
+     "type": "string"
+    },
+    "player_style": {
+     "type": "string",
+     "description": "the nearest of the preview player's caption styles (what caption_style_id carries when no style was asked for)"
+    },
+    "style": {
+     "type": "object",
+     "propertyNames": {
+      "type": "string"
+     },
+     "additionalProperties": {},
+     "description": "the full CaptionStyle captionseasy validated"
+    },
+    "settings": {
+     "type": "object",
+     "propertyNames": {
+      "type": "string"
+     },
+     "additionalProperties": {},
+     "description": "captionseasy pacing settings"
+    },
+    "overrides": {
+     "type": "object",
+     "propertyNames": {
+      "type": "string"
+     },
+     "additionalProperties": {}
+    },
+    "warnings": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "rule_id": {
+     "type": "string",
+     "minLength": 1,
+     "description": "the rule that made this decision, e.g. \"law.pause_trim\" or \"nightdesk.split_on_number\""
+    }
+   },
+   "required": [
+    "number",
+    "id",
+    "name",
+    "player_style",
+    "style",
+    "settings",
+    "rule_id"
+   ],
+   "additionalProperties": false
+  },
   "words": {
    "type": "array",
    "items": {
@@ -292,6 +357,41 @@
        ],
        "additionalProperties": false
       }
+     },
+     "camera": {
+      "description": "a named library camera move on this shot; zoom keys stay the numbers the player draws",
+      "type": "object",
+      "properties": {
+       "asset_ref": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9_-]*:[a-z0-9][\\w.-]*$",
+        "description": "camera:<move id>, an R7 camera move (edit-scope moves on user footage)"
+       },
+       "t": {
+        "type": "number",
+        "minimum": 0
+       },
+       "dur": {
+        "type": "number",
+        "minimum": 0
+       },
+       "params": {
+        "type": "object",
+        "propertyNames": {
+         "type": "string"
+        },
+        "additionalProperties": {}
+       },
+       "rule_id": {
+        "type": "string",
+        "minLength": 1,
+        "description": "the rule that made this decision, e.g. \"law.pause_trim\" or \"nightdesk.split_on_number\""
+       }
+      },
+      "required": [
+       "asset_ref"
+      ],
+      "additionalProperties": false
      },
      "bg": {
       "description": "'blur': the same footage, blurred, fills the frame behind a 'fit' shot",
@@ -743,7 +843,31 @@
        "number_hit",
        "whoosh",
        "riser",
-       "end"
+       "end",
+       "word",
+       "key-word",
+       "list-item",
+       "pop",
+       "cascade",
+       "bubble",
+       "card-in",
+       "slide-out",
+       "scene",
+       "hard-hit",
+       "stat",
+       "notify",
+       "accent",
+       "click-ui",
+       "code",
+       "ui-reveal",
+       "build",
+       "big-build",
+       "cta",
+       "page-turn",
+       "riffle",
+       "paper-pop",
+       "thud",
+       "tear"
       ]
      },
      "gain_db": {
