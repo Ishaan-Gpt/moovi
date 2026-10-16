@@ -1,0 +1,39 @@
+{
+  "id": "level-ladder",
+  "name": "Level Ladder",
+  "about": "A talking-head roadmap kit: speaker at a desk with five poker chips and a chess knight marking the current level; neon-violet level orbs held between two glowing hands (a coin flip between levels); white-grid UI boards with lime stickers; paper posters (reveal with a face cut-out, an orbit of tool icons, words that shatter); photo inserts with hand-drawn labels and arrows; black cards with lime type; two-tier captions. Learned from reference r2, built with ishaan-motion.",
+  "from": ["ref:r2"],
+  "styles": ["brand-promo", "studio-minimal"],
+  "load": ["../motion/core.js", "../motion/type.js", "world.js", "inserts.js"],
+  "palette": {
+    "deep": "#090616",
+    "accent": "#7c3aed",
+    "accentMid": "#3b1490",
+    "accent2": "#d6ff3a",
+    "pop": "#d8262f",
+    "glow": "#b57bff",
+    "paper": "#efede8",
+    "board": "#f7f7f8",
+    "ink": "#141414",
+    "room": "#34361d",
+    "roomLight": "rgba(170,220,60,0.30)",
+    "chips": "#e0409a #4a62e0 #d8d4cc #2fae4a #ef6a2a"
+  },
+  "type": {
+    "display": { "family": "Anton", "weight": 400, "case": "upper" },
+    "text": { "family": "InterTight", "weight": 800 },
+    "key": { "family": "InterTight", "weight": 900 },
+    "serif": { "family": "Serif", "italic": true }
+  },
+  "motion": {
+    "engine": "ishaan-motion canvas engine (kits/motion/core.js): AE ramps, closed-form springs, log-space slams, velocity smear",
+    "slam": { "seconds": 0.26, "from": 1.4 },
+    "pop": { "spring": "pop" },
+    "settle": { "spring": "firm" },
+    "coinFlip": { "seconds": 0.22 },
+    "whip": { "seconds": 0.3 },
+    "pixel": { "seconds": 0.14, "block": 60 },
+    "dive": { "seconds": 0.5, "zoom": 2.6, "blur": 5 }
+  },
+  "frame": { "designW": 1080, "designH": 1920, "captionY": { "full": 0.64, "board": 0.78 } }
+}

@@ -8,7 +8,7 @@ import { CRAFT, closeMemory, health, library, run, seedLibrary, type AssetRow } 
 
 interface Part extends Partial<AssetRow> { id: string; category: AssetRow['category']; name: string; about: string; role: string; at?: number }
 interface KitFile { id: string; name: string; about: string; palette: Record<string, string>; type: unknown; motion: unknown; frame: unknown; styles?: string[] }
-interface PartsFile { kit?: { file: string; draw: string }; reference: { id: string; url: string; title: string; kind: string; seconds: number; notes?: string }; impl: string; styles?: string[]; parts: Part[]; uses?: { id: string; role: string; at?: number }[] }
+interface PartsFile { kit?: { file: string; draw?: string }; reference: { id: string; url: string; title: string; kind: string; seconds: number; notes?: string }; impl: string; styles?: string[]; parts: Part[]; uses?: { id: string; role: string; at?: number }[] }
 
 const file = process.argv[2];
 if (!file) { console.error('usage: reference <parts.json>'); process.exit(1); }
@@ -19,9 +19,15 @@ if (!h.ok) { console.error(`FalkorDB is not reachable: ${h.error}`); process.exi
 const ROOT = join(import.meta.dirname, '../../..');
 const KIT = P.kit ? JSON.parse(readFileSync(join(ROOT, P.kit.file), 'utf8')) as KitFile : null;
 const runtime = KIT ? `kit:${KIT.id}` : `ref-${P.reference.id}`;
+// a part's implementations: the kit's draw module (when it has one), plus any the part lists itself (e.g. `kit-motion`,
+// the ishaan-motion build of the same component); a part with none falls back to the reference's own runtime
+const implOf = (p: Part): Record<string, string> => {
+  const own = { ...(P.kit?.draw ? { [runtime]: `${P.kit.draw}#${p.id}` } : {}), ...(p.impl ?? {}) };
+  return Object.keys(own).length ? own : { [runtime]: p.id.split(':')[1]! };
+};
 const rows: AssetRow[] = P.parts.map(p => ({
   id: p.id, category: p.category, name: p.name, about: p.about,
-  runtime: p.runtime ?? [runtime], impl: p.impl ?? { [runtime]: P.kit ? `${P.kit.draw}#${p.id}` : p.id.split(':')[1]! },
+  runtime: [...new Set([...(p.runtime ?? []), ...Object.keys(implOf(p))])], impl: implOf(p),
   licence: p.licence ?? 'own code (MIT), recreated from a reference', credit: p.credit ?? null, ship: p.ship ?? true, attribution: p.attribution ?? false,
   file: null, vendored: false, energy: p.energy ?? null, tags: [...(p.tags ?? []), 'from-reference'], params: p.params ?? {},
   src: P.kit?.draw ?? P.impl, needs: p.needs ?? [], events: p.events ?? [], styles: p.styles ?? P.styles ?? [], family: p.family ?? null,
@@ -32,7 +38,7 @@ await run(CRAFT, library.addReference, { id: `ref:${r.id}`, url: r.url, title: r
 const parts = [...P.parts.map(p => ({ id: p.id, role: p.role, at: p.at ?? null, note: null })), ...(P.uses ?? []).map(u => ({ id: u.id, role: u.role, at: u.at ?? null, note: 'existing library asset' }))];
 const linked = await run<{ parts: number }>(CRAFT, library.addReferenceParts, { ref: `ref:${r.id}`, rows: parts });
 if (KIT) {
-  await run(CRAFT, library.seedKit, { id: KIT.id, name: KIT.name, about: KIT.about, palette: JSON.stringify(KIT.palette), type: JSON.stringify(KIT.type), motion: JSON.stringify(KIT.motion), frame: JSON.stringify(KIT.frame), src: P.kit!.draw });
+  await run(CRAFT, library.seedKit, { id: KIT.id, name: KIT.name, about: KIT.about, palette: JSON.stringify(KIT.palette), type: JSON.stringify(KIT.type), motion: JSON.stringify(KIT.motion), frame: JSON.stringify(KIT.frame), src: P.kit!.draw ?? P.impl });
   await run(CRAFT, library.linkKitParts, { kit: KIT.id, rows: P.parts.map(p => ({ id: p.id, role: p.role })) });
   await run(CRAFT, library.linkKitStyles, { kit: KIT.id, styles: KIT.styles ?? P.styles ?? [] });
   await run(CRAFT, library.referenceTaught, { ref: `ref:${r.id}`, kit: KIT.id });
