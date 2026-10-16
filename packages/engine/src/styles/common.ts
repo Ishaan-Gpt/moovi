@@ -45,6 +45,8 @@ export interface RunInput {
   port?: number;
   /** Stop: aborts the run (the next stage never starts, child processes are killed, model calls are cancelled) */
   signal?: AbortSignal;
+  /** Auto matched the brief to a kit (styles/kit/kits.ts): its palette roles dress the film's library inserts */
+  kit?: { id: string; name: string; palette: Record<string, string> };
 }
 
 export interface RunResult {

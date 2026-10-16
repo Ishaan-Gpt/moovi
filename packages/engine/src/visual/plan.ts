@@ -159,7 +159,7 @@ function layoutFor(needs: Set<Need>, seed: number, i: number, recent: LayoutId[]
   return [...from].sort((a, b) => rank(b) - rank(a))[0]!;
 }
 
-function contentFor(a: Artifact, text: string, nums: number[], c: { image?: string | null; logo?: string | null; brand?: string | null }, role: 'main' | 'other', variant: number, clip: { path: string; kind: 'footage' | 'scroll' | 'recording'; at: number } | null, photo: string | null = null): Content {
+export function contentFor(a: Artifact, text: string, nums: number[], c: { image?: string | null; logo?: string | null; brand?: string | null }, role: 'main' | 'other', variant: number, clip: { path: string; kind: 'footage' | 'scroll' | 'recording'; at: number } | null, photo: string | null = null): Content {
   // a scene's elements do not all say the same words: the main one takes the headline phrase, the others a clause or the key words each
   text = noThousands(text);
   const clauses = text.split(/[,;:.!?]|\s[-–—]\s/).map(s => s.trim()).filter(s => s.length > 2);

@@ -92,7 +92,7 @@ UNWIND $needs AS nid
 MATCH (a:Asset {category: $category})-[s:SERVES]->(:Need {id: nid})
 WHERE ($runtime IS NULL OR $runtime IN a.runtime) AND (NOT $shipOnly OR a.ship)
 WITH a, count(*) AS hits, sum(s.w) AS rank
-RETURN a.id AS id, a.name AS name, a.runtime AS runtime, a.energy AS energy, a.params AS params, hits
+RETURN a.id AS id, a.name AS name, a.runtime AS runtime, a.energy AS energy, a.params AS params, a.impl AS impl, hits
 ORDER BY hits DESC, rank ASC, a.id
 LIMIT $n`),
 

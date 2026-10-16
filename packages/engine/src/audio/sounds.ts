@@ -18,7 +18,7 @@ import { CRAFT, library, run } from '@moovi/graph';
 import { config, REPO } from '../config';
 import { sfxMap, type Ev, type SfxMap } from './mix';
 
-interface EventRow { id: string; file: string | null; first: boolean; then: boolean; params: string | null; align: 'start' | 'peak' | 'end' | null; slices: 'onsets' | null; sliceLen: number | null }
+interface EventRow { id: string; file: string | null; first: boolean; then: boolean; params: string | null; impl: string | null; align: 'start' | 'peak' | 'end' | null; slices: 'onsets' | null; sliceLen: number | null }
 interface SfxRow { id: string; file: string | null; params: string | null; impl: string | null }
 
 export interface SoundCast {
@@ -70,13 +70,19 @@ export async function castSounds(events: Ev[], o: { timeoutMs?: number } = {}): 
   wanted.forEach((event, i) => {
     const usable = rows[i]!.filter(r => r.file && existsSync(fileOf(r.file)));
     // one sound key per asset and event: the file cut the way THIS event cuts it (the FITS edge's align / slices; else the asset's own)
-    const keyOf = (r: EventRow) => `${r.id}@${event}`;
+    const keyOf = (r: EventRow) => `${r.id}@${event}`, spec = base.events[event]!;
+    // an edge from an older seed carries no cut, rank or follow-up flag: the asset's mixer keys against this event's
+    // own entry say all three (its key in the event's sounds = a choice, in that place; its key = the event's `then`)
+    const mixKeys = (r: EventRow) => { try { return String((JSON.parse(r.impl ?? '{}') as { mixer?: string }).mixer ?? '').split(',').filter(Boolean); } catch { return []; } };
+    const own = (r: EventRow) => mixKeys(r).find(k => spec.sounds.includes(k)), isThen = (r: EventRow) => r.then || (!own(r) && !!spec.then && mixKeys(r).includes(spec.then.sound));
     for (const r of usable) {
-      const s = specOf(r);
-      map.sounds[keyOf(r)] = r.align ? { file: s.file, align: r.align, ...(r.slices ? { slices: r.slices, slice_len: r.sliceLen ?? 1 } : {}) } : s;
+      const s = specOf(r), k = own(r) ?? (isThen(r) ? spec.then!.sound : undefined);
+      map.sounds[keyOf(r)] = r.align ? { file: s.file, align: r.align, ...(r.slices ? { slices: r.slices, slice_len: r.sliceLen ?? 1 } : {}) }
+        : k && base.sounds[k] ? { ...base.sounds[k]!, file: s.file } : s;
       asset[keyOf(r)] = r.id;
     }
-    const spec = base.events[event]!, choices = usable.filter(r => !r.then), follow = usable.find(r => r.then);
+    const place = (r: EventRow) => { const k = own(r); return k ? spec.sounds.indexOf(k) : 99; };
+    const choices = usable.filter(r => !isThen(r)).sort((x, y) => (x.first === y.first ? 0 : x.first ? -1 : 1) || place(x) - place(y)), follow = usable.find(isThen);
     if (!choices.length) { empty.push(event); cast[event] = spec.sounds; return; } // nothing in the graph for it yet: map.json's own
     map.events[event] = { ...spec, sounds: choices.map(keyOf), ...(spec.then && follow ? { then: { ...spec.then, sound: keyOf(follow) } } : {}) };
     cast[event] = choices.map(r => r.id);

@@ -18,6 +18,7 @@ import { castFilm, compose, darkWorld, planLines, rebind, STAGE, type DarkWorld,
 import { darkvoxLibrary, VOCAB } from '../darkvox/library';
 import { propFor } from '../darkvox/props';
 import { serveDarkVox } from '../darkvox/player';
+import { borrowFor, lookFor } from './kit/borrow';
 import { chooseArc, grow, improvise, recentArcs, recentSetups, remember, signals, writeBrief, type Spec } from './kit';
 import { CAMERA, SOUND } from '../../../library/src/dark-vox/tokens';
 import { clock, mixAudio, readSite, tts, within, type Hooks, type RunInput, type RunResult } from './common';
@@ -103,7 +104,7 @@ export async function run(o: RunInput, h: Hooks = {}): Promise<RunResult> {
   log(`${ps.length} shots for ${words.length} words (${duration}s); line plan ${planModel} ${((Date.now() - s) / 1000).toFixed(1)}s`);
   const lastWord = words.at(-1)!.end;
   const site = url ? siteFilms(new URL(url).hostname).slice(0, 2).flatMap(f => f.setups) : [];
-  const { beats, plan } = castFilm({ ps, lines, plans, lib, seed, recent: [...new Set([...site, ...recentSetups('darkvox', 3)])], end: lastWord + 0.3 });
+  const { beats, plan, casts } = castFilm({ ps, lines, plans, lib, seed, recent: [...new Set([...site, ...recentSetups('darkvox', 3)])], end: lastWord + 0.3 });
   // a kept improvisation plays through the composer, rebound to this beat
   plan.forEach((p, i) => { const g = lib.find(x => x.id === p.setup && x.generated); if (g) p.spec = rebind(g.generated!.spec as Spec, ps[i]!.words, p.props); });
   const inks = [world.palette.cream, world.palette.parchment, world.palette.brass, world.palette.gold, world.palette.wood, world.palette.woodLit, world.palette.cobalt, world.palette.navy, world.palette.oxblood, world.palette.scarlet];
@@ -149,6 +150,11 @@ export async function run(o: RunInput, h: Hooks = {}): Promise<RunResult> {
 
   s = Date.now(); C.begin('compose');
   const { film, events } = compose({ id, world, words, pieces: ps, plan, pics, duration, audio: '/v/master.wav', picUrl: f => `/v/pics/${f}`, endCard });
+  // where the style's own library was weak (improvised, or a low score), an insert from the shared library graph
+  const W = world.palette;
+  await borrowFor('darkvox', dir, film.shots.map((sh, i) => ({ index: i, t0: sh.t0, t1: sh.t1, text: beats[i]?.text ?? '', needs: beats[i]?.needs ?? [],
+    weak: !casts[i]?.setup || casts[i]!.score < 5.5, score: casts[i]?.score, locked: !beats[i] || sh.setup === 'end-card', room: 'top' as const })), seed,
+    lookFor({ palette: { ink: W.night, card: W.cream, accent: W.scarlet, accent2: W.gold, soft: W.parchment, onAccent: W.cream }, font: { ui: 'Bricolage, system-ui, sans-serif', serif: 'Fraunces, Georgia, serif', display: 'Anton, sans-serif' } }, o.kit), log);
   writeFileSync(join(dir, 'film.json'), JSON.stringify(film, null, 1));
   writeFileSync(join(dir, 'events.json'), JSON.stringify(events, null, 1));
   writeFileSync(join(dir, `${id}.json`), JSON.stringify({ component: 'darkvox-player', props: { timeline: { fps: 30, frames: Math.round(duration * 30) } } }));

@@ -19,6 +19,7 @@ import { servePlayer } from '../s4/player';
 import { contactSheet } from '../s4/sheet';
 import { PERIWINKLE, worldFrom, type World } from '../s4/world';
 import { cast, chooseArc, grow, grown, improvise, recentArcs, recentSetups, remember, signals, writeBrief, type Arc, type Spec } from './kit';
+import { borrowFor, lookFor, roomOf } from './kit/borrow';
 import { clock, hostSlug, mixAudio, readSite, tts, type Hooks, type RunInput, type RunResult } from './common';
 
 /** The coined term as the script says it (a model's field can drift from its own lines). */
@@ -189,6 +190,11 @@ export async function run(o: RunInput, h: Hooks = {}): Promise<RunResult> {
     return { setup: `improv-${r.source}`, family: `improv-${r.spec.layout}`, why: `improvised (${r.source}) ${r.spec.layout}: ${r.spec.about}`, pics: mine, spec: r.spec, enter: ent[i]! };
   });
   const { film, events } = compose({ id, world, words: words!, pieces: ps, cast: film_cast, coined, duration, audio: '/v/master.wav', picUrl: f => `/v/pics/${f}`, arc: arc?.id ?? (scriptText ? 'script' : 'clone') });
+  // where the style's own library was weak (improvised, or a low score), an insert from the shared library graph,
+  // in the room the beat's type leaves
+  await borrowFor('s4', dir, film.beats.map((b, i) => ({ index: i, t0: b.t0, t1: b.t1, text: ps[i]!.text, needs: bins[i]!.needs,
+    weak: !casts[i]!.setup || casts[i]!.score < 5, score: casts[i]!.score, locked: i === film.beats.length - 1, room: roomOf(b.locks) })), seed,
+    lookFor({ palette: { ink: world.ink, card: world.paper, accent: world.edge, accent2: world.top, soft: world.mid, onAccent: world.paper }, font: { ui: 'Arch, system-ui, sans-serif', serif: 'Tight, Georgia, serif', display: 'Arch, sans-serif' } }, o.kit), log);
   writeFileSync(join(dir, 'film.json'), JSON.stringify(film, null, 1));
   writeFileSync(join(dir, 'events.json'), JSON.stringify(events, null, 1));
   writeFileSync(join(dir, `${id}.json`), JSON.stringify({ component: 's4-player', props: { timeline: { fps: 30, frames: Math.round(duration * 30) } } }));

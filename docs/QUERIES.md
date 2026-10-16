@@ -1549,7 +1549,7 @@ LIMIT $n
 
 ### `useArtifact` (write)
 
-The art director puts an artifact in a scene’s slot: (Scene)-[:USES_ARTIFACT {slot}]->(Artifact), with the layout it sits in.
+The art director puts an artifact in a scene’s slot: (Scene)-[:USES_ARTIFACT {slot}]->(Artifact), with the layout it sits in. A live style’s insert borrowed from the library graph is slot `library`, layout = the style.
 
 ```cypher
 MATCH (r:Run {id: $run})
@@ -2217,7 +2217,7 @@ UNWIND $needs AS nid
 MATCH (a:Asset {category: $category})-[s:SERVES]->(:Need {id: nid})
 WHERE ($runtime IS NULL OR $runtime IN a.runtime) AND (NOT $shipOnly OR a.ship)
 WITH a, count(*) AS hits, sum(s.w) AS rank
-RETURN a.id AS id, a.name AS name, a.runtime AS runtime, a.energy AS energy, a.params AS params, hits
+RETURN a.id AS id, a.name AS name, a.runtime AS runtime, a.energy AS energy, a.params AS params, a.impl AS impl, hits
 ORDER BY hits DESC, rank ASC, a.id
 LIMIT $n
 ```
