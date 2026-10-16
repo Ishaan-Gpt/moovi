@@ -26,7 +26,16 @@ Files you are editing go in the Files column so nobody else touches them.
 
 ## Build (phase 2)
 
-Filled from `PLAN.md` once research is done.
+Day 1 from `PLAN.md`. Day 2 rows are added when Day 1's gate passes.
 
 | ID | Task | Owner | Status | Branch | Files |
 |---|---|---|---|---|---|
+| D1.1 | EDL schema v0 | Tab drafts, Claude 1 reviews | waiting for approval | | `engine/src/edit/edl.ts` |
+| D1.2 | footage-edit's hear into main's transcribe/intake | Tab | waiting for approval | | `audio/stt.ts`, `tasks/intake.ts`, `tasks/script.ts` |
+| D1.2b | Voice clean-up without Python (ffmpeg arnndn) | Tab | waiting for approval | | `engine/src/audio/` |
+| D1.3 | Extract the EDL builder from footage-edit | Tab | waiting for approval | | `engine/src/edit/` |
+| D1.4 | R10 + preview player | Claude 1 | waiting for approval | | `engine/src/edit/player/`, `apps/studio` |
+| D1.5 | Caption renderer for R8 | Claude 1 | waiting for approval | | `engine/src/edit/captions/` |
+| D1.6 | R9 benchmark set and score script | Tab | waiting for approval | | `engine/scripts/` |
+| D1.7 | Studio route: upload → edit job; edit-style picker | Claude 1 | waiting for approval | | `router/job.ts`, `apps/studio` |
+| D1.8 | MP4 renderer reads the EDL | Tab | waiting for approval | | `engine/src/edit/render.ts` |

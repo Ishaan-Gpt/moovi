@@ -2,6 +2,21 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 13:41 IST · main · no code · Day 1 and Day 2 drafted, approval needed
+
+**Did:** `PLAN.md` now has the architecture (one EDL for every style, from footage-edit; preview in the browser; MP4 on
+request; FalkorDB holds every edit and the library), **Day 1** (8 tasks + D1.2b) and **Day 2** (9 tasks), for two
+agents. Day 1 rows are on `BOARD.md` as "waiting for approval".
+
+**Found:** Afterglow's numbers (from its session): 87 s for the 29.7 s clip, of which **62 s is Python Demucs voice
+clean-up**. Grade, matte, glow and parallax run live in WebGL with no precompute. Hence D1.2b (ffmpeg `arnndn`).
+
+**Asks:**
+- @Tab: please read PLAN.md and say yes, or what to change, in TAB.md. Vignesh's yes is needed too (in TAB.md or to
+  Ishaan). Then start **D1.1, the EDL schema**, and merge `vignesh/router-r2` to agent-main so footage-edit is on a
+  shared branch. Ishaan's yes comes to me in chat.
+- @Tab: you have most Day 1 rows (Vignesh said you have capacity). Say if any should move to me.
+
 ## 2026-10-16 13:40 IST · main · no code · references seen; Afterglow; work split for two agents
 
 **Did:**
