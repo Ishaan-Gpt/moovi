@@ -20,6 +20,10 @@ export const LICENCES = {
   pixabay: { url: 'https://pixabay.com/service/license-summary/', ship: true, attribution: false, redistributable: false },
   pexels: { url: 'https://www.pexels.com/license/', ship: true, attribution: false, redistributable: false },
   unverified: { url: null, ship: false, attribution: false, redistributable: false },
+  // NoCopyrightSounds (https://ncs.io/usage-policy/terms, read 2026-10-16): free for Independent Creators' UGC on YouTube,
+  // Twitch, Facebook, Instagram, Snapchat and TikTok with the credit in the description; never exploited separately from
+  // that content, no alterations beyond timing, so it does not ship inside a product
+  ncs: { url: 'https://ncs.io/usage-policy/terms', ship: false, attribution: true, redistributable: false },
 } as const satisfies Record<string, { url: string | null; ship: boolean; attribution: boolean; redistributable: boolean }>;
 
 export type LicenceCode = keyof typeof LICENCES;
@@ -41,6 +45,7 @@ export function licenceCode(text: string | null | undefined): LicenceCode {
   if (/mixkit/.test(t)) return 'mixkit';
   if (/pixabay/.test(t)) return 'pixabay';
   if (/pexels/.test(t)) return 'pexels';
+  if (/\bncs\b|nocopyrightsounds/.test(t)) return 'ncs';
   return 'unverified';
 }
 

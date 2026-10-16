@@ -4,12 +4,13 @@ import { sh } from '../../bench';
 import { config } from '../../config';
 import { speakLines } from '../../audio/lines';
 import { bedStem, castStem, sfxStem, type Ev } from '../../audio/mix';
+import { fetchMusic, lufsOf, musicFilter, musicMixPlan, musicWant, pickMusic, MUSIC_MIX, type MusicMixPlan, type MusicPick } from '../../audio/music-lib';
 import { checkClip, clipId, fetchClip, rank, type Clip, type ClipCandidate } from '../../footage';
 import { clipAssetId } from '../../footage/graph';
 import { mixkit } from '../../footage/sources';
 import { validateEdl } from '../edl';
-import { clipMomentEdl, cmLines, plateSpans, spoken, CM_PALETTE, CM_TAIL, CM_TRANSITIONS, type CmEdl, type CmScript, type CmTheme, type TimedWord } from './clip-moment';
-import { cmPlan, cmTopic, mixkitLicence, CM_CAMERAS } from './clip-moment-plan';
+import { clipMomentEdl, cmLines, plateSpans, spoken, CM_END_MAX, CM_PALETTE, CM_TAIL, CM_TRANSITIONS, type CmEdl, type CmScript, type CmTheme, type TimedWord } from './clip-moment';
+import { cmClipFits, cmPlan, cmTopic, mixkitLicence, CM_CAMERAS } from './clip-moment-plan';
 import { gradeClips, spreadOf, CM_FINISH_CHAIN, CM_GRADE, CM_GRADE_IDS, CM_LOOK_CHAIN, type ClipGrade } from './clip-moment-grade';
 
 /**
@@ -40,7 +41,7 @@ export interface CmRunInput {
 }
 
 export interface CmClipPick { beat: number; query: string; id: string; ref: string; title: string; page: string; licence: string; file: string; score?: number; why?: string }
-export interface CmTraceBeat { beat: number; line: string; queries: string[]; candidates: number; checked: { ref: string; title: string; score: number; verdict: string; tags?: string[] }[]; picked: { ref: string; title: string; query: string; score: number; verdict: string }[]; graphic?: string; components?: string[]; library?: string[] }
+export interface CmTraceBeat { beat: number; line: string; queries: string[]; candidates: number; checked: { ref: string; title: string; score: number; verdict: string; tags?: string[] }[]; picked: { ref: string; title: string; query: string; score: number; verdict: string }[]; graphic?: string; components?: string[]; library?: string[]; music?: string }
 export interface CmRunResult { edl: CmEdl; dir: string; timings: Record<string, number>; clips: CmClipPick[]; rejected: { ref: string; why: string; beat?: number }[]; why: string[]; graph: string }
 
 export const CM_VOICES = ['en-US-BrianMultilingualNeural', 'en-US-AvaMultilingualNeural', 'en-US-EmmaMultilingualNeural'];
@@ -199,7 +200,7 @@ export function limiter(n: number) {
 
 /* ── the craft graph: clips it already keeps in (assetsServing), 3D cast from its camera and 3d assets, chosen clips (with their licence) out as Asset nodes ── */
 const OBJ_NEEDS: Record<string, string[]> = { tower: ['number', 'data', 'growth'], cubes: ['build', 'data', 'layers'], gyro: ['process', 'cycle'], knot: ['process', 'connect'], coin: ['money', 'payoff'], dotglobe: ['global', 'network', 'location'], network: ['network', 'connect'] };
-interface GraphIo { licence(ref: string): Promise<'free' | 'restricted' | null>; serving(needs: string[]): Promise<ClipCandidate[]>; cast3d(s: CmScript): Promise<{ script: CmScript; notes: string[] }>; keep(rows: { ref: string; title: string; page: string; url: string; query: string; licence: 'free' | 'restricted' }[]): Promise<number> }
+interface GraphIo { licence(ref: string): Promise<'free' | 'restricted' | null>; serving(needs: string[]): Promise<ClipCandidate[]>; cast3d(s: CmScript): Promise<{ script: CmScript; notes: string[] }>; keep(rows: { ref: string; title: string; page: string; url: string; query: string; licence: 'free' | 'restricted' }[]): Promise<number>; music(needs: string[]): Promise<Map<string, number>> }
 async function graphIo(log: (s: string) => void): Promise<GraphIo | null> {
   try {
     const g = await import('@moovi/graph');
@@ -214,6 +215,11 @@ async function graphIo(log: (s: string) => void): Promise<GraphIo | null> {
         const r = rows[0]; if (!r) return null;
         const v = (() => { try { return (JSON.parse(r.params ?? '{}') as { mixkit_licence?: string }).mixkit_licence; } catch { return undefined; } })();
         return v === 'free' || v === 'restricted' ? v : r.licence === 'mixkit-restricted' ? 'restricted' : null;
+      },
+      // the music beds that serve the video's tones (category music, the mixer runtime, shippable licences only)
+      async music(needs) {
+        const rows = await g.run<{ id: string; hits: number }>(g.CRAFT, g.library.assetsServing, { needs, category: 'music', runtime: 'mixer', shipOnly: true, n: 40 });
+        return new Map(rows.map(r => [r.id, Number(r.hits)]));
       },
       // clips the library already keeps (licence-clean, shippable) that serve this line's footage needs
       async serving(needs) {
@@ -330,7 +336,7 @@ export async function makeClipMoment(i: CmRunInput): Promise<CmRunResult> {
       // the tags their pages carry, and only a free clip still at CM_MIN_SCORE or more is ever used
       const foundWord = (q: string) => q === 'graph' ? '' : (q.toLowerCase().match(/[a-z0-9]+/g) ?? []).find(w => w.length > 2 && !STOPW.has(w)) ?? '';
       const ranked = [...pool2.values()].map(x => ({ ...x, score: clipScore(x.c.title, b.say, x.q, topic, ladder, { found: foundWord(x.q), tags: tagsOf(x.c.ref) }) }))
-        .filter(x => x.score >= CM_MIN_SCORE - 1 && !used.has(x.c.ref) && !/^1\d{5}$/.test(x.c.ref)).sort((x, y) => y.score - x.score || Number(x.c.ref) - Number(y.c.ref)).slice(0, CM_CHECK_MAX);
+        .filter(x => x.score >= CM_MIN_SCORE - 1 && !used.has(x.c.ref) && !/^1\d{5}$/.test(x.c.ref) && (cmClipFits(b.say, x.c.title) || (rejected.push({ ref: x.c.ref, why: `subject guard: "${x.c.title.slice(0, 40)}" does not show this line's part`, beat: bi + 1 }), false))).sort((x, y) => y.score - x.score || Number(x.c.ref) - Number(y.c.ref)).slice(0, CM_CHECK_MAX);
       // licence pages are checked best first, a few at a time, and only until the beat has its clips (every page
       // fetch counts against Mixkit's rate limit; a cached verdict costs nothing)
       const lic: string[] = [];
@@ -428,9 +434,31 @@ export async function makeClipMoment(i: CmRunInput): Promise<CmRunResult> {
   if (!cast) sfxStem(evs, join(dir, 'sfx.wav'));
   const sfxIds: Record<string, string> = {};
   if (cast?.source === 'graph') for (const [ev, ids] of Object.entries(cast.events)) if (ids[0]) sfxIds[ev] = ids[0];
-  bedStem(D0 + 0.5, join(dir, 'music.wav'));
-  await sh(config.ffmpeg, ['-v', 'error', '-y', '-i', join(dir, 'vo.wav'), '-i', join(dir, 'music.wav'), '-i', join(dir, 'sfx.wav'), '-filter_complex',
-    '[0:a]aresample=48000,asplit=2[vo][key];[1:a]aresample=48000,volume=0.32[bed];[bed][key]sidechaincompress=threshold=0.03:ratio=8:attack=20:release=300[ducked];[2:a]aresample=48000,volume=0.55[fx];[vo][ducked][fx]amix=inputs=3:normalize=0:duration=longest,acompressor=threshold=-20dB:ratio=3:attack=5:release=80,loudnorm=I=-14:TP=-1.5:LRA=7[a]',
+  // the bed: one library track per video (audio/music-lib: licence gate, cast by the video's tones through the graph's
+  // assetsServing, catalogue if the graph is down), its drop on the first 3D moment (else the first cut), ducked about
+  // MUSIC_MIX.underVoiceLu under the voice, faded out over the end card; no pick = the vendored bed, said in the trace
+  const firstThud = evs.filter(e => e.event === 'thud' && e.t >= 1.5 && e.t <= 12).map(e => e.t).sort((a, b) => a - b)[0];
+  const dropTarget = r3(firstThud ?? (pre.cuts ?? [])[0]?.t ?? 3);
+  let musicPick: MusicPick | null = null, musicPlan: MusicMixPlan | null = null, musicFile = '', musicNote = '', voiceLufs: number | null = null, musicLufs: number | null = null;
+  try {
+    const want = musicWant({ lines, seconds: D0, dropTarget, seed: topic ?? lines[0] ?? 'clip-moment' });
+    const hits = g ? await g.music(want.needs).catch(() => null) : null;
+    musicPick = pickMusic(want, hits && hits.size ? hits : null);
+    if (musicPick) {
+      musicFile = await fetchMusic(musicPick.track, i.signal ? { signal: i.signal } : {});
+      const base = { track: musicPick.track, dropTarget, seconds: D0, endCardAt: r3(D0 - CM_END_MAX) };
+      const seek = musicMixPlan({ ...base, voiceLufs: 0, musicLufs: 0 }).seek;
+      [voiceLufs, musicLufs] = await Promise.all([lufsOf(join(dir, 'vo.wav')), lufsOf(musicFile, { start: seek, dur: D0 })]);
+      musicPlan = musicMixPlan({ ...base, voiceLufs: voiceLufs ?? -18, musicLufs: musicLufs ?? -14 });
+      log(`music: ${musicPick.track.id} (${musicPick.source}) ${musicPick.why}; drop at ${musicPlan.dropAt ?? 'none'} s, ${musicPlan.gainDb} dB`);
+    } else musicNote = 'music: no library track passed the gate and served the needs; vendored bed';
+  } catch (e) { musicNote = `music: ${(e as Error).message.slice(0, 160)}; vendored bed`; musicPick = null; musicPlan = null; }
+  if (musicNote) log(musicNote);
+  const vo0 = '[0:a]aresample=48000,asplit=2[vo][key];';
+  const tailMix = `[bed][key]sidechaincompress=${musicPlan ? MUSIC_MIX.sidechain : 'threshold=0.03:ratio=8:attack=20:release=300'}[ducked];[2:a]aresample=48000,volume=0.55[fx];[vo][ducked][fx]amix=inputs=3:normalize=0:duration=longest,acompressor=threshold=-20dB:ratio=3:attack=5:release=80,loudnorm=I=-14:TP=-1.5:LRA=7[a]`;
+  if (!musicPlan) bedStem(D0 + 0.5, join(dir, 'music.wav'));
+  await sh(config.ffmpeg, ['-v', 'error', '-y', '-i', join(dir, 'vo.wav'), '-i', musicPlan ? musicFile : join(dir, 'music.wav'), '-i', join(dir, 'sfx.wav'), '-filter_complex',
+    vo0 + (musicPlan ? `${musicFilter(musicPlan, '1:a', 'bed')};` : '[1:a]aresample=48000,volume=0.32[bed];') + tailMix,
     '-map', '[a]', '-t', D0.toFixed(3), '-ar', '48000', '-c:a', 'aac', '-b:a', '160k', join(dir, 'master.m4a')], { timeout: 120_000 });
   lap('audio');
 
@@ -446,8 +474,10 @@ export async function makeClipMoment(i: CmRunInput): Promise<CmRunResult> {
   if (problems.length) throw new Error(`clip-moment EDL: ${problems.slice(0, 3).join('; ')}`);
   writeFileSync(join(dir, 'edl.json'), JSON.stringify(edl));
   const picks: CmClipPick[] = clips.flatMap((cs, k) => cs.map(c => ({ beat: k + 1, query: c.query, id: clipId(c), ref: c.ref, title: c.title, page: c.page, licence: c.licence, file: c.path!, score: c.score })));
-  // credits stay off screen (the free licence needs none): here and on the Asset nodes
-  writeFileSync(join(dir, 'credits.json'), JSON.stringify({ footage: picks.map(({ file: _f, ...p }) => p), rejected, voice, sfx: sfxIds }, null, 1));
+  // credits stay off screen: here and on the Asset nodes; a music licence that asks for a credit (NCS, CC BY) gets it in
+  // the video description, so the exact text rides here as music.description
+  const music = musicPick ? { id: musicPick.track.id, title: musicPick.track.title, artist: musicPick.track.artist, licence: musicPick.track.licence, use_scope: musicPick.useScope, description: musicPick.credit } : null;
+  writeFileSync(join(dir, 'credits.json'), JSON.stringify({ footage: picks.map(({ file: _f, ...p }) => p), rejected, voice, sfx: sfxIds, music }, null, 1));
   // the trace: per line, what was searched, what was checked (score, licence) and picked, its components and 3D ids
   const comps = edl.inserts.filter(x => String(x.asset_ref ?? '').startsWith('clip-moment:'));
   script.beats.forEach((b, k) => {
@@ -460,9 +490,16 @@ export async function makeClipMoment(i: CmRunInput): Promise<CmRunResult> {
     clips: allClips.map(c => { const q = gradeOf.get(c.path!)!; return { ref: c.ref, title: c.title, raw: q.raw, after: q.after, gamma: q.gamma, sat: q.sat }; }),
     spread: { raw: spreadOf(grades.map(q => q.raw)), after: spreadOf(grades.map(q => q.after)) },
   };
+  if (musicPick && musicPlan) {
+    trace[0]!.music = `${musicPick.track.id} starts (${musicPick.track.genre}), seek ${musicPlan.seek} s, ${musicPlan.gainDb} dB, ${musicPlan.underVoiceLu} LU under the voice`;
+    if (musicPlan.dropAt !== null) { const tb = trace[beatOf(musicPlan.dropAt)]!; tb.music = `${tb.music ? `${tb.music}; ` : ''}${musicPick.track.id} drop lands at ${musicPlan.dropAt} s`; }
+  }
+  const musicTrace = musicPick && musicPlan
+    ? { id: musicPick.track.id, title: musicPick.track.title, artist: musicPick.track.artist, genre: musicPick.track.genre, mood: musicPick.track.mood, licence: musicPick.track.licence, licenceUrl: musicPick.track.licenceUrl, sourceUrl: musicPick.track.sourceUrl, source: musicPick.source, candidates: musicPick.candidates, score: musicPick.score, why: musicPick.why, dropTarget, plan: musicPlan, voiceLufs, musicLufs }
+    : { id: null, note: musicNote || 'vendored bed' };
   const transitions = (edl.cuts ?? []).map(c => ({ t: c.t, type: c.type, ref: String(c.rule_id).replace(/^cm\.tr\./, '') }));
   const sfxTrace = (edl.sfx ?? []).map(s => ({ t: s.t, event: String((s as { event?: string }).event ?? ''), ref: s.asset_ref, rule: s.rule_id }));
-  writeFileSync(join(dir, 'trace.json'), JSON.stringify({ topic, library: lib.notes, components: comps.length, kinds: [...new Set(comps.map(x => String(x.asset_ref).slice(12)))], threeD, palette: CM_PALETTE, grade: gradeTrace, transitions, transitionKinds: CM_TRANSITIONS.map(x => x.ref), sfx: sfxTrace, sound: sfxIds, mixkit: mixkitBreaker(), beats: trace }, null, 1));
+  writeFileSync(join(dir, 'trace.json'), JSON.stringify({ topic, library: lib.notes, components: comps.length, kinds: [...new Set(comps.map(x => String(x.asset_ref).slice(12)))], threeD, palette: CM_PALETTE, grade: gradeTrace, transitions, transitionKinds: CM_TRANSITIONS.map(x => x.ref), sfx: sfxTrace, sound: sfxIds, mixkit: mixkitBreaker(), music: musicTrace, beats: trace }, null, 1));
   let graph = 'off';
   if (g) {
     const verdictsNow = readVerdicts();

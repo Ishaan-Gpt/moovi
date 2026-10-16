@@ -62,9 +62,9 @@ export function clipMomentRuntime(REG: Record<string, unknown>) {
   /* ── always on: vignette, pixel dust, brand pill, credit line ── */
   function vignette(strength: number) {
     const gr = g.createRadialGradient(DW / 2, DH * 0.48, DH * 0.2, DW / 2, DH * 0.5, DH * 0.78);
-    gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, alpha(P.deep!, 0.85 * strength)); g.fillStyle = gr; g.fillRect(0, 0, DW, DH);
-    const top = g.createLinearGradient(0, 0, 0, 360); top.addColorStop(0, 'rgba(0,0,0,0.55)'); top.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = top; g.fillRect(0, 0, DW, 360);
-    const bot = g.createLinearGradient(0, DH - 520, 0, DH); bot.addColorStop(0, 'rgba(0,0,0,0)'); bot.addColorStop(1, 'rgba(0,0,0,0.6)'); g.fillStyle = bot; g.fillRect(0, DH - 520, DW, 520);
+    gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, alpha(P.deep!, 0.5 * strength)); g.fillStyle = gr; g.fillRect(0, 0, DW, DH);
+    const top = g.createLinearGradient(0, 0, 0, 360); top.addColorStop(0, 'rgba(0,0,0,0.4)'); top.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = top; g.fillRect(0, 0, DW, 360);
+    const bot = g.createLinearGradient(0, DH - 520, 0, DH); bot.addColorStop(0, 'rgba(0,0,0,0)'); bot.addColorStop(1, 'rgba(0,0,0,0.45)'); g.fillStyle = bot; g.fillRect(0, DH - 520, DW, 520);
   }
   function dust(t: number, n: number, shape: string) {
     for (let i = 0; i < n; i++) {
@@ -504,7 +504,7 @@ export function clipMomentRuntime(REG: Record<string, unknown>) {
         if (mv) blurPx += Math.min(2.4, Math.abs(mv(clamp(u + du)) - mv(u)) * 0.45);
       }
       // full bleed and sharp (the footage is the picture); a card darkens it a little, 'cm-dim' also blurs it
-      cur.style.filter = 'blur(' + ((hard ? d * 11 : 0) + blurPx * k).toFixed(2) + 'px) brightness(' + (0.96 - d * (hard ? 0.5 : 0.3) + lift).toFixed(3) + ') saturate(' + (1.12 + d * 0.1).toFixed(2) + ') contrast(1.05)';
+      cur.style.filter = 'blur(' + ((hard ? d * 11 : 0) + blurPx * k).toFixed(2) + 'px) brightness(' + (1.04 - d * (hard ? 0.45 : 0.18) + lift).toFixed(3) + ') saturate(' + (1.12 + d * 0.1).toFixed(2) + ') contrast(1.05)';
       g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, W, H); g.setTransform(k, 0, 0, k, 0, 0);
       const ov = E.overlays || [];
       if (q >= 0 && cur.readyState >= 2) transition(ty, cur, q, cut);

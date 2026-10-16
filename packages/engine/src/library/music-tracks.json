@@ -1,0 +1,1389 @@
+{
+ "about": "Background music for the library (category music). Metadata only: the audio is fetched from fileUrl into a local cache (MOOVI_MUSIC_CACHE, default ~/.cache/moovi/music), never committed. Licence gate: only tracks whose licence allows free commercial use on YouTube, Instagram and Facebook with no attribution on screen. Mixkit Stock Music Free License (read 2026-10-16 at https://mixkit.co/license/modal/musicFree): commercial and non-commercial use, any web or social media platform, no attribution; not allowed: CDs/DVDs, TV/radio, video games, remixing into a music-only track, claiming or registering on a rights management service. bpm, dropAt and hookAt are measured from the audio (onset autocorrelation, loudness rise); genre and mood come from Mixkit's genre and tag pages plus the measured loudness, not from hand auditioning. Viral additions 2026-10-16 (Vignesh: \"use that viral music which actually people recognize\"): 12 NCS classics (use_scope creator-use: our own YT/FB/IG videos with the description credit, never bundled in the product) and 5 Kevin MacLeod CC BY 4.0 meme beds (product-safe with credit); licences read on ncs.io/usage-policy/terms and incompetech.com on 2026-10-16; NCS bpm and every viral dropAt are estimates from the audio; ytViews read 2026-10-16. Audio cached under the cache dir viral/ folder, never in git. Not used: Alan Walker Fade, Cartoon On & On, Tobu Candyland/Cloud 9 (no longer on ncs.io).",
+ "measuredAt": "2026-10-16",
+ "tracks": [
+  {
+   "id": "music:mixkit-need-for-speed",
+   "title": "Need for speed",
+   "artist": "Arulo",
+   "source": "mixkit",
+   "mixkitId": 369,
+   "fileUrl": "https://assets.mixkit.co/music/369/369.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/hip-hop/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "upbeat-trap",
+   "mixkitGenre": "Trap",
+   "mood": [
+    "hype",
+    "confident",
+    "driving"
+   ],
+   "energy": 5,
+   "bpm": 92.3,
+   "hasDrop": true,
+   "dropAt": 12.0,
+   "hookAt": 12.0,
+   "dur": 97.8,
+   "needs": [
+    "hook",
+    "speed",
+    "build",
+    "success"
+   ]
+  },
+  {
+   "id": "music:mixkit-head-bang",
+   "title": "Head Bang",
+   "artist": "Arulo",
+   "source": "mixkit",
+   "mixkitId": 357,
+   "fileUrl": "https://assets.mixkit.co/music/357/357.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/hip-hop/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "upbeat-trap",
+   "mixkitGenre": "Trap",
+   "mood": [
+    "hype",
+    "aggressive"
+   ],
+   "energy": 5,
+   "bpm": 73.8,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": null,
+   "dur": 97.3,
+   "needs": [
+    "hook",
+    "speed",
+    "build",
+    "success"
+   ]
+  },
+  {
+   "id": "music:mixkit-sparta",
+   "title": "Sparta",
+   "artist": "Arulo",
+   "source": "mixkit",
+   "mixkitId": 370,
+   "fileUrl": "https://assets.mixkit.co/music/370/370.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/hip-hop/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "upbeat-trap",
+   "mixkitGenre": "Trap",
+   "mood": [
+    "epic",
+    "aggressive",
+    "confident"
+   ],
+   "energy": 4,
+   "bpm": 95.7,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": null,
+   "dur": 104.0,
+   "needs": [
+    "hook",
+    "speed",
+    "build",
+    "success"
+   ]
+  },
+  {
+   "id": "music:mixkit-thunder",
+   "title": "Thunder",
+   "artist": "Arulo",
+   "source": "mixkit",
+   "mixkitId": 318,
+   "fileUrl": "https://assets.mixkit.co/music/318/318.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/hip-hop/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "dark-trap",
+   "mixkitGenre": "Hip Hop",
+   "mood": [
+    "dark",
+    "tense",
+    "aggressive"
+   ],
+   "energy": 4,
+   "bpm": 95.7,
+   "hasDrop": true,
+   "dropAt": 20.2,
+   "hookAt": 20.2,
+   "dur": 101.2,
+   "needs": [
+    "hook",
+    "stakes",
+    "warning",
+    "chaos",
+    "build"
+   ]
+  },
+  {
+   "id": "music:mixkit-greed",
+   "title": "Greed",
+   "artist": "Arulo",
+   "source": "mixkit",
+   "mixkitId": 404,
+   "fileUrl": "https://assets.mixkit.co/music/404/404.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/tag/trap/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "dark-trap",
+   "mixkitGenre": "Trap",
+   "mood": [
+    "dark",
+    "confident"
+   ],
+   "energy": 4,
+   "bpm": 99.4,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": null,
+   "dur": 96.0,
+   "needs": [
+    "hook",
+    "stakes",
+    "warning",
+    "chaos",
+    "build"
+   ]
+  },
+  {
+   "id": "music:mixkit-trap-electro-vibes",
+   "title": "Trap Electro Vibes",
+   "artist": "Alejandro Magaña (A. M.)",
+   "source": "mixkit",
+   "mixkitId": 126,
+   "fileUrl": "https://assets.mixkit.co/music/126/126.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/electronic/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "upbeat-trap",
+   "mixkitGenre": "Electronic",
+   "mood": [
+    "hype",
+    "playful",
+    "driving"
+   ],
+   "energy": 5,
+   "bpm": 184.6,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": 3.05,
+   "dur": 115.8,
+   "needs": [
+    "hook",
+    "speed",
+    "build",
+    "success"
+   ]
+  },
+  {
+   "id": "music:mixkit-acid-party",
+   "title": "Acid Party",
+   "artist": "Arulo",
+   "source": "mixkit",
+   "mixkitId": 420,
+   "fileUrl": "https://assets.mixkit.co/music/420/420.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/hip-hop/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "electronic",
+   "mixkitGenre": "Trap",
+   "mood": [
+    "hype",
+    "playful"
+   ],
+   "energy": 4,
+   "bpm": 152.0,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": null,
+   "dur": 100.8,
+   "needs": [
+    "speed",
+    "build",
+    "idea",
+    "ai",
+    "data"
+   ]
+  },
+  {
+   "id": "music:mixkit-golden-storm",
+   "title": "Golden Storm",
+   "artist": "Diego Nava",
+   "source": "mixkit",
+   "mixkitId": 470,
+   "fileUrl": "https://assets.mixkit.co/music/470/470.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/tag/corporate/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "electronic",
+   "mixkitGenre": "EDM",
+   "mood": [
+    "uplifting",
+    "hype"
+   ],
+   "energy": 5,
+   "bpm": 129.2,
+   "hasDrop": true,
+   "dropAt": 15.05,
+   "hookAt": 15.05,
+   "dur": 95.5,
+   "needs": [
+    "speed",
+    "build",
+    "idea",
+    "ai",
+    "data"
+   ]
+  },
+  {
+   "id": "music:mixkit-rising-sun",
+   "title": "Rising Sun",
+   "artist": "Diego Nava",
+   "source": "mixkit",
+   "mixkitId": 523,
+   "fileUrl": "https://assets.mixkit.co/music/523/523.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/tag/cinematic/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "electronic",
+   "mixkitGenre": "EDM",
+   "mood": [
+    "uplifting",
+    "bright"
+   ],
+   "energy": 4,
+   "bpm": 112.3,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": null,
+   "dur": 91.7,
+   "needs": [
+    "speed",
+    "build",
+    "idea",
+    "ai",
+    "data"
+   ]
+  },
+  {
+   "id": "music:mixkit-drum-and-bass-vibes",
+   "title": "Drum and Bass Vibes",
+   "artist": "Lily J",
+   "source": "mixkit",
+   "mixkitId": 719,
+   "fileUrl": "https://assets.mixkit.co/music/719/719.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/electronic/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "electronic",
+   "mixkitGenre": "Electronic",
+   "mood": [
+    "driving",
+    "tense",
+    "hype"
+   ],
+   "energy": 5,
+   "bpm": 117.5,
+   "hasDrop": true,
+   "dropAt": 21.85,
+   "hookAt": 21.85,
+   "dur": 96.0,
+   "needs": [
+    "speed",
+    "build",
+    "idea",
+    "ai",
+    "data"
+   ]
+  },
+  {
+   "id": "music:mixkit-motivating-mornings",
+   "title": "Motivating Mornings",
+   "artist": "Ahjay Stelino",
+   "source": "mixkit",
+   "mixkitId": 33,
+   "fileUrl": "https://assets.mixkit.co/music/33/33.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/tag/corporate/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "corporate-upbeat",
+   "mixkitGenre": "Corporate Music",
+   "mood": [
+    "uplifting",
+    "bright",
+    "confident"
+   ],
+   "energy": 3,
+   "bpm": 80.7,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": 3.95,
+   "dur": 96.2,
+   "needs": [
+    "benefit",
+    "success",
+    "process",
+    "learn",
+    "idea"
+   ]
+  },
+  {
+   "id": "music:mixkit-running-out-of-time",
+   "title": "Running Out of Time",
+   "artist": "Ahjay Stelino",
+   "source": "mixkit",
+   "mixkitId": 77,
+   "fileUrl": "https://assets.mixkit.co/music/77/77.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/tag/corporate/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "corporate-upbeat",
+   "mixkitGenre": "Corporate Music",
+   "mood": [
+    "driving",
+    "tense",
+    "uplifting"
+   ],
+   "energy": 4,
+   "bpm": 129.2,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": 1.85,
+   "dur": 96.5,
+   "needs": [
+    "benefit",
+    "success",
+    "process",
+    "learn",
+    "idea"
+   ]
+  },
+  {
+   "id": "music:mixkit-close-up",
+   "title": "Close Up",
+   "artist": "Michael Ramir C.",
+   "source": "mixkit",
+   "mixkitId": 1167,
+   "fileUrl": "https://assets.mixkit.co/music/1167/1167.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/tag/corporate/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "corporate-upbeat",
+   "mixkitGenre": "Corporate Music",
+   "mood": [
+    "confident",
+    "smooth"
+   ],
+   "energy": 3,
+   "bpm": 103.4,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": null,
+   "dur": 95.1,
+   "needs": [
+    "benefit",
+    "success",
+    "process",
+    "learn",
+    "idea"
+   ]
+  },
+  {
+   "id": "music:mixkit-sweet-september",
+   "title": "Sweet September",
+   "artist": "Arulo",
+   "source": "mixkit",
+   "mixkitId": 282,
+   "fileUrl": "https://assets.mixkit.co/music/282/282.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/hip-hop/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "lofi",
+   "mixkitGenre": "Hip Hop",
+   "mood": [
+    "chill",
+    "warm"
+   ],
+   "energy": 2,
+   "bpm": 152.0,
+   "hasDrop": true,
+   "dropAt": 37.9,
+   "hookAt": 37.9,
+   "dur": 98.7,
+   "needs": [
+    "calm",
+    "focus",
+    "learn"
+   ]
+  },
+  {
+   "id": "music:mixkit-sleepy-cat",
+   "title": "Sleepy Cat",
+   "artist": "Alejandro Magaña (A. M.)",
+   "source": "mixkit",
+   "mixkitId": 135,
+   "fileUrl": "https://assets.mixkit.co/music/135/135.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/tag/lo-fi/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "lofi",
+   "mixkitGenre": "Chillout",
+   "mood": [
+    "chill",
+    "calm"
+   ],
+   "energy": 1,
+   "bpm": 136.0,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": null,
+   "dur": 119.2,
+   "needs": [
+    "calm",
+    "focus",
+    "learn"
+   ]
+  },
+  {
+   "id": "music:mixkit-epical-drums-01",
+   "title": "Epical Drums 01",
+   "artist": "Grigoriy Nuzhny",
+   "source": "mixkit",
+   "mixkitId": 676,
+   "fileUrl": "https://assets.mixkit.co/music/676/676.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/tag/cinematic/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "cinematic",
+   "mixkitGenre": "Sound Elements",
+   "mood": [
+    "epic",
+    "tense"
+   ],
+   "energy": 4,
+   "bpm": 143.6,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": 1.65,
+   "dur": 105.9,
+   "needs": [
+    "emotion",
+    "reveal",
+    "stakes",
+    "build",
+    "scale"
+   ]
+  },
+  {
+   "id": "music:mixkit-lifes-a-movie",
+   "title": "Life's a Movie",
+   "artist": "Arulo",
+   "source": "mixkit",
+   "mixkitId": 322,
+   "fileUrl": "https://assets.mixkit.co/music/322/322.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/tag/epic/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "cinematic",
+   "mixkitGenre": "Film Score",
+   "mood": [
+    "epic",
+    "emotional"
+   ],
+   "energy": 3,
+   "bpm": 103.4,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": null,
+   "dur": 121.2,
+   "needs": [
+    "emotion",
+    "reveal",
+    "stakes",
+    "build",
+    "scale"
+   ]
+  },
+  {
+   "id": "music:mixkit-i-wont-surrender",
+   "title": "I Won't surrender",
+   "artist": "Michael Ramir C.",
+   "source": "mixkit",
+   "mixkitId": 846,
+   "fileUrl": "https://assets.mixkit.co/music/846/846.mp3",
+   "sourceUrl": "https://mixkit.co/free-stock-music/tag/cinematic/",
+   "licence": "Mixkit Stock Music Free License",
+   "licenceUrl": "https://mixkit.co/license/#musicFree",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": false
+   },
+   "genre": "cinematic",
+   "mixkitGenre": "Film Score",
+   "mood": [
+    "epic",
+    "emotional",
+    "tense"
+   ],
+   "energy": 3,
+   "bpm": 112.3,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": null,
+   "dur": 114.4,
+   "needs": [
+    "emotion",
+    "reveal",
+    "stakes",
+    "build",
+    "scale"
+   ]
+  },
+  {
+   "id": "music:ncs-sky-high",
+   "title": "Sky High",
+   "artist": "Elektronomia",
+   "source": "ncs",
+   "fileUrl": "https://ncsmusic.s3.eu-west-1.amazonaws.com/tracks/000/000/290/sky-high-1586948785-jGkCsW2xA9.mp3",
+   "sourceUrl": "https://ncs.io/skyhigh",
+   "licence": "NCS (NoCopyrightSounds) Usage Policy",
+   "licenceUrl": "https://ncs.io/usage-policy/terms",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": true,
+    "attributionPlace": "description",
+    "onScreen": false
+   },
+   "credit": "Song: Elektronomia - Sky High [NCS Release]\nMusic provided by NoCopyrightSounds\nFree Download/Stream: http://ncs.io/skyhigh\nWatch: http://youtu.be/TW9d8vYrVFQ",
+   "use_scope": "creator-use",
+   "genre": "electronic",
+   "sourceGenre": "Progressive House",
+   "mood": [
+    "uplifting",
+    "euphoric",
+    "bright"
+   ],
+   "energy": 4,
+   "bpm": 129.2,
+   "hasDrop": true,
+   "dropAt": 47.8,
+   "hookAt": 47.8,
+   "dur": 236.3,
+   "needs": [
+    "hook",
+    "success",
+    "growth",
+    "ai"
+   ],
+   "recognizable": true,
+   "ytViews": 289555976,
+   "cacheFile": "viral/ncs-sky-high.mp3"
+  },
+  {
+   "id": "music:ncs-heroes-tonight",
+   "title": "Heroes Tonight (feat. Johnning)",
+   "artist": "Janji",
+   "source": "ncs",
+   "fileUrl": "https://ncsmusic.s3.eu-west-1.amazonaws.com/tracks/000/000/143/heroes-tonight-feat-johnning-1586946924-fcppiBJp7z.mp3",
+   "sourceUrl": "https://ncs.io/ht",
+   "licence": "NCS (NoCopyrightSounds) Usage Policy",
+   "licenceUrl": "https://ncs.io/usage-policy/terms",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": true,
+    "attributionPlace": "description",
+    "onScreen": false
+   },
+   "credit": "Song: Janji - Heroes Tonight (feat. Johnning) [NCS Release]\nMusic provided by NoCopyrightSounds\nFree Download/Stream: http://ncs.io/ht\nWatch: http://youtu.be/3nQNiWdeH2Q",
+   "use_scope": "creator-use",
+   "genre": "electronic",
+   "sourceGenre": "Progressive House",
+   "mood": [
+    "heroic",
+    "uplifting",
+    "driving"
+   ],
+   "energy": 4,
+   "bpm": 129.2,
+   "hasDrop": true,
+   "dropAt": 33.0,
+   "hookAt": 33.0,
+   "dur": 208.1,
+   "needs": [
+    "hook",
+    "build",
+    "success",
+    "emotion"
+   ],
+   "recognizable": true,
+   "ytViews": 384036137,
+   "cacheFile": "viral/ncs-heroes-tonight.mp3"
+  },
+  {
+   "id": "music:ncs-shine",
+   "title": "Shine",
+   "artist": "Spektrem",
+   "source": "ncs",
+   "fileUrl": "https://ncsmusic.s3.eu-west-1.amazonaws.com/tracks/000/000/004/shine-1586945670-Quaaj2gT6A.mp3",
+   "sourceUrl": "https://ncs.io/shine",
+   "licence": "NCS (NoCopyrightSounds) Usage Policy",
+   "licenceUrl": "https://ncs.io/usage-policy/terms",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": true,
+    "attributionPlace": "description",
+    "onScreen": false
+   },
+   "credit": "Song: Spektrem - Shine [NCS Release]\nMusic provided by NoCopyrightSounds\nFree Download/Stream: http://ncs.io/shine\nWatch: http://youtu.be/n4tK7LYFxI0",
+   "use_scope": "creator-use",
+   "genre": "electronic",
+   "sourceGenre": "Progressive House",
+   "mood": [
+    "bright",
+    "uplifting",
+    "driving"
+   ],
+   "energy": 4,
+   "bpm": 129.2,
+   "hasDrop": true,
+   "dropAt": 50.9,
+   "hookAt": 50.9,
+   "dur": 259.1,
+   "needs": [
+    "hook",
+    "reveal",
+    "success"
+   ],
+   "recognizable": true,
+   "ytViews": 186300583,
+   "cacheFile": "viral/ncs-shine.mp3"
+  },
+  {
+   "id": "music:ncs-invincible",
+   "title": "Invincible",
+   "artist": "DEAF KEV",
+   "source": "ncs",
+   "fileUrl": "https://ncsmusic.s3.eu-west-1.amazonaws.com/tracks/000/000/137/invincible-1586946876-v3qvV3TEKb.mp3",
+   "sourceUrl": "https://ncs.io/invincible",
+   "licence": "NCS (NoCopyrightSounds) Usage Policy",
+   "licenceUrl": "https://ncs.io/usage-policy/terms",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": true,
+    "attributionPlace": "description",
+    "onScreen": false
+   },
+   "credit": "Song: DEAF KEV - Invincible [NCS Release]\nMusic provided by NoCopyrightSounds\nFree Download/Stream: http://ncs.io/invincible\nWatch: http://youtu.be/J2X5mJ3HDYE",
+   "use_scope": "creator-use",
+   "genre": "electronic",
+   "sourceGenre": "Glitch Hop",
+   "mood": [
+    "hype",
+    "confident",
+    "gritty"
+   ],
+   "energy": 5,
+   "bpm": 99.4,
+   "hasDrop": true,
+   "dropAt": 14.2,
+   "hookAt": 14.2,
+   "dur": 273.1,
+   "needs": [
+    "hook",
+    "speed",
+    "stakes",
+    "ai"
+   ],
+   "recognizable": true,
+   "ytViews": 294516978,
+   "cacheFile": "viral/ncs-invincible.mp3"
+  },
+  {
+   "id": "music:ncs-my-heart",
+   "title": "My Heart",
+   "artist": "Different Heaven & EH!DE",
+   "source": "ncs",
+   "fileUrl": "https://ncsmusic.s3.eu-west-1.amazonaws.com/tracks/000/000/007/my-heart-1586945702-4NfTD6qN1D.mp3",
+   "sourceUrl": "https://ncs.io/myheart",
+   "licence": "NCS (NoCopyrightSounds) Usage Policy",
+   "licenceUrl": "https://ncs.io/usage-policy/terms",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": true,
+    "attributionPlace": "description",
+    "onScreen": false
+   },
+   "credit": "Song: Different Heaven & EH!DE - My Heart [NCS Release]\nMusic provided by NoCopyrightSounds\nFree Download/Stream: http://ncs.io/myheart\nWatch: http://youtu.be/jK2aIUmmdP4",
+   "use_scope": "creator-use",
+   "genre": "electronic",
+   "sourceGenre": "Drumstep",
+   "mood": [
+    "emotional",
+    "intense",
+    "epic"
+   ],
+   "energy": 5,
+   "bpm": 172.3,
+   "hasDrop": true,
+   "dropAt": 34.1,
+   "hookAt": 34.1,
+   "dur": 267.1,
+   "needs": [
+    "hook",
+    "build",
+    "reveal",
+    "emotion"
+   ],
+   "recognizable": true,
+   "ytViews": 295468625,
+   "cacheFile": "viral/ncs-my-heart.mp3"
+  },
+  {
+   "id": "music:ncs-blank",
+   "title": "Blank",
+   "artist": "Disfigure",
+   "source": "ncs",
+   "fileUrl": "https://ncsmusic.s3.eu-west-1.amazonaws.com/tracks/000/000/003/blank-1586945660-LPD2Fw7OZ0.mp3",
+   "sourceUrl": "https://ncs.io/blank",
+   "licence": "NCS (NoCopyrightSounds) Usage Policy",
+   "licenceUrl": "https://ncs.io/usage-policy/terms",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": true,
+    "attributionPlace": "description",
+    "onScreen": false
+   },
+   "credit": "Song: Disfigure - Blank [NCS Release]\nMusic provided by NoCopyrightSounds\nFree Download/Stream: http://ncs.io/blank\nWatch: http://youtu.be/p7ZsBPK656s",
+   "use_scope": "creator-use",
+   "genre": "electronic",
+   "sourceGenre": "Melodic Dubstep",
+   "mood": [
+    "epic",
+    "intense",
+    "dark"
+   ],
+   "energy": 5,
+   "bpm": 92.3,
+   "hasDrop": true,
+   "dropAt": 30.9,
+   "hookAt": 30.9,
+   "dur": 209.1,
+   "needs": [
+    "hook",
+    "reveal",
+    "stakes"
+   ],
+   "recognizable": true,
+   "ytViews": 272959317,
+   "cacheFile": "viral/ncs-blank.mp3"
+  },
+  {
+   "id": "music:ncs-mortals",
+   "title": "Mortals (feat. Laura Brehm)",
+   "artist": "Warriyo",
+   "source": "ncs",
+   "fileUrl": "https://ncsmusic.s3.eu-west-1.amazonaws.com/tracks/000/000/287/mortals-feat-laura-brehm-1586948736-3e1Snmxk7T.mp3",
+   "sourceUrl": "https://ncs.io/mortals",
+   "licence": "NCS (NoCopyrightSounds) Usage Policy",
+   "licenceUrl": "https://ncs.io/usage-policy/terms",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": true,
+    "attributionPlace": "description",
+    "onScreen": false
+   },
+   "credit": "Song: Warriyo - Mortals (feat. Laura Brehm) [NCS Release]\nMusic provided by NoCopyrightSounds\nFree Download/Stream: http://ncs.io/mortals\nWatch: http://youtu.be/yJg-Y5byMMw",
+   "use_scope": "creator-use",
+   "genre": "upbeat-trap",
+   "sourceGenre": "Future Trap",
+   "mood": [
+    "dark",
+    "epic",
+    "tense"
+   ],
+   "energy": 4,
+   "bpm": 89.1,
+   "hasDrop": true,
+   "dropAt": 50.3,
+   "hookAt": 50.3,
+   "dur": 228.3,
+   "needs": [
+    "hook",
+    "reveal",
+    "hidden",
+    "scale"
+   ],
+   "recognizable": true,
+   "ytViews": 322871940,
+   "cacheFile": "viral/ncs-mortals.mp3"
+  },
+  {
+   "id": "music:ncs-why-we-lose",
+   "title": "Why We Lose (feat. Coleman Trapp)",
+   "artist": "Cartoon, Jéja",
+   "source": "ncs",
+   "fileUrl": "https://ncsmusic.s3.eu-west-1.amazonaws.com/tracks/000/000/144/why-we-lose-feat-coleman-trapp-1586946940-Bpv8ccBznf.mp3",
+   "sourceUrl": "https://ncs.io/whywelose",
+   "licence": "NCS (NoCopyrightSounds) Usage Policy",
+   "licenceUrl": "https://ncs.io/usage-policy/terms",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": true,
+    "attributionPlace": "description",
+    "onScreen": false
+   },
+   "credit": "Song: Cartoon, Jéja - Why We Lose (feat. Coleman Trapp) [NCS Release]\nMusic provided by NoCopyrightSounds\nFree Download/Stream: http://ncs.io/whywelose\nWatch: http://youtu.be/zyXmsVwZqX4",
+   "use_scope": "creator-use",
+   "genre": "electronic",
+   "sourceGenre": "Drum & Bass",
+   "mood": [
+    "emotional",
+    "driving",
+    "bittersweet"
+   ],
+   "energy": 4,
+   "bpm": 86.1,
+   "hasDrop": true,
+   "dropAt": 97.3,
+   "hookAt": 97.3,
+   "dur": 213.1,
+   "needs": [
+    "emotion",
+    "build",
+    "timeline"
+   ],
+   "recognizable": true,
+   "ytViews": 252708453,
+   "cacheFile": "viral/ncs-why-we-lose.mp3"
+  },
+  {
+   "id": "music:ncs-earth",
+   "title": "Earth",
+   "artist": "K-391",
+   "source": "ncs",
+   "fileUrl": "https://ncsmusic.s3.eu-west-1.amazonaws.com/tracks/000/000/219/earth-1586947603-Y3sfMhSEdq.mp3",
+   "sourceUrl": "https://ncs.io/earth",
+   "licence": "NCS (NoCopyrightSounds) Usage Policy",
+   "licenceUrl": "https://ncs.io/usage-policy/terms",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": true,
+    "attributionPlace": "description",
+    "onScreen": false
+   },
+   "credit": "Song: K-391 - Earth [NCS Release]\nMusic provided by NoCopyrightSounds\nFree Download/Stream: http://ncs.io/earth\nWatch: http://youtu.be/dOo2jWb73JY",
+   "use_scope": "creator-use",
+   "genre": "electronic",
+   "sourceGenre": "Drumstep",
+   "mood": [
+    "epic",
+    "cinematic",
+    "intense"
+   ],
+   "energy": 5,
+   "bpm": 112.3,
+   "hasDrop": true,
+   "dropAt": 81.3,
+   "hookAt": 81.3,
+   "dur": 233.4,
+   "needs": [
+    "scale",
+    "reveal",
+    "nature"
+   ],
+   "recognizable": false,
+   "ytViews": 43040554,
+   "cacheFile": "viral/ncs-earth.mp3"
+  },
+  {
+   "id": "music:ncs-feel-good",
+   "title": "Feel Good",
+   "artist": "Syn Cole",
+   "source": "ncs",
+   "fileUrl": "https://ncsmusic.s3.eu-west-1.amazonaws.com/tracks/000/000/205/1754048435_cSGiPs4mj9_Syn-Cole---Feel-Good.mp3",
+   "sourceUrl": "https://ncs.io/feelgood",
+   "licence": "NCS (NoCopyrightSounds) Usage Policy",
+   "licenceUrl": "https://ncs.io/usage-policy/terms",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": true,
+    "attributionPlace": "description",
+    "onScreen": false
+   },
+   "credit": "Song: Syn Cole - Feel Good [NCS Release]\nMusic provided by NoCopyrightSounds\nFree Download/Stream: http://ncs.io/feelgood\nWatch: http://youtu.be/q1ULJ92aldE",
+   "use_scope": "creator-use",
+   "genre": "electronic",
+   "sourceGenre": "Future House",
+   "mood": [
+    "happy",
+    "bouncy",
+    "bright"
+   ],
+   "energy": 3,
+   "bpm": 83.4,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": 0.0,
+   "dur": 182.0,
+   "needs": [
+    "benefit",
+    "success",
+    "calm"
+   ],
+   "recognizable": true,
+   "ytViews": 153047974,
+   "cacheFile": "viral/ncs-feel-good.mp3"
+  },
+  {
+   "id": "music:ncs-fearless-pt-ii",
+   "title": "Fearless pt. II (feat. Chris Linton)",
+   "artist": "TULE",
+   "source": "ncs",
+   "fileUrl": "https://ncsmusic.s3.eu-west-1.amazonaws.com/tracks/000/000/437/1642597731_7Oh2UXW77m_Lost-Sky---Fearless-pt.-II-feat.-Chris-Linton-NCS-Release.mp3",
+   "sourceUrl": "https://ncs.io/Fearless2",
+   "licence": "NCS (NoCopyrightSounds) Usage Policy",
+   "licenceUrl": "https://ncs.io/usage-policy/terms",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": true,
+    "attributionPlace": "description",
+    "onScreen": false
+   },
+   "credit": "Song: TULE - Fearless pt.II (feat. Chris Linton) [NCS Release]\nMusic provided by NoCopyrightSounds\nFree Download/Stream: http://ncs.io/Fearless2\nWatch: http://youtu.be/S19UcWdOA-I",
+   "use_scope": "creator-use",
+   "genre": "upbeat-trap",
+   "sourceGenre": "Trap",
+   "mood": [
+    "confident",
+    "motivational",
+    "driving"
+   ],
+   "energy": 4,
+   "bpm": 73.8,
+   "hasDrop": true,
+   "dropAt": 53.2,
+   "hookAt": 53.2,
+   "dur": 194.2,
+   "needs": [
+    "hook",
+    "success",
+    "build",
+    "stakes"
+   ],
+   "recognizable": true,
+   "ytViews": 251287809,
+   "cacheFile": "viral/ncs-fearless-pt-ii.mp3"
+  },
+  {
+   "id": "music:ncs-montagem-toma",
+   "title": "Montagem Toma",
+   "artist": "MXZI, sk3tch01, X972",
+   "source": "ncs",
+   "fileUrl": "https://ncsmusic.s3.eu-west-1.amazonaws.com/tracks/000/001/891/1748533196_2w2lQuHMYe_MXZI-sk3tch01-X972---Montagem-Toma.mp3",
+   "sourceUrl": "https://ncs.io/MontagemToma",
+   "licence": "NCS (NoCopyrightSounds) Usage Policy",
+   "licenceUrl": "https://ncs.io/usage-policy/terms",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": true,
+    "attributionPlace": "description",
+    "onScreen": false
+   },
+   "credit": "Song: MXZI, sk3tch01, X972 - Montagem Toma\nMusic provided by NoCopyrightSounds\nFree Download/Stream: http://ncs.io/MontagemToma\nWatch: http://ncs.lnk.to/MontagemTomaAT/youtube",
+   "use_scope": "creator-use",
+   "genre": "phonk",
+   "sourceGenre": "Brazilian Phonk / Funk",
+   "mood": [
+    "hype",
+    "aggressive",
+    "swagger"
+   ],
+   "energy": 5,
+   "bpm": 129.2,
+   "hasDrop": true,
+   "dropAt": 20.7,
+   "hookAt": 20.7,
+   "dur": 122.8,
+   "needs": [
+    "hook",
+    "speed",
+    "money",
+    "number"
+   ],
+   "recognizable": false,
+   "ytViews": 5169312,
+   "cacheFile": "viral/ncs-montagem-toma.mp3"
+  },
+  {
+   "id": "music:kevin-monkeys-spinning-monkeys",
+   "title": "Monkeys Spinning Monkeys",
+   "artist": "Kevin MacLeod",
+   "source": "incompetech",
+   "fileUrl": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Monkeys%20Spinning%20Monkeys.mp3",
+   "sourceUrl": "https://incompetech.com/music/royalty-free/music.html",
+   "licence": "CC-BY-4.0",
+   "licenceUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": true,
+    "attributionPlace": "description",
+    "onScreen": false
+   },
+   "credit": "\"Monkeys Spinning Monkeys\" Kevin MacLeod (incompetech.com)\nLicensed under Creative Commons: By Attribution 4.0\nhttps://creativecommons.org/licenses/by/4.0/",
+   "use_scope": "product-safe",
+   "genre": "comedic",
+   "sourceGenre": "Quirky orchestral",
+   "mood": [
+    "silly",
+    "bouncy",
+    "bright"
+   ],
+   "energy": 3,
+   "bpm": 144.0,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": 0.0,
+   "dur": 125.1,
+   "needs": [
+    "chaos",
+    "payoff"
+   ],
+   "recognizable": true,
+   "ytViews": 1178865,
+   "cacheFile": "viral/kevin-monkeys-spinning-monkeys.mp3"
+  },
+  {
+   "id": "music:kevin-sneaky-snitch",
+   "title": "Sneaky Snitch",
+   "artist": "Kevin MacLeod",
+   "source": "incompetech",
+   "fileUrl": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Sneaky%20Snitch.mp3",
+   "sourceUrl": "https://incompetech.com/music/royalty-free/music.html",
+   "licence": "CC-BY-4.0",
+   "licenceUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": true,
+    "attributionPlace": "description",
+    "onScreen": false
+   },
+   "credit": "\"Sneaky Snitch\" Kevin MacLeod (incompetech.com)\nLicensed under Creative Commons: By Attribution 4.0\nhttps://creativecommons.org/licenses/by/4.0/",
+   "use_scope": "product-safe",
+   "genre": "comedic",
+   "sourceGenre": "Quirky pizzicato",
+   "mood": [
+    "sneaky",
+    "humorous",
+    "mischief"
+   ],
+   "energy": 2,
+   "bpm": 87.0,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": 0.0,
+   "dur": 136.6,
+   "needs": [
+    "hidden",
+    "question"
+   ],
+   "recognizable": true,
+   "ytViews": 779527,
+   "cacheFile": "viral/kevin-sneaky-snitch.mp3"
+  },
+  {
+   "id": "music:kevin-fluffing-a-duck",
+   "title": "Fluffing a Duck",
+   "artist": "Kevin MacLeod",
+   "source": "incompetech",
+   "fileUrl": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Fluffing%20a%20Duck.mp3",
+   "sourceUrl": "https://incompetech.com/music/royalty-free/music.html",
+   "licence": "CC-BY-4.0",
+   "licenceUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": true,
+    "attributionPlace": "description",
+    "onScreen": false
+   },
+   "credit": "\"Fluffing a Duck\" Kevin MacLeod (incompetech.com)\nLicensed under Creative Commons: By Attribution 4.0\nhttps://creativecommons.org/licenses/by/4.0/",
+   "use_scope": "product-safe",
+   "genre": "comedic",
+   "sourceGenre": "Comedic brass",
+   "mood": [
+    "silly",
+    "clumsy",
+    "bright"
+   ],
+   "energy": 3,
+   "bpm": 122.0,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": 0.0,
+   "dur": 67.4,
+   "needs": [
+    "chaos",
+    "problem"
+   ],
+   "recognizable": true,
+   "ytViews": 2344826,
+   "cacheFile": "viral/kevin-fluffing-a-duck.mp3"
+  },
+  {
+   "id": "music:kevin-investigations",
+   "title": "Investigations",
+   "artist": "Kevin MacLeod",
+   "source": "incompetech",
+   "fileUrl": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Investigations.mp3",
+   "sourceUrl": "https://incompetech.com/music/royalty-free/music.html",
+   "licence": "CC-BY-4.0",
+   "licenceUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": true,
+    "attributionPlace": "description",
+    "onScreen": false
+   },
+   "credit": "\"Investigations\" Kevin MacLeod (incompetech.com)\nLicensed under Creative Commons: By Attribution 4.0\nhttps://creativecommons.org/licenses/by/4.0/",
+   "use_scope": "product-safe",
+   "genre": "comedic",
+   "sourceGenre": "Comedic mystery",
+   "mood": [
+    "curious",
+    "mysterious",
+    "humorous"
+   ],
+   "energy": 2,
+   "bpm": 94.0,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": 0.0,
+   "dur": 93.5,
+   "needs": [
+    "question",
+    "hidden",
+    "proof"
+   ],
+   "recognizable": true,
+   "ytViews": 1948094,
+   "cacheFile": "viral/kevin-investigations.mp3"
+  },
+  {
+   "id": "music:kevin-local-forecast-elevator",
+   "title": "Local Forecast - Elevator",
+   "artist": "Kevin MacLeod",
+   "source": "incompetech",
+   "fileUrl": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Local%20Forecast%20-%20Elevator.mp3",
+   "sourceUrl": "https://incompetech.com/music/royalty-free/music.html",
+   "licence": "CC-BY-4.0",
+   "licenceUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "use": {
+    "commercial": true,
+    "youtube": true,
+    "instagram": true,
+    "facebook": true,
+    "attribution": true,
+    "attributionPlace": "description",
+    "onScreen": false
+   },
+   "credit": "\"Local Forecast - Elevator\" Kevin MacLeod (incompetech.com)\nLicensed under Creative Commons: By Attribution 4.0\nhttps://creativecommons.org/licenses/by/4.0/",
+   "use_scope": "product-safe",
+   "genre": "lounge",
+   "sourceGenre": "Elevator jazz",
+   "mood": [
+    "calm",
+    "ironic",
+    "retro"
+   ],
+   "energy": 2,
+   "bpm": 82.0,
+   "hasDrop": false,
+   "dropAt": null,
+   "hookAt": 0.0,
+   "dur": 189.2,
+   "needs": [
+    "time",
+    "calm"
+   ],
+   "recognizable": true,
+   "ytViews": 444761,
+   "cacheFile": "viral/kevin-local-forecast-elevator.mp3"
+  }
+ ]
+}

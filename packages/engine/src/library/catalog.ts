@@ -38,6 +38,7 @@ import { CAPTION_STYLES } from '../edit/captions';
 import { lookMap } from '../edit/looks';
 import { listLooks } from 'captionseasy';
 import { CAMERA_MOVES, promptFor } from '@moovi/library/camera';
+import { MUSIC_TRACKS, useScopeOf } from '../audio/music-lib';
 import { X1, edlCuts, endCards, fonts, grades, overlays, textures, x1Specs } from './edit-styles';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -138,6 +139,17 @@ export function music(): Row[] {
     runtime: ['mixer', 'ffmpeg'], impl: { craft: t.id }, licence: 'CC-BY-4.0', credit: t.credit, author: t.credit.match(/by ([^(,]+)/)?.[1]?.trim() ?? null, title: t.id.replace(/-/g, ' '), sourceUrl: t.credit.match(/https?:\/\/\S+/)?.[0] ?? null,
     file: t.src, vendored: false, energy: Math.max(1, Math.min(5, Math.round(t.energy * 5))), tags: [t.mood, ...t.feel.toLowerCase().split(/,\s*/)],
     params: { bpm: t.bpm, beat: t.beat, starts: t.starts, energy: t.energy, length: t.length, dur: secondsOf(t.length), loop: false, end_button_at: null, mood: [t.mood], beats: t.starts }, src: 'packages/graph/data/craft.json',
+  }));
+  // Shorts beds (Vignesh 2026-10-16): Mixkit Stock Music Free License tracks plus recognisable NCS (creator-use) and
+  // Kevin MacLeod CC BY 4.0 (product-safe) tracks, metadata only, audio cached outside git (audio/music-lib.ts). They
+  // SERVE needs so the planner casts them by the video's tones, like every other asset; a credit goes in the description.
+  for (const t of MUSIC_TRACKS) rows.push(row({
+    id: t.id, category: 'music', name: t.title, about: `${t.genre} bed for Shorts: ${t.mood.join(', ')}${t.hasDrop ? `, drop at ${t.dropAt} s` : ''}, about ${Math.round(t.bpm)} bpm`,
+    runtime: ['mixer', 'ffmpeg'], impl: { mixer: 'music-lib', ffmpeg: 'cache' }, licence: t.licence, credit: t.credit ?? null, author: t.artist, title: t.title,
+    sourceUrl: t.sourceUrl, licenceUrl: t.licenceUrl, file: null, vendored: false, energy: t.energy,
+    tags: [t.genre, ...t.mood, 'shorts', t.hasDrop ? 'drop' : 'no-drop', t.source, useScopeOf(t), ...(t.recognizable ? ['recognizable'] : [])], needs: needsOf(t.needs),
+    params: { genre: t.genre, mood: t.mood, bpm: t.bpm, hasDrop: t.hasDrop, dropAt: t.dropAt, hookAt: t.hookAt, dur: t.dur, fileUrl: t.fileUrl, use: t.use, use_scope: useScopeOf(t), recognizable: t.recognizable ?? false, cache: true, loop: false, end_button_at: null, beats: t.dropAt === null ? [] : [t.dropAt] },
+    src: 'packages/engine/src/library/music-tracks.json',
   }));
   return rows;
 }

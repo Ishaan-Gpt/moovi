@@ -16,7 +16,7 @@ import { config } from '../../config';
 
 export const CM_GRADE = {
   /** mean luma (signalstats YAVG, 8 bit) every clip is brought to */
-  luma: 100,
+  luma: 116,
   /** mean saturation (signalstats SATAVG, 8 bit) every clip is brought to (stock clips measure 4 to 20; a grey night clip
    *  gains the most, and the shared warm balance gives every clip the same gold cast) */
   sat: 15,
@@ -30,10 +30,11 @@ export const CM_LOOK_CHAIN = [
   // blues, cyans and magentas out (never navy; strength widens the hue selection, the default barely touches them)
   'huesaturation=saturation=-1:colors=c+b+m:strength=20',
   'colorbalance=rs=0.0:gs=0.0:bs=0.0:rm=0.02:gm=0.01:bm=-0.025:rh=0.04:gh=0.02:bh=-0.05',
-  "curves=master='0/0 0.22/0.18 0.5/0.5 0.78/0.82 1/1'",
+  // v4 (root's review of v3: too dark overall): a lifted toe and brighter mids instead of crushed shadows
+  "curves=master='0/0.02 0.22/0.22 0.5/0.54 0.78/0.83 1/1'",
 ].join(',');
 /** the finish on the joined plate: vignette and film grain (temporal, so it moves like film) */
-export const CM_FINISH_CHAIN = 'vignette=angle=PI/5,noise=c0s=7:c0f=t+u';
+export const CM_FINISH_CHAIN = 'vignette=angle=PI/9,noise=c0s=7:c0f=t+u';
 export const CM_GRADE_IDS = ['effect:clip-grade', 'effect:grain-vignette'];
 
 export interface ClipStats { luma: number; sat: number }
