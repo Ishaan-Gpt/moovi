@@ -73,7 +73,10 @@ Brand and character: `docs/BRAND.md`, `docs/CHARACTER.md`.
   the shared engine `kits/motion`. Intake for a new reel is one command, `scripts/ref-intake.ts <id> <url>`.
 - **Quality ratchet:** a new clone ships only when a blind subagent judge scores it strictly above the best previous
   film, with both scored in the same round. R3 scored 7.6. R4 scored 6.6 against R3's 6.4 in its round.
-- In progress: `ishaan/library-wire` (generation styles and Auto cast from the library) and `ishaan/camera-layer` (PR #1).
+- The camera layer (63 moves callable by keyword, `packages/library/src/camera`) is merged. Still in progress:
+  `ishaan/library-wire` (generation styles and Auto cast from the library).
+- The clones' code is in git (`data/refs/<id>/clone-motion/`, `parts.json`). The reference media is not; fetch it with
+  `ref-intake`. The `ishaan-motion` skill is checked in at `.claude/skills/ishaan-motion/` (mirror of Ishaan's copy).
 - **Live edit preview** (main 9473f58, live on the server): an uploaded clip is edited and plays live in the studio,
   with 11 caption styles from R8 (`engine/src/edit/`). See `docs/agents/BOARD.md` D1.4, D1.5 and D1.7.
 

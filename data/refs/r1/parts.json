@@ -1,0 +1,663 @@
+{
+ "reference": {
+  "id": "r1",
+  "url": "https://www.instagram.com/p/Ddtf1lUzljq/",
+  "title": "5 memory secrets (crimson-poster explainer)",
+  "kind": "talking-head explainer, 9:16",
+  "seconds": 88.6,
+  "notes": "Night Desk B: speaker in a warm low-key room, crimson poster inserts (full frame, top-half panel, chapter cards), key words in a condensed face, some behind the head. 27 scene changes, ~0.3 changes/s. Clone: data/refs/r1/clone (a timeline over the crimson-poster kit)."
+ },
+ "kit": {
+  "file": "packages/library/src/kits/crimson-poster/kit.json",
+  "draw": "packages/library/src/kits/crimson-poster/draw.js"
+ },
+ "impl": "packages/library/src/kits/crimson-poster/draw.js",
+ "styles": [
+  "night-desk"
+ ],
+ "parts": [
+  {
+   "id": "caption:chest-words",
+   "category": "caption",
+   "role": "captions",
+   "at": 0,
+   "name": "Chest words",
+   "energy": 3,
+   "about": "1-3 words at a time in the heavy text face with a soft dark shadow, popping in at chest height; on the seam when the frame is split",
+   "params": {
+    "face": "text",
+    "size": 0.059,
+    "fill": "paper",
+    "shadow": "soft",
+    "chunk": {
+     "maxWords": 3,
+     "maxChars": 14,
+     "breakOnPause": 0.28,
+     "breakOnPunct": true
+    },
+    "motion": "pop",
+    "y": {
+     "full": 0.61,
+     "split": 0.51
+    }
+   },
+   "tags": [
+    "word-timed",
+    "footage-safe"
+   ],
+   "impl": {
+    "kit-motion": "packages/library/src/kits/motion/type.js#wordLine"
+   }
+  },
+  {
+   "id": "caption:condensed-term",
+   "category": "caption",
+   "role": "a named term",
+   "at": 48.4,
+   "name": "Condensed term",
+   "energy": 4,
+   "about": "the chunk that names a thing (a product, a term) switches to the display face, caps, for that chunk only",
+   "params": {
+    "face": "display",
+    "size": 0.085,
+    "case": "upper",
+    "fill": "paper",
+    "motion": "pop",
+    "trigger": "named term"
+   },
+   "tags": [
+    "word-timed"
+   ],
+   "needs": [
+    "brand",
+    "product",
+    "focus"
+   ],
+   "impl": {
+    "kit-motion": "packages/library/src/kits/motion/type.js#wordLine"
+   }
+  },
+  {
+   "id": "effect:connector-big-word",
+   "category": "effect",
+   "role": "key word",
+   "at": 13.3,
+   "name": "Connector + big word",
+   "energy": 5,
+   "about": "the small words of the phrase appear one by one, then the key word lands in the display face across most of the width, with a punch hit",
+   "params": {
+    "small": {
+     "face": "label",
+     "size": 0.04
+    },
+    "big": {
+     "face": "display",
+     "width": 0.85
+    },
+    "fill": "paper",
+    "motion": "land",
+    "variants": [
+     "low",
+     "top",
+     "left",
+     "stack"
+    ]
+   },
+   "tags": [
+    "type",
+    "kinetic"
+   ],
+   "needs": [
+    "claim",
+    "focus",
+    "warning",
+    "number"
+   ],
+   "events": [
+    {
+     "event": "key-word",
+     "gainDb": -21,
+     "first": false
+    }
+   ],
+   "impl": {
+    "kit-motion": "packages/library/src/kits/motion/type.js#slam"
+   }
+  },
+  {
+   "id": "effect:word-behind-head",
+   "category": "effect",
+   "role": "key word behind the speaker",
+   "at": 15,
+   "name": "Word behind the head",
+   "energy": 5,
+   "about": "the big key word sits behind the speaker: the head and shoulders overlap its lower half (on real footage this needs a person mask)",
+   "params": {
+    "layer": "between background and person",
+    "variant": "top",
+    "y": 0.34,
+    "motion": "land"
+   },
+   "tags": [
+    "type",
+    "depth",
+    "needs-mask"
+   ],
+   "needs": [
+    "claim",
+    "focus",
+    "payoff"
+   ],
+   "impl": {
+    "kit-motion": "packages/library/src/kits/motion/type.js#slam"
+   }
+  },
+  {
+   "id": "effect:glow-title-count",
+   "category": "effect",
+   "role": "hook title",
+   "at": 0.5,
+   "name": "Glowing hook title with count dots",
+   "energy": 5,
+   "about": "a condensed title glowing in the paper colour lands on the spoken number; dots pop in as the count",
+   "params": {
+    "face": "display",
+    "size": 0.176,
+    "fill": "paper",
+    "glow": "paper",
+    "motion": "title",
+    "dots": 5,
+    "y": 0.135
+   },
+   "tags": [
+    "type",
+    "hook"
+   ],
+   "needs": [
+    "hook",
+    "number",
+    "list"
+   ],
+   "impl": {
+    "kit-motion": "data/refs/r1/clone-motion/edit.js#hook"
+   }
+  },
+  {
+   "id": "ui:fake-progress-timer",
+   "category": "ui",
+   "role": "hook device",
+   "at": 0,
+   "name": "Fake progress timer",
+   "energy": 3,
+   "about": "a video progress bar with 0:00 and the promised length over the first seconds: the promise made visible",
+   "params": {
+    "seconds": 2.6,
+    "track": "paper",
+    "progress": "accent",
+    "y": 0.12,
+    "width": 0.72
+   },
+   "tags": [
+    "hook"
+   ],
+   "needs": [
+    "hook",
+    "time",
+    "speed"
+   ],
+   "impl": {
+    "kit-motion": "data/refs/r1/clone-motion/edit.js#hook"
+   }
+  },
+  {
+   "id": "effect:crimson-ground",
+   "category": "effect",
+   "role": "poster background",
+   "at": 3.2,
+   "name": "Lit paper ground",
+   "energy": 2,
+   "about": "a radial ground from the accent (lit centre) through accentMid to deep at the edges, with paper noise and a vignette: the ground of every poster and panel",
+   "params": {
+    "stops": [
+     "accent",
+     "accentMid",
+     "deep"
+    ],
+    "noise": 0.1,
+    "vignette": 0.55,
+    "glowAt": [
+     0.5,
+     0.3
+    ]
+   },
+   "tags": [
+    "background",
+    "palette"
+   ],
+   "needs": [
+    "stakes",
+    "warning",
+    "emotion"
+   ],
+   "impl": {
+    "kit-motion": "packages/library/src/kits/crimson-poster/motion/world.js#crimson"
+   }
+  },
+  {
+   "id": "insert:keys-poster",
+   "category": "insert",
+   "role": "the promise",
+   "at": 3.2,
+   "name": "Lit title over a fan of keys",
+   "energy": 4,
+   "about": "full-frame poster: a lit sign title (over / WORD / under), a hand from the bottom holding a ring of keys that fan out, each labelled in turn, dial arcs behind",
+   "params": {
+    "frame": "full",
+    "items": 5,
+    "title": {
+     "face": "display",
+     "fill": [
+      "warm",
+      "pop",
+      "accent"
+     ],
+     "glow": "pop"
+    },
+    "labels": {
+     "face": "label",
+     "fill": "warm",
+     "glow": "glow"
+    },
+    "push": 0.04,
+    "motion": {
+     "fan": 0.7,
+     "stagger": "stagger"
+    }
+   },
+   "tags": [
+    "poster",
+    "list-promise"
+   ],
+   "needs": [
+    "hook",
+    "list",
+    "steps",
+    "reveal",
+    "number"
+   ],
+   "impl": {
+    "kit-motion": "packages/library/src/kits/crimson-poster/motion/posters.js#heroPoster"
+   }
+  },
+  {
+   "id": "transition:key-chapter-card",
+   "category": "transition",
+   "role": "chapter break",
+   "at": 11,
+   "name": "Chapter card: one lit key",
+   "energy": 4,
+   "family": "blur",
+   "about": "between chapters: the promise poster comes back blurred and pushed in, one key lights up in the glow colours and slides in, the chapter name above it; a short light flash on the cut",
+   "params": {
+    "motion": "cardIn",
+    "zoom": [
+     2.5,
+     2.3
+    ],
+    "key": {
+     "hot": [
+      "glow",
+      "gold",
+      "pop"
+     ]
+    },
+    "label": {
+     "face": "label",
+     "fill": "gold",
+     "glow": "glow",
+     "size": 0.043
+    }
+   },
+   "tags": [
+    "chapter",
+    "footage-safe"
+   ],
+   "needs": [
+    "steps",
+    "list",
+    "number"
+   ],
+   "events": [
+    {
+     "event": "scene",
+     "gainDb": -25,
+     "first": false
+    }
+   ],
+   "impl": {
+    "kit-motion": "packages/library/src/kits/crimson-poster/motion/posters.js#card"
+   }
+  },
+  {
+   "id": "insert:split-top-panel",
+   "category": "insert",
+   "role": "explainer panel",
+   "at": 6.6,
+   "name": "Top-half poster panel",
+   "energy": 3,
+   "about": "a lit-ground panel takes the top half and drops in, the speaker is reframed into the bottom half, captions sit on the seam",
+   "params": {
+    "frame": "top_half",
+    "split": 0.5,
+    "motion": "panelDrop",
+    "captionY": 0.51
+   },
+   "tags": [
+    "layout",
+    "split"
+   ],
+   "needs": [
+    "process",
+    "steps",
+    "list",
+    "compare"
+   ],
+   "events": [
+    {
+     "event": "card-in",
+     "gainDb": -30,
+     "first": false
+    }
+   ],
+   "impl": {
+    "kit-motion": "data/refs/r1/clone-motion/edit.js#drawPanel"
+   }
+  },
+  {
+   "id": "ui:icon-chain",
+   "category": "ui",
+   "role": "steps",
+   "at": 6.6,
+   "name": "Icon chain",
+   "energy": 3,
+   "about": "flat icons in the ink colour pop in on their spoken noun, joined by dashed lines that draw to the next one, a label under each",
+   "params": {
+    "icons": [
+     "person",
+     "keypad",
+     "doc",
+     "desk",
+     "stopwatch",
+     "notebook"
+    ],
+    "fill": "ink",
+    "connector": "paper",
+    "size": 0.12,
+    "motion": "pop"
+   },
+   "tags": [
+    "icons"
+   ],
+   "needs": [
+    "steps",
+    "process",
+    "list",
+    "flow"
+   ],
+   "impl": {
+    "kit-motion": "packages/library/src/kits/crimson-poster/motion/posters.js#popIcon"
+   }
+  },
+  {
+   "id": "ui:acronym-letters",
+   "category": "ui",
+   "role": "framework",
+   "at": 28,
+   "name": "Acronym letters lit word by word",
+   "energy": 3,
+   "about": "a big spaced acronym in muted letters; each letter lights up as its word is spoken, the word appears below",
+   "params": {
+    "face": "display",
+    "size": 0.24,
+    "off": "warm 45%",
+    "on": "paper + glow"
+   },
+   "tags": [
+    "framework"
+   ],
+   "needs": [
+    "list",
+    "steps",
+    "learn",
+    "idea"
+   ],
+   "impl": {
+    "kit-motion": "packages/library/src/kits/crimson-poster/motion/posters.js#PANELS.pure"
+   }
+  },
+  {
+   "id": "ui:typed-examples",
+   "category": "ui",
+   "role": "example",
+   "at": 32.3,
+   "name": "Typed examples, key phrase highlighted",
+   "energy": 3,
+   "about": "a glowing display title, then examples typed out line by line; the phrase that makes the point is in accent2",
+   "params": {
+    "title": {
+     "face": "display",
+     "fill": "gold",
+     "glow": "glow"
+    },
+    "lines": {
+     "face": "label",
+     "fill": "paper",
+     "highlight": "accent2"
+    },
+    "motion": "type"
+   },
+   "tags": [
+    "text"
+   ],
+   "needs": [
+    "compare",
+    "before-after",
+    "contrast",
+    "learn"
+   ],
+   "impl": {
+    "kit-motion": "packages/library/src/kits/crimson-poster/motion/posters.js#PANELS.berlin"
+   }
+  },
+  {
+   "id": "ui:papers-drop",
+   "category": "ui",
+   "role": "proof",
+   "at": 21.5,
+   "name": "Notes papers drop in",
+   "energy": 2,
+   "about": "two or three handwritten pages drop in one after another, slightly rotated, with soft shadows",
+   "params": {
+    "count": 3,
+    "stagger": 0.15
+   },
+   "tags": [
+    "proof"
+   ],
+   "needs": [
+    "proof",
+    "learn",
+    "build"
+   ],
+   "impl": {
+    "kit-motion": "packages/library/src/kits/crimson-poster/motion/posters.js#paper"
+   }
+  },
+  {
+   "id": "ui:garden-metaphor",
+   "category": "ui",
+   "role": "metaphor",
+   "at": 42.6,
+   "name": "Watering can and growing plant",
+   "energy": 3,
+   "about": "two labels (from / to), a tilted can carrying the method's name pouring drops, a plant growing as it is watered",
+   "params": {
+    "labels": {
+     "face": "display",
+     "fill": "warm"
+    },
+    "drops": "lobe",
+    "grow": 2.6
+   },
+   "tags": [
+    "metaphor"
+   ],
+   "needs": [
+    "growth",
+    "process",
+    "learn",
+    "nature",
+    "time"
+   ],
+   "impl": {
+    "kit-motion": "packages/library/src/kits/crimson-poster/motion/posters.js#plant"
+   }
+  },
+  {
+   "id": "ui:brain-callout",
+   "category": "ui",
+   "role": "stat",
+   "at": 49.4,
+   "name": "Brain with a lit lobe and a callout",
+   "energy": 3,
+   "about": "a dark head in profile with the brain showing, one lobe lit; a callout line draws out and the number lands bold",
+   "params": {
+    "lobe": "lobe",
+    "line": "paper",
+    "value": {
+     "face": "label",
+     "size": 0.08,
+     "glow": "lobe"
+    }
+   },
+   "tags": [
+    "stat"
+   ],
+   "needs": [
+    "number",
+    "health",
+    "learn",
+    "proof",
+    "time"
+   ],
+   "impl": {
+    "kit-motion": "packages/library/src/kits/crimson-poster/motion/posters.js#brainHead"
+   }
+  },
+  {
+   "id": "ui:product-bullets",
+   "category": "ui",
+   "role": "sponsor",
+   "at": 57.1,
+   "name": "Product pack with bullets",
+   "energy": 3,
+   "about": "the product pack pops in on the left, its ingredients appear as glowing bullets on the right, each on its spoken word",
+   "params": {
+    "bullets": {
+     "face": "label",
+     "fill": "cool",
+     "size": 0.048
+    },
+    "motion": "pop"
+   },
+   "tags": [
+    "sponsor"
+   ],
+   "needs": [
+    "product",
+    "list",
+    "benefit",
+    "brand"
+   ],
+   "impl": {
+    "kit-motion": "packages/library/src/kits/crimson-poster/motion/posters.js#pack"
+   }
+  },
+  {
+   "id": "camera:jump-punch",
+   "category": "camera",
+   "role": "speaker rhythm",
+   "at": 0,
+   "name": "Jump cut, alternate punch",
+   "energy": 3,
+   "about": "every jump cut on the speaker alternates the framing (1.0 / 1.14 scale, x offset 0 / +30 / -30) with a slow 2% push inside each shot",
+   "params": {
+    "scales": [
+     1,
+     1.14
+    ],
+    "offsets": [
+     0,
+     0.028,
+     -0.028
+    ],
+    "push": 0.02
+   },
+   "tags": [
+    "move",
+    "footage-safe"
+   ],
+   "impl": {
+    "kit-motion": "data/refs/r1/clone-motion/edit.js#camAt"
+   }
+  },
+  {
+   "id": "effect:comment-cta",
+   "category": "effect",
+   "role": "call to action",
+   "at": 86.3,
+   "name": "Comment keyword CTA",
+   "energy": 4,
+   "about": "small 'comment', then the keyword in quotes in a huge display face pops in, '& I will share them' below",
+   "params": {
+    "keyword": {
+     "face": "display",
+     "fill": "paper",
+     "size": 0.22
+    },
+    "motion": "pop"
+   },
+   "tags": [
+    "cta"
+   ],
+   "needs": [
+    "cta"
+   ],
+   "impl": {
+    "kit-motion": "data/refs/r1/clone-motion/edit.js#cta"
+   }
+  }
+ ],
+ "uses": [
+  {
+   "id": "sfx:fs-whoosh-swosh-whoosh-air-cut",
+   "role": "whoosh on poster and chapter-card entries",
+   "at": 3.17
+  },
+  {
+   "id": "sfx:fs-147285",
+   "role": "swipe on top-panel entries",
+   "at": 6.57
+  },
+  {
+   "id": "sfx:fs-impact-punch2",
+   "role": "hit on each big word",
+   "at": 13.3
+  },
+  {
+   "id": "sfx:ui-pop",
+   "role": "pop on icons",
+   "at": 7
+  }
+ ]
+}

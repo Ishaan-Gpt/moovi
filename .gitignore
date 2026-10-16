@@ -26,7 +26,15 @@ apps/studio/public/me/
 .bench/
 
 # engine + studio runtime data: users' uploads, runs, renders, vendored engine/SFX/music, FalkorDB backups (local only)
-/data/
+/data/*
+# except the reference clones' code and parts lists. The reference video, voice and frames stay local (they are not
+# ours); fetch them with scripts/ref-intake.ts <id> <url>
+!/data/refs/
+/data/refs/*/*
+!/data/refs/*/clone-motion/
+!/data/refs/*/parts.json
+/data/refs/*/clone-motion/*.mp3
+/data/refs/*/clone-motion/*.mp4
 
 # extra Next build folders (second dev servers)
 .next-*/

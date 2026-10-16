@@ -49,8 +49,10 @@ a palette, so it can be re-skinned to any brand. Kits carry no brand words.
 
 ## References cloned so far
 
-Each one is a live canvas clone in `data/refs/<id>/clone-motion/` (gitignored: the reference video is not ours).
-To view one, serve the repo root and open `/data/refs/<id>/clone-motion/`. The parts are in `data/refs/<id>/parts.json`.
+Each one is a live canvas clone. Its code is in git under `data/refs/<id>/clone-motion/` and its parts are in
+`data/refs/<id>/parts.json`. The reference video, voice and frames are not ours, so they stay out of git. To fetch them,
+run `scripts/ref-intake.ts <id> <reel url>` with the URL from the table below. Then serve the repo root (any static
+server) and open `/data/refs/<id>/clone-motion/`.
 
 | Ref | Reel | Kit | Blind-judge score |
 |---|---|---|---|
@@ -62,12 +64,13 @@ To view one, serve the repo root and open `/data/refs/<id>/clone-motion/`. The p
 **The quality ratchet.** Every new clone must score above the best previous film. A blind subagent judge scores still
 sheets on typography, composition, craft, fidelity and premium feel. The previous best film's sheet is scored in the
 same round, because different judges calibrate differently. A tie does not ship. The process and the scoreboard live in
-the `ishaan-motion` skill (`references/ratchet.md`), which every video job uses.
+the `ishaan-motion` skill, which every video job uses. The skill is checked in at `.claude/skills/ishaan-motion/`
+(see `references/ratchet.md` and `taste.md`), and it grows after every reference.
 
 ## Still open
 
 - `ishaan/library-wire`: generation styles and Auto casting from the library. Another session is working on it; it
   is not merged.
-- `ishaan/camera-layer` (PR #1): the camera layer's code. Its moves are already in the graph via `camera-layer.ts`.
+- The camera layer (`packages/library/src/camera`, 63 moves) is merged; its moves reach the graph via `camera-layer.ts`.
 - The R2 clone is below the bar. The R1, R3 and R4 clones still use code stand-ins for the speaker and for photo
   props; real cut-outs would beat them.
