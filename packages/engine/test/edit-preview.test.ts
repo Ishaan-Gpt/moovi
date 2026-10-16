@@ -104,3 +104,12 @@ test('the studio preview route serves the edit page with its paths under the pre
   assert.ok(html.includes(`'${base}/v/'`), 'the clip is loaded under the prefix');
   assert.ok(html.includes(`url(${base}/engine/fonts/`), 'fonts load under the prefix');
 });
+
+test('a zero-length word from speech-to-text is kept and captioned, not dropped (Test 1)', () => {
+  const ws = [{ word: 'Now', t: 5.0, end: 5.3 }, { word: 'Moovi', t: 5.42, end: 5.42 }, { word: 'is', t: 5.6, end: 5.8 }];
+  const e = roughEdl(SRC, ws, { palette: PAL });
+  assert.equal(e.words.length, 3);
+  const m = e.words.find(w => w.text === 'Moovi')!;
+  assert.ok(m.src_t1 > m.src_t0 && m.src_t1 <= 5.6);
+  assert.equal(EDIT.outWords(e).length, 3);
+});

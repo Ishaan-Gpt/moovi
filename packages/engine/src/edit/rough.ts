@@ -15,7 +15,10 @@ const isKey = (w: string) => /\d/.test(w) || w.replace(/[^\p{L}]/gu, '').length 
 
 export function roughEdl(source: PlayerEdl['source'], words: Word[], o: RoughOpts): PlayerEdl {
   const pauseMax = o.pauseMax ?? 0.4, pauseKeep = o.pauseKeep ?? 0.18, holdMax = o.holdMax ?? 2.6, punch = o.punch ?? 1.12;
-  const ws = words.filter(w => w.end > w.t && w.t < source.duration).sort((a, b) => a.t - b.t);
+  // whisper sometimes returns a word with zero length (Test 1: "Movie" at 5.42 s); give it a short span up to the
+  // next word instead of dropping it, so every spoken word is captioned
+  const sorted = words.filter(w => w.t < source.duration && w.end >= w.t).sort((a, b) => a.t - b.t);
+  const ws = sorted.map((w, i) => w.end > w.t ? w : { ...w, end: Math.min(w.t + 0.12, sorted[i + 1]?.t ?? w.t + 0.12, source.duration) }).filter(w => w.end > w.t);
   // keep ranges in source time: speech, with long pauses cut down to a breath (half the kept pause on each side)
   const keep: [number, number][] = [];
   if (!ws.length) keep.push([0, source.duration]);
