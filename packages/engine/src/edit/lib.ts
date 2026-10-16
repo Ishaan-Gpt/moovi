@@ -10,10 +10,10 @@ export type Role = 'ink' | 'paper' | 'accent' | 'accent2' | 'deep' | 'pop';
 export type Palette = Record<Role, string>;
 
 export interface EdlWord { src_t0: number; src_t1: number; text: string; role?: 'connector' | 'key' | 'number' | 'title'; line_id?: number }
-export interface EdlZoom { t: number; scale: number; cx: number; cy: number; ease?: 'out' | 'inout' | 'cut'; dur?: number }
+export interface EdlZoom { t: number; scale: number; cx: number; cy: number; ease?: 'out' | 'inout' | 'linear' | 'cut'; dur?: number }
 export interface EdlShot {
   t_in: number; t_out: number; src_in: number; src_out: number;
-  layout?: 'full' | 'split_top' | 'split_bottom' | 'card' | 'pip' | 'full_insert';
+  layout?: 'full' | 'split_top' | 'split_bottom' | 'card' | 'pip' | 'grid' | 'full_insert';
   framing?: { scale: number; cx: number; cy: number };
   zoom?: EdlZoom[];
 }
@@ -93,7 +93,7 @@ export function editLib() {
     let cur = { ...base };
     for (const z of g.zoom ?? []) {
       if (t < z.t) break;
-      const d = z.ease === 'cut' ? 0 : (z.dur ?? 0.25), a = d ? (z.ease === 'inout' ? easeInOut : easeOut)((t - z.t) / d) : 1;
+      const d = z.ease === 'cut' ? 0 : (z.dur ?? 0.25), a = d ? (z.ease === 'inout' ? easeInOut : z.ease === 'linear' ? clamp : easeOut)((t - z.t) / d) : 1;
       cur = { scale: cur.scale + (z.scale - cur.scale) * a, cx: cur.cx + (z.cx - cur.cx) * a, cy: cur.cy + (z.cy - cur.cy) * a };
     }
     return cur;

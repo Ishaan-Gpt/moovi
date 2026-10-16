@@ -3,10 +3,11 @@
  * plan is the stand-in from src/edit/rough.ts (pause trim, a shot per sentence, alternating punch-ins).
  *
  *   pnpm --filter @moovi/engine exec tsx --env-file-if-exists=../../.env.local scripts/edit-preview.ts <clip.mp4>
- *     [--words words.json] [--caption punch-duo] [--port 4310] [--measure] [--no-serve]
+ *     [--words words.json | --edl plan.json] [--caption punch-duo] [--port 4310] [--measure] [--no-serve]
  *
  * --words takes [{word, t | start, end}] (skips transcription); otherwise the clip is transcribed with the key in
- * .env.local. --measure plays the edit once in headless Chrome and prints the player's own numbers.
+ * .env.local. --edl plays a given EDL (validated with validateEdl; its source.file is replaced by the clip).
+ * --measure plays the edit once in headless Chrome and prints the player's own numbers.
  */
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, extname, join, resolve } from 'node:path';
@@ -16,7 +17,8 @@ import { transcribeWords } from '../src/audio/stt';
 import { probe } from '../src/bench';
 import { config } from '../src/config';
 import { CAPTION_STYLES } from '../src/edit/captions';
-import { EDIT } from '../src/edit/lib';
+import { validateEdl } from '../src/edit/edl';
+import { EDIT, type PlayerEdl } from '../src/edit/lib';
 import { PAGE } from '../src/edit/page';
 import { roughEdl, type Word } from '../src/edit/rough';
 import { servePlayer } from '../src/s4/player';
@@ -38,22 +40,30 @@ const pr = await probe(clip);
 if (!pr.hasVideo) throw new Error('that file has no video stream');
 mark('probe');
 
-let words: Word[];
-const wf = flag('--words');
-if (wf) words = (JSON.parse(readFileSync(wf, 'utf8')) as { word: string; t?: number; start?: number; end: number }[]).map(w => ({ word: w.word, t: w.t ?? w.start ?? 0, end: w.end }));
-else words = pr.hasAudio ? await transcribeWords(clip, dir) : [];
-writeFileSync(join(dir, 'words.json'), JSON.stringify(words, null, 1));
-mark(wf ? 'words(file)' : 'transcribe');
-
-// the default palette is the brand's; each edit style brings its own on Day 2 (packages/library, like the gen styles)
-const palette = { ink: color.ink, paper: color.surface, accent: color.ice, accent2: color.frostMid, deep: color.ink, pop: color.iceWhite };
-const edl = roughEdl({ file, duration: pr.duration, w: pr.width ?? 1080, h: pr.height ?? 1920, fps: pr.fps ?? 30 }, words, { palette, captionStyle: caption });
+let words: Word[] = [], edl: PlayerEdl;
+const ef = flag('--edl'), wf = flag('--words');
+if (ef) {
+  const raw = JSON.parse(readFileSync(ef, 'utf8')) as Record<string, unknown> & { source: Record<string, unknown> };
+  raw.source = { ...raw.source, file };
+  const v = validateEdl(raw);
+  if (!v.edl || v.problems.length) throw new Error(`EDL problems: ${v.problems.join('; ')}`);
+  if (v.edl.source.duration > pr.duration + 0.05) throw new Error(`the EDL needs ${v.edl.source.duration} s of source; the clip has ${pr.duration.toFixed(2)} s`);
+  edl = v.edl; mark('edl(file)');
+} else {
+  if (wf) words = (JSON.parse(readFileSync(wf, 'utf8')) as { word: string; t?: number; start?: number; end: number }[]).map(w => ({ word: w.word, t: w.t ?? w.start ?? 0, end: w.end }));
+  else words = pr.hasAudio ? await transcribeWords(clip, dir) : [];
+  writeFileSync(join(dir, 'words.json'), JSON.stringify(words, null, 1));
+  mark(wf ? 'words(file)' : 'transcribe');
+  // the default palette is the brand's; each edit style brings its own on Day 2 (packages/library, like the gen styles)
+  const palette = { ink: color.ink, paper: color.surface, accent: color.ice, accent2: color.frostMid, deep: color.ink, pop: color.iceWhite };
+  edl = roughEdl({ file, duration: pr.duration, w: pr.width ?? 1080, h: pr.height ?? 1920, fps: pr.fps ?? 30 }, words, { palette, captionStyle: caption });
+}
 const tl = EDIT.timeline(edl);
 if (tl.problems.length) throw new Error(`EDL problems: ${tl.problems.join('; ')}`);
 writeFileSync(join(dir, 'edl.json'), JSON.stringify(edl, null, 1));
 mark('plan');
 
-console.log(`source ${pr.duration.toFixed(1)} s ${pr.width}x${pr.height} → edit ${tl.duration.toFixed(1)} s, ${edl.shots.length} shots, ${words.length} words, captions ${caption}`);
+console.log(`source ${pr.duration.toFixed(1)} s ${pr.width}x${pr.height} → edit ${tl.duration.toFixed(1)} s, ${edl.shots.length} shots, ${edl.words.length} words, captions ${edl.caption_style_id}`);
 console.log(`stages (s): ${Object.entries(lap).map(([k, v]) => `${k} ${v}`).join(' · ')} · to plan ${Object.values(lap).reduce((a, b) => a + b, 0).toFixed(2)}`);
 console.log(`files: ${resolve(dir)}`);
 if (args.includes('--no-serve')) process.exit(0);
