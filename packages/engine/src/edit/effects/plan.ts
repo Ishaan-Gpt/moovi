@@ -208,6 +208,18 @@ export function resolveFxParams(e: FxEvent): FxEvent {
 }
 
 /**
+ * Where the stat counter card sits (design px, its top edge): its home spot near the top (260) unless that covers
+ * the face, then under the face, then over it, staying above the caption band. The card is about 360 px tall.
+ */
+export function statCardTop(face: { y0: number; y1: number } | null | undefined, cardH = 360, H = 1920): number {
+  const home = 260, gap = 40, floor = Math.round(H * 0.7), ceil = 150;
+  if (!face || home + cardH <= face.y0 || home >= face.y1) return home;
+  if (face.y1 + gap + cardH <= floor) return Math.round(face.y1 + gap);
+  if (face.y0 - gap - cardH >= ceil) return Math.round(face.y0 - gap - cardH);
+  return home;
+}
+
+/**
  * Phrases of speech for the music duck: words closer than `join` s are one phrase. Returned on the film clock.
  */
 export function speechPhrases(words: FxWord[], join = 0.35): { t0: number; t1: number }[] {

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { FX, FX_IDS, holdsSlot, type FxId } from '../src/edit/effects/catalog';
-import { active, captionChunks, fxCount, resolveFxParams, statRoll, captionHidden, captionY, checkFx, duckExpr, fitFx, giantWordSize, placeFx, sourceTime, speechPhrases, used, type FxEvent, type FxWord } from '../src/edit/effects/plan';
+import { active, captionChunks, fxCount, resolveFxParams, statCardTop, statRoll, captionHidden, captionY, checkFx, duckExpr, fitFx, giantWordSize, placeFx, sourceTime, speechPhrases, used, type FxEvent, type FxWord } from '../src/edit/effects/plan';
 import { effectsRuntime } from '../src/edit/effects/runtime';
 import { fxInstructions, gapAfter, phraseLine, speechCut, FX_VOICE } from '../src/edit/effects/voice';
 import { fxFraming, fxSfxCues, FX_MIX, FX_SFX, sfxGain, sfxGainCapped } from '../src/edit/effects/render';
@@ -197,4 +197,12 @@ test('mix: an effect sound peaks at least 3 dB under the music peak, even when t
   assert.equal(sfxGainCapped(-1, bed, bed + 10 - FX_MIX.duck), sfxGain(-1, bed));
   assert.ok(FX_MIX.sfxUnderMusicPeak >= 3);
   assert.ok(FX_MIX.outroFade > 0 && FX_MIX.outroFade <= 1);
+});
+
+test('stat counter card stays off the face: home spot when clear, else under the face, above the captions', () => {
+  assert.equal(statCardTop(null), 260);
+  assert.equal(statCardTop({ y0: 700, y1: 1100 }), 260);          // face lower in frame: home spot is clear
+  const top = statCardTop({ y0: 300, y1: 650 });                    // face high, where the card used to sit
+  assert.ok(top >= 650 && top + 360 <= 1920 * 0.7, String(top));
+  assert.equal(statCardTop({ y0: 200, y1: 1300 }), 260);           // nowhere free: keep the home spot
 });

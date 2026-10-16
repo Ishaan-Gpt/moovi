@@ -245,7 +245,7 @@ export function effectsRuntime(D: FxRuntimeData) {
       }
       case 'stat-counter': {
         const from = +(p.from ?? 0), to = Number.isFinite(+p.to) ? +p.to : 100, dec = p.decimals ?? 0;
-        const n = keep(el(front, `<div class="glass" style="position:absolute;left:150px;width:780px;top:260px;padding:34px 40px 40px;text-align:center">
+        const n = keep(el(front, `<div class="glass" style="position:absolute;left:150px;width:780px;top:${Math.round(+(p.top ?? 260))}px;padding:34px 40px 40px;text-align:center">
           <div class="v" style="font-weight:900;font-size:170px;line-height:1;color:${GOLD};letter-spacing:-.03em;font-variant-numeric:tabular-nums"></div>
           <div style="color:#fff;font-weight:700;font-size:44px;margin-top:8px">${esc(p.label ?? '')}</div>
           <div style="margin-top:26px;height:18px;border-radius:9px;background:rgba(255,255,255,.14);overflow:hidden"><div class="bar" style="height:100%;width:0;background:linear-gradient(90deg,${GOLD2},${GOLD})"></div></div></div>`));

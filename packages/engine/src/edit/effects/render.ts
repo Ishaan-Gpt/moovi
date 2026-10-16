@@ -11,7 +11,7 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { config } from '../../config';
 import { FX, type FxId } from './catalog';
-import { captionChunks, captionHidden, captionY, duckExpr, giantWordSize, resolveFxParams, sourceTime, type FxEvent, type FxWord } from './plan';
+import { captionChunks, captionHidden, captionY, duckExpr, giantWordSize, resolveFxParams, sourceTime, statCardTop, type FxEvent, type FxWord } from './plan';
 import { effectsRuntime, type FxRuntimeData } from './runtime';
 
 export const FX_W = 1080, FX_H = 1920;
@@ -174,7 +174,7 @@ export async function renderFxFilm(f: FxFilm): Promise<{ out: string; frames: nu
   const caps = captionChunks(f.words);
   const faceBand = { y0: geo.faceBox.y0 / FX_H - 0.02, y1: geo.faceBox.y1 / FX_H + 0.01 };
   const fileUrl = (p: string) => 'file://' + p;
-  const events = f.events.map(resolveFxParams).map(e => e.fx === 'giant-word' && !(e.params && 'size' in e.params) ? { ...e, params: { ...(e.params ?? {}), size: giantWordSize(String(e.params?.word ?? 'WOW')) } } : e);
+  const events = f.events.map(resolveFxParams).map(e => e.fx === 'stat-counter' && !(e.params && 'top' in e.params) ? { ...e, params: { ...(e.params ?? {}), top: statCardTop(geo.faceBox) } } : e).map(e => e.fx === 'giant-word' && !(e.params && 'size' in e.params) ? { ...e, params: { ...(e.params ?? {}), size: giantWordSize(String(e.params?.word ?? 'WOW')) } } : e);
   const data: FxRuntimeData = { frames: fileUrl(prep.frames), masks: prep.masks ? fileUrl(prep.masks) : null, count: prep.count, fps, box: geo.box, face: geo.face, bg: fileUrl(prep.bg), bgMode: geo.feather ? 'strip' : 'cover', faceBox: geo.faceBox, events, captions: caps, titles: f.titles ?? [], fonts: fxFontCss() };
   const html = join(f.work, 'index.html');
   writeFileSync(html, `<!doctype html><html><head><meta charset="utf-8"></head><body></body></html>`);
