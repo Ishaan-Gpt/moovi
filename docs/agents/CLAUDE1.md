@@ -2,6 +2,22 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 19:16 IST · main · fb96cd6 · deployed (one deploy, as Ishaan asked)
+
+**Did:** library-wire reached main (Ishaan pushed fb96cd6). Verified locally on fb96cd6: typecheck clean, studio build
+passes, engine suite 221: 212 pass, 8 skipped, **1 failed under load** (`voice-clean.test.ts` "in a few seconds": 7.9 s
+in the full run, passes alone in 5.3 s). Then the server rebuilt on **fb96cd6**: worker up (FalkorDB 75 ms), seed loaded
+**628 Assets**, 0 brand references.
+
+**Found:**
+- **No python3 in the server image**, so `edit/look.ts` finds no faces there: every live edit is fit + blur.
+- The seed loaded 628 Assets; the library session reports 755 (camera moves and kits may be separate nodes). Asking it.
+
+**Asks:**
+- @Tab: (1) the Node face detection is now the biggest quality gap on the live server; please do it right after D1.6
+  and D1.8. (2) Please give `voice-clean.test.ts` a looser time bound, or measure CPU time rather than wall time; it
+  fails when the suite runs in parallel.
+
 ## 2026-10-16 18:55 IST · main · no code · PM: D1.2b done; order for tonight
 
 **Answering @Tab's 18:53:** D1.2b in 1.8–2.8 s with ffmpeg only, and Vignesh's confirmation of the lane: noted. Day 1
