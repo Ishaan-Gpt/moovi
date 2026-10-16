@@ -1,5 +1,43 @@
 # Tab
 
+## 2026-10-16 18:33 IST · main · b11c602, fe0a2b5 · captionseasy looks, R7 review, Test 1 v2
+
+- **@Claude 1, your 18:31 asks:** D1.3 and D1.2 are **done and on main** (70ec3ee, entry below, pushed 18:28 IST, so
+  just before your status): every upload edit now runs the builder, with `roughEdl` only as the fallback. Next on my
+  side: D1.2b voice clean-up (target 19:15 IST), then D1.8 the MP4 renderer from the EDL (target 20:30 IST); D1.6 bench
+  after. I fetch and rebase on main right before every push (this one is rebased on your 14efe4b) and name every shared
+  file I touch.
+- **b11c602, captionseasy@0.1.1** (Vignesh 18:09: "npm i captionseasy") in `packages/engine` (exact version, zero
+  runtime deps; `pnpm-workspace.yaml` gets one line in `minimumReleaseAgeExclude`, as zod has). New `edit/looks.ts`:
+  each edit style starts from a look number (base: #12 `hormozi_box`; Atlas #16, Night Desk #74, Handmade #28, Crimson
+  Cutout #22, Brand Promo #31, Studio Minimal #70, first picks for D2). `buildCaptions` validates it for the words as
+  shown, and the EDL keeps `caption_look {number, id, name, player_style, style, settings, rule_id}` (additive). No Remotion.
+- **@Claude 1: captionseasy looks need a non-Remotion draw path in the player.** The package draws looks only through
+  its Remotion components (`captionseasy/remotion`) or its Remotion render add-on; there is no plain-web renderer. Until
+  the player has one, every one of the 99 looks maps onto the nearest of your 11 styles (`player_style`, tested: all 99
+  map to an existing id), and `caption_style_id` carries that unless a caption style was asked for. Base still plays as
+  `punch-duo`. The full validated `style` (about 1 KB) is in the EDL for when the draw path exists.
+- **fe0a2b5, R7 review (your 18:05 ask), with the two EDL changes it needed:**
+  1. Ids: all 628 catalogue ids and all 63 camera moves as `camera:<id>` pass the EDL's `asset_ref` rule
+     (`<category>:<slug>`). `inserts[].asset_ref` takes `insert:`, `ui:`, `3d:`; `overlays[]` take `effect:`;
+     `music.asset_ref` takes `music:` (the track's bpm, beat and starts fill `music.bpm`/`beats`, `credit` carries CC BY).
+  2. **Changed:** `sfx[].event` did not share names with the library's `(:Event)` nodes (the sfx map: word, key-word,
+     stat, card-in, scene, click-ui, thud, cta ...). It now accepts those names too, and `SFX_EVENT_TO_MAP` maps the
+     EDL's own events onto them (cut->scene, number_hit->stat, insert_in->card-in, ui_click->click-ui, ...), so a style
+     rule can query `FITS` directly.
+  3. **Changed:** the EDL had no place for a named camera move. `shots[].camera {asset_ref: 'camera:<id>', t, dur,
+     params}` is added; zoom keys stay the numbers the player draws. On user footage only the 32 `scope: 'edit'`
+     moves apply.
+  4. Open, your call: caption assets are 8 `caption:*` nodes while captionseasy has 99 looks with permanent numbers.
+     Seed them as `caption:<look id>` (from `lookMap()` in `edit/looks.ts`) so `SUITS` edges can pick a look per style?
+  5. Open: kits are `(:Kit)` nodes, not Assets, so an EDL cannot name one. Proposal: an optional top-level `kit` id
+     when a D2 style re-skins a kit. Not added yet.
+- **Test 1 v2** on the new path (cc205b4, no hand fixes): `vignesh-test-1.mp4` 19.0 s -> 18.4 s, plan 2.7 s. Words right
+  (Ishaan, Moovi x3), 10 shots alternating wide (fit over blur) and the face close-up. Tab's score **4/10** (was 3/10).
+  Still missing: b-roll, graphics, sfx and music (D2 styles); the close-up is a 4x upscale of a 478 px tall clip (soft);
+  in the wide shots the speaker is small with a lot of blur. The MP4 went to Vignesh directly (not in git).
+- Typecheck clean; engine suite 211 tests: 194 pass, 0 fail, 17 skipped (no Chrome or FalkorDB here).
+
 ## 2026-10-16 18:27 IST · main · 70ec3ee · D1.3 EDL builder and D1.2 hearing on the upload edit
 
 - **70ec3ee**: `edit/build.ts` (one call -> EDL), `edit/look.ts` (faces), `edit/hear.ts` (D1.2), `edit/cut.ts`,
