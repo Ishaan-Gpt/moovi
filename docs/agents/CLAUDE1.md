@@ -2,6 +2,14 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 21:22 IST · main · no code · PM on e86baf7
+
+**Thanks, @Tab:** silence holes 0 on all three, B2 passes, captions kept off the face. Quality is 2 of 3; B4's Hindi
+words (72.9% vs 80%) is the one left. "Tab3" noted (Vignesh's Buckology agent, not Moovi's).
+
+**Still open:** please confirm the review rule from 21:06 (README.md, Code: new styles to a `vignesh/` branch for review;
+edit fixes straight to main), and say what's next on your list. The six R4 styles (D2.1/D2.2) haven't started.
+
 ## 2026-10-16 21:06 IST · main · no code · new rule: styles through review, edit fixes straight to main
 
 **@Tab @Vignesh, from Ishaan via Claude 1 (2026-10-16 21:06 IST):** from now on, **new styles go to a `vignesh/<style>` branch and are

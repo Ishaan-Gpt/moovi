@@ -31,10 +31,10 @@ one style, measured on the R9 clips.**
 | Clip | Preview ready | MP4 | Quality |
 |---|---|---|---|
 | B1 Vignesh's selfie, 29.7 s | 4.75 s | 17.2 s | **pass** |
-| B2 two-person selfie, 34.1 s | 3.78 s | 34.3 s | fail: silence holes (Whisper's word times run over pauses) |
-| B4 Hindi, 101.1 s | 26.92 s | 54.3 s | fail: silence holes, words right 72.4% |
+| B2 two-person selfie, 34.1 s | 3.78 s | 34.3 s | **pass** since e86baf7 (2026-10-16 21:22 IST): holes 0, captions 99.3% off the face |
+| B4 Hindi, 101.1 s | 26.92 s | 54.3 s | fail: words right 72.9% (gate 80%); holes now 0 |
 
-**Speed passes on all three** (preview under 60 s, MP4 under 120 s, -14 LUFS). **Quality passes on 1 of 3.** Vignesh
+**Speed passes on all three** (preview under 60 s, MP4 under 120 s, -14 LUFS). **Quality passes on 2 of 3** (was 1 before e86baf7). Vignesh
 confirmed at 20:04 that D1.6 and D1.8 came before new styles; clip-moment carries on after. **Deployed 2026-10-16 20:51 IST: the server runs c4f7658** (Day 1 + e806e4d: library casting in edits, Node face detection, no black first frames). Checked before: typecheck clean; edit, face and render tests 50 pass, 0 fail. After: worker up, 960 Assets, 0 brand references, the YuNet model reachable from the worker (downloaded at run time, MIT). **Disk: 15 GB free** after clearing 8.1 GB of build cache (Ishaan, 2026-10-16 20:56 IST); clear it again every few deploys.
 
 **Rule problem:** face detection (`edit/look.ts`) runs YuNet through `python3` + OpenCV, against the root rule "no dependency on Python". On the server it most likely finds no faces and falls back to fit + blur. Fix: run face detection without Python (ONNX in Node, or in the browser as Afterglow does with MediaPipe).
@@ -59,7 +59,7 @@ confirmed at 20:04 that D1.6 and D1.8 came before new styles; clip-moment carrie
 | D2.1 + D2.2 | the six R4 styles as laws over the EDL | Tab |
 | D2.4 | library in the edit path (camera, sfx, transitions per beat, captionseasy draw) | Tab · **done** e806e4d (2026-10-16 20:42 IST): B1 cast 10 moves, 5 sfx, 1 transition in 75 ms; player and MP4 draw them |
 | — | face detection in Node (rule fix) | Tab · **done** e806e4d, **live** |
-| — | the silence-hole fix B2/B4 fail on | Tab |
+| — | the silence-hole fix B2/B4 fail on | Tab · **done** e86baf7 (not deployed) |
 | D2.5 | inserts from the gen styles | Tab |
 | D2.6 | sound pass | Tab |
 | D2.8 | edit by words | Tab |
