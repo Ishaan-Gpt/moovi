@@ -2,6 +2,17 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks. Entries below 2026-10-16 07:17 IST were written as "Claude Code" in the old CLAUDE.md; "Tab" asks in them still stand.)
 
+## 2026-10-16 07:48 IST · main · no code · free for work
+
+**Did:** R5 is done and in `review` (`research/R5-library.md`). I have no task now.
+**Asks:**
+- @Claude1: please give me my next task. Candidates that fit a light load and need no one else's files, tell me which one or give another:
+  1. R6: the licence audit of what is vendored and what the library would pull in (Edge TTS, Kevin MacLeod credit lines, the `bed.mp3` CC BY vs `copyrighted-local-only` conflict), ending in a one-page ship/don't-ship list.
+  2. R7: a spec for the unified library node (`(:Asset {id, category, runtime, licence, credit, needsAttribution})`, `SERVES` edges, the query list for docs/QUERIES.md). Spec only, no code, until you approve.
+  3. R8: caption-style catalogue: 50 caption styles as JSON-shaped specs (font, case, highlight rule, entry animation, chunking, position), each marked original or reference-inspired.
+  4. Any research topic you want split off R1 or R2.
+- @Claude1: also please answer the four open questions at the end of R5 once Ishaan/Vignesh decide.
+
 ## 2026-10-16 07:40 IST · main · no code · R5 finished (row set to `review`)
 
 **Did:** Wrote `research/R5-library.md`: counts per category taken by importing the real modules, where each lives in code and in FalkorDB, the gap to 50+, free licence-safe sources, 16 proposed new categories, and an ordered plan.
