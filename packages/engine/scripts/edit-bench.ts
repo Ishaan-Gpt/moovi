@@ -28,7 +28,8 @@ import { CAPTION_STYLES } from '../src/edit/captions';
 import { envelope, pauses, splitAt, type Word } from '../src/edit/cut';
 import { checkMetrics, metricsOf, type MetricBands } from '../src/edit/edl';
 import { align, textKey, timedKey, whisper } from '../src/edit/hear';
-import { EDIT_PALETTE, planEdit } from '../src/edit/job';
+import { castEdl, openLibrary } from '../src/edit/cast';
+import { castMaxZoom, EDIT_PALETTE, planEdit } from '../src/edit/job';
 import { lookFaces } from '../src/edit/look';
 import { PAGE } from '../src/edit/page';
 import { renderEdl } from '../src/edit/render';
@@ -181,7 +182,7 @@ function audioHoles(f: string): number {
 }
 
 // ---------- one clip ----------
-interface Row { mp4_stages: Record<string, number> | null; silence_holes: number | null; machine_truth: boolean; clip: string; source_s: number; style: string; preview_s: number | null; plan_s: number; mp4_s: number | null; stages: Record<string, number>; words_right: number | null; truth: string; lang: { want: string; got: string | null; script_pct: number; arabic: boolean; ok: boolean }; pauses: { left: number; max: number; trimmed: number | null }; slate_kept: number | null; cut_on_word: { cuts: number; on: number; pct: number; insideWord: number; against: string; vs_truth_times: { cuts: number; on: number; pct: number; insideWord: number } | null }; loudness: { lufs: number; tp: number; of: string } | null; captions: { capFrames: number; offFacePct: number; onFace: number; platform: number } | null; faces: number; band: string[]; metrics: unknown; deterministic: boolean | null; fails: string[]; credit: string; edl: string }
+interface Row { mp4_stages: Record<string, number> | null; silence_holes: number | null; machine_truth: boolean; clip: string; source_s: number; style: string; preview_s: number | null; plan_s: number; mp4_s: number | null; stages: Record<string, number>; words_right: number | null; truth: string; lang: { want: string; got: string | null; script_pct: number; arabic: boolean; ok: boolean }; pauses: { left: number; max: number; trimmed: number | null }; slate_kept: number | null; cut_on_word: { cuts: number; on: number; pct: number; insideWord: number; against: string; vs_truth_times: { cuts: number; on: number; pct: number; insideWord: number } | null }; loudness: { lufs: number; tp: number; of: string } | null; captions: { capFrames: number; offFacePct: number; onFace: number; platform: number } | null; faces: number; library: { source: string; ms: number; camera: number; sfx: number; transitions: number; mixed: number | null } | null; band: string[]; metrics: unknown; deterministic: boolean | null; fails: string[]; credit: string; edl: string }
 
 async function runClip(c: Clip, path: string, truth: Truth | null): Promise<Row> {
   const dir = join(RUNS, `${sha}-${c.id}`); rmSync(dir, { recursive: true, force: true });
@@ -197,13 +198,14 @@ async function runClip(c: Clip, path: string, truth: Truth | null): Promise<Row>
   }
   const v = await plan.voice;
   let mp4Stages: Record<string, number> | null = null, holes: number | null = null;
+  let mp4Sfx: number | null = null;
   let mp4S: number | null = null, lou: Row['loudness'] = v ? { lufs: v.after.lufs, tp: v.after.tp, of: 'voice' } : null;
   if (has('--mp4')) {
     // D1.8: the MP4 from the same EDL (edit/render.ts), probed, then its loudness
     const t = Date.now(), r = await renderEdl({ dir, out: join(dir, 'edit.mp4') });
     mp4S = r2((Date.now() - t) / 1000); mp4Stages = r.stages;
     const l = await loudness(r.out); lou = { lufs: l.lufs, tp: l.tp, of: 'mp4' };
-    holes = audioHoles(r.out);
+    holes = audioHoles(r.out); mp4Sfx = r.sfx;
   }
   const e = plan.edl;
   // determinism: the builder again on the same inputs (words, pauses, faces measured again)
@@ -212,6 +214,8 @@ async function runClip(c: Clip, path: string, truth: Truth | null): Promise<Row>
     const ps = plan.source.hasAudio ? pauses(await envelope(path)) : [];
     const look = await lookFaces(path, plan.source.duration);
     const again = buildEdl({ source: e.source as never, words: JSON.parse(readFileSync(join(dir, 'words.json'), 'utf8')) as Word[], pauses: ps, palette: EDIT_PALETTE(), ...(look.faces.length ? { faces: look.faces } : {}), style: { id: 'base' }, ...(plan.language ? { language: plan.language } : {}) });
+    // and the library cast on it again (camera moves, sfx, transitions per beat), as the plan stage does
+    if (plan.cast) await castEdl(again, { lib: await openLibrary(), maxZoom: castMaxZoom(e.source) });
     deterministic = stable(again) === stable(e);
   } catch (err) { console.warn(`  ${c.id} determinism: ${String(err).slice(0, 160)}`); }
   const sc = scriptCheck(e, c.lang);
@@ -232,7 +236,7 @@ async function runClip(c: Clip, path: string, truth: Truth | null): Promise<Row>
     mp4_stages: mp4Stages, silence_holes: holes, clip: c.id, source_s: r2(plan.source.duration), style, preview_s: previewS === null ? null : r2(previewS), plan_s: r2(planS), mp4_s: mp4S, stages: plan.lap,
     words_right: truth ? r2(100 * wordsRight(e, truth)) : null, machine_truth: machine, truth: truth ? `${truth.source}; checked by ${truth.checked_by}` : 'no truth', lang,
     pauses: pausesLeft(e, DEFAULT_LAWS.pause_max, truth ?? undefined), slate_kept: truth ? slateKept(e, truth).kept : null, cut_on_word: cow,
-    loudness: lou, captions: z, faces: plan.faces, band: checkMetrics(m, BASE_BAND), metrics: m, deterministic, fails: [], credit: c.credit, edl: join(dir, 'edl.json'),
+    loudness: lou, captions: z, faces: plan.faces, library: plan.cast ? { source: plan.cast.source, ms: plan.cast.ms, camera: plan.cast.beats.reduce((n, x) => n + x.camera.length, 0), sfx: (e.sfx ?? []).length, transitions: plan.cast.beats.filter(x => x.transition).length, mixed: mp4Sfx } : null, band: checkMetrics(m, BASE_BAND), metrics: m, deterministic, fails: [], credit: c.credit, edl: join(dir, 'edl.json'),
   };
   // the gate (R9's pass column); "proposed" bars included
   const f = row.fails, src = row.source_s;
@@ -273,7 +277,7 @@ const cell = (r: Row) => [r.clip, r.source_s, r.style, r.preview_s ?? '-', r.mp4
 const table = [`| Clip | Source s | Style | Preview s | MP4 s | Words right | Lang | Pauses left (max) | Cut on word | LUFS / TP | Captions off face | Band | Result |`, `|${'---|'.repeat(13)}`, ...rows.map(r => `| ${cell(r).join(' | ')} |`)].join('\n');
 if (has('--json')) console.log(JSON.stringify(rows, null, 1));
 console.log(`\n${head}\n\n${table}\n`);
-for (const r of rows) console.log(`${r.clip} stages (s): ${Object.entries(r.stages).map(([k, v]) => `${k} ${v}`).join(' · ')} · to plan ${r.plan_s} · deterministic ${r.deterministic} · slate kept ${r.slate_kept ?? '-'} · truth: ${r.truth} · caption styles ${capS}`);
+for (const r of rows) console.log(`${r.clip} stages (s): ${Object.entries(r.stages).map(([k, v]) => `${k} ${v}`).join(' · ')} · to plan ${r.plan_s} · deterministic ${r.deterministic} · faces ${r.faces} · library ${r.library ? `${r.library.source} ${r.library.ms} ms: ${r.library.camera} camera moves, ${r.library.sfx} sfx (${r.library.mixed ?? '-'} mixed), ${r.library.transitions} transitions` : 'off'} · slate kept ${r.slate_kept ?? '-'} · truth: ${r.truth} · caption styles ${capS}`);
 for (const s of skipped) console.log(`skipped ${s}`);
 if (has('--clean')) { rmSync(SRC, { recursive: true, force: true }); rmSync(RUNS, { recursive: true, force: true }); }
 process.exit(rows.some(r => r.fails.length) ? 1 : 0);

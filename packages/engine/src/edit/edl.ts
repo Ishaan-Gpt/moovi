@@ -118,7 +118,9 @@ export const Sfx = z.object({
   event: z.enum(['cut', 'insert_in', 'title_in', 'flash', 'stamp', 'ui_click', 'number_hit', 'whoosh', 'riser', 'end',
     // the library's (:Event) names, which the engine sfx map and R7's FITS edges use (assets/sfx/map.json)
     ...SFX_MAP_EVENTS]),
-  gain_db: z.number().optional(), rule_id: ruleId,
+  gain_db: z.number().optional(),
+  file: z.string().optional().describe('the sound file in packages/engine/assets/sfx (the player plays it; the renderer mixes it)'),
+  rule_id: ruleId,
 });
 
 export const Music = z.object({

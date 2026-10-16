@@ -1,39 +1,20 @@
 import { execFile } from 'node:child_process';
-import { existsSync, mkdirSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import type { Face } from './build';
+import { readOnnx, type OnnxGraph } from './onnx';
+import { yunet } from './yunet';
 
 /**
  * The look step (D1.3): where the speaker's face is, in SOURCE time, as fractions of the source frame, so the player
- * crops on it (Claude 1's EDIT.cropAt, 2cf18a6) and the builder centres its punch-ins on it. OpenCV's YuNet face
- * detector (a 230 KB model fetched once into ~/.cache/moovi, the same one footage-edit's face label uses), run by the
- * vision python (MOOVI_VISION_PY, else `python3` when it imports cv2) on one frame every `step` seconds. Optional: no
- * python, no cv2 or no face found returns [] and the edit is framed without faces.
+ * crops on it (Claude 1's EDIT.cropAt, 2cf18a6), the builder centres its punch-ins on it and the library's camera moves
+ * frame it. OpenCV's YuNet face detector (a 230 KB model fetched once into ~/.cache/moovi, the same one footage-edit's
+ * face label uses), run in Node by edit/yunet.ts (no native dependency, no Python: the root CLAUDE.md rule, and the
+ * server image has no python3). One ffmpeg call decodes the sampled frames (long side 256 px, bgr24); at most about
+ * 28 samples per clip. Optional: no model or no face found returns [] and the edit is framed without faces.
  */
 const FACE_URL = 'https://github.com/opencv/opencv_zoo/raw/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx';
-const LOOK_PY = `
-import sys, json, cv2
-cap = cv2.VideoCapture(sys.argv[2]); step = float(sys.argv[3]); dur = float(sys.argv[4])
-fps = cap.get(cv2.CAP_PROP_FPS) or 30.0; every = max(1, int(round(step * fps)))
-out, det, i = [], None, 0
-while True:
-    ok = cap.grab()
-    if not ok: break
-    if i % every == 0:
-        ok, f = cap.retrieve()
-        if ok:
-            H, W = f.shape[:2]
-            if det is None: det = cv2.FaceDetectorYN.create(sys.argv[1], "", (W, H), 0.6)
-            _, fs = det.detect(f)
-            if fs is not None and len(fs):
-                x, y, w, h = [float(v) for v in max(fs, key=lambda r: r[2] * r[3])[:4]]
-                c = float(max(fs, key=lambda r: r[2] * r[3])[14])
-                out.append([i / fps, x / W, y / H, w / W, h / H, c])
-    i += 1
-    if i / fps > dur: break
-print(json.dumps(out))
-`;
 
 const run = (cmd: string, args: string[], ms: number) => new Promise<string>((res, rej) =>
   execFile(cmd, args, { timeout: ms, killSignal: 'SIGKILL', maxBuffer: 8 << 20 }, (e, out) => e ? rej(e) : res(String(out))));
@@ -46,14 +27,6 @@ async function faceModel(): Promise<string> {
   if (!r.ok) throw new Error(`face model: HTTP ${r.status}`);
   writeFileSync(f, Buffer.from(await r.arrayBuffer()));
   return f;
-}
-
-let pyChecked: string | null | undefined;
-async function visionPy(): Promise<string | null> {
-  if (pyChecked !== undefined) return pyChecked;
-  const cands = [process.env.MOOVI_VISION_PY, 'python3'].filter((p): p is string => !!p);
-  for (const p of cands) { try { await run(p, ['-c', 'import cv2'], 15_000); return (pyChecked = p); } catch { /* next */ } }
-  return (pyChecked = null);
 }
 
 /**
@@ -75,14 +48,50 @@ export function smoothFaces(raw: number[][]): Face[] {
   });
 }
 
+let graph: OnnxGraph | null = null;
+async function faceGraph(): Promise<OnnxGraph> { return graph ??= readOnnx(readFileSync(await faceModel())); }
+
+/** The sample step for a clip: every 0.5 s on short clips, spread to about 28 samples on long ones. */
+export const lookStep = (duration: number) => Math.max(0.5, Math.round((duration / 28) * 4) / 4);
+
+/** Decode frames every `step` seconds at w x h (bgr24) with one ffmpeg call. */
+async function frames(video: string, step: number, w: number, h: number, ms: number): Promise<Buffer> {
+  return new Promise((res, rej) => execFile('ffmpeg', ['-v', 'error', '-i', video, '-an', '-vf', `fps=1/${step}:start_time=0:round=down,scale=${w}:${h}`, '-f', 'rawvideo', '-pix_fmt', 'bgr24', 'pipe:1'],
+    { timeout: ms, killSignal: 'SIGKILL', maxBuffer: 256 << 20, encoding: 'buffer' }, (e, out) => e ? rej(e) : res(out as Buffer)));
+}
+
+/**
+ * Raw detections for a clip: [src_t, x, y, w, h, conf] per sample with a face (the largest one), fractions of the
+ * source frame. Yields to the event loop between frames, so the hearing beside it keeps its sockets serviced.
+ */
+export async function detectFaces(video: string, duration: number, o: { step?: number; width?: number; height?: number; timeoutMs?: number } = {}): Promise<number[][]> {
+  const step = o.step ?? lookStep(duration);
+  let W = o.width, H = o.height;
+  if (!W || !H) {
+    const p = await run('ffprobe', ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height:stream_side_data=rotation', '-of', 'json', video], 15_000);
+    const st = (JSON.parse(p).streams?.[0] ?? {}) as { width?: number; height?: number; side_data_list?: { rotation?: number }[] };
+    W = st.width ?? 0; H = st.height ?? 0;
+    if (Math.abs(st.side_data_list?.[0]?.rotation ?? 0) === 90) [W, H] = [H, W];
+  }
+  if (!W || !H) return [];
+  const k = 256 / Math.max(W, H), w = Math.max(2, Math.round(W * k / 2) * 2), h = Math.max(2, Math.round(H * k / 2) * 2);
+  const [g, buf] = await Promise.all([faceGraph(), frames(video, step, w, h, o.timeoutMs ?? 30_000)]);
+  const n = Math.floor(buf.length / (w * h * 3)), out: number[][] = [];
+  for (let i = 0; i < n; i++) {
+    const t = +(i * step).toFixed(3); if (t > duration) break;
+    const fs = yunet(g, buf.subarray(i * w * h * 3, (i + 1) * w * h * 3), w, h);
+    if (fs.length) { const f = fs.reduce((a, b) => (b.w * b.h > a.w * a.h ? b : a)); out.push([t, f.x / w, f.y / h, f.w / w, f.h / h, f.score]); }
+    await new Promise(r => setImmediate(r));
+  }
+  return out;
+}
+
 /** Face keys for a clip ([] when the look step is unavailable or sees no face in at least a third of the samples). */
 export async function lookFaces(video: string, duration: number, o: { step?: number; timeoutMs?: number } = {}): Promise<{ faces: Face[]; seconds: number; why?: string }> {
   const t0 = Date.now(), secs = () => +((Date.now() - t0) / 1000).toFixed(2);
-  const step = o.step ?? (duration > 60 ? 1 : 0.5);
+  const step = o.step ?? lookStep(duration);
   try {
-    const py = await visionPy(); if (!py) return { faces: [], seconds: secs(), why: 'no vision python with cv2' };
-    const out = await run(py, ['-c', LOOK_PY, await faceModel(), video, String(step), String(duration)], o.timeoutMs ?? 30_000);
-    const raw = JSON.parse(out.trim().split('\n').at(-1) ?? '[]') as number[][];
+    const raw = await detectFaces(video, duration, { step, ...(o.timeoutMs ? { timeoutMs: o.timeoutMs } : {}) });
     const samples = Math.max(1, Math.floor(duration / step));
     if (raw.length < samples / 3) return { faces: [], seconds: secs(), why: `a face in only ${raw.length} of ${samples} samples` };
     return { faces: smoothFaces(raw), seconds: secs() };

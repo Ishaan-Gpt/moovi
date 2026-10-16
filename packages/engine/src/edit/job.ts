@@ -4,6 +4,7 @@ import { color } from '@moovi/brand';
 import { sttAvailable } from '../audio/stt';
 import { probe } from '../bench';
 import { buildEdl } from './build';
+import { castEdl, openLibrary, type CastTrace } from './cast';
 import { envelope, pauses, type Word } from './cut';
 import { keepOf, validateEdl } from './edl';
 import { hear, type Heard } from './hear';
@@ -36,6 +37,8 @@ export interface PlanInput {
   onNote?: (text: string) => unknown;
   /** start the voice clean-up (default true) */
   voice?: boolean;
+  /** cast camera moves, sounds and transitions from the library graph per beat (edit/cast.ts; default true) */
+  library?: boolean;
 }
 export interface Planned {
   edl: PlayerEdl;
@@ -50,11 +53,18 @@ export interface Planned {
   source: { file: string; duration: number; w: number; h: number; fps: number; hasAudio: boolean };
   /** true when the builder failed and roughEdl planned the edit */
   rough: boolean;
+  /** the library cast's per-beat trace (cast.json), null when off, rough or it failed */
+  cast: CastTrace | null;
+  /** why faces are missing, when they are (the look step's own words) */
+  lookWhy?: string;
   /** the voice clean-up, running; resolves null when there is no audio or it failed */
   voice: Promise<CleanVoice | null>;
 }
 
 export const EDIT_PALETTE = () => ({ ink: color.ink, paper: color.surface, accent: color.ice, accent2: color.frostMid, deep: color.ink, pop: color.iceWhite });
+
+/** How far the library's camera moves may push in on this source (a 478 px tall clip goes soft past about 1.2x). */
+export const castMaxZoom = (s: { w: number; h: number }) => Math.min(2, Math.max(1.2, 1.3 * Math.min(s.w, s.h) / 720));
 
 export async function planEdit(o: PlanInput): Promise<Planned> {
   const lap: Record<string, number> = {}; let tl = Date.now();
@@ -101,6 +111,18 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
     edl = roughEdl(source, words.map(w => ({ word: w.word, t: w.t, end: w.end })), { palette, captionStyle: o.caption ?? 'punch-duo' });
     rough = true;
   }
+  // the library in the edit path: camera:<id> moves (by the needs each beat's tag SERVES, framed on the face keys),
+  // sfx by the library's events and transitions on beat changes, all from the FalkorDB graph (catalogue if it is down)
+  let cast: CastTrace | null = null;
+  if (!rough && o.library !== false) {
+    try {
+      const before = JSON.stringify(edl);
+      cast = await castEdl(edl as never, { lib: await openLibrary(), maxZoom: castMaxZoom(source) });
+      const bad = validateEdl(edl as never).problems.filter(p => !p.startsWith('version'));
+      if (bad.length || EDIT.timeline(edl).problems.length) { edl = JSON.parse(before); cast = null; console.warn(`[edit] library cast undone: ${bad.slice(0, 2).join('; ')}`); }
+      else writeFileSync(join(dir, 'cast.json'), JSON.stringify(cast, null, 1));
+    } catch (e) { console.warn(`[edit] library cast: ${String((e as Error).message ?? e).slice(0, 160)}`); cast = null; }
+  }
   const t = EDIT.timeline(edl);
   if (t.problems.length) throw new Error(`The edit plan is inconsistent: ${t.problems.join('; ')}`);
   writeFileSync(join(dir, 'edl.json'), JSON.stringify(edl, null, 1));
@@ -111,5 +133,5 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
       .then(v => { writeFileSync(join(dir, 'voice.json'), JSON.stringify(v, null, 1)); return v; })
       .catch(e => { console.warn(`[edit] voice clean-up: ${String((e as Error).message ?? e).slice(0, 160)}`); return null; })
     : Promise.resolve(null);
-  return { edl, words, ...(language ? { language } : {}), heard, faces: look.faces.length, lap, duration: t.duration, source: { ...source, hasAudio: pr.hasAudio }, rough, voice };
+  return { edl, words, ...(language ? { language } : {}), heard, faces: look.faces.length, lap, duration: t.duration, source: { ...source, hasAudio: pr.hasAudio }, rough, cast, ...(look.why ? { lookWhy: look.why } : {}), voice };
 }

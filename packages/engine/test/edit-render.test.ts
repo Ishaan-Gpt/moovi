@@ -22,7 +22,7 @@ test('render geometry: cover, contain and the CSS scale about the framing centre
   const l = buildEdl({ source: { file: 'src.mp4', duration: 4.2, w: 1920, h: 1080, fps: 30 }, words, palette });
   l.shots.forEach(s => { s.layout = 'fit'; s.framing = { scale: 1, cx: 0.5, cy: 0.5 }; s.zoom = []; });
   const q = placeAt(l, 0.1, 720, 1280);
-  assert.deepEqual(q, { sw: 720, sh: 405, x: 0, y: 438, fit: true });
+  assert.deepEqual(q, { sw: 720, sh: 405, x: 0, y: 438, fit: true, blur: 0 });
   // frames cover the film once, in order; one command line per change
   const fr = shotFrames(e, 30), d = EDIT.timeline(e).duration;
   assert.equal(fr[0]!.a, 0); assert.equal(fr.at(-1)!.b, Math.round(d * 30));

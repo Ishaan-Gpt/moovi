@@ -873,6 +873,10 @@
      "gain_db": {
       "type": "number"
      },
+     "file": {
+      "description": "the sound file in packages/engine/assets/sfx (the player plays it; the renderer mixes it)",
+      "type": "string"
+     },
      "rule_id": {
       "type": "string",
       "minLength": 1,

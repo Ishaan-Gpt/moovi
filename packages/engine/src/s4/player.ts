@@ -159,7 +159,7 @@ ${CLIENT}
 
 /** Serve <dir>/film.json with its pictures and audio on the Style 4 player; resolves the page URL. */
 export async function servePlayer(dir: string, port = 0, page: string = PAGE): Promise<{ url: string; close: () => void }> {
-  const roots = [['/engine/', join(config.assets, 'renderer')], ['/data/', config.data], ['/v/', resolve(dir)]] as const;
+  const roots = [['/engine/', join(config.assets, 'renderer')], ['/sfx/', join(config.assets, 'sfx')], ['/data/', config.data], ['/v/', resolve(dir)]] as const;
   const server = createServer((req, res) => {
     const u = decodeURIComponent((req.url ?? '/').split('?')[0]!);
     if (u === '/' || u === '/index.html') { res.writeHead(200, { 'content-type': 'text/html', 'cache-control': 'no-store' }); res.end(page); return; }

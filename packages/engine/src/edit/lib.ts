@@ -29,6 +29,10 @@ export interface PlayerEdl {
   words: EdlWord[];
   shots: EdlShot[];
   inserts?: EdlInsert[];
+  /** cuts with a transition the player draws (whip, zoom_through, blur_zoom, slide, flash); others are hard cuts */
+  cuts?: { t: number; type: string; dur?: number }[];
+  /** one-shot sounds in output time (the library's sfx assets, cast by edit/cast.ts) */
+  sfx?: { t: number; asset_ref: string; event: string; gain_db?: number; file?: string }[];
   /** face boxes in SOURCE time, fractions of the source frame (the look step); the crop follows them */
   faces?: { src_t: number; x: number; y: number; w: number; h: number }[];
 }
@@ -192,7 +196,50 @@ export function editLib() {
     return { px: pos(f.x, vw), py: pos(f.y + 0.08, vh) };
   }
 
-  return { faceAt, cropAt, clamp, easeOut, easeInOut, back, timeline, shotAt, srcAt, outOf, framingAt, outWords, chunk, captionAt, entryOf, sizePx, posY, caseOf };
+  /**
+   * The transition on screen at output time t, centred on its cut: `dx`/`dy` move the picture (fractions of the frame,
+   * out one way before the cut and in from the other side after it), `zoom` multiplies the framing, `blur` is the
+   * motion blur in output pixels at 1080 wide, `flash` the white over the frame (0..1). All 0 (zoom 1) between cuts.
+   */
+  function transitionAt(e: PlayerEdl, t: number): { dx: number; dy: number; zoom: number; blur: number; flash: number } {
+    const none = { dx: 0, dy: 0, zoom: 1, blur: 0, flash: 0 };
+    for (const c of e.cuts ?? []) {
+      const d = c.dur ?? 0.24, h = d / 2;
+      if (c.type === 'hard' || c.type === 'jump' || c.type === 'punch' || t < c.t - h || t >= c.t + h) continue;
+      const before = t < c.t, u = before ? clamp((t - (c.t - h)) / h) : clamp(((c.t + h) - t) / h); // 0 at the edges, 1 at the cut
+      const k = u * u;
+      if (c.type === 'whip') return { ...none, dx: (before ? -1 : 1) * 0.42 * k, blur: 60 * k };
+      if (c.type === 'slide') return { ...none, dy: (before ? -1 : 1) * 0.3 * k, blur: 30 * k };
+      if (c.type === 'zoom_through') return { ...none, zoom: 1 + (before ? 0.45 : 0.3) * k, blur: 24 * k };
+      if (c.type === 'blur_zoom') return { ...none, zoom: 1 + 0.16 * k, blur: 18 * k };
+      if (c.type === 'flash') return { ...none, flash: Math.min(1, 1.2 * k) };
+    }
+    return none;
+  }
+
+  /**
+   * The captionseasy look's own props (the EDL's caption_look.style, Ishaan's captionseasy npm) as the player draws
+   * them over the nearest of the 11 player styles: font (mapped to the fonts the player ships), weight, italic, case,
+   * fill, the active word's treatment, stroke and the line's height on the frame. Sizes stay the player style's.
+   */
+  function lookProps(s: any, w: number): { family: string; weight: number; italic: boolean; casing: string; fill: string | null; hi: { treat: 'box' | 'colour' | 'scale'; color: string | null; bg: string | null }; stroke: { px: number; color: string } | null; shadow: boolean; y: number | null } | null {
+    if (!s || typeof s !== 'object') return null;
+    const f = String(s.fontId || s.fontFamily || '');
+    const family = /anton|bebas|oswald|league|impact|condensed/i.test(f) ? 'Anton' : /mono|code|courier/i.test(f) ? 'JetBrains Mono'
+      : /serif|playfair|garamond|lora|merriweather|georgia|instrument/i.test(f) && !/sans/i.test(f) ? 'Instrument Serif'
+      : /archivo/i.test(f) ? 'Archivo' : /geist/i.test(f) ? 'Geist' : /tight/i.test(f) ? 'Inter Tight' : 'Inter';
+    const a = s.active || {}, eff = String(a.effect || '');
+    const hi: { treat: 'box' | 'colour' | 'scale'; color: string | null; bg: string | null } = eff === 'box' || eff === 'pill' || eff === 'highlight'
+      ? { treat: 'box', color: a.color || null, bg: a.boxColor || a.background || null }
+      : eff === 'scale' || eff === 'pop' ? { treat: 'scale', color: a.color || null, bg: null } : { treat: 'colour', color: a.color || null, bg: null };
+    const st = s.stroke && s.stroke.enabled && s.stroke.width > 0 ? { px: Math.max(1, Math.round(s.stroke.width * w / 1080 * 10) / 10), color: String(s.stroke.color || '#000') } : null;
+    const y = s.position && typeof s.position.y === 'number' ? clamp(s.position.y, 0.12, 0.9) : null;
+    return { family, weight: family === 'Anton' || family === 'Instrument Serif' ? 400 : Math.round(clamp(Number(s.fontWeight) || 800, 100, 900) / 100) * 100,
+      italic: s.fontStyle === 'italic' || family === 'Instrument Serif', casing: s.casing === 'upper' || s.casing === 'lower' ? s.casing : 'none',
+      fill: s.fill && s.fill.type === 'solid' && s.fill.color ? String(s.fill.color) : null, hi, stroke: st, shadow: Array.isArray(s.shadows) && s.shadows.length > 0, y };
+  }
+
+  return { lookProps, transitionAt, faceAt, cropAt, clamp, easeOut, easeInOut, back, timeline, shotAt, srcAt, outOf, framingAt, outWords, chunk, captionAt, entryOf, sizePx, posY, caseOf };
 }
 
 export const EDIT = editLib();

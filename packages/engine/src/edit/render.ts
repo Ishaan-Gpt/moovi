@@ -25,10 +25,10 @@ import { cleanVoice } from './voice';
  * Writes `out`; returns the stage seconds and counts.
  */
 export interface RenderOpts { dir: string; out: string; w?: number; h?: number; fps?: number; /** shots rendered at once */ jobs?: number; /** player pages drawing the overlay at once */ pages?: number; crf?: number; keepTemp?: boolean }
-export interface RenderResult { out: string; seconds: number; stages: Record<string, number>; frames: number; shots: number; overlays: number; size: number }
+export interface RenderResult { out: string; seconds: number; stages: Record<string, number>; frames: number; shots: number; overlays: number; size: number; /** library sounds mixed in */ sfx: number }
 
 /** Where one output frame's picture sits: the source scaled to sw x sh, its top-left at (x, y) of the w x h frame. */
-export interface Place { sw: number; sh: number; x: number; y: number; fit: boolean }
+export interface Place { sw: number; sh: number; x: number; y: number; fit: boolean; /** the transition's motion blur, ffmpeg gblur sigma at this frame size (0 = none) */ blur: number }
 
 /** The player's geometry for output time t at w x h (pure; the player's draw(t) in numbers). */
 export function placeAt(e: PlayerEdl, t: number, w: number, h: number): Place {
@@ -37,10 +37,12 @@ export function placeAt(e: PlayerEdl, t: number, w: number, h: number): Place {
   const k = fit ? Math.min(w / srcW, h / srcH) : Math.max(w / srcW, h / srcH), dw = srcW * k, dh = srcH * k;
   const c = fit ? { px: 50, py: 50 } : EDIT.cropAt(e, t);
   const offx = (w - dw) * c.px / 100, offy = (h - dh) * c.py / 100;
-  const f = EDIT.framingAt(e, t), ox = f.cx * w, oy = f.cy * h, s = f.scale;
-  // CSS: transform-origin (ox, oy), scale(s): a point p lands at o + (p - o) * s
+  const f = EDIT.framingAt(e, t), ox = f.cx * w, oy = f.cy * h, tr = EDIT.transitionAt(e, t), s = f.scale * tr.zoom;
+  // CSS: translate(dx, dy) scale(s) about transform-origin (ox, oy): a point p lands at o + (p - o) * s + d
   const sw = Math.max(2, Math.round(dw * s)), sh = Math.max(2, Math.round(dh * s));
-  return { sw, sh, x: Math.round(ox + (offx - ox) * s), y: Math.round(oy + (offy - oy) * s), fit };
+  // the player's CSS blur(px) is a gaussian of that standard deviation in output pixels
+  const blur = tr.blur > 0.5 ? +(tr.blur * w / 1080).toFixed(1) : 0;
+  return { sw, sh, x: Math.round(ox + (offx - ox) * s + tr.dx * w), y: Math.round(oy + (offy - oy) * s + tr.dy * h), fit, blur };
 }
 
 /** The frame ranges of each shot on the output clock: shot i covers frames [a, b). */
@@ -50,13 +52,53 @@ export function shotFrames(e: PlayerEdl, fps: number): { a: number; b: number; s
 
 /** The sendcmd script for one shot: a scale size and an overlay position per output frame, on the shot's own clock. */
 export function shotCommands(e: PlayerEdl, r: { a: number; b: number }, fps: number, w: number, h: number): string {
-  const lines: string[] = []; let last = '';
+  const lines: string[] = []; let last = ''; const blurs = shotBlurs(e, r, fps, w, h);
   for (let j = r.a; j < r.b; j++) {
-    const p = placeAt(e, (j + 0.5) / fps, w, h), key = `${p.sw} ${p.sh} ${p.x} ${p.y}`;
+    const p = placeAt(e, (j + 0.5) / fps, w, h), key = `${p.sw} ${p.sh} ${p.x} ${p.y} ${p.blur}`;
     if (key === last) continue; last = key;
-    lines.push(`${((j - r.a) / fps).toFixed(4)} [enter] scale@z w ${p.sw}, scale@z h ${p.sh}, overlay@o x ${p.x}, overlay@o y ${p.y};`);
+    lines.push(`${((j - r.a) / fps).toFixed(4)} [enter] scale@z w ${p.sw}, scale@z h ${p.sh}, overlay@o x ${p.x}, overlay@o y ${p.y}${blurs ? `, gblur@b sigma ${srcSigma(e, p)}` : ''};`);
   }
   return lines.join('\n') + '\n';
+}
+
+/** Whether a shot has any transition blur (only then does its picture get the gblur filter). */
+/** The transition blur in source pixels (the gblur runs before the scale): output sigma times source over scaled width. */
+export const srcSigma = (e: PlayerEdl, p: Place) => +(p.blur * e.source.w / p.sw).toFixed(2);
+
+export function shotBlurs(e: PlayerEdl, r: { a: number; b: number }, fps: number, w: number, h: number): boolean {
+  if (!(e.cuts ?? []).some(c => c.type !== 'hard' && c.type !== 'jump' && c.type !== 'punch')) return false;
+  for (let j = r.a; j < r.b; j++) if (placeAt(e, (j + 0.5) / fps, w, h).blur > 0) return true;
+  return false;
+}
+
+/**
+ * The library's sounds (E.sfx, cast from the graph by edit/cast.ts) as ffmpeg inputs and an amix chain over the voice:
+ * each file delayed to its output time and set to the library's level for it (`gain_db` is the FITS level, the RMS in
+ * dB the sound sits at in the sound stem, as the engine mixer reads assets/sfx/map.json), given the file's own RMS
+ * (`rms`, measured; -20 dB when unknown). Files not on disk are skipped (reported in `missing`).
+ */
+export function sfxMix(e: PlayerEdl, dir: string, first: number, rms: Record<string, number> = {}): { inputs: string[]; filter: string; count: number; missing: string[] } {
+  const inputs: string[] = [], parts: string[] = [], missing: string[] = [];
+  for (const s of e.sfx ?? []) {
+    if (!s.file) continue;
+    const f = join(dir, s.file); if (!existsSync(f)) { missing.push(s.file); continue; }
+    const k = first + inputs.length / 2, ms = Math.max(0, Math.round(s.t * 1000));
+    const vol = Math.min(12, (s.gain_db ?? -24) - (rms[s.file] ?? -20));
+    inputs.push('-i', f);
+    parts.push(`[${k}:a]aformat=sample_rates=48000:channel_layouts=stereo,volume=${vol.toFixed(1)}dB,adelay=${ms}|${ms}[x${parts.length}]`);
+  }
+  return { inputs, filter: parts.join(';'), count: parts.length, missing };
+}
+
+/** A sound file's RMS in dB (ffmpeg volumedetect's mean volume), cached per file. */
+const RMS = new Map<string, number>();
+export async function rmsOf(file: string): Promise<number | null> {
+  if (RMS.has(file)) return RMS.get(file)!;
+  try {
+    const out = await new Promise<string>((res, rej) => execFile(config.ffmpeg, ['-hide_banner', '-nostats', '-i', file, '-af', 'volumedetect', '-f', 'null', '-'], { timeout: 20_000, killSignal: 'SIGKILL' }, (err, _o, se) => err ? rej(err) : res(String(se))));
+    const m = /mean_volume:\s*(-?[\d.]+) dB/.exec(out); if (!m) return null;
+    RMS.set(file, +m[1]!); return +m[1]!;
+  } catch { return null; }
 }
 
 const run = (cmd: string, args: string[], ms = 600_000) => new Promise<string>((res, rej) =>
@@ -88,15 +130,18 @@ export async function renderEdl(o: RenderOpts): Promise<RenderResult> {
     writeFileSync(cmd, shotCommands(e, r, fps, W, H));
     const p0 = placeAt(e, (r.a + 0.5) / fps, W, H);
     const bg = p0.fit
-      ? `[0:v]fps=${fps},scale=108:192:force_original_aspect_ratio=increase,crop=108:192,scale=${Math.round(W * 1.12)}:${Math.round(H * 1.12)},gblur=sigma=14,crop=${W}:${H},eq=saturation=1.1,colorchannelmixer=rr=.7:gg=.7:bb=.7,format=yuv420p[bg]`
+      ? `[0:v]setpts=PTS-STARTPTS,fps=${fps},scale=108:192:force_original_aspect_ratio=increase,crop=108:192,scale=${Math.round(W * 1.12)}:${Math.round(H * 1.12)},gblur=sigma=14,crop=${W}:${H},eq=saturation=1.1,colorchannelmixer=rr=.7:gg=.7:bb=.7,format=yuv420p[bg]`
       : `color=c=black:s=${W}x${H}:r=${fps},format=yuv420p[bg]`;
-    const graph = `${bg};[0:v]fps=${fps},sendcmd=f='${cmd.replace(/'/g, "\\'")}',scale@z=w=${p0.sw}:h=${p0.sh}:flags=bicubic,format=yuv420p[fg];[bg][fg]overlay@o=x=${p0.x}:y=${p0.y}:eof_action=pass:shortest=0[v]`;
+    // setpts: a seek lands the first decoded frame a little after 0, so without it the shot's first frame was the black
+    // backing (5 black frames at cuts in the D1.8 B1 render); the blur runs on the source frame (a fixed size) before the per-frame scale, at the sigma that lands as the player's
+    const blur = shotBlurs(e, r, fps, W, H) ? `gblur@b=sigma=${srcSigma(e, p0)},` : '';
+    const graph = `${bg};[0:v]setpts=PTS-STARTPTS,fps=${fps},sendcmd=f='${cmd.replace(/'/g, "\\'")}',${blur}scale@z=w=${p0.sw}:h=${p0.sh}:flags=bicubic,format=yuv420p[fg];[bg][fg]overlay@o=x=${p0.x}:y=${p0.y}:eof_action=pass:shortest=0[v]`;
     await run(ff, ['-v', 'error', '-y', '-ss', g.src_in.toFixed(4), '-i', src, '-filter_complex', graph, '-map', '[v]', '-frames:v', String(n), '-an',
       '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '12', '-g', String(fps), '-pix_fmt', 'yuv420p', '-threads', '2', join(tmp, `s${i}.mp4`)]);
   });
 
   // 2. captions and inserts from the player page, distinct frames only (alongside the picture)
-  let overlays = 0;
+  let overlays = 0, sfxCount = 0;
   const over = (async () => {
     const srv = await servePlayer(o.dir, 0, PAGE);
     const b = await chromium.launch({ headless: true, ...(config.chrome.path ? { executablePath: config.chrome.path } : { channel: config.chrome.channel }) });
@@ -125,13 +170,19 @@ export async function renderEdl(o: RenderOpts): Promise<RenderResult> {
   const [, , voice] = await Promise.all([pic.then(() => { stages.picture = since(); }), over.then(() => { stages.overlay = since(); }), voiceP.then(v => { stages.voice = since(); return v; })]);
   tl = Date.now();
 
-  // 3. one pass
+  // 3. one pass: the voice with the library's sounds mixed in (the voice keeps its -14 LUFS; sounds sit under it)
+  const sdir = join(config.assets, 'sfx'), rms: Record<string, number> = {};
+  for (const f of new Set((e.sfx ?? []).map(s => s.file).filter((x): x is string => !!x))) { const v = await rmsOf(join(sdir, f)); if (v !== null) rms[f] = v; }
+  const sx = sfxMix(e, sdir, voice ? 3 : 2, rms), nV = voice ? 1 : 0;
+  const mixed = sx.count > 0;
+  const audio = !mixed ? '' : `;${sx.filter};${voice ? '[2:a]aformat=sample_rates=48000:channel_layouts=stereo[vo];[vo]' : ''}${Array.from({ length: sx.count }, (_, i) => `[x${i}]`).join('')}amix=inputs=${sx.count + nV}:normalize=0:duration=${voice ? 'first' : 'longest'},alimiter=limit=0.89:level=false[a]`;
+  sfxCount = sx.count;
   writeFileSync(join(tmp, 'shots.txt'), ranges.map((_, i) => `file 's${i}.mp4'`).join('\n') + '\n');
   await run(ff, ['-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', join(tmp, 'shots.txt'), '-framerate', String(fps), '-i', join(tmp, 'ov', '%06d.png'),
-    ...(voice ? ['-i', voice] : []), '-filter_complex', `[0:v]setpts=N/${fps}/TB[p];[1:v]format=rgba[c];[p][c]overlay=0:0:eof_action=pass,format=yuv420p[v]`,
-    '-map', '[v]', ...(voice ? ['-map', '2:a', '-c:a', 'aac', '-b:a', '160k'] : []), '-t', (N / fps).toFixed(4), '-r', String(fps),
+    ...(voice ? ['-i', voice] : []), ...sx.inputs, '-filter_complex', `[0:v]setpts=N/${fps}/TB[p];[1:v]format=rgba[c];[p][c]overlay=0:0:eof_action=pass,format=yuv420p[v]${audio}`,
+    '-map', '[v]', ...(mixed ? ['-map', '[a]', '-c:a', 'aac', '-b:a', '160k'] : voice ? ['-map', '2:a', '-c:a', 'aac', '-b:a', '160k'] : []), '-t', (N / fps).toFixed(4), '-r', String(fps),
     '-c:v', 'libx264', '-preset', 'veryfast', '-crf', String(o.crf ?? 20), '-pix_fmt', 'yuv420p', '-movflags', '+faststart', o.out]);
   lap('encode');
   if (!o.keepTemp) rmSync(tmp, { recursive: true, force: true });
-  return { out: o.out, seconds: +((Date.now() - t0) / 1000).toFixed(2), stages, frames: N, shots: ranges.length, overlays, size: statSync(o.out).size };
+  return { out: o.out, seconds: +((Date.now() - t0) / 1000).toFixed(2), stages, frames: N, shots: ranges.length, overlays, size: statSync(o.out).size, sfx: sfxCount };
 }

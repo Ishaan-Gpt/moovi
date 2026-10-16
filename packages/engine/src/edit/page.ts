@@ -17,13 +17,15 @@ const TL = EDIT.timeline(E); if (TL.problems.length) throw new Error('EDL: ' + T
 const D = TL.duration, W = E.output.w, H = E.output.h, S = E.shots;
 const ST = CAPTION_STYLES.find(s => s.id === String(E.caption_style_id).replace(/^caption:/, '')) || CAPTION_STYLES[0];
 const CW = EDIT.chunk(EDIT.outWords(E), ST);
+// the captionseasy look's own props, when the player style was picked from that look (edit/looks.ts; EDIT.lookProps)
+const LK = E.caption_look && E.caption_look.player_style === String(E.caption_style_id).replace(/^caption:/, '') && Q.get('look') !== 'off' ? EDIT.lookProps(E.caption_look.style, W) : null;
 const $ = id => document.getElementById(id), stage = $('stage'), cap = $('cap'), ins = $('ins');
 for (const k in E.palette) document.documentElement.style.setProperty('--' + k, E.palette[k]);
 stage.style.width = W + 'px'; stage.style.height = H + 'px';
 if (STILL) { $('bar').style.display = 'none'; $('wrap').style.inset = '0'; }
 const fit = () => { const box = $('wrap').getBoundingClientRect(), s = Math.min(box.width / W, box.height / H); stage.style.transform = 'scale(' + s + ')'; const f = $('frame'); f.style.width = W * s + 'px'; f.style.height = H * s + 'px'; };
 fit(); addEventListener('resize', fit);
-await Promise.all([ST.font, ST.key].filter(Boolean).map(f => document.fonts.load((f.italic ? 'italic ' : '') + f.weight + ' 40px "' + f.family + '"').catch(() => null)));
+await Promise.all([ST.font, ST.key, LK && { family: LK.family, weight: LK.weight, italic: LK.italic }].filter(Boolean).map(f => document.fonts.load((f.italic ? 'italic ' : '') + f.weight + ' 40px "' + f.family + '"').catch(() => null)));
 
 /* ── the two decks ── */
 const A = $('va'), B = $('vb'), M = { cuts: [], kicks: 0, firstFrame: null, t0: performance.now() };
@@ -57,10 +59,11 @@ let chunkKey = -2;
 const SHADOW = { soft: '0 4px 22px rgba(0,0,0,.5)', hard: '0 7px 0 var(--ink)', long: '4px 4px 0 var(--ink),8px 8px 0 var(--ink),12px 12px 0 var(--ink)', '3d': '0 3px 0 var(--deep),0 6px 0 var(--deep),0 9px 0 var(--deep)', glow: '0 0 28px var(--accent)' };
 function styleWord(el, w, s) {
   const f = w.key && ST.key ? ST.key : ST.font, size = EDIT.sizePx(w.key && ST.key ? ST.key.size : ST.size, W);
-  el.style.font = (f.italic ? 'italic ' : '') + f.weight + ' ' + size + 'px/1.06 "' + f.family + '",sans-serif';
+  el.style.font = LK && !(w.key && ST.key) ? (LK.italic ? 'italic ' : '') + LK.weight + ' ' + size + 'px/1.06 "' + LK.family + '",sans-serif' : (f.italic ? 'italic ' : '') + f.weight + ' ' + size + 'px/1.06 "' + f.family + '",sans-serif';
   el.style.letterSpacing = (ST.font.tracking || 0) + 'em';
   if (ST.look.stroke) { el.style.webkitTextStroke = ST.look.stroke.px + 'px var(--' + ST.look.stroke.role + ')'; el.style.paintOrder = 'stroke fill'; }
   if (ST.look.shadow) el.style.textShadow = SHADOW[ST.look.shadow];
+  if (LK) { if (LK.stroke) { el.style.webkitTextStroke = LK.stroke.px + 'px ' + LK.stroke.color; el.style.paintOrder = 'stroke fill'; } else if (!ST.look.stroke) el.style.webkitTextStroke = ''; if (LK.shadow && !ST.look.shadow) el.style.textShadow = SHADOW.soft; }
   if (w.key && ST.key && ST.key.line) el.style.display = 'block';
 }
 function drawCaptions(t) {
@@ -69,28 +72,36 @@ function drawCaptions(t) {
   if (k !== chunkKey) {
     chunkKey = k; cap.innerHTML = '';
     cap.className = 'cap box-' + (ST.look.box || 'none');
-    if (c) for (const w of c.words) { const el = document.createElement('span'); el.className = 'w'; el.textContent = EDIT.caseOf(w.text, w.key && ST.key ? ST.key.case : ST.font.case); styleWord(el, w); cap.appendChild(el); }
+    if (c) for (const w of c.words) { const el = document.createElement('span'); el.className = 'w'; el.textContent = EDIT.caseOf(w.text, w.key && ST.key ? ST.key.case : LK ? LK.casing : ST.font.case); styleWord(el, w); cap.appendChild(el); }
   }
   if (!c) return;
-  const fill = 'var(--' + ST.look.fill + ')', hiRole = 'var(--' + (ST.highlight.role || 'accent') + ')';
+  const fill = LK && LK.fill ? LK.fill : 'var(--' + ST.look.fill + ')', hiRole = LK && (LK.hi.bg || LK.hi.color) ? (LK.hi.bg || LK.hi.color) : 'var(--' + (ST.highlight.role || 'accent') + ')';
+  const treat = LK ? LK.hi.treat : ST.highlight.treat;
   c.words.forEach((w, j) => {
     const el = cap.children[j]; if (!el) return;
     const [sc, dy, op, bl] = w.on ? EDIT.entryOf(ST, w.p) : [1, 0, ST.entry === 'none' || ST.chunk.mode === 'line' ? 1 : 0, 0];
     let colour = w.key && ST.key ? 'var(--' + ST.key.role + ')' : fill, bg = '', extra = 1;
-    if (w.hot) { if (ST.highlight.treat === 'colour') colour = hiRole; else if (ST.highlight.treat === 'box') { bg = hiRole; colour = 'var(--ink)'; } else if (ST.highlight.treat === 'scale') extra = 1.12; }
+    if (w.hot) { if (treat === 'colour') colour = hiRole; else if (treat === 'box') { bg = hiRole; colour = LK && LK.hi.color ? LK.hi.color : 'var(--ink)'; } else if (treat === 'scale') { extra = 1.12; if (LK && LK.hi.color) colour = LK.hi.color; } }
     if (ST.id === 'kara-sweep' && !w.on) { el.style.opacity = '0.4'; } else el.style.opacity = String(op);
     el.style.color = colour; el.style.background = bg; el.style.transform = 'translateY(' + dy.toFixed(1) + 'px) scale(' + (sc * extra).toFixed(3) + ')';
     el.style.filter = bl > 0.2 ? 'blur(' + bl.toFixed(1) + 'px)' : '';
     if (ST.entry === 'typewriter') { const full = EDIT.caseOf(w.text, ST.font.case); el.textContent = w.on ? full.slice(0, Math.ceil(full.length * w.p)) : ''; }
   });
 }
-cap.style.top = (EDIT.posY(ST.position) * H) + 'px';
+cap.style.top = ((LK && LK.y !== null ? LK.y : EDIT.posY(ST.position)) * H) + 'px';
 const FRAME = { full: [0, 0, 1, 1], top_half: [0.04, 0.03, 0.92, 0.44], card_box: [0.12, 0.12, 0.76, 0.34], beside_head: [0.54, 0.16, 0.42, 0.26] };
 function drawInserts(t) {
   const on = (E.inserts || []).filter(x => t >= x.t0 && t < x.t1 && !(TPL && TPL.owns(x)));
   ins.innerHTML = on.map(x => { const [l, tp, w, h] = FRAME[x.frame] || FRAME.card_box, p = EDIT.easeOut((t - x.t0) / 0.3), q = EDIT.easeOut((x.t1 - t) / 0.25);
     return '<div class="ins" style="left:' + l * W + 'px;top:' + tp * H + 'px;width:' + w * W + 'px;height:' + h * H + 'px;opacity:' + Math.min(p, q).toFixed(2) + ';transform:translateY(' + ((1 - p) * 60).toFixed(0) + 'px)"><b>' + (x.label || x.kind) + '</b><i>' + (x.asset_ref || x.kind) + '</i></div>'; }).join('');
 }
+// the white of a flash transition (drawn in the overlay layer too, so the MP4 has it)
+const fx = $('fx');
+function drawFx(t) { const k = EDIT.transitionAt(E, t).flash; fx.style.opacity = k > 0.01 ? k.toFixed(2) : '0'; return k > 0.01 ? k.toFixed(2) : ''; }
+// the library's sounds (E.sfx, cast by edit/cast.ts from the graph) played as the output clock passes them
+const SFX = (E.sfx || []).filter(s => s.file).map(s => ({ t: s.t, g: Math.min(1, Math.pow(10, ((s.gain_db ?? -24) + 20) / 20)), a: LAYER || STILL ? null : new Audio('/sfx/' + s.file) }));
+let sfxT = -1;
+function playSfx(t) { if (sfxT >= 0) for (const s of SFX) if (s.a && s.t > sfxT && s.t <= t) { s.a.currentTime = 0; s.a.volume = s.g; s.a.play().catch(() => {}); } sfxT = t; }
 // the blurred fill behind a 'fit' shot: the visible deck drawn small every frame and blurred by CSS (cheap)
 const bg = $('bg'), bgx = bg.getContext('2d');
 function drawBg(g) {
@@ -108,8 +119,11 @@ function draw(t) {
   drawBg(g);
   const f = EDIT.framingAt(E, t);
   cur.style.transformOrigin = (f.cx * 100).toFixed(2) + '% ' + (f.cy * 100).toFixed(2) + '%';
-  cur.style.transform = 'scale(' + f.scale.toFixed(4) + ')';
-  drawCaptions(t); drawInserts(t);
+  // the library's transition on a beat change (edit/cast.ts): the picture whips, slides or zooms through the cut
+  const x = EDIT.transitionAt(E, t);
+  cur.style.transform = (x.dx || x.dy ? 'translate(' + (x.dx * W).toFixed(1) + 'px,' + (x.dy * H).toFixed(1) + 'px) ' : '') + 'scale(' + (f.scale * x.zoom).toFixed(4) + ')';
+  cur.style.filter = x.blur > 0.5 ? 'blur(' + (x.blur * W / 1080).toFixed(1) + 'px)' : '';
+  drawCaptions(t); drawInserts(t); drawFx(t);
   if (TPL) { TPL.draw(t, cur, g); cap.style.visibility = TPL.hideCaptions(t) ? 'hidden' : ''; }
   if (!STILL) { $('tl').textContent = t.toFixed(1) + ' / ' + D.toFixed(1); $('s').value = String(Math.round(t / D * 1000)); }
 }
@@ -128,15 +142,15 @@ function frame(now) {
     prep(si + 1);
   }
   if (t >= D) { draw(D); stop(); $('p').textContent = 'Replay'; window.__done = true; return; }
-  draw(t); requestAnimationFrame(frame);
+  playSfx(t); draw(t); requestAnimationFrame(frame);
 }
 async function start() {
   if (tNow >= D - 0.05) { await place(0); draw(0); }
-  base = tNow; cur.muted = false; await cur.play().catch(e => { cur.muted = true; return cur.play(); });
+  base = tNow; sfxT = tNow; cur.muted = false; await cur.play().catch(e => { cur.muted = true; return cur.play(); });
   if (M.firstFrame === null) cur.requestVideoFrameCallback(n => { M.firstFrame = +(n - M.t0).toFixed(1); });
   playing = true; wall0 = performance.now(); $('p').textContent = 'Pause'; requestAnimationFrame(frame);
 }
-function stop() { playing = false; cur.pause(); nxt.pause(); $('p').textContent = 'Play'; }
+function stop() { playing = false; sfxT = -1; cur.pause(); nxt.pause(); $('p').textContent = 'Play'; }
 $('p').onclick = () => playing ? stop() : start();
 $('s').oninput = async e => { const was = playing; stop(); const t = +e.target.value / 1000 * D; await place(t); draw(t); if (was) start(); };
 
@@ -145,8 +159,8 @@ window.__play = () => start();
 window.__metrics = () => ({ duration: D, shots: S.length, cuts: M.cuts, kicks: M.kicks, firstFrame: M.firstFrame, done: !!window.__done });
 if (LAYER) {
   // the overlay layer: the drawn markup is the frame's state, so equal markup means an equal picture
-  window.__over = async t => { drawCaptions(t); drawInserts(t); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); };
-  window.__overKeys = ts => ts.map(t => { drawCaptions(t); drawInserts(t); const c = cap.innerHTML, i = ins.innerHTML; return c || i ? cap.className + c + '|' + i : ''; });
+  window.__over = async t => { drawCaptions(t); drawInserts(t); drawFx(t); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); };
+  window.__overKeys = ts => ts.map(t => { drawCaptions(t); drawInserts(t); const k = drawFx(t), c = cap.innerHTML, i = ins.innerHTML; return c || i || k ? cap.className + c + '|' + i + '|' + k : ''; });
   window.__ready = true; return;
 }
 await place(STILL ? +Q.get('t') : 0); draw(STILL ? +Q.get('t') : 0);
@@ -165,6 +179,7 @@ html,body{margin:0;height:100%;background:#111;color:#eee;font:14px system-ui,sa
 #tpl{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 #bg{position:absolute;inset:-6%;width:112%;height:112%;filter:blur(28px) saturate(1.1) brightness(.7);display:none}
 #ins{position:absolute;inset:0;pointer-events:none}
+#fx{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
 .ins{position:absolute;box-sizing:border-box;border-radius:40px;background:color-mix(in srgb,var(--deep) 92%,transparent);box-shadow:0 24px 80px rgba(0,0,0,.45);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--paper);font:700 54px/1.1 'Inter Tight',sans-serif;text-align:center;padding:40px}
 .ins i{font:500 26px 'JetBrains Mono',monospace;font-style:normal;opacity:.6}
 .cap{position:absolute;left:70px;right:70px;transform:translateY(-50%);text-align:center;pointer-events:none}
@@ -180,7 +195,7 @@ input[type=range]{flex:1}
 </style></head><body>
 <div id="wrap"><div id="frame" style="position:relative"><div id="stage">
 <canvas id="bg" width="108" height="192"></canvas><video id="va" playsinline preload="auto"></video><video id="vb" playsinline preload="auto" muted></video>
-<div id="ins"></div><canvas id="tpl"></canvas><div id="cap" class="cap"></div>
+<div id="ins"></div><canvas id="tpl"></canvas><div id="cap" class="cap"></div><div id="fx"></div>
 </div></div></div>
 <div id="bar"><button id="p">Play</button><input id="s" type="range" min="0" max="1000" value="0"><span id="tl">0.0</span></div>
 <script>${EDIT_SRC}\nvar CAPTION_STYLES = ${JSON.stringify(CAPTION_STYLES)};\n${TEMPLATES_SRC}</script>
