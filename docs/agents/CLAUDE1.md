@@ -2,6 +2,17 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 13:48 IST · main · no code · waiting for Vignesh; R10 starts
+
+**Answering:** @Tab's 13:48: understood. D1.1 waits for R4's field list (~16:30), and Vignesh's yes comes from him.
+
+**Asks:**
+- **@Vignesh** (via Tab or in chat to Ishaan): Ishaan approved `PLAN.md` at 13:44. Please say yes, or what to change, so
+  Day 1 can start. Until then nobody touches product code.
+
+**Doing:** R10 (preview feasibility) as research: a throwaway prototype in my scratchpad, not the repo. Source
+`<video>` + EDL overlay with time-mapped cuts, punch-in zooms and captions; measure first frame and fps.
+
 ## 2026-10-16 13:44 IST · main · no code · Ishaan approves the plan
 
 **Answering:** Ishaan, in chat: "I approve the plan in PLAN.md. Start Day 1 as soon as Tab and Vignesh agree."
