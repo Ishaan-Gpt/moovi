@@ -3,7 +3,8 @@ import { extname, join } from 'node:path';
 import { color } from '@moovi/brand';
 import { sttAvailable } from '../audio/stt';
 import { probe } from '../bench';
-import { buildEdl } from './build';
+import { buildEdl, type BuildInput } from './build';
+import { castStyleSfx, isD22, styledEdl } from './styles';
 import { castEdl, openLibrary, type CastTrace } from './cast';
 import { envelope, pauses, type Word } from './cut';
 import { keepOf, validateEdl } from './edl';
@@ -39,6 +40,10 @@ export interface PlanInput {
   voice?: boolean;
   /** cast camera moves, sounds and transitions from the library graph per beat (edit/cast.ts; default true) */
   library?: boolean;
+  /** D2.2: an R4 style with its own laws (edit/styles.ts: atlas, handmade, studio-minimal); default the base edit */
+  style?: string;
+  /** the creator's name or handle for the style's end card */
+  handle?: string;
 }
 export interface Planned {
   edl: PlayerEdl;
@@ -103,7 +108,8 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
   const source = { file, duration: pr.duration, w: pr.width ?? 1080, h: pr.height ?? 1920, fps: pr.fps ?? 30 };
   let edl: PlayerEdl, rough = false;
   try {
-    const e = buildEdl({ source, words, pauses: ps, ...(quiet ? { quiet: quiet.pauses } : {}), palette, ...(look.faces.length ? { faces: look.faces } : {}), style: { id: 'base', ...(o.caption ? { caption: o.caption } : {}) }, ...(language ? { language } : {}) });
+    const bi: BuildInput = { source, words, pauses: ps, ...(quiet ? { quiet: quiet.pauses } : {}), palette, ...(look.faces.length ? { faces: look.faces } : {}), style: { id: 'base', ...(o.caption ? { caption: o.caption } : {}) }, ...(language ? { language } : {}) };
+    const e = isD22(o.style) ? styledEdl(bi, o.style, o.handle ? { name: o.handle } : {}) : buildEdl(bi);
     const bad = validateEdl(e).problems.filter(p => !p.startsWith('version'));
     if (bad.length) throw new Error(bad.slice(0, 3).join('; '));
     edl = e;
@@ -117,7 +123,11 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
   // the library in the edit path: camera:<id> moves (by the needs each beat's tag SERVES, framed on the face keys),
   // sfx by the library's events and transitions on beat changes, all from the FalkorDB graph (catalogue if it is down)
   let cast: CastTrace | null = null;
-  if (!rough && o.library !== false) {
+  if (!rough && o.library !== false && isD22(o.style)) {
+    // D2.2 styles: the style chose framing and cuts; the library graph gives the sound files for its events
+    try { const r = await castStyleSfx(edl as never, await openLibrary()); writeFileSync(join(dir, 'cast.json'), JSON.stringify({ style: o.style, ...r }, null, 1)); }
+    catch (e) { console.warn(`[edit] style sounds: ${String((e as Error).message ?? e).slice(0, 160)}`); }
+  } else if (!rough && o.library !== false) {
     try {
       const before = JSON.stringify(edl);
       cast = await castEdl(edl as never, { lib: await openLibrary(), maxZoom: castMaxZoom(source) });

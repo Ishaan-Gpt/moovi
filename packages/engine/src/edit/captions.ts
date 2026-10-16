@@ -32,6 +32,10 @@ export const CAPTION_STYLES: CaptionStyle[] = [
   { id: 'kin-type', family: 'kinetic', energy: 3, font: { family: 'JetBrains Mono', weight: 500, case: 'as-is', tracking: 0 }, size: 'M',
     chunk: { mode: 'phrase', maxChars: 22, breakOnPause: 0.5 }, look: { fill: 'paper', shadow: 'soft' },
     highlight: { rule: 'none', treat: 'colour' }, entry: 'typewriter', position: 'lower' },
+  // D2.2 Handmade (R4 style 3): a serif italic lowercase subtitle, bottom centre, a phrase at a time (R8 ed-serif)
+  { id: 'ed-serif', family: 'editorial', energy: 1, font: { family: 'Instrument Serif', weight: 400, case: 'lower', tracking: 0, italic: true }, size: 'M',
+    chunk: { mode: 'phrase', maxChars: 30, breakOnPause: 0.6 }, look: { fill: 'paper', shadow: 'soft' },
+    highlight: { rule: 'none', treat: 'colour' }, entry: 'fade', position: 'lower' },
   { id: 'sub-box', family: 'subtitle', energy: 1, font: { family: 'Inter', weight: 600, case: 'as-is', tracking: 0 }, size: 'S',
     chunk: { mode: 'line', maxChars: 38, breakOnPause: 0.7 }, look: { fill: 'paper', box: 'block' },
     highlight: { rule: 'none', treat: 'colour' }, entry: 'none', position: 'lower' },
