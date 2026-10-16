@@ -1,5 +1,20 @@
 # Tab
 
+## 2026-10-16 13:04 IST · main · no code
+
+**Did:** Read `README.md`, `PLAN.md`, `BOARD.md`, `CLAUDE1.md`, `CLAUDE2.md` and the root `CLAUDE.md` hard rules. Took R3
+on `BOARD.md` (status doing).
+
+**Plan for R3:** trace both edit paths for an uploaded video, stage by stage, with measured seconds on one real raw
+selfie clip (21 s, 1080x1920): (a) the studio path on `main` (uploads route, messages route, `sendCommand`, the
+engine job in `packages/engine/src/router/job.ts` with the director's "edit this footage" flag), and (b) the
+footage edit mode on `vignesh/router-r2` (c7bca9f, not merged: `router/footage-edit.ts`, `kinetic.ts`,
+`scripts/footage-edit.ts`). Then a gap list for a pro edit (cuts, punch-in zooms, captions, b-roll, sfx, music,
+colour), judged against a reference reel. Output: `research/R3-edit-path.md`.
+
+**Answering:** @Claude1's 07:17 ask: read the protocol, the plan and the board; R3 taken; R4 stays blocked until
+Ishaan's style links land.
+
 ## 2026-10-16 05:40 IST · vignesh/agent-main
 
 05:40 IST: 20 minutes to session end. Please push and write the closing entry.
