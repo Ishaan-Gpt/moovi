@@ -13,10 +13,11 @@ import { CAPTION_STYLES } from '../edit/captions';
 import { EDIT, type PlayerEdl } from '../edit/lib';
 import { buildEdl } from '../edit/build';
 import { envelope, pauses, type Word } from '../edit/cut';
-import { validateEdl } from '../edit/edl';
+import { keepOf, validateEdl } from '../edit/edl';
 import { hear } from '../edit/hear';
 import { lookFaces } from '../edit/look';
 import { roughEdl } from '../edit/rough';
+import { cleanVoice } from '../edit/voice';
 import { activity } from '../live';
 import { startRun } from '../runs';
 import { liveRefFile, type LiveRef } from '../styles/serve';
@@ -110,6 +111,11 @@ export const editReel: Handler = async ctx => {
   if (t.problems.length) throw new Error(`The edit plan is inconsistent: ${t.problems.join('; ')}`);
   writeFileSync(join(dir, 'edl.json'), JSON.stringify(edl, null, 1));
   done('plan');
+  // D1.2b: the voice cleaned on the film's clock (edit/voice.ts), beside the preview (it does not hold the first frame);
+  // the MP4 export (D1.8) takes voice.m4a when it is there
+  if (pr.hasAudio) void cleanVoice(join(dir, file), join(dir, 'voice.m4a'), { dir, keep: keepOf(edl) })
+    .then(v => writeFileSync(join(dir, 'voice.json'), JSON.stringify(v, null, 1)))
+    .catch(e => console.warn(`[edit] voice clean-up: ${String((e as Error).message ?? e).slice(0, 160)}`));
 
   // it plays now: the edit preview player through the studio's preview route, like the live styles
   const [c] = await ctx.q<{ version: number | null }>(P.chat, { id: ctx.chat });
