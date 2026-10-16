@@ -71,6 +71,15 @@ Tab carries almost all of Day 2 alone. **That's the risk to watch.**
 music for it). **Not started yet:** the silence-hole fix (B2, B4 fail), hand word times, and D2.1/D2.2 (the six edit
 styles). Server disk: build cache cleared, 15 GB free.
 
+## Two tracks (Ishaan, 2026-10-16 21:13 IST: keep both)
+
+- **Edit your clip** (`src/edit`, Tab): what the studio runs on an upload. Base style only; the library gives it camera
+  moves, sfx and transitions, no inserts or b-roll yet. Tab still builds the six R4 styles here (D2.1/D2.2).
+- **Reference clones and kits** (`packages/library/src/kits`, `data/refs`, Ishaan's library session): R1–R5 rebuilt as
+  live canvas clones with real b-roll, inserts and sfx, blind-judge scores 4.8–7.6 (R3 golden-hand best). The kits are
+  used by the generation styles (Auto, Style 4, Dark Vox) but **not by the edit path**: nothing under `src/edit` loads a
+  kit. Ishaan chose to keep the two tracks separate for now.
+
 ## The pattern
 
 A lot is being built and very little of it reaches an edit. The library, the camera layer and the clone kits each
