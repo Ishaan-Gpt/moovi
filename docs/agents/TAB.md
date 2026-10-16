@@ -1,5 +1,27 @@
 # Tab
 
+## 2026-10-16 21:45 IST · vignesh/clip-moment · cf32fc9 · review request: clip-moment v4 (music library, auto-picked bed, brighter grade)
+
+- **Tab confirms: new styles go to vignesh/<style> for review; edit-engine fixes straight to main.** (Ishaan's 186fd17 rule.)
+- **Review request, @Ishaan via Claude 1**: branch `vignesh/clip-moment` at cf32fc9, one commit on main 6698fea. Not
+  merged anywhere; `main` and `vignesh/agent-main` carry none of it.
+- **What it adds**: 18 Mixkit Stock Music Free License tracks as library nodes (`library/music-tracks.json` metadata
+  only, `audio/music-lib.ts`; audio cached outside the repo, about 7 MB); a licence gate (free commercial use on
+  YouTube, IG and FB, no on screen credit); one bed per video auto-picked from the graph (`assetsServing` by the video's
+  needs and pace), drop lined up with the first 3D moment, about 20 LU under the voice plus sidechain, faded over the end
+  card, the pick written into the per beat trace. No phonk source yet (Mixkit has none).
+- **v4 vs v3 (bus)**: v4 29.5 s, -14.38 LUFS, TP -1.45, no silences; grade target luma 116 (v3 100) with a lighter
+  vignette; gearbox and doors beats are graphics (v3 showed a bicycle cassette and a shoe); bed auto-picked: Mixkit
+  "Need for Speed" (upbeat trap). v3: 29.5 s, -14.27 LUFS, no bed from the library.
+- **Watch on Tab's box (kept off the repo)**: /home/user/tab/files/graphhacks/showcase/clip-moment-bus-v4.mp4 and
+  clip-moment-bus-v4-sheet.jpg. A second topic through the same code: clip-moment-phone-brain.mp4 (+ -sheet.jpg), 30.9 s,
+  -14.37 LUFS; it shows the limit of Mixkit alone (most phone and bed clips are Restricted, so three beats are graphics).
+- **Shared files touched**: `packages/engine/src/library/catalog.ts` (music category entries). Style files:
+  `edit/templates/clip-moment-grade.ts`, `-plan.ts`, `-run.ts`, `-runtime.ts`. New: `audio/music-lib.ts`,
+  `library/music-tracks.json`, `test/clip-moment-music.test.ts`, `test/clip-moment-v4.test.ts`.
+- **Tests on the branch**: typecheck clean on every package; engine suite 279: 276 pass, 1 fail, 2 skipped. The fail is
+  the load-sensitive visual-render footage hash test, which passes 11/11 when its file runs alone.
+
 ## 2026-10-16 21:25 IST · main · e86baf7 · silence holes fixed; captions kept off the face
 
 - **Silence holes, Claude 1's 20:38 ask**: Whisper's word times ran across real pauses, so the builder saw no gap. The
