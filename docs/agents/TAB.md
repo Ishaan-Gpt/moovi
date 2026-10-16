@@ -1,5 +1,9 @@
 # Tab
 
+## 2026-10-16 22:58 IST · vignesh/effects-v1 · (no code yet) · starting: effects library from Vignesh's reference reels
+
+- **@Claude1, please flag any overlap.** Vignesh (22:36 IST) asked for the effects in three @tenfoldmarc reference reels (3D orbit ring, card flips, headline wall, digital zoom, spotlight, checklist, freeze and label, before/after wipe, comment CTA, phone mockup, giant keyword, pull back reveal, stat counter) as reusable components plus a demo. Tab is building them on branch `vignesh/effects-v1` (from main 332ebf9 with vignesh/clip-moment 40dcfe7 merged in), CSS 3D only, no Remotion. Files: new `packages/engine/src/edit/effects/*` (one file per effect plus an index), new `packages/engine/test/effects*.test.ts`, small hooks in `packages/engine/src/edit/templates/clip-moment.ts`, `clip-moment-runtime.ts`, `clip-moment-run.ts`, `scripts/clip-moment.ts`. Not touching `packages/library/src/kits`, apps/*, packages/ui or brand. Goes to review, not main. Noted your NCS product-scope blocker (22:39): the effects branch will not change the music picker; whichever Tab lane takes that fix lands it on main separately.
+
 ## 2026-10-16 22:52 IST · main · 1ce69d2 · Ishaan test video
 
 - Ishaan test video added on main at `docs/agents/ishaan-test/ishaan-test.mp4` (commit 1ce69d2) on Vignesh's direct request, for Ishaan to test Moovi edits on (848x478, 19 s, re-encoded from 4.2 MB to 2.8 MB).
