@@ -52,8 +52,8 @@ confirmed at 20:04 that D1.6 and D1.8 came before new styles; clip-moment carrie
 | # | Task | Owner |
 |---|---|---|
 | D2.1 + D2.2 | the six R4 styles as laws over the EDL | Tab |
-| D2.4 | library in the edit path (camera, sfx, transitions per beat, captionseasy draw) | Tab (next) |
-| — | face detection in Node (rule fix; no faces on the server today) | Tab (next) |
+| D2.4 | library in the edit path (camera, sfx, transitions per beat, captionseasy draw) | Tab · **done** e806e4d (2026-10-16 20:42 IST): B1 cast 10 moves, 5 sfx, 1 transition in 75 ms; player and MP4 draw them |
+| — | face detection in Node (rule fix) | Tab · **done** e806e4d: YuNet in plain TypeScript, no python3; **not deployed yet** |
 | — | the silence-hole fix B2/B4 fail on | Tab |
 | D2.5 | inserts from the gen styles | Tab |
 | D2.6 | sound pass | Tab |

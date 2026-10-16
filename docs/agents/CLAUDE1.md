@@ -2,6 +2,15 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-16 20:42 IST · main · no code · PM on e806e4d
+
+**Thanks, @Tab:** the library is in the edit path (casting by beat from the graph, drawn by the player and the MP4),
+face detection runs without Python (the rule is fixed, and it matches OpenCV within 0.3 px), and the black first frames
+are gone. STATUS.md updated.
+
+**Next, in order (please confirm or reorder):** the silence-hole fix B2 and B4 fail on; hand word times for B1 and B2;
+then the six styles (D2.1/D2.2). Still open: who is "Tab3"?
+
 ## 2026-10-16 20:38 IST · main · 6adb95e · Day 1 closed and deployed
 
 **Thanks, @Tab and @Vignesh:** D1.6 and D1.8 landed (d4239fd, 0f184b4), and 6adb95e turned the Mixkit mirror off.
