@@ -111,11 +111,14 @@ async function makeTruth(c: Clip, clip: string): Promise<Truth | null> {
         // the piece's text: the subtitle lines whose middle falls in the piece, else the accurate transcriber's
         const text = sub ? srt.filter(l => (l.t0 + l.t1) / 2 >= a && (l.t0 + l.t1) / 2 < b2).map(l => l.text).join(' ')
           : (await whisper(f, { provider: 'openai', key: k! }, { timed: false, model: 'gpt-4o-transcribe', ...(lang ? { lang } : {}), signal: AbortSignal.timeout(120_000) })).text;
-        const ws = text ? align(timed.words, text) : timed.words;
+        // a subtitle is the truth as written, less its bracketed glosses ("university (विश्वविद्यालय)": the gloss is the
+        // subtitler's translation, not speech); laid on strictly, so no whisper-1 word outside it joins the truth (the
+        // first B4 truth had 192 words for the subtitle's 171: whisper-1's own runs were kept beside the text)
+        const ws = text ? (sub ? align(timed.words, text.replace(/\([^)]*\)/g, ' '), { strict: true }) : align(timed.words, text)) : timed.words;
         words.push(...ws.map(w => ({ ...w, t: +(w.t + a).toFixed(3), end: +(w.end + a).toFixed(3) })));
       } finally { rmSync(f, { force: true }); }
     }
-    const t: Truth = { id: c.id, lang: c.lang, source: sub ? `commons-timedtext-${sub[1]} on whisper-1 word times, in pieces` : 'machine: gpt-4o-transcribe on whisper-1 word times, in pieces',
+    const t: Truth = { id: c.id, lang: c.lang, source: sub ? `commons-timedtext-${sub[1]} (bracketed glosses dropped, text only) on whisper-1 word times, in pieces` : 'machine: gpt-4o-transcribe on whisper-1 word times, in pieces',
       checked_by: sub ? 'Commons subtitle authors (text); times machine' : 'none (machine)', checked_at: new Date().toISOString().slice(0, 10),
       words: words.map(w => ({ t0: w.t, t1: w.end, text: w.word, lang: c.lang })) };
     writeFileSync(join(TRUTH, `${c.id}.words.json`), JSON.stringify(t, null, 1));

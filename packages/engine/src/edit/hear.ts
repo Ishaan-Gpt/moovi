@@ -22,8 +22,18 @@ import { bare, envelope, pauses, splitAt, type Word } from './cut';
  */
 
 /** How many words of `text` agree with the timed words, in order (longest common subsequence on bare words). */
+/**
+ * The key two transcripts are matched on: `bare` with the combining marks KEPT and the spellings Hindi writes two ways
+ * folded together. `bare` drops \p{M}, which for Devanagari is every vowel sign and the virama, so "है", "हैं" and
+ * "हूँ" all became "ह" and the alignment anchored on the wrong words (R9's B4: whisper-1 words leaked into the text).
+ * Folded: the nukta (ज़/ज), chandrabindu to anusvara (हूँ/हूं), a nasal half letter before a consonant to anusvara
+ * (हिन्दी/हिंदी). Latin text keys exactly as `bare` did.
+ */
+export const wordKey = (w: string) => w.toLowerCase().normalize('NFC').replace(/[^\p{L}\p{M}\p{N}']/gu, '')
+  .replace(/\u093c/g, '').replace(/\u0901/g, '\u0902').replace(/[\u0919\u091e\u0923\u0928\u092e]\u094d(?=[\u0915-\u0939])/g, '\u0902');
+
 export function agreement(text: string, timed: Word[]): number {
-  const A = text.split(/\s+/).map(bare).filter(Boolean), T = timed.map(w => bare(w.word));
+  const A = text.split(/\s+/).map(wordKey).filter(Boolean), T = timed.map(w => wordKey(w.word));
   let prev = new Int16Array(T.length + 1);
   for (const a of A) { const cur = new Int16Array(T.length + 1); for (let j = 0; j < T.length; j++) cur[j + 1] = a === T[j] ? prev[j]! + 1 : Math.max(prev[j + 1]!, cur[j]!); prev = cur; }
   return prev[T.length]!;
@@ -33,9 +43,15 @@ export function agreement(text: string, timed: Word[]): number {
  * The accurate text to trust: the answer that agrees with the most timed words (a wrong-language or drifting answer
  * agrees with few), longer on a tie; none when even the best agrees with under a third of what was timed.
  */
-export function pickText(cands: string[], timed: Word[]): string | null {
-  const scored = cands.map(c => ({ c, a: agreement(c, timed) })).sort((x, y) => y.a - x.a || y.c.length - x.c.length);
-  return scored[0] && scored[0].a >= Math.max(3, timed.length / 3) ? scored[0].c : null;
+export function pickText(cands: string[], timed: Word[], o: { ordered?: boolean } = {}): string | null {
+  const scored = cands.map((c, i) => ({ c, i, a: agreement(c, timed) })).sort((x, y) => y.a - x.a || y.c.length - x.c.length);
+  const best = scored[0];
+  if (!best || best.a < Math.max(3, timed.length / 3)) return null;
+  // ordered: the candidates come best model first; the first one within 10% of the best agreement wins. The timed words
+  // are whisper-1's, so agreement with them finds a drifting answer but cannot rank two good ones (B4: the weaker
+  // Hindi text agreed with 125 timed words, the stronger with 122)
+  if (o.ordered) return scored.filter(x => x.a >= 0.9 * best.a).sort((x, y) => x.i - y.i)[0]!.c;
+  return best.c;
 }
 
 /**
@@ -90,14 +106,14 @@ export function fixWords(ws: Word[], fixes: Record<string, string>): Word[] {
  * words; each run of accurate words between two anchors takes the time span of the timed words between them (or of the
  * gap), split by length. Timed words with no counterpart are kept (they are said; the accurate model may skip a slate).
  */
-export function align(timed: Word[], text: string): Word[] {
+export function align(timed: Word[], text: string, o: { strict?: boolean } = {}): Word[] {
   const acc = text.split(/\s+/).filter(Boolean);
-  const A = acc.map(bare), T = timed.map(w => bare(w.word));
+  const A = acc.map(wordKey), T = timed.map(w => wordKey(w.word));
   const n = A.length, m = T.length, L = Array.from({ length: n + 1 }, () => new Int16Array(m + 1));
   for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) L[i]![j] = A[i] === T[j] && A[i] ? L[i + 1]![j + 1]! + 1 : Math.max(L[i + 1]![j]!, L[i]![j + 1]!);
   const pairs: [number, number][] = [];
   for (let i = 0, j = 0; i < n && j < m;) { if (A[i] === T[j] && A[i]) { pairs.push([i, j]); i++; j++; } else if (L[i + 1]![j]! >= L[i]![j + 1]!) i++; else j++; }
-  if (pairs.length < Math.max(2, acc.length * 0.3) || acc.length < timed.length * 0.6) return timed; // too different, or the text stopped early
+  if (!o.strict && (pairs.length < Math.max(2, acc.length * 0.3) || acc.length < timed.length * 0.6)) return timed; // too different, or the text stopped early
   const out: Word[] = [];
   const anchors: [number, number][] = [[-1, -1], ...pairs, [n, m]];
   for (let k = 0; k < anchors.length - 1; k++) {
@@ -106,12 +122,13 @@ export function align(timed: Word[], text: string): Word[] {
     const accRun = acc.slice(i0 + 1, i1), tRun = timed.slice(j0 + 1, j1);
     if (!accRun.length) {
       // timed-only words the accurate text skipped: a run longer than a stray word is speech, keep it
-      if (k === 0 || k === anchors.length - 2 || tRun.length > 2) out.push(...tRun);
+      // (strict: the text is the truth, e.g. a published subtitle; nothing outside it is added)
+      if (!o.strict && (k === 0 || k === anchors.length - 2 || tRun.length > 2)) out.push(...tRun);
       continue;
     }
     const s = tRun.length ? tRun[0]!.t : (j0 >= 0 ? timed[j0]!.end : Math.max(0, (timed[j1]?.t ?? 0) - 0.3 * accRun.length));
     const e = tRun.length ? tRun.at(-1)!.end : (j1 < m ? timed[j1]!.t : s + 0.3 * accRun.length);
-    if (k === 0 && tRun.length > accRun.length + 2) { out.push(...tRun); continue; } // a pre-roll the accurate model skipped
+    if (!o.strict && k === 0 && tRun.length > accRun.length + 2) { out.push(...tRun); continue; } // a pre-roll the accurate model skipped
     const tot = accRun.reduce((a, w) => a + w.length + 1, 0); let c = s;
     for (const w of accRun) { const d = (e - s) * (w.length + 1) / tot; out.push({ word: w, t: +c.toFixed(3), end: +(c + d).toFixed(3) }); c += d; }
   }
@@ -121,6 +138,19 @@ export function align(timed: Word[], text: string): Word[] {
 
 // ---------- the speech-to-text calls ----------
 export type SttProvider = 'groq' | 'openai';
+
+/**
+ * The accurate-text models asked for a language (MOOVI_TEXT_MODEL pins one). English: gpt-4o-transcribe. Any other
+ * language: gpt-4o-mini-transcribe first, gpt-4o-transcribe beside it, and pickText (ordered) keeps the first answer that
+ * agrees with the timed words about as well as the best. Measured 2026-10-16 on R9's B4 (Hindi, 101 s) against the
+ * Commons subtitle text: the hearing with the mini model's text 88.3 to 91.2% words right over 4 runs, with
+ * gpt-4o-transcribe's 79.0 and 81.3% (it drops and respells words; on 8 s pieces it fell to 42 to 45%).
+ */
+export function textModels(lang: string): string[] {
+  const pin = process.env.MOOVI_TEXT_MODEL?.trim();
+  if (pin) return [pin];
+  return lang === 'en' ? ['gpt-4o-transcribe'] : ['gpt-4o-mini-transcribe', 'gpt-4o-transcribe'];
+}
 interface Key { provider: SttProvider; key: string }
 const MODEL: Record<SttProvider, string> = { groq: 'whisper-large-v3-turbo', openai: 'whisper-1' };
 const base = (p: SttProvider) => p === 'openai' ? `${(process.env.MOOVI_OPENAI_BASE ?? 'https://api.openai.com').replace(/\/$/, '')}/v1/audio/transcriptions` : `${(process.env.MOOVI_GROQ_BASE ?? 'https://api.groq.com').replace(/\/$/, '')}/openai/v1/audio/transcriptions`;
@@ -258,7 +288,7 @@ export async function hear(audio: string, dir: string, o: HearOpts = {}): Promis
       return { words: parts.flatMap(p => p.words), language: parts[0]?.language ?? l ?? '' };
     };
     const tx = textKey();
-    const textRun = tx ? Promise.all([prompt, ''].filter((p, i, a) => a.indexOf(p) === i).map(p => whisper(mp3, { provider: 'openai', key: tx }, { lang, prompt: p, timed: false, model: process.env.MOOVI_TEXT_MODEL ?? 'gpt-4o-transcribe', ...(o.signal ? { signal: o.signal } : {}) }).then(r => r.text).catch(() => ''))) : Promise.resolve([] as string[]);
+    const textRun = tx ? Promise.all(textModels(lang).flatMap(model => [prompt, ''].filter((p, i, a) => a.indexOf(p) === i).map(p => whisper(mp3, { provider: 'openai', key: tx }, { lang, prompt: p, timed: false, model, ...(o.signal ? { signal: o.signal } : {}) }).then(r => r.text).catch(() => '')))) : Promise.resolve([] as string[]);
     // no language named (no brief script, no MOOVI_STT_LANG): the English lock translates a Hindi speaker into fluent
     // English that passes every gate (R9's B4), so an unlocked pass runs beside it and may re-lock (relock below); it
     // gets no vocabulary prompt (the English names pulled a Hindi piece into a few garbled words)
@@ -266,17 +296,20 @@ export async function hear(audio: string, dir: string, o: HearOpts = {}): Promis
     const byDefault = !o.lang && !process.env.MOOVI_STT_LANG?.trim() && lang === 'en';
     const [locked, texts, probe] = await Promise.all([timedRun(lang), textRun, byDefault ? timedRun(undefined, '').catch(err => { probeErr = String((err as Error)?.message ?? err).slice(0, 200); return null; }) : Promise.resolve(null)]);
     lap('timed+text');
-    const pickFor = (ws: Word[]) => pickText(texts.filter(Boolean), ws);
+    const pickFor = (ws: Word[]) => pickText(texts.filter(Boolean), ws, { ordered: true });
     let words = locked.words, text = pickFor(words), detected = locked.language, by = `${tk.provider} ${MODEL[tk.provider]}, locked to ${lang}, ${cuts.length} piece${cuts.length > 1 ? 's' : ''}`;
     if (byDefault && !probe) by += `, the unlocked pass failed (${probeErr})`;
     let g = gate(words, voiced, lang, text), relocked: string | null = null;
     const re = probe ? relock(probe.language, probe.words, words) : null;
     if (probe && re) {
       // heard in its own language: the accurate text again in that language (the English one was a translation)
-      const t2 = tx ? await whisper(mp3, { provider: 'openai', key: tx }, { lang: re, timed: false, model: process.env.MOOVI_TEXT_MODEL ?? 'gpt-4o-transcribe', ...(o.signal ? { signal: o.signal } : {}) }).then(r => r.text).catch(() => '') : '';
-      // the timed words again, locked to that language: the unlocked pass may drift script between pieces
-      const again = await timedRun(re, '').catch(() => null), ws = again?.words.length ? again.words : probe.words;
-      words = ws; text = t2 ? pickText([t2], ws) : null; g = gate(words, voiced, re, text); detected = probe.language; relocked = re;
+      // (every accurate-text model for that language, at once, beside the timed words again)
+      const [t2, again] = await Promise.all([
+        tx ? Promise.all(textModels(re).map(model => whisper(mp3, { provider: 'openai', key: tx }, { lang: re, timed: false, model, ...(o.signal ? { signal: o.signal } : {}) }).then(r => r.text).catch(() => ''))) : Promise.resolve([] as string[]),
+        // the timed words again, locked to that language: the unlocked pass may drift script between pieces
+        timedRun(re, '').catch(() => null)]);
+      const ws = again?.words.length ? again.words : probe.words;
+      words = ws; text = pickText(t2.filter(Boolean), ws, { ordered: true }); g = gate(words, voiced, re, text); detected = probe.language; relocked = re;
       by = `${tk.provider} ${MODEL[tk.provider]}, no language named, heard as ${re} (the English lock translated it), ${cuts.length} piece${cuts.length > 1 ? 's' : ''}`;
       lap('relock');
     }
