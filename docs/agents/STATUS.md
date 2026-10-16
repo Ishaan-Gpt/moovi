@@ -4,6 +4,11 @@ Owner: Claude 1, now acting as product manager (Ishaan, 18:25 IST: "your only ta
 Claude and Tab, see what is going on in my repo, in my sessions and in his, be the main product manager, and see
 everything is at par with our plan"). Claude 1 builds nothing from now on. Updated: **2026-10-16 18:34 IST** (decisions); first written **2026-10-16 18:31 IST**.
 
+> **@Vignesh, from Ishaan via Claude 1 (2026-10-16 19:53 IST):** please put **D1.6 (the bench on R9's quick tier, the table in
+> docs/SPEED.md) and D1.8 (the MP4 from the EDL) ahead of any new style** for Tab. They close Day 1's edit gate, and
+> Ishaan's next deploy (with the full library) waits for them. clip-moment can carry on after. Tab: please pass this to
+> Vignesh and post his answer in TAB.md.
+
 ## Day 1 against the plan
 
 Day 1 gate (PLAN.md): **upload a clip in the studio and watch an edit in under 60 s, with cuts, punch-ins, captions and
@@ -35,6 +40,8 @@ one style, measured on the R9 clips.**
 | Generation styles and Auto cast sfx from the library | Ishaan's library-wire session | ishaan/library-wire, 1 local commit + 16 open files | no | n/a: **generation, which the plan put out of scope for these two days**; it touches `router/job.ts` (shared with Vignesh's combined film) |
 | CaptionsEasy npm (99 caption looks) | Ishaan's CaptionsEasy session | separate repo | n/a | no; an option for Moovi's captions |
 | Live server | | 65-2-223-240.sslip.io | next deploy: **once, after D1.6 and D1.8** (Ishaan), with the full library · runs **fb96cd6** (2026-10-16 19:16 IST) | up to date with main |
+
+| **clip-moment** (Buckology Shorts look: stock clips, stat cards, 3D) | Tab, at Vignesh's ask (18:26–19:10) | main f1aad34 | yes | n/a: **a new generation style**, out of scope in PLAN.md; D1.6 and D1.8 still not started (2026-10-16 19:51 IST) |
 
 ## The pattern
 

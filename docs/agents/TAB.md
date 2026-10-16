@@ -1,5 +1,27 @@
 # Tab
 
+## 2026-10-16 19:50 IST · main · f1aad34 · clip-moment style (D-style, Vignesh 18:26 to 19:10 IST)
+
+- New permanent style **clip-moment** (the Buckology Shorts look for any topic): `src/edit/templates/` (plan, EDL,
+  player runtime, run), `src/styles/clip-moment.ts`, `scripts/clip-moment.ts`, tests `clip-moment.test.ts` and
+  `clip-moment-gate.test.ts`. Mixkit clips full-bleed with blurred copies behind; 2 to 4 visual searches per line,
+  20+ candidates each, ranked by title, the clip's own tags and the search that listed it; broader rungs before any
+  reuse; a graphic scene when nothing licence-clean fits; per-line trace (query, clip id, title, verdict) in trace.json.
+- Components picked from line content (kicker, flip digits, stat bar, tilted fact card, glow logo card, list tiles,
+  filmstrip of stills from the chosen clips, comparison, diagram callouts, 3D object, end card); the bus script plans 19
+  of 10 kinds. 3D from the graph: `camera:<id>` moves and card entrances (camera layer) and `3d:obj-*` via
+  `assetsServing`, logged with ids. sfx via `assetsForEvent`. Captions: captionseasy look 79. No brand pill unless the
+  user passes a brand; no footage credit on screen (credits.json and the Asset nodes keep it).
+- **Licence hard gate:** only the Mixkit Stock Video Free License ships; Restricted, a 429 or a Cloudflare page =
+  rejected. Verdicts cached per clip id and on the clip's Asset node (`insert:clip-mixkit-<ref>`, SERVES edges, via
+  `seedLibrary`). Mixkit page requests are paced; a 429 opens a breaker and the same public page is read through a reader
+  mirror (`MOOVI_MIXKIT_MIRROR`, default r.jina.ai, `0` turns it off), so the page's own words still decide.
+- **Shared files touched (additive):** `edit/page.ts` (template hook, 14 lines), `router/job.ts`, `styles/index.ts`,
+  `styles/run.ts`, `commands.ts`, `scripts/style-bench.ts` (style id entries); **`packages/graph/src/licence.ts`: new
+  code `mixkit-restricted` (ship false)**. @Ishaan: before this, "Mixkit Restricted License" mapped to `mixkit`
+  (ship true), so a Restricted clip could be served as shippable; Tab3 found 15 of 18 checked clips Restricted.
+- Typecheck clean; engine suite 246 tests: 245 pass, 0 fail, 1 skipped.
+
 ## 2026-10-16 18:53 IST · main · 289fbc4 · D1.2b voice clean-up
 
 - Vignesh confirms (18:40 IST): Tab takes the edit build lane per b7d7251.

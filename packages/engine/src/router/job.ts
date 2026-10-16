@@ -12,6 +12,7 @@ import { startRun } from '../runs';
 import { combinedFilm, direct, secsOf } from './film';
 import { styleReel, type ReelInput } from '../tasks/reel';
 import { briefNeeds, matchKit } from '../styles/kit/kits';
+import { pickClipMoment } from '../edit/templates/clip-moment-plan';
 
 /**
  * The combined film as an engine job, so the studio's normal path runs it: the brief box's "Auto" style, and (unless
@@ -57,6 +58,16 @@ export function autoStyleFor(brief: string, kinds: string[] = []): ReelInput['st
   if (/\b(story|fable|tale|history|journey|founder|legend)\b/.test(b) || n('quote') + n('story') >= 3) return 'darkvox';
   return 'anatomy';
 }
+/**
+ * Auto's pick for a script it wrote, with the reason (logged like the kit pick): a story stays Dark Vox; a script whose
+ * lines can be illustrated with stock clips (most lines name something footage shows) is Clip Moment; else Anatomy.
+ */
+export function autoPickFor(brief: string, kinds: string[], lines: string[]): { style: ReelInput['style']; why: string } {
+  const first = autoStyleFor(brief, kinds);
+  if (first === 'darkvox') return { style: 'darkvox', why: 'a story or quotes: Dark Vox' };
+  const cm = pickClipMoment({ lines });
+  return cm.pick ? { style: 'clip-moment', why: cm.why } : { style: first, why: `${cm.why}: Anatomy draws it instead` };
+}
 export function urlStyleFor(brief: string): ReelInput['style'] {
   const b = brief.toLowerCase();
   if (/\b(story|fable|tale|history|journey|founder)\b/.test(b)) return 'darkvox';
@@ -73,7 +84,10 @@ async function autoLive(ctx: Parameters<Handler>[0], brief: string) {
     await ctx.say('Auto: I write the script first, then pick the style that fits it and play it live.', 'note', undefined, 'moovi');
     const d = await direct(brief, secsOf(brief), ['darkvox', 'anatomy'], { signal: ctx.signal });
     const brand = (d.title || brief).replace(/[^\p{L}\p{N} .&'-]/gu, '').trim().split(/\s+/).slice(0, 3).join(' ') || 'Moovi';
-    reel = { style: autoStyleFor(brief, d.beats.map(b => b.kind)), script: d.beats.map(b => b.say.trim()).join('\n'), brand };
+    const pick = autoPickFor(brief, d.beats.map(b => b.kind), d.beats.map(b => b.say.trim()));
+    console.log(`[auto ${ctx.run.id}] style ${pick.style}: ${pick.why}`);
+    // Clip Moment's brand pill is the user's own brand only, never a title Auto made up
+    reel = { style: pick.style, script: d.beats.map(b => b.say.trim()).join('\n'), ...(pick.style === 'clip-moment' ? {} : { brand }) };
   }
   // a kit whose parts serve the brief (the script's lines when there is one): its palette dresses the style's inserts
   const kit = await matchKit(briefNeeds(reel.script ? reel.script.split('\n') : [brief]));
