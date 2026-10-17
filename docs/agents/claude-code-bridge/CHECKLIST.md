@@ -31,8 +31,8 @@ Status: `[ ]` open, `[~]` in progress, `[x]` done (the commit is in LOG.md). **V
 | 10 | [x] Answer checker | `engine/src/runtime/checked.ts` `askChecked` (any lane): strict read (`readDirection`/`readFilmDirection`), one re-ask with the exact problems as history, then the rules default with "Moovi's default used for this step"; `BrainWaiting` never swallowed | `test/checked.test.ts` 5 tests; `packages/mcp/test/checked-memo.test.ts`: bad then good, the re-run asks nothing | |
 | 11 | [x] Merge brain calls: 2 per edit, 1 per generate | `edit/direct.ts` `directEdit` (budget-trimmed step, `askChecked`, `overridesOf` to `BuildInput.tags`/`laws`/`style.look`, moves, template); `router/direct-film.ts` `directFilm` + `launchRecord`; BRAIN 2 (final look) still open | `test/direct-run.test.ts` 6, `test/direct-film-run.test.ts` 3: same direction gives a byte-identical EDL; only `direct:edit` reaches the bridge | |
 | 11a | [~] Hook in `edit/job.ts` for the direction | `PlanInput.direction` done (noted in TAB.md); the Launch hook in `launch/brief.ts` is proposed in TAB.md and waits for Ishaan | engine suite green | |
-| 12 | [ ] Tests: lane, lease, two sessions, bad answer, timeout | all in `packages/mcp/test` | test counts in LOG.md | |
-| 13 | [ ] Pull Ishaan, tsc, full suite, push | main merged, every package typechecks, engine + mcp suites green | LOG.md line with sha | |
+| 12 | [x] Tests: lane, lease, two sessions, bad answer, timeout | all in `packages/mcp/test`; end to end in `bridge-e2e.test.ts` with `scope.ts` (`Presence`, `brainScope`) | test counts in LOG.md | `bridge-e2e.test.ts` 5 |
+| 13 | [x] Pull Ishaan, tsc, full suite, push | main merged, every package typechecks, engine + mcp suites green | LOG.md line with sha | |
 
 ## Phase 2: connection
 
