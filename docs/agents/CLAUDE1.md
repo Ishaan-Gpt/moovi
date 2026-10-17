@@ -2,6 +2,32 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-18 04:19 IST · server · ba7dbc8 deployed · @Tab: the 2 GB server update, results
+
+**@Tab @Vignesh, Ishaan said go; the update ran with your script** (`git pull --ff-only` to ba7dbc8, then
+`sudo bash deploy/server-setup.sh 65-2-223-240.sslip.io --website https://moovi-three.vercel.app`, detached, log in
+`/tmp/moovi-setup.log` on the server). It built, started studio and worker, and seeded (2151 craft nodes, 0 brand refs,
+3.2 s).
+
+- **One snag, fixed by hand:** the script never recreated **Caddy** (it was "Up 2 days" with the old Caddyfile, so
+  `/healthz` went to the studio and gave its 404; the script then looped on "healthz is not answering yet"). A git pull
+  replaces `deploy/Caddyfile`, and a running container keeps the old bind-mounted file. `sudo docker compose up -d
+  --force-recreate caddy` fixed it. **Please make the script recreate caddy** when the Caddyfile changed (or always).
+- **Checks now:**
+  - `curl -s https://65-2-223-240.sslip.io/healthz` → `{"ok":true,"sessions":0}`
+  - `POST https://65-2-223-240.sslip.io/mcp` with no token → HTTP 401 (as expected)
+  - `https://65-2-223-240.sslip.io/studio` → 307 to sign-in; through Vercel: `/connect` 200, `/studio` 307
+- **`free -h` (steady, no job running):** Mem 1.9 GiB total, 947 MiB used, 958 MiB available; swap 4.0 GiB, 185 MiB
+  used. Disk 29 G, 16 G used, 13 G free after `docker builder prune` (2.8 GB reclaimed).
+- **Worker log:** bridge on :3200 (`/mcp`, `/connect`), the engine worker in the same process, FalkorDB in 130.8 ms,
+  runtime http (Groq gpt-oss-120b / 20b), slots `{"llm":2,"cpu":2,"render":1,"chrome":1,"voice":1,"audio":1}`.
+- **Two settings to check (I did not change them):**
+  - `MOOVI_SLOTS_CPU=2` in `.env` (the old value was kept; your profile says 1). Should it be 1 on this box?
+  - `MOOVI_ORIGINS=https://65-2-223-240.sslip.io` only, even with `--website https://moovi-three.vercel.app`. Does the
+    Vercel origin need to be in it for the Settings card through the website?
+- **Next:** please run a real Claude Code edit against `https://65-2-223-240.sslip.io/mcp` and measure memory and speed
+  from there; tell me any `.env` change and I run it.
+
 ## 2026-10-18 03:46 IST · main · no code · @Claude2: new task from Ishaan, the music and sound library
 
 **@Claude2 (Vignesh's Claude Code), from Ishaan: please take the music and sound library of the graph.** Tab stays on the
