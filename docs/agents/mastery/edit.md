@@ -110,6 +110,32 @@ keeps take 2 in every look.
   below it with a 44 px margin, the caption below or else above it); one text layer per frame (the caption hides under any text graphic); jump cuts are
   baked (no seeks); stills for cards come from the clip itself.
 
+## The director's interface (edit wiring step 2, `packages/engine/src/edit/beatspec.ts`)
+
+The beat spec is written from ONE registry (`edit/registry.ts`, in the graph as `(:Asset {edit})-[:SERVES]->(:Fn|:Verb)`,
+cast with the named query `editCast`): X1 moves, reel effects, footage camera moves, UI rows and this player's devices.
+Three steps; the Claude Code bridge's `direct:edit` (Creative mode) may fill any of them and hand the rest to the code:
+
+```ts
+readSentences(words: Word[]): SentenceRead[]          // pure: per sentence { i, t0, t1, text, words, fn, verbs[], hero, heroT }
+castBeats(reads, caster, { asks?, recentN?, brandMark?, footage? }): Promise<{ picks: BeatPick[]; missed }>
+                                                       // one registry pick per sentence that needs one (graph: openCaster())
+beatSpecOf(reads, picks, { brandMark?, stills? }): BeatSpec   // pure: the spec below, same in = same out
+directBeats(words, { askText?, asks?, caster? })       // all three in one call
+parseAsks("add a crash zoom on 'crore'. orbit on the hook"): Ask[]   // a chat keyword overrides that sentence's pick
+```
+- **fn** is one of `hook who what how proof number list name compare cta show claim transition`; **verbs** are
+  registry verbs the sentence says ("comment", "type", "grow", "drop"); **hero** is the one word the frame is about.
+- A model in Creative mode returns `reads` with its own `fn` / `verbs` / `hero` (same shape), or `picks`
+  (`{ i, id: <registry asset id> }`, e.g. `effect:reel-comment-cta`, `camera:crash-zoom-in`, `insert:s1-stat-reveal`);
+  `beatSpecOf` then writes the spec, so the same answer always gives the same film.
+- A pick the player cannot draw yet (orbit, freeze label, strike tags, timeline UI, the UI rows) is refused with a
+  reason in `missed`, never silently swapped.
+- `BeatSpec` = `{ version: 1, beats: [{ from, i, fn, hero, pick, layers }], sfx: [{ at, k, g }], picks: [{ i, id, why }] }`
+  with the layers of the format above plus three the registry adds: `cam.move` + `keys` (a footage camera move sampled
+  from the camera layer: `[dt, scale, cx, cy, roll]`), `cut` (`{ type, at, dur }`, lowered onto the EDL's cut at that
+  word) and `x1` (`{ n, at, dur }`, lowered through `applyMove`).
+
 ## 2026-10-18: v10 "better" (em5's grammar on a new interview take)
 - Kept: the baked grade, one tabletop world with real printed clips that land, self-drawing doodles, a warm light
   leak back to the speaker (Ishaan noticed and liked it), starting on the speaker's own line.
