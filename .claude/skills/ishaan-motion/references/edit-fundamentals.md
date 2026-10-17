@@ -127,3 +127,11 @@ the caption is hidden for that span. Two texts in one frame is bad taste.
   keeps a face.
 - The world is reused as the ground of every full-screen beat (chapter cards come from it), so the film has one look.
 
+## 11. What an editor adds to a raw clip (before/after reference em5, 2026-10-18; analysis in docs/agents/mastery/edit-ref-em5.md)
+- Grade first: highlights down, blue pulled out, saturation up about 20 %, a soft dark fall-off where captions sit.
+- Reframe tighter than the raw (about 1.25x), every shot moving; the closest angle saved for the payoff.
+- One full-screen world, once, for the abstract middle: a physical surface with real light, photoreal objects
+  acting out each noun or verb, a hand-drawn layer on top (arrows that draw, handwritten labels).
+- Objects land (motion blur in, a contact shadow), framing props slide in from the corners; light is the transition
+  (the world's light sweeps in, a light leak wipes out).
+- Photoreal objects need real cut-outs (rule 0.1): fetch or generate them, never flat stand-ins.
