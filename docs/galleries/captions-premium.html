@@ -799,25 +799,69 @@ const segReady = (async () => {
     window.faceState = () => ({ ready: !!faceDet, box: faceBox });
   } catch (e) { console.warn('person matte unavailable', e); }
 })();
-const maskC = document.createElement('canvas'), personC = document.createElement('canvas');
+const maskC = document.createElement('canvas'), personC = document.createElement('canvas'), segIn = document.createElement('canvas');
+// during playback the matte runs in a worker on a small copy of the frame, so the frame loop never waits on the model;
+// the renderer composites the latest mask (stills segment their exact frame on the page, synchronously)
+const VISION = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs';
+const workerSrc = [
+  "let seg = null;",
+  "self.onmessage = async e => {",
+  "  if (e.data.init) {",
+  "    const m = await import(e.data.vision);",
+  "    const fs = await m.FilesetResolver.forVisionTasks(e.data.wasm);",
+  "    const opts = d => ({ baseOptions: { modelAssetPath: e.data.model, delegate: d }, runningMode: 'VIDEO', outputConfidenceMasks: true, outputCategoryMask: false });",
+  "    seg = await m.ImageSegmenter.createFromOptions(fs, opts('CPU'));",
+  "    self.postMessage({ ready: true }); return;",
+  "  }",
+  "  let r; try { r = seg.segmentForVideo(e.data.bmp, e.data.ts); } catch (err) { self.postMessage({ error: String(err) }); return; } finally { e.data.bmp.close(); }",
+  "  const mk = r.confidenceMasks[0], a = mk.getAsFloat32Array(), out = new Uint8ClampedArray(a.length * 4);",
+  "  for (let i = 0; i < a.length; i++) out[i * 4 + 3] = Math.max(0, Math.min(255, (a[i] - 0.35) * 3.3 * 255));",
+  "  self.postMessage({ w: mk.width, h: mk.height, data: out }, [out.buffer]); if (r.close) r.close();",
+  "};",
+].join(String.fromCharCode(10));
+const matteWorker = new Worker(URL.createObjectURL(new Blob([workerSrc], { type: 'text/javascript' }))); // classic: MediaPipe's loader uses importScripts
+let wReady = false, wBusy = false, wClock = 0, wSent = -1, wError = '', maskReady = false;
+matteWorker.onerror = e => { wError = String(e.message || e); console.warn('matte worker', e); };
+window.matteState = () => ({ wReady, wBusy, wError, maskReady });
+matteWorker.onmessage = e => {
+  if (e.data.ready) { wReady = true; return; }
+  if (e.data.error) { wBusy = false; wError = e.data.error; return; }
+  wBusy = false;
+  maskC.width = e.data.w; maskC.height = e.data.h;
+  maskC.getContext('2d').putImageData(new ImageData(e.data.data, e.data.w, e.data.h), 0, 0);
+  maskReady = true;
+};
+matteWorker.postMessage({ init: true, vision: VISION, wasm: 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm', model: 'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite' });
+function pumpMatte() {
+  if (!wReady || wBusy || v.readyState < 2 || v.currentTime === wSent) return;
+  wSent = v.currentTime; wBusy = true;
+  segIn.width = 256; segIn.height = Math.round(256 * v.videoHeight / v.videoWidth);
+  segIn.getContext('2d').drawImage(v, 0, 0, segIn.width, segIn.height);
+  createImageBitmap(segIn).then(bmp => matteWorker.postMessage({ bmp, ts: wClock = Math.max(wClock + 1, performance.now()) }, [bmp]));
+}
 let lastSegT = -1, segClock = 0;
-function personAt(W, H) {
-  if (!seg || v.readyState < 2) return null;
-  if (v.currentTime !== lastSegT) {
+function personAt(W, H, sync) {
+  if (v.readyState < 2) return null;
+  // until the worker's first mask arrives, segment on the page: a highlight is never drawn over the speaker
+  if (!sync) { pumpMatte(); if (!maskReady) sync = true; }
+  if (sync && !seg) return null;
+  if (sync && v.currentTime !== lastSegT) {
     lastSegT = v.currentTime;
-    const r = seg.segmentForVideo(v, segClock = Math.max(segClock + 1, performance.now()));
+    // segment a small copy of the frame (256 px wide): the mask is soft anyway, and a full-size read-back cost ~60 ms
+    segIn.width = 256; segIn.height = Math.round(256 * v.videoHeight / v.videoWidth); segIn.getContext('2d').drawImage(v, 0, 0, segIn.width, segIn.height);
+    const r = seg.segmentForVideo(segIn, segClock = Math.max(segClock + 1, performance.now()));
     const mk = r.confidenceMasks[0], a = mk.getAsFloat32Array();
     maskC.width = mk.width; maskC.height = mk.height;
     const mc = maskC.getContext('2d'), id = mc.createImageData(mk.width, mk.height);
     for (let i = 0; i < a.length; i++) id.data[i * 4 + 3] = Math.max(0, Math.min(255, (a[i] - 0.35) * 3.3 * 255));
     mc.putImageData(id, 0, 0); r.close?.();
   }
-  personC.width = W; personC.height = H;
+  if (personC.width !== W || personC.height !== H) { personC.width = W; personC.height = H; }
   const pc = personC.getContext('2d');
-  pc.drawImage(v, 0, 0, W, H);
-  pc.globalCompositeOperation = 'destination-in'; pc.filter = 'blur(1px)';
+  pc.globalCompositeOperation = 'copy'; pc.drawImage(v, 0, 0, W, H);
+  pc.globalCompositeOperation = 'destination-in'; pc.imageSmoothingQuality = 'high'; // the small soft mask scaled up: smooth edges, no blur pass
   pc.drawImage(maskC, 0, 0, W, H);
-  pc.filter = 'none'; pc.globalCompositeOperation = 'source-over';
+  pc.globalCompositeOperation = 'source-over';
   return personC;
 }
 const needsPerson = p => p.tiers.some(t => t && t.behind);
@@ -825,20 +869,23 @@ const needsPerson = p => p.tiers.some(t => t && t.behind);
 let lastFaceT = -1, faceClock = 0, faceBox = null;
 function faceAt() {
   if (!faceDet || v.readyState < 2) return faceBox;
-  if (v.currentTime !== lastFaceT) {
+  // the face box only steers where a card starts, so it is read a few times a second, not every frame
+  if (Math.abs(v.currentTime - lastFaceT) > 0.4) {
     lastFaceT = v.currentTime;
     const d = faceDet.detectForVideo(v, faceClock = Math.max(faceClock + 1, performance.now())).detections[0];
     if (d) { const b = d.boundingBox, vw = v.videoWidth, vh = v.videoHeight; faceBox = { x: (b.originX - b.width * 0.15) / vw, y: (b.originY - b.height * 0.35) / vh, w: b.width * 1.3 / vw, h: b.height * 1.6 / vh }; }
   }
   return faceBox;
 }
-const sceneAt = (p, W, H) => ({ face: p.layout === 'stack' ? faceAt() : null, person: needsPerson(p) ? personAt(W, H) : null });
+const sceneAt = (p, W, H, sync = false) => ({ face: p.layout === 'stack' ? faceAt() : null, person: needsPerson(p) ? personAt(W, H, sync) : null });
 function frame() {
   const r = c.getBoundingClientRect(), d = devicePixelRatio || 1;
   if (c.width !== Math.round(r.width * d)) { c.width = Math.round(r.width * d); c.height = Math.round(r.height * d); }
   // the video is painted into the caption canvas, so blend modes (the difference face) see its pixels
   if (v.readyState >= 2) ctx.drawImage(v, 0, 0, c.width, c.height); else ctx.clearRect(0, 0, c.width, c.height);
-  drawCaption(ctx, preset, list, v.currentTime, c.width, c.height, sceneAt(preset, c.width, c.height));
+  const t0 = performance.now(), sc = sceneAt(preset, c.width, c.height), t1 = performance.now();
+  drawCaption(ctx, preset, list, v.currentTime, c.width, c.height, sc);
+  const t2 = performance.now(); const pf = (window.capProf ??= { scene: 0, draw: 0, n: 0 }); pf.scene += t1 - t0; pf.draw += t2 - t1; pf.n++;
   requestAnimationFrame(frame);
 }
 Promise.all(PREMIUM_PRESETS.flatMap(p => p.tiers.filter(Boolean).map(t => document.fonts.load((t.italic ? 'italic ' : '') + t.weight + ' ' + (t.stretch || 'normal') + ' 40px "' + t.font + '"')))).finally(() => requestAnimationFrame(frame));
@@ -850,7 +897,7 @@ window.still = async (vr, t, refUrl, acc) => {
   v.currentTime = t; await new Promise(r => v.addEventListener('seeked', r, { once: true }));
   const W = 1696, H = 956, f = document.createElement('canvas'); f.width = W; f.height = H;
   await segReady;
-  const g = f.getContext('2d'); g.drawImage(v, 0, 0, W, H); drawCaption(g, p, l, t, W, H, sceneAt(p, W, H));
+  const g = f.getContext('2d'); g.drawImage(v, 0, 0, W, H); drawCaption(g, p, l, t, W, H, sceneAt(p, W, H, true));
   const s = document.getElementById('still'); s.style.display = 'block';
   if (!refUrl) { s.width = W; s.height = H; s.getContext('2d').drawImage(f, 0, 0); return; }
   const ref = new Image(); ref.src = refUrl; await ref.decode();
