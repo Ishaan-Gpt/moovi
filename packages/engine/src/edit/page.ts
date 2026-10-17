@@ -56,7 +56,7 @@ async function place(t) {
 
 /* ── one frame ── */
 let chunkKey = -2;
-const SHADOW = { soft: '0 4px 22px rgba(0,0,0,.5)', hard: '0 7px 0 var(--ink)', long: '4px 4px 0 var(--ink),8px 8px 0 var(--ink),12px 12px 0 var(--ink)', '3d': '0 3px 0 var(--deep),0 6px 0 var(--deep),0 9px 0 var(--deep)', glow: '0 0 28px var(--accent)' };
+const SHADOW = { soft: '0 4px 22px rgba(0,0,0,.5)', hard: '0 7px 0 var(--ink)', long: '4px 4px 0 var(--ink),8px 8px 0 var(--ink),12px 12px 0 var(--ink)', '3d': '0 3px 0 var(--deep),0 6px 0 var(--deep),0 9px 0 var(--deep)', glow: '0 0 28px var(--accent)', lift: '0 2px 3px rgba(0,0,0,.8),0 0 16px rgba(0,0,0,.6),0 8px 34px rgba(0,0,0,.5)' };
 function styleWord(el, w, s) {
   const f = w.key && ST.key ? ST.key : ST.font, size = EDIT.sizePx(w.key && ST.key ? ST.key.size : ST.size, W);
   el.style.font = LK && !(w.key && ST.key) ? (LK.italic ? 'italic ' : '') + LK.weight + ' ' + size + 'px/1.06 "' + LK.family + '",sans-serif' : (f.italic ? 'italic ' : '') + f.weight + ' ' + size + 'px/1.06 "' + f.family + '",sans-serif';

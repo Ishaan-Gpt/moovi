@@ -47,7 +47,7 @@ export interface CaptionStyle {
   /** minWords/maxWords (D2.2 Atlas): a chunk shorter than minWords joins a neighbour (same sentence first, gap at most 1 s) while the
    * pair stays inside maxWords words and maxChars + 8 characters, so no lone small word stands as a caption */
   chunk: { mode: 'word' | '2w' | '3w' | 'phrase' | 'line'; maxChars: number; breakOnPause: number; minWords?: number; maxWords?: number; /** the chunk's words enter together (the key word still lights when spoken) */ together?: boolean };
-  look: { fill: Role; stroke?: { px: number; role: Role }; shadow?: 'soft' | 'hard' | 'long' | '3d' | 'glow'; box?: 'pill' | 'block' | 'per-word' | 'underline' | 'chip' };
+  look: { fill: Role; stroke?: { px: number; role: Role }; shadow?: 'soft' | 'hard' | 'long' | '3d' | 'glow' | 'lift'; box?: 'pill' | 'block' | 'per-word' | 'underline' | 'chip' };
   highlight: { rule: 'current' | 'keyword' | 'number' | 'none'; treat: 'colour' | 'scale' | 'box' | 'underline' | 'weight'; role?: Role };
   entry: 'pop' | 'stamp' | 'slide-up' | 'fade' | 'blur-in' | 'typewriter' | 'kinetic' | 'none';
   position: 'lower' | 'center' | 'upper' | 'face-safe' | 'chest';

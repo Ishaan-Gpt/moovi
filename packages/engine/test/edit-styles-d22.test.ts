@@ -199,6 +199,9 @@ test('D2.2 Handmade: the comment word is the named thing the take is about, not 
 test('D2.2 Handmade captions: ed-serif at L with an outline, no lone word; the term card moves off the face', () => {
   const st = CAPTION_STYLES.find(s => s.id === 'ed-serif')!;
   assert.equal(st.size, 'XXL'); assert.ok(st.look.stroke && st.chunk.minWords === 2 && st.chunk.together && st.chunk.maxWords === 5);
+  // reads on bright pavement: a real outline (at least 6 px at 1080 wide, in the style's deep ink) and the lifted shadow, which the page defines
+  assert.ok(st.look.stroke!.px >= 6 && st.look.stroke!.role === 'deep' && st.look.shadow === 'lift', JSON.stringify(st.look));
+  assert.match(PAGE, /lift: '0 2px 3px rgba\(0,0,0,\.8\)/);
   const e = styledEdl(input, 'handmade');
   const { chunks } = EDIT.chunk(EDIT.captionWords(e), st);
   assert.ok(chunks.filter(c => c.words.length < 2).length <= 1);

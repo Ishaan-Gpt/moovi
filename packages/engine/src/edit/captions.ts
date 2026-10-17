@@ -39,8 +39,9 @@ export const CAPTION_STYLES: CaptionStyle[] = [
     key: { family: 'Anton', weight: 400, case: 'upper', size: 'XL', role: 'accent', line: true } },
   // D2.2 Handmade (R4 style 3): a serif italic lowercase subtitle, bottom centre, a phrase at a time (R8 ed-serif); large with a thin deep outline so it reads on bright walls, the phrase up as a whole, no lone word
   // v4: XXL (130 px on 1080) after root QA of handmade-v3 ("still small"), phrases of 2 to 5 words so two lines at most
+  // v5: the white serif had low contrast on bright pavement (root QA of handmade-v4): an 8 px deep outline (painted under the fill, so 4 px shows) and a lifted dark shadow
   { id: 'ed-serif', family: 'editorial', energy: 1, font: { family: 'Instrument Serif', weight: 400, case: 'lower', tracking: 0, italic: true }, size: 'XXL',
-    chunk: { mode: 'phrase', maxChars: 20, breakOnPause: 0.6, minWords: 2, maxWords: 5, together: true }, look: { fill: 'paper', stroke: { px: 3, role: 'deep' }, shadow: 'soft' },
+    chunk: { mode: 'phrase', maxChars: 20, breakOnPause: 0.6, minWords: 2, maxWords: 5, together: true }, look: { fill: 'paper', stroke: { px: 8, role: 'deep' }, shadow: 'lift' },
     highlight: { rule: 'none', treat: 'colour' }, entry: 'fade', position: 'lower' },
   { id: 'sub-box', family: 'subtitle', energy: 1, font: { family: 'Inter', weight: 600, case: 'as-is', tracking: 0 }, size: 'S',
     chunk: { mode: 'line', maxChars: 38, breakOnPause: 0.7 }, look: { fill: 'paper', box: 'block' },
