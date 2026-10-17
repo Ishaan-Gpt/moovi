@@ -8,10 +8,17 @@ Read this first if you are picking the work up. Updated by Tab after every item.
   Claude Code makes only the top-level decisions (1 to 3 calls per video); Moovi's server does everything else.
 - **Plan:** `docs/agents/research/mcp-claude-code-bridge-plan.md` (sections 16 to 23 win over earlier ones).
 - **Checklist:** `CHECKLIST.md` (this folder). **Log:** `LOG.md`.
-- **Branch:** `vignesh/mcp-sampling` (work), merged to `main` with `--no-ff` after each green item.
+- **Branch:** `claude-code-bridge` (Vignesh, 2026-10-17 19:38 IST: "use a different branch"). Before every item:
+  `git fetch` and merge `origin/main` into it (additive merge commit, Ishaan's shas in LOG.md). Not merged to main
+  until Vignesh says so (Ishaan's CLAUDE.md asks for main; Vignesh's branch rule wins for the bridge, noted in TAB.md).
+- **Push:** through the GitHub API (git data: blobs, trees, commits, then the ref with `force: false`), never force.
 - **Last sha:** see the newest line in `LOG.md`.
-- **Current state:** plan done; items 1, 2 and 6 done. No product code yet.
-- **Next item:** 3 (freeze the "direct the edit" JSON shape).
+- **Current state:** items 1, 2, 3, 3a and 6 done. `packages/engine/src/edit/direct.schema.ts` is the frozen "direct the edit"
+  contract: `liveMenus()` (looks from `D22_STYLES`/`STYLE_LAWS` plus base and studio-cut, moves from `X1_MOVES`, caption
+  looks from captionseasy `listLooks()` filtered to `STYLE_LOOKS` by default), `directEditSchema()` (strict zod),
+  `directEditJsonSchema()` (about 2.2k chars), `checkDirection()`, `readDirection()` (never throws) and
+  `EXAMPLE_DIRECTION`. Look `studio-cut` maps to `planEdit({ template: 'studio-cut' })` in item 11.
+- **Next item:** 4 (freeze the "direct the film" JSON shape: Launch brief first, wrapped with style pick, why and model).
 
 ## How to run things
 
