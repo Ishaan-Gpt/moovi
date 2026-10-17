@@ -72,6 +72,8 @@ export const bare = (s: string) => s.replace(/[^\p{L}\p{N}%$#&+ ]/gu, '');
 const cased = (tier: TierSpec, s: string) => (tier.casing === 'none' ? bare(s) : tier.casing === 'lower' ? bare(s).toLowerCase() : bare(s).toUpperCase());
 
 const clamp = (x: number) => Math.min(Math.max(x, 0), 1);
+/** An entry curve that starts and ends at rest, weighted to the start: 1 - (1 - x^1.3)^3 (zero speed at 0 and at 1). */
+const fromRest = (x: number) => 1 - Math.pow(1 - Math.pow(clamp(x), 1.3), 3);
 
 type Ctx2D = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
 /** the font of the last `font()` call, applied as-is to offscreen layers (`ctx.font` reads back without the stretch) */
@@ -201,7 +203,9 @@ function tierLine(ctx: CanvasRenderingContext2D, p: PremiumPreset, tier: TierSpe
     if (e >= 0) {
       const r = p.enter;
       // damped spring 1 - exp(-decay e) cos(freq e): from scaleFrom down through 1, a little under, back to 1
-      const spring = 1 - Math.exp(-r.decay * e) * Math.cos(r.freq * e);
+      // a damped spring when it bounces (Caption 1, the reel's measured motion); otherwise one curve that leaves rest
+      // and lands at rest (owner rule: speed is a curve, never a step)
+      const spring = r.freq > 0 ? 1 - Math.exp(-r.decay * e) * Math.cos(r.freq * e) : fromRest(e * r.decay / 4.6);
       const sc = r.scaleFrom + (1 - r.scaleFrom) * spring;
       const pull = clamp(1 - e / r.blurS);
       const flash = 1 + r.flash * Math.exp(-e / r.flashS);
@@ -346,7 +350,7 @@ function drawStack(ctx: CanvasRenderingContext2D, p: PremiumPreset, c: Card, t: 
       if (i) x += gapX(l);
       const e = t - l.w.t;
       if (e >= 0 && !!l.tier.behind === behind) {
-        const k = 1 - Math.pow(1 - clamp(e / r.blurS), 3);
+        const k = fromRest(e / r.blurS);
         const dy = (1 - k) * (r.rise ?? 0.04) * S;
         ctx.save();
         if (k < 1) ctx.filter = `blur(${(1 - k) * r.blur * S}px)`;
