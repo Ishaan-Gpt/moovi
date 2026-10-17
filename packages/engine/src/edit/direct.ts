@@ -7,7 +7,7 @@
  * the same Direction always gives the same EDL. A Direction of null means "the rules", exactly today's edit.
  */
 import { z } from 'zod';
-import { askChecked, BRAIN_CAPS, estimateTokens, runtime, trimTranscript, VideoBudget, type Checked, type History, type Sentence } from '../runtime';
+import { askChecked, BRAIN_CAPS, DEFAULT_NOTE, estimateTokens, runtime, trimTranscript, VideoBudget, type Checked, type History, type Sentence } from '../runtime';
 import { sentences, type Face, type BuildInput } from './build';
 import type { Word } from './cut';
 import { directEditJsonSchema, directEditSchema, EXAMPLE_DIRECTION, liveMenus, readDirection, STUDIO_CUT_LOOK, type DirectMenus, type Direction } from './direct.schema';
@@ -100,7 +100,7 @@ export async function directEdit(i: DirectEditInput & { signal?: AbortSignal; bu
   if (!step.fits || !ok.ok) {
     const why = !step.fits ? `the transcript is too long for one step (${step.tokens} tokens)` : (ok as { why: string }).why;
     i.log?.(`direct:edit: rules (${why})`);
-    return { value: null, source: 'default', problems: [[why]], tries: 0, note: 'Moovi\'s default used for this step', step };
+    return { value: null, source: 'default', problems: [[why]], tries: 0, note: DEFAULT_NOTE, step };
   }
   const ctx = { sentences: step.sentences, menus: step.menus };
   const r = await askChecked<Direction | null>({

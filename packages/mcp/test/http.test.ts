@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import type { AddressInfo } from 'node:net';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
-import { BrainHub, bridgeHttp, buildMcp, longPoll, mcpHandler, UNAUTHORIZED } from '../src/index';
+import { BrainHub, bridgeHttp, buildMcp, longPoll, mcpHandler, TOKEN_REMOVED, UNAUTHORIZED } from '../src/index';
 
 const TOKENS: Record<string, { user: string; tokenId: string }> = { 'tok-u1': { user: 'u1', tokenId: 't1' }, 'tok-u2': { user: 'u2', tokenId: 't2' } };
 const hub = new BrainHub();
@@ -23,11 +23,12 @@ const post = (headers: Record<string, string>, body: unknown) => fetch(`${base}/
 const init = { jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'curl', version: '1' } } };
 
 test('bridge 14: no token or a wrong token is a 401 with a plain message', async () => {
-  for (const h of [{}, { authorization: 'Bearer nope' }, { authorization: 'Basic tok-u1' }] as Record<string, string>[]) {
+  // no bearer: how to connect; a bearer Moovi does not know (removed, replaced, mistyped): copy a new one (item 23)
+  for (const [h, msg] of [[{}, UNAUTHORIZED], [{ authorization: 'Bearer nope' }, TOKEN_REMOVED], [{ authorization: 'Basic tok-u1' }, UNAUTHORIZED]] as [Record<string, string>, string][]) {
     const r = await post(h, init);
     assert.equal(r.status, 401);
     assert.match(r.headers.get('www-authenticate') ?? '', /Bearer/);
-    assert.equal((await r.json()).error.message, UNAUTHORIZED);
+    assert.equal((await r.json()).error.message, msg);
   }
 });
 

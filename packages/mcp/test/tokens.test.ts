@@ -91,7 +91,8 @@ test('bridge 15: over HTTP, mint with curl, connect a real MCP client with the t
   assert.ok((await client.listTools()).tools.length > 0);
   assert.equal(mcp.sessionsOf('u7').length, 1);
   await fetch(`${base}/api/brain/link`, { method: 'DELETE', headers: { 'x-user': 'u7' } });
-  await assert.rejects(() => client.listTools(), /401|token|Unauthorized/i);
+  // item 23: a revoked token tells Claude Code in plain words what to do
+  await assert.rejects(() => client.listTools(), /This Moovi connection was removed\. Copy a new one from Moovi Settings\./);
   assert.equal(mcp.sessionsOf('u7').length, 0);
   await client.close().catch(() => undefined);
 });

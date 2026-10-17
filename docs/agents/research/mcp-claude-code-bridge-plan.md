@@ -341,6 +341,11 @@ connects Claude Code, every stage that asks a model is answered by their Claude,
 | Claude Code hits its plan's usage limit | The step waits; after 2 min the panel adds: "Your Claude Code may have reached its usage limit. It resets at the time Claude Code shows, or add an API key to keep going." | Nothing is lost; the job parks and resumes later. We keep each video small for Claude: about 2 to 4 short steps and 3 small frames per edit, so one video should use a small slice of a session (to be measured in Vignesh's Pro test). |
 | Claude starts editing files or running commands instead | The user sees Claude asking Claude Code's own permission for that, as always. | Every step's text says it is content to process and that no files or commands are needed. The prompt `run` says the same. The user's own permission prompts stay on. |
 | The Moovi server restarts mid job | The step row resumes after a few seconds. | The queue and memo live in Redis; the engine's task leases re-run the job; answered steps replay from the memo. |
+| The bridge process (`/mcp`) is down | Claude Code shows its own "failed to connect" for moovi; the step row says "Waiting for Claude Code", the pill "Claude Code offline", with `/moovi:run` and a Copy button. | The step stays queued in the store; after 120 s it falls to the user's key (item 24) or waits; a restarted bridge on the same store hands out the same step. |
+| Claude answers over the step's token cap | Nothing (a retry happens in the same turn). | Every brain step carries its cap (`max_answer_tokens`, plan 23.3); `moovi_answer` refuses an answer over it (a quarter of slack, the estimate runs high) with "the answer is about N tokens; this step allows M" and the step stays open. |
+| Claude uses numbers the source never said | Nothing, or "Used Moovi's default for this step". | The checker names them ("the numbers 40 are not in the source: use only numbers it says") in the one re-ask; a second answer with them gets the default. |
+
+Bridge item 23: each row above has a test in `packages/mcp/test/failures.test.ts`, and the words live in `packages/mcp/src/notices.ts`.
 
 ## 18. The experience, in plain steps
 

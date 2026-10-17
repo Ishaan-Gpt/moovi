@@ -37,6 +37,8 @@ export interface McpHttpOptions {
 interface Live { ctx: SessionCtx; transport: StreamableHTTPServerTransport; server: McpServer; lastAt: number }
 
 export const UNAUTHORIZED = 'Moovi needs a valid token: open Moovi Settings, Connect Claude Code, and run the command it shows.';
+/** bridge item 23 (plan 17): a token that was removed, replaced or never existed */
+export const TOKEN_REMOVED = 'This Moovi connection was removed. Copy a new one from Moovi Settings.';
 
 function rpcError(res: ServerResponse, status: number, message: string, extra: Record<string, string> = {}) {
   if (res.headersSent) return;
@@ -84,7 +86,7 @@ export function mcpHandler(o: McpHttpOptions) {
     const id = typeof sid === 'string' ? sid : null;
     if (!who) {
       if (id && live.has(id)) await close(id, 'token no longer valid');
-      rpcError(res, 401, UNAUTHORIZED, { 'www-authenticate': 'Bearer realm="moovi", error="invalid_token"' });
+      rpcError(res, 401, bearer ? TOKEN_REMOVED : UNAUTHORIZED, { 'www-authenticate': 'Bearer realm="moovi", error="invalid_token"' });
       return true;
     }
     const read = req.method === 'POST' ? await readBody(req, maxBody) : { ok: true as const, body: undefined };

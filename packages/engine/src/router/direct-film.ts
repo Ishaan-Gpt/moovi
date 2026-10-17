@@ -5,7 +5,7 @@
  * launch/brief.ts gets back from its own model call (name, color, tagline, facts, features, prompt, audience, number,
  * line1..N), so its doctor, accent words and number checks still run unchanged. Null value = the style's own path.
  */
-import { askChecked, BRAIN_CAPS, estimateTokens, runtime, VideoBudget, type Checked, type History } from '../runtime';
+import { askChecked, BRAIN_CAPS, DEFAULT_NOTE, estimateTokens, runtime, VideoBudget, type Checked, type History } from '../runtime';
 import { ISOLATION_LINE } from '../edit/direct';
 import { directFilmJsonSchema, directFilmSchema, EXAMPLE_FILM, filmMenus, launchSlotLines, readFilmDirection, type FilmContext, type FilmDirection } from './direct-film.schema';
 
@@ -42,7 +42,7 @@ export async function directFilm(i: DirectFilmInput & { signal?: AbortSignal; bu
   try { step = directFilmStep(i); } catch (e) { return { value: null, source: 'default', problems: [[(e as Error).message]], tries: 0, note: 'the style\'s own path' }; }
   const budget = i.budget ?? new VideoBudget();
   const ok = budget.allow('film', step.tokens);
-  if (!step.fits || !ok.ok) return { value: null, source: 'default', problems: [[!step.fits ? 'step too large' : (ok as { why: string }).why]], tries: 0, note: 'Moovi\'s default used for this step' };
+  if (!step.fits || !ok.ok) return { value: null, source: 'default', problems: [[!step.fits ? 'step too large' : (ok as { why: string }).why]], tries: 0, note: DEFAULT_NOTE };
   // one style = one strict object whose shape goes to APIs that constrain decoding; a union is checked on read only
   const shape = 'shape' in step.schema ? (step.schema as unknown as { shape: Record<string, never> }).shape : undefined;
   return askChecked<FilmDirection | null>({

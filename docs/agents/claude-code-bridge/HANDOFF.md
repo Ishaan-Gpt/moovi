@@ -14,7 +14,7 @@ Read this first if you are picking the work up. Updated by Tab after every item.
   pushing in main as well as in this new branch"; matches Ishaan's CLAUDE.md). Red code goes to the branch only.
 - **Push:** through the GitHub API (git data: blobs, trees, commits, then the ref with `force: false`), never force.
 - **Last sha:** see the newest line in `LOG.md`.
-- **Current state:** Phase 0 and Phase 1 done; Phase 2 in progress: items 14 (`/mcp`), 15 (tokens, `/api/brain/*`), 16 (`moovi_next`/`moovi_answer`, `board.ts`, `hub.register()`, engine hooks) 17 (the `run` prompt) and 18 (end to end proof with the SDK client, `app.ts`, `scripts/serve.ts`, `scripts/e2e.ts`) done. See the newest LOG lines.
+- **Current state:** Phases 0, 1 and 2 done (items 1 to 18); Phase 3 items 20 to 24 done (resume, two windows, hostile CLAUDE.md, the failure cases, the 120 s fallback). Waiting on Vignesh's tests (items 19 and 25). See the newest LOG lines.
   - Contracts: `engine/src/edit/direct.schema.ts`, `engine/src/router/direct-film.schema.ts`, `engine/src/runtime/budget.ts`.
   - Lane switch `engine/src/runtime/lane.ts`; checker `engine/src/runtime/checked.ts`; `keys.registerBrainScope`.
   - Brain calls: `engine/src/edit/direct.ts` (`directEditStep`, `directEdit`, `overridesOf`; `planEdit` asks for a
@@ -49,8 +49,17 @@ Read this first if you are picking the work up. Updated by Tab after every item.
   look, a sentence that does not exist) get one re-ask then the default; hostile free text gives the same overrides and
   EDL as a clean answer; at the door (HTTP) prose, oversize and off-menu answers are refused and the step stays open.
   The manual check with a real junk CLAUDE.md is in `TEST-WITH-CLAUDE-CODE.md` section 8b for Vignesh.
-- **Next item:** 23 (each row of plan section 17 plus the brief's cases: a test and a clear user message). Item 19
-  (Vignesh's test) runs in parallel.
+- **Item 23 done:** `packages/mcp/src/notices.ts`: `NOTICE` holds every user-facing sentence in the plan's own words
+  (section 17), `jobNotice(facts)` says what a video's pill, row, hint and Copy command show, `errorNotice(e)` maps the
+  bridge errors (`BrainNotPickedUp`, `BrainWaiting`, `BrainTimedOut`, `NoModelForAgent`) to the same words.
+  `/api/brain/status` now returns `notice` and `jobs` (one notice per running video, from `queue.open(user)`); the UI
+  request is in `docs/agents/TAB.md`. Wording changes: a bearer that does not verify (revoked, replaced, unknown) gets
+  `TOKEN_REMOVED` ("This Moovi connection was removed. Copy a new one from Moovi Settings."; no bearer still gets
+  `UNAUTHORIZED`); `IDLE_OTHER_WINDOW` and `DEFAULT_NOTE` are the plan 17 sentences. New guard: every brain step
+  carries `maxOut` from `BRAIN_CAPS` (`capOf` in bridge.ts) and `moovi_answer` refuses an answer over it (25 percent
+  slack, `OVER_CAP_SLACK`) with the step left open. Tests: `test/failures.test.ts` (14: the 11 rows of plan 17, plus
+  over-budget, numbers not in the source, bridge process down), all on fake clocks except the HTTP ones.
+- **Next item:** 25 (Vignesh's second test). Item 19 (his first test) runs in parallel.
 - **Item 12 tests** (`packages/mcp/test/bridge-e2e.test.ts`, 5): a stand-in Claude Code session (ticket, then pull and
   answer through the `Gate`) directs `directEdit` end to end inside `withModel(brainScope(...))`; a second window is
   turned away while the first holds the job, and a bad answer gets exactly one re-ask; no `/moovi:run` ticket means no

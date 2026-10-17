@@ -6,7 +6,7 @@
  * reach the user's Claude Code even by mistake.
  */
 import { z } from 'zod';
-import { BrainNotPickedUp, isBrainAgent, PICKUP_MS, type CompleteRequest, type Runtime } from '@moovi/engine/runtime';
+import { BRAIN_CAPS, BrainNotPickedUp, isBrainAgent, PICKUP_MS, type CompleteRequest, type Runtime } from '@moovi/engine/runtime';
 import { fingerprint, StepQueue, type ThinkStep } from './queue';
 
 export const ANSWER_MS = 5 * 60_000;
@@ -38,6 +38,9 @@ const sleep = (ms: number, signal?: AbortSignal) => new Promise<void>((res, rej)
   signal?.addEventListener('abort', on, { once: true });
 });
 
+/** the answer cap of a brain agent: direct:edit, direct:film, direct:look map to BRAIN_CAPS edit, film, look */
+export const capOf = (agent: string): number | undefined => (BRAIN_CAPS as Record<string, { out: number } | undefined>)[agent.replace(/^direct:/, '')]?.out;
+
 const jsonSchemaOf = (shape: z.ZodRawShape | undefined) => (shape ? z.toJSONSchema(z.object(shape), { unrepresentable: 'any' }) as Record<string, unknown> : null);
 
 export function bridgeRuntime(o: BridgeOptions): Runtime {
@@ -49,7 +52,9 @@ export function bridgeRuntime(o: BridgeOptions): Runtime {
     run: async req => { throw new BrainRefused(`${req.agent} (tool loop)`); },
     async complete(req: CompleteRequest): Promise<string> {
       if (!isBrainAgent(req.agent)) throw new BrainRefused(req.agent);
-      const body = { agent: req.agent, system: req.system, prompt: req.prompt, schema: jsonSchemaOf(req.schema), history: req.history, ...(o.extras?.(req) ?? {}) };
+      // item 23: every brain step carries its hard answer cap (plan 23.3), so moovi_answer can refuse an over-budget answer
+      const extra = o.extras?.(req) ?? {}, cap = capOf(req.agent);
+      const body = { agent: req.agent, system: req.system, prompt: req.prompt, schema: jsonSchemaOf(req.schema), history: req.history, ...(cap && extra.maxOut === undefined ? { maxOut: cap } : {}), ...extra };
       const fp = fingerprint(body);
       const memo = await o.queue.recall(o.user, fp);
       if (memo !== null) { o.onEvent?.({ type: 'replayed', step: null, agent: req.agent, fp }); return memo; }
