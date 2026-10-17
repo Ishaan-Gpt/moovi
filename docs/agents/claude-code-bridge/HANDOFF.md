@@ -8,10 +8,23 @@ Read this first if you are picking the work up. Updated by Tab after every item.
   Claude Code makes only the top-level decisions (1 to 3 calls per video); Moovi's server does everything else.
 - **Plan:** `docs/agents/research/mcp-claude-code-bridge-plan.md` (sections 16 to 23 win over earlier ones).
 - **Checklist:** `CHECKLIST.md` (this folder). **Log:** `LOG.md`.
-- **Branch:** `vignesh/mcp-sampling` (work), merged to `main` with `--no-ff` after each green item.
+- **Branch:** `claude-code-bridge`. Before every item: `git fetch` and merge `origin/main` into it (additive merge
+  commit, Ishaan's shas in LOG.md). After every green item (tsc per package, full engine suite, secret scan): push the
+  branch, then merge it into `main` with an additive merge commit and push main too (Vignesh 2026-10-17 19:52 IST: "keep
+  pushing in main as well as in this new branch"; matches Ishaan's CLAUDE.md). Red code goes to the branch only.
+- **Push:** through the GitHub API (git data: blobs, trees, commits, then the ref with `force: false`), never force.
 - **Last sha:** see the newest line in `LOG.md`.
-- **Current state:** plan done; items 1, 2 and 6 done. No product code yet.
-- **Next item:** 3 (freeze the "direct the edit" JSON shape).
+- **Current state:** items 1 to 4 and 6 done. Contracts frozen:
+  - `packages/engine/src/edit/direct.schema.ts` ("direct the edit"): `liveMenus()` (looks from `D22_STYLES`/`STYLE_LAWS`
+    plus base and studio-cut, moves from `X1_MOVES`, caption looks from captionseasy filtered to `STYLE_LOOKS`),
+    `directEditSchema()` (strict zod), `directEditJsonSchema()`, `checkDirection()`, `readDirection()` (never throws),
+    `EXAMPLE_DIRECTION`. Look `studio-cut` maps to `planEdit({ template: 'studio-cut' })` in item 11.
+  - `packages/engine/src/router/direct-film.schema.ts` ("direct the film"): `FILM_BRIEFS` (Launch only for now; a
+    style is added with its own entry, styles without one keep their server path), `filmMenus()`, `directFilmSchema()`
+    (one strict object per offered style, a union on `style` when more than one), `readFilmDirection()`, `EXAMPLE_FILM`.
+    The Launch arc stays a server pick (`chooseLaunchArc`, offered first); Claude Code may choose another from the menu.
+    Item 11 maps the answer onto `launchBrief`'s fields (`line1..N` from `lines`) so the doctor still runs.
+- **Next item:** 5 (token budget: per-call caps from plan 23.3, an estimator and a trimmer for the edit step's transcript).
 
 ## How to run things
 

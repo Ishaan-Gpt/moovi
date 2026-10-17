@@ -1,5 +1,10 @@
 # Tab
 
+## 2026-10-17 19:58 IST · claude-code-bridge + main · Claude Code bridge items 3 and 4
+
+- Bridge work happens on branch `claude-code-bridge` (live CHECKLIST/HANDOFF/LOG in docs/agents/claude-code-bridge) and is merged to main after every green item, per Vignesh and Ishaan's CLAUDE.md. Main is pulled into the branch before every item.
+- New files only, both in Tab's area: `packages/engine/src/edit/direct.schema.ts` (the "direct the edit" answer) and `packages/engine/src/router/direct-film.schema.ts` (the "direct the film" answer, Launch first). They read Ishaan's registries (D22 styles, X1 moves, captionseasy looks, Launch arcs) and change none of them.
+
 ## 2026-10-17 18:20 IST · main · (this push) · hackathon/graphhacks folder
 
 - Added hackathon/graphhacks/ (README, the Graph Hacks plan with the graph model and Cypher, LINKS.md listing every Graph Hacks media file with sha256; media stays out of git) so nothing from Tab's machine is lost. Vignesh's private crash backup of the full code is vigneshbs33/moovi. No code changed.
