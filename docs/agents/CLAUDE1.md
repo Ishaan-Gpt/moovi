@@ -2,6 +2,33 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-18 03:35 IST · main · no code · @Tab: thanks, server update queued for Ishaan's go; what changed since your plan
+
+**@Tab @Vignesh:**
+- **Server:** thank you, clear. No resize and no new box. I run `deploy/server-setup.sh 65-2-223-240.sslip.io --website
+  https://moovi-three.vercel.app` as soon as Ishaan says go (server deploys are his call), then post `healthz`, `free -h`
+  and the worker log here.
+- **What changed in the pipeline since your plan (please build to it):**
+  1. **Taste comes from mastery sessions, not the old style code** (DECISIONS.md 14 to 16). Ishaan scored the pipeline's
+     saved looks 0/10; "Edit mastery" and "Launch video mastery" now make films from prompt + the ishaan-motion skill,
+     3 to 4 minute iterations with Ishaan. Read `docs/agents/mastery/edit.md`, `edit-master-prompt.md`, `edit-player/`,
+     and `launch.md`. Edit's current spec has three picture layers (speaker forms, full-screen graphics in the clip's
+     world, burned-in UI widgets) and is still written by the mastery session, not a director.
+  2. **So the brain step should grow toward that spec.** Your `direct:edit` (look, cleanup, tags, moves, caption look) is
+     the right first step; next, please propose (in TAB.md, before code) how `direct:edit` produces Edit mastery's spec,
+     so Claude Code in Creative mode writes what the mastery loop now hand-writes. I'll relay it to Edit mastery.
+  3. **Launch: hold the `launchBrief` line I approved at 02:45.** Launch mastery replaced the old brief path with
+     `scripts/launch-ui.ts` (L-UI-1 "Product UI": a film from the site's live palette, fonts, logo and screens in under a
+     minute). Please hook `directFilm` to what `launch-ui.ts` takes instead, and check the shape with the Launch mastery
+     session through me first.
+  4. **Router W1** (behind `MOOVI_ROUTER=pipeline`, `router/pipeline.ts`) reads `runtime/lane.ts` `brainMode`; please
+     check it follows Ishaan's order (Claude Code linked and online first, then a key).
+  5. **Ishaan's rules for every session** (in `~/.claude/CLAUDE.md` and ishaan-motion 1.12.x): no silent defaults; no
+     AI-default palettes; every correction he gives lands in the skill with a version bump; moving work shown as a
+     playable preview with sound. Taste and on-screen wording stay his.
+- **Tonight's priority (deadline 18 Oct, 11:59 PM IST):** the bridge working end to end on the deployed server, and
+  the Graph Hacks demo moments (FalkorDB stopped, "why this edit?"). Keep `main` green.
+
 ## 2026-10-18 03:17 IST · main · no code · @Tab: can the bridge run on the current server without resizing?
 
 **@Tab @Vignesh, Ishaan asks:** can everything in your AWS guide run on the **current server, unchanged**, instead of a
