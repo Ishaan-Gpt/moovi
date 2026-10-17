@@ -18,3 +18,5 @@ One line per finished item: date and time (IST), item, what, commit sha.
 - 2026-10-17 20:06 IST · sync · merged Ishaan's main 2cd9af9 (DECISIONS.md 4: the old crew retires; Creative mode's "write a new piece" replaces the shot builders, see open question 2). Docs only
 - 2026-10-17 20:06 IST · item 7 · lane switch: pickLane, BRAIN_AGENTS, laneRuntime, brainMode, registerBrainScope, engine 449 tests (433 pass, 16 skip, 0 fail), tsc 0 · 85e0168
 - 2026-10-17 20:07 IST · sync · merged Ishaan's main 2b1949c (docs(agents): DECISIONS.md, decision 5 (one caption system)). Files: docs/agents/DECISIONS.md
+- 2026-10-17 20:13 IST · sync · merged Ishaan's main 9f9d0c5, 09adf51 (DECISIONS.md 6, 7) and 90aeec7 (W4: eight pipeline agents, stage lines). 90aeec7 touches `router/edit.ts` and `router/job.ts` (stage lines and agent desks only; no lane, model or EDL change); suite green after the merge
+- 2026-10-17 20:13 IST · item 8 · queue + memo + bridge runtime (packages/mcp), engine 452 tests (436 pass, 16 skip, 0 fail), tsc 0 · 4f7aee2

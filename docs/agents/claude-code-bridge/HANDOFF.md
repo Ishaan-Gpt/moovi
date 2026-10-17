@@ -14,20 +14,21 @@ Read this first if you are picking the work up. Updated by Tab after every item.
   pushing in main as well as in this new branch"; matches Ishaan's CLAUDE.md). Red code goes to the branch only.
 - **Push:** through the GitHub API (git data: blobs, trees, commits, then the ref with `force: false`), never force.
 - **Last sha:** see the newest line in `LOG.md`.
-- **Current state:** Phase 0 done; Phase 1 item 7 done. See the newest LOG lines for shas.
+- **Current state:** Phase 0 done; Phase 1 items 7 and 8 done. See the newest LOG lines for shas.
   - Contracts: `engine/src/edit/direct.schema.ts` (direct the edit), `engine/src/router/direct-film.schema.ts` (direct
     the film, Launch first), `engine/src/runtime/budget.ts` (caps, estimator, trimmer, `VideoBudget`).
-  - Lane switch: `engine/src/runtime/lane.ts`. It lives in the engine, not `packages/mcp`, because `keys.scopeFor` needs
-    it and `packages/mcp` depends on the engine (no cycle). Brain calls (`direct:edit`, `direct:film`, `direct:look`) go
-    to Claude Code when online, else the key, else the server (MOOVI_BYOK=optional), else wait (`BrainWaiting`, the job
-    parks). Detail calls never reach Claude Code: key, else the server model. A step not picked up in `PICKUP_MS` (120 s)
-    moves to the next lane. `keys.registerBrainScope(fn)` is asked before the own key (Ishaan: online beats a key); a
-    bridge fault falls back to the own key. `keys.serverModel()` is the server lane.
-  - Not yet changed (needed by item 14): `chat.ts` line 20 checks `loadModel` under MOOVI_BYOK=required, so a keyless
-    user with Claude Code would be asked for a key in chat; switch it to `scopeFor(cmd.user)` (one line).
-- **Next item:** 8 (job queue saving every step and answer: Redis/FalkorDB queue plus a 24 h memo by fingerprint, replay on re-run;
-  decide whether `packages/mcp` is created now, as a workspace package depending on the engine, or the queue starts in
-  `engine/src/runtime/` and moves).
+  - Lane switch: `engine/src/runtime/lane.ts` (in the engine because `keys.scopeFor` needs it and `packages/mcp`
+    depends on the engine). Brain calls (`direct:edit|film|look`) go to Claude Code online, else key, else server
+    (MOOVI_BYOK=optional), else wait (`BrainWaiting`). Detail calls never reach Claude Code. `keys.registerBrainScope`
+    is asked before the own key; `keys.serverModel()` is the server lane. Engine exports `./runtime` and `./keys`.
+  - `packages/mcp` (new workspace package, `pnpm install` links it): `store.ts` (`memoryStore`, `redisStore`, keys
+    `ce:brain:*`), `queue.ts` (`StepQueue`: push, next(user, session), answer (idempotent, foreign session refused),
+    cancel, recall/remember memo 24 h by `fingerprint`), `bridge.ts` (`bridgeRuntime`: refuses non-brain agents and tool
+    loops, memo first, polls the step, `BrainNotPickedUp` after 120 s, `BrainTimedOut` after 5 min, `accept` hook:
+    only accepted answers are remembered).
+  - Needed later: `chat.ts` line 20 checks `loadModel` under MOOVI_BYOK=required; switch it to `scopeFor(cmd.user)`.
+- **Next item:** 9 (session lease per job: lease on pick, refreshed per call, 2 min lapse, run tickets; plan section 21; `StepQueue.next`
+  takes a `session` already, the lease decides which session may pick a job's steps).
 
 ## How to run things
 
