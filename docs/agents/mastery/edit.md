@@ -106,5 +106,6 @@ keeps take 2 in every look.
   - `leak` `{ at }`: a warm light leak sweeping across on its word
   - spec-level `start` (an anchor: the edit begins on a word) and `theme.fall` (the dark fall-off under the captions); the grade is baked by `build-cut.mjs --grade "<ffmpeg chain>"`
   - `world` (a brand world) `{ stops, img: [{ src, x, y, w, h, enter, at, mask }], text: [{ html, y, at }], pip }` · `wipe` `{ src, at, dur }`
-- Rules the player enforces: one text layer per frame (the caption hides under any text graphic); jump cuts are
+- Rules the player enforces: text never covers a face (every drawn picture projects its face box; text graphics move
+  below it with a 44 px margin, the caption below or else above it); one text layer per frame (the caption hides under any text graphic); jump cuts are
   baked (no seeks); stills for cards come from the clip itself.

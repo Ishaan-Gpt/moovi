@@ -60,6 +60,8 @@ const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
 /** a word anchor: { w: 'word', after: <anchor or seconds>, n: 1, dt: 0 } → source seconds (the word's start) */
 const at = a => { if (typeof a === 'number') return a; if (!a) return START; const after = a.after === undefined ? 0 : at(a.after); let n = a.n || 1, w; for (const x of WORDS) if (x.t >= after - .01 && norm(x.text) === norm(a.w) && --n === 0) { w = x; break; } return (w ? (a.end ? w.end : w.t) : after) + (a.dt || 0); };
 if (SPEC.start) START = Math.max(START, at(SPEC.start) - .12);
+const FACEBOXES = [];
+const faceSize = t => { let b = FACES[0]; for (const q of FACES) if (Math.abs(q.src_t - t) < Math.abs(b.src_t - t)) b = q; return { w: b.w, h: b.h }; };
 const faceAt = t => { if (!FACES.length) return { x: .5, y: .42 }; let k = 0; while (k + 1 < FACES.length && FACES[k + 1].src_t <= t) k++; const a = FACES[k], b = FACES[k + 1] || a, u = b === a ? 0 : clamp((t - a.src_t) / (b.src_t - a.src_t)); return { x: lerp(a.x + a.w / 2, b.x + b.w / 2, u), y: lerp(a.y + a.h / 2, b.y + b.h / 2, u) }; };
 
 // the palette: the spec's (a brand's own tokens), else derived from the footage itself
@@ -70,6 +72,7 @@ function drawVideo(t, r, z = 1, Y = .36, radius = 0, dim = 0, c = ctx, blur = 0,
   if (V.readyState < 2) return; const ctx = c; if (Q.has('nofx')) { blur = 0; look = ''; }
   const sa = EDL.source.w / EDL.source.h, f = faceAt(t), H = Math.max(r.h, r.w / sa) * z, W = H * sa;
   let x = r.w / 2 - f.x * W, y = Y * r.h - f.y * H; x = Math.min(0, Math.max(r.w - W, x)); y = Math.min(0, Math.max(r.h - H, y));
+  if (!blur && FACES.length) { const fs = faceSize(t); FACEBOXES.push({ x0: Math.max(r.x, r.x + x + (f.x - fs.w / 2) * W), y0: Math.max(r.y, r.y + y + (f.y - fs.h / 2) * H), x1: Math.min(r.x + r.w, r.x + x + (f.x + fs.w / 2) * W), y1: Math.min(r.y + r.h, r.y + y + (f.y + fs.h / 2) * H) }); }
   ctx.save(); ctx.beginPath(); if (radius) ctx.roundRect(r.x, r.y, r.w, r.h, radius); else ctx.rect(r.x, r.y, r.w, r.h); ctx.clip();
   if (blur) { SMALL.getContext('2d').drawImage(V, 0, 0, SMALL.width, SMALL.height); ctx.globalAlpha = .75; ctx.imageSmoothingQuality = 'high'; ctx.drawImage(SMALL, r.x + x, r.y + y, W, H); ctx.globalAlpha = 1; }
   else { if (look && !Q.has('nofx')) ctx.filter = look; ctx.drawImage(V, r.x + x, r.y + y, W, H); ctx.filter = 'none'; }
@@ -220,12 +223,18 @@ const stopBed = () => { try { bedSrc && bedSrc.stop(); } catch {} bedSrc = null;
 const beatAt = t => BEATS.findLast(b => t >= b.t0 - 1e-3) || BEATS[0];
 
 function frame(t) {
-  ctx.clearRect(0, 0, 1080, 1920); ctxT.clearRect(0, 0, 1080, 1920); cc.clearRect(0, 0, 540, 960); for (const d of ov.children) d.style.display = 'none';
+  FACEBOXES.length = 0; ctx.clearRect(0, 0, 1080, 1920); ctxT.clearRect(0, 0, 1080, 1920); cc.clearRect(0, 0, 540, 960); for (const d of ov.children) d.style.display = 'none';
   if (bedGain) bedGain.gain.value = (SPEC.music?.gain ?? .08) * (1 + .7 * win(t, END - 3, END - .3));
   const b = beatAt(t); b.layers.forEach((L, i) => DEVICES[L.t].draw(L, t, b, b.state[i]));
+  const M = 44, hit = (a, f) => a.x0 < f.x1 + M && a.x1 > f.x0 - M && a.y0 < f.y1 + M && a.y1 > f.y0 - M;
+  for (const d of ov.children) { d.style.translate = ''; if (d.style.display === 'none' || d.classList.contains('desk') || !d.dataset.text) continue;
+    const e = d.firstElementChild || d, x0 = d.offsetLeft + e.offsetLeft, y0 = d.offsetTop + e.offsetTop, box = { x0, y0, x1: x0 + e.offsetWidth, y1: y0 + e.offsetHeight };
+    const f = FACEBOXES.find(q => hit(box, q)); if (f) { let dy = f.y1 + M - box.y0; if (box.y1 + dy > 1880) dy = f.y0 - M - box.y1; d.style.translate = `0 ${dy.toFixed(0)}px`; } }
+  let capP = CAP; if (CAP) { const half = 150, cy = CAP.y * 1920, cbox = { x0: 120, y0: cy - half, x1: 960, y1: cy + half }, f = FACEBOXES.find(q => hit(cbox, q));
+    if (f) { const below = f.y1 + M + half, above = f.y0 - M - half; capP = { ...CAP, y: (below + half < 1880 ? below : Math.max(half + 60, above)) / 1920 }; } }
   // one text layer per frame (owner rule): the caption steps aside whenever a text graphic is on screen
   const textOn = [...ov.children].some(d => d.dataset.text && d.style.display !== 'none' && +(d.style.opacity || 1) > .05);
-  if (CAP && !b.noCaption && !textOn && !Q.has('nocap')) drawCaption(cc, CAP, list, t, 540, 960);
+  if (CAP && !b.noCaption && !textOn && !Q.has('nocap')) drawCaption(cc, capP, list, t, 540, 960);
 }
 function loop() {
   let t = toSrc(V.currentTime);
