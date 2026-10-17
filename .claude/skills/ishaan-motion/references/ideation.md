@@ -25,4 +25,5 @@ If it could appear in any other brand's video unchanged, it is still generic. Ma
 
 ## Banned as a final choice (allowed only as idea #1 to be rejected)
 Centred fade-in, generic slide-up, spinning logo, stock "glitch", lens flare, neon-outline text, confetti, a plain
-card grid, emoji as icons, default library icon sets used untouched.
+card grid, emoji as icons, default library icon sets used untouched, the AI-default palette (blue / orange / cream /
+navy + ice blue / neon on black; see palette.md), and any saved style, kit or preset applied without asking "can something be better?".

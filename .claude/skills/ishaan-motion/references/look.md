@@ -1,8 +1,8 @@
 # Look
 
 ## Colour
-- Brand palette only, taken from the site's CSS and the logo. Keep tokens in one place (bg, fg, accent, glow + extras).
-- **Colour events**: switch light/dark every 1–3 shots so cuts read at speed (cream → ink drop → cream → ink wall → deep-green finale).
+- **Palette: `palette.md` first.** Never the AI-default colours; run the five-palette drill, build OKLCH ramps, design contrast from them. The brand's real colours (site CSS, logo) are kept as the brand mark; keep every colour as a token (ramps + roles).
+- **Colour events**: switch light/dark every 1–3 shots so cuts read at speed (the light and dark ends of the same ramps).
 - Dark shots: exactly one big soft bloom (radius ≈ 0.6 × frame height, off-centre, slowly rotating/breathing) and an
   optional 5–15% dot grid or dust layer. Light shots: white or pastel with at most one coloured light streak.
 

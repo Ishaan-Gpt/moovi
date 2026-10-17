@@ -19,7 +19,7 @@ Intake ─> Reference study ─> Message + shot list ─> Grid (beats or words) 
 
 Work through the stages in order and don't skip ahead. Most bad videos come from starting the build before the beat grid and the shot list exist.
 
-## 0. The five non-negotiables (read before anything else)
+## 0. The six non-negotiables (read before anything else)
 
 1. **Know your limits. Never make a cheap copy.** If a shot would look better with a real video, image, 3D render, recording or asset than with a code approximation, **stop and ask for it**. Say exactly what you need: format, size, alpha or not, length, angle, and why it beats the code version. Ask in one batched list, early (at intake or reference study), never halfway through the build. A labelled placeholder is better than a fake. Only build it in code when code genuinely wins or the owner says no.
    **When you are working unattended** (a side session, a one-pass brief, nobody to answer): do not stall. **First fetch real footage or a photo** for every span where the reference cuts to b-roll, a photo or a clip inside a device (Moovi: `scripts/ref-footage.ts <id> name="query"`, the engine footage finder, licence on every clip; play it with `kits/motion/footage.js`). A drawn stand-in there reads as a paused video. Only when nothing passes: build the best labelled stand-in, keep it swappable (one function or file per asset), and put the batched wish-list (spec + reason per asset) at the top of your report.
@@ -27,6 +27,7 @@ Work through the stages in order and don't skip ahead. Most bad videos come from
 3. **Micro-details are never skipped, only added.** Every arrival, hover, press, settle, cursor move, number change and colour change gets its micro-motion (blur-in, overshoot, secondary wobble, shadow and light response) **and** its SFX. If the reference has it, keep it and improve it. If the reference lacks it but it would help, add it. Removing a micro-effect needs a reason; adding one doesn't.
 4. **Best hybrid stack, used proudly.** Don't stay loyal to one engine. Choose per shot from Remotion, HyperFrames, the MotionEasy canvas engine, Three.js/R3F, GSAP, Lottie/Rive, shaders, ffmpeg and Python analysis. Composite them if that gives the best frame. If a library, skill or tool would speed up or improve the output, **install it, integrate it and use it** (respect licences; record it in `references/toolbox.md`). Research when unsure: docs, examples, Motion/Remotion skills, the web.
 5. **Never the first idea. Pick the 4th or 5th.** For every shot, transition, layout, text treatment and icon, write down 5 ideas. The first 1–3 are what everyone (and every AI) would make. Choose from 4–5, or combine them. The procedure is in `references/ideation.md`. If the choice still looks like a template, go again.
+6. **No silent defaults. Ever.** Anything that arrived by default (a colour, a font, an ease, a layout, a caption style, an SFX, a library preset, a pipeline template, a saved style or rule table, the first thing that came to mind) is a suspect, not a choice. Before keeping it, ask: *can something be better?* Write at least two alternatives and keep the default only if it beats them, and say why in the notes. This includes this repo's own saved looks, kits and rule tables: the owner judged them weak (2026-10-18), so they are references to out-invent, never to apply blindly. **Colour first:** never the AI-default palette (blue, orange, cream, navy + ice blue, neon on black); run the palette drill in `references/palette.md` and build tint ramps for contrast.
 
 ## 1. Intake (ask once, in one message)
 
@@ -96,8 +97,8 @@ Choose transitions from `references/shots-and-transitions.md`: iris born from a 
 
 ## 7. Look
 
-The rules are in `references/look.md`:
-- Brand palette only.
+The rules are in `references/look.md` and `references/palette.md`:
+- **A rare, derived palette, built as OKLCH ramps** (palette.md): never the AI defaults (blue/orange/cream/navy + ice blue/neon on black). The brand's own colour is kept as its mark; the film's world is built around it from the drill, not from defaults.
 - Alternate light and dark every 1–3 shots so cuts still read at speed.
 - Dark shots get **one** big soft colour bloom; never a glow on every element.
 - A display sans plus a serif italic accent.
@@ -129,6 +130,15 @@ The music carries the piece (on a talking head, the voice does: SFX quieter stil
 ## 10. Review loop and ship checklist
 
 1. **Stills first.** Make contact sheets at fixed timestamps and compare them side by side with the reference. Fix size and timing before any full render.
+   **The storyboard board** (what the owner reviews; owner, 2026-10-18: small grey notes under each frame "read poorly"):
+   - one card per beat: the frame large on the left, a **structured side panel** on the right, never a line of small text under it;
+   - the panel, in the film's own type and palette, readable at phone size (≥ 22 px at board scale): the time and
+     beat as a headline, the spoken words with the hero word marked, then labelled rows **CAM · TYPE · GFX · FX · SFX ·
+     MUSIC · TRANSITION OUT**, one short line each, an icon per row;
+   - a timeline ribbon across the top of the board: the whole film's length, beats as blocks, cuts as ticks, SFX
+     hits as dots, the music's sections, so the rhythm is visible at a glance;
+   - the palette strip (the ramps, with their roles) and the type system in the board's header;
+   - frames are settled moments (never mid-transition), and the board itself is designed, not a dump.
 2. Watch it at normal speed, then at 0.25×, checking for dead stops, lockstep groups and settles that are too fast.
 3. **Leap check:** put each shot next to the reference. If ours isn't clearly better (depth, detail, timing, sound), it isn't done.
 4. Run the full checklist in `references/checklist.md`: honesty, overflow, safe areas, banned effects, variety, loudness and ffprobe output.
