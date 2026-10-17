@@ -60,7 +60,7 @@ export class BrainHub {
     registerBrainHooks({
       prime: async u => {
         await this.presence.prime(u);
-        // connected (a live token) but never polled yet: linked, so the job waits for /moovi:run instead of a refusal
+        // connected (a live token) but never polled yet: linked, so the job waits for /mcp__moovi__run instead of a refusal
         if (this.presence.state(u) === 'off' && (await this.tokens.status(u)).linked) this.presence.link(u);
       },
       linked: async u => (await this.tokens.status(u)).linked,

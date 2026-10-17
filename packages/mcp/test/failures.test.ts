@@ -66,7 +66,7 @@ async function window(token: string) {
   return { client, call };
 }
 
-test('failure 1: Claude Code closed mid job: the row says Waiting with /moovi:run; a new /moovi:run picks the same step up', async () => {
+test('failure 1: Claude Code closed mid job: the row says Waiting with /mcp__moovi__run; a new /mcp__moovi__run picks the same step up', async () => {
   const r = rig(); r.hub.presence.touch('u1');
   await r.hub.board.start({ user: 'u1', job: 'job-1' });
   const job = withModel(r.scope()!, () => directEdit({ words }));
@@ -76,7 +76,7 @@ test('failure 1: Claude Code closed mid job: the row says Waiting with /moovi:ru
   await r.hub.gate.release('win-A', new Map([[a.step.job, a.lease]])); // the window closes (server.ts onclose)
   clockT.t += ONLINE_MS + 1000;
   const [n] = await r.notices();
-  assert.deepEqual({ pill: n!.pill, row: n!.row, copy: n!.copy }, { pill: 'Claude Code offline', row: 'Waiting for Claude Code', copy: '/moovi:run' });
+  assert.deepEqual({ pill: n!.pill, row: n!.row, copy: n!.copy }, { pill: 'Claude Code offline', row: 'Waiting for Claude Code', copy: '/mcp__moovi__run' });
   const b = await r.hub.gate.pull('u1', 'win-B', await r.hub.gate.mintTicket('u1'));
   assert.ok('step' in b); assert.equal(b.step.id, a.step.id, 'the same step, not a new question');
   assert.deepEqual(await r.hub.gate.submit('u1', 'win-B', b.lease, b.step.id, good), { ok: true });
@@ -133,7 +133,7 @@ test('failure 4: bad or partial JSON: refused at once with the problem; twice ba
   assert.equal(errorNotice(new NoModelForAgent('direct:film', 'no lane'))!.row, NOTICE.tryAgain, 'a stage with no default says Try again');
 });
 
-test('failure 5: /moovi:run in a second window: told another window has the video', async () => {
+test('failure 5: /mcp__moovi__run in a second window: told another window has the video', async () => {
   const r = rig(); r.hub.presence.touch('u1');
   const job = withModel(r.scope()!, () => directEdit({ words }));
   await r.queued();
@@ -157,7 +157,7 @@ test('failure 6: two browser tabs: both read the same state from the server', as
   await r.hub.gate.submit('u1', 'win-A', a.lease, a.step.id, good); await job;
 });
 
-test('failure 7: a second video while one runs: Queued, Claude Code will take it next; one /moovi:run takes both in order', async () => {
+test('failure 7: a second video while one runs: Queued, Claude Code will take it next; one /mcp__moovi__run takes both in order', async () => {
   const r = rig(); r.hub.presence.touch('u1');
   await r.hub.board.start({ user: 'u1', job: 'job-1' }); clockT.t += 1;
   await r.hub.board.start({ user: 'u1', job: 'job-2' });
@@ -179,7 +179,7 @@ test('failure 8: a job takes too long: no pickup or no answer parks it with Wait
   const br = bridgeRuntime({ queue: r.hub.queue, user: 'u1', job: () => 'job-1', pickupMs: 1000, answerMs: 2000, pollMs: 5, now: () => clockT.t });
   const unpicked = br.complete!(req); await r.queued(); clockT.t += 1000;
   const e1 = await unpicked.catch(e => e); assert.ok(e1 instanceof BrainNotPickedUp);
-  assert.deepEqual(errorNotice(e1), { pill: 'Claude Code offline', row: 'Waiting for Claude Code', hint: null, copy: '/moovi:run' });
+  assert.deepEqual(errorNotice(e1), { pill: 'Claude Code offline', row: 'Waiting for Claude Code', hint: null, copy: '/mcp__moovi__run' });
   assert.equal(errorNotice(new BrainWaiting('direct:edit'))!.row, NOTICE.waiting, 'the wait lane parks with the same words');
   const unanswered = br.complete!({ ...req, prompt: 'p2' }); await r.queued();
   assert.ok('step' in (await r.hub.gate.pull('u1', 'win-A', await r.hub.gate.mintTicket('u1'))));
@@ -226,7 +226,7 @@ test('failure 11: the Moovi server restarts mid job: the queue and memo live in 
   assert.deepEqual(await store.range(KEY.queue('u1')), [], 'replayed from the memo: Claude Code is asked nothing');
 });
 
-test('failure 12: the bridge process is down: the job keeps waiting with /moovi:run; a restarted bridge hands out the same step', async () => {
+test('failure 12: the bridge process is down: the job keeps waiting with /mcp__moovi__run; a restarted bridge hands out the same step', async () => {
   const store = memoryStore(() => clockT.t);
   const r = rig(store); r.hub.presence.touch('u1');
   await r.hub.board.start({ user: 'u1', job: 'job-1' });
@@ -239,7 +239,7 @@ test('failure 12: the bridge process is down: the job keeps waiting with /moovi:
   await assert.rejects(() => fetch(url, { method: 'POST' }), 'Claude Code cannot reach it (its own "failed to connect")');
   clockT.t += ONLINE_MS + 1000; // no window can call in
   const [n] = await r.notices();
-  assert.deepEqual([n!.pill, n!.row, n!.copy], ['Claude Code offline', 'Waiting for Claude Code', '/moovi:run']);
+  assert.deepEqual([n!.pill, n!.row, n!.copy], ['Claude Code offline', 'Waiting for Claude Code', '/mcp__moovi__run']);
   const back = new BrainHub(store, { now: () => clockT.t }); // the bridge comes back up
   const p = await back.gate.pull('u1', 'win-A', await back.gate.mintTicket('u1')); assert.ok('step' in p);
   await back.gate.submit('u1', 'win-A', p.lease, p.step.id, good);

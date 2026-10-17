@@ -38,10 +38,10 @@ test('bridge 16: precheck catches only certain shape errors', () => {
   assert.deepEqual(precheck(schema, { style: 'atlas', hook: 1, extra: true }), []);
 });
 
-test('bridge 16: from /moovi:run to the brain answer to done, through moovi_next and moovi_answer over HTTP', async () => {
+test('bridge 16: from /mcp__moovi__run to the brain answer to done, through moovi_next and moovi_answer over HTTP', async () => {
   const { token } = await hub.tokens.mint('u1');
   const w = await window(token);
-  assert.equal((await w.call('moovi_next', { wait_s: 0 })).body.message, IDLE_NO_TICKET, 'nothing happens without /moovi:run');
+  assert.equal((await w.call('moovi_next', { wait_s: 0 })).body.message, IDLE_NO_TICKET, 'nothing happens without /mcp__moovi__run');
   const ticket = await hub.gate.mintTicket('u1');
   assert.equal((await w.call('moovi_next', { ticket, wait_s: 0.2 })).body.message, NOTHING_RUNNING);
   assert.equal(hub.presence.state('u1'), 'online', 'pulling counts as online');

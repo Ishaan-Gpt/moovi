@@ -61,7 +61,7 @@ Status: `[ ]` open, `[~]` in progress, `[x]` done (the commit is in LOG.md). **V
 | # | Item | Done means | Proof | V |
 |---|---|---|---|---|
 | 26 | [ ] Live steps with timings | one row per agent, details folded; needs Ishaan's 5 UI pieces (`UI-HOOKS.md`) | studio shows it | V |
-| 27 | [ ] Measure real tokens and seconds | per video vs plan 23.4 | LOG.md | P |
+| 27 | [x] Measure real tokens and seconds | per video vs plan 23.4 | `MEASURE.md` (3 e2e runs, a real model as the brain, `count_tokens` on every text): about 3,800 in and 250 out per video, live edit 9 to 10 s, final 3.9 to 5.8 min (over 23.4); `estimateTokens` fixed (ran low), `engine/test/budget.test.ts` budget 27, `mcp/test/measure.test.ts` | P |
 | 28 | [ ] VIGNESH: the 13-step Pro sheet | plan section 20, all boxes ticked | his notes | P |
 | 29 | [ ] Final HANDOFF, docs and merge | README in `packages/mcp`, HANDOFF exact, merged to main | LOG.md | |
 

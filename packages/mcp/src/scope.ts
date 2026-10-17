@@ -33,7 +33,7 @@ export class Presence {
     }
   }
   /** a user who connected Claude Code (a live token) but whose Claude Code has not pulled yet counts as linked, so a
-   * keyless user's video waits for their /moovi:run instead of being refused (MOOVI_BYOK=required) */
+   * keyless user's video waits for their /mcp__moovi__run instead of being refused (MOOVI_BYOK=required) */
   link(user: string) { if (!this.seen.has(user)) this.seen.set(user, this.now() - ONLINE_MS - 1); }
   forget(user: string) { this.seen.delete(user); this.written.delete(user); void this.store?.del(KEY.seen(user)).catch(() => undefined); }
   /** read the shared reading (newest wins); a store that cannot be read leaves the local reading as it is */

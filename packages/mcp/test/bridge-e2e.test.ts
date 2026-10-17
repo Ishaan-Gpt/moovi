@@ -19,7 +19,7 @@ function rig(o: { own?: Runtime | null; byok?: 'required' | 'optional'; pickupMs
   return { store, queue, presence, gate, scope, lanes };
 }
 
-/** a stand-in Claude Code session: types /moovi:run (a ticket), then pulls and answers through the gate */
+/** a stand-in Claude Code session: types /mcp__moovi__run (a ticket), then pulls and answers through the gate */
 async function claudeSession(r: ReturnType<typeof rig>, session: string, answer: (n: number) => string | Promise<string>, o: { ticket?: string | null; pause?: (asked: number) => Promise<void> } = {}) {
   const ticket = o.ticket === null ? undefined : o.ticket ?? await r.gate.mintTicket('u1');
   let stop = false, n = 0; const idles: string[] = [];
@@ -60,7 +60,7 @@ test('bridge 12: a second session never gets the job; a bad answer gets one re-a
   assert.ok(b.idles.includes(IDLE_OTHER_WINDOW));
 });
 
-test('bridge 12: no /moovi:run (no ticket) means no work; the step times out to the key', async () => {
+test('bridge 12: no /mcp__moovi__run (no ticket) means no work; the step times out to the key', async () => {
   const keySaw: string[] = [];
   const key: Runtime = { name: 'key', vision: false, run: async () => { throw new Error('x'); }, complete: async (q: CompleteRequest) => { keySaw.push(q.agent); return good; } };
   const r = rig({ own: key, pickupMs: 60 }); r.presence.touch('u1');

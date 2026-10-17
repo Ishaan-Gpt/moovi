@@ -14,7 +14,7 @@ Read this first if you are picking the work up. Updated by Tab after every item.
   pushing in main as well as in this new branch"; matches Ishaan's CLAUDE.md). Red code goes to the branch only.
 - **Push:** through the GitHub API (git data: blobs, trees, commits, then the ref with `force: false`), never force.
 - **Last sha:** see the newest line in `LOG.md`.
-- **Current state:** Phases 0, 1 and 2 done (items 1 to 18); Phase 3 items 20 to 24 done (resume, two windows, hostile CLAUDE.md, the failure cases, the 120 s fallback). Waiting on Vignesh's tests (items 19 and 25). See the newest LOG lines.
+- **Current state:** Phases 0, 1 and 2 done (items 1 to 18); Phase 3 items 20 to 24 done (resume, two windows, hostile CLAUDE.md, the failure cases, the 120 s fallback); item 27 (measure) done. Waiting on Vignesh's tests (items 19 and 25). See the newest LOG lines.
   - Contracts: `engine/src/edit/direct.schema.ts`, `engine/src/router/direct-film.schema.ts`, `engine/src/runtime/budget.ts`.
   - Lane switch `engine/src/runtime/lane.ts`; checker `engine/src/runtime/checked.ts`; `keys.registerBrainScope`.
   - Brain calls: `engine/src/edit/direct.ts` (`directEditStep`, `directEdit`, `overridesOf`; `planEdit` asks for a
@@ -49,6 +49,21 @@ Read this first if you are picking the work up. Updated by Tab after every item.
   look, a sentence that does not exist) get one re-ask then the default; hostile free text gives the same overrides and
   EDL as a clean answer; at the door (HTTP) prose, oversize and off-menu answers are refused and the step stays open.
   The manual check with a real junk CLAUDE.md is in `TEST-WITH-CLAUDE-CODE.md` section 8b for Vignesh.
+- **Item 27 done (measure):** `MEASURE.md` in this folder. `scripts/e2e.ts` takes `E2E_BRAIN=model` (a real Claude
+  model answers each step from the exact tool text), `E2E_COUNT=exact` (the provider's `count_tokens` on every text
+  read and written; Moovi's tool share counted on top of a client that already has tools) and `E2E_OUT=<file>`.
+  Per video: one `direct:edit` step, about 3,800 tokens in and 250 out (caps 10,000 and 2,500), first step at 4 s,
+  live edit at 9 to 10 s, effects version at 3.9 to 5.8 min (over plan 23.4; the render, not the brain). Fixes:
+  `estimateTokens` now 2.8 / 1.3 characters per token (the old 3.6 / 1.5 ran 11 to 22 percent low; budget 27 test),
+  `directFilmStep` cuts its source by that estimate (it overshot the film cap), `mcp/test/measure.test.ts` keeps
+  RUN_OVERHEAD above the run prompt and tool text.
+- **Run command is `/mcp__moovi__run`** (Claude Code's name for an MCP prompt; Vignesh hit `/moovi:run` not working):
+  every bridge string, the connect page (`app.ts`, asserted in `test/app.test.ts`), `NOTICE.run`, `IDLE_NO_TICKET`,
+  `/api/brain/link` `run` and the lane messages say it. Docs and comments that still say `/moovi:run` mean the same.
+- **Studio key gate (open, Ishaan):** `apps/studio/src/lib/session.ts` sends a keyless user to Settings under
+  `MOOVI_BYOK=required` even when Claude Code is linked: it reads `modelInfo` only, and the studio process does not
+  register the bridge hooks. Request with the exact two lines in `docs/agents/TAB.md` (register `linked` once, then
+  `&& !(await brainLinked(u.id))`).
 - **Item 23 done:** `packages/mcp/src/notices.ts`: `NOTICE` holds every user-facing sentence in the plan's own words
   (section 17), `jobNotice(facts)` says what a video's pill, row, hint and Copy command show, `errorNotice(e)` maps the
   bridge errors (`BrainNotPickedUp`, `BrainWaiting`, `BrainTimedOut`, `NoModelForAgent`) to the same words.

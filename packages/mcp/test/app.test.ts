@@ -5,7 +5,7 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { BrainHub, bridgeApp } from '../src/index';
 
-// bridge 18: the assembled server (what scripts/serve.ts runs), from the website's Connect step to /moovi:run in a window
+// bridge 18: the assembled server (what scripts/serve.ts runs), from the website's Connect step to /mcp__moovi__run in a window
 const hub = new BrainHub();
 const app = bridgeApp(hub, { userOf: async req => req.headers.get('x-test-user') });
 await new Promise<void>(res => app.http.listen(0, '127.0.0.1', res));
@@ -23,11 +23,14 @@ test('bridge 18: health, the connect page, and sign-in first', async () => {
   assert.equal((await fetch(`${base}/healthz`)).status, 200);
   const page = await fetch(`${base}/connect`);
   assert.equal(page.status, 200);
-  assert.match(await page.text(), /Make my connect command/);
+  const html = await page.text();
+  assert.match(html, /Make my connect command/);
+  assert.match(html, /\/mcp__moovi__run/, 'the page names the command Claude Code really shows for an MCP prompt');
+  assert.doesNotMatch(html, /\/moovi:run/, 'not /moovi:run, which Claude Code does not recognise');
   assert.equal((await fetch(`${base}/api/brain/link`, { method: 'POST' })).status, 401, 'no signed-in user, no token');
 });
 
-test('bridge 18: token from the website, claude mcp add command, /moovi:run in one window, revoke cuts it off', async () => {
+test('bridge 18: token from the website, claude mcp add command, /mcp__moovi__run in one window, revoke cuts it off', async () => {
   const r = await fetch(`${base}/api/brain/link`, { method: 'POST', headers: { 'x-test-user': 'u18', 'content-type': 'application/json' }, body: '{}' });
   assert.equal(r.status, 200);
   const j = await r.json() as { command: string; token: string; url: string };
@@ -37,7 +40,7 @@ test('bridge 18: token from the website, claude mcp add command, /moovi:run in o
 
   const a = await connect(j.token), b = await connect(j.token);
   const prompts = await a.listPrompts();
-  assert.ok(prompts.prompts.some(p => p.name === 'run'), 'the server serves /moovi:run itself, nothing to install');
+  assert.ok(prompts.prompts.some(p => p.name === 'run'), 'the server serves /mcp__moovi__run itself, nothing to install');
   const run = await a.getPrompt({ name: 'run' });
   assert.match((run.messages[0]!.content as { text: string }).text, /run ticket rt_[0-9a-f]+/);
   const st = async (c: Client) => JSON.parse(((await c.callTool({ name: 'moovi_status', arguments: {} })).content as { text: string }[])[0]!.text) as Record<string, unknown>;

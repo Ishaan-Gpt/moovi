@@ -5,7 +5,7 @@ import { withModel, BrainWaiting, PICKUP_MS, WAIT_MS } from '@moovi/engine/runti
 import { brainScope, Gate, IDLE_OTHER_WINDOW, KEY, LEASE_MS, MEMO_TTL_MS, memoryStore, Presence, StepQueue } from '../src/index';
 
 /**
- * Bridge item 20: the Claude Code window drops mid video (closed, network cut) and a new /moovi:run in any window picks
+ * Bridge item 20: the Claude Code window drops mid video (closed, network cut) and a new /mcp__moovi__run in any window picks
  * the same video back up. Fake clock for every timer that decides (leases, tickets, memo, pickup); real timers only
  * for the few milliseconds of polling.
  */
@@ -28,7 +28,7 @@ function rig() {
   return { clock, store, queue, presence, gate, scope, lanes, queued, waiting };
 }
 
-test('bridge 20: a window drops holding a step; 2 min later a new /moovi:run takes the same step over and the video finishes', async () => {
+test('bridge 20: a window drops holding a step; 2 min later a new /mcp__moovi__run takes the same step over and the video finishes', async () => {
   const r = rig(); r.presence.touch('u1');
   const tA = await r.gate.mintTicket('u1');
   const job = withModel(r.scope()!, () => directEdit({ words }));
@@ -62,12 +62,12 @@ test('bridge 20: dropped between steps, the job parks; the rerun from another wi
   assert.deepEqual(await r.gate.submit('u1', 'sess-A', a.lease, a.step.id, '{"style":"vaporwave"}'), { ok: true });
   await r.queued(); // the engine's one re-ask is queued ... and window A is gone
   r.clock.t += PICKUP_MS;
-  await r.waiting(); // no key: the step waits for a /moovi:run (the wait lane, 10 min) ...
+  await r.waiting(); // no key: the step waits for a /mcp__moovi__run (the wait lane, 10 min) ...
   r.clock.t += WAIT_MS;
   await assert.rejects(first, BrainWaiting, '... then, with nobody picking up, the job parks; it does not fail');
   assert.deepEqual(r.lanes, ['direct:edit>claude-code', 'direct:edit>claude-code', 'direct:edit>wait']);
 
-  // later, a /moovi:run in a window in another folder; the worker runs the job again
+  // later, a /mcp__moovi__run in a window in another folder; the worker runs the job again
   const tB = await r.gate.mintTicket('u1');
   assert.ok('idle' in await r.gate.pull('u1', 'sess-B', tB));
   const again = withModel(r.scope()!, () => directEdit({ words }));
@@ -84,7 +84,7 @@ test('bridge 20: dropped between steps, the job parks; the rerun from another wi
   assert.equal((await r.store.range(KEY.queue('u1'))).length, 0);
 });
 
-test('bridge 20: dropped between steps, a /moovi:run within 10 min picks the waiting step up, no rerun needed', async () => {
+test('bridge 20: dropped between steps, a /mcp__moovi__run within 10 min picks the waiting step up, no rerun needed', async () => {
   const r = rig(); r.presence.touch('u1');
   const job = withModel(r.scope()!, () => directEdit({ words }));
   await r.queued();

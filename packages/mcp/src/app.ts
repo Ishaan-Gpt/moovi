@@ -45,7 +45,7 @@ const CONNECT_PAGE = `<!doctype html><html><head><meta charset="utf-8"><meta nam
 const out=document.getElementById('out'),st=document.getElementById('st');
 async function status(){const r=await fetch('/api/brain/status');if(!r.ok){st.textContent='Not signed in to Moovi in this browser.';return}const s=await r.json();st.textContent=s.linked?('Linked (token ending '+s.token_last4+'), Claude Code '+(s.online?'online':'offline')):'Not linked yet.'}
 document.getElementById('go').onclick=async()=>{const r=await fetch('/api/brain/link',{method:'POST',headers:{'content-type':'application/json'},body:'{}'});const j=await r.json();if(!r.ok){out.textContent=j.error||'Could not make a token';return}
-out.innerHTML='<p>1. Run this once in a terminal (it works from every folder):</p><pre></pre><p>2. In Claude Code type <code>/moovi:run</code>, then start your video on the Moovi website.</p><p class="muted">This command is shown once. Keep it private: it lets a Claude Code work on your videos.</p>';out.querySelector('pre').textContent=j.command;status()};
+out.innerHTML='<p>1. Run this once in a terminal (it works from every folder):</p><pre></pre><p>2. In Claude Code type <code>/mcp__moovi__run</code>, then start your video on the Moovi website.</p><p class="muted">This command is shown once. Keep it private: it lets a Claude Code work on your videos.</p>';out.querySelector('pre').textContent=j.command;status()};
 document.getElementById('off').onclick=async()=>{await fetch('/api/brain/link',{method:'DELETE'});out.textContent='Disconnected.';status()};
 status();
 </script></body></html>`;

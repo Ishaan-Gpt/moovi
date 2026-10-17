@@ -1,17 +1,17 @@
 /**
  * Isolation (bridge item 9; plan section 21): one job, one Claude Code session, and nothing happens unless the user typed
- * /moovi:run in that session.
+ * /mcp__moovi__run in that session.
  *
- * - Run ticket: getting the /moovi:run prompt mints `rt_...` (10 min to first use, then bound to the session that used
+ * - Run ticket: getting the /mcp__moovi__run prompt mints `rt_...` (10 min to first use, then bound to the session that used
  *   it). A pull without a valid ticket is idle and does nothing, so other sessions and projects that have Moovi added
  *   see the tools but cannot pull work.
  * - Lease: the first pull of a job by a session takes `ls_...` on that job (SET NX, 2 min, refreshed on every call). A
  *   second session never gets a step of a leased job; an answer must carry the lease of the step's job and session.
- *   When a lease lapses (2 min with no call), a fresh /moovi:run anywhere takes the job over; answered steps replay
+ *   When a lease lapses (2 min with no call), a fresh /mcp__moovi__run anywhere takes the job over; answered steps replay
  *   from the memo, so nothing is asked twice.
  * - Resume (item 20): the holder's last call is the lease's `at`. A window that is polling keeps it fresh
  *   (`keepAlive`); one that dropped (closed, network cut) stops, and 2 min after its last call another window with its
- *   own /moovi:run takes the job over, including a step the dropped window had picked and never answered (`repick`).
+ *   own /mcp__moovi__run takes the job over, including a step the dropped window had picked and never answered (`repick`).
  *   A window that closes cleanly gives its leases back at once (`release`).
  */
 import { randomBytes } from 'node:crypto';
@@ -24,7 +24,7 @@ export const TICKET_MS = 6 * 3600_000;
 /** a picked step's answer window (bridge.ts ANSWER_MS) plus a little: the lease never lapses mid answer */
 export const ANSWER_HOLD_MS = 5 * 60_000 + 15_000;
 
-export const IDLE_NO_TICKET = 'Type /moovi:run to let this Claude Code work on your Moovi video.';
+export const IDLE_NO_TICKET = 'Type /mcp__moovi__run to let this Claude Code work on your Moovi video.';
 export const IDLE_OTHER_WINDOW = 'Another Claude Code window is already working on this video. You can close this one.';
 export const IDLE_NOTHING = 'Nothing to do right now: Moovi will have the next step shortly.';
 
@@ -37,7 +37,7 @@ export class Gate {
   /** onPull: every authorised pull (a ticket checked), e.g. Presence.touch: the user's Claude Code is online */
   constructor(readonly store: BrainStore, readonly queue: StepQueue, readonly now: () => number = Date.now, readonly onPull?: (user: string) => void) {}
 
-  /** A one-time run ticket for this user (embedded in the /moovi:run prompt). */
+  /** A one-time run ticket for this user (embedded in the /mcp__moovi__run prompt). */
   async mintTicket(user: string): Promise<string> {
     const t = rnd('rt');
     await this.store.set(KEY.ticket(t), JSON.stringify({ user, createdAt: this.now(), session: null } satisfies Ticket), TICKET_FIRST_USE_MS);
@@ -88,7 +88,7 @@ export class Gate {
     }
   }
 
-  /** A window that closed gives its leases back at once: the next /moovi:run anywhere takes the job without waiting. */
+  /** A window that closed gives its leases back at once: the next /mcp__moovi__run anywhere takes the job without waiting. */
   async release(session: string, held: ReadonlyMap<string, string>): Promise<void> {
     for (const [job, lease] of held) {
       const cur = await this.leaseOf(job);
