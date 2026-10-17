@@ -9,6 +9,10 @@
  *   second session never gets a step of a leased job; an answer must carry the lease of the step's job and session.
  *   When a lease lapses (2 min with no call), a fresh /moovi:run anywhere takes the job over; answered steps replay
  *   from the memo, so nothing is asked twice.
+ * - Resume (item 20): the holder's last call is the lease's `at`. A window that is polling keeps it fresh
+ *   (`keepAlive`); one that dropped (closed, network cut) stops, and 2 min after its last call another window with its
+ *   own /moovi:run takes the job over, including a step the dropped window had picked and never answered (`repick`).
+ *   A window that closes cleanly gives its leases back at once (`release`).
  */
 import { randomBytes } from 'node:crypto';
 import { KEY, type BrainStore } from './store';
@@ -54,16 +58,48 @@ export class Gate {
 
   private async leaseOf(job: string): Promise<Lease | null> { const v = await this.store.get(KEY.lease(job)); return v ? JSON.parse(v) as Lease : null; }
 
-  /** Take or refresh the lease on a job for this session; null when another session holds it. */
-  async acquire(user: string, job: string, session: string, ticket: string): Promise<string | null> {
+  /** a lease whose holder made no call for LEASE_MS: its window dropped, another window may take the job */
+  private stale(l: Lease) { return this.now() - l.at >= LEASE_MS; }
+
+  /** Take or refresh the lease on a job for this session; null when another live session holds it. */
+  async acquire(user: string, job: string, session: string, ticket: string, depth = 0): Promise<string | null> {
     const cur = await this.leaseOf(job);
     if (cur) {
-      if (cur.session !== session || cur.user !== user) return null;
+      if (cur.user !== user) return null;
+      if (cur.session !== session) {
+        if (!this.stale(cur) || depth > 2) return null;
+        // take over from a dropped window; read back so two windows taking over at once end with one owner
+        const l: Lease = { lease: rnd('ls'), user, job, session, ticket, at: this.now() };
+        await this.store.set(KEY.lease(job), JSON.stringify(l), LEASE_MS);
+        return (await this.leaseOf(job))?.lease === l.lease ? l.lease : null;
+      }
       await this.store.set(KEY.lease(job), JSON.stringify({ ...cur, at: this.now(), ticket }), LEASE_MS);
       return cur.lease;
     }
     const l: Lease = { lease: rnd('ls'), user, job, session, ticket, at: this.now() };
-    return (await this.store.setNx(KEY.lease(job), JSON.stringify(l), LEASE_MS)) ? l.lease : (await this.acquire(user, job, session, ticket));
+    return (await this.store.setNx(KEY.lease(job), JSON.stringify(l), LEASE_MS)) ? l.lease : (await this.acquire(user, job, session, ticket, depth + 1));
+  }
+
+  /** A polling window keeps the jobs it holds (moovi_next calls this on every look), so a second window is turned away. */
+  async keepAlive(session: string, held: ReadonlyMap<string, string>): Promise<void> {
+    for (const [job, lease] of held) {
+      const cur = await this.leaseOf(job);
+      if (cur && cur.lease === lease && cur.session === session) await this.store.set(KEY.lease(job), JSON.stringify({ ...cur, at: this.now() }), LEASE_MS);
+    }
+  }
+
+  /** A window that closed gives its leases back at once: the next /moovi:run anywhere takes the job without waiting. */
+  async release(session: string, held: ReadonlyMap<string, string>): Promise<void> {
+    for (const [job, lease] of held) {
+      const cur = await this.leaseOf(job);
+      if (cur && cur.lease === lease && cur.session === session) await this.store.del(KEY.lease(job));
+    }
+  }
+
+  /** Is `job` held by a live window other than `session`? (moovi_next tells a second window so, even between steps) */
+  async heldElsewhere(job: string, session: string): Promise<boolean> {
+    const cur = await this.leaseOf(job);
+    return !!cur && cur.session !== session && !this.stale(cur);
   }
 
   /** Is this the live lease of `job` for `session`? Refreshes it when it is. */
@@ -83,6 +119,16 @@ export class Gate {
     // a step is handed out only for a job this session holds (or can take); jobs leased elsewhere are skipped
     let blocked = false;
     const leases = new Map<string, string>();
+    // first, a picked step nobody answered: this window asking again, or the window that took over from a dropped one
+    for (const s of await this.queue.picked(user)) {
+      const l = leases.get(s.job) ?? await this.acquire(user, s.job, session, ticket!);
+      if (!l) { blocked = true; continue; }
+      leases.set(s.job, l);
+      const again = await this.queue.repick(s.id, session);
+      if (!again) continue;
+      await this.extend(s.job, ANSWER_HOLD_MS);
+      return { step: again, lease: l };
+    }
     const step = await this.queue.next(user, session, async s => {
       const l = leases.get(s.job) ?? await this.acquire(user, s.job, session, ticket!);
       if (!l) { blocked = true; return false; }

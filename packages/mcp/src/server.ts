@@ -80,6 +80,8 @@ export function buildMcp(hub: BrainHub, ctx: SessionCtx): McpServer {
   let ticket: string | undefined;
   const leases = new Map<string, string>();
   const watched = new Set<string>();
+  // item 20: a window that closes gives its videos back at once, so a /moovi:run in another window goes on right away
+  mcp.server.onclose = () => { void hub.gate.release(session, leases).catch(() => undefined); };
 
   const progress = (extra: Extra) => async (waitedS: number) => {
     const token = extra._meta?.progressToken; if (token === undefined) return;
@@ -93,11 +95,18 @@ export function buildMcp(hub: BrainHub, ctx: SessionCtx): McpServer {
     const got = await longPoll<CallToolResult>({
       waitMs: Math.min(waitS * 1000, WAIT_MAX_MS), signal: extra.signal, onProgress: progress(extra),
       attempt: async () => {
+        await hub.gate.keepAlive(session, leases);
         const p = await hub.gate.pull(user, session, ticket);
         if ('step' in p) { leases.set(p.step.job, p.lease); watched.add(p.step.job); return stepView(p.step, p.lease); }
         if (p.idle === IDLE_NO_TICKET) return text({ status: 'idle', message: IDLE_NO_TICKET });
         if (p.idle === IDLE_OTHER_WINDOW) { blocked = true; return text({ status: 'idle', message: IDLE_OTHER_WINDOW }); }
-        for (const j of await hub.board.running(user)) watched.add(j.job);
+        const running = await hub.board.running(user);
+        for (const j of running) watched.add(j.job);
+        // item 21: between steps too, a second window on a video another live window holds is told so (and stops)
+        if (running.length && !running.some(j => leases.has(j.job))) {
+          const elsewhere = await Promise.all(running.map(j => hub.gate.heldElsewhere(j.job, session)));
+          if (elsewhere.every(Boolean)) { blocked = true; watched.clear(); return text({ status: 'idle', message: IDLE_OTHER_WINDOW }); }
+        }
         if (!watched.size) return null;
         const mine = (await Promise.all([...watched].map(j => hub.board.get(j)))).filter(j => j !== null);
         if (mine.length && mine.every(j => j.state !== 'running')) {

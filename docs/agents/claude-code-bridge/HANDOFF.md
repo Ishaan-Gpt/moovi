@@ -27,7 +27,16 @@ Read this first if you are picking the work up. Updated by Tab after every item.
   - Known gaps: Direction `cards` are recorded but not yet placed (inserts.ts casts cards from the graph by tag); the
     edit step sends no keyframes yet (the step supports images, `CompleteRequest` has no image field); BRAIN 2 (final
     look) not wired; `chat.ts` line 20 still checks `loadModel` under MOOVI_BYOK=required.
-- **Next item:** 19, Vignesh tests on his laptop with `TEST-WITH-CLAUDE-CODE.md` (this folder). Watch for: the slash name Claude Code shows for the server prompt (expected `/mcp__moovi__run`), tool permission prompts, and the number of `moovi_next` polls during the render (5 in the proof; a longer `wait_s` or a "come back when done" answer would cut them). Website mount for real users: two rewrite lines requested from Ishaan in `docs/agents/TAB.md` (2026-10-17 22:00). Still open from Phase 1: the Launch hook (11a, waits for Ishaan, requested in TAB.md), Direction `cards` placement, keyframes on the edit step, BRAIN 2 (final look).
+- **Phase 3 (items 20 to 24), in progress.** Item 20 done: `lease.ts` (`Gate`): the lease's `at` is the holder's
+  last call; `keepAlive` (every `moovi_next` look) keeps a polling window's videos; a lease with no call for
+  `LEASE_MS` (2 min) is taken over by another window with its own `/moovi:run` (read back, one owner); `release` on
+  MCP session close (`server.ts` `mcp.server.onclose`) gives the video back at once; `heldElsewhere` lets
+  `moovi_next` tell a second window "another window" between steps too. `queue.ts`: `held:<user>` list of picked
+  steps, `picked()`, `repick()`: a dropped window's open step goes to the window that takes over (same step id, fresh
+  answer window); the same window asking again gets its open step back. Tests: `packages/mcp/test/resume.test.ts`.
+- **Next item:** 24 (lane order with fake clocks; also the "wait" lane: queue the step and wait for a `/moovi:run`
+  instead of parking at once, and treat a linked but never polled user as linked), then 21, 22, 23. Item 19
+  (Vignesh's test) runs in parallel with `TEST-WITH-CLAUDE-CODE.md`.
 - **Item 12 tests** (`packages/mcp/test/bridge-e2e.test.ts`, 5): a stand-in Claude Code session (ticket, then pull and
   answer through the `Gate`) directs `directEdit` end to end inside `withModel(brainScope(...))`; a second window is
   turned away while the first holds the job, and a bad answer gets exactly one re-ask; no `/moovi:run` ticket means no

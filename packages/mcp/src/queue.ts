@@ -64,9 +64,34 @@ export class StepQueue {
       await this.store.remove(KEY.queue(user), id);
       s.state = 'picked'; s.pickedAt = this.now(); s.pickedBy = session;
       await this.put(s);
+      await this.store.push(KEY.held(user), id);
       return s;
     }
     return null;
+  }
+
+  /** The user's picked steps that have no answer yet, oldest first (bridge item 20: resume after a dropped window). */
+  async picked(user: string): Promise<ThinkStep[]> {
+    const out: ThinkStep[] = [];
+    for (const id of await this.store.range(KEY.held(user))) {
+      const s = await this.get(id);
+      if (!s || s.state !== 'picked') { await this.store.remove(KEY.held(user), id); continue; }
+      out.push(s);
+    }
+    return out;
+  }
+
+  /**
+   * Hand a picked, unanswered step to `session` (the window that now holds its job, after the old one dropped, or the
+   * same window asking again). The answer window starts again; an answer from the old session is refused from now on.
+   */
+  async repick(id: string, session: string): Promise<ThinkStep | null> {
+    const s = await this.get(id);
+    if (!s || s.state !== 'picked') return null;
+    s.pickedBy = session; s.pickedAt = this.now();
+    await this.store.set(KEY.pick(id), session, STEP_TTL_MS);
+    await this.put(s);
+    return s;
   }
 
   /** The answer for a picked step. Idempotent: the same answer twice is fine, a different second answer is refused. */
@@ -78,6 +103,7 @@ export class StepQueue {
     if (session !== undefined && s.pickedBy && s.pickedBy !== session) return { ok: false, why: 'this step belongs to another session' };
     s.state = 'answered'; s.answeredAt = this.now(); s.answer = text;
     await this.put(s);
+    await this.store.remove(KEY.held(s.user), id);
     return { ok: true };
   }
 
@@ -86,6 +112,7 @@ export class StepQueue {
     if (s.state === 'answered') return;
     s.state = state; await this.put(s);
     await this.store.remove(KEY.queue(s.user), id);
+    await this.store.remove(KEY.held(s.user), id);
   }
 
   /** A remembered accepted answer for this fingerprint, or null. */

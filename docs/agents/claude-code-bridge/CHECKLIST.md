@@ -49,7 +49,7 @@ Status: `[ ]` open, `[~]` in progress, `[x]` done (the commit is in LOG.md). **V
 
 | # | Item | Done means | Proof | V |
 |---|---|---|---|---|
-| 20 | [ ] Pause and resume across sessions | parked job resumes from a new session, nothing asked twice | e2e test | |
+| 20 | [x] Pause and resume across sessions | parked job resumes from a new session, nothing asked twice; a dropped window's open step is taken over 2 min after its last call (at once after a clean close); a polling window keeps its video | `packages/mcp/test/resume.test.ts` (5): takeover of the same step, late answer refused, park then rerun replays from the memo and asks only the new step, clean close, keep alive, memo 24 h | |
 | 21 | [ ] Same plan from 2 folders | two sessions, same answers, byte-identical EDL | e2e test | |
 | 22 | [ ] Junk CLAUDE.md has no effect | strict steps, server checks; manual check with the real `claude` | manual + schema test | P |
 | 23 | [ ] All 12 failure cases | each row of plan section 17 has a test or a manual check | tests + LOG.md | |
