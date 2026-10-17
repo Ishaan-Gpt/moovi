@@ -8,7 +8,9 @@ export type Severity = 'P0' | 'P1' | 'P2';
 export interface Issue {
   sev: Severity;
   /** a stable name, so a repair or a lint table can key on it */
-  code: 'empty-frame' | 'sparse-frame' | 'text-off-frame' | 'dead-beat' | 'late-hook' | 'end-card' | 'caption-gap' | 'repeat-setup' | 'player-error';
+  code: 'empty-frame' | 'sparse-frame' | 'text-off-frame' | 'dead-beat' | 'late-hook' | 'end-card' | 'caption-gap' | 'repeat-setup' | 'player-error' | 'floor' | 'vision';
+  /** the floor rule it breaks (review/floor.ts) */
+  rule?: import('../floor').RuleId;
   /** the beat it belongs to (index into the film's beats), when it has one */
   beat?: number;
   /** the film time it was seen at */
@@ -39,6 +41,10 @@ export interface Review {
   /** P0 count: anything here and the film should not be called checked */
   blocking: number;
   seconds: number;
+  /** the model's look at the stills, when it was asked for */
+  vision?: { ms: number; asked: number; found: number; skipped?: string; error?: string };
+  /** the same findings on Lens's one scale and shape (review/lens.ts) */
+  lens?: import('../lens').LensResult;
 }
 
 export const SEV_ORDER: Record<Severity, number> = { P0: 0, P1: 1, P2: 2 };

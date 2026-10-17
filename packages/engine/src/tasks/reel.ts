@@ -12,6 +12,7 @@ import { recordInserts } from '../styles/kit/borrow';
 import { runStyle, table } from '../styles/run';
 import { liveRefFile, type LiveRef } from '../styles/serve';
 import { reviewFilm, reviewLine, type Review } from '../review/film';
+import { chipOf } from '../review/lens';
 
 export interface ReelInput { style: StyleId; url?: string; script?: string; brand?: string; /** Auto's kit match (styles/kit/kits.ts) */ kit?: { id: string; name: string; palette: Record<string, string> } }
 
@@ -121,7 +122,8 @@ async function lens(ctx: Parameters<Handler>[0], style: StyleId, r: Awaited<Retu
       new Promise<never>((_, rej) => { if (ac.signal.aborted) rej(new Error('stopped')); else ac.signal.addEventListener('abort', () => rej(new Error(`no answer in ${REVIEW_MS / 1000} s`)), { once: true }); }),
     ]);
     void activity(ctx.chat, 'lens', task, 'done', `review · ${rv.seconds.toFixed(1)} s`, { ms: Math.round(rv.seconds * 1000), scope: 'review' });
-    await ctx.say(reviewLine(rv), 'note', { review: { frames: rv.frames.length, seconds: rv.seconds, blocking: rv.blocking, issues: rv.issues.map(i => ({ sev: i.sev, code: i.code, t: i.t ?? null, text: i.text })) } }, 'lens' as AgentId);
+    // the chip's data in Lens's one shape (review/lens.ts chipOf: the same fields the studio chip reads, plus level and input)
+    await ctx.say(reviewLine(rv), 'note', { review: rv.lens ? chipOf(rv.lens) : { frames: rv.frames.length, seconds: rv.seconds, blocking: rv.blocking, issues: rv.issues.map(i => ({ sev: i.sev, code: i.code, t: i.t ?? null, text: i.text })) } }, 'lens' as AgentId);
     return rv;
   } catch (e) {
     console.warn(`[reel ${ctx.run.id}] review: ${String(e instanceof Error ? e.message : e).slice(0, 160)}`);

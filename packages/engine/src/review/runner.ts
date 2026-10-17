@@ -11,7 +11,9 @@ import { collideEdl } from './collide';
 import { reviewConfig, type ReviewConfig, type ReviewOverride } from './config';
 import { cssRgb, ratio, luminance, regionContrast, sampleBox, saveFrame } from './contrast';
 import { capBase, captionBoxes, lookOf, styleOf, type CapBox, type MeasuredCap } from './geometry';
-import { lintEdl } from './lint';
+import { floorCheck, floorOfConfig, RULE_IDS, type FloorFilm, type FloorRules } from './floor';
+import { checkIssueOf, lens, type LensResult } from './lens';
+import { floorCaptionOf, lintEdl } from './lint';
 import { visionFrames, visionReview, type VisionFn } from './vision';
 import { scoreOf, SEVERITY_COST, type Issue, type Review } from './types';
 
@@ -20,10 +22,28 @@ export interface RepairResult { edl: PlayerEdl; did: string; action: 'move' | 'p
 const clone = <T>(x: T): T => JSON.parse(JSON.stringify(x)) as T;
 const laws = (e: PlayerEdl) => (e.style_laws ?? {}) as Record<string, unknown>;
 
-/** The code checks on the EDL alone (no pixels): lint plus the collision map. */
-export function checkEdl(e: PlayerEdl, cfg: ReviewConfig = reviewConfig(e), W = e.output?.w || 720, H = e.output?.h || 1280, measured?: MeasuredCap[] | null): Review {
+/**
+ * An edit plan as the floor reads it (review/floor.ts): its captions, its visual changes (cuts and cards) and its mix
+ * loudness when it has one. What an EDL does not say (transitions, text sizes, theme) is left out, never guessed.
+ */
+export function floorOfEdl(e: PlayerEdl, caps: CapBox[] = captionBoxes(e)): FloorFilm {
+  const shots = e.shots ?? [], ins = e.inserts ?? [];
+  const lufs = (e as { mix?: { lufs?: unknown } }).mix?.lufs;
+  return {
+    input: 'edit', duration: shots.at(-1)?.t_out ?? 0,
+    captions: caps.map(floorCaptionOf),
+    changes: [...shots.slice(1).map(g => g.t_in), ...ins.map(x => x.t0)].sort((a, b) => a - b),
+    ...(typeof lufs === 'number' ? { sound: { lufs } } : {}),
+  };
+}
+
+/** the caption rules lint.ts and collide.ts run per chunk; the rest of the floor runs over the whole plan here */
+const CAPTION_RULES = RULE_IDS.filter(id => id.startsWith('captions.'));
+
+/** The code checks on the EDL alone (no pixels): lint plus the collision map, then the rest of the floor rules. */
+export function checkEdl(e: PlayerEdl, cfg: ReviewConfig = reviewConfig(e), W = e.output?.w || 720, H = e.output?.h || 1280, measured?: MeasuredCap[] | null, rules: FloorRules = floorOfConfig(cfg)): Review {
   const caps = captionBoxes(e, W, H, undefined, measured);
-  const issues = [...lintEdl(e, cfg, caps), ...collideEdl(e, cfg, caps)];
+  const issues = [...lintEdl(e, cfg, caps, rules), ...collideEdl(e, cfg, caps, rules), ...floorCheck(floorOfEdl(e, caps), rules, CAPTION_RULES).map(checkIssueOf)];
   return { issues, score: scoreOf(issues), frames: [] };
 }
 
@@ -70,18 +90,21 @@ export function repairEdl(e: PlayerEdl, issues: Issue[], cfg: ReviewConfig = rev
   return null;
 }
 
-export interface CheckResult<E> { edl: E; before: Review; after: Review | null; repaired: string | null; kept: 'original' | 'repaired'; error?: string }
+export interface CheckResult<E> { edl: E; before: Review; after: Review | null; repaired: string | null; kept: 'original' | 'repaired'; error?: string;
+  /** the kept version on Lens's scale (review/lens.ts), the shape the chat chip draws */
+  lens: LensResult }
 
 /** For edits (no pixels): check, at most one repair, keep whichever scores better. Never throws. */
 export function checkAndRepair<E extends object>(e: E, o: { config?: ReviewOverride } = {}): CheckResult<E> {
-  const empty: Review = { issues: [], score: 100, frames: [] };
+  const empty: Review = { issues: [], score: 100, frames: [] }, t0 = Date.now();
+  const seen = (r: Review, repaired: string | null = null) => lens({ input: 'edit', review: r, seconds: +((Date.now() - t0) / 1000).toFixed(2), repaired });
   try {
     const pe = e as unknown as PlayerEdl, cfg = reviewConfig(pe, o.config);
     const before = checkEdl(pe, cfg), fix = before.issues.length ? repairEdl(pe, before.issues, cfg) : null;
-    if (!fix) return { edl: e, before, after: null, repaired: null, kept: 'original' };
+    if (!fix) return { edl: e, before, after: null, repaired: null, kept: 'original', lens: seen(before) };
     const after = checkEdl(fix.edl, cfg);
-    return after.score > before.score ? { edl: fix.edl as unknown as E, before, after, repaired: fix.did, kept: 'repaired' } : { edl: e, before, after, repaired: fix.did, kept: 'original' };
-  } catch (err) { return { edl: e, before: empty, after: null, repaired: null, kept: 'original', error: String((err as Error)?.message ?? err) }; }
+    return after.score > before.score ? { edl: fix.edl as unknown as E, before, after, repaired: fix.did, kept: 'repaired', lens: seen(after, fix.did) } : { edl: e, before, after, repaired: fix.did, kept: 'original', lens: seen(before) };
+  } catch (err) { return { edl: e, before: empty, after: null, repaired: null, kept: 'original', error: String((err as Error)?.message ?? err), lens: seen(empty) }; }
 }
 
 /** The colour a palette role (or a literal colour) names */
@@ -142,7 +165,9 @@ export interface RenderReview { before: Review; after: Review | null; repaired: 
   /** the one vision review: what it found, how long it took, or why it was skipped */
   vision?: { ms: number; asked: number; issues: string[]; frames: string[]; skipped?: string; error?: string };
   /** how many caption boxes came from the browser rather than the estimate */
-  measured?: number }
+  measured?: number;
+  /** the shipped version on Lens's scale (review/lens.ts) */
+  lens?: LensResult }
 
 /** the render callback may hand back the repaired render's own measured boxes */
 const measuredOf = (r: unknown): MeasuredCap[] | null => { const m = (r as { capRects?: unknown } | null | undefined)?.capRects; return Array.isArray(m) && m.length ? m as MeasuredCap[] : null; };
@@ -203,6 +228,7 @@ export async function reviewRender(o: RenderReviewOpts, render: (out: string) =>
     if (out2 && existsSync(out2)) rmSync(out2, { force: true });
   }
   res.ms = Date.now() - t0;
+  res.lens = lens({ input: 'edit', review: res.kept === 'repaired' && res.after ? res.after : res.before, seconds: +(res.ms / 1000).toFixed(2), repaired: res.kept === 'repaired' ? res.repaired : null });
   try { writeFileSync(join(o.dir, 'review.json'), JSON.stringify(res, null, 2)); } catch { /* a read-only folder still renders */ }
   return res;
 }

@@ -19,6 +19,8 @@ import { MUSIC_MIX } from '../src/audio/music-lib';
 import { DEFAULT_LAWS } from '../src/edit/build';
 import { CAPTION_FONTS, CAPTION_STYLES } from '../src/edit/captions';
 import { FX_RULES } from '../src/edit/effects/plan';
+import { FLOOR } from '../src/review/floor';
+import { checkSevOf, filmSevOf } from '../src/review/lens';
 import { FX_MIX } from '../src/edit/effects/render';
 import { EDIT } from '../src/edit/lib';
 import { STYLE_LAWS } from '../src/edit/styles';
@@ -66,8 +68,9 @@ const LAUNCH_DEF = { pre: lift('packages/engine/src/launch/plan.ts', /: \{ pre: 
 const LAUNCH_TR = [...src('packages/library/src/kits/launch/trans.js').matchAll(/pre: ([\d.]+), post: ([\d.]+)/g)].map(m => r2(+m[1]! + +m[2]!));
 const VIS_TR = lift('packages/engine/src/visual/page/motion.js', /export const TRANSITION_S = ([\d.]+)/);
 const SM_FLASH = lift('packages/engine/src/edit/styles.ts', /c\.dur = ([\d.]+)/);
-const DEAD_BEAT = lift('packages/engine/src/review/film/plan.ts', /len > ([\d.]+)/);
-const LATE_HOOK = lift('packages/engine/src/review/film/plan.ts', /first\.t1 - first\.t0 > ([\d.]+)/);
+// the film review's beat numbers live in the floor rules now (review/floor.ts)
+const DEAD_BEAT = FLOOR['pacing.maxBeatSec'].value;
+const LATE_HOOK = FLOOR['pacing.hookSec'].value;
 const EDITOR_BED = lift('packages/engine/src/tasks/editor.ts', /bedLu: adj\.bedLu \?\? ([\d.]+)/);
 const S1_ARRIVE = r2(TIMING.sceneArrive / FPS);
 const KEY_SFX = EVENT_SOUNDS['key-word'];
@@ -149,6 +152,9 @@ const reviewSrc = ['collide.ts', 'lint.ts', 'pixels.ts', 'runner.ts', 'vision.ts
 const filmSrc = ['index.ts', 'plan.ts', 'frames.ts'].map(f => src(`packages/engine/src/review/film/${f}`)).join('\n');
 const sevOf = new Map<string, Set<string>>();
 for (const m of reviewSrc.matchAll(/kind: '(\w+)', severity: ([^,]+),/g)) for (const s of m[2]!.matchAll(/'(error|warn)'/g)) (sevOf.get(`check.${m[1]}`) ?? sevOf.set(`check.${m[1]}`, new Set()).get(`check.${m[1]}`)!).add(s[1]!);
+// the rules CHECK and the film review run through the floor (review/floor.ts): their severity is the rule's level
+for (const [rule, key] of [['captions.minSec', 'check.caption_time'], ['captions.maxWords', 'check.caption_words'], ['captions.face', 'check.face']] as const) { const l = FLOOR[rule].level; if (FLOOR[rule].on && l) (sevOf.get(key) ?? sevOf.set(key, new Set()).get(key)!).add(checkSevOf(l)); }
+for (const [rule, key] of [['pacing.hookSec', 'film.late-hook'], ['pacing.maxBeatSec', 'film.dead-beat']] as const) { const l = FLOOR[rule].level; if (FLOOR[rule].on && l) (sevOf.get(key) ?? sevOf.set(key, new Set()).get(key)!).add(filmSevOf[l]); }
 for (const m of filmSrc.matchAll(/sev: ([^,]+), code: '([\w-]+)'/g)) for (const s of m[1]!.matchAll(/'(P\d)'/g)) (sevOf.get(`film.${m[2]}`) ?? sevOf.set(`film.${m[2]}`, new Set()).get(`film.${m[2]}`)!).add(s[1]!);
 /** today's severity on the page's scale: CHECK error and film P0 → block; CHECK warn, P1, P2 → warn (today nothing holds up the preview) */
 const toChoice = (s: string) => (s === 'error' || s === 'P0' ? 'block' : 'warn');
@@ -165,6 +171,7 @@ const ABOUT: Record<string, string> = {
   'check.face': 'text on the face', 'check.safe_zone': 'a caption in the platform UI bars', 'check.collision': 'a caption overlaps a card', 'check.burned_text': "a caption sits on the source's own text", 'check.vision': 'a finding from the model look at frames',
   'film.empty-frame': 'nothing on screen', 'film.sparse-frame': 'a near-empty frame', 'film.text-off-frame': 'text runs off the frame', 'film.dead-beat': `one set-up over ${DEAD_BEAT} s`, 'film.late-hook': `the opening beat holds over ${LATE_HOOK} s`,
   'film.end-card': 'the end card outside 8–30 % of the film', 'film.caption-gap': "captions miss over 15 % of the script's words", 'film.repeat-setup': 'the same set-up twice in a row', 'film.player-error': 'the player did not load',
+  'check.floor': 'a floor rule Ishaan switches on (review/floor.ts)', 'film.floor': 'a floor rule Ishaan switches on (review/floor.ts)', 'film.vision': 'a finding from the model look at the beat stills (opt-in)',
 };
 interface Prob { id: string; group: string; kind: string; about: string; today: string; start: 'block' | 'warn' | 'off'; note?: string }
 const PROBS: Prob[] = [];

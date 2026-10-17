@@ -2,10 +2,13 @@
  * Lints on the film's own data (film.json + script.txt), no browser: the beat map in seconds. Every style writes its
  * beats with t0/t1 (Style 4 and 5 `beats`, Dark Vox `shots`, Anatomy `secs`), so one reader covers them all.
  * Numbers follow docs/agents/research/R11-open-design.md: the hook lands by about 2.5 s, no beat sits still past
- * ~6.5 s, an end card is 8–30 % of the film, captions carry the script's words.
+ * ~6.5 s, an end card is 8–30 % of the film, captions carry the script's words. The hook and the beat length are floor
+ * rules (review/floor.ts), so their numbers live there; the rest of the floor runs over the plan after them.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { beatFloor, floorCheck, floorRules, type FloorFilm, type FloorRules } from '../floor';
+import { filmIssueOf } from '../lens';
 import type { Issue } from './types';
 
 export interface Beat { i: number; t0: number; t1: number; setup: string; words: string[] }
@@ -33,15 +36,23 @@ export function readPlan(dir: string): Plan {
   return { duration: Number(film.duration) || (beats.at(-1)?.t1 ?? 0), beats, end, script };
 }
 
-export function lintPlan(p: Plan, o: { captions: boolean } = { captions: true }): Issue[] {
+/**
+ * A generated film as the floor reads it: its beats (the end card marked, which may hold) and their starts as the
+ * visual changes. Captions, transitions, text sizes and sound are not in film.json in one shape yet, so they are left
+ * out, never guessed.
+ */
+export function floorOfPlan(p: Plan): FloorFilm {
+  // the end card is allowed to hold; every other beat must move on
+  const beats = p.beats.map(b => ({ i: b.i, t0: b.t0, t1: b.t1, setup: b.setup, ...(p.end !== null && b.t0 >= p.end - 0.05 ? { end: true } : {}) }));
+  return { input: 'film', duration: p.duration, beats, changes: beats.slice(1).map(b => b.t0) };
+}
+
+const BEAT_RULES = ['pacing.hookSec', 'pacing.maxBeatSec', 'text.textOnly'] as const;
+
+export function lintPlan(p: Plan, o: { captions: boolean } = { captions: true }, rules: FloorRules = floorRules()): Issue[] {
   const out: Issue[] = [];
-  const first = p.beats[0];
-  if (first && first.t1 - first.t0 > 4.0) out.push({ sev: 'P2', code: 'late-hook', beat: 0, t: first.t0, text: `the opening beat holds ${(first.t1 - first.t0).toFixed(1)} s before anything changes; the hook should land by about 2.5 s` });
-  for (const b of p.beats) {
-    const len = b.t1 - b.t0;
-    // the end card is allowed to hold; every other beat must move on
-    if (len > 6.5 && !(p.end !== null && b.t0 >= p.end - 0.05)) out.push({ sev: 'P1', code: 'dead-beat', beat: b.i, t: b.t0, text: `beat ${b.i + 1} (${b.setup || 'no set-up'}) runs ${len.toFixed(1)} s on one set-up` });
-  }
+  const film = floorOfPlan(p);
+  out.push(...beatFloor(film.beats!, rules).map(filmIssueOf));
   for (let i = 1; i < p.beats.length; i++) {
     const a = p.beats[i - 1]!, b = p.beats[i]!;
     if (a.setup && a.setup === b.setup) out.push({ sev: 'P2', code: 'repeat-setup', beat: b.i, t: b.t0, text: `beats ${a.i + 1} and ${b.i + 1} use the same set-up (${b.setup}) back to back` });
@@ -57,5 +68,6 @@ export function lintPlan(p: Plan, o: { captions: boolean } = { captions: true })
     const cover = 1 - missing.length / said.length;
     if (cover < 0.85) out.push({ sev: 'P1', code: 'caption-gap', text: `captions carry ${Math.round(cover * 100)} % of the script's words (missing e.g. "${[...new Set(missing)].slice(0, 5).join('", "')}")` });
   }
+  out.push(...floorCheck(film, rules, [...BEAT_RULES]).map(filmIssueOf));
   return out;
 }

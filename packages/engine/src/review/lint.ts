@@ -1,9 +1,12 @@
 /**
  * The anti-slop lint: banned filler, captions that say too much at once, the same card twice, two overlays at once.
- * Pure code on the EDL, no pixels, a few milliseconds.
+ * Pure code on the EDL, no pixels, a few milliseconds. The caption floor rules (time on screen, words at once, and any
+ * caption rule Ishaan switches on) come from review/floor.ts, with this config's numbers.
  */
 import type { PlayerEdl } from '../edit/lib';
 import type { ReviewConfig } from './config';
+import { captionFloor, floorOfConfig, type FloorCaption, type FloorRules } from './floor';
+import { checkIssueOf } from './lens';
 import { captionBoxes, type CapBox } from './geometry';
 import type { Issue } from './types';
 
@@ -12,13 +15,15 @@ export function bannedIn(text: string, banned: string[]): string[] {
   const n = norm(text); return banned.filter(b => b && n.includes(' ' + b.toLowerCase() + ' '));
 }
 
-export function lintEdl(e: PlayerEdl, cfg: ReviewConfig, caps: CapBox[] = captionBoxes(e)): Issue[] {
+/** A caption chunk as the floor reads it. */
+export const floorCaptionOf = (c: CapBox): FloorCaption => ({ i: c.chunk, t0: c.t0, t1: c.t1, text: c.text, words: c.words });
+
+export function lintEdl(e: PlayerEdl, cfg: ReviewConfig, caps: CapBox[] = captionBoxes(e), rules: FloorRules = floorOfConfig(cfg)): Issue[] {
   const out: Issue[] = [];
   for (const c of caps) {
     const bad = bannedIn(c.text, cfg.banned);
     if (bad.length) out.push({ kind: 'banned_word', severity: 'warn', t: c.t, chunk: c.chunk, msg: `caption "${c.text}" carries ${bad.map(b => `"${b}"`).join(', ')}` });
-    if (c.t1 - c.t0 < cfg.minCaptionSec) out.push({ kind: 'caption_time', severity: 'warn', t: c.t, chunk: c.chunk, value: +(c.t1 - c.t0).toFixed(2), msg: `caption "${c.text}" is on screen ${(c.t1 - c.t0).toFixed(2)} s (least ${cfg.minCaptionSec} s to read)` });
-    if (c.words > cfg.maxCaptionWords) out.push({ kind: 'caption_words', severity: 'warn', t: c.t, chunk: c.chunk, value: c.words, msg: `caption "${c.text}" shows ${c.words} words (most ${cfg.maxCaptionWords})` });
+    for (const x of captionFloor(floorCaptionOf(c), rules)) out.push({ ...checkIssueOf(x), t: c.t });
   }
   const ins = (e.inserts ?? []).map((x, i) => ({ ...x, i })).sort((a, b) => a.t0 - b.t0);
   for (const x of ins) {
