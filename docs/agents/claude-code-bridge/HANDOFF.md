@@ -49,6 +49,12 @@ Read this first if you are picking the work up. Updated by Tab after every item.
   look, a sentence that does not exist) get one re-ask then the default; hostile free text gives the same overrides and
   EDL as a clean answer; at the door (HTTP) prose, oversize and off-menu answers are refused and the step stays open.
   The manual check with a real junk CLAUDE.md is in `TEST-WITH-CLAUDE-CODE.md` section 8b for Vignesh.
+- **Live-test fix (Oct 17, Vignesh, fresh unseeded FalkorDB):** the edit failed with `[craft] assetOrigins failed: ERR
+  Invalid graph operation on empty key`. FalkorDB refuses a read-only query on a graph that does not exist yet; the graph
+  client now reads that as no rows (`isEmptyKey` in `graph/src/client.ts`), an outage still stops the job. A failed job's
+  reason now reaches Claude Code (`JobInfo.error`, `moovi_next` failed result has `reason` and says it). `pnpm graph:seed`
+  reads `.env.local`; the test guide setup is `pnpm falkordb` then `pnpm graph:reset` (craft + library, keeps accounts).
+  Tests: `mcp/test/failure-reason.test.ts` (3), `engine/test/graph-empty-key.test.ts` (2, one needs a live FalkorDB).
 - **Item 27 done (measure):** `MEASURE.md` in this folder. `scripts/e2e.ts` takes `E2E_BRAIN=model` (a real Claude
   model answers each step from the exact tool text), `E2E_COUNT=exact` (the provider's `count_tokens` on every text
   read and written; Moovi's tool share counted on top of a client that already has tools) and `E2E_OUT=<file>`.
@@ -110,6 +116,8 @@ Read this first if you are picking the work up. Updated by Tab after every item.
 
 ## Gotchas
 
+- A fresh FalkorDB has no `craft` graph until `pnpm graph:reset`; reads on it are empty (no error since Oct 17), so the
+  edit runs plainer (no library sounds, camera moves, why links). Seed it.
 - Claude Code HTTP tool calls: first byte within 60 s, abort after 5 min idle without progress. Long poll 45 s max.
 - Claude Code warns past 10k tokens of tool output; keep every step small.
 - The engine's own deadlines assume an API; the bridge scope sets `deadlineScale` high and the bridge enforces its own

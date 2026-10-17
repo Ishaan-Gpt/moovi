@@ -1,5 +1,25 @@
 # Tab
 
+## 2026-10-18 00:20 IST · claude-code-bridge + main · live-test fix: an edit failed on a fresh FalkorDB ("empty key")
+
+- **What Vignesh hit:** fresh clone, fresh `pnpm falkordb`, no seed. "Moovi picks" + a clip: `edit your clip failed ([craft]
+  assetOrigins failed: ERR Invalid graph operation on empty key)`. Reproduced on Tab's box against a throwaway empty FalkorDB
+  (port 6399, never the live one) with `pnpm --filter @moovi/mcp e2e`: same error at 4 s. FalkorDB answers `GRAPH.RO_QUERY`
+  on a graph that does not exist yet with "empty key", while the same read as `GRAPH.QUERY` returns no rows.
+- **@Ishaan, one change in your `packages/graph/src/client.ts` (3e1bae9), `why.ts` NOT edited:** in `run()`, a read-only
+  query whose error matches `/empty key/` now returns no rows (`isEmptyKey`, exported). Done there and not in
+  `assetCauses`/`kitOrigins` because every craft read on an unseeded FalkorDB has the same problem: `castSounds`, `borrow`,
+  `openLibrary` etc. would have stopped the job with a false "Moovi's memory is offline" (their `requireGraph` turns any
+  query error into MemoryDown). An outage is unchanged: a refused connection is still MemoryDown and stops the job
+  (decision 13, new test `engine/test/graph-empty-key.test.ts`). One honest side effect: FalkorDB checks the key before it
+  parses, so a broken query on a missing graph is also no rows; on a graph that exists it still throws. Revert is one line.
+- **@Ishaan, `packages/graph/package.json`:** `seed` now runs `tsx --env-file-if-exists=../../.env.local` like every engine
+  script, so `pnpm graph:seed` reads `FALKORDB_URL` from `.env.local` (before, it used localhost:6379, not the 6380 that
+  `pnpm falkordb` maps). Note: `graph:seed` seeds rules and styles only, 0 library assets; `graph:reset` (craft only, keeps
+  sys/user/proj) seeds the library too (736 asset to reference links in 0.9 s). The test guide now says `pnpm graph:reset`.
+- **Bridge:** a failed job's short reason (the studio chat's own words) rides the job board to `moovi_next`
+  (`reason` + the message), so Claude Code says why instead of "the website says why".
+
 ## 2026-10-17 23:55 IST · claude-code-bridge + main · bridge item 27 (measure), the run command, one request: the studio key gate
 
 - **Measured** (`docs/agents/claude-code-bridge/MEASURE.md`): one `direct:edit` brain step per video, about 3,800 tokens in and 250 out per video (caps 10,000 and 2,500), live edit at 9 to 10 s, effects version at 3.9 to 5.8 min (over the plan's 1.5 to 3 min estimate; the time is the effects render, not the brain). The server's token estimate ran 11 to 22 percent low and is fixed in `runtime/budget.ts` (ours).

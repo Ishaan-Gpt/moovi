@@ -9,7 +9,7 @@
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
-    "seed": "tsx scripts/seed.ts",
+    "seed": "tsx --env-file-if-exists=../../.env.local scripts/seed.ts",
     "check": "tsx scripts/check.ts",
     "docs": "tsx scripts/docs.ts"
   },

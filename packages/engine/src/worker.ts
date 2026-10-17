@@ -163,7 +163,7 @@ export class Worker {
       await pq(pid, P.setRun, { id: runId, status: 'failed', error: msg.slice(0, 500), at: Date.now(), brief: null, skill: null, card: null, match: null });
       await say(pid, run.chat, 'moovi', `I couldn’t finish this one: ${t.title.toLowerCase()} failed (${msg.slice(0, 220)}). Ask me to try again, or change the brief.`, 'error');
       await publish(run.chat, { type: 'run', run: { id: runId, n: run.n, status: 'failed' } });
-      await brainRun({ type: 'end', user, project: pid, run: runId, chat: run.chat, ok: false });
+      await brainRun({ type: 'end', user, project: pid, run: runId, chat: run.chat, ok: false, error: `${t.title.toLowerCase()} failed (${msg.slice(0, 220)})` });
       await this.o.onRunEnd?.(pid, run, false);
     } finally {
       clearInterval(beat);

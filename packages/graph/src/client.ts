@@ -118,6 +118,11 @@ async function run<T>(graph: string, name: string, cypher: string, params: Param
     error = e instanceof Error ? e.message : String(e);
     if (e instanceof MemoryDown) throw e;
     if (/ECONNREFUSED|ENOTFOUND|socket|closed|connect/i.test(error)) { conn = null; throw new MemoryDown(e); }
+    // A graph nobody has written yet (an unseeded `craft` on a fresh FalkorDB) is a missing key, and FalkorDB answers a
+    // read-only query on it with "empty key" where the same read as GRAPH.QUERY returns no rows. It is an empty graph,
+    // not an outage: no rows. FalkorDB checks the key before parsing, so a broken query on a missing graph is no rows too;
+    // on a graph that exists it still throws. (Live test, Oct 17: a fresh `pnpm falkordb` failed the edit at assetOrigins.)
+    if (ro && isEmptyKey(error)) { error = undefined; return rows; }
     throw new Error(`[${graph}] ${name} failed: ${error}`);
   } finally {
     const ev: QueryEvent = { graph, name, cypher: cypher.trim(), params, ro, ms: +(performance.now() - t0).toFixed(2), rows: rows.length, at: Date.now(), error };
@@ -126,6 +131,9 @@ async function run<T>(graph: string, name: string, cypher: string, params: Param
     listeners.forEach(fn => { try { fn(ev); } catch { /* a listener never breaks a query */ } });
   }
 }
+
+/** FalkorDB's answer to GRAPH.RO_QUERY on a graph that does not exist yet ("ERR Invalid graph operation on empty key"). */
+export const isEmptyKey = (message: string) => /empty key/i.test(message);
 
 /** Read-only query (server-enforced). */
 export const read = <T = Record<string, unknown>>(graph: string, name: string, cypher: string, params: Params = {}, timeoutMs = 2500) =>
