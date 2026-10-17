@@ -26,10 +26,12 @@ if [ ! -f .env ]; then
     echo "MOOVI_BYOK=required"
     echo "MOOVI_RUNTIME=http"
     echo "MOOVI_CHROME_PATH=/usr/bin/chromium"
-    [ -n "$SITE" ] && echo "SITE_ADDRESS=$SITE" && echo "MOOVI_ORIGINS=https://$SITE"
+    [ -n "$SITE" ] && echo "SITE_ADDRESS=$SITE" && echo "MOOVI_ORIGINS=https://$SITE" && echo "PUBLIC_URL=https://$SITE"
   } > .env
   chmod 600 .env
 fi
 
 docker compose up -d --build
+# the craft library (effects, styles) into the graph; safe to run again
+docker compose run --rm seed || true
 docker compose ps

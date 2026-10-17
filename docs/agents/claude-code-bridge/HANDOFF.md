@@ -14,7 +14,7 @@ Read this first if you are picking the work up. Updated by Tab after every item.
   pushing in main as well as in this new branch"; matches Ishaan's CLAUDE.md). Red code goes to the branch only.
 - **Push:** through the GitHub API (git data: blobs, trees, commits, then the ref with `force: false`), never force.
 - **Last sha:** see the newest line in `LOG.md`.
-- **Current state:** Phases 0, 1 and 2 done (items 1 to 18); Phase 3 items 20 to 24 done (resume, two windows, hostile CLAUDE.md, the failure cases, the 120 s fallback); item 27 (measure) done. Waiting on Vignesh's tests (items 19 and 25). See the newest LOG lines.
+- **Current state:** Phases 0, 1 and 2 done (items 1 to 18); Phase 3 items 20 to 24 done (resume, two windows, hostile CLAUDE.md, the failure cases, the 120 s fallback); item 27 (measure) done. Live-test round 3 (Oct 18): effects render with no Python (Node face + U2-Net-p cutout), cuts keep air around every kept word, the preview clock follows the playing video, Claude Code keeps looping on moovi_next, Settings card "Use Claude Code", AWS compose + `DEPLOY-AWS.md`. Waiting on Vignesh's next test on Windows. See the newest LOG lines.
   - Contracts: `engine/src/edit/direct.schema.ts`, `engine/src/router/direct-film.schema.ts`, `engine/src/runtime/budget.ts`.
   - Lane switch `engine/src/runtime/lane.ts`; checker `engine/src/runtime/checked.ts`; `keys.registerBrainScope`.
   - Brain calls: `engine/src/edit/direct.ts` (`directEditStep`, `directEdit`, `overridesOf`; `planEdit` asks for a

@@ -48,7 +48,11 @@ const seekTo = (v, t) => new Promise(r => {
   v.currentTime = t;
 });
 const show = v => { A.classList.toggle('on', v === A); B.classList.toggle('on', v === B); };
-async function prep(k) { rolled = false; if (k < S.length) await seekTo(nxt, Math.max(0, S[k].src_in - PRE)); }
+// a shot that starts where the one before it ended in the source (a sentence or hold_max split inside one kept piece)
+// is the same take running on: the visible deck plays straight through it, so only a real jump cut needs the other deck
+const joined = k => k > 0 && k < S.length && Math.abs(S[k].src_in - S[k - 1].src_out) < 0.02;
+const nextJump = k => { while (k < S.length && joined(k)) k++; return k; };
+async function prep(k) { rolled = false; const j = nextJump(k); if (j < S.length) await seekTo(nxt, Math.max(0, S[j].src_in - PRE)); }
 /** jump to output time t (start, scrub, still): the visible deck on the right source second, the other one on the next shot */
 async function place(t) {
   si = EDIT.shotAt(E, t); nxt.pause(); nxt.muted = true;
@@ -225,16 +229,29 @@ function draw(t) {
 }
 
 /* ── playback ── */
+// the output clock follows the picture's own media time while the visible deck plays its shot (Vignesh's Windows
+// preview, Oct 18: on a slow decode the wall clock ran on while a deck was still seeking, so 2 s of speech went
+// silent and the next cut chopped the words); a deck that is not on its shot yet holds the clock up to HOLD seconds
+const HOLD = 1.2;
+function clock(now) {
+  const g = S[si], mt = cur.currentTime;
+  if (!MIX && !cur.paused && cur.readyState >= 2 && mt >= g.src_in - 0.3 && mt <= g.src_out + 0.6) { const t = g.t_in + (mt - g.src_in); base = t; wall0 = now; return t; }
+  const el = (now - wall0) / 1000;
+  return MIX ? base + el : base + Math.max(0, el - HOLD);
+}
 function frame(now) {
   if (!playing) return;
-  const t = base + (now - wall0) / 1000, g = S[si];
-  if (PRE > 0 && !rolled && si + 1 < S.length && t >= g.t_out - PRE) { rolled = true; nxt.muted = true; nxt.play().catch(() => {}); }
-  if (t >= g.t_out && si + 1 < S.length) {
+  let t = clock(now);
+  const j = nextJump(si + 1);
+  if (PRE > 0 && !rolled && j < S.length && t >= S[j].t_in - PRE) { rolled = true; nxt.muted = true; nxt.play().catch(() => {}); }
+  while (t >= S[si].t_out && si + 1 < S.length && joined(si + 1)) si++;
+  if (t >= S[si].t_out && si + 1 < S.length) {
     const due = now, want = S[si + 1].src_in; si++;
     const old = cur; cur = nxt; nxt = old;
     cur.muted = !!MIX; if (cur.paused) cur.play().catch(() => {}); show(cur);
     old.muted = true; old.pause(); old.style.transform = '';
     cur.requestVideoFrameCallback((n, md) => M.cuts.push({ hold: +(n - due).toFixed(1), off: +((md.mediaTime - want) * 1000).toFixed(0) }));
+    base = S[si].t_in; wall0 = now; t = base;
     prep(si + 1);
   }
   if (t >= D) { draw(D); stop(); $('p').textContent = 'Replay'; window.__done = true; return; }

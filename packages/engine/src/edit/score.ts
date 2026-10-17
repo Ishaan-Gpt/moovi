@@ -1,5 +1,6 @@
 import { EDIT, type PlayerEdl } from './lib';
 import { keepOf } from './edl';
+import { onWordMs } from './build';
 
 /**
  * The R9 edit score (docs/agents/research/R9-benchmark-set.md), the pure part: every number here is read from the EDL,
@@ -71,10 +72,11 @@ export function slateKept(e: PlayerEdl, truth: Truth): { slate: [number, number]
 
 /**
  * Cut on word: every jump in the source between two shots (a speaker cut) is checked on both sides against the word
- * edges (truth words when given, else the EDL's own): on word when within `snapMs` of an edge; inside a word when it
+ * edges (truth words when given, else the EDL's own): on word when within `snapMs` of an edge (default: the air the
+ * cut rules keep, onWordMs in build.ts); inside a word when it
  * lies inside a word more than snapMs from both its edges.
  */
-export function cutOnWord(e: PlayerEdl, words: { t0: number; t1: number }[], snapMs = 100): { cuts: number; on: number; pct: number; insideWord: number } {
+export function cutOnWord(e: PlayerEdl, words: { t0: number; t1: number }[], snapMs = onWordMs()): { cuts: number; on: number; pct: number; insideWord: number } {
   const s = snapMs / 1000, edges = words.flatMap(w => [w.t0, w.t1]);
   const near = (x: number) => edges.some(y => Math.abs(x - y) <= s);
   const inWord = (x: number) => words.some(w => x > w.t0 + s && x < w.t1 - s);
