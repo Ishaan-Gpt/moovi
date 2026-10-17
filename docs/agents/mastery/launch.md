@@ -25,3 +25,19 @@ isn't used for taste.
 - One bespoke film beats a template made of re-skinned parts. Never cast the old Launch looks, arcs or parts blindly.
 - A slideshow of one headline per beat reads as cheap. A film needs continuity: one motif and one moving camera,
   with transitions made from objects.
+
+## Ref 1: dump.cam (x.com/javiiarchive, 20 s) — what it teaches
+- **The product's own UI is the whole film.** There are no headline cards; the only on-screen words are the UI's own
+  ("Your dumps.", the filter pills, the search box, "New dump"). The copy lives in the product.
+- **The logo becomes the UI.** The mark slides left, the wordmark appears beside it and the header bar builds around
+  them (filters, search, the call to action). That header then stays put as the anchor across most of the film.
+- **Real content, dense and colourful.** Dozens of real-looking user items (photos, posters, stickers, phone shots)
+  pop into a growing pile. Density and colour carry the energy, on a calm warm-grey world with one brand colour.
+- **Chaos, then order.** The pile is zoomed into, one item opens, then everything flies into a tidy grid ("Your
+  dumps."). A filter pill click re-flows the grid, then a phone view, then the Templates page scrolls.
+- **Dive into a tile.** One template goes full-bleed (a real photo). A frosted search bar appears on it and types
+  "little wins". The photo shrinks away and the search bar stays as the bridge. Results fly in around it, then fly out.
+- **The end card is the brand's own button.** The search bar turns into the orange "dump.cam" pill: the call to action
+  is a piece of the UI.
+- **Craft:** 60 fps, fast but smooth layout morphs, a cursor that clicks and selects, selection handles on the chosen
+  item, motion blur on the fly-ins, no camera shake, no glow.

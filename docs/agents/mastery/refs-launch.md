@@ -5,3 +5,4 @@ The "launch mastery" session reads this file at the start of every iteration and
 
 ## Links
 
+- https://x.com/javiiarchive/status/2109664187244753316 (ref 1, dump.cam, 20 s, 1920x1080 at 60 fps, about -17.7 LUFS)
