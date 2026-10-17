@@ -62,3 +62,6 @@
 - Rule 0.6, no silent defaults: every default (colour, font, ease, layout, saved style, pipeline rule) is questioned against alternatives.
 - New references/palette.md: the banned AI-default palettes, the 5-palette drill, OKLCH tint ramps, roles, contrast from ramps.
 - §10 storyboard board spec: frame plus a structured side panel, a timeline ribbon, the palette strip (owner: notes under frames read poorly).
+
+## 1.10.1 (2026-10-18)
+- Lessons: a moving piece is shown as a playable preview (range-capable server); every owner correction lands in the skills unasked.
