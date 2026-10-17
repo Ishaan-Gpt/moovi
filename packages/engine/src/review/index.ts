@@ -5,3 +5,5 @@ export * from './lint';
 export * from './collide';
 export * from './contrast';
 export * from './runner';
+export * from './vision';
+export * from './pixels';
