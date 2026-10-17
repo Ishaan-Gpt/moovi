@@ -115,3 +115,14 @@ keeps take 2 in every look.
   leak back to the speaker (Ishaan noticed and liked it), starting on the speaker's own line.
 - The recipe for every edit is in ishaan-motion `edit-fundamentals.md` §12; the known gap (full-screen motion
   graphics, "1/10 compared to the reference") is §13, proposed as its own mastery.
+
+## 2026-10-18: v11, the world from real cut-outs (motion-graphics mastery, waiting for Ishaan's verdict)
+- Owner's direction: no three.js world built from scratch; use the existing tools (the player's `desk`, the kit motion
+  curves in `kits/motion/core.js`) and make it look premium fast.
+- The `desk` device now places real photo cut-outs (CC0 scans rendered once to PNG with alpha): a laptop playing the
+  lecture clip on its own screen, a megaphone, a bulb that flickers on with a glow, framing leaves, a cup, a teapot and
+  pencils sliding in from the corners at a nearer depth (parallax and depth blur). Drops fall under gravity and bounce
+  twice; the contact shadow follows the cut-out's alpha. A window gobo with real leaf silhouettes lights the paper and
+  sweeps in on every visit. Ink draws on its own words and labels write on from the left.
+- Measured with perf.ts (2 runs each, same machine): v10 31 fps, p95 35 ms; v11 35–37 fps, p95 43–48 ms, worst frame
+  149 ms, no frozen video clock over 100 ms (the world is warmed once at load).

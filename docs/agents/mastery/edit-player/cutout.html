@@ -1,0 +1,40 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Cut-outs</title>
+<script type="importmap">{"imports":{"three":"../../../packages/engine/node_modules/three/build/three.module.js","three/addons/":"../../../packages/engine/node_modules/three/examples/jsm/"}}</script>
+</head><body style="margin:0;background:#888">
+<script type="module">
+// One-time still cut-outs (PNG, alpha) of the CC0 scanned props in data/world, lit from the same top-left window as
+// the desk world, so every prop's shading agrees with the desk's light. Driven by cutouts.mjs: window.__shot(spec).
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+const R = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+R.toneMapping = THREE.AgXToneMapping; R.toneMappingExposure = 1.05; R.outputColorSpace = THREE.SRGBColorSpace; document.body.appendChild(R.domElement);
+const env = await new RGBELoader().loadAsync('../../world/hdri/photo_studio_loft_hall_1k.hdr'); env.mapping = THREE.EquirectangularReflectionMapping;
+const cache = {};
+window.__shot = async ({ m, nodes, tilt = 90, yaw = 0, roll = 0, size = 1024, emissive = 0, screen = false, pad = 1.06 }) => {
+  const g = cache[m] ??= (await new GLTFLoader().loadAsync(`../../world/${m}/${m}.gltf`)).scene;
+  const scene = new THREE.Scene(); scene.environment = env; scene.environmentIntensity = .55;
+  const root = new THREE.Group(); scene.add(root);
+  const src = nodes ? nodes.map(n => g.getObjectByName(n)).filter(Boolean) : [g];
+  for (const s of src) { const c = s.clone(true); if (nodes) c.position.set(0, 0, 0); root.add(c); }
+  root.traverse(o => { if (o.isMesh) { o.material = o.material.clone(); if (emissive && /glass/i.test(o.material.name)) { o.material.emissive = new THREE.Color('#FFD27A'); o.material.emissiveIntensity = emissive; o.material.transparent = false; o.material.opacity = 1; } } });
+  root.rotation.set(0, THREE.MathUtils.degToRad(yaw), THREE.MathUtils.degToRad(roll));
+  // the window: warm key from the top-left, a soft cool fill from the room
+  const key = new THREE.DirectionalLight('#FFE6C4', 3.2); key.position.set(-2, 3, -1.2); scene.add(key);
+  const fill = new THREE.HemisphereLight('#F6EEE2', '#B9A88F', .9); scene.add(fill);
+  // camera: tilt 90 = straight down, 0 = level front
+  const box = new THREE.Box3().setFromObject(root), ctr = box.getCenter(new THREE.Vector3()), rad = box.getSize(new THREE.Vector3()).length() / 2;
+  const fov = 18, d = rad / Math.sin(THREE.MathUtils.degToRad(fov / 2)) * pad, a = THREE.MathUtils.degToRad(tilt);
+  const cam = new THREE.PerspectiveCamera(fov, 1, d / 20, d * 4); cam.position.set(ctr.x, ctr.y + d * Math.sin(a), ctr.z + d * Math.cos(a)); cam.up.set(0, tilt > 80 ? 0 : 1, tilt > 80 ? -1 : 0); cam.lookAt(ctr);
+  R.setSize(size, size, false); R.setClearColor(0, 0); R.render(scene, cam);
+  // trim to the alpha bounds
+  const gl = R.getContext(), px = new Uint8Array(size * size * 4); gl.readPixels(0, 0, size, size, gl.RGBA, gl.UNSIGNED_BYTE, px);
+  let x0 = size, y0 = size, x1 = 0, y1 = 0; for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) if (px[(y * size + x) * 4 + 3] > 8) { const yy = size - 1 - y; x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, yy); y1 = Math.max(y1, yy); }
+  const out = document.createElement('canvas'); out.width = x1 - x0 + 1; out.height = y1 - y0 + 1; out.getContext('2d').drawImage(R.domElement, -x0, -y0);
+  let quad = null; if (screen) { const s = g.getObjectByName('classic_laptop_screen'); const mesh = []; root.traverse(o => { if (o.isMesh && o.material.name === 'classic_laptop_screen') mesh.push(o); });
+    if (mesh[0]) { mesh[0].geometry.computeBoundingBox(); const b = mesh[0].geometry.boundingBox; const c = [[b.min.x, b.max.y], [b.max.x, b.max.y], [b.max.x, b.min.y], [b.min.x, b.min.y]].map(([x, y]) => { const v = new THREE.Vector3(x, y, b.max.z); mesh[0].localToWorld(v); v.project(cam); return [((v.x + 1) / 2 * size - x0) / out.width, ((1 - v.y) / 2 * size - y0) / out.height]; }); quad = c; } }
+  return { png: out.toDataURL('image/png'), w: out.width, h: out.height, quad };
+};
+window.__ready = true;
+</script></body></html>
