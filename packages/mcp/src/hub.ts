@@ -64,6 +64,12 @@ export class BrainHub {
         if (this.presence.state(u) === 'off' && (await this.tokens.status(u)).linked) this.presence.link(u);
       },
       linked: async u => (await this.tokens.status(u)).linked,
+      // the router's mode (W1 brainFor): online only while a window polls, so a linked and online Claude Code is Creative
+      presence: async u => {
+        await this.presence.prime(u);
+        const s = this.presence.state(u);
+        return s === 'off' && (await this.tokens.status(u)).linked ? 'linked' : s;
+      },
       run: async e => {
         if (e.type === 'start') await this.board.start({ user: e.user, job: e.run, project: e.project, chat: e.chat, title: e.title ?? null });
         else await this.board.finish({ job: e.run, ok: e.ok !== false, user: e.user, project: e.project, chat: e.chat, title: e.title ?? null, error: e.error ?? null });

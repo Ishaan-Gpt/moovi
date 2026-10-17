@@ -137,6 +137,8 @@ export function registerBrainScope(fn: BrainScopeSource | null) { brainSource = 
 export interface BrainHooks {
   prime?: (user: string) => Promise<void>;
   linked?: (user: string) => Promise<boolean>;
+  /** the user's Claude Code as the lane switch sees it: polling now (online), connected but quiet (linked), or off */
+  presence?: (user: string) => Promise<'online' | 'linked' | 'off'>;
   run?: (e: { type: 'start' | 'end'; user: string; project: string; run: string; chat: string; ok?: boolean; title?: string; error?: string }) => Promise<void> | void;
 }
 let brainHooks: BrainHooks = {};
@@ -148,6 +150,9 @@ const quiet = async <T>(what: string, fn: () => Promise<T> | T | undefined, dflt
 export const primeBrainScope = (user: string | null | undefined) => (user && brainHooks.prime ? quiet('prime', () => brainHooks.prime!(user), undefined) : Promise.resolve(undefined));
 /** whether the user has Claude Code connected (false without the bridge) */
 export const brainLinked = (user: string) => (brainHooks.linked ? quiet('linked', () => brainHooks.linked!(user), false) : Promise.resolve(false));
+/** online / linked / off from the bridge (the router's Creative test, W1); without a bridge, the token alone (linked or off) */
+export const brainPresence = async (user: string): Promise<'online' | 'linked' | 'off'> =>
+  brainHooks.presence ? quiet('presence', () => brainHooks.presence!(user), 'off' as const) : ((await brainLinked(user)) ? 'linked' : 'off');
 export const brainRun = (e: Parameters<NonNullable<BrainHooks['run']>>[0]) => (brainHooks.run ? quiet('run', () => brainHooks.run!(e), undefined) : Promise.resolve(undefined));
 
 function ownScope(user: string): ModelScope | null {

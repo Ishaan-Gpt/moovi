@@ -102,10 +102,13 @@ test('sounds: one cue per effect, on its start', () => {
   assert.deepEqual(used([ev('checklist', 4, 6), ev('orbit', 1, 3)]), ['orbit', 'checklist']);
 });
 
-test('captions step aside while a giant word or a framed picture is up, and only then', () => {
-  const evs = [ev('giant-word', 1, 2.5), ev('phone-mockup', 4, 6), ev('checklist', 7, 9)];
+test('captions step aside while a giant word or the app window is up; the phone keeps them, above the phone', () => {
+  const evs = [ev('giant-word', 1, 2.5), ev('phone-mockup', 4, 6), ev('checklist', 7, 9), ev('pull-back', 10, 12)];
   assert.equal(captionHidden(evs, 1.5), true);
-  assert.equal(captionHidden(evs, 5), true);
+  assert.equal(captionHidden(evs, 5), false, 'every spoken word stays on screen during the phone');
+  assert.equal(captionHidden(evs, 11), true);
+  const y = captionY(5, evs, { y0: 0.3, y1: 0.5 }, 0.035, 0.76);
+  assert.ok(y - 0.035 >= 0.08 && y + 0.035 < 0.18, `above the phone (its top edge is at about 0.18 of the frame), inside the safe area: ${y}`);
   assert.equal(captionHidden(evs, 8), false);
   assert.equal(captionHidden(evs, 3), false);
   assert.ok(FX['giant-word'].ownsText);

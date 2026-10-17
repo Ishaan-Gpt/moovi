@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { TYPE_IDS, TYPE_WORDS, TYPES, isTypeId, typeOf, type TypeId } from '@moovi/library/types';
 import type { Attachment, AttachmentRole } from '../commands';
-import { brainLinked, byokMode, loadModel, serverModel } from '../keys';
+import { brainPresence, byokMode, loadModel, serverModel } from '../keys';
 import { ask } from '../runtime';
 import { brainMode, type LaneFacts } from '../runtime/lane';
 import { HOW_WORDS, ROLE_CHOICES, ROLE_QUESTION, TYPE_QUESTION, typeChoice } from './pipeline-words';
@@ -165,12 +165,14 @@ export function routeRules(i: RouteInput, brain: Brain): Route {
 /* ───── brain ───── */
 
 /**
- * Whether the user's Claude Code is online. STUB for Tab (the bridge, packages/mcp): the engine only hears "linked"
- * today (keys.brainLinked), so this reads linked or off and never online. The bridge replaces it with its presence
- * reading (`registerPresence(user => presence.state(user))`), which makes "connected and online" Creative.
+ * Whether the user's Claude Code is online. Wired by Tab (bridge, 2026-10-18): keys.brainPresence asks the bridge
+ * (packages/mcp hub.register's presence hook: online while a window polls, linked when connected but quiet, else off),
+ * so "connected and online" is Creative; without the bridge in the process it reads the token alone (linked or off).
+ * `registerPresence` still overrides it (tests).
  */
 export type PresenceFn = (user: string) => Promise<LaneFacts['claudeCode']> | LaneFacts['claudeCode'];
-const linkedOnly: PresenceFn = async user => ((await brainLinked(user)) ? 'linked' : 'off');
+// the bridge's own reading when it is plugged in (online while a Claude Code window polls), else the token alone
+const linkedOnly: PresenceFn = user => brainPresence(user);
 let presence: PresenceFn = linkedOnly;
 export function registerPresence(fn: PresenceFn | null) { presence = fn ?? linkedOnly; }
 

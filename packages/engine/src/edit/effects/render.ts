@@ -250,6 +250,7 @@ export async function renderFxFilm(f: FxFilm): Promise<{ out: string; frames: nu
   const n = Math.round(dur * fps);
   try {
     const page = await browser.newPage({ viewport: { width: FX_W, height: FX_H }, deviceScaleFactor: 1 });
+    page.setDefaultTimeout(120_000);
     await page.goto(fileUrl(html));
     await page.evaluate(`var __name = function (f) { return f; };\n(${effectsRuntime.toString()})(${JSON.stringify(data)}); ${geo.feather ? `document.getElementById('base').style.maskImage='linear-gradient(to bottom, transparent 0, black 160px)';document.getElementById('cut').style.maskImage='linear-gradient(to bottom, transparent 0, black 160px)';` : ''} window.__fx.ready`);
     const ff = spawn(config.ffmpeg, ['-nostdin', '-v', 'error', '-y', '-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'mjpeg', '-i', '-', '-c:v', 'libx264', '-preset', 'medium', '-crf', '19', '-pix_fmt', 'yuv420p', '-r', String(fps), '-movflags', '+faststart', vfile], { stdio: ['pipe', 'ignore', 'pipe'] });
@@ -261,7 +262,10 @@ export async function renderFxFilm(f: FxFilm): Promise<{ out: string; frames: nu
       const hideCap = captionHidden(f.events, t);
       const cy = hideCap ? null : captionY(t, f.events, faceBand, 0.035, 0.76);
       await page.evaluate(`window.__fx.frame(${t}, ${src}, ${cy === null ? 'null' : cy})`);
-      const buf = await page.screenshot({ type: 'jpeg', quality: 92 });
+      // a busy machine (a 2 vCPU server, other jobs) can take far longer than Playwright's 30 s default for one frame:
+      // wait longer, and try a frame once more before the whole effects render is given up
+      const shot = () => page.screenshot({ type: 'jpeg', quality: 92, timeout: 120_000 });
+      const buf = await shot().catch(() => shot());
       if (!ff.stdin.write(buf)) await new Promise(r => ff.stdin.once('drain', r));
       f.onFrame?.(i, n);
     }

@@ -66,6 +66,12 @@ export function fxLines(words: FxWord[], gap = 0.6): FxLine[] {
 const clean = (s: string) => s.replace(/[^\p{L}\p{N}%$₹€£.'-]/gu, '').replace(/^[.'-]+|[.'-]+$/g, '');
 const STOP = new Set("a an the and or but so to of in on at for with is are was were be it this that you your i we our my me us they it's just like really very can will do does did have has had not no yes all its from by as if then than there here what when how who why which".split(' '));
 const NUM_WORDS: Record<string, number> = { two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, twenty: 20, thirty: 30, fifty: 50, hundred: 100, thousand: 1000 };
+/** the giant word of a line: a number first, then a name (capitalised, not the line's first word), then the longest word */
+function keyWord(l: FxLine): string {
+  const ws = l.words.map(w => clean(w.word)).filter(w => w && !STOP.has(w.toLowerCase()) && w.length <= 12);
+  return ws.find(w => /\d/.test(w)) ?? ws.slice(1).find(w => /^[A-Z]/.test(w)) ?? [...ws].sort((a, b) => b.length - a.length)[0] ?? '';
+}
+
 /** the word a line's effect lands on, and that effect's words (params) */
 function cueFor(fx: FxId, l: FxLine): { at: string | number; params?: Record<string, unknown> } {
   const ws = l.words.map(w => clean(w.word)), key = ws.filter(w => w && !STOP.has(w.toLowerCase())).sort((a, b) => b.length - a.length)[0] ?? ws[0] ?? '';
@@ -130,6 +136,27 @@ export async function autoFx(words: FxWord[], o: { src?: FxSource; max?: number;
     cues.push({ fx: best.id, at: c.at, ...(c.params ? { params: c.params } : {}) });
     picks.push({ fx: best.id, needs, line: l.text, at: typeof c.at === 'number' ? c.at : l.t0, ...(o.faces ? { face } : {}) });
     used.add(best.id); last = best.id; lastT = l.t0;
+  }
+  // one giant keyword on the strongest line left plain (a pro edit's word punch): the payoff (last line) first, then a
+  // line with a number, a name or a claim; never closer than `spacing` to another pick. It comes on top of `max`: it is
+  // the word, not a scene, and the caption steps aside while it is up
+  if (!used.has('giant-word') && words.length >= 8) {
+    const KEEP = new Set(['claim', 'payoff', 'reveal', 'answer', 'hook', 'stat']);
+    const free = lines.map((l, i) => ({ l, i })).filter(({ l }) => l.words.length >= 3 && !picks.some(p => p.line === l.text)
+      && picks.every(p => Math.abs(p.at - l.t0) >= spacing && Math.abs(p.at - l.t1) >= spacing));
+    const score = ({ l, i }: { l: FxLine; i: number }) => (i === lines.length - 1 ? 3 : 0) + (/\d/.test(l.text) ? 2 : 0)
+      + (l.words.slice(1).some(w => /^[A-Z]/.test(clean(w.word))) ? 1 : 0)
+      + detectNeeds(l.text, { index: i, count: lines.length }).filter(n => KEEP.has(n)).length;
+    const best = free.sort((x, y) => score(y) - score(x))[0];
+    if (best) {
+      const word = keyWord(best.l);
+      if (word) {
+        const at = best.l.words.find(x => clean(x.word) === word)?.t ?? best.l.t0;
+        cues.push({ fx: 'giant-word', at, params: { word: word.toUpperCase() } });
+        picks.push({ fx: 'giant-word', needs: ['payoff'], line: best.l.text, at, ...(o.faces ? { face: faceIn(best.l) } : {}) });
+        used.add('giant-word');
+      }
+    }
   }
   // one transition between two picked moments, on the longest pause between lines (a whip for fast talk, else a flip)
   const gaps = lines.slice(1).map((l, i) => ({ t: lines[i]!.t1, g: l.t0 - lines[i]!.t1 })).filter(g => g.g > 0.25 && g.t > 1).sort((a, b) => b.g - a.g);

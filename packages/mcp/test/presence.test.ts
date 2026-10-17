@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { memoryStore, ONLINE_MS, Presence } from '../src/index';
+import { brainPresence } from '@moovi/engine/keys';
+import { BrainHub, memoryStore, ONLINE_MS, Presence } from '../src/index';
+import { brainFor } from '../../engine/src/router/pipeline';
 
 test('bridge 16: presence crosses processes through the store (the /mcp process writes, the worker primes)', async () => {
   let t = 1_000_000;
@@ -17,4 +19,18 @@ test('bridge 16: presence crosses processes through the store (the /mcp process 
   await worker.prime('u1');
   assert.equal(worker.state('u1'), 'online');
   await new Presence(() => t).prime('u1');
+});
+
+test('router W1: a linked, online Claude Code is Creative (the bridge hands the router its presence, not only "linked")', async () => {
+  const hub = new BrainHub(memoryStore());
+  const unregister = hub.register({ server: null });
+  try {
+    assert.equal(await brainPresence('w1-off'), 'off');
+    await hub.tokens.mint('w1-linked');
+    assert.equal(await brainPresence('w1-linked'), 'linked', 'connected, no window polling yet');
+    await hub.tokens.mint('w1-online'); hub.presence.touch('w1-online');
+    assert.equal(await brainPresence('w1-online'), 'online');
+    assert.equal(await brainFor('w1-online'), 'creative', 'Ishaan\'s order: a linked, online Claude Code first');
+  } finally { unregister(); }
+  assert.equal(await brainPresence('w1-online'), 'off', 'no bridge in the process: the token alone, and no hooks');
 });

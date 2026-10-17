@@ -230,13 +230,17 @@ export function effectsRuntime(D: FxRuntimeData) {
         const word = String(p.word ?? 'WOW'), setup = p.setup ? String(p.setup) : '';
         const size = p.size ?? Math.max(90, Math.min(520, Math.floor(900 / (Math.max(2, word.length) * 0.954))));
         // the keyword sits BEHIND the speaker; the small setup line sits in FRONT, just above it, so the head never hides it
-        const n = keep(el(back, `<div class="abs" style="width:${W}px;text-align:center;transform-style:flat">
-          <div class="gw" style="font-weight:900;font-size:${size}px;line-height:.9;letter-spacing:-.03em;color:${GOLD};text-shadow:0 12px 50px rgba(0,0,0,.35);text-transform:uppercase">${esc(word)}</div></div>`));
+        // behind the head only when the word is wide enough to show beside it; on a close-up (the head about as wide as
+        // the word, measured 2026-10-18 on Vignesh's selfie: MOOVI fully hidden, captions off, 0.8 s of nothing) it
+        // goes in FRONT at chest height, the caption's own slot, so it never covers the face
+        const wordW = Math.max(2, [...word].length) * 0.9 * size * 1.06, ahead = wordW - 2.3 * F.r < 240;
+        const n = keep(el(ahead ? front : back, `<div class="abs" style="width:${W}px;text-align:center;transform-style:flat">
+          <div class="gw" style="font-weight:900;font-size:${size}px;line-height:.9;letter-spacing:-.03em;color:${GOLD};text-shadow:${ahead ? '0 6px 0 rgba(0,0,0,.55),0 10px 40px rgba(0,0,0,.6)' : '0 12px 50px rgba(0,0,0,.35)'};text-transform:uppercase">${esc(word)}</div></div>`));
         const su = setup ? keep(el(front, `<div class="abs" style="width:${W}px;text-align:center;font-weight:800;font-size:64px;color:#fff;text-shadow:0 6px 20px rgba(0,0,0,.55)">${esc(setup)}</div>`)) : null;
         const gw = n.querySelector('.gw') as HTMLElement;
-        return { e, hide, needsCut: true, draw: (t) => {
+        return { e, hide, needsCut: !ahead, draw: (t) => {
           show(n, true); const k = eOut(prog(t, e.t0, 0.32)), o = eIn(prog(t, e.t1 - 0.25, 0.25));
-          const top = Math.max(180, F.cy - F.r * 0.75 - size * 0.5);
+          const top = ahead ? Math.min(H * 0.8 - size, Math.max(F.cy + F.r * 1.35, H * 0.55)) : Math.max(180, F.cy - F.r * 0.75 - size * 0.5);
           n.style.top = top + 'px';
           gw.style.filter = `blur(${((1 - k) * 22).toFixed(1)}px)`; gw.style.transform = `scale(${(1.18 - 0.18 * k + 0.03 * (t - e.t0)).toFixed(3)})`;
           n.style.opacity = String(k * (1 - o));
@@ -299,7 +303,7 @@ export function effectsRuntime(D: FxRuntimeData) {
       }
       case 'whip-spin': {
         return { e, hide, draw: () => undefined, cam: (t, c) => {
-          const x = prog(t, e.t0, dur); c.rotZ += eInOut(x) * 360 * (p.dir ?? 1); c.scale *= 1 + 0.25 * Math.sin(Math.PI * x); c.blur = Math.max(c.blur, 9 * Math.sin(Math.PI * x));
+          const x = prog(t, e.t0, dur); c.rotZ += eInOut(x) * 360 * (p.dir ?? 1); c.scale *= 1 + 0.4 * Math.sin(Math.PI * x); c.blur = Math.max(c.blur, 18 * Math.sin(Math.PI * x));
         } };
       }
       case 'phone-mockup': {

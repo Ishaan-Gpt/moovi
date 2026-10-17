@@ -67,9 +67,30 @@ export function cleanWords(ws: Word[], duration = Infinity): Word[] {
 }
 
 type Asr = (audio: Float32Array, o: Record<string, unknown>) => Promise<{ text: string; chunks?: Chunk[] }>;
-let asrP: Promise<Asr> | null = null, queue: Promise<unknown> = Promise.resolve();
+let asrP: Promise<Asr> | null = null, queue: Promise<unknown> = Promise.resolve(), idle: ReturnType<typeof setTimeout> | null = null;
+
+/**
+ * How long the speech model stays loaded after its last clip (ms, MOOVI_STT_KEEP_MS; default 0: freed as soon as the clip is heard,
+ * the next job loads it again in about 4 s from the disk cache).
+ * Held, the turbo costs about 2 GB of memory for the whole job: measured 2026-10-18 on the 8 GB dev box, an effects
+ * render with the model still loaded was killed by the kernel (out of memory, the render process at about 2.9 GB), three
+ * times, once with a 15 s keep window (the render starts within seconds of the hearing).
+ * On a 2 GB server the render needs that memory back.
+ */
+export const sttKeepMs = () => { const v = Number(process.env.MOOVI_STT_KEEP_MS); return Number.isFinite(v) && v >= 0 ? v : 0; };
+
+/** free the model now (the next clip loads it again, about 4 s from the disk cache) */
+export async function releaseLocalStt(): Promise<boolean> {
+  if (idle) { clearTimeout(idle); idle = null; }
+  const p = asrP; asrP = null;
+  if (!p) return false;
+  const asr = await p.catch(() => null) as (Asr & { dispose?: () => Promise<unknown> }) | null;
+  await asr?.dispose?.().catch(() => undefined);
+  return !!asr;
+}
 
 function load(onNote?: (text: string) => unknown): Promise<Asr> {
+  if (idle) { clearTimeout(idle); idle = null; }
   if (asrP) return asrP;
   asrP = (async () => {
     // kept out of the studio's Next bundle (it transpiles the engine; the jobs run in the worker under tsx, never there)
@@ -106,6 +127,11 @@ export async function localWords(file: string, o: { lang?: string; maxSeconds?: 
     const words = cleanWords(chunksToWords(r.chunks ?? []), audio.length / 16000);
     return { text: words.map(w => w.word).join(' '), words, language: english ? 'en' : o.lang ?? '' };
   });
-  queue = run.catch(() => undefined);
+  queue = run.catch(() => undefined).then(() => {
+    // nothing else queued behind this clip: let the model go after the keep window
+    if (idle) clearTimeout(idle);
+    idle = setTimeout(() => { void releaseLocalStt(); }, sttKeepMs());
+    idle.unref?.();
+  });
   return run;
 }

@@ -138,8 +138,14 @@ if [ ! -f .env ]; then
 fi
 setkey SITE_ADDRESS "$SITE"
 setkey PUBLIC_URL "https://$SITE"
-setkey MOOVI_ORIGINS "https://$SITE"
-if [ -n "$WEBSITE" ]; then setkey WEBSITE_URL "${WEBSITE%/}"; fi
+# the pages allowed to call /api/brain/* with the user's cookie: this site, and the website when it fronts it (the
+# Settings card through the website sends the website's Origin, and Caddy replaces any forwarded host it is sent)
+if [ -n "$WEBSITE" ]; then
+  setkey MOOVI_ORIGINS "https://$SITE,${WEBSITE%/}"
+  setkey WEBSITE_URL "${WEBSITE%/}"
+else
+  setkey MOOVI_ORIGINS "https://$SITE"
+fi
 # no API key needed: users who connect Claude Code (Settings, Use Claude Code) have their brain there. Under
 # MOOVI_BYOK=required the website still sends a keyless user to Settings (apps/studio/src/lib/session.ts reads only the
 # saved key), so the server runs with optional: a user with neither a key nor Claude Code is told so when a video starts.
@@ -165,6 +171,9 @@ if [ "$LOW_MEM" -eq 1 ]; then docker compose stop worker studio >/dev/null 2>&1 
 docker compose build studio
 if [ "$CADDY" -eq 1 ]; then
   docker compose up -d
+  # a running Caddy keeps the Caddyfile it started with (a bind mount of a file a git pull replaced): recreate it so
+  # the routes of this checkout (/mcp, /healthz, /connect) are live. Its certificates live in a volume and stay.
+  docker compose up -d --force-recreate --no-deps caddy
 else
   docker compose up -d falkordb studio worker
 fi
