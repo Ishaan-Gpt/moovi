@@ -18,7 +18,7 @@ Status: `[ ]` open, `[~]` in progress, `[x]` done (the commit is in LOG.md). **V
 | 3 | [x] Freeze the "direct the edit" JSON shape | zod schema + JSON Schema with enums read from the live menus (looks, cleanup, moves, cards, caption looks); one example answer | `edit/direct.schema.ts` (`EXAMPLE_DIRECTION`, `readDirection`, `directEditJsonSchema`); `test/direct-edit.test.ts` 5 tests | |
 | 3a | [x] Read the menus at call time | style ids, cleanup levels, move ids, card kinds, caption looks come from the engine's own registries | unit: menu lists match the registries | |
 | 4 | [x] Freeze the "direct the film" JSON shape | the chosen style's own brief schema (Launch first), wrapped with style pick + why + model | `router/direct-film.schema.ts` (`FILM_BRIEFS`, `EXAMPLE_FILM`, `readFilmDirection`); `test/direct-film.test.ts` 6 tests | |
-| 5 | [ ] Token budget per video | 10k in / 2.5k out max per video, per-call caps (plan 23.3), an estimator and a trimmer | unit: long transcript trimmed under cap | |
+| 5 | [x] Token budget per video | 10k in / 2.5k out max per video, per-call caps (plan 23.3), an estimator and a trimmer | `runtime/budget.ts` (`BRAIN_CAPS`, `VIDEO_CAP`, `estimateTokens`, `trimTranscript`, `VideoBudget`); `test/budget.test.ts` 6 tests | |
 | 6 | [x] CHECKLIST, HANDOFF and LOG in the repo | this folder on main | LOG.md | |
 
 ## Phase 1: bridge

@@ -14,17 +14,21 @@ Read this first if you are picking the work up. Updated by Tab after every item.
   pushing in main as well as in this new branch"; matches Ishaan's CLAUDE.md). Red code goes to the branch only.
 - **Push:** through the GitHub API (git data: blobs, trees, commits, then the ref with `force: false`), never force.
 - **Last sha:** see the newest line in `LOG.md`.
-- **Current state:** items 1 to 4 and 6 done. Contracts frozen:
-  - `packages/engine/src/edit/direct.schema.ts` ("direct the edit"): `liveMenus()` (looks from `D22_STYLES`/`STYLE_LAWS`
-    plus base and studio-cut, moves from `X1_MOVES`, caption looks from captionseasy filtered to `STYLE_LOOKS`),
-    `directEditSchema()` (strict zod), `directEditJsonSchema()`, `checkDirection()`, `readDirection()` (never throws),
-    `EXAMPLE_DIRECTION`. Look `studio-cut` maps to `planEdit({ template: 'studio-cut' })` in item 11.
-  - `packages/engine/src/router/direct-film.schema.ts` ("direct the film"): `FILM_BRIEFS` (Launch only for now; a
-    style is added with its own entry, styles without one keep their server path), `filmMenus()`, `directFilmSchema()`
-    (one strict object per offered style, a union on `style` when more than one), `readFilmDirection()`, `EXAMPLE_FILM`.
-    The Launch arc stays a server pick (`chooseLaunchArc`, offered first); Claude Code may choose another from the menu.
-    Item 11 maps the answer onto `launchBrief`'s fields (`line1..N` from `lines`) so the doctor still runs.
-- **Next item:** 5 (token budget: per-call caps from plan 23.3, an estimator and a trimmer for the edit step's transcript).
+- **Current state:** Phase 0 done (items 1 to 6). Contracts frozen:
+  - `packages/engine/src/edit/direct.schema.ts` ("direct the edit"): `liveMenus()` (looks: base, atlas, handmade,
+    studio-minimal, studio-cut, matching DECISIONS.md 3; moves from `X1_MOVES`; caption looks from captionseasy filtered
+    to `STYLE_LOOKS`), `directEditSchema()` (strict zod), `directEditJsonSchema()`, `checkDirection()`, `readDirection()`
+    (never throws), `EXAMPLE_DIRECTION`. Look `studio-cut` maps to `planEdit({ template: 'studio-cut' })` in item 11.
+  - `packages/engine/src/router/direct-film.schema.ts` ("direct the film"): `FILM_BRIEFS` (Launch only for now; keys
+    move from styles to the 7 types of DECISIONS.md 1 when that registry lands), `filmMenus()`, `directFilmSchema()`,
+    `readFilmDirection()`, `EXAMPLE_FILM`. The Launch arc stays a server pick (`chooseLaunchArc`), offered first.
+  - `packages/engine/src/runtime/budget.ts`: caps per call (edit 6000/1200, film 5000/1500, look 2000/300) and per
+    video (10000/2500, plus 1000 per /moovi:run), `estimateTokens` (high on purpose), `imageTokens`, `trimTranscript`
+    (keeps every sentence number, shrinks words 30, 12, 6, 3; `fits: false` means use the rules), `VideoBudget`.
+  - Push helper fix: a merge whose tree equals a parent's reuses that tree (the API refuses an empty tree list).
+- **Next item:** 7 (one switch for every AI call: create `packages/mcp` with `lane.ts` (`LANE_ORDER`, `pickLane`), `brain.ts`
+  (`BRAIN_AGENTS`), and in the engine `registerScopeFallback` in `keys.ts` plus `brainMode()`; read `runtime/index.ts`
+  `ask()` and `keys.ts` first).
 
 ## How to run things
 
