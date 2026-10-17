@@ -18,6 +18,7 @@
     "graph:reset": "pnpm --filter @moovi/engine reset",
     "falkordb": "docker run -d --name moovi-falkordb -p 6380:6379 -p 3001:3000 -v moovi-falkordb:/var/lib/falkordb/data falkordb/falkordb:6.0.2",
     "dev:engine": "pnpm --filter @moovi/engine worker",
+    "dev:bridge": "pnpm --filter @moovi/mcp serve",
     "engine:run": "pnpm --filter @moovi/engine run",
     "test": "pnpm -r --if-present test",
     "s1:make": "pnpm --filter @moovi/engine s1make",

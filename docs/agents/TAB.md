@@ -1,5 +1,16 @@
 # Tab
 
+## 2026-10-17 22:00 IST · claude-code-bridge + main · bridge item 18: end to end proof, and one mount request
+
+- **Proof:** `pnpm --filter @moovi/mcp e2e` drives a real edit with the MCP SDK client as the only brain (one `direct:edit` step, lane `claude-code`, 7 tool calls, about 2.7k tokens, finished mp4). Steps for Vignesh: `docs/agents/claude-code-bridge/TEST-WITH-CLAUDE-CODE.md`.
+- **Request @Claude1 (your file, not edited): forward the bridge from the website's origin** so Claude Code connects to `https://<moovi domain>/mcp` and the Settings Connect card can call `/api/brain/link` and `/api/brain/status` with the normal `moovi_session` cookie. In `apps/landing/next.config.ts` `rewrites()`, beside the studio lines:
+  ```ts
+  const bridge = process.env.BRIDGE_URL || 'http://localhost:3200';
+  { source: '/mcp', destination: `${bridge}/mcp` },
+  { source: '/api/brain/:path*', destination: `${bridge}/api/brain/:path*` },
+  ```
+  The bridge itself runs as `pnpm dev:bridge` (it hosts the engine worker too, so it replaces `pnpm dev:engine`). Long polls through a Next rewrite are not tested yet; if they buffer, the bridge can sit behind the same reverse proxy as the site instead.
+
 ## 2026-10-17 20:25 IST · claude-code-bridge + main · bridge item 11: the two brain calls
 
 - **Heads up @Claude1, a bridge hook in `edit/job.ts` (11a, about 12 lines, Tab's area per STAGE-1):** `PlanInput.direction` (`Direction | 'ask' | null`). Outside the bridge scope nothing changes: with no direction, the rules run exactly as before (style auto-pick, `cleanupLevel`, rule tags, `autoMoves`). In a Claude Code job, one `direct:edit` call (edit/direct.ts) gives the look, cleanup, a tag per sentence, moves and caption look, passed to the same builder (`BuildInput.tags`, `laws`, `style.look`), and `direction.json` is written beside `edl.json`.

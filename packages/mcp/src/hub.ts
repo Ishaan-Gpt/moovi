@@ -46,11 +46,12 @@ export class BrainHub {
    * queue (laneRuntime), detail calls to their key or Moovi's server model; run starts and ends reach the job board.
    * Returns the unregister function.
    */
-  register(o: { server?: Runtime | null; bridge?: Partial<Omit<BridgeOptions, 'queue' | 'user' | 'job'>> } = {}): () => void {
+  register(o: { server?: Runtime | null; bridge?: Partial<Omit<BridgeOptions, 'queue' | 'user' | 'job'>>; onLane?: (user: string, agent: string, lane: string, why: string) => void } = {}): () => void {
     registerBrainScope((user, own) => brainScope({
       user, own, queue: this.queue, presence: this.presence,
       job: () => currentRun() ?? `job-${user}`,
       server: o.server === undefined ? serverModel() : o.server, byok: byokMode(),
+      ...(o.onLane ? { onLane: (agent: string, lane: string, why: string) => o.onLane!(user, agent, lane, why) } : {}),
       bridge: {
         ...(o.bridge ?? {}),
         onEvent: e => { o.bridge?.onEvent?.(e); if (e.type === 'queued') { const job = currentRun(); if (job) void this.board.start({ user, job }).catch(() => undefined); } },
