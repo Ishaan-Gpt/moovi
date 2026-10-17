@@ -41,8 +41,12 @@ Read this first if you are picking the work up. Updated by Tab after every item.
   keyless video started before `/moovi:run` waits instead of "add your API key" (MOOVI_BYOK=required). Tests:
   `packages/mcp/test/lanes.test.ts` (fake clocks: 119 s no key call, 120 s key; server only under optional; wait then
   pick up; park at 10 min; offline goes to the key at once; memo kept across a switch; token but never polled).
-- **Next item:** 21 (two windows, two videos, never cross; same video from 2 folders gives byte-identical answers), then
-  22 (junk CLAUDE.md), 23 (the failure table). Item 19 (Vignesh's test) runs in parallel.
+- **Item 21 done:** `packages/mcp/test/windows.test.ts`: two windows on two videos never cross (a cross answer is
+  refused); the same video from two folders gets a byte-identical step view, the same answer and a byte-identical EDL
+  (`buildEdl` is re-exported from `@moovi/engine/brain` for this); over HTTP a second window is told "another window"
+  between steps and gets the video when the first window closes.
+- **Next item:** 22 (junk or hostile CLAUDE.md cannot change decisions beyond the strict JSON), then 23 (the failure
+  table). Item 19 (Vignesh's test) runs in parallel.
 - **Item 12 tests** (`packages/mcp/test/bridge-e2e.test.ts`, 5): a stand-in Claude Code session (ticket, then pull and
   answer through the `Gate`) directs `directEdit` end to end inside `withModel(brainScope(...))`; a second window is
   turned away while the first holds the job, and a bad answer gets exactly one re-ask; no `/moovi:run` ticket means no
