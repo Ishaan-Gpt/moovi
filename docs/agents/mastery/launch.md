@@ -48,3 +48,17 @@ isn't used for taste.
   is a piece of the UI.
 - **Craft:** 60 fps, fast but smooth layout morphs, a cursor that clicks and selects, selection handles on the chosen
   item, motion blur on the fly-ins, no camera shake, no glow.
+
+## Ref 2: Vainu (instagram.com/p/Del5jxutfmh, 64 s): what it teaches
+- **One material runs the film: dots.** Real photos scatter at depth, then swarm into a rotating sphere of thumbnails.
+  The sphere collapses to one dot, the dot becomes the logo ("Reintroducing ● VAINU"). Then come dot-matrix numbers
+  over dark halftone tiles, a dot field that "pulls up the ones that matter", signal pins rising out of a halftone
+  landscape, and a dot-matrix map with counts.
+- **One sentence across many beats,** small and precise, centred, word by word: "Companies don't stand still. They
+  grow. They hire. They acquire. They change." Each verb has its own picture. The type is small (about 2.5% of the
+  frame height); the picture carries the scale.
+- **Busywork as a cloud:** dozens of chore verbs swirl around the payoff line ("So you can spend less time…"), then
+  clear for "And more time acting on what matters."
+- **One accent** (a signal green) on a white world, with dark tiles for the stats. The product's UI appears as frosted
+  glass over real photos (the search prompt over a city, signal cards over fog).
+- **End:** the logo with a rule and the line "Nothing changes except everything."
