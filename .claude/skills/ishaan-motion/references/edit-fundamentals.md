@@ -93,3 +93,30 @@ The preview is one generic player fed a beat spec (`{ clip, palette, caption, mu
 [{ t: device, ... }] }], sfx }`); devices: cam (framing, push, punch), world, cascade, tag, letters, input, sides,
 pill, wipe. Tested on two unlike clips (a solo product intro, a two-person podcast) without changing the player.
 A spec is what the pipeline's director should write; the player is what the studio should play.
+
+## 10. The three picture layers beyond captions and sound (owner, 2026-10-18; decoded from e3, e4, em1, em2, em4)
+**One text layer per frame (owner rule).** When any graphic carries words (a big letter, a headline, a tag, a card),
+the caption is hidden for that span. Two texts in one frame is bad taste.
+
+**A. The speaker's frame has forms, and it morphs between them on a spring (never a hard swap):**
+- `full` (default) · `split` 50:50 (graphic panel top, speaker bottom half, a soft contact shadow on the seam) ·
+  `card` (a rounded rectangle at bottom centre, about 60% of the width, over the theme world or a dimmed blurred copy
+  of the room) · `corner` (a small window, about 28% of the width, top or bottom corner, ringed in the theme) ·
+  `grid` (the speaker's own takes tiled, the live one lit).
+- The form follows the sentence: the speaker owns the frame for who/feeling; shrinks to a card or corner when a
+  graphic must explain; returns full for the punchline. Continuity comes from the morph: the rect, corner radius and
+  ring animate from the previous beat's form over about 0.35 s.
+
+**B. Burned-in premium UI over the picture (speaker still on screen):**
+- Glass or theme-material widgets placed in the frame's empty space (desk plane, beside the head, above the
+  shoulder), never on the face: a number badge, a glass icon tile, a node graph with connectors that draw, a 3-step
+  line, a glass input field, the speaker's own reel cards.
+- Each enters on its word with a spring and a small SFX, has depth (shadow, a sheen, the room's light on it) and
+  leaves before the next idea; at most two on screen.
+
+**C. Full-screen motion graphics in the film's world:**
+- A world built once per film from the theme (the brand's, else the footage's own): ground, a texture (grid, dust),
+  one bloom; kinetic type and one hero object acting out the sentence; the speaker in a corner window so the voice
+  keeps a face.
+- The world is reused as the ground of every full-screen beat (chapter cards come from it), so the film has one look.
+

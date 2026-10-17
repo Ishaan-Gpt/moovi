@@ -11,10 +11,13 @@ html,body{margin:0;height:100%;background:var(--page,#111);overflow:hidden;font-
 #bar{position:absolute;left:0;right:0;bottom:0;height:70px;display:flex;align-items:center;gap:16px;padding:0 22px;background:var(--panel,#16181c);color:var(--panel-ink,#ddd)}
 #bar button{font:700 15px Manrope;padding:10px 22px;border:0;border-radius:999px;background:var(--accent,#888);color:#fff;cursor:pointer}
 #bar input{flex:1}#tc{font:600 13px JBMono;min-width:90px}
+.tile{position:absolute;width:170px;height:210px;border-radius:30px;display:grid;place-items:center;font:400 120px 'Russo One';color:var(--mat-ink,#fff);background:linear-gradient(160deg,var(--mat-hi,rgba(255,255,255,.12)),var(--mat,rgba(255,255,255,.03)));box-shadow:inset 0 2px 0 rgba(255,255,255,.18),inset 0 0 0 2px var(--mat-edge,rgba(255,255,255,.15)),0 24px 50px rgba(0,0,0,.5);backdrop-filter:blur(10px)}
+.tile.lit{color:#fff;background:linear-gradient(160deg,var(--accent-hi,#fff),var(--accent,#888));box-shadow:inset 0 2px 0 rgba(255,255,255,.5),0 0 60px var(--accent-glow,rgba(255,255,255,.5)),0 24px 50px rgba(0,0,0,.5)}
+.glassw{display:flex;align-items:center;gap:20px;padding:24px 30px;border-radius:28px;color:var(--mat-ink,#fff);font:800 40px Manrope;background:linear-gradient(160deg,var(--mat-hi,rgba(255,255,255,.12)),var(--mat,rgba(255,255,255,.03)));box-shadow:inset 0 2px 0 rgba(255,255,255,.18),inset 0 0 0 2px var(--mat-edge,rgba(255,255,255,.15)),0 24px 50px rgba(0,0,0,.5);backdrop-filter:blur(14px)}
 #gate{position:absolute;inset:0;display:grid;place-items:center;z-index:5;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);cursor:pointer;font:700 54px Manrope;color:#fff}
 </style></head>
 <body>
-<div id="stage"><video id="v" preload="auto" playsinline></video><canvas id="cv" width="1080" height="1920"></canvas><div id="ov"></div><canvas id="cap" width="1080" height="1920"></canvas><div id="gate">loading…</div></div>
+<div id="stage"><video id="v" preload="auto" playsinline></video><canvas id="cv" width="1080" height="1920"></canvas><div id="ov"></div><canvas id="cvt" width="1080" height="1920" style="position:absolute;inset:0"></canvas><canvas id="cap" width="1080" height="1920"></canvas><div id="gate">loading…</div></div>
 <div id="bar"><button id="pp">Play</button><input id="sc" type="range" min="0" max="1000" value="0"><span id="tc">0.00</span></div>
 <script type="module">
 /**
@@ -25,7 +28,7 @@ html,body{margin:0;height:100%;background:var(--page,#111);overflow:hidden;font-
 import { premiumCaption1, cards, drawCaption, ticks, accentFromPixels } from './premium.js';
 const Q = new URLSearchParams(location.search), SPEC = await (await fetch(Q.get('spec') || 'specs/moovi-intro.json')).json();
 const CLIP = SPEC.clip.replace(/\/?$/, '/');
-const $ = id => document.getElementById(id), V = $('v'), cv = $('cv'), ctx = cv.getContext('2d'), cc = $('cap').getContext('2d'), ov = $('ov'), stage = $('stage');
+const $ = id => document.getElementById(id), V = $('v'), cv = $('cv'), ctx = cv.getContext('2d'), ctxT = $('cvt').getContext('2d'), cc = $('cap').getContext('2d'), ov = $('ov'), stage = $('stage');
 V.src = CLIP + 'hd.mp4';
 const fit = () => { const w = innerWidth, h = innerHeight - 70, k = Math.min(w / 1080, h / 1920) * .96; stage.style.transform = `translate(${(w - 1080 * k) / 2}px,${(h - 1920 * k) / 2}px) scale(${k})`; };
 addEventListener('resize', fit); fit();
@@ -47,18 +50,27 @@ const faceAt = t => { if (!FACES.length) return { x: .5, y: .42 }; let k = 0; wh
 const P = SPEC.palette || {};
 for (const [k, v] of Object.entries(P)) document.documentElement.style.setProperty('--' + k, v);
 
-function drawVideo(t, r, z = 1, Y = .36, radius = 0, dim = 0) {
-  if (V.readyState < 2) return;
+function drawVideo(t, r, z = 1, Y = .36, radius = 0, dim = 0, c = ctx, blur = 0) {
+  if (V.readyState < 2) return; const ctx = c;
   const sa = EDL.source.w / EDL.source.h, f = faceAt(t), H = Math.max(r.h, r.w / sa) * z, W = H * sa;
   let x = r.w / 2 - f.x * W, y = Y * r.h - f.y * H; x = Math.min(0, Math.max(r.w - W, x)); y = Math.min(0, Math.max(r.h - H, y));
   ctx.save(); ctx.beginPath(); if (radius) ctx.roundRect(r.x, r.y, r.w, r.h, radius); else ctx.rect(r.x, r.y, r.w, r.h); ctx.clip();
-  ctx.filter = 'contrast(1.05)'; ctx.drawImage(V, r.x + x, r.y + y, W, H); ctx.filter = 'none';
+  ctx.filter = blur ? `blur(${blur}px) brightness(.7)` : 'contrast(1.05)'; ctx.drawImage(V, r.x + x, r.y + y, W, H); ctx.filter = 'none';
   const g = ctx.createRadialGradient(r.x + r.w / 2, r.y + r.h * .38, r.h * .3, r.x + r.w / 2, r.y + r.h * .45, r.h * .75); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.4)');
   ctx.fillStyle = g; ctx.fillRect(r.x, r.y, r.w, r.h);
   if (dim) { ctx.fillStyle = `rgba(6,6,10,${dim})`; ctx.fillRect(r.x, r.y, r.w, r.h); }
   ctx.restore();
 }
-const el = (html, css = '') => { const d = document.createElement('div'); d.innerHTML = html; d.style.cssText = css; d.style.display = 'none'; ov.appendChild(d); return d; };
+const el = (html, css = '', text = false) => { const d = document.createElement('div'); d.innerHTML = html; d.style.cssText = css; d.style.display = 'none'; if (text) d.dataset.text = '1'; ov.appendChild(d); return d; };
+// the film's world (the theme): ground stops, a texture and one bloom, drawn under every non-full frame and full-screen graphic
+const TH = SPEC.theme || {};
+function ground() {
+  const g = ctx.createRadialGradient(540, 700, 40, 540, 900, 1700); (TH.ground || [[0, '#222'], [1, '#000']]).forEach(([o, c]) => g.addColorStop(o, c)); ctx.fillStyle = g; ctx.fillRect(0, 0, 1080, 1920);
+  if (TH.grid) { ctx.save(); ctx.strokeStyle = TH.grid; ctx.lineWidth = 2; for (let x = 0; x <= 1080; x += 90) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 1920); ctx.stroke(); } for (let y = 0; y <= 1920; y += 90) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1080, y); ctx.stroke(); } ctx.restore(); }
+  if (TH.bloom) { const [bx, by, br, bc] = TH.bloom, b = ctx.createRadialGradient(bx, by, 0, bx, by, br); b.addColorStop(0, bc); b.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = b; ctx.fillRect(0, 0, 1080, 1920); }
+}
+/** the speaker's frame forms (edit-fundamentals §10 A); a beat morphs from the previous beat's form */
+const FORMS = { full: [0, 0, 1080, 1920, 0], split: [0, 960, 1080, 960, 0], card: [190, 1000, 700, 820, 44], 'corner-br': [690, 1300, 340, 520, 34], 'corner-tl': [50, 110, 340, 520, 34], 'corner-tr': [690, 110, 340, 520, 34] };
 const show = (d, css) => { d.style.display = ''; if (css) Object.assign(d.style, css); };
 
 // stills of the clip itself (for cards and rows), grabbed once at load
@@ -81,31 +93,52 @@ async function grab(times) { for (const s of times) { if (STILLS[s]) continue; V
  */
 const DEVICES = {
   cam: { build: () => ({}), draw: (L, t, b) => { const k = t - b.t0, pz = L.punch ? Math.pow(L.by || 1.08, eo(win(t, at(L.punch) - .02, at(L.punch) + .16))) : 1, land = b.first ? 0 : .035 * (1 - eo(win(k, 0, .18)));
-    drawVideo(t, { x: 0, y: 0, w: 1080, h: 1920 }, ((L.z || 1.04) + land) * pz + (L.push ?? .01) * k, L.Y ?? .36, 0, (L.dim || 0) * eo(win(k, 0, .3))); } },
-  world: { build: L => ({ imgs: (L.img || []).map(i => el(`<img src="${i.src}" style="width:100%;height:100%;object-fit:contain;${i.mask ? '-webkit-mask-image:' + i.mask : ''}">`, `left:${i.x}px;top:${i.y}px;width:${i.w}px;height:${i.h}px`)), texts: (L.text || []).map(x => el(x.html, `left:0;right:0;top:${x.y}px;text-align:center`)) }),
+    const to = FORMS[L.form || 'full'], from = FORMS[b.prevForm || 'full'], m = b.prevForm && b.prevForm !== (L.form || 'full') ? eio(win(k, 0, .42)) : 1, r = to.map((v, i) => lerp(from[i], v, m));
+    const full = r[2] >= 1079 && r[3] >= 1919, z = ((L.z || 1.04) + land) * pz + (L.push ?? .01) * k;
+    if (full) { drawVideo(t, { x: 0, y: 0, w: 1080, h: 1920 }, z, L.Y ?? .36, 0, (L.dim || 0) * eo(win(k, 0, .3))); return; }
+    // behind a shrunk frame: the film's world, or the room itself blurred and dimmed
+    if (L.ground === 'room') drawVideo(t, { x: 0, y: 0, w: 1080, h: 1920 }, 1.2, .36, 0, .35, ctx, 24); else ground();
+    const ring = TH.ring || 'rgba(255,255,255,.18)';
+    ctxT.save(); ctxT.shadowColor = 'rgba(0,0,0,.55)'; ctxT.shadowBlur = 50; ctxT.shadowOffsetY = 18; ctxT.fillStyle = '#000'; ctxT.beginPath(); ctxT.roundRect(r[0], r[1], r[2], r[3], r[4]); ctxT.fill(); ctxT.restore();
+    drawVideo(t, { x: r[0], y: r[1], w: r[2], h: r[3] }, Math.max(1, z * (L.form === 'split' ? 1.15 : 1.05)), L.form === 'split' ? .42 : .4, r[4], 0, ctxT);
+    if (r[4] > 2) { ctxT.save(); ctxT.strokeStyle = ring; ctxT.lineWidth = 4; ctxT.beginPath(); ctxT.roundRect(r[0], r[1], r[2], r[3], r[4]); ctxT.stroke(); ctxT.restore(); }
+    if (L.form === 'split' && m > .99) { const g = ctxT.createLinearGradient(0, 940, 0, 1000); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.45)'); ctxT.fillStyle = g; ctxT.fillRect(0, 960, 1080, 40); } } },
+  world: { build: L => ({ imgs: (L.img || []).map(i => el(`<img src="${i.src}" style="width:100%;height:100%;object-fit:contain;${i.mask ? '-webkit-mask-image:' + i.mask : ''}">`, `left:${i.x}px;top:${i.y}px;width:${i.w}px;height:${i.h}px`)), texts: (L.text || []).map(x => el(x.html, `left:0;right:0;top:${x.y}px;text-align:center`, true)) }),
     draw: (L, t, b, S) => { ctx.save(); const g = ctx.createRadialGradient(540, 760, 40, 540, 760, 1530); (L.stops || [[0, '#fff'], [1, '#ddd']]).forEach(([o, c]) => g.addColorStop(o, c)); ctx.fillStyle = g; ctx.fillRect(0, 0, 1080, 1920); ctx.restore();
       (L.img || []).forEach((i, n) => { const p = t - at(i.at), s = spring(p); show(S.imgs[n], { opacity: clamp(p * 5), transform: i.enter === 'drop' ? `translateY(${((1 - s) * -300).toFixed(0)}px) rotate(${((i.spin || 0) * (t - b.t0)).toFixed(1)}deg)` : `translateY(${((1 - s) * 500).toFixed(0)}px)` }); });
       (L.text || []).forEach((x, n) => { const p = t - at(x.at), s = spring(p); show(S.texts[n], { opacity: clamp(p * 6), transform: `scale(${(.7 + .3 * s).toFixed(3)})` }); });
       if (L.pip) drawVideo(t, { x: 760, y: 1560, w: 250, h: 250 }, 1.5, .45, 125); } },
-  cascade: { build: L => ({ cards: L.items.map((it, i) => el(`<div style="width:320px;padding:26px 30px;border-radius:30px;background:var(--card,rgba(255,255,255,.92));box-shadow:0 26px 60px rgba(0,0,0,.4),0 0 0 2px var(--card-edge,rgba(255,255,255,.6));font:800 44px Manrope;color:var(--card-ink,#111);letter-spacing:-.02em">${it.title}${it.sub ? `<small style="display:block;font:600 24px JBMono;letter-spacing:.08em;color:var(--card-sub,#666);text-transform:uppercase;margin-top:4px">${it.sub}</small>` : ''}</div>`, `left:${i % 2 ? 680 : 40}px;top:${(L.y || 180) + i * 210}px`)) }),
+  cascade: { build: L => ({ cards: L.items.map((it, i) => el(`<div style="width:320px;padding:26px 30px;border-radius:30px;background:var(--card,rgba(255,255,255,.92));box-shadow:0 26px 60px rgba(0,0,0,.4),0 0 0 2px var(--card-edge,rgba(255,255,255,.6));font:800 44px Manrope;color:var(--card-ink,#111);letter-spacing:-.02em">${it.title}${it.sub ? `<small style="display:block;font:600 24px JBMono;letter-spacing:.08em;color:var(--card-sub,#666);text-transform:uppercase;margin-top:4px">${it.sub}</small>` : ''}</div>`, `left:${i % 2 ? 680 : 40}px;top:${(L.y || 180) + i * 210}px`, true)) }),
     draw: (L, t, b, S) => L.items.forEach((it, i) => { const p = t - at(it.at), s = spring(p); show(S.cards[i], { opacity: clamp(p * 8), transform: `translateX(${((1 - s) * (i % 2 ? 1 : -1) * 120).toFixed(0)}px) scale(${(.85 + .15 * s).toFixed(3)})` }); }) },
-  tag: { build: L => ({ d: el(`<div style="display:inline-flex;flex-direction:column;padding:22px 34px 24px;border-radius:24px;background:var(--tag,rgba(12,10,12,.78));backdrop-filter:blur(12px);box-shadow:0 20px 50px rgba(0,0,0,.4);border-left:8px solid var(--accent,#fff)"><b style="font:800 54px Manrope;color:#fff;letter-spacing:-.02em">${L.name}</b>${L.role ? `<span style="font:600 26px JBMono;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-soft,#ccc);margin-top:6px">${L.role}</span>` : ''}</div>`, `left:${L.x ?? 60}px;top:${L.y ?? 1180}px`) }),
+  tag: { build: L => ({ d: el(`<div style="display:inline-flex;flex-direction:column;padding:22px 34px 24px;border-radius:24px;background:var(--tag,rgba(12,10,12,.78));backdrop-filter:blur(12px);box-shadow:0 20px 50px rgba(0,0,0,.4);border-left:8px solid var(--accent,#fff)"><b style="font:800 54px Manrope;color:#fff;letter-spacing:-.02em">${L.name}</b>${L.role ? `<span style="font:600 26px JBMono;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-soft,#ccc);margin-top:6px">${L.role}</span>` : ''}</div>`, `left:${L.x ?? 60}px;top:${L.y ?? 1180}px`, true) }),
     draw: (L, t, b, S) => { const p = t - at(L.at), s = spring(p), out = L.hold ? eio(win(t, at(L.at) + L.hold, at(L.at) + L.hold + .25)) : 0; show(S.d, { opacity: clamp(p * 6) * (1 - out), transform: `translateX(${((1 - s) * -160 - out * 120).toFixed(0)}px)` }); } },
-  letters: { build: L => ({ ds: L.items.map((it, i) => el(`<span style="font:400 ${it.size || 420}px 'Russo One';color:var(--accent,#fff);-webkit-text-stroke:${(it.size || 420) * .045}px var(--accent,#fff);filter:drop-shadow(0 0 30px var(--accent-glow,rgba(255,255,255,.5))) drop-shadow(0 20px 40px rgba(0,0,0,.6))">${it.ch}</span>`, `left:${it.x}px;top:${it.y}px`)) }),
+  letters: { build: L => ({ ds: L.items.map((it, i) => el(`<span style="font:400 ${it.size || 420}px 'Russo One';color:var(--accent,#fff);-webkit-text-stroke:${(it.size || 420) * .045}px var(--accent,#fff);filter:drop-shadow(0 0 30px var(--accent-glow,rgba(255,255,255,.5))) drop-shadow(0 20px 40px rgba(0,0,0,.6))">${it.ch}</span>`, `left:${it.x}px;top:${it.y}px`, true)) }),
     draw: (L, t, b, S) => L.items.forEach((it, i) => { const p = t - at(it.at), s = spring(p); show(S.ds[i], { opacity: clamp(p * 8), transform: `scale(${(1.4 - .4 * s).toFixed(3)}) rotate(${((1 - s) * (it.r || 8)).toFixed(1)}deg)`, filter: p < .16 ? `blur(${((1 - p / .16) * 10).toFixed(1)}px)` : '' }); }) },
   input: { build: L => ({ d: el(`<div style="position:relative;width:960px;height:250px;border-radius:44px;background:rgba(255,255,255,.95);box-shadow:0 30px 70px rgba(0,0,0,.4)"><div class="tx" style="position:absolute;left:70px;top:58px;font:500 46px Manrope;color:#9aa7b4;white-space:nowrap"></div></div>`, `left:60px;top:${L.y || 860}px`) }),
     draw: (L, t, b, S) => { const k = t - b.t0; show(S.d, { transform: `translateY(${((1 - spring(k)) * 260).toFixed(0)}px)` }); const tx = S.d.querySelector('.tx'); if (L.typed) { const n = Math.round(L.typed.length * win(t, at(L.from), at(L.to))); tx.innerHTML = L.typed.slice(0, n) + `<span style="opacity:${Math.floor(t * 3) % 2}">|</span>`; tx.style.color = 'var(--card-ink,#111)'; tx.style.fontWeight = '700'; } else tx.textContent = L.placeholder || ''; } },
-  pill: { build: L => ({ d: el(`<div style="display:flex;align-items:center;gap:26px;width:900px;padding:22px 24px;border-radius:999px;background:rgba(250,250,252,.95);box-shadow:0 30px 70px rgba(0,0,0,.45);box-sizing:border-box"><div class="av" style="width:110px;height:110px;border-radius:50%;background-size:cover;background-position:50% 25%;border:4px solid var(--accent,#999);flex:none"></div><div class="pt" style="flex:1;font:700 66px Manrope;color:#111"></div><div class="ps" style="width:120px;height:86px;border-radius:999px;background:var(--accent,#555);display:grid;place-items:center;flex:none"><svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg></div></div>`, `left:90px;top:${L.y || 1040}px`) }),
+  pill: { build: L => ({ d: el(`<div style="display:flex;align-items:center;gap:26px;width:900px;padding:22px 24px;border-radius:999px;background:rgba(250,250,252,.95);box-shadow:0 30px 70px rgba(0,0,0,.45);box-sizing:border-box"><div class="av" style="width:110px;height:110px;border-radius:50%;background-size:cover;background-position:50% 25%;border:4px solid var(--accent,#999);flex:none"></div><div class="pt" style="flex:1;font:700 66px Manrope;color:#111"></div><div class="ps" style="width:120px;height:86px;border-radius:999px;background:var(--accent,#555);display:grid;place-items:center;flex:none"><svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg></div></div>`, `left:90px;top:${L.y || 1040}px`, true) }),
     draw: (L, t, b, S) => { const k = t - b.t0; S.d.querySelector('.av').style.backgroundImage = `url(${STILLS[L.avatar]})`; show(S.d, { transform: `translateY(${((1 - spring(k - .1)) * 300).toFixed(0)}px)`, opacity: clamp((k - .1) * 6) }); const n = Math.round(L.keyword.length * win(t, at(L.at), at(L.at) + .45)); S.d.querySelector('.pt').innerHTML = L.keyword.slice(0, n) + `<span style="opacity:${Math.floor(t * 3) % 2}">|</span>`; } },
   sides: { build: L => ({ ds: L.stills.map((s, i) => el(`<div style="width:280px;height:480px;border-radius:30px;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.45),0 0 0 8px rgba(255,255,255,.8)"><img style="width:100%;height:100%;object-fit:cover"></div>`, `left:${i ? 776 : 24}px;top:${L.y || 640}px`)) }),
     draw: (L, t, b, S) => S.ds.forEach((d, i) => { d.querySelector('img').src ||= STILLS[L.stills[i]]; const p = t - at(L.at) - i * .18, s = spring(p); show(d, { opacity: clamp(p * 6), transform: `translateY(${((1 - s) * 220).toFixed(0)}px) rotate(${i ? 7 : -7}deg)` }); }) },
+  /** full-screen motion graphics in the film's world: a strip of tiles (chars) that scrolls, lit tiles lifting out on their words, a headline */
+  mg: { build: L => ({ tiles: [...(L.chars || '')].map(ch => el(`<div class="tile">${ch}</div>`, '', true)), head: L.headline ? el(L.headline.html, `left:0;right:0;top:${L.headline.y ?? 260}px;text-align:center`, true) : null }),
+    draw: (L, t, b, S) => { const k = t - b.t0, n = S.tiles.length, lit = L.lit || [], area = L.area || [0, 0, 1080, 960], gapX = L.gap || 190;
+      S.tiles.forEach((d, i) => { const ch = (L.chars || '')[i], li = lit.findIndex(x => x.ch === ch), lt = li >= 0 ? at(lit[li].at) : null, on = lt !== null && t >= lt - .02;
+        const sx = L.scroll ? area[0] + (((i * gapX - t * L.scroll) % (n * gapX)) + n * gapX) % (n * gapX) - 200 : area[0] + (area[2] - (n - 1) * gapX - 170) / 2 + i * gapX, sy = area[1] + area[3] * (L.row ?? .55) - 105;
+        const spot = lit[li] && lit[li].spot, p = on ? spring(t - lt) : 0;
+        const x = spot ? lerp(sx, spot[0], p) : sx, y = spot ? lerp(sy, spot[1], p) : sy - (on ? 40 * p : 0), sc = spot ? lerp(1, spot[2] || 1, p) : (on ? 1 + .15 * p : 1);
+        d.className = 'tile' + (on ? ' lit' : ''); show(d, { left: x.toFixed(0) + 'px', top: y.toFixed(0) + 'px', transform: `scale(${sc.toFixed(3)})`, opacity: (clamp(k * 4 - i * .03) * (on || !L.dimOthers ? 1 : .3)).toFixed(3) }); });
+      if (S.head) { const p = t - at(L.headline.at), s = spring(p); show(S.head, { opacity: clamp(p * 6), transform: `translateY(${((1 - s) * 40).toFixed(0)}px)` }); } } },
+  /** burned-in premium UI over the picture: glass widgets in the frame's empty space, each on its word */
+  burn: { build: L => ({ ds: L.items.map(it => el(it.kind === 'badge' ? `<div class="tile lit" style="position:relative;width:150px;height:180px;font-size:100px">${it.text}</div>` : `<div class="glassw">${it.icon ? `<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">${it.icon}</svg>` : ''}<b>${it.text || ''}</b></div>`, `left:${it.x}px;top:${it.y}px`, !!it.text)) }),
+    draw: (L, t, b, S) => L.items.forEach((it, i) => { const p = t - at(it.at), s = spring(p); show(S.ds[i], { opacity: clamp(p * 6), transform: `translateY(${((1 - s) * 60).toFixed(0)}px) scale(${(.8 + .2 * s).toFixed(3)}) rotate(${((1 - s) * (it.r || 6)).toFixed(1)}deg)` }); }) },
   wipe: { build: L => ({ d: el(`<img src="${L.src}" style="width:100%;height:100%">`, 'width:700px;height:700px;top:600px') }),
     draw: (L, t, b, S) => { const a = at(L.at), k = win(t, a - (L.dur || .3), a); if (k > 0 && k < 1) show(S.d, { left: lerp(-700, 1500, eio(k)) + 'px', transform: `rotate(${k * 280}deg)`, filter: `blur(${(Math.sin(k * Math.PI) * 6).toFixed(1)}px)` }); } },
 };
 
 // the beats: each runs from its anchor to the next beat's
 const BEATS = SPEC.beats.map(b => ({ ...b, t0: at(b.from) })).sort((a, b) => a.t0 - b.t0);
-BEATS.forEach((b, i) => { b.t1 = i + 1 < BEATS.length ? BEATS[i + 1].t0 : END; b.first = i === 0; b.state = b.layers.map(L => DEVICES[L.t].build(L, b)); });
+BEATS.forEach((b, i) => { b.t1 = i + 1 < BEATS.length ? BEATS[i + 1].t0 : END; b.first = i === 0; b.prevForm = i ? (BEATS[i - 1].layers.find(L => L.t === 'cam') || {}).form || 'full' : null; b.state = b.layers.map(L => DEVICES[L.t].build(L, b)); });
 const need = [...new Set(BEATS.flatMap(b => b.layers.flatMap(L => [...(L.stills || []), ...(L.avatar !== undefined ? [L.avatar] : [])])))];
 
 // captions: the approved Premium Caption 1, accent from the spec (a brand's own) or from the footage itself
@@ -124,10 +157,12 @@ const stopBed = () => { try { bedSrc && bedSrc.stop(); } catch {} bedSrc = null;
 const beatAt = t => BEATS.findLast(b => t >= b.t0 - 1e-3) || BEATS[0];
 
 function frame(t) {
-  ctx.clearRect(0, 0, 1080, 1920); cc.clearRect(0, 0, 1080, 1920); for (const d of ov.children) d.style.display = 'none';
+  ctx.clearRect(0, 0, 1080, 1920); ctxT.clearRect(0, 0, 1080, 1920); cc.clearRect(0, 0, 1080, 1920); for (const d of ov.children) d.style.display = 'none';
   if (bedGain) bedGain.gain.value = (SPEC.music?.gain ?? .08) * (1 + .7 * win(t, END - 3, END - .3));
   const b = beatAt(t); b.layers.forEach((L, i) => DEVICES[L.t].draw(L, t, b, b.state[i]));
-  if (CAP && !b.noCaption) drawCaption(cc, CAP, list, t, 1080, 1920);
+  // one text layer per frame (owner rule): the caption steps aside whenever a text graphic is on screen
+  const textOn = [...ov.children].some(d => d.dataset.text && d.style.display !== 'none' && +(d.style.opacity || 1) > .05);
+  if (CAP && !b.noCaption && !textOn) drawCaption(cc, CAP, list, t, 1080, 1920);
 }
 function loop() {
   let t = V.currentTime;
