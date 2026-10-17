@@ -137,7 +137,7 @@ export function registerBrainScope(fn: BrainScopeSource | null) { brainSource = 
 export interface BrainHooks {
   prime?: (user: string) => Promise<void>;
   linked?: (user: string) => Promise<boolean>;
-  run?: (e: { type: 'start' | 'end'; user: string; project: string; run: string; chat: string; ok?: boolean; title?: string }) => Promise<void> | void;
+  run?: (e: { type: 'start' | 'end'; user: string; project: string; run: string; chat: string; ok?: boolean; title?: string; error?: string }) => Promise<void> | void;
 }
 let brainHooks: BrainHooks = {};
 export function registerBrainHooks(h: BrainHooks | null) { brainHooks = h ?? {}; }

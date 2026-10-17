@@ -13,6 +13,8 @@ export interface JobInfo {
   state: 'running' | 'done' | 'failed';
   title: string | null; url: string | null;
   startedAt: number; endedAt: number | null;
+  /** a failed job's short reason, the same words the studio chat shows (absent on older rows) */
+  error?: string | null;
 }
 
 export class JobBoard {
@@ -34,10 +36,10 @@ export class JobBoard {
     return j;
   }
 
-  async finish(o: { job: string; ok: boolean; user?: string; project?: string | null; chat?: string | null; title?: string | null }): Promise<JobInfo | null> {
+  async finish(o: { job: string; ok: boolean; user?: string; project?: string | null; chat?: string | null; title?: string | null; error?: string | null }): Promise<JobInfo | null> {
     const cur = await this.get(o.job) ?? (o.user ? await this.start({ user: o.user, job: o.job, project: o.project ?? null, chat: o.chat ?? null }) : null);
     if (!cur) return null;
-    const j: JobInfo = { ...cur, state: o.ok ? 'done' : 'failed', title: o.title ?? cur.title, endedAt: this.now() };
+    const j: JobInfo = { ...cur, state: o.ok ? 'done' : 'failed', title: o.title ?? cur.title, endedAt: this.now(), error: o.ok ? null : (o.error ?? '').trim().slice(0, 300) || null };
     await this.put(j);
     return j;
   }

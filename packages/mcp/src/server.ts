@@ -31,6 +31,10 @@ export const MAX_ANSWER_CHARS = 32_000;
 /** an answer may run this far past its cap (estimateTokens counts high) before it is refused */
 export const OVER_CAP_SLACK = 1.25;
 export const overBudget = (used: number, cap: number) => `the answer is about ${used} tokens; this step allows ${cap}: shorten the free text fields and send it again`;
+/** What moovi_next says when the video failed: the job's own short reason when there is one, so Claude Code can say it. */
+export const failedMessage = (reason?: string | null) => reason
+  ? `Moovi could not finish this video: ${reason}. Tell the user this reason in one line and stop.`
+  : 'Moovi could not finish this video; the website says why. Tell the user and stop.';
 export const NOTHING_RUNNING = 'No Moovi video is running yet. Start one on the Moovi website, then call moovi_next again.';
 
 type Extra = { signal: AbortSignal; _meta?: { progressToken?: string | number }; sendNotification: (n: { method: 'notifications/progress'; params: { progressToken: string | number; progress: number; message?: string } }) => Promise<void> };
@@ -118,7 +122,7 @@ export function buildMcp(hub: BrainHub, ctx: SessionCtx): McpServer {
           watched.clear(); leases.clear();
           return text(last.state === 'done'
             ? { status: 'done', title: last.title, url: last.url, seconds: Math.round(((last.endedAt ?? hub.now()) - last.startedAt) / 1000), message: 'The video is ready on the Moovi website. Tell the user, with the link if there is one, and stop.' }
-            : { status: 'failed', url: last.url, message: 'Moovi could not finish this video; the website says why. Tell the user and stop.' });
+            : { status: 'failed', url: last.url, ...(last.error ? { reason: last.error } : {}), message: failedMessage(last.error) });
         }
         return null;
       },

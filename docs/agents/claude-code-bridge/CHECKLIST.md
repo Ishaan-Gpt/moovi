@@ -55,6 +55,7 @@ Status: `[ ]` open, `[~]` in progress, `[x]` done (the commit is in LOG.md). **V
 | 23 | [x] All 12 failure cases | each row of plan section 17 has a test or a manual check | `mcp/src/notices.ts` (`NOTICE`, the plan's words; `jobNotice`, `errorNotice`; `jobs` in `/api/brain/status`); `mcp/test/failures.test.ts` 14 tests: the 11 rows of plan 17 plus over-budget answer, numbers not in the source, bridge process down | |
 | 24 | [x] Online Claude Code first, key fallback after 120 s | lane switch mid job keeps the memo; no key and no server model allowed: the step waits 10 min (`WAIT_MS`) for a `/moovi:run` in any window, then the job parks; a connected but never polled keyless user is linked, not refused | `packages/mcp/test/lanes.test.ts` (7, fake clocks), `engine/test/lane.test.ts` (wait lane) | |
 | 25 | [ ] VIGNESH: close mid job, reopen in another folder | the video finishes, nothing asked twice | manual sheet steps 9, 10, 11b | P |
+| 25a | [x] Live-test fix: edit on an unseeded FalkorDB | a missing craft graph reads as empty (outage still stops), the failure reason reaches Claude Code, guide says `pnpm graph:reset` | `graph-empty-key.test.ts`, `failure-reason.test.ts`, e2e on an empty FalkorDB: failed at 4 s before, live edit at 3.4 s after | |
 
 ## Phase 4: finish
 

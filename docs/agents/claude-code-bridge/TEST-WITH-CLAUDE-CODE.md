@@ -34,9 +34,18 @@ In the repo, on `main` (the bridge is merged there):
 git pull
 pnpm install
 pnpm falkordb
+pnpm graph:reset
 ```
 
 `pnpm falkordb` starts FalkorDB in Docker on port 6380 (skip it if it is already running).
+
+`pnpm graph:reset` fills Moovi's craft memory in FalkorDB in about a second: the rules, the styles and the library
+(sounds, camera moves, effects and the reference reels they came from). Run it once on a new FalkorDB, after
+`pnpm falkordb` and after `.env.local` below is set: it reads `FALKORDB_URL` from `.env.local`, so nothing has to be
+exported. Despite the name it only replaces the shared `craft` graph; your account and projects stay.
+`pnpm graph:seed` (also reads `.env.local` now) seeds only the rules and styles, not the library, so the edit has no
+library sounds or camera moves; use `graph:reset`. Without either, a fresh FalkorDB has no craft graph at all; since
+Oct 17 the edit still finishes then (a missing graph reads as empty), but plainer.
 
 In `.env.local` at the repo root, make sure you have:
 
@@ -67,6 +76,9 @@ The bridge prints:
 ```
 
 If it says FalkorDB is not reachable, run `pnpm falkordb` and check `FALKORDB_URL`.
+
+If a video fails, Claude Code now says the reason in one line (the same words the studio chat shows), for example
+`edit your clip failed (...)`. Send Tab that line.
 
 ## 3. Sign in to Moovi
 
@@ -106,6 +118,9 @@ not running or the token was replaced.
    always).
 4. On the website, in a project chat, upload a short talking clip and send a brief, for example
    `Edit my clip into a clean short with captions.`
+   On a screen without the type cards (no "Edit my video" tile), the Edit path is: click **Moovi picks**, attach the
+   clip with **+** at the bottom left, type the brief, press the arrow. Do not pick Editorial (it needs a pasted
+   script) or Clip Moment (it needs stock footage, not your clip).
 
 ## 7. What you should see
 

@@ -66,7 +66,7 @@ export class BrainHub {
       linked: async u => (await this.tokens.status(u)).linked,
       run: async e => {
         if (e.type === 'start') await this.board.start({ user: e.user, job: e.run, project: e.project, chat: e.chat, title: e.title ?? null });
-        else await this.board.finish({ job: e.run, ok: e.ok !== false, user: e.user, project: e.project, chat: e.chat, title: e.title ?? null });
+        else await this.board.finish({ job: e.run, ok: e.ok !== false, user: e.user, project: e.project, chat: e.chat, title: e.title ?? null, error: e.error ?? null });
       },
     });
     return () => { registerBrainScope(null); registerBrainHooks(null); };
