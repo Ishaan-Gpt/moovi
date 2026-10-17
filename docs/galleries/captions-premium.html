@@ -387,23 +387,73 @@ function round(c, tier, text, x, y, px) {
     c.strokeText(text, x, y);
     c.restore();
 }
+const SPRITES = new Map();
+const TIER_KEYS = new WeakMap();
+function sprite(tier, text, px, S) {
+    let tk = TIER_KEYS.get(tier);
+    if (!tk) {
+        tk = JSON.stringify(tier);
+        TIER_KEYS.set(tier, tk);
+    }
+    const key = `${face.font}|${face.stretch}|${face.spacing}|${text}|${Math.round(S)}|${tk}`;
+    const hit = SPRITES.get(key);
+    if (hit)
+        return hit;
+    const glowR = tier.glow ? Math.max(...tier.glow.layers.map(l => l.r)) * S * 2.5 : 0;
+    const shadowR = tier.shadow ? (tier.shadow.blur * 2 + Math.abs(tier.shadow.dy)) * S : 0;
+    const pad = Math.ceil(Math.max(px * 0.3, glowR, shadowR));
+    const probe = new OffscreenCanvas(1, 1).getContext('2d');
+    setFace(probe);
+    const w = Math.ceil(probe.measureText(text).width * (1 + (tier.skew ?? 0)) + px * 0.2) + pad * 2, h = Math.ceil(px * 1.4) + pad * 2;
+    const layer = (draw) => {
+        const c = new OffscreenCanvas(w, h), o = c.getContext('2d');
+        setFace(o);
+        draw(o);
+        return c;
+    };
+    const out = {
+        pad, px,
+        shadow: tier.shadow ? layer(o => {
+            o.shadowColor = tier.shadow.color;
+            o.shadowBlur = tier.shadow.blur * S;
+            o.shadowOffsetY = tier.shadow.dy * S;
+            // the letters themselves are pushed out of the layer, only their shadow stays
+            o.shadowOffsetX = w * 2;
+            o.fillStyle = '#000';
+            o.fillText(text, pad - w * 2, pad + px);
+        }) : null,
+        glow: tier.glow ? layer(o => bloom(o, tier, text, pad, pad + px, px, S, 1)) : null,
+        face: layer(o => paintFace(o, tier, text, pad, pad + px, px, S)),
+    };
+    if (SPRITES.size > 400)
+        SPRITES.clear();
+    SPRITES.set(key, out);
+    return out;
+}
 function paintWord(ctx, tier, text, x, y, px, S, alpha, glowGain = 1) {
+    const sp = sprite(tier, text, px, S);
+    const ox = x - sp.pad, oy = y - sp.pad - px;
+    ctx.save();
+    if (sp.shadow) {
+        ctx.globalAlpha = alpha;
+        ctx.drawImage(sp.shadow, ox, oy);
+    }
+    if (sp.glow) {
+        ctx.globalCompositeOperation = 'screen';
+        ctx.globalAlpha = Math.min(1, alpha * glowGain);
+        ctx.drawImage(sp.glow, ox, oy);
+        ctx.globalCompositeOperation = 'source-over';
+    }
+    ctx.globalAlpha = alpha;
+    ctx.drawImage(sp.face, ox, oy);
+    ctx.restore();
+}
+/** The word's face (edge, fill, inner sheen) at full opacity, drawn once into its sprite. */
+function paintFace(ctx, tier, text, x, y, px, S) {
+    const alpha = 1;
     ctx.save();
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
-    if (tier.shadow) {
-        ctx.globalAlpha = alpha;
-        ctx.shadowColor = tier.shadow.color;
-        ctx.shadowBlur = tier.shadow.blur * S;
-        ctx.shadowOffsetY = tier.shadow.dy * S;
-        ctx.fillStyle = '#000';
-        ctx.fillText(text, x, y);
-        ctx.shadowColor = 'transparent';
-        ctx.shadowBlur = 0;
-        ctx.shadowOffsetY = 0;
-    }
-    if (tier.glow)
-        bloom(ctx, tier, text, x, y, px, S, alpha * glowGain);
     ctx.globalAlpha = alpha;
     if (tier.edge) {
         ctx.lineJoin = 'round';
