@@ -7,6 +7,8 @@ import { checkAndRepair, repairEdl } from '../review/runner';
 import { reviewConfig } from '../review/config';
 import { pixelCheckEdl } from '../review/pixels';
 import type { PlayerEdl } from './lib';
+import { bare, FILLERS } from './cut';
+import { chooseTake, pickN, type Takes, type TakeGroup, type TakePick } from './takes';
 
 /**
  * D2.8, edit by words: "tighter", "less zoom", "swap the card at 0:12" change a finished EDL and the player replays it.
@@ -24,6 +26,10 @@ import type { PlayerEdl } from './lib';
  *    off the face); **drop the card at 0:12**; **add a card at 0:12** (casts the beat under that moment);
  *  - **add a paper cut at 0:04** (any playable X1 move by name: digital zoom, checklist, headline wall, zoom-through,
  *    chart grow, paper cut, doodle, cover story, glass type): the move at that moment; with no time, on the beat it suits;
+ *  - **use take 2** / the second (first, last, other, earlier) take / **keep this one at 0:12** (W15, edit/takes.ts): a
+ *    line said more than once plays the take named instead; "for the intro" / "for the ending" or a time says which
+ *    line when several were retaken (one retaken line needs neither). The time of "keep this one" is a time in the film,
+ *    or in the raw clip for a take the film does not play;
  *  - **undo** puts the previous EDL back (reEditDir keeps one step in its folder; change/versions.ts walks every
  *    version, and **redo** walks forward again).
  *
@@ -37,17 +43,22 @@ export type ReEditOp =
   | { op: 'zoom'; k: number; said: 'less' | 'more' | 'none' }
   | { op: 'swap' | 'drop' | 'add'; t: number }
   | { op: 'move'; n: string; t: number | null }
+  | { op: 'take'; pick: TakePick; t: number | null; line: 'first' | 'last' | null }
   | { op: 'undo' }
   | { op: 'redo' };
 export interface ReEditStep { said: string; op: ReEditOp; did: string }
 export interface ReEditResult { edl: Edl; steps: ReEditStep[]; unknown: string[]; problems: string[]; ms: number; duration: { before: number; after: number };
+  /** the takes after a "use take 2" (written to takes.json beside the EDL) */
+  takes?: Takes;
   /** CHECK on the new EDL (review/): its score before and after the one repair, what the repair did, which version was kept */
   review?: { before: number; after: number | null; repaired: string | null; kept: 'original' | 'repaired'; issues: string[];
     /** reEditDir only: contrast on the footage under up to 3 caption boxes (no render), and the plate it added when no repair was spent yet */
     pixels?: { frames: { t: number; contrast?: number }[]; issues: string[]; repaired: string | null; ms: number; skipped?: string; error?: string } } }
 export interface ReEditOpts { src?: InsertSource; /** quiet stretches in source seconds (the planner's quiet.json pauses) */ quiet?: [number, number][];
   /** CHECK on the edited EDL, on by default (false skips it); its repairs here move the caption, never drop a card the person asked for */
-  review?: boolean }
+  review?: boolean;
+  /** the clip's takes (takes.json): what "use take 2" chooses from */
+  takes?: Takes | null }
 
 const r3 = (x: number) => Math.round(x * 1000) / 1000;
 /** The words people use for each playable X1 move (edit/moves.ts), most specific first. */
@@ -73,6 +84,21 @@ export function timeOf(s: string): number | null {
   return n ? Number(n[1]) : null;
 }
 
+const ORD: Record<string, TakePick> = { first: 1, '1st': 1, one: 1, original: 1, second: 2, '2nd': 2, two: 2, third: 3, '3rd': 3, three: 3, fourth: 4, '4th': 4, four: 4, fifth: 5, '5th': 5, five: 5, last: 'last', final: 'last', other: 'other', earlier: 'earlier', previous: 'earlier', older: 'earlier', later: 'later', next: 'later', newer: 'later' };
+/** "use take 2 for the intro", "the second take", "keep this one at 0:12": a take op, else null. */
+export function takeOf(c: string, t: number | null): Extract<ReEditOp, { op: 'take' }> | null {
+  let pick: TakePick | null = null, rest = c;
+  const a = c.match(/\btake\s*(?:#|no\.?|number)?\s*(\d+|one|two|three|four|five)\b/);
+  const b = c.match(/\b(first|1st|second|2nd|third|3rd|fourth|4th|fifth|5th|last|final|other|earlier|previous|older|later|next|newer|original)\s+(?:take|attempt|try)\b/);
+  const d = c.match(/\b(?:keep|use|want|go with|pick)\s+(?:this|that)(?:\s+(?:one|take))?\b|\b(?:keep|use) the take at\b/);
+  if (a) { pick = /^\d+$/.test(a[1]!) ? Number(a[1]) : ORD[a[1]!]!; rest = c.replace(a[0], ' '); }
+  else if (b) { pick = ORD[b[1]!]!; rest = c.replace(b[0], ' '); }
+  else if (d && t !== null) pick = 'this';
+  if (pick === null) return null;
+  const line = /\b(intro|opening|start|beginning|first line|hook)\b/.test(rest) ? 'first' : /\b(outro|ending|end|last line|closing|cta|sign[- ]?off)\b/.test(rest) ? 'last' : null;
+  return { op: 'take', pick, t, line };
+}
+
 /** Read an instruction into operations; clauses it cannot read come back in `unknown`. */
 export function parseEdit(words: string): { ops: { said: string; op: ReEditOp }[]; unknown: string[] } {
   const ops: { said: string; op: ReEditOp }[] = [], unknown: string[] = [];
@@ -81,7 +107,9 @@ export function parseEdit(words: string): { ops: { said: string; op: ReEditOp }[
     const more = /\b(even|much|way|a lot|super|really|more and more)\b/.test(c) ? 2 : 1;
     const t = timeOf(c);
     let op: ReEditOp | null = null;
-    if (/^(redo|undo (the|that|my) undo|put it back again)\b/.test(c)) op = { op: 'redo' };
+    const tk = takeOf(c, t);
+    if (tk) op = tk;
+    else if (/^(redo|undo (the|that|my) undo|put it back again)\b/.test(c)) op = { op: 'redo' };
     else if (/^(undo|revert|go back|put it back)\b/.test(c)) op = { op: 'undo' };
     else if (/\b(add|put|use|give|insert|throw in|do|place|want)\b/.test(c) && moveIn(c)) op = { op: 'move', n: moveIn(c)!, t };
     else if (t !== null && new RegExp(`\\b(swap|change|replace|switch|different|another|new)\\b`).test(c) && (new RegExp(`\\b${CARD}s?\\b`).test(c) || /\b(swap|replace)\b/.test(c))) op = { op: 'swap', t };
@@ -103,7 +131,7 @@ interface Piece { from: number; src_in: number; src_out: number }
  * Rebuild the shots from new source pieces (each carrying the index of the old shot it came from) and move every
  * output-timed event to where its source moment now plays. A moment that was cut snaps to the next kept moment.
  */
-export function retime(e: Edl, pieces: Piece[], ruleId: string, newHoles: { a: number; b: number }[] = []): Edl {
+export function retime(e: Edl, pieces: Piece[], ruleId: string, newHoles: { a: number; b: number; text?: string }[] = [], reason: EdlRemoved['reason'] = 'pause_trim'): Edl {
   const old = e.shots;
   const shots: EdlShotV0[] = [];
   let t = 0;
@@ -155,7 +183,7 @@ export function retime(e: Edl, pieces: Piece[], ruleId: string, newHoles: { a: n
   if (e.music?.beats) out.music = { ...e.music, beats: e.music.beats.filter(b => b <= dur) };
   // the source that is no longer played joins removed[] (merged with what was already there)
   const removed: EdlRemoved[] = [...(e.removed ?? []).map(r => ({ ...r }))];
-  for (const h of newHoles) removed.push({ src_in: r3(h.a), src_out: r3(h.b), reason: 'pause_trim', rule_id: ruleId });
+  for (const h of newHoles) removed.push({ src_in: r3(h.a), src_out: r3(h.b), reason, ...(h.text ? { text: h.text } : {}), rule_id: ruleId });
   // what was removed but is played again is no longer removed
   const keep = shots.map(s => [s.src_in, s.src_out] as const);
   out.removed = removed.flatMap(r => {
@@ -282,24 +310,126 @@ function beatFor(e: Edl, t0: number, t1: number): NonNullable<Edl['beats']>[numb
   return idx.length ? { t0, t1, word_idx: idx, tag: 'claim' } : null;
 }
 
+/** The source moment playing at film time t (null past the end). */
+function srcAt(e: Edl, t: number): number | null {
+  const s = e.shots.find(x => t >= x.t_in - 1e-6 && t < x.t_out) ?? (Math.abs(t - e.shots.at(-1)!.t_out) < 1e-3 ? e.shots.at(-1) : undefined);
+  return s ? s.src_in + (t - s.t_in) : null;
+}
+/** As the player places a word (lib.ts outOf): played when a shot holds its start. */
+const playedAt = (e: Edl, src: number) => e.shots.some(g => src >= g.src_in - 1e-6 && src < g.src_out);
+const short = (text: string) => `“${text.split(/\s+/).slice(0, 5).join(' ')}${text.split(/\s+/).length > 5 ? '…' : ''}”`;
+
+/** The group and take a take op names, or why it cannot tell (never a guess). */
+export function resolveTake(e: Edl, takes: Takes, op: Extract<ReEditOp, { op: 'take' }>): { g: TakeGroup; n: number } | { why: string } {
+  const gs = takes.groups;
+  if (!gs.length) return { why: 'no line was said more than once in this clip' };
+  const kept = (g: TakeGroup) => g.takes.find(x => x.n === g.kept)!;
+  const inTake = (g: TakeGroup, s: number) => g.takes.find(x => s >= x.a - 0.05 && s <= x.b + 0.05);
+  if (op.pick === 'this') {
+    const s = srcAt(e, op.t!);
+    // a time in the film: the take playing there; else a time in the raw clip, on a take the film does not play
+    if (s !== null) for (const g of gs) { const x = inTake(g, s); if (x?.n === g.kept) return { g, n: x.n }; }
+    for (const g of gs) { const x = inTake(g, op.t!); if (x) return { g, n: x.n }; }
+    return { why: `no line said more than once at ${clock(op.t!)}` };
+  }
+  let g: TakeGroup | undefined;
+  if (op.t !== null) {
+    const s = srcAt(e, op.t);
+    g = gs.find(x => s !== null && inTake(x, s)) ?? gs.find(x => inTake(x, op.t!));
+    if (!g) return { why: `no line said more than once at ${clock(op.t)}` };
+  } else if (op.line) {
+    // the intro (or the ending) only when no other played line comes before (after) that line's takes
+    const by = [...gs].sort((x, y) => kept(x).a - kept(y).a), c = op.line === 'first' ? by[0]! : by.at(-1)!;
+    const firstTake = c.takes[0]!, lastTake = c.takes.at(-1)!;
+    const outside = e.words.filter(w => playedAt(e, w.src_t0) && !c.takes.some(x => w.src_t0 >= x.a - 0.05 && w.src_t0 <= x.b + 0.05));
+    const ok = op.line === 'first' ? !outside.some(w => w.src_t1 <= firstTake.a + 0.01) : !outside.some(w => w.src_t0 >= lastTake.b - 0.01);
+    if (!ok) return { why: `the ${op.line === 'first' ? 'intro' : 'ending'} was said once; the line said more than once is ${short(kept(c).text)}` };
+    g = c;
+  } else if (gs.length === 1) g = gs[0]!;
+  else return { why: `${gs.length} lines were said more than once (${gs.map(x => short(kept(x).text)).join(', ')}); say which: “use take 2 for the intro” or “use take 2 at 0:12”` };
+  const n = pickN(g, op.pick);
+  if (n === null) return { why: `${short(kept(g).text)} has ${g.takes.length} takes (take ${g.kept} is playing); say “use take 1” to “use take ${g.takes.length}”` };
+  return { g, n };
+}
+
+/**
+ * Play another take of a line (W15): the source the playing take filled is cut (down to a breath of air on each
+ * side, never into a word around it) and the chosen take plays in its place, split at its own pauses over pause_max
+ * as the builder would, framed like the shot it replaces; every event follows its source moment (retime). The line's
+ * beat moves to the new take; the old take joins removed[] as a retake.
+ */
+export function swapTake(e: Edl, from: { a: number; b: number; text: string }, to: { a: number; b: number }, ruleId = 'reedit.take'): Edl | null {
+  const L = e.laws ?? { pause_max: 0.4, pause_keep: 0.18, hold_max: 2.6, snap_ms: 100 }, side = L.pause_keep / 2;
+  const isIn = (w: Edl['words'][number], x: { a: number; b: number }) => w.src_t0 >= x.a - 0.01 && w.src_t1 <= x.b + 0.01;
+  const others = e.words.filter(w => !isIn(w, from) && !isIn(w, to));
+  const prevEnd = Math.max(-Infinity, ...others.filter(w => w.src_t1 <= from.a + 0.01).map(w => w.src_t1));
+  const nextStart = Math.min(Infinity, ...others.filter(w => w.src_t0 >= from.b - 0.01).map(w => w.src_t0));
+  const cut = { a: Math.max(from.a - side, prevEnd), b: Math.min(from.b + side, nextStart) };
+  const idx = e.shots.findIndex(s => s.src_out > from.a + 1e-3 && s.src_in < from.b - 1e-3);
+  if (idx < 0) return null; // the playing take is not in the film (cut by an earlier edit)
+  const pieces: Piece[] = [];
+  e.shots.forEach((s, i) => {
+    if (s.src_out <= cut.a + 1e-6 || s.src_in >= cut.b - 1e-6) { pieces.push({ from: i, src_in: s.src_in, src_out: s.src_out }); return; }
+    if (cut.a - s.src_in > 0.04) pieces.push({ from: i, src_in: s.src_in, src_out: cut.a });
+    if (s.src_out - cut.b > 0.04) pieces.push({ from: i, src_in: cut.b, src_out: s.src_out });
+  });
+  // the new take, in runs split at its own long pauses (fillers are not played)
+  const ws = e.words.filter(w => isIn(w, to) && !FILLERS.has(bare(w.text))).sort((x, y) => x.src_t0 - y.src_t0);
+  if (!ws.length) return null;
+  const runs: { a: number; b: number }[] = [];
+  for (const w of ws) { const last = runs.at(-1); if (last && w.src_t0 - last.b <= L.pause_max) last.b = Math.max(last.b, w.src_t1); else runs.push({ a: w.src_t0, b: w.src_t1 }); }
+  const lo = Math.max(-Infinity, ...others.filter(w => w.src_t1 <= to.a + 0.01).map(w => w.src_t1)), hi = Math.min(Infinity, ...others.filter(w => w.src_t0 >= to.b - 0.01).map(w => w.src_t0));
+  const fresh: Piece[] = runs.map(r => ({ from: idx, src_in: Math.max(r.a - side, lo, 0), src_out: Math.min(r.b + side, hi, e.source.duration) }));
+  const at = pieces.findIndex(p => p.src_in >= cut.b - 1e-6);
+  pieces.splice(at < 0 ? pieces.length : at, 0, ...fresh);
+  // the beat of the old take, to give the new one
+  const oldIdx = new Set(e.words.map((w, k) => isIn(w, from) ? k : -1).filter(k => k >= 0));
+  const beat = (e.beats ?? []).find(b => b.word_idx.some(k => oldIdx.has(k)));
+  // caption_hide indexes the words as played (lib.ts outWords): carried over by word, not by position
+  const laws = (e as { style_laws?: { caption_hide?: number[] } }).style_laws;
+  const playedIdx = (x: Edl) => x.words.map((w, k) => playedAt(x, w.src_t0) ? k : -1).filter(k => k >= 0);
+  const hidden = laws?.caption_hide ? new Set(laws.caption_hide.map(i => playedIdx(e)[i]).filter((k): k is number => k !== undefined)) : null;
+  const out = retime(e, pieces, ruleId, [{ ...cut, text: from.text }], 'retake');
+  const outOf = (src: number) => { const g = out.shots.find(s => src >= s.src_in - 1e-6 && src < s.src_out); return g ? r3(g.t_in + (src - g.src_in)) : null; };
+  const newIdx = out.words.map((w, k) => isIn(w, to) && playedAt(out, w.src_t0) && !FILLERS.has(bare(w.text)) ? k : -1).filter(k => k >= 0);
+  if (beat && newIdx.length) {
+    const t0 = outOf(out.words[newIdx[0]!]!.src_t0), t1 = outOf(Math.max(out.words[newIdx.at(-1)!]!.src_t0, out.words[newIdx.at(-1)!]!.src_t1 - 0.001));
+    if (t0 !== null && t1 !== null) out.beats = [...(out.beats ?? []).filter(b => !b.word_idx.some(k => oldIdx.has(k))), { ...beat, t0, t1: Math.max(t0, t1), word_idx: newIdx }].sort((x, y) => x.t0 - y.t0);
+  }
+  if (e.captions) out.captions = [...(out.captions ?? []).filter(c => !c.word_idx.some(k => oldIdx.has(k))), ...newIdx.flatMap(k => { const w = out.words[k]!, t0 = outOf(w.src_t0), t1 = outOf(Math.max(w.src_t0, w.src_t1 - 0.001)); return t0 === null ? [] : [{ t0, t1: Math.max(t0 + 0.05, t1 ?? t0), word_idx: [k], rule_id: ruleId }]; })].sort((x, y) => x.t0 - y.t0);
+  if (hidden && laws) (out as { style_laws?: object }).style_laws = { ...laws, caption_hide: playedIdx(out).map((k, i) => hidden.has(k) ? i : -1).filter(i => i >= 0) };
+  return out;
+}
+
 /** Apply an instruction to an EDL. `prev` is the EDL before the last edit (for "undo"). */
 export async function reEdit(e0: Edl, words: string, o: ReEditOpts & { prev?: Edl | null } = {}): Promise<ReEditResult> {
   const t0 = performance.now();
   const before = e0.shots.at(-1)!.t_out;
   const parsed = parseEdit(words), unknown = parsed.unknown;
   // times the person names are read on the edit they watched: undo first, then the card edits, then what retimes
-  const rank = (x: ReEditOp) => x.op === 'undo' || x.op === 'redo' ? 0 : x.op === 'swap' || x.op === 'drop' || x.op === 'add' || x.op === 'move' ? 1 : 2;
+  const rank = (x: ReEditOp) => x.op === 'undo' || x.op === 'redo' ? 0 : x.op === 'swap' || x.op === 'drop' || x.op === 'add' || x.op === 'move' || x.op === 'take' ? 1 : 2;
   const ops = parsed.ops.map((x, i) => ({ ...x, i })).sort((x, y) => rank(x.op) - rank(y.op) || x.i - y.i);
   let e = clone(e0);
   const steps: ReEditStep[] = [];
   let src: InsertSource | undefined = o.src;
   const lib = async () => (src ??= await openInserts());
+  let takes = o.takes ?? null, tookTake = false;
   for (const { said, op } of ops) {
     let did = '';
     if (op.op === 'undo') {
       if (o.prev) { e = clone(o.prev); did = 'put the previous edit back'; } else did = 'nothing to undo';
     } else if (op.op === 'redo') {
       did = 'nothing to redo'; // one folder keeps one step: redo walks the versions (change/versions.ts)
+    } else if (op.op === 'take') {
+      const r = takes ? resolveTake(e, takes, op) : { why: 'this clip has no takes on record (it was edited before takes were found)' };
+      if ('why' in r) did = r.why;
+      else if (r.n === r.g.kept) did = `take ${r.n} of ${short(r.g.takes[0]!.text)} is already the one playing`;
+      else {
+        const from = r.g.takes.find(x => x.n === r.g.kept)!, to = r.g.takes.find(x => x.n === r.n)!;
+        const next = swapTake(e, from, to);
+        if (!next) did = `take ${r.g.kept} of ${short(from.text)} is no longer in the film, so there is nothing to swap`;
+        else { e = next; takes = chooseTake(takes!, r.g.id, r.n); tookTake = true; did = `swapped to take ${r.n} of ${short(to.text)}`; }
+      }
     } else if (op.op === 'tighter') {
       const L = e.laws ?? { pause_max: 0.4, pause_keep: 0.18, hold_max: 2.6, snap_ms: 100 };
       const cap = r3(Math.max(0.1, Math.min(L.pause_max, 0.4) * (op.strength > 1 ? 0.35 : 0.55)));
@@ -355,7 +485,7 @@ export async function reEdit(e0: Edl, words: string, o: ReEditOpts & { prev?: Ed
     review = { before: c.before.score, after: c.after ? c.after.score : null, repaired: c.repaired, kept: e === c.edl && c.kept === 'repaired' ? 'repaired' : 'original', issues: now.issues.slice(0, 8).map(i => i.msg) };
   }
   const problems = validateEdl(e).problems;
-  return { ...(review ? { review } : {}), edl: e, steps, unknown, problems, ms: Math.round(performance.now() - t0), duration: { before: r3(before), after: r3(e.shots.at(-1)!.t_out) } };
+  return { ...(review ? { review } : {}), ...(tookTake && takes ? { takes } : {}), edl: e, steps, unknown, problems, ms: Math.round(performance.now() - t0), duration: { before: r3(before), after: r3(e.shots.at(-1)!.t_out) } };
 }
 
 /**
@@ -369,7 +499,9 @@ export async function reEditDir(dir: string, words: string, o: ReEditOpts = {}):
   const prev = existsSync(prevFile) ? JSON.parse(readFileSync(prevFile, 'utf8')) as Edl : null;
   const qf = join(dir, 'quiet.json');
   const quiet = o.quiet ?? (existsSync(qf) ? ((JSON.parse(readFileSync(qf, 'utf8')) as { pauses?: [number, number][] }).pauses ?? []) : []);
-  const r = await reEdit(cur, words, { ...o, prev, quiet });
+  const tf = join(dir, 'takes.json');
+  const takes = o.takes !== undefined ? o.takes : existsSync(tf) ? JSON.parse(readFileSync(tf, 'utf8')) as Takes : null;
+  const r = await reEdit(cur, words, { ...o, prev, quiet, takes });
   // CHECK part 2: the pixels under the captions of the edited EDL (source footage placed as the render places it);
   // a low read gets the backing plate only when the code check spent no repair (at most one repair per edit)
   if (r.review && o.review !== false) {
@@ -388,6 +520,7 @@ export async function reEditDir(dir: string, words: string, o: ReEditOpts = {}):
     // the edit replaced is the one "undo" brings back (so undo after undo is redo)
     writeFileSync(prevFile, JSON.stringify(cur, null, 1));
     writeFileSync(file, JSON.stringify(r.edl, null, 1));
+    if (r.takes) writeFileSync(tf, JSON.stringify(r.takes, null, 1));
   }
   const hist = existsSync(log) ? JSON.parse(readFileSync(log, 'utf8')) as unknown[] : [];
   hist.push({ at: new Date().toISOString(), words, steps: r.steps, unknown: r.unknown, problems: r.problems, ms: r.ms, duration: r.duration, written, ...(r.review ? { review: r.review } : {}) });

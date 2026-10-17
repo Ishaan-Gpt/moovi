@@ -42,6 +42,8 @@ export interface BuildInput {
   palette: Palette;
   laws?: Partial<Laws>;
   seed?: number;
+  /** source spans said again better later (edit/takes.ts dropSpans): cut as `retake` holes, their words never kept */
+  retakes?: { a: number; b: number; text?: string }[];
 }
 
 const r4 = (x: number) => Math.round(x * 10000) / 10000;
@@ -105,7 +107,7 @@ export function fitWords(ws: Word[], quiet: [number, number][], quietMax = DEFAU
 }
 
 /** Holes to cut, in source seconds, each with its reason; merged and sorted. */
-export function holesOf(ws: Word[], ps: [number, number][], take: { a: number; b: number }, L: Laws, quiet: [number, number][] = []): { a: number; b: number; reason: EdlRemoved['reason']; text?: string; rule: string }[] {
+export function holesOf(ws: Word[], ps: [number, number][], take: { a: number; b: number }, L: Laws, quiet: [number, number][] = [], retakes: { a: number; b: number; text?: string }[] = []): { a: number; b: number; reason: EdlRemoved['reason']; text?: string; rule: string }[] {
   const airOut = L.pause_keep / 2, airIn = L.pause_keep / 2, out: { a: number; b: number; reason: EdlRemoved['reason']; text?: string; rule: string }[] = [];
   const isFill = (w: Word) => FILLERS.has(bare(w.word));
   const speech = ws.filter(w => !isFill(w));
@@ -135,14 +137,23 @@ export function holesOf(ws: Word[], ps: [number, number][], take: { a: number; b
     const b = next ? Math.min(next.t - Math.min(airIn, Math.max(0, next.t - w.end)), Math.max(w.end, next.t - airIn)) : w.end;
     out.push({ a: Math.min(a, w.t), b: Math.max(b, w.end), reason: 'filler', text: w.word, rule: 'law.filler' });
   });
-  // clip to the take, merge overlaps (a merged hole keeps the strongest reason: filler over pause)
+  // retakes (edit/takes.ts): the take said again better is cut whole, with the air around it down to a breath (to the
+  // take's edge when nothing is kept before or after it)
+  const inRetake = (w: Word) => retakes.some(r => w.t >= r.a - 0.01 && w.end <= r.b + 0.01);
+  for (const r of retakes) {
+    const prev = [...speech].reverse().find(w => w.end <= r.a + 0.01 && !inRetake(w)), next = speech.find(w => w.t >= r.b - 0.01 && !inRetake(w));
+    out.push({ a: prev ? Math.min(r.a, prev.end + airOut) : -Infinity, b: next ? Math.max(r.b, next.t - airIn) : Infinity, reason: 'retake', ...(r.text ? { text: r.text } : {}), rule: 'law.retake' });
+  }
+  // clip to the take, merge overlaps (a merged hole keeps the strongest reason: retake over filler over pause)
+  const rank = (x: EdlRemoved['reason']) => x === 'retake' ? 2 : x === 'filler' ? 1 : 0;
   const xs = out.map(h => ({ ...h, a: Math.max(h.a, take.a), b: Math.min(h.b, take.b) })).filter(h => h.b - h.a > 0.04).sort((x, y) => x.a - y.a);
   const merged: typeof out = [];
   for (const h of xs) {
     const last = merged.at(-1);
     if (last && h.a <= last.b + 0.02) {
       last.b = Math.max(last.b, h.b);
-      if (h.reason === 'filler') { last.reason = 'filler'; last.rule = 'law.filler'; last.text = [last.text, h.text].filter(Boolean).join(' '); }
+      if (rank(h.reason) > rank(last.reason)) { last.reason = h.reason; last.rule = h.rule; last.text = h.text; }
+      else if (h.reason === 'filler' && last.reason === 'filler') last.text = [last.text, h.text].filter(Boolean).join(' ');
     } else merged.push({ ...h });
   }
   return merged;
@@ -198,8 +209,9 @@ export function buildEdl(i: BuildInput): Edl {
   if (openerCut && take.a > preEnd + 0.02) removed.push({ src_in: r4(preEnd), src_out: r4(take.a), reason: 'filler', text: openerCut.word, rule_id: 'law.take_opener' });
 
   // 2 + 3. holes, snapped out of words
-  const keptWords = ws.filter(w => w.t >= take.a - 0.01 && w.end <= take.b + 0.01 && !FILLERS.has(bare(w.word)));
-  const holes = holesOf(ws, ps, take, L, qs);
+  const retakes = (i.retakes ?? []).filter(r => r.b > r.a);
+  const keptWords = ws.filter(w => w.t >= take.a - 0.01 && w.end <= take.b + 0.01 && !FILLERS.has(bare(w.word)) && !retakes.some(r => w.t >= r.a - 0.01 && w.end <= r.b + 0.01));
+  const holes = holesOf(ws, ps, take, L, qs, retakes);
   snapHoles(holes, keptWords);
   const segs: { a: number; b: number }[] = []; let cur = take.a;
   for (const h of holes) { if (h.b - h.a <= 0.04) continue; if (h.a > cur) segs.push({ a: cur, b: h.a }); cur = Math.max(cur, h.b); }
@@ -210,6 +222,11 @@ export function buildEdl(i: BuildInput): Edl {
   for (let k = 0; k + 1 < pieces.length; k++) {
     const a = pieces[k]!.b, b = pieces[k + 1]!.a, h = holes.find(x => x.a < b && x.b > a);
     removed.push({ src_in: r4(a), src_out: r4(b), reason: h?.reason ?? 'silence', ...(h?.text ? { text: h.text } : {}), rule_id: h?.rule ?? 'law.sliver' });
+  }
+  // a retake at the very start or end of the take is cut before the first piece (after the last) too
+  for (const [a, b] of [[take.a, pieces[0]?.a ?? take.a], [pieces.at(-1)?.b ?? take.b, take.b]] as const) {
+    const h = holes.find(x => x.reason === 'retake' && x.a < b && x.b > a);
+    if (b - a > 0.02 && h) removed.push({ src_in: r4(a), src_out: r4(b), reason: 'retake', ...(h.text ? { text: h.text } : {}), rule_id: h.rule });
   }
   if (take.b < dur - 0.02) removed.push({ src_in: r4(take.b), src_out: r4(dur), reason: 'tail', rule_id: 'law.take_window' });
 
