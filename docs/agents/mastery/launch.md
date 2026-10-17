@@ -63,3 +63,17 @@ isn't used for taste.
   glass over real photos (the search prompt over a city, signal cards over fog).
 - **End:** the logo with a rule and the line "Nothing changes except everything."
 - launch-ui.ts input (for Tab's directFilm): one site URL in, data.json out {name, host, url, tagline, gridTitle, sub, cta, nav[], cards[], query, colours[{hex,w,role}], fonts{display,displayWeight,ui,cssUrl}, images[], logo, hero}; unchanged since L-UI-1.
+
+## Ref 3: Commas Studios (instagram.com/p/Dd_YP9Wo8c-, 35 s): what it teaches
+- **Type out of light:** "Introducing" resolves out of a horizontal light smear (copies of the word streaked sideways
+  and pulled together). The product name follows in the same streak.
+- **The logo mark is a window:** the mark drops on black, the wordmark slides out of it, then the mark scales up in
+  log space until its shape is a window onto a real landscape, and the product's phone UI floats inside it.
+- **One giant verb per beat, blurred behind floating UI** (Post, Engage, Grow): the word is huge and soft, the UI card
+  sharp in front, a real photo plate behind both.
+- **UI over real environment plates:** the product's windows float over mountains, a famous painting, clouds and a
+  wheat field. The plate gives the colour, and the UI stays the brand's.
+- **Two worlds:** the dark brand world (logo beats), and a light product world with a soft glow of the brand colour
+  rising from the bottom (product demo: sidebar click → course grid → zoom → "Gate your best content." → "Host" →
+  "Sell inside your community.").
+- **End:** a big glass rendering of the mark between the two halves of the name, then the lockup on black.
