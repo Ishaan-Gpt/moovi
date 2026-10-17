@@ -27,6 +27,8 @@ isn't used for taste.
 - A slideshow of one headline per beat reads as cheap. A film needs continuity: one motif and one moving camera,
   with transitions made from objects.
 
+- **f3 (Ishaan: better):** the product's own UI as the whole film, a header that stays as the anchor, a dense colourful pile that sorts into order, and a bridge element (the search bar becomes the end pill). Keep this direction.
+
 ## Ref 1: dump.cam (x.com/javiiarchive, 20 s) — what it teaches
 - **The product's own UI is the whole film.** There are no headline cards; the only on-screen words are the UI's own
   ("Your dumps.", the filter pills, the search box, "New dump"). The copy lives in the product.
