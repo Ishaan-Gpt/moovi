@@ -2,7 +2,7 @@ import { join } from 'node:path';
 import { project as P, projectGraph, run as runQ, userGraph, type Q } from '@moovi/graph';
 import { config } from './config';
 import { group, HEAD_MAX } from './heads';
-import type { AgentId, ChatMessage } from './events';
+import { agentOf, type AgentId, type ChatMessage } from './events';
 import { activity, pq, say, status } from './live';
 import { keyOf, type TaskSpec } from './scheduler';
 
@@ -29,7 +29,8 @@ export type Handler = (ctx: TaskCtx) => Promise<Outcome>;
 
 const json = <T>(s: unknown): T | null => { if (s === null || s === undefined || s === '') return null; if (typeof s !== 'string') return s as T; try { return JSON.parse(s) as T; } catch { return null; } };
 
-export const desk = (agent: string): AgentId => (agent === 'intake' || agent === 'match' ? 'moovi' : agent === 'voice' ? 'editor' : agent) as AgentId;
+/** The crew's task-board roles (scribe, director, hunter, builder, voice, intake, match) shown as one of the eight agents. */
+export const desk = (agent: string): AgentId => agentOf(agent);
 
 export function runDir(user: string, pid: string, run: string) { return join(config.data, 'users', user, 'projects', pid, 'runs', run); }
 export function projectDir(user: string, pid: string) { return join(config.data, 'users', user, 'projects', pid); }

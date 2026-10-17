@@ -92,7 +92,7 @@ export const matchStyle: Handler = async ctx => {
     : style === 's1' ? `This is a Style 1 explainer: a vertical short where every word lands on the voice. (match ${(m.score * 100).toFixed(0)}%)`
     : f.footage === 'edit' ? `I’ll edit your footage into a premium reel with a look designed for it (closest known: ${nearestName}).`
     : f.footage === 'reference' ? 'I’ll study your reference and design a new style from it, with a fresh script and our own assets.'
-    : `No known style fits this one exactly, so the Art Director will design one for it (closest known: ${nearestName}).`;
+    : `No known style fits this one exactly, so the Designer will design one for it (closest known: ${nearestName}).`;
   await ctx.say(steer.steered ? `You turned ${steer.steered === 's1' ? 'Style 1' : steer.steered} down before, so I’m not using it. ${say}` : say, 'text', undefined, 'moovi');
   return { output: matchRow, spawn: playbookSpecs(ctx, pkg.playbook, f, !!reuse?.card), note: style === 'unique' ? `unique (nearest ${m.nearest})` : style };
 };

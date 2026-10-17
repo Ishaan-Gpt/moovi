@@ -2,7 +2,7 @@ import { CRAFT, craft as C, MemoryDown, project as P, run as runQ, user as U } f
 import type { Role } from '@moovi/skills';
 import type { TaskCtx } from '../ctx';
 import { loadMemory, memoryBlock, NO_MEMORY, type FilmRef, type Memory, type MemoryRole } from '../memory';
-import { AGENT_NAMES, type AgentId } from '../events';
+import { AGENT_NAMES, agentOf } from '../events';
 import { model, runWithFallback, type Tier, type Tool } from '../runtime';
 import { resultText } from '../runtime/tool';
 
@@ -54,7 +54,7 @@ export const ROLE_LINE: Record<Role, string> = {
 };
 
 export function systemFor(role: Role, job: string, know: string) {
-  const name = AGENT_NAMES[role as AgentId];
+  const name = AGENT_NAMES[agentOf(role)];
   return `You are ${name}, ${ROLE_LINE[role]}, in Moovi's crew (a video studio run by AI agents).
 ${job}
 Work only through your tools. Never invent facts, numbers, URLs or asset ids. Be decisive; don't ask the user questions (Moovi does that).

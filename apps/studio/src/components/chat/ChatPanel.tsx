@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CrewBlob, type CrewId } from '@moovi/ui';
-import { AGENT_NAMES, type AgentId, type ChatMessage } from '@moovi/engine/events';
+import { AGENT_NAMES, agentOf, type AgentId, type ChatMessage } from '@moovi/engine/events';
 import { ago, mediaUrl } from '@/lib/client';
 import type { Activity } from '../office/useChat';
 import { Composer, type ComposerHandle } from './Composer';
@@ -10,7 +10,7 @@ export interface ChatSummary { id: string; title: string; status: string; videoS
 
 /**
  * The chat: a glass column on the left of the set. Messages from you and the crew; between them, the crew's live
- * work folded into one quiet "working" row you can open; questions with buttons; the video when it's ready.
+ * work folded into one quiet line per agent you can open; questions with buttons; the video when it's ready.
  */
 export function ChatPanel(p: {
   pid: string; cid: string; title: string; project: string; chats: ChatSummary[]; messages: ChatMessage[]; activity: Activity[];
@@ -88,7 +88,7 @@ export function ChatPanel(p: {
 }
 
 type Item = { type: 'msg'; m: ChatMessage } | { type: 'work'; key: string; rows: Activity[]; last: boolean };
-/** Messages in order; the crew's activity between two messages folds into one "working" item. */
+/** Messages in order; the crew's activity between two messages folds into one item (a line per agent). */
 function thread(messages: ChatMessage[], activity: Activity[]): Item[] {
   const out: Item[] = [];
   const acts = activity.filter(a => a.kind !== 'tool' || !a.text.startsWith('graph')).concat(activity.filter(a => a.kind === 'tool' && a.text.startsWith('graph')));
@@ -129,8 +129,8 @@ function ReviewNote({ name, text, review }: { name: string; text: string; review
 }
 
 function Avatar({ agent }: { agent?: AgentId }) {
-  const id = (agent ?? 'moovi') as CrewId | 'moovi';
-  return <span className="msg__avatar" aria-hidden="true"><CrewBlob id={id === 'voice' as never ? 'editor' : id} size={30} /></span>;
+  const id = agentOf(agent) as CrewId | 'moovi';
+  return <span className="msg__avatar" aria-hidden="true"><CrewBlob id={id} size={30} /></span>;
 }
 
 function Message({ m, pid, cid, answered, onAnswer, onOpenVideo }: { m: ChatMessage; pid: string; cid: string; answered: Map<string, string>; onAnswer: (q: string, c: string, label: string) => void; onOpenVideo: (v: number) => void }) {
@@ -140,7 +140,7 @@ function Message({ m, pid, cid, answered, onAnswer, onOpenVideo }: { m: ChatMess
       {Array.isArray(m.data?.uploads) && <span className="msg__files muted">{(m.data!.uploads as string[]).length} file{(m.data!.uploads as string[]).length > 1 ? 's' : ''} attached</span>}
     </div>
   );
-  const name = AGENT_NAMES[(m.agent ?? 'moovi') as AgentId] ?? 'Moovi';
+  const name = AGENT_NAMES[agentOf(m.agent)];
   if (m.kind === 'note' && m.data?.review) return <ReviewNote name={name} text={m.text} review={m.data.review as ReviewData} />;
   if (m.kind === 'note') return <div className="msg msg--note"><b>{name}</b> {m.text}</div>;
   if (m.kind === 'video') {
@@ -180,25 +180,41 @@ function Message({ m, pid, cid, answered, onAnswer, onOpenVideo }: { m: ChatMess
 
 const renderMentions = (t: string) => t.split(/(@[a-z]+)/gi).map((s, i) => (s.startsWith('@') ? <span key={i} className="mention">{s}</span> : s));
 
-/** The crew's work between two messages: one line (the latest), opening to every row. */
+/**
+ * The crew's work between two messages: one line per agent, in the order they started. An agent's line is the summary
+ * it posted when its stage ended (its 'line' row), or what it is doing now; its steps fold under it, closed by default.
+ */
 function Work({ rows, live }: { rows: Activity[]; live: boolean }) {
+  return <>{byAgent(rows).map(g => <AgentWork key={g.agent} {...g} live={live && !g.line} />)}</>;
+}
+
+function byAgent(rows: Activity[]): { agent: AgentId; line: Activity | null; steps: Activity[] }[] {
+  const groups = new Map<AgentId, { agent: AgentId; line: Activity | null; steps: Activity[] }>();
+  for (const r of rows) {
+    const g = groups.get(r.agent) ?? { agent: r.agent, line: null, steps: [] };
+    groups.set(r.agent, g);
+    if (r.kind === 'line') g.line = r; else g.steps.push(r);
+  }
+  return [...groups.values()];
+}
+
+function AgentWork({ agent, line, steps, live }: { agent: AgentId; line: Activity | null; steps: Activity[]; live: boolean }) {
   const [open, setOpen] = useState(false);
-  const last = rows.filter(r => r.kind !== 'tool').at(-1) ?? rows.at(-1)!;
-  const done = rows.filter(r => r.kind === 'done').length, failed = rows.filter(r => r.kind === 'fail').length;
+  const last = line ?? steps.filter(r => r.kind !== 'tool').at(-1) ?? steps.at(-1)!;
+  const done = steps.filter(r => r.kind === 'done').length, failed = steps.filter(r => r.kind === 'fail').length;
   return (
     <div className={`work ${live ? 'is-live' : ''}`}>
-      <button className="work__head" aria-expanded={open} onClick={() => setOpen(o => !o)}>
+      <button className="work__head" aria-expanded={open} onClick={() => setOpen(o => !o)} disabled={!steps.length}>
         <span className="work__spark" aria-hidden="true" />
-        <span className="work__line"><b>{AGENT_NAMES[last.agent]}</b> {last.kind === 'start' ? last.text.toLowerCase() : last.text}</span>
-        <span className="work__count muted">{done ? `${done} done` : ''}{failed ? ` · ${failed} retried` : ''}</span>
+        <span className="work__line"><b>{AGENT_NAMES[agent]}</b> {last.kind === 'start' ? last.text.toLowerCase() : last.text}</span>
+        <span className="work__count muted">{!line && done ? `${done} done` : ''}{failed ? `${!line && done ? ' · ' : ''}${failed} retried` : ''}</span>
         <svg className="work__chev" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
       </button>
       {open && (
         <ol className="work__rows">
-          {rows.map(r => (
+          {steps.map(r => (
             <li key={r.id} data-k={r.kind}>
               <i aria-hidden="true" />
-              <b>{AGENT_NAMES[r.agent]}</b>
               <span>{r.text}</span>
               {r.ms ? <em className="muted">{(r.ms / 1000).toFixed(1)} s</em> : null}
             </li>

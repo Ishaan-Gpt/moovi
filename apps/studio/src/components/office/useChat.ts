@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useReducer, useRef } from 'react';
-import type { AgentId, AgentState, ChatMessage, Stamped } from '@moovi/engine/events';
+import { agentOf, type AgentId, type AgentState, type ChatMessage, type Stamped } from '@moovi/engine/events';
 import { api } from '@/lib/client';
 
 /**
@@ -8,7 +8,7 @@ import { api } from '@/lib/client';
  * Everything the office draws comes from here: no event is invented on the client.
  */
 export interface Status { state: AgentState; text: string; count?: number; at: number }
-export interface Activity { id: string; agent: AgentId; task: string; kind: 'start' | 'tool' | 'done' | 'fail' | 'note'; text: string; at: number; ms?: number; scope?: string }
+export interface Activity { id: string; agent: AgentId; task: string; kind: 'start' | 'tool' | 'done' | 'fail' | 'note' | 'line'; text: string; at: number; ms?: number; scope?: string }
 export interface Flight { id: string; from: AgentId; to: AgentId; at: number }
 export interface Video { id: string; status: 'making' | 'ready' | 'failed'; version: number; duration?: number; format?: string; live?: boolean }
 export interface OfficeState {
@@ -34,10 +34,11 @@ function reduce(s: OfficeState, a: Action): OfficeState {
   if (a.type === 'local') return s.messages.some(m => m.id === a.message.id) ? s : { ...s, messages: [...s.messages, a.message] };
   const e = a.e;
   switch (e.type) {
-    case 'message': return s.messages.some(m => m.id === e.message.id) ? s : { ...s, messages: [...s.messages, e.message] };
-    case 'status': return { ...s, status: { ...s.status, [e.agent]: { state: e.state, text: e.text, count: e.count, at: e.at } } };
+    case 'message': return s.messages.some(m => m.id === e.message.id) ? s : { ...s, messages: [...s.messages, withAgent(e.message)] };
+    // old runs' events carry the ids before the eight agents (scribe, hunter, voice, …): shown as who they are now
+    case 'status': return { ...s, status: { ...s.status, [agentOf(e.agent)]: { state: e.state, text: e.text, count: e.count, at: e.at } } };
     case 'activity': {
-      const act: Activity = { id: e.id, agent: e.agent, task: e.task, kind: e.kind, text: e.text, at: e.at, ms: e.ms, scope: e.scope };
+      const act: Activity = { id: e.id, agent: agentOf(e.agent), task: e.task, kind: e.kind, text: e.text, at: e.at, ms: e.ms, scope: e.scope };
       let flights = s.flights;
       // a handoff on set: a task finished at one desk and the next one starts at another, within moments
       if (a.live && e.kind === 'start') {
@@ -53,8 +54,10 @@ function reduce(s: OfficeState, a: Action): OfficeState {
   }
 }
 
+const withAgent = (m: ChatMessage): ChatMessage => (m.agent ? { ...m, agent: agentOf(m.agent) } : m);
+
 export function useChat(pid: string, cid: string, init: { messages: ChatMessage[]; title: string; video: Video | null; live: number[] }) {
-  const [state, dispatch] = useReducer(reduce, null, () => ({ messages: init.messages, status: {}, activity: [], flights: [], run: null, video: init.video, fresh: 0, live: init.live, title: init.title, connected: false }));
+  const [state, dispatch] = useReducer(reduce, null, () => ({ messages: init.messages.map(withAgent), status: {}, activity: [], flights: [], run: null, video: init.video, fresh: 0, live: init.live, title: init.title, connected: false }));
   const replayed = useRef(false);
   useEffect(() => {
     // replay the stream (statuses, activity) without treating old events as live, then follow it

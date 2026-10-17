@@ -1,4 +1,4 @@
-import { MENTIONABLE, newId, sendCommand, userSay } from '@moovi/engine';
+import { LEGACY_AGENT, MENTIONABLE, newId, sendCommand, userSay } from '@moovi/engine';
 import { styleOf } from '@moovi/engine/styles';
 import { apiProject, fail } from '@/lib/session';
 import { chat } from '@/lib/project';
@@ -46,7 +46,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ pid: st
     return Response.json({ message: msg, id: newId('ok') });
   }
   if (!text && !uploads.length) return fail(400, 'Write something, or add a file.');
-  const mentions = [...new Set([...text.matchAll(/@([a-z]+)/gi)].map(m => m[1]!.toLowerCase()).map(m => ({ art: 'director', artdirector: 'director', assets: 'hunter', shot: 'builder', shotbuilder: 'builder', research: 'researcher' } as Record<string, string>)[m] ?? m))].filter(m => MENTIONABLE.includes(m as never) || m === 'video');
+  const mentions = [...new Set([...text.matchAll(/@([a-z]+)/gi)].map(m => m[1]!.toLowerCase()).map(m => ({ ...LEGACY_AGENT, art: 'designer', artdirector: 'designer', assets: 'researcher', shot: 'designer', shotbuilder: 'designer', research: 'researcher' } as Record<string, string>)[m] ?? m))].filter(m => MENTIONABLE.includes(m as never) || m === 'video');
   const msg = await userSay(pid, cid, text, { ...(uploads.length ? { uploads } : {}), ...(mentions.length ? { mentions } : {}) });
   const first = b.kind === 'brief' || (c.videoStatus === 'none' && c.status === 'new');
   if (first) await sendCommand({ type: 'brief', ...base, text, ratio: b.ratio ?? 'auto', uploads, message: msg.id });

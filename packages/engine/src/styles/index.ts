@@ -2,6 +2,7 @@
  * The style registry: the live-preview styles the studio and the terminal both run. Pure data (the studio's
  * browser code imports it); the runners live in ./run.ts and the preview server in ./serve.ts.
  */
+import type { AgentId } from '../events';
 export type StyleId = 's1' | 's4' | 's5' | 'darkvox' | 'anatomy' | 'launch' | 'combined' | 'clip-moment';
 /** which live player plays the result (none of them encodes an MP4) */
 export type PlayerKind = 's1-engine' | 's4-player' | 's5-player' | 'darkvox-player' | 'anatomy-player' | 'launch-player' | 'edit-player' | 'mp4';
@@ -36,7 +37,7 @@ export const STYLES: StyleInfo[] = [
 
 export const styleOf = (id: string): StyleInfo | undefined => STYLES.find(s => s.id === id);
 
-export type Desk = 'moovi' | 'researcher' | 'scribe' | 'director' | 'hunter' | 'builder' | 'lens' | 'keeper' | 'editor';
+export type Desk = AgentId;
 /**
  * Stage names (the keys of the timing table, identical in the terminal and the studio) → what the office says and
  * which desk does it. Keys not listed (to_preview, total) are summary times, not stages.
@@ -44,23 +45,23 @@ export type Desk = 'moovi' | 'researcher' | 'scribe' | 'director' | 'hunter' | '
 export const STAGES: Record<string, { text: string; desk: Desk }> = {
   fetch: { text: 'reading site', desk: 'researcher' },
   site: { text: 'reading site', desk: 'researcher' },
-  brief: { text: 'writing script', desk: 'scribe' },
-  'brief(reuse)': { text: 'reusing script', desk: 'scribe' },
-  voice: { text: 'recording voice', desk: 'editor' },
-  'voice(ref)': { text: 'taking ref voice', desk: 'editor' },
-  'voice(reuse)': { text: 'reusing voice', desk: 'editor' },
-  'transcript(ref)': { text: 'listening', desk: 'editor' },
-  'media-wait': { text: 'site screenshot', desk: 'hunter' },
-  'plan+qa': { text: 'building scenes', desk: 'builder' },
-  plan: { text: 'planning', desk: 'director' },
-  pictures: { text: 'drawing pictures', desk: 'builder' },
-  'plan+pictures': { text: 'drawing pictures', desk: 'builder' },
-  compose: { text: 'composing', desk: 'editor' },
-  audio: { text: 'mixing audio', desk: 'editor' },
+  brief: { text: 'writing script', desk: 'writer' },
+  'brief(reuse)': { text: 'reusing script', desk: 'writer' },
+  voice: { text: 'recording voice', desk: 'sound' },
+  'voice(ref)': { text: 'taking ref voice', desk: 'sound' },
+  'voice(reuse)': { text: 'reusing voice', desk: 'sound' },
+  'transcript(ref)': { text: 'listening', desk: 'sound' },
+  'media-wait': { text: 'site screenshot', desk: 'researcher' },
+  'plan+qa': { text: 'building scenes', desk: 'designer' },
+  plan: { text: 'planning', desk: 'designer' },
+  pictures: { text: 'drawing pictures', desk: 'designer' },
+  'plan+pictures': { text: 'drawing pictures', desk: 'designer' },
+  compose: { text: 'composing', desk: 'designer' },
+  audio: { text: 'mixing audio', desk: 'sound' },
   sheet: { text: 'checking frames', desk: 'lens' },
-  clips: { text: 'fetching Mixkit clips', desk: 'hunter' },
+  clips: { text: 'fetching Mixkit clips', desk: 'researcher' },
   plate: { text: 'cutting footage', desk: 'editor' },
-  edl: { text: 'placing graphics', desk: 'builder' },
+  edl: { text: 'placing graphics', desk: 'designer' },
   graph: { text: 'reading the library', desk: 'keeper' },
 };
 export const SUMMARY_KEYS = ['to_preview', 'total'];

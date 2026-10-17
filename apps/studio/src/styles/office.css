@@ -25,10 +25,9 @@
 /* the crew breathe out of step; while working they bob quicker and lean into the desk */
 .station .crew-blob__body { transform-origin: 50% 90%; animation: bob 3.1s var(--ease) infinite alternate; }
 .station[data-agent="researcher"] .crew-blob__body { animation-duration: 2.7s; animation-delay: -.4s; }
-.station[data-agent="scribe"] .crew-blob__body { animation-duration: 3.4s; animation-delay: -1.1s; }
-.station[data-agent="director"] .crew-blob__body { animation-duration: 2.9s; animation-delay: -2.2s; }
-.station[data-agent="hunter"] .crew-blob__body { animation-duration: 3.6s; animation-delay: -.8s; }
-.station[data-agent="builder"] .crew-blob__body { animation-duration: 3.2s; animation-delay: -1.7s; }
+.station[data-agent="writer"] .crew-blob__body { animation-duration: 3.4s; animation-delay: -1.1s; }
+.station[data-agent="sound"] .crew-blob__body { animation-duration: 2.9s; animation-delay: -2.2s; }
+.station[data-agent="designer"] .crew-blob__body { animation-duration: 3.2s; animation-delay: -1.7s; }
 .station[data-agent="lens"] .crew-blob__body { animation-duration: 2.8s; animation-delay: -.2s; }
 .station[data-agent="keeper"] .crew-blob__body { animation-duration: 3.8s; animation-delay: -2.6s; }
 .station[data-agent="editor"] .crew-blob__body { animation-duration: 3.0s; animation-delay: -1.4s; }

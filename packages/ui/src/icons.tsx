@@ -47,4 +47,5 @@ export const IconSend = (p: P) => (<svg {...base(p)}><path d="M12.2 19.4c-.4-4.6
 
 /** One icon per crew member (their prop badge). */
 export const crewIcons = { moovi: IconClapper, scribe: IconPen, cutter: IconScissors, beat: IconHeadphones, lens: IconLoupe, keeper: IconOrb,
-  researcher: IconGraph, director: IconRatio, hunter: IconSpark, builder: IconScissors, editor: IconPlay } as const;
+  researcher: IconGraph, director: IconRatio, hunter: IconSpark, builder: IconScissors, editor: IconPlay,
+  writer: IconPen, sound: IconHeadphones, designer: IconRatio } as const;
