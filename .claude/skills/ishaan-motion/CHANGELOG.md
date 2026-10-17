@@ -75,3 +75,6 @@
 
 ## 1.11.2 (2026-10-18)
 - Premium Caption 1 shipped as two variations whose colour comes from the video (one accent → fill ramp + bloom); 1.1 word spacing.
+
+## 1.12.0 (2026-10-18)
+- edit-fundamentals.md: creator-reel devices decoded from em1 (cascade on springs, dim + product on top, the lit one in a row, the post frame, object wipe, comment pill ending), as brand-reskinnable fundamentals.
