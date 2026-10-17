@@ -14,18 +14,20 @@ Read this first if you are picking the work up. Updated by Tab after every item.
   pushing in main as well as in this new branch"; matches Ishaan's CLAUDE.md). Red code goes to the branch only.
 - **Push:** through the GitHub API (git data: blobs, trees, commits, then the ref with `force: false`), never force.
 - **Last sha:** see the newest line in `LOG.md`.
-- **Current state:** Phase 0 done; Phase 1 items 7, 8, 9 done. See the newest LOG lines for shas.
+- **Current state:** Phase 0 done; Phase 1 items 7 to 10 done. See the newest LOG lines for shas.
   - Contracts: `engine/src/edit/direct.schema.ts`, `engine/src/router/direct-film.schema.ts`, `engine/src/runtime/budget.ts`.
-  - Lane switch: `engine/src/runtime/lane.ts` (brain calls to Claude Code online, else key, else server under
-    MOOVI_BYOK=optional, else wait; detail calls never reach Claude Code); `keys.registerBrainScope`, `keys.serverModel`.
-  - `packages/mcp`: `store.ts` (memory or FalkorDB Redis side, keys `ce:brain:*`), `queue.ts` (`StepQueue`, memo 24 h,
-    exactly-once pick key), `bridge.ts` (`bridgeRuntime`), `lease.ts` (`Gate`: `mintTicket`, `pull(user, session,
-    ticket)` = moovi_next, `submit(user, session, lease, step, answer)` = moovi_answer; idle texts are the exact words
-    Claude Code will show).
+  - Lane switch: `engine/src/runtime/lane.ts`; `keys.registerBrainScope`, `keys.serverModel`.
+  - Checker: `engine/src/runtime/checked.ts` (`askChecked`, in the engine because item 11's `directEdit` uses it; the
+    re-ask is its own memo step, so re-runs replay both answers and land on the same result).
+  - `packages/mcp`: `store.ts`, `queue.ts` (`StepQueue`, memo 24 h, every answer remembered: replay plus the checker is
+    deterministic), `bridge.ts` (`bridgeRuntime`), `lease.ts` (`Gate`: tickets, leases, `pull` = moovi_next,
+    `submit` = moovi_answer).
+  - Ishaan's DECISIONS.md 12 puts the connect card, online pill and /moovi:run panel in Settings (his UI).
   - Needed later: `chat.ts` line 20 checks `loadModel` under MOOVI_BYOK=required; switch it to `scopeFor(cmd.user)`.
-- **Next item:** 10 (answer checker: strict JSON against the step's schema via `readDirection`/`readFilmDirection`, one re-ask with the
-  exact problems as `history`, then the safe default (the rules) with a "default used" note; wire it as the bridge's
-  `accept` hook so only accepted answers are remembered).
+- **Next item:** 11 (merge the brain calls: `edit/direct.ts directEdit(inputs)` builds the compact step (budget-trimmed sentences, shot
+  lines, menus, schema, example), asks `direct:edit` through `askChecked`, and maps the Direction onto the rule pickers'
+  overrides; `router/direct-film.ts directFilm` fills Launch's brief; 11a: the `planEdit({ direction })` hook in
+  `edit/job.ts`, noted in TAB.md first).
 
 ## How to run things
 
