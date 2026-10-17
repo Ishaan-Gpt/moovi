@@ -98,6 +98,9 @@ export function takeWindow(ws: Word[], ps: [number, number][], duration: number)
     // on sentence punctuation (. ? ! or the Devanagari danda) keep their place
     const before = ws.filter(w => w.t >= a && w.t < p0); // by start: a last word often runs a few ms into the pause
     if (before.length >= 4 && /[.?!।]$/.test(before.at(-1)!.word.trim())) continue;
+    // eight words or more is a line, not set-up talk ("ok, recording"), even unpunctuated (romanized Hinglish has no
+    // full stops): a clip cut from the middle of a talk keeps its opening
+    if (before.length >= 8) continue;
     a = p1; why = 'after the set-up talk (last long pause in the opening)';
   }
   // the take starts on the first speech after that point
