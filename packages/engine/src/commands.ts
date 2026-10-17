@@ -2,9 +2,19 @@
  * What the studio asks the engine to do. The studio only writes commands (and reads events); the engine owns
  * every decision. Commands carry ids the studio has already checked against the signed-in user.
  */
+import type { TypeId } from '@moovi/library/types';
+
+/** What an attachment is for (Stage 1 W1, decision 2): footage to edit, a reference to learn the look from, or an asset to place. */
+export type AttachmentRole = 'footage' | 'reference' | 'asset';
+export interface Attachment { upload: string; role: AttachmentRole }
+
 export type Command =
   /** a new chat's first brief: make the video */
-  | { type: 'brief'; user: string; project: string; chat: string; text: string; ratio?: 'auto' | '9:16' | '16:9' | '1:1' | '4:5'; uploads: string[]; message: string; style?: { id: 's1' | 's4' | 's5' | 'darkvox' | 'anatomy' | 'launch' | 'combined' | 'clip-moment'; url?: string; script?: string; brand?: string } }
+  | { type: 'brief'; user: string; project: string; chat: string; text: string; ratio?: 'auto' | '9:16' | '16:9' | '1:1' | '4:5'; uploads: string[]; message: string; style?: { id: 's1' | 's4' | 's5' | 'darkvox' | 'anatomy' | 'launch' | 'combined' | 'clip-moment'; url?: string; script?: string; brand?: string };
+      /** the type card the user tapped (MOOVI_ROUTER=pipeline; old briefs leave it out). Not `type`: that key is the command's own kind */
+      filmType?: TypeId;
+      /** a role per upload, from the studio's role chips (MOOVI_ROUTER=pipeline); a missing one is decided by the router */
+      attachments?: Attachment[] }
   /** a message in a chat (to Moovi, or to an @agent; may refer to the video with @video) */
   | { type: 'message'; user: string; project: string; chat: string; text: string; mentions: string[]; uploads: string[]; message: string }
   /** the answer to a question card */

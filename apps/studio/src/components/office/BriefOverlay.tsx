@@ -1,9 +1,14 @@
 'use client';
 import { useEffect, useId, useRef, useState, type DragEvent, type FormEvent, type KeyboardEvent } from 'react';
 import { STYLES, styleOf, type StyleId } from '@moovi/engine/styles';
+import type { AttachmentRole } from '@moovi/engine';
+import { AUTO_CARD, ROLE_CHIPS, TYPE_CARDS, type FilmType } from './type-words';
 
 /** A pick from the style strip: one of the live-preview styles, from a site link or (some styles) a script. */
 export interface StylePick { id: StyleId; url?: string; script?: string; brand?: string }
+
+/** The one way in (MOOVI_ROUTER=pipeline): the tapped type card and a role per file (null: Moovi decides). */
+export interface BriefExtra { filmType?: FilmType; roles?: (AttachmentRole | null)[] }
 
 export type Ratio = 'auto' | '9:16' | '16:9' | '1:1' | '4:5';
 const RATIOS: { id: Ratio; label: string; hint: string }[] = [
@@ -19,10 +24,14 @@ const RATIOS: { id: Ratio; label: string; hint: string }[] = [
  * the landing page (prompt, footage or a reference, frame size). With a finished video in the project, one tap
  * writes "like the last one" so the crew reuses its style for a new script.
  */
-export function BriefOverlay({ open, canClose, previous, onClose, onSubmit }: {
+export function BriefOverlay({ open, canClose, previous, pipeline = false, onClose, onSubmit }: {
   open: boolean; canClose: boolean; previous: string | null;
-  onClose: () => void; onSubmit: (text: string, files: File[], ratio: Ratio, style?: StylePick) => Promise<void>;
+  /** MOOVI_ROUTER=pipeline: type cards replace the style strip and each file gets a role chip */
+  pipeline?: boolean;
+  onClose: () => void; onSubmit: (text: string, files: File[], ratio: Ratio, style?: StylePick, extra?: BriefExtra) => Promise<void>;
 }) {
+  const [filmType, setFilmType] = useState<FilmType | null>(null);
+  const [roles, setRoles] = useState<(AttachmentRole | null)[]>([]);
   const [style, setStyle] = useState<StyleId | null>(null);
   const [mode, setMode] = useState<'url' | 'script'>('url');
   const [link, setLink] = useState('');
@@ -64,6 +73,7 @@ export function BriefOverlay({ open, canClose, previous, onClose, onSubmit }: {
     const ok = Array.from(list).filter(f => /^(video|image|audio)\//.test(f.type));
     if (ok.length < list.length) setErr('Only video, images and audio can go to the crew.');
     setFiles(prev => [...prev, ...ok].slice(0, 6));
+    setRoles(prev => [...prev, ...ok.map(() => null)].slice(0, 6));
   };
   const submit = async (e?: FormEvent) => {
     e?.preventDefault();
@@ -79,7 +89,7 @@ export function BriefOverlay({ open, canClose, previous, onClose, onSubmit }: {
     }
     if (!text.trim() && !files.length) { setNudge(n => n + 1); area.current?.focus(); return; }
     setBusy(true); setErr('');
-    try { await onSubmit(text.trim(), files, ratio); setText(''); setFiles([]); }
+    try { await onSubmit(text.trim(), files, ratio, undefined, pipeline ? { ...(filmType ? { filmType } : {}), roles } : undefined); setText(''); setFiles([]); setRoles([]); }
     catch (x) { setErr((x as Error).message); }
     finally { setBusy(false); }
   };
@@ -99,7 +109,16 @@ export function BriefOverlay({ open, canClose, previous, onClose, onSubmit }: {
       <div className="nb__veil" onClick={() => { if (canClose && !busy) onClose(); }} aria-hidden="true" />
       <div className="nb__col">
         <h2 id={`${id}-h`} className="nb__title">What is this <em className="serif">one</em> for?</h2>
-        <div className="nb__styles" role="radiogroup" aria-label="Style">
+        {pipeline ? <div className="nb__styles" role="radiogroup" aria-label="Type of video">
+          <button type="button" role="radio" aria-checked={!filmType} className="nb__style" onClick={() => setFilmType(null)}>
+            <span className="nb__swatch" data-s="auto" aria-hidden="true"><i /><i /><i /></span><span><b>{AUTO_CARD.title}</b><em>{AUTO_CARD.line}</em></span>
+          </button>
+          {TYPE_CARDS.map(t => (
+            <button key={t.id} type="button" role="radio" aria-checked={filmType === t.id} className="nb__style" data-soon={t.soon || undefined} onClick={() => setFilmType(t.id)}>
+              <span><b>{t.title}</b><em>{t.line}</em></span>
+            </button>
+          ))}
+        </div> : <div className="nb__styles" role="radiogroup" aria-label="Style">
           <button type="button" role="radio" aria-checked={!style} className="nb__style" onClick={() => setStyle(null)}>
             <span className="nb__swatch" data-s="auto" aria-hidden="true"><i /><i /><i /></span><span><b>Moovi picks</b><em>Any brief</em></span>
           </button>
@@ -108,7 +127,7 @@ export function BriefOverlay({ open, canClose, previous, onClose, onSubmit }: {
               <span className="nb__swatch" data-s={st.id} aria-hidden="true"><i /><i /><i /></span><span><b>{st.name}</b><em>{st.kind}</em></span>
             </button>
           ))}
-        </div>
+        </div>}
         {info && <p className="nb__about">{info.description} <span className="muted">9:16 · plays live, no render</span></p>}
         <form className="nb__box" onSubmit={submit} data-drag={drag || undefined}
           onDragOver={e => onDrag(e, true)} onDragEnter={e => onDrag(e, true)} onDragLeave={() => setDrag(false)} onDrop={e => { onDrag(e, false); add(e.dataTransfer.files); }}>
@@ -143,7 +162,10 @@ export function BriefOverlay({ open, canClose, previous, onClose, onSubmit }: {
               <ul className="nb__files">
                 {files.map((f, i) => (
                   <li key={`${f.name}${i}`}><span>{f.name}</span><em className="muted">{(f.size / 1048576).toFixed(f.size > 10485760 ? 0 : 1)} MB</em>
-                    <button type="button" aria-label={`Remove ${f.name}`} onClick={() => setFiles(fs => fs.filter((_, k) => k !== i))}><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg></button>
+                    {pipeline && (() => { const k = ROLE_CHIPS.findIndex(c => c.id === (roles[i] ?? null)), chip = ROLE_CHIPS[k]!; return (
+                      <button type="button" className="nb__role" data-role={chip.id ?? 'auto'} aria-label={`What ${f.name} is for: ${chip.label}. Tap to change.`}
+                        onClick={() => setRoles(rs => { const next = [...rs]; next[i] = ROLE_CHIPS[(k + 1) % ROLE_CHIPS.length]!.id; return next; })}>{chip.label}</button>); })()}
+                    <button type="button" aria-label={`Remove ${f.name}`} onClick={() => { setFiles(fs => fs.filter((_, k) => k !== i)); setRoles(rs => rs.filter((_, k) => k !== i)); }}><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg></button>
                   </li>
                 ))}
               </ul>

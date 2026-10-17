@@ -13,6 +13,7 @@ import { TYPE_IDS, type TypeId, type TypeSpec } from './spec';
 import { UI_MORPH } from './ui-morph';
 
 export * from './spec';
+export { TYPE_WORDS, type TypePhrase } from './words';
 export { LAUNCH_ARC_IDS, LAUNCH_REFS } from './launch';
 export { DARKVOX_ARCS, EDITORIAL_ARCS } from './brand-post';
 export { ANATOMY_ARCS, CLEAR_SIGNAL_ARCS } from './saas-explainer';

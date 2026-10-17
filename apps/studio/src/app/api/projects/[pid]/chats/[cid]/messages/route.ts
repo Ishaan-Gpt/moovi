@@ -1,4 +1,5 @@
-import { LEGACY_AGENT, MENTIONABLE, newId, sendCommand, userSay } from '@moovi/engine';
+import { LEGACY_AGENT, MENTIONABLE, newId, sendCommand, userSay, type Attachment } from '@moovi/engine';
+import { FILM_TYPES, type FilmType } from '@/components/office/type-words';
 import { styleOf } from '@moovi/engine/styles';
 import { apiProject, fail, offline } from '@/lib/session';
 import { chat } from '@/lib/project';
@@ -11,7 +12,9 @@ export const runtime = 'nodejs';
  */
 type Body = { kind: 'brief' | 'message' | 'answer' | 'stop'; text?: string; uploads?: string[]; ratio?: 'auto' | '9:16' | '16:9' | '1:1' | '4:5'; question?: string; choice?: string; label?: string;
   /** one of the four live-preview styles (the brief box's picker): its pipeline runs as one engine job */
-  style?: { id?: string; url?: string; script?: string; brand?: string } };
+  style?: { id?: string; url?: string; script?: string; brand?: string };
+  /** MOOVI_ROUTER=pipeline: the tapped type card and the role chips (the engine ignores both with the switch off) */
+  filmType?: string; attachments?: { upload?: string; role?: string }[] };
 
 /** FalkorDB down: the composer shows "Moovi's memory is offline" (decision 13). */
 export const POST = (req: Request, ctx: { params: Promise<{ pid: string; cid: string }> }) => send(req, ctx).catch(offline);
@@ -52,7 +55,9 @@ async function send(req: Request, { params }: { params: Promise<{ pid: string; c
   const mentions = [...new Set([...text.matchAll(/@([a-z]+)/gi)].map(m => m[1]!.toLowerCase()).map(m => ({ ...LEGACY_AGENT, art: 'designer', artdirector: 'designer', assets: 'researcher', shot: 'designer', shotbuilder: 'designer', research: 'researcher' } as Record<string, string>)[m] ?? m))].filter(m => MENTIONABLE.includes(m as never) || m === 'video');
   const msg = await userSay(pid, cid, text, { ...(uploads.length ? { uploads } : {}), ...(mentions.length ? { mentions } : {}) });
   const first = b.kind === 'brief' || (c.videoStatus === 'none' && c.status === 'new');
-  if (first) await sendCommand({ type: 'brief', ...base, text, ratio: b.ratio ?? 'auto', uploads, message: msg.id });
+  const filmType = FILM_TYPES.includes(b.filmType as FilmType) ? b.filmType as FilmType : undefined;
+  const attachments = (b.attachments ?? []).filter((a): a is Attachment => !!a.upload && uploads.includes(a.upload) && ['footage', 'reference', 'asset'].includes(a.role ?? ''));
+  if (first) await sendCommand({ type: 'brief', ...base, text, ratio: b.ratio ?? 'auto', uploads, message: msg.id, ...(filmType ? { filmType } : {}), ...(attachments.length ? { attachments } : {}) });
   else await sendCommand({ type: 'message', ...base, text, mentions, uploads, message: msg.id });
   return Response.json({ message: msg, id: newId('ok') });
 }

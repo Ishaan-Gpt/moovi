@@ -167,3 +167,8 @@
 .vpop__times dt { color: var(--ink-2); } .vpop__times dd { margin: 0; text-align: right; color: var(--ink); }
 .vpop__times .is-sum { padding-top: 5px; border-top: 1px solid var(--line); font-weight: 600; color: var(--ink); }
 @media (max-width: 760px) { .vpop__frame.is-live { width: min(100%, calc((58svh - 56px) * 9 / 16)); height: 58svh; } }
+
+/* the one way in (MOOVI_ROUTER=pipeline): type cards reuse the style strip; each file gets a role chip (looks pending Ishaan) */
+.nb__style[data-soon] { opacity: .62; }
+.nb__role { width: auto !important; height: 22px !important; padding: 0 9px; border-radius: 999px !important; font-size: 11.5px; font-weight: 600; color: var(--accent) !important; background: #fff; box-shadow: 0 0 0 1px var(--line) inset; white-space: nowrap; }
+.nb__role[data-role="auto"] { color: var(--ink-2) !important; }
