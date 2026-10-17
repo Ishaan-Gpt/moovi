@@ -2,6 +2,50 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-17 19:28 IST · main · af7ceec · the final pipeline, the final merge, and the bridge plan checked against it
+
+**@Tab @Vignesh, the final pipeline (Ishaan approved it as final today):** `docs/agents/maps/proposed.html`. Download
+it and open it in a browser: one way in, two brains (Precise for open APIs, Creative for a connected Claude Code),
+seven video types, eight stages each owned by one agent, floor rules, chat edits that patch only what changed, the
+taste system, the ishaan-motion tree, the mapped library. Every box says whether it exists, is partly built or is new.
+Ishaan's own words behind it: `docs/agents/ISHAAN-VISION.md` (parts 1 to 4). Please build toward it.
+
+**Pull main before you start anything: it moved a lot (95000ac..af7ceec, Ishaan's go).**
+- Merged: the Launch style (Auto routes launch, announce, release, promo briefs to it); Studio Cut as one more edit look
+  (only when the brief names it or `MOOVI_EDIT_TEMPLATE=studio-cut`; your D2.2 styles stay the default, unchanged);
+  Ishaan's style-film review, moved to `review/film/` so it sits beside your CHECK in `review/`; from
+  ishaan/avatar-edit-fixes the hook fix in `takeWindow` and Hinglish romanize (its lookdraw was dropped: your
+  `lookProps` already draws captionseasy looks).
+- New: the studio chat sends a message on a live edit to `reEditDir` first (`talk.ts editByWords`: next version, nothing
+  re-made; unread clauses go to Moovi as before). `parseEdit` reads named X1 moves at a time ("add a paper cut at 0:04",
+  any of your 9). CHECK (`checkAndRepair`, code only) also runs on the first plan in `planEdit` (check.json). Light / Tight
+  cleanup from the brief (`cleanupLevel`). Auto says its pick in the chat. CHECK flags a caption under 0.45 s
+  (`minCaptionSec`, `caption_time`) and has more AI tells in `banned`. Landing: real metadataBase, robots, sitemap.
+- Engine suite 425: 413 pass, 0 fail, 12 skipped (no local FalkorDB); typecheck clean on every package.
+
+**The bridge plan (`research/mcp-claude-code-bridge-plan.md`) against the final pipeline: it fits, no blocking clash.**
+It is the Creative mode's plumbing, and the seam (`scopeFor`, `ask()`) leaves styles, kits and apps alone. Six points
+to settle before or while you build:
+1. **Lane order (a decision for Ishaan).** `pickLane` puts `key` first, so a user with both a key and a linked Claude Code
+   gets Precise mode. The pipeline says a connected Claude Code means Creative mode. Please make the order one switch
+   in one place, and wait for Ishaan's call on the default.
+2. **Creative mode is more than a better model in the same slots.** In the pipeline, Creative mode writes 10 hooks and
+   ranks them, drafts freely inside the arc, writes new pieces in code (the Designer's "write a new piece" box) and
+   reviews every beat. The bridge carries today's `ask()` calls unchanged, which is the right first step. Please add
+   `brainMode()` (your section 15) in phase 1 so stages can branch on it later, and keep a step kind open for "write a
+   component" (code back, not JSON).
+3. **Chat edits stay instant.** Clauses `parseEdit` can read never become a think step (no `/moovi:run` for "tighter").
+   Only what it cannot read should go to Claude. When you add the `ask` fallback to `reedit.ts` (your section 5 table,
+   "later"), build it as the free-language-to-library parser: the answer is ops on the EDL from the library's named
+   assets, never free code.
+4. **Chat flood.** The pipeline shows one line per agent with details folded. Bridge step rows ("Claude is picking the
+   key moments") should fold under their agent, not add rows.
+5. **Voices.** The 63 Edge voices are not shippable (unofficial endpoint). Your `local-tts.ts` with Kokoro is the likely
+   replacement, so the voice-casting stage (stage 4) will cast from Kokoro's voices. Please tag each Kokoro voice
+   (language, accent, gender, age, tone) the way `audio/voices.ts` does, so they go into the graph the same way.
+6. **Files we share.** You plan small edits to `review/config.ts`; the final merge added `minCaptionSec` and banned
+   words there, so rebase first. `keys.ts`, `worker.ts`, `hear.ts` and `stt.ts` were not touched by the merge.
+
 ## 2026-10-16 22:56 IST · main · no code · the test video; clip-moment 40dcfe7 still lacks the NCS fix
 
 **Test video:** @Vignesh's `docs/agents/ishaan-test/ishaan-test.mp4` (1ce69d2, 2.7 MB, 19 s) is on main. The repo is
