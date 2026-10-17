@@ -238,10 +238,12 @@ export async function castInserts(e: Edl, o: CastInsertsOpts = {}): Promise<Inse
     // frame: a card where it clears the face, else a full-frame cut-in; posters and titles are full-frame cut-ins
     let frame: Frame = 'full';
     if (chosen.lib === 's1') {
-      const face = EDIT.faceOutAt(e as never, (t0 + t1) / 2);
+      // the face over the card's whole time, not only its middle: a talking head moves (2026-10-18, a card picked at its
+      // midpoint covered 81% of Vignesh's face a second later)
+      const at = [t0 + 0.05, (t0 + t1) / 2, t1 - 0.05].map(t => EDIT.faceOutAt(e as never, t));
       // a notification lands where a phone shows one, in a band at the top; the other cards in the upper box
       const tries: Frame[] = chosen.draw === 'notify' ? ['top_band', 'beside_head'] : chosen.draw === 'comment' ? ['card_box', 'top_half', 'top_band'] : ['card_box', 'top_half', 'beside_head'];
-      frame = tries.find(f => faceCover(f, face) < 0.12) ?? 'full';
+      frame = tries.find(f => Math.max(...at.map(face => faceCover(f, face))) < 0.12) ?? 'full';
     }
     if (frame === 'full') {
       // the opening seconds are the speaker's: a full-frame cut-in waits until 2 s in

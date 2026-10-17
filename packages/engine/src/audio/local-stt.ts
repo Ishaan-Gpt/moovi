@@ -1,11 +1,16 @@
 /**
  * Speech to text with no key: Whisper running inside Node (transformers.js, ONNX on the CPU), word timings included.
  * It is the fallback when the job has no Groq or OpenAI key, or when that provider refuses (billing, a bad key, an
- * outage). The model (onnx-community/whisper-base_timestamped, quantized, about 77 MB) downloads once to
+ * outage). The model (onnx-community/whisper-large-v3-turbo_timestamped, 4 bit, about 760 MB) downloads once to
  * data/models (MOOVI_MODEL_CACHE moves it) on first use; nothing to install beyond `pnpm install`.
  * MOOVI_STT=local forces it even with a key, MOOVI_STT=off turns it off (then an edit of a talking clip stops and
- * asks for a key), MOOVI_STT_LOCAL_MODEL picks another transformers.js Whisper (e.g. onnx-community/whisper-tiny.en_timestamped).
- * Measured 2026-10-18 on the 4 CPU dev box: a 20 s clip heard in 4.6 s (model load 1.3 s from cache).
+ * asks for a key), MOOVI_STT_LOCAL_MODEL picks another transformers.js Whisper (onnx-community/whisper-small_timestamped,
+ * 250 MB and about 3x faster, or whisper-base_timestamped, 77 MB, for a slow machine).
+ * Measured 2026-10-18 on the 4 CPU dev box, Vignesh's accented selfie in street noise (29.7 s), against a reference
+ * transcript: base wrote "automatically edit that's also made up of it"; small wrote "we are editing the first Moovi
+ * which is Moovi ... extremely labor-gassing ... after it's time ... social media business" (8.8 s); turbo wrote "we are
+ * building the world's first ... video editor ... extremely flabbergasting ... after effects ... your entire social media
+ * with it" (26 s, load 4 s from cache). A word prompt did not change either model's output, so none is sent.
  */
 import { execFile } from 'node:child_process';
 import { existsSync } from 'node:fs';
@@ -20,9 +25,11 @@ export function sttMode(env = process.env.MOOVI_STT): SttMode {
   return v === 'local' || v === 'off' ? v : 'auto';
 }
 export const localAllowed = () => sttMode() !== 'off';
-export const localModel = () => process.env.MOOVI_STT_LOCAL_MODEL?.trim() || 'onnx-community/whisper-base_timestamped';
+export const localModel = () => process.env.MOOVI_STT_LOCAL_MODEL?.trim() || 'onnx-community/whisper-large-v3-turbo_timestamped';
+/** the weights' precision per model: the turbo at 4 bit (760 MB; at 8 bit it is 1.1 GB for the same words), the rest at 8 bit */
+export const localDtype = (model = localModel()): string | Record<string, string> => /large-v3-turbo/.test(model) ? { encoder_model: 'q4', decoder_model_merged: 'q4' } : 'q8';
 export const modelCache = () => process.env.MOOVI_MODEL_CACHE?.trim() || join(config.data, 'models');
-const LOCAL_MB = 77;
+const localMb = (m: string) => /large-v3-turbo/.test(m) ? 760 : /small/.test(m) ? 250 : /base/.test(m) ? 77 : /tiny/.test(m) ? 40 : 500;
 
 interface Chunk { text: string; timestamp: [number, number | null] }
 /** transformers.js word chunks to Moovi's timed words (seconds, 3 decimals; an open end takes the next start). Pure. */
@@ -31,8 +38,31 @@ export function chunksToWords(chunks: Chunk[], offset = 0): Word[] {
   chunks.forEach((c, i) => {
     const word = c.text.trim(); if (!word) return;
     const t = c.timestamp[0] ?? 0, end = c.timestamp[1] ?? chunks[i + 1]?.timestamp[0] ?? t + 0.3;
+    // a piece with no leading space continues the word before it (Whisper split "labor-gassing" as " labor" + "-gassing")
+    const prev = out[out.length - 1];
+    if (prev && !/^\s/.test(c.text)) { prev.word += word; prev.end = +(Math.max(end, t) + offset).toFixed(3); return; }
     out.push({ word, t: +(t + offset).toFixed(3), end: +(Math.max(end, t) + offset).toFixed(3) });
   });
+  return out;
+}
+
+const key = (w: string) => w.toLowerCase().replace(/[^\p{L}\p{N}']/gu, '');
+/**
+ * Whisper's known failure on a slate or room tone is a loop: the same word over and over (measured 2026-10-18 on
+ * Vignesh's raw clip: "Start!" 110 times from 7.2 s to 30 s, which broke the EDL builder with zero-length shots).
+ * Kept: words in time order, at most two of the same word in a row, never the same word twice inside 150 ms (nobody
+ * says a word twice that fast; Whisper's doubled "Start! Start!" 60 ms apart kept a slate word on screen), inside the clip,
+ * each at least 40 ms long. Pure.
+ */
+export function cleanWords(ws: Word[], duration = Infinity): Word[] {
+  const out: Word[] = [];
+  for (const w of ws) {
+    const prev = out[out.length - 1], k = key(w.word);
+    if (!k || w.t > duration + 0.05) continue;
+    if (prev && w.t < prev.t - 0.05) continue;
+    if (prev && key(prev.word) === k && (w.t - prev.t < 0.15 || (out.length > 1 && key(out[out.length - 2]!.word) === k))) continue;
+    out.push({ ...w, end: +Math.max(w.end ?? w.t, w.t + 0.04).toFixed(3) });
+  }
   return out;
 }
 
@@ -47,10 +77,10 @@ function load(onNote?: (text: string) => unknown): Promise<Asr> {
     const model = localModel(), cache = modelCache();
     tf.env.cacheDir = cache;
     if (!existsSync(join(cache, ...model.split('/')))) {
-      const line = `downloading the speech model once, about ${LOCAL_MB} MB (${model})`;
+      const line = `downloading the speech model once, about ${localMb(model)} MB (${model})`;
       console.log(`[stt] ${line}`); await onNote?.(line);
     }
-    return await tf.pipeline('automatic-speech-recognition', model, { dtype: 'q8' }) as unknown as Asr;
+    return await tf.pipeline('automatic-speech-recognition', model, { dtype: localDtype(model) as never }) as unknown as Asr;
   })();
   asrP.catch(() => { asrP = null; });
   return asrP;
@@ -70,8 +100,11 @@ export async function localWords(file: string, o: { lang?: string; maxSeconds?: 
     o.signal?.throwIfAborted();
     if (audio.length < 1600) return { text: '', words: [], language: o.lang ?? '' };
     const english = /\.en(_|$)/.test(localModel());
-    const r = await asr(audio, { return_timestamps: 'word', chunk_length_s: 30, stride_length_s: 5, ...(english ? {} : { task: 'transcribe', ...(o.lang ? { language: o.lang } : {}) }) });
-    return { text: (r.text ?? '').trim(), words: chunksToWords(r.chunks ?? []), language: english ? 'en' : o.lang ?? '' };
+    // 20 s windows: with one 30 s window the turbo stopped at "your entire social" and lost the clip's last 4 s
+    // (measured 2026-10-18 on the 29.7 s selfie; padding the audio did not help, 20 s windows with a 4 s stride did)
+    const r = await asr(audio, { return_timestamps: 'word', chunk_length_s: 20, stride_length_s: 4, ...(english ? {} : { task: 'transcribe', ...(o.lang ? { language: o.lang } : {}) }) });
+    const words = cleanWords(chunksToWords(r.chunks ?? []), audio.length / 16000);
+    return { text: words.map(w => w.word).join(' '), words, language: english ? 'en' : o.lang ?? '' };
   });
   queue = run.catch(() => undefined);
   return run;

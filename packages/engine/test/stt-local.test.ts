@@ -5,7 +5,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { chunksToWords, localWords, sttMode } from '../src/audio/local-stt';
+import { chunksToWords, cleanWords, localWords, sttMode } from '../src/audio/local-stt';
 import { isProviderRefusal, NEEDS_SPEECH_KEY, plainSpeechError, speechAvailable } from '../src/audio/stt';
 import { config } from '../src/config';
 import { hear } from '../src/edit/hear';
@@ -38,6 +38,18 @@ test('stt: no key hears locally; MOOVI_STT=off with no key hears nothing; a key 
 test('stt: transformers.js word chunks become timed words (open end takes the next start)', () => {
   const ws = chunksToWords([{ text: ' Hello,', timestamp: [0.38, 0.68] }, { text: ' ', timestamp: [0.7, 0.7] }, { text: ' this', timestamp: [0.9, null] }, { text: ' is', timestamp: [1.06, 1.42] }], 10);
   assert.deepEqual(ws, [{ word: 'Hello,', t: 10.38, end: 10.68 }, { word: 'this', t: 10.9, end: 11.06 }, { word: 'is', t: 11.06, end: 11.42 }]);
+  // a piece with no leading space is the rest of the word before it
+  assert.deepEqual(chunksToWords([{ text: ' labor', timestamp: [1, 1.3] }, { text: '-gassing', timestamp: [1.3, 1.7] }, { text: ' and', timestamp: [1.8, 1.9] }]).map(w => [w.word, w.end]), [['labor-gassing', 1.7], ['and', 1.9]]);
+});
+
+test('stt: a Whisper loop on a slate is cut to at most two, in time order, inside the clip, never zero length', () => {
+  const loop = Array.from({ length: 110 }, (_, i) => ({ word: 'Start!', t: 7.2 + i * 0.2, end: 7.2 + i * 0.2 }));
+  const ws = cleanWords([{ word: 'Take', t: 1, end: 1.3 }, { word: 'one.', t: 1.3, end: 1.6 }, ...loop, { word: 'Start!', t: 7.3, end: 7.3 }, { word: 'Hello', t: 30.1, end: 30.4 }, { word: 'late', t: 40, end: 40.2 }], 31);
+  assert.deepEqual(ws.map(w => w.word), ['Take', 'one.', 'Start!', 'Start!', 'Hello']);
+  assert.ok(ws.every(w => (w.end ?? 0) - w.t >= 0.04));
+  assert.deepEqual(cleanWords([{ word: 'very', t: 1, end: 1.2 }, { word: 'very', t: 1.2, end: 1.4 }, { word: 'good', t: 1.4, end: 1.6 }]).length, 3);
+  assert.deepEqual(cleanWords([{ word: 'go', t: 1, end: 1.2 }, { word: 'go', t: 1.01, end: 1.2 }]).length, 1);
+  assert.deepEqual(cleanWords([{ word: 'Start!', t: 7.18, end: 7.22 }, { word: 'Start!', t: 7.24, end: 7.28 }, { word: 'Hello', t: 8.6, end: 8.8 }]).map(w => w.word), ['Start!', 'Hello']);
 });
 
 test('stt: a provider refusal is told apart from our own abort, and said plainly', () => {
@@ -67,7 +79,7 @@ test('edit: a talking clip with nothing to hear it stops with the plain reason, 
   } finally { rmSync(dir, { recursive: true, force: true }); }
 }));
 
-// The real model: downloads about 77 MB once into data/models (MOOVI_MODEL_CACHE). Skipped when it cannot download
+// The real model: downloads about 760 MB once into data/models (MOOVI_MODEL_CACHE). Skipped when it cannot download
 // (no network in CI) or with MOOVI_STT_LOCAL_TEST=off.
 const offline = (e: unknown) => /fetch|network|ENOTFOUND|ECONN|EAI_AGAIN|timed? ?out|Could not locate|Unauthorized|\b40[13]\b|\b5\d\d\b/i.test(String((e as Error)?.message ?? e));
 test('stt: the local model hears the fixture with word timings, no key needed', { timeout: 600_000, skip: process.env.MOOVI_STT_LOCAL_TEST === 'off' && 'MOOVI_STT_LOCAL_TEST=off' }, async t => withEnv({}, async () => {

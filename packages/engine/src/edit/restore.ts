@@ -74,7 +74,7 @@ export function restoreChain(s: { w: number; h: number; bpp: number }, short = 1
 const SEEKABLE = (fps: number) => { const g = String(Math.max(1, Math.round(fps / 2))); return ['-g', g, '-keyint_min', g, '-sc_threshold', '0', '-maxrate', '10M', '-bufsize', '10M']; };
 
 const ff = (args: string[], ms: number) => new Promise<void>((res, rej) =>
-  execFile(config.ffmpeg, ['-nostdin', '-hide_banner', '-v', 'error', ...args], { timeout: ms, killSignal: 'SIGKILL', maxBuffer: 8 << 20 }, (e, _o, err) => e ? rej(new Error(String(err).slice(-300) || String(e))) : res()));
+  execFile(config.ffmpeg, ['-nostdin', '-hide_banner', '-v', 'error', ...args], { timeout: Math.round(ms), killSignal: 'SIGKILL', maxBuffer: 8 << 20 }, (e, _o, err) => e ? rej(new Error(String(err).slice(-300) || String(e))) : res()));
 
 /**
  * Restore `src` into `out` when it is weak, and bake `grade` in when given; resolves null when there is nothing to do. The audio is

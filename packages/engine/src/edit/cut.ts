@@ -13,6 +13,11 @@ export interface Seg { a: number; b: number; zoom: number }
 export const bare = (w: string) => w.toLowerCase().replace(/[^\p{L}\p{N}']/gu, '');
 
 export const CUES = new Set(['start', 'action', 'rolling', 'go', 'ready', 'okay', 'ok']);
+/**
+ * A greeting right after a cue opens the take even after a short beat: Vignesh's raw selfie (2026-10-18) says "Start!"
+ * then "Hello guys" 0.55 s later, and the 0.7 s pause rule kept his set-up talk and the slate in the edit.
+ */
+export const GREETS = new Set(['hello', 'hi', 'hey', 'namaste', 'welcome', 'yo']);
 export const FILLERS = new Set(['um', 'uh', 'erm', 'uhm', 'hmm', 'mm', 'ah', 'er']);
 export const OPENERS = new Set(['and', 'so', 'okay', 'ok', 'alright', 'well']);
 
@@ -86,7 +91,7 @@ export function splitAt(ps: [number, number][], duration: number, target = 10): 
  */
 export function takeWindow(ws: Word[], ps: [number, number][], duration: number): { a: number; b: number; why: string } {
   let a = 0, why = 'no pre-roll';
-  ws.forEach((w, i) => { const nx = ws[i + 1]; if (CUES.has(bare(w.word)) && w.t < duration * 0.5 && (!nx || nx.t - w.end > 0.7)) { a = Math.max(a, w.end); why = `after the slate cue "${w.word}"`; } });
+  ws.forEach((w, i) => { const nx = ws[i + 1]; if (CUES.has(bare(w.word)) && w.t < duration * 0.5 && (!nx || nx.t - w.end > 0.7 || (GREETS.has(bare(nx.word)) && nx.t - w.end > 0.2))) { a = Math.max(a, w.end); why = `after the slate cue "${w.word}"`; } });
   for (const [p0, p1] of ps) {
     if (!(p0 < duration * 0.4 && p1 - p0 >= 1.0 && p1 > a)) continue;
     // a finished sentence before the pause is content (an edited video's hook), not set-up talk: 4+ words that end
