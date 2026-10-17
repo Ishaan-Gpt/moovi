@@ -8,8 +8,9 @@ import { ClaudeCodeCard } from '@/components/settings/ClaudeCodeCard';
 export const metadata: Metadata = { title: 'Your model' };
 export const dynamic = 'force-dynamic';
 
-/** The bridge's address for the browser: MOOVI_BRIDGE_PUBLIC_URL, else this site's own address on a server, else the dev bridge. */
-const bridgeBase = () => (process.env.MOOVI_BRIDGE_PUBLIC_URL?.trim().replace(/\/+$/, '') ?? (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:3200'));
+/** The bridge's address for the browser: MOOVI_BRIDGE_PUBLIC_URL, else this site's own /studio on a server (the proxy
+ * sends /studio/api/brain/* to the bridge, so it also works through a site that rewrites /studio here), else the dev bridge. */
+const bridgeBase = () => (process.env.MOOVI_BRIDGE_PUBLIC_URL?.trim().replace(/\/+$/, '') ?? (process.env.NODE_ENV === 'production' ? '/studio' : 'http://localhost:3200'));
 
 const safeNext = (n: string | undefined) => (n && /^\/studio(\/|$|\?)/.test(n) && !n.startsWith('//') && !n.startsWith('/studio/settings') ? n : '/studio');
 

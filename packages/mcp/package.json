@@ -12,7 +12,8 @@
     "typecheck": "tsc -p tsconfig.json",
     "test": "tsx --test test/*.test.ts",
     "serve": "tsx --env-file-if-exists=../../.env.local scripts/serve.ts",
-    "e2e": "tsx --env-file-if-exists=../../.env.local scripts/e2e.ts"
+    "e2e": "tsx --env-file-if-exists=../../.env.local scripts/e2e.ts",
+    "check": "tsx scripts/check.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.1",

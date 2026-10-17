@@ -32,6 +32,8 @@ services:
     pull_policy: never
     restart: unless-stopped
     depends_on: [falkordb, studio]
+    # local only, like the studio: the public reaches the bridge through Caddy (or your own web server, --no-caddy)
+    ports: ["127.0.0.1:3200:3200"]
     command: ["pnpm", "--filter", "@moovi/mcp", "exec", "tsx", "scripts/serve.ts"]
     env_file: [.env]
     environment:
@@ -40,9 +42,11 @@ services:
       MOOVI_BRIDGE_HOST: 0.0.0.0
       MOOVI_BRIDGE_PORT: "3200"
       # the public address Claude Code connects to and the website it sends people back to
-      MOOVI_PUBLIC_URL: ${PUBLIC_URL:-http://localhost:3100}
+      # (WEBSITE_URL: set it when people open Moovi on another address that proxies /studio here, e.g. a Vercel site;
+      # the Settings card then works from there, and Claude Code still connects to PUBLIC_URL/mcp directly)
+      MOOVI_PUBLIC_URL: ${WEBSITE_URL:-${PUBLIC_URL:-http://localhost:3100}}
       MOOVI_BRIDGE_URL: ${PUBLIC_URL:-http://localhost:3100}/mcp
-      MOOVI_ORIGINS: ${PUBLIC_URL:-http://localhost:3100}
+      MOOVI_ORIGINS: ${PUBLIC_URL:-http://localhost:3100},${WEBSITE_URL:-}
       # models the effects and the cleanup fetch once (face, person cutout, denoise) live on the volume too
       HOME: /data/home
     # Chromium needs more shared memory than Docker's 64 MB default
@@ -73,7 +77,6 @@ services:
   caddy:
     image: caddy:2.8
     restart: unless-stopped
-    depends_on: [studio]
     ports: ["80:80", "443:443"]
     depends_on: [studio, worker]
     environment:

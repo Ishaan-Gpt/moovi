@@ -34,8 +34,9 @@ git clone https://github.com/Ishaan-Gpt/moovi.git && cd moovi
 cp .env.example .env
 ```
 
-(or, on a fresh Ubuntu box, `sudo bash deploy/server-setup.sh moovi.example.com` does steps 2 to 4: swap, Docker, a `.env`
-with a fresh secret, `SITE_ADDRESS` and `PUBLIC_URL`, the build, the start and the seed)
+(or `sudo bash deploy/server-setup.sh [moovi.example.com]` does steps 2 to 4: Docker if missing, swap if none, a `.env`
+with a fresh secret, `SITE_ADDRESS` and `PUBLIC_URL`, the build, the start and the seed. With no address it uses
+`<public-ip>.sslip.io`. See "Updating" below for a server that already runs something.)
 
 ## 3. Environment (.env)
 
@@ -45,7 +46,8 @@ with a fresh secret, `SITE_ADDRESS` and `PUBLIC_URL`, the build, the start and t
 | `SITE_ADDRESS` | `moovi.example.com` (or `<ip>.sslip.io`) | Caddy fetches the certificate for it |
 | `PUBLIC_URL` | `https://moovi.example.com` | the address in the Claude Code connect command (`/mcp`) and allowed origin |
 | `MOOVI_GRAPH_OPTIONAL` | `0` (or delete the line) | in production FalkorDB is required |
-| `MOOVI_BYOK` | `optional` to let people use Claude Code with no key; `required` forces a key | |
+| `MOOVI_BYOK` | `optional` (the script sets it) | Claude Code users have no key. Under `required` the website still sends a keyless user to Settings (`apps/studio/src/lib/session.ts` reads only the saved key; fix requested in TAB.md) |
+| `WEBSITE_URL` | `https://your-site.vercel.app` (only if people open Moovi there) | another site that rewrites `/studio` to this server: the Settings card works from there, video links point there; Claude Code still connects to `PUBLIC_URL/mcp` |
 | `FALKORDB_URL` | leave it; compose sets `falkor://falkordb:6379` | |
 
 Optional: `MOOVI_STT_LOCAL_MODEL=onnx-community/whisper-small_timestamped` (smaller, faster speech model),
@@ -67,7 +69,8 @@ denoise models (a few MB) land there too (`HOME=/data/home`). Nothing is downloa
 ## 5. Connect Claude Code (each user)
 
 1. Sign in at `https://moovi.example.com/studio`.
-2. Open `https://moovi.example.com/connect`, click **Make my connect command**, and paste it in a terminal:
+2. Open Settings, **Use Claude Code (no key)**, copy the command (or open `https://moovi.example.com/connect`, click
+   **Make my connect command**), and paste it in a terminal:
    `claude mcp add --scope user --transport http moovi https://moovi.example.com/mcp --header "Authorization: Bearer mvk_..."`
 3. Upload a clip in the studio, then in Claude Code type `/mcp__moovi__run`. Claude Code keeps working until the
    video is done.
@@ -93,11 +96,33 @@ default 60 s works but leaves little margin). Streaming responses must not be bu
 The compose FalkorDB is the tested path. FalkorDB Cloud works with `FALKORDB_URL=falkor://user:pass@host:port`;
 ElastiCache does not (it has no graph module). Run `seed` once against a new database.
 
-## Updating
+## Updating, or a server that already runs Moovi (or other sites)
 
 ```
-git pull && docker compose build && docker compose up -d && docker compose run --rm seed
+cd <the moovi folder> && git pull && sudo bash deploy/server-setup.sh
 ```
+
+Re-running the script is the update: it keeps `MOOVI_SECRET` and the address already in `.env` (or takes a new one as
+the argument), adds `PUBLIC_URL`, `SITE_ADDRESS` and `MOOVI_ORIGINS` when an older `.env` lacks them, sets
+`MOOVI_BYOK=optional`, rebuilds, restarts and seeds. It stops with a plain message, before starting anything, when:
+port 80 or 443 is held by another web server (run it with `--no-caddy`: Moovi then listens on 127.0.0.1:3100 and
+127.0.0.1:3200 only and the script prints the Caddy or nginx routes to add), port 3100 or 3200 is taken, `/opt/moovi`
+exists and is not Moovi, Docker is there without `docker compose` v2, or Docker is not running. It adds swap only when
+the server has none, and installs Docker only when it is missing.
+
+Website on another address (for example a Vercel site that rewrites `/studio/*` to this server):
+`sudo bash deploy/server-setup.sh <server-address> --website https://your-site.vercel.app`. Caddy sends
+`/studio/connect` and `/studio/api/brain/*` to the bridge, so the Settings card works through the rewrite.
+
+## Check the bridge from any computer
+
+```
+pnpm --filter @moovi/mcp check "<the claude mcp add command from Settings>"
+```
+
+It checks, in plain words, what Claude Code will hit: the address is https and ends in `/mcp`, `/healthz` is the
+bridge (not the website), the token is accepted, the tools and `/mcp__moovi__run` are there, and one `moovi_next`
+round trip works through the proxy. Exit code 0 means ready.
 
 ## Checks when something is off
 
