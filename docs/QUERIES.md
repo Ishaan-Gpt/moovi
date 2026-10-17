@@ -2417,6 +2417,72 @@ RETURN a.licence AS licence, a.category AS category, count(a) AS n
 ORDER BY n DESC
 ```
 
+### `clearEditRegistry` (write)
+
+Before re-linking the edit registry: drop every (:Asset)-[:SERVES]->(:Fn|:Verb) edge and every asset’s edit entry.
+
+```cypher
+MATCH (a:Asset)-[e:SERVES]->(x)
+WHERE x:Fn OR x:Verb
+DELETE e
+WITH count(e) AS dropped
+MATCH (a:Asset) WHERE a.edit IS NOT NULL
+SET a.edit = null, a.editBuilt = null, a.editAuto = null
+RETURN dropped, count(a) AS cleared
+```
+
+### `linkEditRegistry` (write)
+
+The edit registry on its assets: a.edit (JSON: device, layer, face rule, sfx, min, max, aka), a.editBuilt (the one player draws it), a.editAuto (cast unasked); missing ids skipped.
+
+```cypher
+UNWIND $rows AS r
+MATCH (a:Asset {id: r.id})
+SET a.edit = r.edit, a.editBuilt = r.built, a.editAuto = r.auto
+RETURN count(a) AS entries
+```
+
+### `linkEditFns` (write)
+
+An edit entry SERVES a sentence function: (Asset)-[:SERVES {w}]->(:Fn {id}); w is its rank (1 = strongest).
+
+```cypher
+UNWIND $rows AS r
+MATCH (a:Asset {id: r.id})
+MERGE (f:Fn {id: r.fn})
+MERGE (a)-[s:SERVES]->(f)
+SET s.w = r.w
+RETURN count(s) AS edges
+```
+
+### `linkEditVerbs` (write)
+
+An edit entry SERVES a spoken verb it acts out: (Asset)-[:SERVES {w}]->(:Verb {id}).
+
+```cypher
+UNWIND $rows AS r
+MATCH (a:Asset {id: r.id})
+MERGE (v:Verb {id: r.verb})
+MERGE (a)-[s:SERVES]->(v)
+SET s.w = r.w
+RETURN count(s) AS edges
+```
+
+### `editCast` (read-only)
+
+The director casts one sentence: registry entries serving its function and/or its verbs (a verb match outranks a function match, both = best), drawn by the player ($built), cast unasked ($auto), not in $recent (the last beats’ picks), only $layers when given; ranked, then id.
+
+```cypher
+MATCH (a:Asset)-[s:SERVES]->(x)
+WHERE ((x:Fn AND x.id = $fn) OR (x:Verb AND x.id IN $verbs))
+  AND a.edit IS NOT NULL AND NOT coalesce(a.retired, false) AND NOT a.id IN $recent
+  AND (NOT $built OR a.editBuilt) AND (NOT $auto OR a.editAuto)
+WITH a, sum(CASE WHEN x:Verb THEN 3 ELSE 2 END) AS score, min(s.w) AS w
+RETURN a.id AS id, a.name AS name, a.category AS category, a.edit AS edit, score, w
+ORDER BY score DESC, w ASC, a.id
+LIMIT $n
+```
+
 ### `addReference` (write)
 
 A video reference the library learned from: (:Reference {id, url, title, kind, seconds, notes}).

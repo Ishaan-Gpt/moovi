@@ -3,6 +3,7 @@ import { catalogue } from './catalog';
 import { X1, eventAliases, styleCast } from './edit-styles';
 import { linkReferenceUses, referenceFiles, seedReference } from './reference';
 import { seedTypes } from './types';
+import { editRegistry, registryRows } from '../edit/registry';
 
 /**
  * The links that span seeds, run after any seed (catalogue, a reference, the camera layer): the EDL's sfx events as
@@ -19,7 +20,22 @@ export async function seedCrossLinks() {
   const tags = Object.entries(X1).flatMap(([n, [, , ids]]) => ids.map(id => ({ id, tag: `x1:${n}` })));
   const tagged = (await run<{ tagged: number }>(CRAFT, library.addAssetTags, { rows: tags }))[0]?.tagged ?? 0;
   const typed = await seedTypes();
-  return { cast: cast.length, suits, x1Tagged: tagged, ...typed };
+  const edit = await seedEditRegistry(rows);
+  return { cast: cast.length, suits, x1Tagged: tagged, ...typed, ...edit };
+}
+
+/**
+ * The edit registry (edit/registry.ts) on its assets: every X1 move, reel effect, footage camera move, UI row and
+ * mastery device with its sentence functions and verbs as SERVES edges, so the director casts with `editCast`.
+ */
+export async function seedEditRegistry(rows = catalogue().flatMap(s => s.rows)) {
+  const r = registryRows(editRegistry(rows));
+  const first = (x: Record<string, number>[], k: string) => x[0]?.[k] ?? 0;
+  await run(CRAFT, library.clearEditRegistry, {});
+  const editEntries = first(await run(CRAFT, library.linkEditRegistry, { rows: r.entries }), 'entries');
+  const editFns = first(await run(CRAFT, library.linkEditFns, { rows: r.fns }), 'edges');
+  const editVerbs = first(await run(CRAFT, library.linkEditVerbs, { rows: r.verbs }), 'edges');
+  return { editEntries, editFns, editVerbs };
 }
 
 /**
