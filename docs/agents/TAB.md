@@ -1,5 +1,9 @@
 # Tab
 
+## 2026-10-17 12:55 IST · main · auto-pick: the effects, moves, styles and music choose themselves
+
+- **Vignesh's override (Oct 17 12:30 IST, his rule over the review-branch rule for this): merged into main** vignesh/effects-v1 (16 reel effects, clip-moment calm rules, coach voice), vignesh/handmade (with vignesh/atlas: D2.2 Atlas, Handmade v5), vignesh/studio-minimal, and the auto-pick wiring: a generic prompt now picks the reel effects by need from the words and the detected faces (head swirl only where a face is on screen), the X1 moves by beat, the D2.2 style (`style: 'auto'`), clip-moment, and a product-scope music bed; test/auto-pick.test.ts proves each. src/edit and packages/library/src/kits stay separate.
+
 ## 2026-10-17 06:43 IST · vignesh/handmade · 77f972f · D2.2 Handmade v5: the serif subtitle reads on bright ground (review branch)
 
 - **vignesh/handmade 77f972f, for @Ishaan to review.** Root QA of handmade-v4 said the white serif subtitle had low contrast on bright pavement. `ed-serif` now has an 8 px outline in the style's deep ink (painted under the fill, so about 4 px shows round each letter) and a new caption shadow `lift` (a tight dark edge, a soft dark halo, a dropped shadow), defined once in the page so the preview and the MP4 overlay draw the same thing. Shared files touched: `engine/src/edit/captions.ts` (the ed-serif look), `engine/src/edit/lib.ts` (`lift` added to the shadow kinds), `engine/src/edit/page.ts` (the `lift` CSS). Nothing in `packages/library/src/kits`, no UI. Tests: `edit-styles-d22` asserts the outline and the shadow (23 pass); engine suite on the branch 314: 312 pass, 0 fail, 2 skipped; tsc clean on every package. Sample (Tab box): files/moovi-overnight/handmade-v5.mp4 on B1, 19.2 s, h264 1080x1920, aac 48k stereo, -14.4 LUFS, no holes; my score 7/10: every subtitle now reads on the pavement; still no music bed, and a few phrases wrap with one word on the second line.

@@ -4,13 +4,14 @@ import { color } from '@moovi/brand';
 import { sttAvailable } from '../audio/stt';
 import { probe } from '../bench';
 import { buildEdl, type BuildInput } from './build';
-import { castStyleSfx, isD22, styledEdl } from './styles';
+import { castStyleSfx, isD22, pickEditStyle, styledEdl } from './styles';
 import { castEdl, openLibrary, type CastTrace } from './cast';
 import { envelope, pauses, type Word } from './cut';
 import { keepOf, validateEdl } from './edl';
 import { hear, type Heard } from './hear';
 import { castInserts, openInserts, type InsertTrace } from './inserts';
-import { castMoves } from './moves';
+import { autoMoves, castMoves } from './moves';
+import { autoFx, openFx, type AutoFx } from './effects/auto';
 import { EDIT, type PlayerEdl } from './lib';
 import { keepTextInFrame, lookText } from './burned';
 import { lookFaces } from './look';
@@ -50,10 +51,16 @@ export interface PlanInput {
   library?: boolean;
   /** D2.5: cast Style 1 UI cards and Editorial posters into insert frames on the beats that call for one (edit/inserts.ts; default true) */
   inserts?: boolean;
-  /** D2.7: X1 moves (by number, e.g. ['13', '17', '05']) a style asks for, placed on the beats they suit (edit/moves.ts) */
+  /** D2.7: X1 moves (by number, e.g. ['13', '17', '05']) a style asks for, placed on the beats they suit (edit/moves.ts);
+   * not given: the moves the edit's beats call for (autoMoves); [] for none */
   moves?: string[];
-  /** D2.2: an R4 style with its own laws (edit/styles.ts: atlas, handmade, studio-minimal); default the base edit */
+  /** D2.2: an R4 style with its own laws (edit/styles.ts: atlas, handmade, studio-minimal); 'auto' picks the one that
+   * fits the brief and the clip (pickEditStyle); default the base edit */
   style?: string;
+  /** the user's words with the upload (the style auto-pick reads them) */
+  brief?: string;
+  /** the reel effects library picked for this clip's words (edit/effects/auto.ts, effects.json; default true) */
+  effects?: boolean;
   /** the creator's name or handle for the style's end card */
   handle?: string;
 }
@@ -74,6 +81,12 @@ export interface Planned {
   cast: CastTrace | null;
   /** the inserts cast from the generation styles (inserts.json), null when off, rough or it failed */
   inserts: InsertTrace | null;
+  /** the X1 moves placed (moves.json) */
+  moves: string[];
+  /** the D2.2 style the edit ran in (null: the base edit) and why */
+  style: { id: string | null; why: string };
+  /** the reel effects picked for the clip's words, on the source clock (effects.json), null when off or too few words */
+  effects: AutoFx | null;
   /** why faces are missing, when they are (the look step's own words) */
   lookWhy?: string;
   /** the voice clean-up, running; resolves null when there is no audio or it failed */
@@ -124,10 +137,18 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
   const look = await lookP, quiet = await quietP;
   if (quiet) writeFileSync(join(dir, 'quiet.json'), JSON.stringify(quiet, null, 1));
   const source = { file, duration: pr.duration, w: pr.width ?? 1080, h: pr.height ?? 1920, fps: pr.fps ?? 30 };
+  // D2.2 auto: the style that fits the brief and the clip (edit/styles.ts pickEditStyle), when none was named
+  let style: string | undefined = o.style, styleWhy = o.style ? `asked for ${o.style}` : 'the base edit';
+  if (o.style === 'auto') {
+    const p = pickEditStyle({ brief: o.brief ?? '', words: words.map(w => w.word), burned: (await textP).length > 0 });
+    style = p.style === 'base' ? undefined : p.style; styleWhy = p.why;
+    writeFileSync(join(dir, 'style.json'), JSON.stringify(p, null, 1));
+    if (style) await o.onNote?.(`style: ${style} (${p.why})`);
+  }
   let edl: PlayerEdl, rough = false;
   try {
     const bi: BuildInput = { source, words, pauses: ps, ...(quiet ? { quiet: quiet.pauses } : {}), palette, ...(look.faces.length ? { faces: look.faces } : {}), style: { id: 'base', ...(o.caption ? { caption: o.caption } : {}) }, ...(language ? { language } : {}) };
-    const e = isD22(o.style) ? styledEdl(bi, o.style, o.handle ? { name: o.handle } : {}) : buildEdl(bi);
+    const e = isD22(style) ? styledEdl(bi, style, o.handle ? { name: o.handle } : {}) : buildEdl(bi);
     const bad = validateEdl(e).problems.filter(p => !p.startsWith('version'));
     if (bad.length) throw new Error(bad.slice(0, 3).join('; '));
     edl = e;
@@ -147,9 +168,9 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
   // the library in the edit path: camera:<id> moves (by the needs each beat's tag SERVES, framed on the face keys),
   // sfx by the library's events and transitions on beat changes, all from the FalkorDB graph (catalogue if it is down)
   let cast: CastTrace | null = null;
-  if (!rough && o.library !== false && isD22(o.style)) {
+  if (!rough && o.library !== false && isD22(style)) {
     // D2.2 styles: the style chose framing and cuts; the library graph gives the sound files for its events
-    try { const r = await castStyleSfx(edl as never, await openLibrary()); writeFileSync(join(dir, 'cast.json'), JSON.stringify({ style: o.style, ...r }, null, 1)); }
+    try { const r = await castStyleSfx(edl as never, await openLibrary()); writeFileSync(join(dir, 'cast.json'), JSON.stringify({ style, ...r }, null, 1)); }
     catch (e) { console.warn(`[edit] style sounds: ${String((e as Error).message ?? e).slice(0, 160)}`); }
   } else if (!rough && o.library !== false) {
     try {
@@ -161,11 +182,14 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
     } catch (e) { console.warn(`[edit] library cast: ${String((e as Error).message ?? e).slice(0, 160)}`); cast = null; }
   }
   // D2.7: the X1 moves a style asked for, on the beats they suit (first, so the inserts fit around them)
-  if (!rough && o.moves?.length) {
+  const want = rough ? [] : o.moves ?? autoMoves(edl as never);
+  let moves: string[] = [];
+  if (want.length) {
     const before = JSON.stringify(edl);
-    const done = castMoves(edl as never, o.moves);
+    const done = castMoves(edl as never, want);
+    moves = done.filter(d => d.ok).map(d => d.n);
     const bad = validateEdl(edl as never).problems.filter(p => !p.startsWith('version'));
-    if (bad.length || EDIT.timeline(edl).problems.length) { edl = JSON.parse(before); console.warn(`[edit] moves undone: ${bad.slice(0, 2).join('; ')}`); }
+    if (bad.length || EDIT.timeline(edl).problems.length) { edl = JSON.parse(before); moves = []; console.warn(`[edit] moves undone: ${bad.slice(0, 2).join('; ')}`); }
     else writeFileSync(join(dir, 'moves.json'), JSON.stringify(done, null, 1));
   }
   // D2.5: Style 1 UI cards and Editorial posters on the beats that call for one, cast from the same graph
@@ -181,6 +205,15 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
   }
   // the library's camera moves came after: they keep the clip's own text whole too
   if (edl.source_text) keepTextInFrame(edl);
+  // the reel effects library (edit/effects): the effects this clip's words call for, cast from the same graph, on the
+  // source clock (the effects film renders over the clip itself: router/edit.ts)
+  let effects: AutoFx | null = null;
+  if (!rough && o.effects !== false && words.length >= 6) {
+    try {
+      effects = await autoFx(words.map(w => ({ word: w.word, t: w.t, end: w.end })), { src: await openFx(), total: pr.duration, ...(look.faces.length ? { faces: look.faces } : look.why ? {} : { faces: [] }) });
+      writeFileSync(join(dir, 'effects.json'), JSON.stringify(effects, null, 1));
+    } catch (e) { console.warn(`[edit] effects: ${String((e as Error).message ?? e).slice(0, 160)}`); effects = null; }
+  }
   const t = EDIT.timeline(edl);
   if (t.problems.length) throw new Error(`The edit plan is inconsistent: ${t.problems.join('; ')}`);
   writeFileSync(join(dir, 'edl.json'), JSON.stringify(edl, null, 1));
@@ -199,5 +232,5 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
       .then(r => { if (r) { useRestored(dir, r); writeFileSync(join(dir, 'restore.json'), JSON.stringify(r, null, 1)); } return r; })
       .catch(e => { console.warn(`[edit] picture restore: ${String((e as Error).message ?? e).slice(0, 160)}`); return null; })
     : Promise.resolve(null);
-  return { edl, words, ...(language ? { language } : {}), heard, faces: look.faces.length, lap, duration: t.duration, source: { ...source, hasAudio: pr.hasAudio }, rough, cast, inserts: ins, ...(look.why ? { lookWhy: look.why } : {}), voice, restore };
+  return { edl, words, ...(language ? { language } : {}), heard, faces: look.faces.length, lap, duration: t.duration, source: { ...source, hasAudio: pr.hasAudio }, rough, cast, inserts: ins, moves, style: { id: isD22(style) ? style : null, why: styleWhy }, effects, ...(look.why ? { lookWhy: look.why } : {}), voice, restore };
 }

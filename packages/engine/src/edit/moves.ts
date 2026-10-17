@@ -123,3 +123,25 @@ export function castMoves(e: Edl, want: string[], o: { gap?: number } = {}): Mov
   }
   return out;
 }
+
+/** The order the auto-pick tries moves in: the camera punch, the beat-change cut, then one insert-layer move. */
+export const AUTO_MOVE_ORDER = ['05', '09', '16', '17', '08', '14', '13'];
+/**
+ * The X1 moves an edit gets when no style asked for any (Vignesh, 2026-10-17: the library must be chosen whenever it
+ * fits): every move whose tags meet a beat of this edit, in AUTO_MOVE_ORDER, at most `max`, and at most one move that
+ * draws an insert (the D2.5 inserts fill the number and list beats). Pure; castMoves then places each on its beat.
+ */
+export function autoMoves(e: Pick<Edl, 'beats'>, max = 3): string[] {
+  const beats = e.beats ?? [], tags = new Set(beats.map(b => b.tag));
+  if (!beats.length) return [];
+  const out: string[] = []; let drawn = 0;
+  for (const n of AUTO_MOVE_ORDER) {
+    const m = X1_MOVES[n]; if (!m) continue;
+    const fits = m.tags.includes('*') ? beats.length > 1 : m.tags.some(x => tags.has(x as never));
+    if (!fits) continue;
+    if (m.layer === 'insert') { if (drawn >= 1) continue; drawn++; }
+    out.push(n);
+    if (out.length >= max) break;
+  }
+  return out;
+}

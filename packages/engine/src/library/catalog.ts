@@ -39,6 +39,8 @@ import { lookMap } from '../edit/looks';
 import { listLooks } from 'captionseasy';
 import { CAMERA_MOVES, promptFor } from '@moovi/library/camera';
 import { MUSIC_TRACKS, useScopeOf } from '../audio/music-lib';
+import { FX, FX_IDS } from '../edit/effects/catalog';
+import { FX_NEEDS } from '../edit/effects/needs';
 import { X1, edlCuts, endCards, fonts, grades, overlays, textures, x1EditRows, x1Specs } from './edit-styles';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -235,6 +237,17 @@ export function effects(): Row[] {
   return [...s1, ...text, ...enters, ...idles, ...ambient].map(r => ({ ...r, params: { ...r.params, kind: kind(r) } }));
 }
 
+
+/** The reel effects library (edit/effects, from three @tenfoldmarc reels): runtime `fx`, each SERVING its needs, so assetsServing picks them. */
+export function reelFx(): Row[] {
+  return FX_IDS.map(id => {
+    const s = FX[id];
+    return row({ ...OWN, id: `effect:reel-${id}`, category: 'effect', name: s.label, about: s.does, runtime: ['fx'], impl: { fx: id }, energy: s.kind === 'transition' ? 4 : 3,
+      tags: ['reel-fx', s.kind, ...(s.behind ? ['behind-speaker'] : [])], params: { kind: s.kind === 'overlay' ? 'overlay' : 'move', fxKind: s.kind, min: s.min, max: s.max, sfx: s.sfx, ...(s.zone ? { zone: s.zone } : {}) },
+      src: 'packages/engine/src/edit/effects/catalog.ts', needs: needsOf(FX_NEEDS[id]) });
+  });
+}
+
 /* ───────────────────────────── camera ───────────────────────────── */
 export const VISUAL_CAMERA = { push: 'push-in', pull: 'pull-out', 'drift-left': null, 'drift-right': null, orbit: null, rise: null, tilt: null } as const;
 const VISUAL_CAMERA_ABOUT: Record<string, string> = { 'drift-left': 'the camera trucks right to left past the scene, a small push', 'drift-right': 'the camera trucks left to right past the scene, a small push', orbit: 'the camera arcs round the subject', rise: 'the camera cranes up past the scene', tilt: 'a diagonal tilt and push' };
@@ -354,7 +367,7 @@ function withX1(rows: Row[]): Row[] {
 export function catalogue(): { seed: string; rows: Row[] }[] {
   const seeds = [
     { seed: 'repo:voice', rows: voices() }, { seed: 'repo:sfx', rows: sfx() }, { seed: 'repo:music', rows: music() },
-    { seed: 'repo:caption', rows: captions() }, { seed: 'repo:transition', rows: transitions() }, { seed: 'repo:effect', rows: [...effects(), ...x1EditRows().map(r => ({ ...r, needs: needsOf(r.needs) }))] },
+    { seed: 'repo:caption', rows: captions() }, { seed: 'repo:transition', rows: transitions() }, { seed: 'repo:effect', rows: [...effects(), ...reelFx(), ...x1EditRows().map(r => ({ ...r, needs: needsOf(r.needs) }))] },
     { seed: 'repo:camera', rows: [...camera(), ...cameraLayer()] }, { seed: 'repo:ui', rows: ui() }, { seed: 'repo:3d', rows: threeD() }, { seed: 'repo:insert', rows: inserts() },
     { seed: 'repo:grade', rows: grades() }, { seed: 'repo:overlay', rows: overlays() }, { seed: 'repo:end_card', rows: endCards() },
     { seed: 'repo:font', rows: fonts(ROOT) }, { seed: 'repo:texture', rows: textures() },

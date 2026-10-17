@@ -18,6 +18,28 @@ export const D22_STYLES = ['atlas', 'handmade', 'studio-minimal'] as const;
 export type D22Style = (typeof D22_STYLES)[number];
 export const isD22 = (id: unknown): id is D22Style => typeof id === 'string' && (D22_STYLES as readonly string[]).includes(id);
 
+/**
+ * The D2.2 style an upload gets when the user named none (Vignesh, 2026-10-17: styles are chosen whenever they fit).
+ * A style the brief names wins; a clip with its own burned-in subtitles goes to Studio Minimal (it keeps them);
+ * brief words pick the style made for them; else the words decide: a clip that says three or more numbers is Atlas
+ * (its number cards carry their unit), a place or travel story is Handmade. Nothing fits: the base edit. Pure.
+ */
+export function pickEditStyle(i: { brief?: string; words: string[]; burned?: boolean }): { style: D22Style | 'base'; why: string } {
+  const b = (i.brief ?? '').toLowerCase();
+  if (/\batlas\b/.test(b)) return { style: 'atlas', why: 'the brief names Atlas' };
+  if (/\bhand ?made\b/.test(b)) return { style: 'handmade', why: 'the brief names Handmade' };
+  if (/\bstudio[ -]?minimal\b/.test(b)) return { style: 'studio-minimal', why: 'the brief names Studio Minimal' };
+  if (i.burned) return { style: 'studio-minimal', why: 'the clip has its own burned-in subtitles: Studio Minimal keeps them and adds none' };
+  if (/\b(minimal|clean|premium|brand(ed)?|logo|corporate|sleek)\b/.test(b)) return { style: 'studio-minimal', why: 'the brief asks for a clean branded look' };
+  if (/\b(vlog|street|travel|aesthetic|cozy|diary|story ?time|handwritten|serif)\b/.test(b)) return { style: 'handmade', why: 'the brief asks for a vlog or story look' };
+  if (/\b(explain\w*|news|data|stats?|numbers?|facts?|finance|money|tech|tips?|breakdown)\b/.test(b)) return { style: 'atlas', why: 'the brief is an explainer: Atlas' };
+  const text = i.words.join(' ');
+  const nums = (text.match(/\d+(?:[.,]\d+)?\s*%?|\b(?:two|three|four|five|six|seven|eight|nine|ten|twenty|thirty|fifty|hundred|thousand|million|billion|percent)\b/gi) ?? []).length;
+  if (nums >= 3) return { style: 'atlas', why: `the clip says ${nums} numbers: Atlas puts each on a card with its unit` };
+  if (/\b(city|street|travel\w*|trip|walk\w*|cafe|beach|mountain\w*|bangalore|mumbai|delhi|paris|london|tokyo)\b/i.test(text)) return { style: 'handmade', why: 'the clip is a place or travel story: Handmade' };
+  return { style: 'base', why: 'no style fits better than the base edit' };
+}
+
 export interface StyleLaw {
   id: D22Style;
   about: string;

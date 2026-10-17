@@ -9,6 +9,10 @@ import type { Handler } from '../ctx';
 import { CAPTION_STYLES } from '../edit/captions';
 import { planEdit } from '../edit/job';
 import { EDIT } from '../edit/lib';
+import { FX } from '../edit/effects/catalog';
+import type { FxEvent } from '../edit/effects/plan';
+import { fxLines } from '../edit/effects/auto';
+import { fxMusic } from '../edit/effects/music';
 import { activity } from '../live';
 import { startRun } from '../runs';
 import { liveRefFile, type LiveRef } from '../styles/serve';
@@ -37,19 +41,33 @@ export function editTarget(cmd: Pick<Brief, 'text' | 'uploads' | 'style'>, uploa
   return { upload: clip.id, ...(caption ? { caption } : {}) };
 }
 
+/**
+ * Whether the edit also gets its effects film (the reel effects library over the clip itself, edit/effects/render.ts):
+ * on unless MOOVI_FX=off, when the plan picked at least two effects for a speaker on screen in a clip of 90 s or less
+ * (the film renders every frame, about a few minutes for a Short). Pure.
+ */
+export function fxFilmFor(p: { effects: { events: FxEvent[] } | null; faces: number; source: { duration: number } }, env = process.env.MOOVI_FX): { go: boolean; why: string } {
+  if ((env ?? 'auto').trim().toLowerCase() === 'off') return { go: false, why: 'MOOVI_FX=off' };
+  const n = p.effects?.events.filter(e => FX[e.fx].kind !== 'transition').length ?? 0;
+  if (n < 2) return { go: false, why: `${n} effect${n === 1 ? '' : 's'} fit the words` };
+  if (p.faces < 1) return { go: false, why: 'no speaker on screen' };
+  if (p.source.duration > 90) return { go: false, why: 'longer than 90 s' };
+  return { go: true, why: `${n} effects fit the words` };
+}
+
 /** If this brief is an edit of the user's own clip, start its run (true); else leave it to the other paths. */
 export async function routeEdit(cmd: Brief, uploads: Upload[]): Promise<boolean> {
   const target = editTarget(cmd, uploads);
   if (!target) return false;
   await startRun(cmd.project, cmd.chat, {
     kind: 'make', request: { text: cmd.text, ratio: cmd.ratio ?? 'auto', uploads: cmd.uploads },
-    specs: [{ key: 'edit', kind: EDIT_KIND, agent: 'editor', resource: 'cpu', title: 'Edit your clip', input: target, max: 1 }],
+    specs: [{ key: 'edit', kind: EDIT_KIND, agent: 'editor', resource: 'cpu', title: 'Edit your clip', input: { ...target, brief: cmd.text ?? '' }, max: 1 }],
   });
   return true;
 }
 
 export const editReel: Handler = async ctx => {
-  const inp = ctx.input<{ upload: string; caption?: string; names?: string[] }>();
+  const inp = ctx.input<{ upload: string; caption?: string; names?: string[]; brief?: string }>();
   const [u] = (await ctx.q<Upload>(P.uploads, { chat: ctx.chat })).filter(x => x.id === inp.upload);
   if (!u) throw new Error('The clip to edit is missing');
   const t0 = Date.now();
@@ -60,7 +78,7 @@ export const editReel: Handler = async ctx => {
   const dir = join(ctx.dir, 'edit');
   // probe, look, hear, plan, and the voice clean-up started beside the preview: one function, the bench runs it too
   const plan = await planEdit({ path: u.path, dir, name: u.name, signal: ctx.signal, onStage: step, onDone: done, onNote: text => ctx.activity('note', text),
-    ...(inp.caption ? { caption: inp.caption } : {}), ...(inp.names?.length ? { names: inp.names } : {}) });
+    style: 'auto', brief: inp.brief ?? '', ...(inp.caption ? { caption: inp.caption } : {}), ...(inp.names?.length ? { names: inp.names } : {}) });
   void plan.restore.then(r => r && ctx.activity('note', r.restored
     ? `cleaned and upscaled your clip from ${r.from.w}x${r.from.h} to ${r.to.w}x${r.to.h}${r.graded ? ', graded' : ''} (${r.seconds} s)`
     : `graded your clip (${r.seconds} s)`));
@@ -84,7 +102,28 @@ export const editReel: Handler = async ctx => {
   await publish(ctx.chat, { type: 'status', agent: 'editor', state: 'done', text: 'done', task: `${ctx.task.id}:editor` }).catch(() => undefined);
   const cut = pr.duration - t.duration;
   await ctx.say(`Here’s your edit, playing live: ${t.duration.toFixed(1)} s from ${pr.duration.toFixed(1)} s (${cut.toFixed(1)} s of pauses cut), ${edl.shots.length} shots, ${words.length} words captioned. Ready ${seconds.toFixed(1)} s after you sent it.`, 'video', { video: ctx.run.video, version, duration: t.duration, format: 'vertical', run: ctx.run.id, live: true, style: 'edit' }, 'moovi');
+  // the reel effects library, picked from what the clip says (edit/effects/auto.ts), as a second version over the clip itself
+  let fxVersion: number | null = null;
+  const fx = fxFilmFor(plan);
+  if (fx.go && plan.effects) {
+    const names = [...new Set(plan.effects.events.map(e => FX[e.fx].label))];
+    await ctx.say(`I also picked ${names.length} effects from the library for what you say (${names.join(', ')}). Rendering that version now; the live edit above is yours meanwhile.`, 'note', undefined, 'moovi');
+    try {
+      const lines = fxLines(words.map(w => ({ word: w.word, t: w.t, end: w.end }))).map(l => l.text);
+      const bed = await fxMusic(lines, plan.source.duration, ctx.signal ? { signal: ctx.signal } : {});
+      const { renderFxFilm } = await import('../edit/effects/render');
+      const v2 = version + 1, file = join(vdir, `v${v2}.mp4`);
+      const r = await renderFxFilm({ video: u.path, out: file, work: join(dir, 'fx-work'), events: plan.effects.events, words: words.map(w => ({ word: w.word, t: w.t, end: w.end })), voice: 'clip', music: bed ? { file: bed.file } : null });
+      await ctx.q(P.setVideo, { id: ctx.run.video, status: 'ready', path: file, poster, duration: +r.seconds.toFixed(2), version: v2, style: 'fx', format: 'vertical', at: Date.now() });
+      await publish(ctx.chat, { type: 'video', video: { id: ctx.run.video, status: 'ready', version: v2, duration: +r.seconds.toFixed(2), format: 'vertical' } });
+      await ctx.say(`Here’s the effects version: ${names.join(', ')}${bed ? `, music: ${bed.pick.track.title}` : ''}.`, 'video', { video: ctx.run.video, version: v2, duration: +r.seconds.toFixed(2), format: 'vertical', run: ctx.run.id, style: 'fx' }, 'moovi');
+      fxVersion = v2;
+    } catch (e) {
+      console.warn(`[edit] effects film: ${String((e as Error).message ?? e).slice(0, 200)}`);
+      await ctx.say('The effects version did not render this time; the live edit above stands.', 'note', undefined, 'moovi');
+    }
+  }
   const vids = await ctx.q<{ video: string }>(P.videos), chats = await ctx.q<{ id: string }>(P.chats);
   await runQ(SYS, S.touchProject, { id: ctx.pid, name: null, chats: chats.length, videos: vids.length, poster, at: Date.now() });
-  return { output: { dir, version, timings: ref.timings, duration: t.duration, shots: edl.shots.length, words: words.length }, note: `edit ready in ${seconds.toFixed(1)} s` };
+  return { output: { dir, version, timings: ref.timings, duration: t.duration, shots: edl.shots.length, words: words.length, style: plan.style, moves: plan.moves, effects: plan.effects?.events.map(e => e.fx) ?? [], fx: fx.why, fxVersion }, note: `edit ready in ${seconds.toFixed(1)} s` };
 };
