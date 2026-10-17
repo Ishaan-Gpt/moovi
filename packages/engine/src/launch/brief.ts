@@ -74,6 +74,8 @@ export function doctorLines(raw: string[], o: { arc: LaunchArc; name: string; si
       if (words(l).length) notes.push(`line ${i + 1}: number not on the site, replaced`);
       l = slot.kind === 'reveal' ? `Meet ${o.name}.` : shorten(cleanLine(o.facts[i % Math.max(1, o.facts.length)] ?? o.features[i % Math.max(1, o.features.length)] ?? `Meet ${o.name}.`, o.name), slot.words[1]);
     }
+    if (slot.kind === 'reveal' && /^meet\b/i.test(l) && l.replace(/[.\s]+$/, '').toLowerCase() !== `meet ${o.name}`.toLowerCase()) { notes.push(`line ${i + 1}: the reveal is "Meet ${o.name}."`); l = `Meet ${o.name}.`; }
+    if (slot.kind === 'reveal' && /\.\s+\S/.test(l)) { notes.push(`line ${i + 1}: a broken reveal, now the brand`); l = `Meet ${o.name}.`; }
     if (slot.kind === 'reveal' && !new RegExp(o.name.split(/\s+/)[0]!.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(l)) { notes.push(`line ${i + 1}: the reveal names the brand`); l = `Meet ${o.name}.`; }
     if (words(l).length > slot.words[1] + 2) { l = shorten(l, slot.words[1]); notes.push(`line ${i + 1}: shortened`); }
     // a launch line keeps its question mark, drops a trailing full stop only on one-word verbs? (keep the reference's full stops)
@@ -94,7 +96,7 @@ export async function launchBrief(o: { url: string; site: Site; arc: LaunchArc; 
   const { site, arc } = o, host = new URL(o.url).hostname.replace(/^www\./, '');
   const fb = fallbackBrief(o.url, site);
   const keys = arc.slots.map((_, i) => `line${i + 1}`);
-  const lineShape = Object.fromEntries(arc.slots.map((s, i) => [keys[i]!, z.string().describe(`${s.does.replace(/<Brand>/g, 'the brand')} (${s.words[0]}-${s.words[1]} words; wrap the ONE key word in *asterisks*)`)]));
+  const lineShape = Object.fromEntries(arc.slots.map((s, i) => [keys[i]!, z.string().describe(`${s.does.replace(/<Brand>/g, fb.name)} (${s.words[0]}-${s.words[1]} words; wrap the ONE key word in *asterisks*)`)]));
   let bounced = 0;
   const validate = (a: Record<string, unknown>) => {
     if (bounced++ >= 1) return null;
@@ -110,7 +112,7 @@ export async function launchBrief(o: { url: string; site: Site; arc: LaunchArc; 
   const call = (tier: 'crew' | 'fast', signal: AbortSignal) => { bounced = 0; return ask({
     agent: 'launch-brief', tier, deadlineMs: 45_000, signal, validate,
     system: 'You write the ON-SCREEN words of a premium product launch film (the kind Apple, Linear or Stripe ship) from the brand\'s own website. Every line is a short headline that appears alone on screen, so it must hit hard in a few words: concrete nouns from the page, sentence case, no hype words, no exclamation marks, no emoji, no quotes, no hashtags. Wrap the ONE word that carries each line\'s meaning in *asterisks*. Facts come ONLY from the page: never invent numbers, names, prices, customers or claims.',
-    prompt: `Site: ${o.url}\nTitle: ${site.meta(/<title[^>]*>([^<]*)/i) ?? ''}\nDescription: ${site.meta(/name=["']description["'][^>]*content=["']([^"']*)/i) ?? ''}\nTheme colour: ${site.meta(/name=["']theme-color["'][^>]*content=["']([^"']*)/i) ?? ''}\nMost-used colours: ${site.counts.join(', ')}\n\nPage text:\n${site.text}\n\nThe film's lines, in order:\n${arc.slots.map((s, i) => `${i + 1}. ${s.does.replace(/<Brand>/g, 'the brand')} (${s.words[0]}-${s.words[1]} words)`).join('\n')}\n\nReturn: name (the brand as the site writes it), color (its main brand colour #RRGGBB, saturated, from the site), tagline (its promise in 3-6 words, from the page), facts (3-6 short facts from the page), features (3-6 things it does, each a 1-3 word name from the page), prompt (one realistic request a user would type or click into the product, 4-9 words; "" if the product has no input), audience (who it is for, 1-4 words), number (one number the page states with its unit and a 2-4 word label, e.g. "11 hours saved per week"; "" if the page states none), then ${keys[0]}…${keys.at(-1)}.`,
+    prompt: `Site: ${o.url}\nTitle: ${site.meta(/<title[^>]*>([^<]*)/i) ?? ''}\nDescription: ${site.meta(/name=["']description["'][^>]*content=["']([^"']*)/i) ?? ''}\nTheme colour: ${site.meta(/name=["']theme-color["'][^>]*content=["']([^"']*)/i) ?? ''}\nMost-used colours: ${site.counts.join(', ')}\n\nPage text:\n${site.text}\n\nThe film's lines, in order:\n${arc.slots.map((s, i) => `${i + 1}. ${s.does.replace(/<Brand>/g, fb.name)} (${s.words[0]}-${s.words[1]} words)`).join('\n')}\n\nReturn: name (the brand as the site writes it), color (its main brand colour #RRGGBB, saturated, from the site), tagline (its promise in 3-6 words, from the page), facts (3-6 short facts from the page), features (3-6 things it does, each a 1-3 word name from the page), prompt (one realistic request a user would type into THIS product to get its main job done, 4-9 words, e.g. for a site builder "Build a landing page for my bakery"; never a question about unrelated data; "" if the product has no input box), audience (who it is for, 1-4 words), number (one number the page states with its unit and a 2-4 word label, e.g. "11 hours saved per week"; "" if the page states none), then ${keys[0]}…${keys.at(-1)}.`,
     schema: { name: z.string(), color: z.string(), tagline: z.string(), facts: z.array(z.string()).min(1), features: z.array(z.string()).min(1), prompt: z.string(), audience: z.string(), number: z.string(), ...lineShape },
   }); };
   const feats0 = pageFeatures(site.html ?? '');
@@ -129,7 +131,8 @@ export async function launchBrief(o: { url: string; site: Site; arc: LaunchArc; 
   const facts = ((b.facts as string[]) ?? []).map(String).filter(f => f.trim() && !inventedNumbers(f, site.text).length).slice(0, 6);
   const features = [...new Set(((b.features as string[]) ?? []).map(x => cleanLine(String(x), name).replace(/[.?]$/, '')).filter(x => x && words(x).length <= 4 && !inventedNumbers(x, site.text).length))].slice(0, 6);
   const feats = features.length >= 3 ? features : [...features, ...feats0].slice(0, 6);
-  const raw = keys.map(k => String(b[k] ?? ''));
+  const raw0 = keys.map(k => String(b[k] ?? ''));
+  const raw = b.source === 'site' ? raw0 : await copyEdit({ lines: raw0, arc, name, tagline: String(b.tagline ?? ''), features: features.length ? features : feats0, siteText: site.text, signal: o.signal, log: o.log });
   const d = doctorLines(raw, { arc, name, siteText: site.text, facts: facts.length ? facts : fb.facts, features: feats });
   for (const n of d.notes) o.log?.(`launch doctor: ${n}`);
   const numStr = String(b.number ?? '');
@@ -140,6 +143,40 @@ export async function launchBrief(o: { url: string; site: Site; arc: LaunchArc; 
     facts: facts.length ? facts : fb.facts, features: feats.length ? feats : ['Fast', 'Simple', 'Yours'], prompt: words(prompt).length >= 3 && !inventedNumbers(prompt, site.text).length ? prompt : '', audience: String(b.audience ?? '').trim(),
     number, lines: d.lines, tokens: d.lines.map((l, i) => accentTokens(l, { brand: name, marked: d.marked[i], kind: arc.slots[i]!.kind })), source: b.source, notes: d.notes,
   };
+}
+
+/**
+ * The copy editor: a second, small model call that reads the lines as a launch-film copy chief would and rewrites
+ * only the weak ones: broken grammar ("You are engineer."), mashed phrases ("organized easy"), vague claims, lines
+ * that are not about what THIS product does, invented example data, a reveal that is not the brand. A failed call
+ * keeps the writer's lines (the deterministic doctor still runs after it).
+ */
+export async function copyEdit(o: { lines: string[]; arc: LaunchArc; name: string; tagline: string; features: string[]; siteText: string; signal?: AbortSignal; log?: (s: string) => void }): Promise<string[]> {
+  const keys = o.arc.slots.map((_, i) => `line${i + 1}`);
+  let bounced = 0;
+  const validate = (a: Record<string, unknown>) => {
+    if (bounced++ >= 1) return null;
+    const ls = keys.map(k => unmark(String(a[k] ?? '')).line), problems: string[] = [];
+    const empty = keys.filter((_, i) => !ls[i]!.trim()); if (empty.length) problems.push(`${empty.join(', ')} are empty`);
+    const nums = ls.flatMap(l => inventedNumbers(l, o.siteText)); if (nums.length) problems.push(`the numbers ${nums.join(', ')} are not on the page`);
+    const long = ls.map((l, i) => [i, words(l).length] as const).filter(([i, n]) => n > o.arc.slots[i]!.words[1] + 2); if (long.length) problems.push(`${long.map(([i]) => keys[i]).join(', ')} are too long`);
+    return problems.length ? problems.join('; ') : null;
+  };
+  try {
+    const a = await ask({
+      agent: 'launch-copy-edit', tier: 'crew', deadlineMs: 30_000, signal: o.signal, validate,
+      system: 'You are the copy chief for premium product-launch films (Apple, Linear, Stripe, Arc). Each line appears ALONE on screen as a big headline. Good lines are short, grammatical, concrete and specific to the product, e.g. for an invoicing tool: "Invoices chase themselves." "Paid in two days, not twenty." "Every reminder, written for you." Bad lines are broken English ("You are engineer."), mashed phrases ("organized easy"), stock claims ("boost productivity", "always available"), fake example data presented as fact ("Q3 revenue grew 18%"), or lines about anything other than what this product does. Read every line aloud as a native English copywriter: if it is not a complete, natural phrase you would put on a billboard, rewrite it. Typical fixes: "You are engineers." → "You ship every week."; "Email hasn\'t changed forever." → "Email hasn\'t changed in twenty years."; "Team productivity amplified." → "Your whole team, on one page."; "Automate busywork continuously." → "Busywork runs itself."; "Resend platform." → "Meet Resend.". Rewrite the weak lines; keep strong lines exactly. Keep each line\'s job and word count. Facts only from the page; never invent numbers, customers or claims. Keep the ONE key word of each line wrapped in *asterisks*. No exclamation marks, no emoji, no quotes.',
+      prompt: `Brand: ${o.name}\nWhat it is: ${o.tagline}\nWhat it does: ${o.features.join(', ')}\n\nPage text (for facts only):\n${o.siteText.slice(0, 2500)}\n\nThe lines, each with its job:\n${o.arc.slots.map((sl, i) => `${keys[i]} (${sl.kind}; ${sl.does.replace(/<Brand>/g, o.name)}; ${sl.words[0]}-${sl.words[1]} words): ${o.lines[i] ?? ''}`).join('\n')}\n\nReturn every line (rewritten or kept), ${keys[0]}…${keys.at(-1)}.`,
+      schema: Object.fromEntries(keys.map(k => [k, z.string()])) as Record<string, z.ZodString>,
+    }) as Record<string, unknown>;
+    const out = keys.map((k, i) => String(a[k] ?? '').trim() || o.lines[i]!);
+    const changed = out.filter((l, i) => unmark(l).line !== unmark(o.lines[i] ?? '').line).length;
+    if (changed) o.log?.(`launch copy edit: ${changed} line(s) rewritten\n${out.map((l, i) => unmark(l).line !== unmark(o.lines[i] ?? '').line ? `  ${unmark(o.lines[i] ?? '').line} → ${unmark(l).line}` : '').filter(Boolean).join('\n')}`);
+    return out;
+  } catch (e) {
+    o.log?.(`launch copy edit skipped (${String(e instanceof Error ? e.message : e).slice(0, 80)})`);
+    return o.lines;
+  }
 }
 
 /** Your own script: one on-screen line per beat (lines starting with # are notes), the key word marked *like this*. */

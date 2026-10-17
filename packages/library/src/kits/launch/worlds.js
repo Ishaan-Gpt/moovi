@@ -114,17 +114,13 @@
     },
   });
 
-  // HUD corners: four thin corner ticks and a mono time code (editorial camera-frame chrome, used sparingly)
+  // corner ticks: four thin camera-frame ticks (no time code or address: the judge reads those as fake chrome)
   L.def('texture:corner-ticks', {
     kind: 'texture',
     draw(S, o) {
-      const c = S.ctx, m = 42 * S.u, l = 22 * S.u; c.save(); c.strokeStyle = rgba(S.P.fg, 0.35); c.lineWidth = 1.5 * S.u;
+      const c = S.ctx, m = 42 * S.u, l = 22 * S.u; c.save(); c.strokeStyle = rgba(S.P.fg, 0.22); c.lineWidth = 1.5 * S.u;
       [[m, m, 1, 1], [S.W - m, m, -1, 1], [m, S.H - m, 1, -1], [S.W - m, S.H - m, -1, -1]].forEach(([x, y, sx, sy]) => { c.beginPath(); c.moveTo(x, y + sy * l); c.lineTo(x, y); c.lineTo(x + sx * l, y); c.stroke(); });
       c.restore();
-      const tc = (o && o.label) || (L.film && L.film.brand && L.film.brand.host) || '';
-      const sec = Math.floor(S.t), fr = Math.floor((S.t % 1) * 24);
-      L.text(c, S.look, `● ${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}:${String(fr).padStart(2, '0')}`, S.W - m - 6 * S.u, m + 30 * S.u, { role: 'micro', px: 15 * S.u, color: rgba(S.P.fg, 0.45), align: 'right' });
-      if (tc) L.text(c, S.look, tc, m + 6 * S.u, m + 30 * S.u, { role: 'micro', px: 15 * S.u, color: rgba(S.P.fg, 0.45), upper: true });
     },
   });
 

@@ -26,7 +26,7 @@ export const LAUNCH_ARCS: LaunchArc[] = [
     S('promise', 1, 'PROMISE: one short quotable line that sums it up', 3, 7, 'payoff', 'claim'),
     END] },
   { id: 'launch-manifesto', name: 'Every signal, at the right moment', from: 'l02', wants: { software: 1, people: 1 }, slots: [
-    S('hook', 1, 'HOOK: "You are <who the customer is>." (a plain statement about the viewer)', 3, 7, 'hook', 'people'),
+    S('hook', 1, 'HOOK: a plain statement of what the viewer does every day, starting with "You" ("You ship every Friday.")', 3, 7, 'hook', 'people'),
     S('problem', 1, 'the pain that follows, in their words', 3, 8, 'problem'),
     S('list', 2, 'an anaphora: three short parallel phrases that each start with the same word ("Every X. Every Y. Every Z.")', 4, 9, 'list', 'benefit'),
     S('reveal', 1, '"Meet <Brand>."', 2, 4, 'reveal', 'brand'),
@@ -42,7 +42,7 @@ export const LAUNCH_ARCS: LaunchArc[] = [
     S('proof', 1.5, 'a proof from the page', 3, 7, 'proof'),
     END] },
   { id: 'launch-since', name: 'Unchanged since then', from: 'l08', wants: { history: 1, software: 1 }, slots: [
-    S('hook', 1, 'HOOK: "<the category> hasn\'t changed since <a year or an era from the page, else \'forever\'>."', 3, 8, 'hook', 'timeline'),
+    S('hook', 1, 'HOOK: "<the category> hasn\'t changed in <a span of years from the page, else \'twenty years\'>." or "<the category> still works like <an old thing>."', 3, 8, 'hook', 'timeline'),
     S('problem', 1, 'the same old chore, concrete', 3, 8, 'problem', 'chaos'),
     S('turn', 1, 'the turn ("Until now." / "Well… now it has.")', 2, 4, 'contrast'),
     S('reveal', 1, '"<Brand>." plus what it is in one word', 1, 4, 'reveal', 'brand'),
