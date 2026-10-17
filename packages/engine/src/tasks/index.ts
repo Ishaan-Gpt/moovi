@@ -11,9 +11,10 @@ import { build } from './builder';
 import { styleReel } from './reel';
 import { editReel, EDIT_KIND } from '../router/edit';
 import { COMBINED_KIND, combinedReel } from '../router/job';
+import { FILM_KIND, filmJob } from '../router/pipeline-job';
 
 /** Every task kind the playbooks name → the agent or worker that does it. */
 export const HANDLERS: Record<string, Handler> = {
   intake, match: matchStyle, plan, research, study, card, script, voice, transcribe, board, asset, build,
-  assemble, render, sound, mux, review, deliver, keep, 'style-reel': styleReel, [EDIT_KIND]: editReel, [COMBINED_KIND]: combinedReel,
+  assemble, render, sound, mux, review, deliver, keep, 'style-reel': styleReel, [EDIT_KIND]: editReel, [COMBINED_KIND]: combinedReel, [FILM_KIND]: filmJob,
 };

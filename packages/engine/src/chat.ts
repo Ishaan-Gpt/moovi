@@ -9,6 +9,7 @@ import { withModel } from './runtime';
 import { recordFeedback } from './memory';
 import { routeCombined } from './router/job';
 import { routeEdit } from './router/edit';
+import { routePipeline } from './router/pipeline-job';
 
 /**
  * The engine's side of the chat: a brief starts a run (intake → match; the matched style's playbook follows);
@@ -33,6 +34,7 @@ async function handle(cmd: Command) {
     case 'brief': {
       const [c] = await pq<{ videoStatus: string }>(cmd.project, P.chat, { id: cmd.chat });
       if (!c) return;
+      if (await routePipeline(cmd)) return; // MOOVI_ROUTER=pipeline: the one way in (Stage 1 W1); off by default
       if (await routeCombined(cmd)) return; // the combined film: the "Auto" style, and the default for a plain brief
       if (cmd.uploads?.length && await routeEdit(cmd, await pq<{ id: string; name: string; path: string; mime: string }>(cmd.project, P.uploads, { chat: cmd.chat }))) return; // your own clip: edited, playing live
       if (cmd.style) { // one of the four live-preview styles: a single job that runs the style's own pipeline
