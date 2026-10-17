@@ -1,6 +1,6 @@
 # Cardboard (cardboard.ai): how it works, and what Moovi can take
 
-Owner: Claude 1 · 2026-10-17. Ishaan will implement later. Source: the teardown `cardboard-ai.md` (their landing code
+Owner: Claude 1 · 2026-10-17. Ishaan will implement later. Source: the teardown `docs/archive/research/cardboard-ai.md` (their landing code
 captured and analysed with REA, plus their public `llms.txt`, 45-release changelog, "hard problems" page, 82 recipes,
 guides, job posts and the Launch HN thread). The editor itself needs a sign-in, so its internals are **inferred** from
 what they publish; the landing-page parts were **observed** in shipped code.

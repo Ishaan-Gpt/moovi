@@ -1,13 +1,5 @@
-# Decision-tree maps
+# Maps
 
-Two interactive pages. Download either file and open it in a browser: drag to move, scroll or pinch to zoom, click
-any box for its rules and code files.
-
-- `current.html`: how Moovi worked on main at fc051c4, before the final merge (Launch, Studio Cut, chat edits by words and CHECK on the first edit came after), from a chat message to a video. The router's four
-  checks, every decision in the four lanes (Auto, your clip, a picked style, the old crew), where FalkorDB and models
-  are used, and where the references feed in. Five traced example messages.
-- `proposed.html`: the final pipeline (Ishaan approved it as final on 2026-10-17; the final merge af7ceec built part of it). One way in; two brains (Precise mode
-  for open APIs, Creative mode for a connected Claude Code); seven video types; eight stages each owned by one agent,
-  including voice casting from the 63 voices and the advanced writer; the floor rules; chat edits that patch only what
-  changed; the taste system; the ishaan-motion tree; the mapped library. Every box is marked as existing, partly built
-  or new. Ishaan's own words behind it are in `../ISHAAN-VISION.md`.
+The final pipeline, the one source of truth for Ishaan and Vignesh, is **`docs/PIPELINE.html`** (download it and open
+it in a browser). `proposed.html` here only forwards to it. The map of the code before the final merge is kept in
+`docs/archive/before-af7ceec-current-pipeline.html` for history.

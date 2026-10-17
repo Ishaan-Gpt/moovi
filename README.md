@@ -27,7 +27,7 @@ Moovi/
 └─ assets/            source art and reference images
 ```
 
-Packages are TypeScript sources consumed by the apps' bundlers, so there's no build step. The dependency direction is `brand ← character ← apps` and `graph ← crew ← studio`; nothing imports upward. How the studio works, its graph model and its setup: [docs/STUDIO.md](docs/STUDIO.md). Every Cypher query: [docs/QUERIES.md](docs/QUERIES.md).
+Packages are TypeScript sources consumed by the apps' bundlers, so there's no build step. The dependency direction is `brand ← character ← apps` and `graph ← crew ← studio`; nothing imports upward. The pipeline Moovi is built toward: [docs/PIPELINE.html](docs/PIPELINE.html). The old studio notes: [docs/archive/STUDIO.md](docs/archive/STUDIO.md). Every Cypher query: [docs/QUERIES.md](docs/QUERIES.md).
 
 ## Run it
 
@@ -73,7 +73,7 @@ crew's three tiers from what the key can use, and stores the key encrypted. Ever
 The crew is built so a model's strength changes how sharp a film is, never whether it works. Models only fill slots
 and pick from lists; casting, layout, timing, the script doctor and all checks are deterministic. Picture styles go
 library-first on models that don't draw as well as Claude. How it works: [docs/MODELS.md](docs/MODELS.md). The five
-reel styles and how each is a language rather than a template: [docs/STYLES.md](docs/STYLES.md).
+reel styles and how each is a language rather than a template: [docs/archive/STYLES.md](docs/archive/STYLES.md).
 
 Server settings (in `.env.local`, see `.env.example`): `MOOVI_SECRET` encrypts stored keys. `MOOVI_BYOK=optional` lets a
 user without a key run on the server's own model (`MOOVI_RUNTIME`).

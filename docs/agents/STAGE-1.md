@@ -3,8 +3,8 @@
 Owner: Claude 1 (PM) for Ishaan · 2026-10-17 · status: **the plan for now**. Stage 2 (`STAGE-2.md`, the After
 Effects-grade prompt editor) starts only after Stage 1 is done.
 
-The target is the final pipeline Ishaan approved on 2026-10-17: `maps/proposed.html` (open it in a browser). Ishaan's
-own words behind it are in `ISHAAN-VISION.md`. Today's code before the final merge is in `maps/current.html`; main is
+The target is the final pipeline Ishaan approved on 2026-10-17: `docs/PIPELINE.html` (open it in a browser), the one source of truth. Ishaan's
+own words behind it are in `ISHAAN-VISION.md`. Today's code before the final merge is in `docs/archive/before-af7ceec-current-pipeline.html`; main is
 af7ceec and later. This document turns the map into work: what changes, in which files, in what order, who owns it,
 and how we know each piece is done.
 
@@ -49,9 +49,13 @@ Stage 1 is done when all of these are true, measured, not assumed:
 
 1. **Nothing that works today breaks.** Every workstream lands behind a switch or as an addition, then becomes the
    default only when its check in section 0 passes. The old crew path stays behind `MOOVI_DEFAULT_STYLE=crew` until D1.
-2. **One owner per file area** (as now): Tab owns the engine spine (`chat.ts`, `router/`, `edit/`, `review/`, `keys.ts`,
-   `worker.ts`, `runtime/`, `packages/mcp`). Ishaan's sessions own `styles/`, `packages/library/src/kits/`, `apps/`,
-   `packages/brand`, `packages/character`. A change in someone else's area goes through their log first.
+2. **Owners (Ishaan, 2026-10-17):** Vignesh (Tab) works only on the Claude Code bridge (W3: `packages/mcp`, the
+   `keys.ts` scope fallback, `worker.ts` parking, `runtime/` brain mode, local STT and TTS). Ishaan's sessions build
+   every other workstream, in every other area. A change to a bridge file goes through Tab's log first.
+6. **Taste is Ishaan's.** Any taste default (caption preset, look, grade, colour, font, motion number, transition, sound,
+   music, voice, arc, copy rule, floor-rule number, skill or sub-skill rule) is proposed with options and waits for his
+   yes. Each workstream lists the defaults it needs in its log before it builds them.
+7. **Synced every step.** Each finished step is pushed to GitHub `main`; no server deploy unless Ishaan asks.
 3. **Taste lives in data, checks live in code.** Numbers and bans go in the type registry, the motion branches and the
    library; the engine enforces them. No taste words in prompts that code could check instead.
 4. **Measured or it did not happen.** Every "done" names its test, its benchmark run and its numbers in the owner's log.
@@ -68,7 +72,7 @@ them. The phase plan is in section 4.
 preparation → pick the type → the shared stages.
 **Where.** `engine/src/chat.ts`, `router/job.ts` (Auto), `router/edit.ts`, `commands.ts` (a `type` field and attachment
 roles on the brief), `apps/studio` (type cards replace the style menu; attachments get a role chip).
-**Who.** Tab (engine), Ishaan's studio session (UI).
+**Who.** Ishaan's sessions (Tab is on the bridge only).
 **Steps.**
 1. `commands.ts`: the brief carries `type?: TypeId` and `attachments: { upload, role: 'footage' | 'reference' | 'asset' }[]`.
 2. `router/pipeline.ts` (new): `route(brief)` returns `{ brain, type, prep: boolean, attachments }`. Type: the card, else
@@ -91,7 +95,7 @@ marks, tool rules, floor overrides and motion branch. Every stage reads it.
 **Where.** `packages/library/src/types/` (new): one JSON or TS file per type, `index.ts` with `TypeSpec` and `typeOf(id)`.
 Graph: `(:Type {id})-[:LOOK]->(:Style)`, `(:Asset)-[:IN_TYPE {w, when}]->(:Type)`, named queries in
 `packages/graph/src/queries/types.ts`.
-**Who.** Ishaan's library session (registry, kits), Tab (graph queries, reads in the engine).
+**Who.** Ishaan's sessions (Tab is on the bridge only).
 **The seven types and their looks (from the map):**
 
 | Type | Looks (existing styles) | Seeds and references |
@@ -129,7 +133,7 @@ box can use it in W7.
 Builder becomes code (no desk). Asset Hunter joins Researcher, Scribe becomes Writer, Voice becomes Sound.
 **Where.** `engine/src/events.ts` (`AgentId`, `DESK_IDS`, `AGENT_NAMES`), every `publish(... agent ...)`,
 `apps/studio` desks and chat panel, `packages/character` if desks are drawn there.
-**Who.** Tab (ids, a compatibility map from old ids so old runs still render), Ishaan's studio session (desks, chat).
+**Who.** Ishaan's sessions (Tab is on the bridge only).
 **Steps.** 1) New ids plus `LEGACY_AGENT` map (scribe → writer, hunter → researcher, voice → sound, builder → code,
 director → designer). 2) Chat: each agent posts one line when its stage ends ("Writer · launch arc, hook picked from 3 ·
 2.1 s"); details (steps, timings, CHECK findings) fold under it. 3) The bridge's step rows fold under their agent.
@@ -142,7 +146,7 @@ watch-through check → rewrite a failing line once. For an edit, it writes only
 **Where.** `engine/src/writer/` (new): `arcs.ts` (from the type registry), `hooks.ts`, `draft.ts`, `humanize.ts`,
 `watch.ts`, `index.ts` (`write(brief, type, facts, brain)`). Each style's brief call becomes an adapter: the Writer's
 lines fill the style's slots (`styles/*.ts`, `launch/brief.ts`).
-**Who.** Ishaan's styles session (adapters), Tab or Claude 1 (the writer core).
+**Who.** Ishaan's sessions (Tab is on the bridge only).
 **Rules (from the map; all code-checked):** hook under 8 words, concrete, a number or a tension, lands by 1.5 s; one idea
 per line, 12 words at most; something new every 2–4 s; an open loop paid off before the CTA; one CTA; 15–35 s unless
 asked; banned AI tells (the `review/config.ts` list grows into `writer/banned.ts`, shared); contractions and plain words;
@@ -158,7 +162,7 @@ weakest copy), then the rest. 3) Blind-judge copy only (text cards side by side)
 **Where.** `engine/src/audio/voices.ts` (tags), `audio/local-tts.ts` (Kokoro, Tab's bridge phase 3) or `openai-tts.ts`,
 `audio/sounds.ts`, `launch/audio.ts` (its grid becomes `audio/grid.ts`, shared), `library/music-tracks.json`,
 `assets/sfx/map.json`.
-**Who.** Tab (audio spine), Ishaan's library session (the sound and music catalogue).
+**Who.** Ishaan's sessions (Tab is on the bridge only).
 **Steps.**
 1. Voices: every voice tagged (language, accent, gender, age, tone, types it suits) in the graph; `castVoice(type,
    brand tone, script language, memory)`; Hinglish → Indian English or Hindi; two speakers → a contrasting pair; your
@@ -178,7 +182,7 @@ Creative mode, write a new piece in code and keep it if it wins.
 **Where.** `engine/src/design/` (new): `theme.ts` (`themeFor(brand, type)`), `cast.ts` (generalizes
 `styles/kit/library.ts cast()` and `edit/cast.ts` over the type slice), `compose.ts` (today's improvisation). Players
 read a `theme` block (each style's player maps it onto its own tokens).
-**Who.** Ishaan's styles session (players read the theme), Tab (the shared casting over the graph).
+**Who.** Ishaan's sessions (Tab is on the bridge only).
 **Steps.** 1) `Theme` type and `themeFor`: the brand measured from CSS (W8) else the type's palette.
 2) Players accept `theme`; the borrow layer (`styles/kit/borrow.ts`) and edit inserts draw in theme tokens. 3) Shared
 casting over `[:IN_TYPE]`, minus recent repeats, plus a seed. 4) Creative mode: "write a new piece" through the bridge's
@@ -193,7 +197,7 @@ first; stock footage; a generated image or drawn set-up; a map; a 3D prop; a cha
 **Where.** `research/capture.ts`, `footage/`, `maps/`, `render3d/`, new `research/brand.ts` (colours scored from CSS and
 computed styles, logo, fonts, no model), new `research/image.ts` (image generation through the user's key, e.g. Gemini,
 or SVG drawn by Opus in Creative mode).
-**Who.** Tab (engine tools), Vignesh's footage and maps work stays where it is.
+**Who.** Ishaan's sessions (Tab is on the bridge only).
 **Steps.** 1) `brand.ts` and its test on 10 known sites. 2) The decision tree as a table of rules (`research/tools.ts`)
 with a trace of why each tool ran. 3) Asset roles from W1: your logos, photos, clips placed before any stock. 4) Image
 generation behind a key check, never required.
@@ -205,7 +209,7 @@ generation behind a key check, never required.
 checks them, on every film and every change, in both modes.
 **Where.** `engine/src/review/floor.ts` (new) read by `review/lint.ts` (CHECK, edits) and `review/film/` (style films),
 and by `design/cast.ts`.
-**Who.** Tab.
+**Who.** Ishaan's sessions (Tab is on the bridge only).
 **The rules (from the map):**
 
 | Area | Rule |
@@ -231,7 +235,7 @@ undo; any version downloads as MP4.
 ops over each style's film data: change a line, re-cast a beat, swap the voice or the music, change a preset value,
 add a reference for taste. `talk.ts` sends every message on a film to the change parser first, Moovi's model call only
 for what it cannot read.
-**Who.** Tab (parser, versions), Ishaan's styles session (each style's ops on its film data).
+**Who.** Ishaan's sessions (Tab is on the bridge only).
 **Steps.**
 1. Versions: each change writes a new version folder that copies the plan files and hard-links the media (today versions
    share one folder, so going back shows the newest edit, and undo is one step). Undo and redo walk the list.
@@ -271,7 +275,7 @@ test lists any that is unused).
 preset set; effects grow from about 20 to 40, each with a rule; unused queries are wired in or removed.
 **Where.** `engine/src/library/catalog.ts`, `packages/graph/src/queries/library.ts`, `edit/captions.ts`, `edit/looks.ts`,
 `edit/effects/catalog.ts`, `edit/moves.ts`.
-**Who.** Ishaan's library session, Tab for the edit-side catalogues.
+**Who.** Ishaan's sessions (Tab is on the bridge only).
 **Steps.** 1) `IN_TYPE {w, when}` on every shipped asset; an asset no type uses is flagged. 2) Captions: 8–12 premium
 presets drawn from captionseasy and the 11 player styles; per type 1 default and 2 alternates; picked by type, speech
 pace and face on screen. 3) Effects: each with when it fires, the maximum per film and its types; grow the set to 40.
@@ -299,7 +303,7 @@ punch-in, transition, motion graphic or B-roll), Light / Balanced / Tight (exist
 (exists), clean the voice (exists), reframe on the speaker (face crop exists; speaker-aware across people is new).
 **Where.** `edit/hear.ts`, `edit/cut.ts`, new `edit/takes.ts`, `edit/build.ts`, `edit/cast.ts`, `edit/reedit.ts` (a "use
 take 2" op).
-**Who.** Tab.
+**Who.** Ishaan's sessions (Tab is on the bridge only).
 **Steps.** 1) `takes.ts`: group sentences by text similarity on the word timings; score fluency (fillers, restarts,
 stumbles), pace and energy (loudness); keep one per group; `takes.json` records the choice and the others. 2) "use the
 second take", "keep this one" in `parseEdit`. 3) The cover rule in the Designer's casting: no cut without a cover; a
@@ -317,7 +321,7 @@ bare jump cut in any benchmark edit (code check on the EDL).
 | D. Change and taste | W10 steps 2–4, W11, W12, W13 | Chat changes for every film; the types learn from references; UI morph and Kinetic built | D2, D4, D5 |
 | E. Prove it | W14 rounds, D7 and D8 | The numbers that say Stage 1 is done | All checks in section 0 |
 
-Phases A and B can run side by side (different owners and files). Each workstream lands on main as soon as its check
+Phase B's bridge (W3) runs on Tab's side all along; the other phases are Ishaan's sessions in order. Each workstream lands on main as soon as its check
 passes; a type keeps today's behaviour until its own check passes.
 
 ## 5. What gets retired
@@ -342,8 +346,8 @@ passes; a type keeps today's behaviour until its own check passes.
 
 ## 7. Where things are
 
-- The final pipeline: `docs/agents/maps/proposed.html`. Ishaan's words: `docs/agents/ISHAAN-VISION.md`.
-- Today before the final merge: `docs/agents/maps/current.html`. The merge itself: main af7ceec (see `CLAUDE1.md`).
+- The final pipeline: `docs/PIPELINE.html`. Ishaan's words: `docs/agents/ISHAAN-VISION.md`.
+- Today before the final merge: `docs/archive/before-af7ceec-current-pipeline.html`. The merge itself: main af7ceec (see `CLAUDE1.md`).
 - The bridge: `docs/agents/research/mcp-claude-code-bridge-plan.md` (Tab).
 - Teardowns: `research/opendesign-inspiration.md`, `cardboard-inspiration.md`, `promptsmotion-inspiration.md`.
 - After Stage 1: `docs/agents/STAGE-2.md`.

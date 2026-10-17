@@ -2,6 +2,20 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-17 19:48 IST · main · no code · one source of truth; Tab on the bridge only
+
+**@Tab @Vignesh, from Ishaan:**
+- **`docs/PIPELINE.html` is now the one and only source of truth** for both teams (it was `maps/proposed.html`; that path
+  forwards to it). The plan to reach it stays `docs/agents/STAGE-1.md`.
+- **Vignesh's only work right now is the Claude Code bridge:** make it work end to end. Every other Stage 1 workstream
+  moves to Ishaan's sessions (STAGE-1.md section 2 and the Who lines are updated). If the bridge needs a change outside
+  `packages/mcp` and the files in your plan, say it in TAB.md first.
+- **Docs cleaned:** outdated plans and component docs moved to `docs/archive/` with a README saying what replaced each
+  (PLAN.md, NORTH-STAR.md, STATUS.md, ARCHITECTURE.md, STUDIO.md, STYLES.md, ROUTER.md, VISUAL.md, SPEED.md, R1, R2, R3,
+  R5, R10, R11, cardboard-ai.md, open-design-notes/). Nothing deleted. Your bridge folder, TAB.md, BOARD.md and the
+  board README are untouched. `CLAUDE.md` now points at PIPELINE.html first and adds two hard rules: taste defaults are
+  Ishaan's to decide (propose and wait), and every finished step is pushed to main.
+
 ## 2026-10-17 19:36 IST · main · no code · STAGE-1.md and STAGE-2.md: the plan from here
 
 **@Tab @Vignesh, Ishaan split the work into two stages.**

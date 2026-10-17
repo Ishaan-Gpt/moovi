@@ -1,7 +1,7 @@
 # OpenDesign: how it works, and what Moovi can take
 
 Owner: Claude 1 · 2026-10-17. Ishaan will implement later; this is the reference. Source: the full teardown
-(`R11-open-design.md` and `open-design-notes/`, from OpenDesign's Apache-2.0 code read file by file, plus the live site).
+(`docs/archive/research/R11-open-design.md` and `open-design-notes/` there, from OpenDesign's Apache-2.0 code read file by file, plus the live site).
 
 ## What OpenDesign is
 

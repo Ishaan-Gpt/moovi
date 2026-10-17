@@ -7,13 +7,27 @@ hackathon is live (preponed, 2026-10-12), so everything here is event work. Repo
 memory, 3D, maps, the visual renderer, the style router). Several AI agents work in this repo at once: check
 `docs/agents/` (the agent board) before starting, and pull before you push.
 
-**Read first:** `docs/ARCHITECTURE.md`, `docs/STUDIO.md`, `docs/STYLES.md` (styles, not templates),
-`docs/MODELS.md` (any model, bring your own key), `docs/QUERIES.md` (every Cypher query), `docs/DEPLOY.md`,
-`docs/LIBRARY.md` (the asset library in FalkorDB, kits, cloned references).
-Vignesh's systems: `docs/VISUAL.md`, `docs/ROUTER.md`, `docs/VOICE.md`, `docs/3D.md`, `docs/MAPS.md`, `docs/SPEED.md`.
-Brand and character: `docs/BRAND.md`, `docs/CHARACTER.md`.
+**The one source of truth: `docs/PIPELINE.html`** (the final pipeline Ishaan approved on 2026-10-17; download it and
+open it in a browser). Everything built from now on moves Moovi toward it. **The plan to get there:**
+`docs/agents/STAGE-1.md` (now). `docs/agents/STAGE-2.md` (the After Effects-grade prompt editor) comes after Stage 1.
+Ishaan's own words behind the pipeline: `docs/agents/ISHAAN-VISION.md`. Old docs that describe the pipeline before it
+are in `docs/archive/` (history only; do not plan from them).
+
+**Read first:** `docs/PIPELINE.html`, `docs/agents/STAGE-1.md`, `docs/MODELS.md` (any model, bring your own key),
+`docs/QUERIES.md` (every Cypher query), `docs/DEPLOY.md`, `docs/LIBRARY.md` (the asset library in FalkorDB, kits,
+cloned references), `docs/LAUNCH.md` (the Launch look).
+Tools: `docs/VOICE.md`, `docs/3D.md`, `docs/MAPS.md`. Brand and character: `docs/BRAND.md`, `docs/CHARACTER.md`.
+
+**Who does what now:** Vignesh (Tab) works only on the Claude Code bridge (`docs/agents/claude-code-bridge/`,
+`packages/mcp`). Ishaan's sessions build Stage 1.
 
 ## Hard rules
+
+- **Taste is Ishaan's.** No session sets or changes a taste default on its own: caption presets, looks, grades, colours,
+  fonts, motion numbers, transitions, sound and music choices, voices, script arcs and copy rules, floor-rule numbers,
+  skill or sub-skill rules. Propose it with the options and wait for Ishaan's yes; list every default you add.
+- **Sync every step.** Each finished step is committed and pushed to GitHub `main` (pull first). No server deploy
+  unless Ishaan asks.
 
 - **FalkorDB stays load-bearing** (the hackathon's core): accounts, the task board, style memory, the craft graph,
   feedback memory, footage licences, voices, scenes. Every query is a named Cypher query in `packages/graph`.
@@ -45,7 +59,7 @@ Brand and character: `docs/BRAND.md`, `docs/CHARACTER.md`.
 - After changes: `pnpm typecheck`; engine tests `pnpm --filter @moovi/engine test` (165 tests, some need FalkorDB);
   local FalkorDB: `pnpm falkordb` (port 6380); local settings in `.env.local` (see `.env.example`).
 
-## Styles and pipelines
+## Styles and pipelines (today's code, being reshaped by Stage 1)
 
 | Id | Name | Output | Notes |
 |---|---|---|---|
