@@ -39,6 +39,7 @@ const menuText = (m: DirectMenus) => [
   'LOOKS:', ...m.looks.map(l => `- ${l.id}: ${l.line}`),
   'MOVES (id: what it is):', ...m.moves.map(x => `- ${x.id}: ${x.line}`),
   ...(m.captionLooks.length ? ['CAPTION LOOKS (optional):', ...m.captionLooks.map(c => `- ${c.id}: ${c.line}`)] : []),
+  ...(m.edit?.length ? ['EDIT REGISTRY (optional spec.picks, id: device (sentence jobs it serves)):', ...m.edit.map(e => `- ${e.id}: ${e.line}`)] : []),
 ].join('\n');
 
 /** The step Claude Code (or the key) sees, inside the edit call's token cap. */
@@ -49,6 +50,7 @@ export function directEditStep(i: DirectEditInput): DirectEditStep {
     ISOLATION_LINE,
     'You direct a short vertical video edit of one person talking to camera. Moovi has heard the clip and will cut, time, caption, check and render it; you make only the creative choices.',
     'Tag every sentence number with what it does (hook, claim, number, list, story, quote, name, cta, aside). Pick one look, the cleanup level, the hook sentence, at most 4 moves on the sentences that earn them and at most 3 cards whose words come from what is said (6 words max). Write a short title. Put your own model id in "model".',
+    ...(menus.edit?.length ? ['Optional "spec" (Edit mastery): in spec.reads give your own reading of the sentences that matter (fn, verbs a picture can act out, the one hero word as spoken); in spec.picks name a device from the EDIT REGISTRY by id on a sentence that earns it (at most 6). Moovi writes the beat spec from them; leave it out to let Moovi read and pick.'] : []),
     `Answer schema (JSON Schema):\n${JSON.stringify(jsonSchema)}`,
     `Example answer for a 4 sentence clip:\n${JSON.stringify(EXAMPLE_DIRECTION)}`,
   ].join('\n\n');
@@ -102,7 +104,8 @@ export async function directEdit(i: DirectEditInput & { signal?: AbortSignal; bu
     i.log?.(`direct:edit: rules (${why})`);
     return { value: null, source: 'default', problems: [[why]], tries: 0, note: DEFAULT_NOTE, step };
   }
-  const ctx = { sentences: step.sentences, menus: step.menus };
+  const texts: string[] = []; for (const x of sentencesOf(i.words)) texts[x.i] = x.text;
+  const ctx = { sentences: step.sentences, menus: step.menus, texts };
   const r = await askChecked<Direction | null>({
     label: DIRECT_EDIT_AGENT, ...(i.log ? { log: i.log } : {}),
     ask: async (history?: History) => {

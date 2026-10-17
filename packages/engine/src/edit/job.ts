@@ -14,6 +14,7 @@ import { hear, type Heard } from './hear';
 import { castInserts, openInserts, type InsertTrace } from './inserts';
 import { autoMoves, castMoves } from './moves';
 import { BRIDGE_PROVIDER, directEdit, overridesOf } from './direct';
+import { specOfDirection } from './direct-spec';
 import type { Direction } from './direct.schema';
 import { modelScope } from '../runtime';
 import { autoFx, openFx, type AutoFx } from './effects/auto';
@@ -209,6 +210,12 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
   const direction = await directionFor(o, words, look.faces, (await textP).length > 0);
   const ov = direction ? overridesOf(direction) : null;
   if (direction) { writeFileSync(join(dir, 'direction.json'), JSON.stringify(direction, null, 1)); await o.onNote?.(`direction: ${direction.style}, ${direction.cleanup} (${direction.why})`); }
+  // the director's beat spec part (edit/direct-spec.ts): written beside the direction for the one player to read; a
+  // graph that is down or a bad pick never stops the edit, it is reported in the file and the log
+  if (direction?.spec) {
+    try { const b = await specOfDirection(direction, words); writeFileSync(join(dir, 'beatspec.json'), JSON.stringify(b, null, 1)); if (b.missed.length) console.warn(`[edit] beat spec: ${b.missed.map(m => m.why).join('; ').slice(0, 200)}`); }
+    catch (e) { console.warn(`[edit] beat spec: ${String((e as Error)?.message ?? e).slice(0, 160)}`); }
+  }
   if (quiet) writeFileSync(join(dir, 'quiet.json'), JSON.stringify(quiet, null, 1));
   // W15: a line said twice or more keeps its best take (edit/takes.ts); takes.json holds every take, "use take 2" swaps
   const takes = findTakes(words);
