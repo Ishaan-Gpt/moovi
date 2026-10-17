@@ -1,0 +1,155 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Edit preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Russo+One&display=block" rel="stylesheet">
+<style>
+@font-face{font-family:'JBMono';src:url('../../../packages/engine/assets/renderer/fonts/jetbrains-mono-latin-wght-normal.woff2') format('woff2');font-weight:100 800}
+@font-face{font-family:'FrauncesV';src:url('../../../packages/engine/assets/renderer/fonts/fraunces-latin-wght-italic.woff2') format('woff2');font-style:italic;font-weight:100 900}
+html,body{margin:0;height:100%;background:var(--page,#111);overflow:hidden;font-family:'Manrope',sans-serif}
+#stage{position:absolute;left:0;top:0;width:1080px;height:1920px;transform-origin:0 0;overflow:hidden;background:#000;border-radius:28px}
+#v{position:absolute;left:0;top:0;width:1080px;height:1920px;object-fit:cover;opacity:.01}
+#cv,#cap{position:absolute;inset:0}#ov{position:absolute;inset:0;pointer-events:none}#ov > *{position:absolute}
+#bar{position:absolute;left:0;right:0;bottom:0;height:70px;display:flex;align-items:center;gap:16px;padding:0 22px;background:var(--panel,#16181c);color:var(--panel-ink,#ddd)}
+#bar button{font:700 15px Manrope;padding:10px 22px;border:0;border-radius:999px;background:var(--accent,#888);color:#fff;cursor:pointer}
+#bar input{flex:1}#tc{font:600 13px JBMono;min-width:90px}
+#gate{position:absolute;inset:0;display:grid;place-items:center;z-index:5;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);cursor:pointer;font:700 54px Manrope;color:#fff}
+</style></head>
+<body>
+<div id="stage"><video id="v" preload="auto" playsinline></video><canvas id="cv" width="1080" height="1920"></canvas><div id="ov"></div><canvas id="cap" width="1080" height="1920"></canvas><div id="gate">loading…</div></div>
+<div id="bar"><button id="pp">Play</button><input id="sc" type="range" min="0" max="1000" value="0"><span id="tc">0.00</span></div>
+<script type="module">
+/**
+ * One generic edit player: any clip the pipeline prepared (words.json, edl.json faces + removed, hd.mp4) plus a beat
+ * spec (?spec=specs/<name>.json). Every time is a word anchor; every layer is a reusable device from DEVICES below,
+ * skinned by the spec's palette. Nothing here knows about one video.
+ */
+import { premiumCaption1, cards, drawCaption, ticks, accentFromPixels } from './premium.js';
+const Q = new URLSearchParams(location.search), SPEC = await (await fetch(Q.get('spec') || 'specs/moovi-intro.json')).json();
+const CLIP = SPEC.clip.replace(/\/?$/, '/');
+const $ = id => document.getElementById(id), V = $('v'), cv = $('cv'), ctx = cv.getContext('2d'), cc = $('cap').getContext('2d'), ov = $('ov'), stage = $('stage');
+V.src = CLIP + 'hd.mp4';
+const fit = () => { const w = innerWidth, h = innerHeight - 70, k = Math.min(w / 1080, h / 1920) * .96; stage.style.transform = `translate(${(w - 1080 * k) / 2}px,${(h - 1920 * k) / 2}px) scale(${k})`; };
+addEventListener('resize', fit); fit();
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x)), lerp = (a, b, k) => a + (b - a) * k;
+const eo = k => 1 - Math.pow(1 - clamp(k), 3), eio = k => { k = clamp(k); return k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; };
+const spring = s => s <= 0 ? 0 : 1 - Math.exp(-11 * s) * Math.cos(15 * s);
+const win = (t, a, b) => clamp((t - a) / (b - a));
+
+const WJ = await (await fetch(CLIP + 'words.json')).json(), WORDS = (Array.isArray(WJ) ? WJ : WJ.words).map(w => ({ text: w.word, t: w.t, end: w.end }));
+const EDL = await (await fetch(CLIP + 'edl.json')).json(), FACES = EDL.faces || [], DUR = EDL.source.duration;
+const CUTS = (EDL.removed || []).map(r => [r.src_in, r.src_out]).sort((a, b) => a[0] - b[0]);
+const START = CUTS[0] && CUTS[0][0] <= .01 ? CUTS[0][1] : 0, END = (CUTS.find(c => c[1] >= DUR - .05) || [DUR])[0];
+const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+/** a word anchor: { w: 'word', after: <anchor or seconds>, n: 1, dt: 0 } → source seconds (the word's start) */
+const at = a => { if (typeof a === 'number') return a; if (!a) return START; const after = a.after === undefined ? 0 : at(a.after); let n = a.n || 1, w; for (const x of WORDS) if (x.t >= after - .01 && norm(x.text) === norm(a.w) && --n === 0) { w = x; break; } return (w ? (a.end ? w.end : w.t) : after) + (a.dt || 0); };
+const faceAt = t => { if (!FACES.length) return { x: .5, y: .42 }; let k = 0; while (k + 1 < FACES.length && FACES[k + 1].src_t <= t) k++; const a = FACES[k], b = FACES[k + 1] || a, u = b === a ? 0 : clamp((t - a.src_t) / (b.src_t - a.src_t)); return { x: lerp(a.x + a.w / 2, b.x + b.w / 2, u), y: lerp(a.y + a.h / 2, b.y + b.h / 2, u) }; };
+
+// the palette: the spec's (a brand's own tokens), else derived from the footage itself
+const P = SPEC.palette || {};
+for (const [k, v] of Object.entries(P)) document.documentElement.style.setProperty('--' + k, v);
+
+function drawVideo(t, r, z = 1, Y = .36, radius = 0, dim = 0) {
+  if (V.readyState < 2) return;
+  const sa = EDL.source.w / EDL.source.h, f = faceAt(t), H = Math.max(r.h, r.w / sa) * z, W = H * sa;
+  let x = r.w / 2 - f.x * W, y = Y * r.h - f.y * H; x = Math.min(0, Math.max(r.w - W, x)); y = Math.min(0, Math.max(r.h - H, y));
+  ctx.save(); ctx.beginPath(); if (radius) ctx.roundRect(r.x, r.y, r.w, r.h, radius); else ctx.rect(r.x, r.y, r.w, r.h); ctx.clip();
+  ctx.filter = 'contrast(1.05)'; ctx.drawImage(V, r.x + x, r.y + y, W, H); ctx.filter = 'none';
+  const g = ctx.createRadialGradient(r.x + r.w / 2, r.y + r.h * .38, r.h * .3, r.x + r.w / 2, r.y + r.h * .45, r.h * .75); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.4)');
+  ctx.fillStyle = g; ctx.fillRect(r.x, r.y, r.w, r.h);
+  if (dim) { ctx.fillStyle = `rgba(6,6,10,${dim})`; ctx.fillRect(r.x, r.y, r.w, r.h); }
+  ctx.restore();
+}
+const el = (html, css = '') => { const d = document.createElement('div'); d.innerHTML = html; d.style.cssText = css; d.style.display = 'none'; ov.appendChild(d); return d; };
+const show = (d, css) => { d.style.display = ''; if (css) Object.assign(d.style, css); };
+
+// stills of the clip itself (for cards and rows), grabbed once at load
+const STILLS = {};
+async function grab(times) { for (const s of times) { if (STILLS[s]) continue; V.currentTime = s; await new Promise(r => V.addEventListener('seeked', r, { once: true })); const c = document.createElement('canvas'); c.width = 360; c.height = Math.round(360 * EDL.source.h / EDL.source.w); c.getContext('2d').drawImage(V, 0, 0, c.width, c.height); STILLS[s] = c.toDataURL('image/jpeg', .85); } }
+
+/**
+ * The device library. Each: build(layer, beat) once → state; draw(state, t, beat) each frame. Layers are drawn in order.
+ * cam       the clip full frame: z, Y, push per s, punch on a word ({ punch: anchor, by: 1.08 }), dim
+ * world     the brand's world: { bg: css gradient, img: [{ src, x, y, w, h, enter: 'rise'|'drop', at }], text: [{ html, y, at }] }
+ * cascade   cards on springs, one per item at its word: items [{ title, sub, at }], side alternates
+ * tag       a lower-third name tag at a word: { name, role, at }
+ * letters   big glyphs that pop beside the head on their words: items [{ ch, at }]
+ * input     the product's real input over a dimmed room: { placeholder, typed, from, to, tap }
+ * row       three takes in a row, the middle one live and lit: { stills: [s1, s2] }
+ * post      the speaker's clip in a story frame: { handle }
+ * sides     two of the clip's stills float up either side: { stills: [s1, s2], at }
+ * pill      the comment-pill ending: { keyword, at, avatar }
+ * wipe      an object whips across as the cut: { src, at, dur }
+ */
+const DEVICES = {
+  cam: { build: () => ({}), draw: (L, t, b) => { const k = t - b.t0, pz = L.punch ? Math.pow(L.by || 1.08, eo(win(t, at(L.punch) - .02, at(L.punch) + .16))) : 1, land = b.first ? 0 : .035 * (1 - eo(win(k, 0, .18)));
+    drawVideo(t, { x: 0, y: 0, w: 1080, h: 1920 }, ((L.z || 1.04) + land) * pz + (L.push ?? .01) * k, L.Y ?? .36, 0, (L.dim || 0) * eo(win(k, 0, .3))); } },
+  world: { build: L => ({ imgs: (L.img || []).map(i => el(`<img src="${i.src}" style="width:100%;height:100%;object-fit:contain;${i.mask ? '-webkit-mask-image:' + i.mask : ''}">`, `left:${i.x}px;top:${i.y}px;width:${i.w}px;height:${i.h}px`)), texts: (L.text || []).map(x => el(x.html, `left:0;right:0;top:${x.y}px;text-align:center`)) }),
+    draw: (L, t, b, S) => { ctx.save(); const g = ctx.createRadialGradient(540, 760, 40, 540, 760, 1530); (L.stops || [[0, '#fff'], [1, '#ddd']]).forEach(([o, c]) => g.addColorStop(o, c)); ctx.fillStyle = g; ctx.fillRect(0, 0, 1080, 1920); ctx.restore();
+      (L.img || []).forEach((i, n) => { const p = t - at(i.at), s = spring(p); show(S.imgs[n], { opacity: clamp(p * 5), transform: i.enter === 'drop' ? `translateY(${((1 - s) * -300).toFixed(0)}px) rotate(${((i.spin || 0) * (t - b.t0)).toFixed(1)}deg)` : `translateY(${((1 - s) * 500).toFixed(0)}px)` }); });
+      (L.text || []).forEach((x, n) => { const p = t - at(x.at), s = spring(p); show(S.texts[n], { opacity: clamp(p * 6), transform: `scale(${(.7 + .3 * s).toFixed(3)})` }); });
+      if (L.pip) drawVideo(t, { x: 760, y: 1560, w: 250, h: 250 }, 1.5, .45, 125); } },
+  cascade: { build: L => ({ cards: L.items.map((it, i) => el(`<div style="width:320px;padding:26px 30px;border-radius:30px;background:var(--card,rgba(255,255,255,.92));box-shadow:0 26px 60px rgba(0,0,0,.4),0 0 0 2px var(--card-edge,rgba(255,255,255,.6));font:800 44px Manrope;color:var(--card-ink,#111);letter-spacing:-.02em">${it.title}${it.sub ? `<small style="display:block;font:600 24px JBMono;letter-spacing:.08em;color:var(--card-sub,#666);text-transform:uppercase;margin-top:4px">${it.sub}</small>` : ''}</div>`, `left:${i % 2 ? 680 : 40}px;top:${(L.y || 180) + i * 210}px`)) }),
+    draw: (L, t, b, S) => L.items.forEach((it, i) => { const p = t - at(it.at), s = spring(p); show(S.cards[i], { opacity: clamp(p * 8), transform: `translateX(${((1 - s) * (i % 2 ? 1 : -1) * 120).toFixed(0)}px) scale(${(.85 + .15 * s).toFixed(3)})` }); }) },
+  tag: { build: L => ({ d: el(`<div style="display:inline-flex;flex-direction:column;padding:22px 34px 24px;border-radius:24px;background:var(--tag,rgba(12,10,12,.78));backdrop-filter:blur(12px);box-shadow:0 20px 50px rgba(0,0,0,.4);border-left:8px solid var(--accent,#fff)"><b style="font:800 54px Manrope;color:#fff;letter-spacing:-.02em">${L.name}</b>${L.role ? `<span style="font:600 26px JBMono;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-soft,#ccc);margin-top:6px">${L.role}</span>` : ''}</div>`, `left:${L.x ?? 60}px;top:${L.y ?? 1180}px`) }),
+    draw: (L, t, b, S) => { const p = t - at(L.at), s = spring(p), out = L.hold ? eio(win(t, at(L.at) + L.hold, at(L.at) + L.hold + .25)) : 0; show(S.d, { opacity: clamp(p * 6) * (1 - out), transform: `translateX(${((1 - s) * -160 - out * 120).toFixed(0)}px)` }); } },
+  letters: { build: L => ({ ds: L.items.map((it, i) => el(`<span style="font:400 ${it.size || 420}px 'Russo One';color:var(--accent,#fff);-webkit-text-stroke:${(it.size || 420) * .045}px var(--accent,#fff);filter:drop-shadow(0 0 30px var(--accent-glow,rgba(255,255,255,.5))) drop-shadow(0 20px 40px rgba(0,0,0,.6))">${it.ch}</span>`, `left:${it.x}px;top:${it.y}px`)) }),
+    draw: (L, t, b, S) => L.items.forEach((it, i) => { const p = t - at(it.at), s = spring(p); show(S.ds[i], { opacity: clamp(p * 8), transform: `scale(${(1.4 - .4 * s).toFixed(3)}) rotate(${((1 - s) * (it.r || 8)).toFixed(1)}deg)`, filter: p < .16 ? `blur(${((1 - p / .16) * 10).toFixed(1)}px)` : '' }); }) },
+  input: { build: L => ({ d: el(`<div style="position:relative;width:960px;height:250px;border-radius:44px;background:rgba(255,255,255,.95);box-shadow:0 30px 70px rgba(0,0,0,.4)"><div class="tx" style="position:absolute;left:70px;top:58px;font:500 46px Manrope;color:#9aa7b4;white-space:nowrap"></div></div>`, `left:60px;top:${L.y || 860}px`) }),
+    draw: (L, t, b, S) => { const k = t - b.t0; show(S.d, { transform: `translateY(${((1 - spring(k)) * 260).toFixed(0)}px)` }); const tx = S.d.querySelector('.tx'); if (L.typed) { const n = Math.round(L.typed.length * win(t, at(L.from), at(L.to))); tx.innerHTML = L.typed.slice(0, n) + `<span style="opacity:${Math.floor(t * 3) % 2}">|</span>`; tx.style.color = 'var(--card-ink,#111)'; tx.style.fontWeight = '700'; } else tx.textContent = L.placeholder || ''; } },
+  pill: { build: L => ({ d: el(`<div style="display:flex;align-items:center;gap:26px;width:900px;padding:22px 24px;border-radius:999px;background:rgba(250,250,252,.95);box-shadow:0 30px 70px rgba(0,0,0,.45);box-sizing:border-box"><div class="av" style="width:110px;height:110px;border-radius:50%;background-size:cover;background-position:50% 25%;border:4px solid var(--accent,#999);flex:none"></div><div class="pt" style="flex:1;font:700 66px Manrope;color:#111"></div><div class="ps" style="width:120px;height:86px;border-radius:999px;background:var(--accent,#555);display:grid;place-items:center;flex:none"><svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg></div></div>`, `left:90px;top:${L.y || 1040}px`) }),
+    draw: (L, t, b, S) => { const k = t - b.t0; S.d.querySelector('.av').style.backgroundImage = `url(${STILLS[L.avatar]})`; show(S.d, { transform: `translateY(${((1 - spring(k - .1)) * 300).toFixed(0)}px)`, opacity: clamp((k - .1) * 6) }); const n = Math.round(L.keyword.length * win(t, at(L.at), at(L.at) + .45)); S.d.querySelector('.pt').innerHTML = L.keyword.slice(0, n) + `<span style="opacity:${Math.floor(t * 3) % 2}">|</span>`; } },
+  sides: { build: L => ({ ds: L.stills.map((s, i) => el(`<div style="width:280px;height:480px;border-radius:30px;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.45),0 0 0 8px rgba(255,255,255,.8)"><img style="width:100%;height:100%;object-fit:cover"></div>`, `left:${i ? 776 : 24}px;top:${L.y || 640}px`)) }),
+    draw: (L, t, b, S) => S.ds.forEach((d, i) => { d.querySelector('img').src ||= STILLS[L.stills[i]]; const p = t - at(L.at) - i * .18, s = spring(p); show(d, { opacity: clamp(p * 6), transform: `translateY(${((1 - s) * 220).toFixed(0)}px) rotate(${i ? 7 : -7}deg)` }); }) },
+  wipe: { build: L => ({ d: el(`<img src="${L.src}" style="width:100%;height:100%">`, 'width:700px;height:700px;top:600px') }),
+    draw: (L, t, b, S) => { const a = at(L.at), k = win(t, a - (L.dur || .3), a); if (k > 0 && k < 1) show(S.d, { left: lerp(-700, 1500, eio(k)) + 'px', transform: `rotate(${k * 280}deg)`, filter: `blur(${(Math.sin(k * Math.PI) * 6).toFixed(1)}px)` }); } },
+};
+
+// the beats: each runs from its anchor to the next beat's
+const BEATS = SPEC.beats.map(b => ({ ...b, t0: at(b.from) })).sort((a, b) => a.t0 - b.t0);
+BEATS.forEach((b, i) => { b.t1 = i + 1 < BEATS.length ? BEATS[i + 1].t0 : END; b.first = i === 0; b.state = b.layers.map(L => DEVICES[L.t].build(L, b)); });
+const need = [...new Set(BEATS.flatMap(b => b.layers.flatMap(L => [...(L.stills || []), ...(L.avatar !== undefined ? [L.avatar] : [])])))];
+
+// captions: the approved Premium Caption 1, accent from the spec (a brand's own) or from the footage itself
+let accent = SPEC.caption?.accent && SPEC.caption.accent !== 'video' ? SPEC.caption.accent : null;
+const words = WORDS.filter(w => w.t >= START - .01 && w.end <= END + .01);
+let CAP, list;
+
+// sound
+const AC = new AudioContext(), buf = {}, load = async (k, f) => { buf[k] = await AC.decodeAudioData(await (await fetch('../../../packages/engine/assets/' + f)).arrayBuffer()); };
+const SOUNDS = { typing: 'sfx-style1/typing.mp3', click: 'sfx/kenney.click.wav', whoosh: 'sfx-style1/woosh-tight.wav', pop: 'sfx/ui.pop.wav', chime: 'sfx/tonal.chime.wav', riser: 'sfx/riser-short.wav', hit: 'sfx/fs.impact.soft-hit.wav', snap: 'sfx-style1/finger-snap-tight.wav', drop: 'sfx/fs.foley.water-drop.wav', notify: 'sfx/tonal.notify.wav' };
+await Promise.all([load('bed', SPEC.music?.file || 'music/bed.mp3'), ...Object.entries(SOUNDS).map(([k, f]) => load(k, f))]).catch(e => console.warn(e));
+let SFX = [], bedSrc = null, bedGain = null, lastT = -1, playing = false;
+const playAt = (k, gain, offset = 0, dur) => { if (!buf[k]) return null; const s = AC.createBufferSource(), g = AC.createGain(); s.buffer = buf[k]; g.gain.value = gain; s.connect(g).connect(AC.destination); s.start(AC.currentTime, offset, dur); return { s, g }; };
+const startBed = () => { stopBed(); const r = playAt('bed', 0, (SPEC.music?.start ?? 2) + V.currentTime); if (r) { bedSrc = r.s; bedGain = r.g; } };
+const stopBed = () => { try { bedSrc && bedSrc.stop(); } catch {} bedSrc = null; };
+const beatAt = t => BEATS.findLast(b => t >= b.t0 - 1e-3) || BEATS[0];
+
+function frame(t) {
+  ctx.clearRect(0, 0, 1080, 1920); cc.clearRect(0, 0, 1080, 1920); for (const d of ov.children) d.style.display = 'none';
+  if (bedGain) bedGain.gain.value = (SPEC.music?.gain ?? .08) * (1 + .7 * win(t, END - 3, END - .3));
+  const b = beatAt(t); b.layers.forEach((L, i) => DEVICES[L.t].draw(L, t, b, b.state[i]));
+  if (CAP && !b.noCaption) drawCaption(cc, CAP, list, t, 1080, 1920);
+}
+function loop() {
+  let t = V.currentTime;
+  if (playing) { const c = CUTS.find(([a, b]) => t >= a && t < b - .02); if (c) { if (c[0] >= END - .02) { pause(); V.currentTime = START; } else { V.currentTime = c[1]; t = c[1]; } } }
+  if (playing && lastT >= 0 && t > lastT && t - lastT < .5) for (const [s, k, g, off, dur] of SFX) if (s > lastT && s <= t) playAt(k, g, off || 0, dur);
+  lastT = t; frame(t); $('tc').textContent = t.toFixed(2) + ' s'; if (!$('sc').matches(':active')) $('sc').value = String(Math.round((t - START) / (END - START) * 1000));
+  requestAnimationFrame(loop);
+}
+async function play() { $('gate').style.display = 'none'; AC.resume().catch(() => {}); if (V.currentTime < START || V.currentTime >= END - .05) V.currentTime = START; try { await V.play(); } catch { $('gate').style.display = ''; $('gate').textContent = 'tap again to play ▶'; return; } playing = true; startBed(); $('pp').textContent = 'Pause'; }
+function pause() { V.pause(); playing = false; stopBed(); $('pp').textContent = 'Play'; }
+$('pp').onclick = () => playing ? pause() : play(); $('gate').onclick = play;
+$('sc').oninput = e => { const t = START + +e.target.value / 1000 * (END - START); V.currentTime = t; lastT = t; if (playing) startBed(); };
+
+await new Promise(r => V.readyState >= 2 ? r() : V.addEventListener('loadeddata', r, { once: true }));
+await grab([...need, ...[.2, .4, .6, .8].map(k => START + k * (END - START))]);
+if (!accent) { const c = document.createElement('canvas'); c.width = 64; c.height = 112; const g = c.getContext('2d'), px = []; for (const s of [.2, .4, .6, .8].map(k => START + k * (END - START))) { const im = new Image(); im.src = STILLS[s]; await im.decode(); g.drawImage(im, 0, 0, 64, 112); px.push(...g.getImageData(0, 0, 64, 112).data); } accent = accentFromPixels(new Uint8ClampedArray(px)) || '#ffffff'; }
+document.documentElement.style.setProperty('--accent', accent);
+CAP = premiumCaption1(SPEC.caption?.variant || '1.1', accent); list = cards(words, CAP.maxWords);
+const quiet = s => BEATS.some(b => b.noCaption && s >= b.t0 && s < b.t1);
+SFX = [...ticks(list).filter(s => !quiet(s)).map((s, i) => [s, 'typing', .55, (i * .37) % 2.2, .06]), ...(SPEC.sfx || []).map(x => [at(x.at), x.k, x.g ?? .4])];
+await document.fonts.load('80px "Russo One"').catch(() => {});
+V.currentTime = START; await new Promise(r => V.addEventListener('seeked', r, { once: true }));
+window.__seek = async t => { V.currentTime = t; await new Promise(r => V.addEventListener('seeked', r, { once: true })); frame(t); };
+window.__ready = true; $('gate').textContent = 'tap to play ▶'; loop();
+</script></body></html>
