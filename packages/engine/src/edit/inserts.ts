@@ -153,7 +153,13 @@ export function faceCover(frame: Frame, face: { x0: number; x1: number; y0: numb
   return (ix * iy) / Math.max(1e-6, (face.x1 - face.x0) * (face.y1 - face.y0));
 }
 
-export interface CastInsertsOpts { src?: InsertSource; gap?: number; max?: number; seed?: number; libs?: InsertLib[] }
+export interface CastInsertsOpts {
+  src?: InsertSource; gap?: number; max?: number; seed?: number; libs?: InsertLib[];
+  /** D2.8 "swap the card": drawers not to use, and library pictures not to reuse; a type-only title card becomes a last resort for every beat */
+  avoid?: InsertDraw[]; avoidPics?: string[];
+  /** a swap keeps the old card's own window (it was already clear of the others) */
+  window?: [number, number];
+}
 
 /** Cast the edit's inserts from the two libraries, in place (appended to `e.inserts`); returns the trace. */
 export async function castInserts(e: Edl, o: CastInsertsOpts = {}): Promise<InsertTrace> {
@@ -165,7 +171,14 @@ export async function castInserts(e: Edl, o: CastInsertsOpts = {}): Promise<Inse
   // strongest beats first, then by time; a hook at the very start is the speaker's own moment
   beats.sort((x, y) => PRIORITY.indexOf(x.b.tag) - PRIORITY.indexOf(y.b.tag) || x.b.t0 - y.b.t0);
   const taken: { t0: number; t1: number; draw: InsertDraw; lib: InsertLib }[] = (e.inserts ?? []).map(x => ({ t0: x.t0, t1: x.t1, draw: 'title' as InsertDraw, lib: 's4' as InsertLib }));
-  const used = new Map<InsertDraw, number>(), usedPics = new Set<string>();
+  // drawn inserts already in the edit count toward "at most twice" and "never twice in a row" (a re-cast after an edit by words)
+  const placed = (e.inserts ?? []).filter(x => drawOf(x));
+  const used = new Map<InsertDraw, number>(), usedPics = new Set<string>(o.avoidPics ?? []);
+  for (const x of placed) { used.set(drawOf(x) as InsertDraw, (used.get(drawOf(x) as InsertDraw) ?? 0) + 1); const pic = (x.params as { pic?: string } | undefined)?.pic; if (pic) usedPics.add(pic); }
+  const draws = (want: { s1: InsertDraw[]; s4: InsertDraw[] }, lib: InsertLib): InsertDraw[] =>
+    // a swap may also say the line as a phone notification (Style 1) or a type-only title card (Editorial), the two drawers that fit any line
+    (o.avoid ? [...new Set([...want[lib], (lib === 's1' ? 'notify' : 'title') as InsertDraw])] : want[lib]).filter(d => !o.avoid?.includes(d));
+  const near = (t0: number, draw: InsertDraw) => nextToSame([...placed, ...out], t0, draw);
   const libCount = { s1: 0, s4: 0 };
   const out: NonNullable<Edl['inserts']> = [];
   const pending = [...beats];
@@ -173,24 +186,27 @@ export async function castInserts(e: Edl, o: CastInsertsOpts = {}): Promise<Inse
     // once one library has an insert, a beat the other library can serve comes next, so an edit shows both
     const missing = libs.filter(l => libCount[l] === 0);
     let at = 0;
-    if (out.length && missing.length) { const j = pending.findIndex(({ b }) => missing.some(l => INSERT_NEEDS[b.tag]![l].length)); if (j >= 0) at = j; }
+    if (out.length && missing.length) { const j = pending.findIndex(({ b }) => missing.some(l => draws(INSERT_NEEDS[b.tag]!, l).length)); if (j >= 0) at = j; }
     const { b } = pending.splice(at, 1)[0]!;
     if (out.length >= max) { trace.skipped.push({ t0: b.t0, tag: b.tag, why: 'enough inserts for this length' }); continue; }
     // the beat's window, kept clear of the inserts already placed (trimmed to fit, never shorter than 1.2 s)
     let t0 = r3(Math.max(b.t0 + 0.12, 0.8)), t1 = r3(Math.min(b.t1 + 0.2, t0 + 2.6, dur - 1));
-    for (const x of taken) { if (x.t0 >= t0 && t1 > x.t0 - gap) t1 = r3(x.t0 - gap); if (x.t0 < t0 && t0 < x.t1 + gap) t0 = r3(x.t1 + gap); }
-    if (t1 - t0 < 1.2) { trace.skipped.push({ t0: b.t0, tag: b.tag, why: taken.length ? 'too close to another insert' : 'beat too short or at the edge' }); continue; }
+    if (o.window) { t0 = r3(o.window[0]); t1 = r3(o.window[1]); }
+    else for (const x of taken) { if (x.t0 >= t0 && t1 > x.t0 - gap) t1 = r3(x.t0 - gap); if (x.t0 < t0 && t0 < x.t1 + gap) t0 = r3(x.t1 + gap); }
+    if (t1 - t0 < (o.window ? 0.5 : 1.2)) { trace.skipped.push({ t0: b.t0, tag: b.tag, why: taken.length ? 'too close to another insert' : 'beat too short or at the edge' }); continue; }
     const ws = b.word_idx.map(i => e.words[i]).filter(Boolean) as Edl['words'];
     const text = ws.map(w => w.text).join(' ');
     const want = INSERT_NEEDS[b.tag]!;
     // the libraries in turn: the one used less so far first, so two inserts come from both
-    const order = [...libs].filter(l => want[l].length).sort((a, c) => libCount[a] - libCount[c] || libs.indexOf(a) - libs.indexOf(c));
+    const order = [...libs].filter(l => draws(want, l).length).sort((a, c) => libCount[a] - libCount[c] || libs.indexOf(a) - libs.indexOf(c));
     let chosen: { lib: InsertLib; draw: InsertDraw; asset: string; why: string } | null = null;
     const titleRow = async () => (await src.inserts([...want.needs, 'quote', 'claim', 'idea'], 's4')).find(r => S4_TITLE.has(r.impl))?.id ?? FALLBACK.title;
     for (const lib of order) {
       const rows = await src.inserts(want.needs, lib);
-      for (const draw of want[lib]) {
-        if ((used.get(draw) ?? 0) >= 2 || nextToSame(out, t0, draw)) continue;
+      for (const draw of draws(want, lib)) {
+        if ((used.get(draw) ?? 0) >= 2 || near(t0, draw)) continue;
+        // a swap tries the next drawer when no new library picture fits this line, instead of giving up on the beat
+        if (o.avoid && draw === 'poster' && !pictures().some(p => !usedPics.has(p.key) && p.svg && pictureScore(p, text) >= 1.4)) continue;
         const row = lib === 's1' ? rows.find(r => S1_DRAW[r.impl] === draw) : rows.find(r => (draw === 'title' ? S4_TITLE : S4_POSTER).has(r.impl));
         chosen = { lib, draw, asset: row?.id ?? FALLBACK[draw], why: row ? `${src.source}: serves ${want.needs.join('/')} (${row.hits})` : 'library had no drawable set-up; fallback' };
         break;
@@ -205,8 +221,9 @@ export async function castInserts(e: Edl, o: CastInsertsOpts = {}): Promise<Inse
       let best: { key: string; s: number; svg: string } | null = null;
       for (const p of pictures()) { if (usedPics.has(p.key) || !p.svg) continue; const s = pictureScore(p, text); if (s > (best?.s ?? 0)) best = { key: p.key, s, svg: p.svg }; }
       if (best && best.s >= 1.4) { params.pic = best.key; params.svg = best.svg; usedPics.add(best.key); }
+      else if (o.avoid?.includes('title')) { trace.skipped.push({ t0: b.t0, tag: b.tag, why: 'no new library picture matched and the title card is the one being swapped' }); continue; }
       else { chosen.draw = 'title'; params.draw = 'title'; chosen.asset = await titleRow(); chosen.why += '; no library picture matched, type-only'; }
-      if ((used.get(chosen.draw) ?? 0) >= 2 || nextToSame(out, t0, chosen.draw)) { trace.skipped.push({ t0: b.t0, tag: b.tag, why: 'title card used twice already or next to one' }); continue; }
+      if ((used.get(chosen.draw) ?? 0) >= 2 || near(t0, chosen.draw)) { trace.skipped.push({ t0: b.t0, tag: b.tag, why: 'title card used twice already or next to one' }); continue; }
     }
     // frame: a card where it clears the face, else a full-frame cut-in; posters and titles are full-frame cut-ins
     let frame: Frame = 'full';
