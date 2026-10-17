@@ -53,7 +53,7 @@ Status: `[ ]` open, `[~]` in progress, `[x]` done (the commit is in LOG.md). **V
 | 21 | [ ] Same plan from 2 folders | two sessions, same answers, byte-identical EDL | e2e test | |
 | 22 | [ ] Junk CLAUDE.md has no effect | strict steps, server checks; manual check with the real `claude` | manual + schema test | P |
 | 23 | [ ] All 12 failure cases | each row of plan section 17 has a test or a manual check | tests + LOG.md | |
-| 24 | [ ] Online Claude Code first, key fallback after 120 s | lane switch mid job keeps the memo | unit + e2e | |
+| 24 | [x] Online Claude Code first, key fallback after 120 s | lane switch mid job keeps the memo; no key and no server model allowed: the step waits 10 min (`WAIT_MS`) for a `/moovi:run` in any window, then the job parks; a connected but never polled keyless user is linked, not refused | `packages/mcp/test/lanes.test.ts` (7, fake clocks), `engine/test/lane.test.ts` (wait lane) | |
 | 25 | [ ] VIGNESH: close mid job, reopen in another folder | the video finishes, nothing asked twice | manual sheet steps 9, 10, 11b | P |
 
 ## Phase 4: finish

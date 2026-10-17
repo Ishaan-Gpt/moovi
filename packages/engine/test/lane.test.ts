@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  BRAIN_AGENTS, BrainNotPickedUp, BrainWaiting, brainMode, LANE_ORDER, laneRuntime, NoModelForAgent, pickLane, PICKUP_MS, type LaneFacts, type Runtime,
+  BRAIN_AGENTS, BrainNotPickedUp, BrainWaiting, brainMode, LANE_ORDER, laneRuntime, NoModelForAgent, pickLane, PICKUP_MS, WAIT_MS, type LaneFacts, type Runtime,
 } from '../src/runtime';
 import { registerBrainScope, scopeFor } from '../src/keys';
 
@@ -88,4 +88,17 @@ test('lane 7: keys.scopeFor asks the registered brain scope first and survives i
     assert.equal(scopeFor('u-bridge'), null, 'a bridge fault falls back to the own key scope (none here)');
   } finally { registerBrainScope(null); }
   assert.equal(scopeFor('u-bridge'), null);
+});
+
+test('lane 24: the wait lane queues on the long-pickup bridge and parks only when nobody picks it up', async () => {
+  assert.ok(WAIT_MS > PICKUP_MS);
+  const log: string[] = [];
+  const brain = fake('brain', log, { fail: new BrainNotPickedUp('direct:edit', PICKUP_MS) });
+  const answers = laneRuntime({ facts: () => F({ claudeCode: 'online' }), brain, waitBrain: fake('wait', log) });
+  assert.equal(await answers.complete!(creq('direct:edit') as never), '{"from":"wait"}');
+  assert.deepEqual(log, ['brain:direct:edit', 'wait:direct:edit']);
+  const nobody = laneRuntime({ facts: () => F({ claudeCode: 'linked' }), brain, waitBrain: fake('wait', [], { fail: new BrainNotPickedUp('direct:edit', WAIT_MS) }) });
+  await assert.rejects(nobody.complete!(creq('direct:edit') as never), BrainWaiting);
+  const none = laneRuntime({ facts: () => F({ claudeCode: 'linked' }), brain });
+  await assert.rejects(none.complete!(creq('direct:edit') as never), BrainWaiting, 'without a wait bridge it parks at once, as before');
 });

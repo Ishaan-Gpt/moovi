@@ -34,9 +34,15 @@ Read this first if you are picking the work up. Updated by Tab after every item.
   `moovi_next` tell a second window "another window" between steps too. `queue.ts`: `held:<user>` list of picked
   steps, `picked()`, `repick()`: a dropped window's open step goes to the window that takes over (same step id, fresh
   answer window); the same window asking again gets its open step back. Tests: `packages/mcp/test/resume.test.ts`.
-- **Next item:** 24 (lane order with fake clocks; also the "wait" lane: queue the step and wait for a `/moovi:run`
-  instead of parking at once, and treat a linked but never polled user as linked), then 21, 22, 23. Item 19
-  (Vignesh's test) runs in parallel with `TEST-WITH-CLAUDE-CODE.md`.
+- **Item 24 done:** `runtime/lane.ts` `WAIT_MS` (10 min) and `LaneRuntimeOptions.waitBrain`: the wait lane (Claude
+  Code linked, no key, no server model allowed) queues the step on a second bridge with the long pickup window and
+  throws `BrainWaiting` (the job parks) only when nobody picks it up; `scope.ts` builds it (`bridge.waitMs`).
+  `Presence.link` + `hub.ts` prime hook: a user with a live token whose Claude Code never polled is `linked`, so a
+  keyless video started before `/moovi:run` waits instead of "add your API key" (MOOVI_BYOK=required). Tests:
+  `packages/mcp/test/lanes.test.ts` (fake clocks: 119 s no key call, 120 s key; server only under optional; wait then
+  pick up; park at 10 min; offline goes to the key at once; memo kept across a switch; token but never polled).
+- **Next item:** 21 (two windows, two videos, never cross; same video from 2 folders gives byte-identical answers), then
+  22 (junk CLAUDE.md), 23 (the failure table). Item 19 (Vignesh's test) runs in parallel.
 - **Item 12 tests** (`packages/mcp/test/bridge-e2e.test.ts`, 5): a stand-in Claude Code session (ticket, then pull and
   answer through the `Gate`) directs `directEdit` end to end inside `withModel(brainScope(...))`; a second window is
   turned away while the first holds the job, and a bad answer gets exactly one re-ask; no `/moovi:run` ticket means no

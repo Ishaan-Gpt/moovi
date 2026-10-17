@@ -4,7 +4,7 @@
  * detail calls to the user's own key or Moovi's server model. Presence: a session that pulled in the last 90 s is
  * online (`seen`), one that pulled before is linked.
  */
-import { laneRuntime, type LaneFacts, type ModelScope, type Runtime } from '@moovi/engine/runtime';
+import { laneRuntime, WAIT_MS, type LaneFacts, type ModelScope, type Runtime } from '@moovi/engine/runtime';
 import { BRIDGE_PROVIDER } from '@moovi/engine/brain';
 import { bridgeRuntime, type BridgeOptions } from './bridge';
 import type { StepQueue } from './queue';
@@ -32,6 +32,9 @@ export class Presence {
       void this.store.set(KEY.seen(user), String(t), SEEN_TTL_MS).catch(() => undefined);
     }
   }
+  /** a user who connected Claude Code (a live token) but whose Claude Code has not pulled yet counts as linked, so a
+   * keyless user's video waits for their /moovi:run instead of being refused (MOOVI_BYOK=required) */
+  link(user: string) { if (!this.seen.has(user)) this.seen.set(user, this.now() - ONLINE_MS - 1); }
   forget(user: string) { this.seen.delete(user); this.written.delete(user); void this.store?.del(KEY.seen(user)).catch(() => undefined); }
   /** read the shared reading (newest wins); a store that cannot be read leaves the local reading as it is */
   async prime(user: string): Promise<void> {
@@ -53,9 +56,11 @@ export function brainScope(o: {
 }): ModelScope | null {
   if (o.presence.state(o.user) === 'off') return null;
   const brain = bridgeRuntime({ queue: o.queue, user: o.user, job: o.job, ...(o.bridge ?? {}) });
+  // the wait lane: the same queue and memo, a longer pickup window (no key and no server model may take the call)
+  const waitBrain = bridgeRuntime({ queue: o.queue, user: o.user, job: o.job, ...(o.bridge ?? {}), pickupMs: o.bridge?.waitMs ?? WAIT_MS });
   const runtime = laneRuntime({
     facts: () => ({ claudeCode: o.presence.state(o.user), hasKey: !!o.own, server: !!o.server, byok: o.byok }),
-    brain, key: o.own?.runtime ?? null, server: o.server, ...(o.onLane ? { onLane: o.onLane } : {}),
+    brain, waitBrain, key: o.own?.runtime ?? null, server: o.server, ...(o.onLane ? { onLane: o.onLane } : {}),
   });
   const base = o.own ?? { models: { director: 'server', crew: 'server', fast: 'server' }, deadlineScale: 1, drawsWell: true };
   return { ...base, runtime, provider: BRIDGE_PROVIDER, ...(o.own?.audio ? { audio: o.own.audio } : {}) } as ModelScope;

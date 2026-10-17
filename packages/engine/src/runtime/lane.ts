@@ -7,7 +7,8 @@
  * same job (detail work) runs on the user's key or the server model, never on the user's Claude Code.
  *
  * A brain call Claude Code does not pick up within PICKUP_MS moves to the key (or the server) for that call; with no
- * other lane the job waits for Claude Code (BrainWaiting, the job parks; nothing is lost). `pickLane` is pure and
+ * other lane the step stays queued for Claude Code up to WAIT_MS (a /moovi:run in any window picks it up), then the
+ * job waits for Claude Code (BrainWaiting, the job parks; nothing is lost). `pickLane` is pure and
  * never throws; `laneRuntime` throws only the typed errors below. No I/O here: the bridge itself (packages/mcp) is the
  * `brain` runtime passed in.
  */
@@ -18,6 +19,11 @@ export type Lane = 'claude-code' | 'key' | 'server' | 'wait' | 'none';
 export const LANE_ORDER = ['claude-code', 'key', 'server'] as const;
 /** a brain step not picked up by the user's Claude Code within this long goes to the next lane (Ishaan: 120 s) */
 export const PICKUP_MS = 120_000;
+/**
+ * The wait lane (no key, no server model allowed, Claude Code linked): the step stays queued this long for a
+ * /moovi:run in any window before the job parks (plan sections 16 and 17: pickup 10 min, then park).
+ */
+export const WAIT_MS = 10 * 60_000;
 
 /** The only agents that may reach the user's Claude Code: the batched decision calls (plan 23.2). */
 export const BRAIN_AGENTS: ReadonlySet<string> = new Set(['direct:edit', 'direct:film', 'direct:look']);
@@ -78,6 +84,9 @@ export interface LaneRuntimeOptions {
   key?: Runtime | null;
   /** this machine's model */
   server?: Runtime | null;
+  /** the same bridge with the long pickup window (WAIT_MS): the wait lane queues the step here and parks only when
+   * nobody picks it up; without it the wait lane parks at once */
+  waitBrain?: Runtime | null;
   /** every lane decision, for the job's activity and LOG proofs */
   onLane?: (agent: string, lane: Lane, why: string) => void;
 }
@@ -95,7 +104,10 @@ export function laneRuntime(o: LaneRuntimeOptions): Runtime {
         continue;
       }
       o.onLane?.(agent, lane, why);
-      if (lane === 'wait') throw new BrainWaiting(agent);
+      if (lane === 'wait') {
+        if (!o.waitBrain) throw new BrainWaiting(agent);
+        try { return await go(o.waitBrain); } catch (e) { if (e instanceof BrainNotPickedUp) throw new BrainWaiting(agent); throw e; }
+      }
       if (lane === 'none') throw new NoModelForAgent(agent, why);
       try { return await go(of(lane)!); }
       catch (e) {
