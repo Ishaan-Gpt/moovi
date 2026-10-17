@@ -2,6 +2,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { metricsOf, validateEdl, type Edl, type EdlCut, type EdlRemoved, type EdlShotV0 } from './edl';
 import { castInserts, openInserts, type InsertDraw, type InsertSource } from './inserts';
+import { checkAndRepair } from '../review/runner';
 
 /**
  * D2.8, edit by words: "tighter", "less zoom", "swap the card at 0:12" change a finished EDL and the player replays it.
@@ -30,8 +31,12 @@ export type ReEditOp =
   | { op: 'swap' | 'drop' | 'add'; t: number }
   | { op: 'undo' };
 export interface ReEditStep { said: string; op: ReEditOp; did: string }
-export interface ReEditResult { edl: Edl; steps: ReEditStep[]; unknown: string[]; problems: string[]; ms: number; duration: { before: number; after: number } }
-export interface ReEditOpts { src?: InsertSource; /** quiet stretches in source seconds (the planner's quiet.json pauses) */ quiet?: [number, number][] }
+export interface ReEditResult { edl: Edl; steps: ReEditStep[]; unknown: string[]; problems: string[]; ms: number; duration: { before: number; after: number };
+  /** CHECK on the new EDL (review/): its score before and after the one repair, what the repair did, which version was kept */
+  review?: { before: number; after: number | null; repaired: string | null; kept: 'original' | 'repaired'; issues: string[] } }
+export interface ReEditOpts { src?: InsertSource; /** quiet stretches in source seconds (the planner's quiet.json pauses) */ quiet?: [number, number][];
+  /** CHECK on the edited EDL, on by default (false skips it); its repairs here move the caption, never drop a card the person asked for */
+  review?: boolean }
 
 const r3 = (x: number) => Math.round(x * 1000) / 1000;
 const CARD = '(?:card|insert|graphic|poster|overlay|pop[- ]?up|b-?roll|title)';
@@ -309,8 +314,16 @@ export async function reEdit(e0: Edl, words: string, o: ReEditOpts & { prev?: Ed
   // measured again only when the edit changed; an undo puts the old EDL back exactly as it was
   const same = (a: Edl, b: Edl) => JSON.stringify({ ...a, metrics: null }) === JSON.stringify({ ...b, metrics: null });
   if (e.metrics && !same(e, e0) && !(o.prev && JSON.stringify(e) === JSON.stringify(o.prev))) e.metrics = metricsOf(e, e.laws?.snap_ms);
+  let review: ReEditResult['review'];
+  const restored = !!o.prev && JSON.stringify(e) === JSON.stringify(o.prev);
+  if (o.review !== false && !same(e, e0) && !restored) {
+    const c = checkAndRepair(e, { config: { repairs: { dropDuplicate: false } } });
+    if (c.kept === 'repaired' && validateEdl(c.edl).problems.length === 0) e = c.edl;
+    const now = c.kept === 'repaired' ? c.after! : c.before;
+    review = { before: c.before.score, after: c.after ? c.after.score : null, repaired: c.repaired, kept: e === c.edl && c.kept === 'repaired' ? 'repaired' : 'original', issues: now.issues.slice(0, 8).map(i => i.msg) };
+  }
   const problems = validateEdl(e).problems;
-  return { edl: e, steps, unknown, problems, ms: Math.round(performance.now() - t0), duration: { before: r3(before), after: r3(e.shots.at(-1)!.t_out) } };
+  return { ...(review ? { review } : {}), edl: e, steps, unknown, problems, ms: Math.round(performance.now() - t0), duration: { before: r3(before), after: r3(e.shots.at(-1)!.t_out) } };
 }
 
 /**

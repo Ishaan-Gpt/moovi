@@ -72,7 +72,7 @@ function drawCaptions(t) {
   const k = c ? c.chunk : -1;
   if (k !== chunkKey) {
     chunkKey = k; cap.innerHTML = '';
-    cap.className = 'cap box-' + (ST.look.box || 'none');
+    cap.className = 'cap box-' + (ST.look.box || (E.style_laws && E.style_laws.caption_plate ? 'block' : 'none'));
     if (c) for (const w of c.words) { const el = document.createElement('span'); el.className = 'w'; el.textContent = EDIT.caseOf(w.text, w.key && ST.key ? ST.key.case : LK ? LK.casing : ST.font.case, !!(CW.words[w.i] && CW.words[w.i].role === 'title')); styleWord(el, w); cap.appendChild(el); }
     // a long key word never runs off the frame: its size comes down to fit (D2.2, FLABBERGASTING at XL)
     for (const el of cap.children) { const mw = W - 150; if (el.offsetWidth > mw) { const fs = parseFloat(getComputedStyle(el).fontSize); el.style.fontSize = Math.floor(fs * mw / el.offsetWidth) + 'px'; } }
@@ -102,7 +102,9 @@ function drawCaptions(t) {
   }
   cap.style.top = (cy * H).toFixed(1) + 'px';
 }
-const CAP_BASE = LK && LK.y !== null ? LK.y : EDIT.posY(ST.position);
+// CHECK's move repair (review/runner.ts) sets style_laws.caption_y; it wins over the style's place
+const CAP_Y = E.style_laws && typeof E.style_laws.caption_y === 'number' && E.style_laws.caption_y > 0 && E.style_laws.caption_y < 1 ? E.style_laws.caption_y : null;
+const CAP_BASE = CAP_Y !== null ? CAP_Y : LK && LK.y !== null ? LK.y : EDIT.posY(ST.position);
 cap.style.top = (CAP_BASE * H) + 'px';
 const STYLED_INS = /^(atlas|handmade|studio-minimal)$/.test(String(E.style_id || ''));
 const FRAME = { full: [0, 0, 1, 1], top_half: [0.04, 0.03, 0.92, 0.44], card_box: [0.12, 0.12, 0.76, 0.34], beside_head: [0.54, 0.16, 0.42, 0.26], top_band: [0.05, 0.035, 0.9, 0.13] };

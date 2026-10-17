@@ -2,6 +2,7 @@ import { buildEdl, type BuildInput, type Laws } from './build';
 import { checkMetrics, metricsOf, type Edl, type MetricBands } from './edl';
 import { EDIT, type Palette } from './lib';
 import { grades } from '../library/edit-styles';
+import type { ReviewOverride } from '../review/config';
 
 /**
  * D2.2: the style laws for Atlas, Handmade and Studio Minimal (R4, docs/agents/research/R4-edit-styles.md), as a pure
@@ -58,6 +59,8 @@ export interface StyleLaw {
   /** the library sound event per EDL sound event this style uses (R7 style_sfx) */
   sfx: Partial<Record<'insert_in' | 'cut' | 'number_hit' | 'riser' | 'flash' | 'end', string>>;
   end: 'name' | 'cta_comment' | 'logo';
+  /** CHECK's rules for this style (review/config.ts): any threshold here overrides the default; a kit does the same through style_laws.review */
+  review?: ReviewOverride;
 }
 
 export const STYLE_LAWS: Record<D22Style, StyleLaw> = {
@@ -225,7 +228,7 @@ export function applyStyle(e: Edl, id: D22Style, o: StyleOpts = {}): Edl {
   out.inserts = inserts.sort((a, b) => a.t0 - b.t0);
   out.overlays = overlays.sort((a, b) => a.t0 - b.t0);
   out.sfx = sfx.sort((a, b) => a.t - b.t);
-  (out as { style_laws?: unknown }).style_laws = { id, grade: grade ?? null, about: s.about, ...(hide.length ? { caption_hide: hide } : {}) };
+  (out as { style_laws?: unknown }).style_laws = { id, grade: grade ?? null, about: s.about, ...(hide.length ? { caption_hide: hide } : {}), ...(s.review ? { review: s.review } : {}) };
   out.metrics = metricsOf(out, out.laws?.snap_ms ?? 100);
   return out;
 }

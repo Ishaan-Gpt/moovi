@@ -3,6 +3,7 @@
 ## 2026-10-17 18:20 IST · main · (this push) · hackathon/graphhacks folder
 
 - Added hackathon/graphhacks/ (README, the Graph Hacks plan with the graph model and Cypher, LINKS.md listing every Graph Hacks media file with sha256; media stays out of git) so nothing from Tab's machine is lost. Vignesh's private crash backup of the full code is vigneshbs33/moovi. No code changed.
+- 2026-10-17 18:20 IST · main · CHECK (NORTH-STAR step 1) landed: packages/engine/src/review/ runs an anti-slop lint, contrast on real pixels, a dead-zone and collision map, then 1 review of up to 3 frames and at most 1 repair (move caption, backing plate, drop duplicate), best version ships, never blocks; default-on in renderEdl and reEdit; every threshold overridable through style_laws.review so kits plug in.
 
 ## 2026-10-17 12:55 IST · main · auto-pick: the effects, moves, styles and music choose themselves
 
