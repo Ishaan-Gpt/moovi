@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { project as P, run as runQ, SYS, sys as S } from '@moovi/graph';
 import { publish } from '../bus';
@@ -141,25 +141,30 @@ export const editReel: Handler = async ctx => {
   await publish(ctx.chat, { type: 'status', agent: 'editor', state: 'done', text: 'done', task: `${ctx.task.id}:editor` }).catch(() => undefined);
   const cut = pr.duration - t.duration;
   await ctx.say(`Here’s your edit, playing live: ${t.duration.toFixed(1)} s from ${pr.duration.toFixed(1)} s (${cut.toFixed(1)} s of pauses cut), ${edl.shots.length} shots, ${words.length} words captioned. Ready ${seconds.toFixed(1)} s after you sent it.`, 'video', { video: ctx.run.video, version, duration: t.duration, format: 'vertical', run: ctx.run.id, live: true, style: 'edit' }, 'moovi');
-  // the reel effects library, picked from what the clip says (edit/effects/auto.ts), as a second version over the clip itself
+  // the reel effects library, picked from what the clip says (edit/effects/auto.ts), baked into the edit itself: the
+  // plan's cut with the effects and the captions drawn over it (edit/effects/onedit.ts) becomes the delivered version,
+  // so the studio and the Claude Code bridge both get one finished video with the effects in it
   let fxVersion: number | null = null;
   const fx = fxFilmFor(plan);
   if (fx.go && plan.effects) {
     const names = [...new Set(plan.effects.events.map(e => FX[e.fx].label))];
-    await ctx.say(`I also picked ${names.length} effects from the library for what you say (${names.join(', ')}). Rendering that version now; the live edit above is yours meanwhile.`, 'note', undefined, 'moovi');
+    await ctx.say(`Adding ${names.length} effects from the library to your edit (${names.join(', ')}). The finished video follows in a few minutes; the live preview above is yours meanwhile.`, 'note', undefined, 'moovi');
     try {
       const lines = fxLines(words.map(w => ({ word: w.word, t: w.t, end: w.end }))).map(l => l.text);
       const bed = await fxMusic(lines, plan.source.duration, ctx.signal ? { signal: ctx.signal } : {});
-      const { renderFxFilm } = await import('../edit/effects/render');
+      const restored = await plan.restore.catch(() => null), cleaned = await plan.voice.catch(() => null);
+      const { renderEditFx } = await import('../edit/effects/onedit');
       const v2 = version + 1, file = join(vdir, `v${v2}.mp4`);
-      const r = await renderFxFilm({ video: u.path, out: file, work: join(dir, 'fx-work'), events: plan.effects.events, words: words.map(w => ({ word: w.word, t: w.t, end: w.end })), voice: 'clip', music: bed ? { file: bed.file } : null });
-      await ctx.q(P.setVideo, { id: ctx.run.video, status: 'ready', path: file, poster, duration: +r.seconds.toFixed(2), version: v2, style: 'fx', format: 'vertical', at: Date.now() });
+      const r = await renderEditFx({ video: restored?.file && existsSync(restored.file) ? restored.file : u.path, shots: edl.shots, events: plan.effects.events,
+        words: words.map(w => ({ word: w.word, t: w.t, end: w.end })), out: file, work: join(dir, 'fx-work'), audio: plan.source.hasAudio !== false, voice: cleaned?.file ?? null, music: bed ? { file: bed.file } : null });
+      const used = [...new Set(r.events.map(e => FX[e.fx].label))];
+      await ctx.q(P.setVideo, { id: ctx.run.video, status: 'ready', path: file, poster, duration: +r.seconds.toFixed(2), version: v2, style: 'edit+fx', format: 'vertical', at: Date.now() });
       await publish(ctx.chat, { type: 'video', video: { id: ctx.run.video, status: 'ready', version: v2, duration: +r.seconds.toFixed(2), format: 'vertical' } });
-      await ctx.say(`Here’s the effects version: ${names.join(', ')}${bed ? `, music: ${bed.pick.track.title}` : ''}.`, 'video', { video: ctx.run.video, version: v2, duration: +r.seconds.toFixed(2), format: 'vertical', run: ctx.run.id, style: 'fx' }, 'moovi');
+      await ctx.say(`Here’s your finished edit with effects: ${used.join(', ')}${bed ? `, music: ${bed.pick.track.title}` : ''}.`, 'video', { video: ctx.run.video, version: v2, duration: +r.seconds.toFixed(2), format: 'vertical', run: ctx.run.id, style: 'edit+fx' }, 'moovi');
       fxVersion = v2;
     } catch (e) {
-      console.warn(`[edit] effects film: ${String((e as Error).message ?? e).slice(0, 200)}`);
-      await ctx.say('The effects version did not render this time; the live edit above stands.', 'note', undefined, 'moovi');
+      console.warn(`[edit] effects edit: ${String((e as Error).message ?? e).slice(0, 200)}`);
+      await ctx.say('The effects did not render onto the edit this time; the live edit above stands.', 'note', undefined, 'moovi');
     }
   }
   const vids = await ctx.q<{ video: string }>(P.videos), chats = await ctx.q<{ id: string }>(P.chats);

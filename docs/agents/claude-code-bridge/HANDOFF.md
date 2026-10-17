@@ -117,8 +117,13 @@ Read this first if you are picking the work up. Updated by Tab after every item.
 ## Gotchas
 
 - Speech needs no key since Oct 18: with no Groq/OpenAI key (or when the provider refuses) `hear()` runs Whisper locally
-  (`audio/local-stt.ts`, transformers.js, 77 MB model downloaded once to `data/models`). `MOOVI_STT=off` turns it off;
+  (`audio/local-stt.ts`, transformers.js, whisper-large-v3-turbo at 4 bit, about 760 MB downloaded once to
+  `data/models`; a 30 s clip heard in about 26 s on 4 CPU cores). `MOOVI_STT_LOCAL_MODEL=onnx-community/whisper-small_timestamped`
+  is the lighter one (250 MB, 3x faster, more misheard words on accented speech). `MOOVI_STT=off` turns it off;
   then an edit of a talking clip stops with "Moovi needs a speech key to hear your clip" (no more silent 0-word edits).
+- Effects are inside the edit since Oct 18: an edit job (`router/edit.ts`) plays the live preview, then delivers ONE
+  finished video: the plan's cut with 3 to 5 library effects (`edit/effects`, picked from the kept words) and the captions
+  (white, keyword yellow, dark outline) drawn over it (`edit/effects/onedit.ts`). `MOOVI_FX=off` skips it (preview only).
 - A fresh FalkorDB has no `craft` graph until `pnpm graph:reset`; reads on it are empty (no error since Oct 17), so the
   edit runs plainer (no library sounds, camera moves, why links). Seed it.
 - Claude Code HTTP tool calls: first byte within 60 s, abort after 5 min idle without progress. Long poll 45 s max.

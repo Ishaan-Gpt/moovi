@@ -45,14 +45,18 @@ export async function openFx(o: { graph?: boolean } = {}): Promise<FxSource> {
 }
 
 export interface FxLine { words: FxWord[]; text: string; t0: number; t1: number }
-/** Spoken words -> lines: a line closes at sentence punctuation or a pause over `gap` seconds. */
+const CLAUSE = new Set(['and', 'because', 'which', 'so', 'but', 'then', 'while', 'where']);
+/** Spoken words -> lines: a line closes at sentence punctuation, a pause over `gap` seconds, or a clause once it runs 2.6 s. */
 export function fxLines(words: FxWord[], gap = 0.6): FxLine[] {
   const out: FxLine[] = []; let cur: FxWord[] = [];
   const close = () => { if (cur.length) out.push({ words: cur, text: cur.map(w => w.word).join(' '), t0: cur[0]!.t, t1: cur[cur.length - 1]!.end }); cur = []; };
   words.forEach((w, i) => {
     cur.push(w);
     const next = words[i + 1];
-    if (/[.!?]$/.test(w.word) || (next && next.t - w.end > gap)) close();
+    // a long run-on sentence ("...and you will love it because it will edit...") splits at its clauses, so a 10 s
+    // sentence gets more than one beat (measured 2026-10-18: one effect for 10 s of Vignesh's selfie)
+    const long = cur.length > 3 && w.end - cur[0]!.t >= 2.6 && !!next && (/,$/.test(w.word) || CLAUSE.has(next.word.toLowerCase().replace(/[^a-z]/g, '')));
+    if (/[.!?]$/.test(w.word) || (next && next.t - w.end > gap) || long) close();
   });
   close();
   return out;
@@ -96,15 +100,15 @@ export const HEAD_FX: ReadonlySet<FxId> = new Set<FxId>(['orbit']);
 
 /**
  * Pick the effects a clip's words call for. Every line's needs go to the source; the best effect not used yet (and
- * not the one before it) becomes that line's cue. At most `max` effects, and lines closer than `spacing` seconds to
+ * not the one before it) becomes that line's cue. At most `max` effects (default one per 5 s, 3 to 5: a reel with more reads as noise), and lines closer than `spacing` seconds to
  * the last pick are left plain (an effect per beat, not per word); the house rules hold on the result.
  */
 export async function autoFx(words: FxWord[], o: { src?: FxSource; max?: number; spacing?: number; total?: number; faces?: { src_t: number }[] } = {}): Promise<AutoFx> {
   // the footage side: with face samples (edit/look.ts) the head swirl only goes where a face is on screen, and wins a
   // hook or people line that has one; without samples (the look step did not run) the words alone decide
   const faceIn = (l: FxLine) => !o.faces || o.faces.some(f => f.src_t >= l.t0 - 0.75 && f.src_t <= l.t1 + 0.75);
-  const src = o.src ?? catalogueFx(), lines = fxLines(words), max = o.max ?? Math.max(2, Math.min(7, Math.round((o.total ?? (words.at(-1)?.end ?? 0)) / 5)));
-  const spacing = o.spacing ?? 2.4, used = new Set<FxId>(), cues: FxCue[] = [], picks: AutoFx['picks'] = [];
+  const src = o.src ?? catalogueFx(), lines = fxLines(words), max = o.max ?? Math.max(3, Math.min(5, Math.round((o.total ?? (words.at(-1)?.end ?? 0)) / 5)));
+  const spacing = o.spacing ?? 1.2, used = new Set<FxId>(), cues: FxCue[] = [], picks: AutoFx['picks'] = [];
   let last: FxId | null = null, lastT = -Infinity;
   for (let i = 0; i < lines.length && cues.length < max; i++) {
     const l = lines[i]!;

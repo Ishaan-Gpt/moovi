@@ -59,7 +59,7 @@ export function effectsRuntime(D: FxRuntimeData) {
   .glass{background:rgba(12,12,12,.72);border:2px solid rgba(255,255,255,.16);border-radius:34px;box-shadow:0 30px 70px rgba(0,0,0,.5),0 0 60px rgba(242,181,29,.18);backdrop-filter:blur(18px)}
   .pill{position:absolute;padding:14px 30px;border-radius:999px;font-weight:800;font-size:40px;letter-spacing:.02em}
   #cap{position:absolute;left:60px;right:60px;text-align:center;font-weight:900;font-size:84px;line-height:1.02;letter-spacing:-.01em;color:#fff;
-    text-shadow:0 6px 24px rgba(0,0,0,.55),0 2px 4px rgba(0,0,0,.6);text-transform:lowercase}
+    -webkit-text-stroke:10px rgba(0,0,0,.9);paint-order:stroke fill;text-shadow:0 6px 24px rgba(0,0,0,.55),0 2px 4px rgba(0,0,0,.6);text-transform:lowercase}
   #cap .k{color:${GOLD};display:inline-block;margin:0 .14em}
   #title{position:absolute;left:50%;top:120px;transform:translateX(-50%);padding:16px 34px;border-radius:999px;background:rgba(10,10,10,.78);
     border:2px solid rgba(255,216,74,.55);color:#fff;font-weight:800;font-size:40px;white-space:nowrap}

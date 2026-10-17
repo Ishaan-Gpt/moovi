@@ -17,6 +17,7 @@ import { BRIDGE_PROVIDER, directEdit, overridesOf } from './direct';
 import type { Direction } from './direct.schema';
 import { modelScope } from '../runtime';
 import { autoFx, openFx, type AutoFx } from './effects/auto';
+import { srcToEdit } from './effects/onedit';
 import { EDIT, type PlayerEdl } from './lib';
 import { keepTextInFrame, lookText } from './burned';
 import { lookFaces } from './look';
@@ -304,7 +305,9 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
   let effects: AutoFx | null = null;
   if (!rough && !sc && o.effects !== false && words.length >= 6) {
     try {
-      effects = await autoFx(words.map(w => ({ word: w.word, t: w.t, end: w.end })), { src: await openFx(), total: pr.duration, ...(look.faces.length ? { faces: look.faces } : look.why ? {} : { faces: [] }) });
+      // picked from the words the cut keeps (a slate or a retake the edit removed never gets an effect), on the source clock
+      const kept = words.filter(w => srcToEdit(edl.shots, w.t) !== null);
+      effects = await autoFx((kept.length >= 6 ? kept : words).map(w => ({ word: w.word, t: w.t, end: w.end })), { src: await openFx(), total: edl.shots.at(-1)?.t_out ?? pr.duration, ...(look.faces.length ? { faces: look.faces } : look.why ? {} : { faces: [] }) });
       writeFileSync(join(dir, 'effects.json'), JSON.stringify(effects, null, 1));
     } catch (e) { stopIfDown(e, 'edit: effects'); console.warn(`[edit] effects: ${String((e as Error).message ?? e).slice(0, 160)}`); effects = null; }
   }
