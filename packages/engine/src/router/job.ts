@@ -1,6 +1,7 @@
 import { copyFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { project as P, run as runQ, SYS, sys as S } from '@moovi/graph';
+import { CRAFT, project as P, run as runQ, SYS, sys as S, whyCraft as WC } from '@moovi/graph';
+import { noteDecision, wordsCause } from '../why';
 import { publish } from '../bus';
 import { probe, sh } from '../bench';
 import { config } from '../config';
@@ -99,6 +100,11 @@ async function autoLive(ctx: Parameters<Handler>[0], brief: string) {
   if (kit) {
     reel = { ...reel, kit: { id: kit.id, name: kit.name, palette: kit.palette } };
     console.log(`[auto ${ctx.run.id}] kit ${kit.id}: ${kit.covered} of ${kit.of} needs (${kit.hits} part hits)`);
+    // "why this kit?" (decision 13): the brief's words and the reference reel that taught the kit
+    const refs = await runQ<{ ref: string; title: string }>(CRAFT, WC.kitOrigins, { kit: kit.id });
+    await noteDecision(((q: never, p?: Record<string, unknown>) => ctx.q(q, p)) as never, ctx.run.id, { kind: 'kit', agent: 'moovi', choice: `the ${kit.name} kit`, why: `${kit.covered} of ${kit.of} needs served`,
+      causes: [wordsCause(`brief:${ctx.run.id}`, brief, 'the needs read from the brief'), { label: 'Rule', id: 'rule:kit:covers', text: 'a kit that serves at least three of the needs in the brief, and half of them, dresses the inserts', how: `${kit.covered} of ${kit.of}` },
+        ...refs.map(r => ({ label: 'Reference' as const, id: r.ref, text: r.title, how: 'taught the kit' }))] });
     await ctx.say(`The brief fits the ${kit.name} kit (${kit.covered} of its ${kit.of} needs): its colours dress the library inserts.`, 'note', { kit: kit.id, covered: kit.covered, of: kit.of }, 'moovi');
   }
   return styleReel(Object.create(ctx, { input: { value: () => reel } }) as typeof ctx);
