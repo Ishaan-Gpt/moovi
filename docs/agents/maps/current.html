@@ -1,0 +1,777 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}</style>
+<title>Moovi Decision Tree</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a blueprint sheet. Toolbar on top, a pan/zoom drawing on the left, the node's file card on the right (stacked on phones). Black and white only. */
+:root {
+  --bg: #ffffff; --ink: #0a0a0a; --mute: #666666; --soft: #f2f2f2; --hair: #d4d4d4; --grid: #ececec;
+  --f-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0b0b0b; --ink: #f3f3f3; --mute: #9b9b9b; --soft: #171717; --hair: #333333; --grid: #161616; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #0b0b0b; --ink: #f3f3f3; --mute: #9b9b9b; --soft: #171717; --hair: #333333; --grid: #161616; color-scheme: dark }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 14px; }
+.app { height: 100%; display: flex; flex-direction: column; }
+header { padding-block: 14px 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); border-bottom: 1px solid var(--ink); display: flex; flex-direction: column; gap: 10px; }
+.titlerow { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; }
+h1 { font-family: var(--f-display); font-weight: 600; font-size: 22px; letter-spacing: 0.01em; margin: 0; text-wrap: balance; }
+.meta { font-family: var(--f-mono); font-size: 11.5px; color: var(--mute); letter-spacing: 0.02em; }
+.bar { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+.grp { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-width: 0; }
+.lab { font-family: var(--f-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--mute); margin-right: 2px; }
+button { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--ink); border-radius: 0; padding: 5px 10px; cursor: pointer; font-size: 12.5px; line-height: 1.2; }
+button:hover { background: var(--soft); }
+button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+button:focus-visible, .node:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.zoom button { width: 32px; padding: 5px 0; font-family: var(--f-mono); }
+main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 390px; }
+.stage { position: relative; min-width: 0; min-height: 0; overflow: hidden; touch-action: none; cursor: grab; background-color: var(--bg);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 24px 24px; }
+.stage.drag { cursor: grabbing; }
+svg#map { width: 100%; height: 100%; display: block; user-select: none; }
+.hint { position: absolute; left: max(12px, env(safe-area-inset-left, 0px)); bottom: 12px; font-family: var(--f-mono); font-size: 11px; color: var(--mute); background: var(--bg); border: 1px solid var(--hair); padding: 4px 8px; pointer-events: none; }
+aside { border-left: 1px solid var(--ink); overflow-y: auto; min-width: 0; padding-block: 18px 28px; padding-left: 20px; padding-right: max(20px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 14px; }
+aside h2 { font-family: var(--f-display); font-weight: 600; font-size: 21px; line-height: 1.15; margin: 0; text-wrap: balance; }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.chip { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; border: 1px solid var(--ink); padding: 2px 6px; }
+.chip.inv { background: var(--ink); color: var(--bg); }
+.chip.dash { border-style: dashed; }
+.sec { display: flex; flex-direction: column; gap: 6px; }
+.sec h3 { font-family: var(--f-mono); font-weight: 500; font-size: 10.5px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--mute); margin: 0; border-bottom: 1px solid var(--hair); padding-bottom: 4px; }
+.sec p { margin: 0; line-height: 1.55; max-width: 62ch; }
+table.rules { border-collapse: collapse; width: 100%; font-size: 13px; }
+table.rules td { border-top: 1px solid var(--hair); padding: 6px 4px 6px 0; vertical-align: top; line-height: 1.4; }
+table.rules td:first-child { width: 52%; color: var(--mute); padding-right: 10px; }
+table.rules td:last-child { font-weight: 500; }
+ul.files { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+ul.files li { font-family: var(--f-mono); font-size: 12px; overflow-wrap: anywhere; }
+.links { display: flex; flex-direction: column; gap: 4px; }
+.links button { text-align: left; border-color: var(--hair); display: flex; gap: 8px; justify-content: space-between; }
+.links button span:last-child { font-family: var(--f-mono); font-size: 11px; color: var(--mute); white-space: nowrap; }
+ol.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 3px; line-height: 1.4; }
+ol.steps button { border: 0; padding: 0; text-align: left; background: none; text-decoration: underline; text-decoration-color: var(--hair); text-underline-offset: 3px; }
+.legend { display: grid; grid-template-columns: 34px 1fr; gap: 8px 10px; align-items: center; font-size: 13px; }
+.legend svg { width: 34px; height: 20px; }
+/* drawing */
+.node { cursor: pointer; }
+.node .shape { fill: var(--bg); stroke: var(--ink); stroke-width: 1.2; }
+.node.decision .shape { stroke-width: 2; }
+.node.graph .shape { stroke-dasharray: 6 4; stroke-width: 1.5; }
+.node.out .shape { fill: var(--ink); }
+.node.out text { fill: var(--bg); }
+.node.ref .shape { stroke-dasharray: 1.5 3; stroke-width: 1.6; stroke-linecap: round; }
+.node.stop .shape { stroke-width: 3; }
+.node.jump .shape { stroke-width: 1.2; }
+.node.offmain .shape { stroke-dasharray: 2 3; }
+.node text { fill: var(--ink); }
+.node .tt { font-family: var(--f-display); font-weight: 600; font-size: 15px; }
+.node .ts { font-family: var(--f-body); font-size: 12px; }
+.node .tg { font-family: var(--f-mono); font-size: 9.5px; letter-spacing: 0.08em; }
+.node .tr { font-family: var(--f-body); font-size: 11.5px; }
+.node .trk { font-family: var(--f-mono); font-size: 11px; }
+.node .rule { stroke: var(--hair); stroke-width: 1; }
+.node.out .rule { stroke: var(--mute); }
+.node:hover .shape { stroke-width: 2.4; }
+.node.sel .shape { stroke-width: 3.2; }
+.edge path { fill: none; stroke: var(--ink); stroke-width: 1.2; }
+.edge text { font-family: var(--f-mono); font-size: 11px; fill: var(--ink); paint-order: stroke; stroke: var(--bg); stroke-width: 4px; stroke-linejoin: round; }
+.edge.hot path { stroke-width: 2.6; }
+.uses path { fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-dasharray: 2 4; stroke-linecap: round; }
+.lane-title { font-family: var(--f-display); font-weight: 600; font-size: 28px; fill: var(--ink); letter-spacing: 0.01em; }
+.lane-sub { font-family: var(--f-mono); font-size: 12px; fill: var(--mute); }
+.lane-rule { stroke: var(--ink); stroke-width: 1; }
+.band { font-family: var(--f-mono); font-size: 12px; letter-spacing: 0.12em; fill: var(--mute); }
+.dim { opacity: 0.14; }
+@media (prefers-reduced-motion: no-preference) { .node, .edge, .dim { transition: opacity 160ms ease; } }
+@media (max-width: 860px) {
+  .app { height: auto; }
+  main { grid-template-columns: 1fr; }
+  .stage { height: 64vh; }
+  aside { border-left: 0; border-top: 1px solid var(--ink); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+}
+</style>
+
+<div class="app">
+  <header>
+    <div class="titlerow">
+      <h1>Moovi, from a message to a video</h1>
+      <span class="meta" id="counts"></span>
+    </div>
+    <div class="bar">
+      <div class="grp" role="group" aria-label="Try a message">
+        <span class="lab">Try a message</span>
+        <button id="p-words" data-path="words" aria-pressed="false">“a 30 s video about coffee”</button>
+        <button id="p-link" data-path="link" aria-pressed="false">“a video for cal.com”</button>
+        <button id="p-clip" data-path="clip" aria-pressed="false">clip + “edit this”</button>
+        <button id="p-style" data-path="style" aria-pressed="false">Dark Vox + a link</button>
+        <button id="p-copy" data-path="copy" aria-pressed="false">clip + “make one like this video”</button>
+      </div>
+    </div>
+    <div class="bar">
+      <div class="grp" role="group" aria-label="Lanes">
+        <span class="lab">Lane</span>
+        <button id="l-all" data-lane="all" aria-pressed="true">All</button>
+        <button id="l-auto" data-lane="auto" aria-pressed="false">Auto</button>
+        <button id="l-edit" data-lane="edit" aria-pressed="false">Your clip</button>
+        <button id="l-style" data-lane="style" aria-pressed="false">Picked style</button>
+        <button id="l-crew" data-lane="crew" aria-pressed="false">Old crew</button>
+        <button id="l-refs" data-lane="refs" aria-pressed="false">References</button>
+      </div>
+      <div class="grp" role="group" aria-label="Show">
+        <span class="lab">Light up</span>
+        <button id="t-graph" data-flag="graph" aria-pressed="false">Graph reads</button>
+        <button id="t-model" data-flag="model" aria-pressed="false">Model calls</button>
+        <button id="t-off" data-flag="off" aria-pressed="false">Not reached</button>
+      </div>
+      <div class="grp zoom" role="group" aria-label="Zoom">
+        <button id="z-in" title="Zoom in">+</button>
+        <button id="z-out" title="Zoom out">−</button>
+        <button id="z-fit" title="Fit everything" style="width:auto;padding:5px 10px;font-family:var(--f-body)">Fit</button>
+      </div>
+    </div>
+  </header>
+  <main>
+    <div class="stage" id="stage">
+      <svg id="map" role="img" aria-label="Moovi's decision tree from a chat message to a finished video"></svg>
+      <div class="hint">drag to move · scroll or pinch to zoom · click a box</div>
+    </div>
+    <aside id="panel" aria-live="polite"></aside>
+  </main>
+</div>
+
+<script>
+// ---------- the content: every box, from the code on main (fc051c4) ----------
+const X = { top: 1600, auto: 520, autoL: 200, autoR: 880, edit: 1240, editA: 1140, editB: 1410, editR: 1580, style: 1960, styleR: 2300, crew: 2680, crewR: 3010 };
+const LANES = {
+  top: 'Entry and router', auto: 'Auto', edit: 'Your clip', style: 'Picked style', crew: 'Old crew', refs: 'References'
+};
+const N = [
+  // entry
+  { id: 'start', lane: 'top', x: X.top, top: 150, kind: 'start', t: 'You send a message', s: 'words, a link, a clip, maybe a style',
+    d: 'You type in the studio chat: plain words, a link, or words with an uploaded clip, and you may pick a style from the menu. The studio only sends a command; the engine worker does all the work. A command is one of five types: brief, message, answer, stop, feedback.',
+    files: ['apps/studio (chat box)', 'packages/engine/src/chat.ts · handleCommand'] },
+  { id: 'key', lane: 'top', x: X.top, after: 'start', kind: 'decision', t: 'Model key missing?', s: 'only when keys are required',
+    rules: [['MOOVI_BYOK=required and you have no key', 'Moovi asks for a key and stops'], ['optional (the live server)', 'go on: your key, else the server’s Groq model']],
+    d: 'Work that needs a model waits for a key only when the server requires one. The live server runs optional, so this is normally "no". If your key is refused or out of quota mid-job, that call retries on the server’s model (withServerFallback).',
+    files: ['packages/engine/src/chat.ts · handleCommand', 'packages/engine/src/keys.ts'] },
+  { id: 'keyY', lane: 'top', x: X.styleR, row: 'key', kind: 'stop', w: 240, t: 'Asks for your key', s: 'nothing starts',
+    d: 'Moovi replies: add your own API key in Settings (Gemini and Groq have free keys), then send again.', files: ['packages/engine/src/chat.ts'] },
+  { id: 'kind', lane: 'top', x: X.top, after: 'key', kind: 'decision', t: 'What kind of message?', s: 'a brief goes to the router',
+    rules: [['brief (asks for a video)', 'the router below'], ['message, answer, stop, feedback', 'handled on the side']],
+    d: 'A brief is a request for a video. Everything else is chat, an answer to a question Moovi asked, a stop, or feedback buttons.',
+    files: ['packages/engine/src/chat.ts · handle'] },
+  { id: 'other', lane: 'top', x: X.styleR, row: 'kind', kind: 'rules', w: 300, graph: true, t: 'Other messages', s: '',
+    rules: [['message', 'talk.ts: questions, @mentions, change requests'], ['answer', 'resumes the task that asked'], ['stop', 'cancels the run, kills its processes'], ['feedback', 'saved to feedback memory']],
+    d: 'Change requests in chat re-run work only on crew films; the live styles and the edit have no chat edit yet. Feedback (chose / turned down) is written to the feedback memory in FalkorDB, and the crew’s match step reads it next time.',
+    files: ['packages/engine/src/talk.ts', 'packages/engine/src/memory.ts · recordFeedback'] },
+
+  // router chain
+  { id: 'd1', lane: 'top', x: X.auto, top: 0, kind: 'decision', w: 250, t: 'Auto picked?', s: 'check 1 of 4',
+    rules: [['you picked “Auto” in the style menu', 'Auto lane, even with uploads'], ['anything else', 'check 2']],
+    d: 'routeCombined runs first. Auto needs some text to work from (your script, your words or the link); with none it falls through to the next check.',
+    files: ['packages/engine/src/router/job.ts · routeCombined'] },
+  { id: 'd2', lane: 'top', x: X.autoR, row: 'd1', kind: 'decision', w: 250, t: 'Plain brief?', s: 'check 2: no style, no upload',
+    rules: [['no style, no upload, and Auto is the default', 'Auto lane'], ['MOOVI_DEFAULT_STYLE=crew', 'skips Auto'], ['a style or an upload', 'check 3']],
+    d: 'Auto is the default for a plain brief (MOOVI_DEFAULT_STYLE is “combined” unless set to “crew”).',
+    files: ['packages/engine/src/router/job.ts · routeCombined, combinedIsDefault'] },
+  { id: 'd3', lane: 'top', x: X.edit, row: 'd1', kind: 'decision', w: 250, t: 'A clip to edit?', s: 'check 3',
+    rules: [['MOOVI_EDIT=crew, or a style picked, or no upload', 'check 4'], ['words ask to copy a style (“like this video”, “in the style of”, “make one like”)', 'check 4 (ends in the old crew)'], ['no video among the uploads', 'check 4'], ['otherwise', 'Your clip lane; a caption style you name (e.g. punch-duo) is used']],
+    d: 'editTarget is a pure function: it picks the first uploaded video and reads a caption style id from your words.',
+    files: ['packages/engine/src/router/edit.ts · editTarget, routeEdit'] },
+  { id: 'd4', lane: 'top', x: X.style, row: 'd1', kind: 'decision', w: 250, t: 'A style picked?', s: 'check 4',
+    rules: [['Style 1, Editorial, Clear Signal, Dark Vox, Anatomy or Clip Moment', 'Picked-style lane, 9:16, uploads ignored'], ['no style', 'Old crew']],
+    d: 'A picked style runs as one “style-reel” job. Uploads sent with a picked style are not used. Anything that reaches here with no style goes to the old crew.',
+    files: ['packages/engine/src/chat.ts · handle'] },
+
+  // Auto lane
+  { id: 'a1', lane: 'auto', x: X.auto, after: 'd1', gap: 90, kind: 'decision', t: 'MP4 instead of live?', s: 'MOOVI_AUTO_RENDER',
+    rules: [['MOOVI_AUTO_RENDER=mp4', 'the mixed MP4 film'], ['default (live, the server)', 'live preview path']],
+    d: 'Auto normally plays live. The MP4 switch runs Vignesh’s mixed film instead.', files: ['packages/engine/src/router/job.ts · combinedReel'] },
+  { id: 'a1y', lane: 'auto', x: X.autoL, row: 'a1', kind: 'step', w: 210, model: true, t: 'Mixed MP4 film', s: 'a look per beat',
+    d: 'combinedFilm: the director writes beats, then each beat gets the look that fits it (Style 1, Dark Vox, Anatomy, real footage, the globe, a 3D prop), with voices, footage, word captions, scenes and a final cut. It wants about 8 GB; on the 2 GB server its segments time out (over 12 minutes).',
+    files: ['packages/engine/src/router/film.ts · combinedFilm'] },
+  { id: 'a1o', lane: 'auto', x: X.autoL, after: 'a1y', kind: 'out', w: 210, t: 'MP4 file', s: 'minutes per film',
+    d: 'The film is saved as v<n>.mp4 with a poster, and Moovi posts the timings per stage.', files: ['packages/engine/src/router/job.ts'] },
+  { id: 'a2', lane: 'auto', x: X.auto, after: ['a1', 'a1o'], kind: 'decision', t: 'A link in the brief?', s: 'a URL or a domain',
+    rules: [['a URL, or a domain like cal.com (.com .io .ai .app .dev .co .org .net .so .xyz .in)', 'pick the style from the words'], ['no link', 'the director writes a script']],
+    d: 'Only a regex decides this. A domain without https:// counts.', files: ['packages/engine/src/router/job.ts · autoLive, DOMAIN'] },
+  { id: 'a2y', lane: 'auto', x: X.autoR, row: 'a2', kind: 'rules', w: 270, t: 'Style for a link', s: 'urlStyleFor, first match wins',
+    rules: [['story, fable, tale, history, journey, founder', 'Dark Vox'], ['how it works, architecture, under the hood, system, product', 'Anatomy'], ['essay, idea, why, metaphor, calm', 'Editorial'], ['list, steps, explain(er), clear, simple', 'Clear Signal'], ['none of these', 'Style 1']],
+    d: 'Keyword matching on your words, in this order. No model, and the reason is not shown to you.', files: ['packages/engine/src/router/job.ts · urlStyleFor'] },
+  { id: 'a3', lane: 'auto', x: X.auto, after: 'a2', kind: 'step', model: true, t: 'Director writes the script', s: 'one model call',
+    d: 'direct(): one model call returns beats, each with what is said, its kind (quote, story, number…), stock-footage searches, places and a voice. Length comes from your words (e.g. “30 s”). Moovi says: “I write the script first, then pick the style.”',
+    files: ['packages/engine/src/router/film.ts · direct, secsOf'] },
+  { id: 'a4', lane: 'auto', x: X.auto, after: 'a3', kind: 'rules', w: 290, t: 'Style for the script', s: 'autoPickFor',
+    rules: [['story words in the brief, or 3+ beats are quotes or stories', 'Dark Vox'], ['half the lines or more name things stock footage shows (score ≥ 0.5)', 'Clip Moment'], ['otherwise', 'Anatomy']],
+    d: 'The Clip Moment score is the share of lines with a visual noun, plus a small bonus for numbers and a closing question. The reason is written only to the server log. The brand is the first three words of the script’s title (not used for Clip Moment).',
+    files: ['packages/engine/src/router/job.ts · autoPickFor, autoStyleFor', 'packages/engine/src/edit/templates/clip-moment-plan.ts · pickClipMoment'] },
+  { id: 'a5', lane: 'auto', x: X.auto, after: ['a4', 'a2y'], kind: 'step', t: 'Find the brief’s needs', s: 'code, no model',
+    d: 'detectNeeds reads each script line (or the brief itself for a link) and lists what the film needs to show (a comparison, a number, a list…), most frequent first.',
+    files: ['packages/engine/src/styles/kit/kits.ts · briefNeeds', 'packages/engine/src/styles/kit/needs.ts'] },
+  { id: 'a6', lane: 'auto', x: X.auto, after: 'a5', kind: 'decision', graph: true, t: 'Does a kit fit?', s: 'kitsServing',
+    rules: [['the best kit covers 3+ needs and at least half of them', 'use that kit'], ['no kit clears the bar, or the graph takes over 4 s', 'nothing changes']],
+    d: 'Asks FalkorDB which reference kit’s parts serve those needs. Auto never waits on a look: if the graph is down, it is “no kit”.',
+    files: ['packages/engine/src/styles/kit/kits.ts · matchKit', 'packages/graph/src/queries/library.ts · kitsServing, kitParts'] },
+  { id: 'a6y', lane: 'auto', x: X.autoR, row: 'a6', kind: 'step', w: 250, graph: true, t: 'Add the kit’s colours', s: 'palette only',
+    d: 'Only the kit’s palette roles (ink, paper, accent, accent2) go along. They colour the library inserts the style borrows. The kit’s motion, type, cards and layout are not used. Moovi says “The brief fits the … kit”.',
+    files: ['packages/engine/src/styles/kit/kits.ts · kitInsertPalette', 'packages/engine/src/styles/kit/borrow.ts'] },
+  { id: 'a7', lane: 'auto', x: X.auto, after: ['a6', 'a6y'], kind: 'jump', t: 'Runs the chosen style', s: '→ Picked-style lane', goto: 's1',
+    d: 'Auto hands the chosen style, the link or script, the brand and the kit to the same style-reel job a picked style uses. From here it continues in the Picked-style lane at “Read the style’s memory”.',
+    files: ['packages/engine/src/router/job.ts · autoLive → styleReel'] },
+
+  // Your clip lane
+  { id: 'e1', lane: 'edit', x: X.edit, after: 'd3', gap: 90, kind: 'step', t: 'Measure the clip', s: 'probe',
+    d: 'Copies the clip into the edit folder and reads its length, size, frame rate and audio. A file with no video stream stops here with an error. Moovi says what it will do: cut the pauses, punch in on each new thought, caption every word.',
+    files: ['packages/engine/src/edit/job.ts · planEdit', 'packages/engine/src/router/edit.ts · editReel'] },
+  { id: 'e2a', lane: 'edit', x: X.editA, after: 'e1', kind: 'rules', w: 250, model: true, t: 'Hear every word', s: 'speech-to-text',
+    rules: [['no audio, or no speech key', 'no words: no word cuts, no captions (you’re told)'], ['the language', 'locked: MOOVI_STT_LANG, else your brief’s script, else English'], ['no language named', 'an unlocked pass runs too and may re-lock (e.g. Hindi)'], ['the gate fails', 'retry unlocked, keep the better, warn you']],
+    d: 'Whisper with a locked language, in pieces for long clips, with a names prompt (Moovi, Ishaan, MOOVI_VOCAB). The gate checks words per voiced second, the share of words in the locked script, and agreement with an accurate text pass.',
+    files: ['packages/engine/src/edit/hear.ts · hear, lockLanguage, relock, gate'] },
+  { id: 'e2b', lane: 'edit', x: X.editB, row: 'e2a', kind: 'rules', w: 230, t: 'Find the face and text', s: 'at the same time',
+    rules: [['face found', 'boxes for crops and punch-ins'], ['no model or no face', 'framed without faces'], ['subtitles burned into the clip', 'kept; Moovi draws none over them']],
+    d: 'OpenCV’s YuNet face detector run in Node (no Python), on about 28 sampled frames, and a check for text already burned into the picture.', files: ['packages/engine/src/edit/look.ts · lookFaces', 'packages/engine/src/edit/burned.ts · lookText'] },
+  { id: 'e3', lane: 'edit', x: X.edit, after: ['e2a', 'e2b'], kind: 'step', t: 'Find the pauses', s: 'loudness, not words',
+    d: 'A loudness envelope; pauses of 0.3 s or more are measured against the clip’s own noise floor.', files: ['packages/engine/src/edit/cut.ts · envelope, pauses'] },
+  { id: 'e3s', lane: 'edit', x: X.edit, after: 'e3', kind: 'rules', w: 300, t: 'Which edit style?', s: 'pickEditStyle, first match wins',
+    rules: [['your words name Atlas, Handmade or Studio Minimal', 'that style'], ['the clip has burned-in subtitles', 'Studio Minimal'], ['minimal, clean, premium, brand, logo, sleek', 'Studio Minimal'], ['vlog, street, travel, story time, handwritten', 'Handmade'], ['explain, news, data, tips, finance, tech', 'Atlas'], ['the clip says 3+ numbers', 'Atlas'], ['a city or travel story', 'Handmade'], ['otherwise', 'Base']],
+    d: 'Keyword and content rules, no model. The pick and its reason are written to style.json and posted as a note.',
+    files: ['packages/engine/src/edit/styles.ts · pickEditStyle', 'packages/engine/src/edit/job.ts'] },
+  { id: 'e4', lane: 'edit', x: X.edit, after: 'e3s', kind: 'rules', w: 300, t: 'Plan the edit (EDL)', s: 'pure code',
+    rules: [['set-up talk before “start”, “action”… or a long opening pause', 'cut; the take starts after'], ['a pause over 0.4 s', 'cut to 0.18 s of air'], ['um, uh, er…', 'cut with its air'], ['every cut', 'within 100 ms of a word edge'], ['new sentence, jump cut, or 2.6 s held', 'new framing on the face'], ['landscape clip', 'whole, over a blurred fill'], ['a style was picked', 'its own laws: numbers, camera, caption, palette, grade']],
+    d: 'Base runs buildEdl (laws from Tab’s R4 references). Atlas, Handmade and Studio Minimal run styledEdl with their own measured laws. Same input, same plan.',
+    files: ['packages/engine/src/edit/build.ts · buildEdl', 'packages/engine/src/edit/styles.ts · styledEdl'] },
+  { id: 'e5', lane: 'edit', x: X.edit, after: 'e4', kind: 'decision', t: 'Is the plan valid?', s: 'validateEdl',
+    rules: [['the builder failed or the EDL does not validate', 'simple cut instead'], ['valid', 'cast from the library']],
+    d: 'A safety net so you always get an edit.', files: ['packages/engine/src/edit/job.ts', 'packages/engine/src/edit/edl.ts · validateEdl'] },
+  { id: 'e5n', lane: 'edit', x: X.editR, row: 'e5', kind: 'step', w: 210, t: 'Simple cut', s: 'roughEdl, no library',
+    d: 'The stand-in plan. You are told “this is the simple cut”. It skips casting, moves, inserts and effects.', files: ['packages/engine/src/edit/rough.ts · roughEdl'] },
+  { id: 'e6', lane: 'edit', x: X.edit, after: 'e5', kind: 'rules', w: 290, graph: true, t: 'Cast from the library', s: 'per beat',
+    rules: [['Base', 'camera moves that SERVE the needs, sfx by event, footage-safe transitions'], ['a style', 'only the sound files for its events (its laws chose framing and cuts)'], ['FalkorDB down', 'the same rows from the catalogue file']],
+    d: 'Writes cast.json with what was picked per beat and why.',
+    files: ['packages/engine/src/edit/cast.ts · castEdl', 'packages/engine/src/edit/styles.ts · castStyleSfx'] },
+  { id: 'e7', lane: 'edit', x: X.edit, after: 'e6', kind: 'decision', t: 'Did casting break it?', s: '',
+    rules: [['the EDL is invalid after casting', 'undo the cast'], ['fine', 'keep it']],
+    d: 'Each layer added to the plan is checked again and rolled back if it broke it (the same rule for moves and inserts).', files: ['packages/engine/src/edit/job.ts'] },
+  { id: 'e7y', lane: 'edit', x: X.editR, row: 'e7', kind: 'step', w: 210, t: 'Undo the cast', s: 'plain plan kept',
+    d: 'The plan from before casting is restored.', files: ['packages/engine/src/edit/job.ts'] },
+  { id: 'e7m', lane: 'edit', x: X.edit, after: ['e7', 'e7y'], kind: 'step', t: 'X1 moves', s: 'on the beats they suit',
+    d: 'The moves a style asks for (or an automatic pick) from the nine X1 effects, placed on suitable beats. Undone if they break the plan.', files: ['packages/engine/src/edit/moves.ts'] },
+  { id: 'e7i', lane: 'edit', x: X.edit, after: 'e7m', kind: 'step', graph: true, t: 'Inserts', s: 'Style 1 cards, Editorial posters',
+    d: 'Pieces from the generation styles cast onto beats that call for them. Undone if they break the plan.', files: ['packages/engine/src/edit/inserts.ts', 'packages/engine/src/edit/inserts-draw.ts'] },
+  { id: 'e8', lane: 'edit', x: X.edit, after: 'e7i', kind: 'rules', w: 280, t: 'Captions', s: '',
+    rules: [['the clip has burned-in subtitles', 'none added'], ['you named a caption style', 'that one'], ['a style', 'its own caption'], ['Base', 'captionseasy look 12 → nearest of the player’s 11 styles']],
+    d: 'Captions come from captionseasy and the 11 player styles (R8 research), not from the graph.',
+    files: ['packages/engine/src/edit/looks.ts', 'packages/engine/src/edit/captions.ts'] },
+  { id: 'e8f', lane: 'edit', x: X.edit, after: 'e8', kind: 'rules', w: 280, graph: true, t: 'Pick reel effects', s: 'for what the clip says',
+    rules: [['fewer than 6 words', 'none'], ['otherwise', 'effects from the 16-effect library where the words call for them (e.g. head swirl on a face)']],
+    d: 'Saved as effects.json on the source clock; they play in the effects version, not in the live edit.', files: ['packages/engine/src/edit/effects/auto.ts', 'packages/engine/src/edit/effects/catalog.ts'] },
+  { id: 'e9', lane: 'edit', x: X.edit, after: 'e8f', kind: 'rules', w: 280, t: 'Clean voice and picture', s: 'beside the preview',
+    rules: [['voice', 'ffmpeg chain to −14 LUFS'], ['every clip', 'your grade LUT baked in'], ['a weak clip (low resolution or bitrate)', 'deblocked, cleaned, upscaled to 1080, sharpened']],
+    d: 'Both run beside the preview, so they never hold the first frame; the player switches to the cleaned files when ready.',
+    files: ['packages/engine/src/edit/voice.ts', 'packages/engine/src/edit/restore.ts'] },
+  { id: 'e10', lane: 'edit', x: X.edit, after: 'e9', kind: 'out', t: 'Live edit preview', s: 'nothing encoded',
+    d: 'The edit player plays the plan over your clip in the browser. Moovi reports the length, pauses cut, shots, words and time to ready.',
+    files: ['packages/engine/src/edit/page.ts', 'packages/engine/src/router/edit.ts'] },
+  { id: 'e12', lane: 'edit', x: X.edit, after: 'e10', kind: 'decision', t: 'Effects version too?', s: 'fxFilmFor',
+    rules: [['MOOVI_FX=off', 'no'], ['fewer than 2 effects fit', 'no'], ['no speaker on screen', 'no'], ['longer than 90 s', 'no'], ['otherwise', 'render it']],
+    d: 'A second version over the clip itself, with the effects and a music bed picked for the words.', files: ['packages/engine/src/router/edit.ts · fxFilmFor'] },
+  { id: 'e13', lane: 'edit', x: X.editR, row: 'e12', kind: 'out', w: 220, t: 'Effects version', s: 'MP4, minutes',
+    d: 'Rendered frame by frame with music; posted as the next version. If it fails, the live edit stands.', files: ['packages/engine/src/edit/effects/render.ts', 'packages/engine/src/edit/effects/music.ts'] },
+  { id: 'e11', lane: 'edit', x: X.editR, row: 'e7m', kind: 'step', offmain: true, w: 220, t: 'Edit by words + CHECK', s: 'on main, not in the studio',
+    d: 'Edit by words (reedit.ts) re-plans the EDL in milliseconds and runs CHECK: lint, collision map, contrast on real pixels, up to 3 frames, at most one repair, best version ships. CHECK also runs on edit MP4 renders. Today only scripts and tests call them; the studio does not.',
+    files: ['packages/engine/src/edit/reedit.ts', 'packages/engine/src/review/runner.ts', 'packages/engine/scripts/reedit.ts'] },
+
+  // Picked style lane
+  { id: 's0', lane: 'style', x: X.style, after: 'd4', gap: 90, kind: 'rules', w: 290, t: 'Which style runs', s: 'one style-reel job',
+    rules: [['Style 1', 'explainer short'], ['Editorial (s4)', 'essay; 258 pictures'], ['Clear Signal (s5)', 'lists and steps'], ['Dark Vox', 'stories; 53 set-ups on a paper stage'], ['Anatomy', 'isometric technical figures'], ['Clip Moment', 'stock clips per line']],
+    d: 'runStyle is the one code path that both the terminal scripts and the studio job call. Auto joins here with the style it picked.',
+    files: ['packages/engine/src/tasks/reel.ts · styleReel', 'packages/engine/src/styles/run.ts · runStyle'] },
+  { id: 's1', lane: 'style', x: X.style, after: 's0', kind: 'rules', w: 280, graph: true, t: 'Read the style’s memory', s: 'styles graph',
+    rules: [['Style 1 or Clip Moment', 'skipped'], ['other styles', 'recent set-ups loaded, so this film differs'], ['FalkorDB down', 'a loud stop']],
+    d: 'loadMemory(style) reads what this style used in its recent films; flushMemory writes the new film back at the end.',
+    files: ['packages/engine/src/styles/run.ts', 'packages/engine/src/styles/kit/library.ts · loadMemory'] },
+  { id: 's2', lane: 'style', x: X.style, after: 's1', kind: 'step', t: 'Read the site or script', s: 'fetch + screenshots',
+    d: 'With a link it fetches and reads the site and captures shots for the visuals; with a script it takes your lines as they are.', files: ['packages/engine/src/styles/<style>.ts'] },
+  { id: 's3', lane: 'style', x: X.style, after: 's2', kind: 'step', model: true, t: 'Write the brief', s: 'one model call + doctor',
+    d: 'One model call fills the style’s fixed slots; a deterministic script doctor fixes weak-model mistakes. On Groq, Style 1 gets a shortlisted template menu so it fits 8k tokens a minute.',
+    files: ['packages/engine/src/styles/<style>.ts'] },
+  { id: 's4', lane: 'style', x: X.style, after: 's3', kind: 'step', t: 'Record the voice', s: 'Edge TTS + word times',
+    d: 'Edge TTS reads each line with word timings, up to 4 lines at once. The motion lands on these word times.', files: ['packages/engine/src/audio'] },
+  { id: 's5', lane: 'style', x: X.style, after: 's4', kind: 'rules', w: 290, t: 'Cast each beat', s: 'the style’s own set-ups',
+    rules: [['score', 'needs overlap + slot fit + role fit − repeats + small jitter'], ['nothing fits well', 'improvise a new set-up; good ones are saved'], ['the model’s hints', 'a bonus, never required']],
+    d: 'Set-ups come from the style’s own library in code, not from the library graph. Repeats in this film and in this style’s recent films lose points, so two films of one site differ.',
+    files: ['packages/engine/src/styles/kit/library.ts · cast', 'packages/engine/src/styles/kit/compose.ts'] },
+  { id: 's6', lane: 'style', x: X.style, after: 's5', kind: 'decision', t: 'A weak beat?', s: 'Editorial, Dark Vox only',
+    rules: [['Editorial or Dark Vox, and the best set-up is weak or improvised', 'borrow a library insert'], ['other styles, or a strong match', 'no insert']],
+    d: 'Style 1, Clear Signal, Anatomy and Clip Moment never borrow.', files: ['packages/engine/src/styles/kit/borrow.ts · borrowFor', 'packages/engine/src/styles/s4.ts', 'packages/engine/src/styles/darkvox.ts'] },
+  { id: 's6y', lane: 'style', x: X.styleR, row: 's6', kind: 'rules', w: 260, graph: true, t: 'Borrow an insert', s: 'assetsServing (ui)',
+    rules: [['how often', 'at most 1 in 3 beats, never two in a row'], ['never', 'on the end card, or the same piece twice'], ['numbers or lists', 'only where the line says them']],
+    d: 'A 2D card, chart or icon badge from the library graph lands on the beat’s first word with the beat’s own words. Auto’s kit palette colours it. Recorded as (Scene)-[:USES_ARTIFACT].',
+    files: ['packages/engine/src/styles/kit/borrow.ts', 'packages/engine/src/styles/kit/liblayer.ts'] },
+  { id: 's7', lane: 'style', x: X.style, after: ['s6', 's6y'], kind: 'rules', w: 280, graph: true, t: 'Sound and music', s: 'one mixer for all styles',
+    rules: [['each sound event', 'first-choice sfx from assetsForEvent'], ['graph down', 'the map.json copy'], ['music', 'a fixed bed file, not the graph']],
+    d: 'Mixed to −14 LUFS. The music bed is the Kevin MacLeod CC-BY track shipped in engine assets.',
+    files: ['packages/engine/src/audio/sounds.ts · castSounds', 'packages/engine/src/audio/mix.ts'] },
+  { id: 's8', lane: 'style', x: X.style, after: 's7', kind: 'out', t: 'Live preview', s: '13–48 s on the server',
+    d: 'The style’s own browser player plays the film; nothing is encoded. Moovi posts it the moment it plays.', files: ['packages/engine/src/styles/serve.ts'] },
+  { id: 's9', lane: 'style', x: X.style, after: 's8', kind: 'step', graph: true, t: 'Sheet, poster, memory', s: 'after it plays',
+    d: 'A contact sheet (one still per beat), a poster from the middle still, the film written to the style’s memory, and borrowed inserts recorded in the project graph.',
+    files: ['packages/engine/src/tasks/reel.ts', 'packages/engine/src/styles/kit/library.ts · flushMemory'] },
+  { id: 's10', lane: 'style', x: X.style, after: 's9', kind: 'step', offmain: true, t: 'Lens review', s: 'uncommitted, on your disk',
+    d: 'Code checks on one still per beat and on the beat map, with a 60 s deadline; it posts a note and never fails the film. The CHECK layer itself is on main (src/review/), but wiring it into the styles exists only as uncommitted changes in the main folder (tasks/reel.ts).',
+    files: ['packages/engine/src/review/ (untracked)', 'packages/engine/src/tasks/reel.ts (modified)'] },
+
+  // Old crew lane
+  { id: 'c1', lane: 'crew', x: X.crew, after: 'd4', gap: 90, kind: 'step', t: 'Intake', s: 'reads brief + uploads',
+    d: 'Reads the brief and measures the uploads; decides whether a clip is footage to edit or a reference to copy.', files: ['packages/engine/src/tasks/intake.ts · intake'] },
+  { id: 'c2', lane: 'crew', x: X.crew, after: 'c1', kind: 'decision', t: 'Edit it or copy it?', s: '',
+    rules: [['unclear', 'asks you, waits'], ['clear', 'go on']],
+    d: 'When intake cannot tell, the run parks on a question with two buttons.', files: ['packages/engine/src/tasks/intake.ts · matchStyle'] },
+  { id: 'c2y', lane: 'crew', x: X.crewR, row: 'c2', kind: 'stop', w: 220, t: 'Asks you', s: 'edit · copy its style',
+    d: '“Is this clip footage you want me to edit, or a video whose style you want me to copy?” Your answer resumes the run.', files: ['packages/engine/src/tasks/intake.ts'] },
+  { id: 'c3', lane: 'crew', x: X.crew, after: ['c2', 'c2y'], kind: 'decision', t: '“Like the previous one”?', s: '',
+    rules: [['yes', 'reuse the last video’s style and card'], ['no', 'match a style']],
+    d: 'The project’s last finished video sets the style and its style card; the script is new.', files: ['packages/engine/src/tasks/intake.ts'] },
+  { id: 'c3y', lane: 'crew', x: X.crewR, row: 'c3', kind: 'step', w: 220, t: 'Reuse its style', s: 'and its card',
+    d: 'Skips matching; keeps the earlier video’s style and writes fresh.', files: ['packages/engine/src/tasks/intake.ts'] },
+  { id: 'c4', lane: 'crew', x: X.crew, after: 'c3', kind: 'rules', w: 280, graph: true, model: true, t: 'Match a style', s: '',
+    rules: [['the brief is unclear', 'one fast model call picks 1–3 intents'], ['you turned a style down before', 'that style is skipped'], ['result', 'Style 1, or a one-off “unique” card']],
+    d: 'A rule-based match on the brief’s features; feedback memory in FalkorDB steers it away from styles you rejected.',
+    files: ['packages/engine/src/tasks/intake.ts · matchStyle', 'packages/skills/src/match'] },
+  { id: 'c5', lane: 'crew', x: X.crew, after: ['c4', 'c3y'], kind: 'step', model: true, t: 'Playbook', s: 'plan → card → script → voice',
+    d: 'The matched style’s playbook spawns tasks: plan, research, study, the Art Director’s card, script or transcribe, voice, storyboard.',
+    files: ['packages/engine/src/tasks/intake.ts · playbookSpecs', 'packages/engine/src/tasks/director.ts', 'packages/engine/src/tasks/script.ts'] },
+  { id: 'c6', lane: 'crew', x: X.crew, after: 'c5', kind: 'step', model: true, t: 'Hunt assets, build shots', s: 'loops',
+    d: 'The asset hunter finds footage (licences in the graph); shot builders write each scene and check rendered stills, in loops.',
+    files: ['packages/engine/src/tasks/hunter.ts', 'packages/engine/src/tasks/builder.ts'] },
+  { id: 'c7', lane: 'crew', x: X.crew, after: 'c6', kind: 'rules', w: 260, t: 'Render', s: 'minutes',
+    rules: [['default', 'the bundled renderer'], ['MOOVI_RENDERER=visual', 'Vignesh’s visual renderer']],
+    d: 'The slow part.', files: ['packages/engine/src/tasks/editor.ts · render', 'packages/engine/src/visual/crew.ts'] },
+  { id: 'c8', lane: 'crew', x: X.crew, after: 'c7', kind: 'step', t: 'Lens check, sound, mux', s: '',
+    d: 'Lens reviews the render (the only lane that checks its result on main), then sound and mux.', files: ['packages/engine/src/tasks/lens.ts', 'packages/engine/src/tasks/editor.ts'] },
+  { id: 'c9', lane: 'crew', x: X.crew, after: 'c8', kind: 'out', t: 'MP4 file', s: '≈ 20 min for 30 s',
+    d: 'Measured 19.7 minutes on a 30 s clip (and it transcribed that clip as Urdu), which is why uploads now go to the edit lane.', files: ['packages/engine/src/tasks/editor.ts · deliver'] },
+  { id: 'c10', lane: 'crew', x: X.crew, after: 'c9', kind: 'step', graph: true, t: 'Keeper', s: 'saves what you liked',
+    d: 'Writes what you chose or turned down to the feedback memory for the next film.', files: ['packages/engine/src/tasks/keeper.ts'] },
+];
+
+const REFS = [
+  { id: 'r1', t: 'The library graph', s: '≈ 960 assets, 15 kinds', uses: ['e6', 'e7i', 'e8f', 's6y', 's7', 'a6'],
+    d: 'About 960 (:Asset) nodes (voice, sfx, music, caption, transition, effect, camera, ui, 3d…), each with SERVES need edges, SUITS weights per style, a licence and runtime ids. Nine of its read queries are not called anywhere: styleCast, assetsForStyle, transitionForCut, resolveAsset, assetCredits, assetKits, referenceParts, references, assetById.',
+    files: ['packages/graph/src/queries/library.ts', 'docs/LIBRARY.md'] },
+  { id: 'r2', t: 'Your clones R1–R5', s: 'kits in the graph', uses: ['a6', 'a6y'],
+    d: 'Reels you sent, cloned as live canvas films with ishaan-motion, judged blind (best R3 at 7.6), broken into parts and saved as kits and (:Reference)-[:HAS_PART] nodes. A user’s video gets only their palette, through Auto.',
+    files: ['packages/library/src/kits/', 'data/refs/r*/clone-motion/'] },
+  { id: 'r3', t: 'ishaan-motion skill', s: 'motion laws', uses: ['r2'],
+    d: 'Used to make the clones and the grade presets. No lane reads it while making a user’s video.', files: ['.claude/skills/ishaan-motion/'] },
+  { id: 'r4', t: 'Tab’s R4 references', s: 'E1–E6, I1–I6', uses: ['e3s', 'e4'],
+    d: 'Reels measured into numbers. They became the base edit laws (pause, punch-in, snap) and the Atlas, Handmade and Studio Minimal styles, all on main.', files: ['docs/agents/research/R4*', 'packages/engine/src/edit/build.ts'] },
+  { id: 'r5', t: 'Caption research', s: 'R8 + captionseasy', uses: ['e8'],
+    d: 'The 11 player caption styles came from the R8 research; the 99 looks come from the captionseasy npm package.', files: ['packages/engine/src/edit/captions.ts', 'packages/engine/src/edit/looks.ts'] },
+  { id: 'r6', t: 'Each style’s set-ups', s: 'in code', uses: ['s0', 's5'],
+    d: 'Every style has its own set-up library in code (Editorial 258 pictures, Dark Vox 53 set-ups…). They are not in the library graph.', files: ['packages/engine/src/styles/', 'packages/engine/src/darkvox/'] },
+  { id: 'r7', t: 'Style memory', s: 'styles graph', uses: ['s1', 's5', 's9'],
+    d: 'What each style used in its recent films, so the next one differs.', files: ['packages/graph (STYLES graph)'] },
+  { id: 'r8', t: 'Feedback memory', s: 'what you chose', uses: ['other', 'c4', 'c10'],
+    d: 'Feedback buttons and Keeper write here; only the crew’s match step reads it. Auto ignores it.', files: ['packages/engine/src/memory.ts'] },
+  { id: 'r9', t: 'Launch l01–l12', s: 'not on main', offmain: true, uses: [],
+    d: '12 promptsmotion and motion.so launch films broken down into a new Launch style. Uncommitted work on ishaan/launch-style; best film 5.50 against the reference’s 7.88. No lane reaches it yet.',
+    files: ['ishaan/launch-style (worktree moovi-launch)', 'docs/LAUNCH.md'] },
+  { id: 'r10', t: 'Teardowns', s: 'docs only', offmain: true, uses: [],
+    d: 'OpenDesign, Cardboard and promptsmotion: what to take is written down; none of it is in the code path yet.',
+    files: ['docs/agents/research/opendesign-inspiration.md', 'docs/agents/research/cardboard-inspiration.md', 'docs/agents/research/promptsmotion-inspiration.md'] },
+];
+
+const E = [
+  ['start', 'key'], ['key', 'keyY', 'yes', 'h'], ['key', 'kind', 'no'], ['kind', 'other', 'other', 'h'], ['kind', 'd1', 'a brief'],
+  ['d1', 'a1', 'yes'], ['d1', 'd2', 'no', 'h'], ['d2', 'a1', 'yes'], ['d2', 'd3', 'no', 'h'], ['d3', 'e1', 'yes'], ['d3', 'd4', 'no', 'h'], ['d4', 's0', 'yes'], ['d4', 'c1', 'no', 'rd'],
+  ['a1', 'a1y', 'mp4', 'hl'], ['a1y', 'a1o'], ['a1', 'a2', 'live'], ['a2', 'a2y', 'link', 'h'], ['a2', 'a3', 'words'], ['a3', 'a4'], ['a4', 'a5'], ['a2y', 'a5', '', 'dl'],
+  ['a5', 'a6'], ['a6', 'a6y', 'yes', 'h'], ['a6', 'a7', 'no'], ['a6y', 'a7', '', 'dl'],
+  ['e1', 'e2a'], ['e1', 'e2b'], ['e2a', 'e3'], ['e2b', 'e3'], ['e3', 'e3s'], ['e3s', 'e4'], ['e4', 'e5'], ['e5', 'e5n', 'no', 'h'], ['e5', 'e6', 'yes'],
+  ['e6', 'e7'], ['e7', 'e7y', 'yes', 'h'], ['e7', 'e7m', 'no'], ['e7y', 'e7m', '', 'dl'], ['e7m', 'e7i'], ['e7i', 'e8'], ['e5n', 'e8', '', 'via'], ['e8', 'e8f'], ['e8f', 'e9'], ['e9', 'e10'], ['e10', 'e12'], ['e12', 'e13', 'yes', 'h'],
+  ['s0', 's1'], ['s1', 's2'], ['s2', 's3'], ['s3', 's4'], ['s4', 's5'], ['s5', 's6'], ['s6', 's6y', 'yes', 'h'], ['s6', 's7', 'no'], ['s6y', 's7', '', 'dl'], ['s7', 's8'], ['s8', 's9'], ['s9', 's10'],
+  ['c1', 'c2'], ['c2', 'c2y', 'unclear', 'h'], ['c2', 'c3', 'clear'], ['c2y', 'c3', 'answered'], ['c3', 'c3y', 'yes', 'h'], ['c3', 'c4', 'no'], ['c4', 'c5'], ['c3y', 'c5', '', 'dl'],
+  ['c5', 'c6'], ['c6', 'c7'], ['c7', 'c8'], ['c8', 'c9'], ['c9', 'c10'],
+];
+
+const PATHS = {
+  words: { t: '“a 30 s video about coffee”', n: ['start', 'key', 'kind', 'd1', 'd2', 'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 's0', 's1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9'],
+    why: 'No style and no upload, so check 2 sends it to Auto. No link, so the director writes a script; the script picks the style (Clip Moment if most lines name things stock footage shows, else Anatomy); a kit may add its colours; then the style runs and plays live.' },
+  link: { t: '“a video for cal.com”', n: ['start', 'key', 'kind', 'd1', 'd2', 'a1', 'a2', 'a2y', 'a5', 'a6', 'a7', 's0', 's1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 'a6y', 's9'],
+    why: 'Auto again. cal.com counts as a link, and none of the keywords match, so urlStyleFor picks Style 1. Style 1 skips the style memory and never borrows inserts.' },
+  clip: { t: 'a clip + “edit this”', n: ['start', 'key', 'kind', 'd1', 'd2', 'd3', 'e1', 'e2a', 'e2b', 'e3', 'e3s', 'e4', 'e5', 'e6', 'e7', 'e7m', 'e7i', 'e8', 'e8f', 'e9', 'e10', 'e12', 'e13'],
+    why: 'An upload skips Auto. It is a video, no style is picked and the words don’t ask to copy a style, so it is edited: an edit style is picked by rule, the plan is built and cast, and it plays live. If at least two effects fit and a speaker is on screen, an effects version renders after.' },
+  style: { t: 'Dark Vox picked + a link', n: ['start', 'key', 'kind', 'd1', 'd2', 'd3', 'd4', 's0', 's1', 's2', 's3', 's4', 's5', 's6', 's6y', 's7', 's8', 's9'],
+    why: 'A picked style skips Auto and the edit. Dark Vox reads its memory, casts its own set-ups and may borrow a library insert on a weak beat.' },
+  copy: { t: 'a clip + “make one like this video”', n: ['start', 'key', 'kind', 'd1', 'd2', 'd3', 'd4', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10'],
+    why: 'The words ask to copy a style, so the edit lane steps aside; with no style picked it falls through to the old crew, which renders an MP4 in about 20 minutes.' },
+};
+
+// ---------- layout ----------
+const NS = 'http://www.w3.org/2000/svg';
+const byId = {};
+const TG = { start: 'START', step: 'STEP', decision: 'DECISION', rules: 'RULES', out: 'RESULT', stop: 'STOPS HERE', jump: 'GOES ON', ref: 'REFERENCE' };
+function wrap(str, n) {
+  const out = []; let line = '';
+  for (const w of String(str).split(/\s+/)) {
+    if (!w) continue;
+    if ((line + ' ' + w).trim().length > n && line) { out.push(line); line = w; } else line = (line + ' ' + w).trim();
+  }
+  if (line) out.push(line);
+  return out;
+}
+function measure(n) {
+  n.w = n.w || (n.kind === 'rules' ? 280 : 240);
+  const pad = n.kind === 'decision' ? 26 : 14, inner = n.w - pad * 2;
+  n.tl = wrap(n.t, Math.floor(inner / 8.2));
+  n.sl = n.s ? wrap(n.s, Math.floor(inner / 6.6)) : [];
+  n.rl = [];
+  if (n.kind === 'rules' && n.rules) for (const [c, o] of n.rules) n.rl.push({ c: wrap(c, Math.floor(inner / 6.2)), o: wrap('→ ' + o, Math.floor(inner / 6.8)) });
+  let h = 14 + 12 + 6 + n.tl.length * 18 + (n.sl.length ? 2 + n.sl.length * 15 : 0);
+  for (const r of n.rl) h += 9 + r.c.length * 14 + r.o.length * 14;
+  n.h = Math.max(n.kind === 'decision' ? 76 : 64, h + 14);
+}
+N.forEach(n => { measure(n); byId[n.id] = n; });
+// rows and stacking, in data order
+const GAP = 56;
+for (const n of N) {
+  if (n.row) n.y = byId[n.row].y;
+  else if (n.after) { const a = [].concat(n.after).map(i => byId[i]); n.y = Math.max(...a.map(b => b.y + b.h)) + (n.gap || GAP); }
+  else n.y = n.top;
+  n.x0 = n.x - n.w / 2; n.x1 = n.x + n.w / 2; n.y1 = n.y + n.h; n.cy = n.y + n.h / 2;
+}
+// the router row sits under the entry
+const routerTop = byId.kind.y1 + 120;
+for (const id of ['d1', 'd2', 'd3', 'd4']) { const n = byId[id]; n.y = routerTop; n.y1 = n.y + n.h; n.cy = n.y + n.h / 2; }
+const routerH = Math.max(...['d1', 'd2', 'd3', 'd4'].map(i => byId[i].h));
+for (const id of ['d1', 'd2', 'd3', 'd4']) { const n = byId[id]; n.h = routerH; n.y1 = n.y + n.h; n.cy = n.y + n.h / 2; }
+// re-stack the lanes now the router has moved
+for (const n of N) {
+  if (n.lane === 'top') continue;
+  if (n.row) n.y = byId[n.row].y;
+  else if (n.after) { const a = [].concat(n.after).map(i => byId[i]); n.y = Math.max(...a.map(b => b.y + b.h)) + (n.gap || GAP); }
+  n.y1 = n.y + n.h; n.cy = n.y + n.h / 2;
+}
+const laneBottom = Math.max(...N.map(n => n.y1));
+const refTop = laneBottom + 170;
+REFS.forEach((r, i) => {
+  r.kind = 'ref'; r.lane = 'refs'; r.w = 250;
+  const col = i % 5, rowi = Math.floor(i / 5);
+  r.x = 380 + col * 600 + (rowi ? 300 : 0); r.y = refTop + rowi * 150;
+  measure(r); r.x0 = r.x - r.w / 2; r.x1 = r.x + r.w / 2; r.y1 = r.y + r.h; r.cy = r.y + r.h / 2;
+  byId[r.id] = r;
+});
+const ALL = [...N, ...REFS];
+const BOUNDS = { x: 40, y: 40, w: 3200, h: Math.max(...REFS.map(r => r.y1)) + 80 };
+
+// ---------- drawing ----------
+const svg = document.getElementById('map');
+const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const defs = el('defs', {}, svg);
+const mk = el('marker', { id: 'ah', viewBox: '0 0 10 10', refX: '9', refY: '5', markerWidth: '7', markerHeight: '7', orient: 'auto-start-reverse' }, defs);
+el('path', { d: 'M1 1L9 5L1 9', style: 'fill:none;stroke:var(--ink);stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round' }, mk);
+const world = el('g', {}, svg);
+const gLanes = el('g', {}, world), gUses = el('g', {}, world), gEdges = el('g', {}, world), gNodes = el('g', {}, world);
+
+// lane headings
+const LH = [['auto', X.auto, 'AUTO', 'plain prompt or a link'], ['edit', X.edit, 'YOUR CLIP', 'an uploaded video'], ['style', X.style, 'PICKED STYLE', 'you chose a style'], ['crew', X.crew, 'OLD CREW', '“like this video”, or crew mode']];
+const headY = routerTop + routerH + 46;
+for (const [lane, x, t, s] of LH) {
+  const g = el('g', { 'data-lane': lane }, gLanes);
+  el('line', { x1: x - 150, x2: x + 150, y1: headY - 6, y2: headY - 6, class: 'lane-rule' }, g);
+  const tt = el('text', { x: x + 14, y: headY + 22, class: 'lane-title' }, g); tt.textContent = t;
+  const ts = el('text', { x: x + 14, y: headY + 40, class: 'lane-sub' }, g); ts.textContent = s;
+}
+// pull lane nodes below their headings
+const shift = headY + 70 - Math.min(...N.filter(n => n.lane !== 'top').map(n => n.y));
+if (shift > 0) for (const n of N) if (n.lane !== 'top') { n.y += shift; n.y1 += shift; n.cy += shift; }
+const lb = Math.max(...N.map(n => n.y1));
+const rshift = lb + 170 - REFS[0].y;
+for (const r of REFS) { r.y += rshift; r.y1 += rshift; r.cy += rshift; }
+BOUNDS.h = Math.max(...REFS.map(r => r.y1)) + 60 - BOUNDS.y;
+{
+  const y = REFS[0].y - 70;
+  el('line', { x1: 60, x2: 3180, y1: y, y2: y, class: 'lane-rule', 'stroke-dasharray': '2 5' }, gLanes);
+  const t = el('text', { x: 60, y: y + 30, class: 'lane-title' }, gLanes); t.textContent = 'REFERENCES AND MEMORY';
+  const s = el('text', { x: 60, y: y + 48, class: 'lane-sub' }, gLanes); s.textContent = 'click one to see where it is used';
+}
+
+function shapeOf(n, g) {
+  const { x0, x1, y, y1, cy } = n;
+  if (n.kind === 'decision') return el('polygon', { class: 'shape', points: `${x0 + 16},${y} ${x1 - 16},${y} ${x1},${cy} ${x1 - 16},${y1} ${x0 + 16},${y1} ${x0},${cy}` }, g);
+  if (n.kind === 'ref') return el('rect', { class: 'shape', x: x0, y, width: n.w, height: n.h, rx: 18 }, g);
+  if (n.kind === 'start') return el('rect', { class: 'shape', x: x0, y, width: n.w, height: n.h, rx: n.h / 2 }, g);
+  return el('rect', { class: 'shape', x: x0, y, width: n.w, height: n.h, rx: 2 }, g);
+}
+function text(g, x, y, cls, s, anchor) { const t = el('text', { x, y, class: cls }, g); if (anchor) t.setAttribute('text-anchor', anchor); t.textContent = s; return t; }
+function drawNode(n) {
+  const cls = ['node', n.kind, n.graph ? 'graph' : '', n.offmain ? 'offmain' : ''].join(' ');
+  const g = el('g', { class: cls, tabindex: '0', role: 'button', 'aria-label': n.t, 'data-id': n.id }, gNodes);
+  n.g = g; shapeOf(n, g);
+  if (n.kind === 'jump') el('rect', { class: 'shape', x: n.x0 + 4, y: n.y + 4, width: n.w - 8, height: n.h - 8, rx: 1, style: 'fill:none' }, g);
+  const pad = n.kind === 'decision' ? 26 : 14, x = n.x0 + pad;
+  let yy = n.y + 14 + 9;
+  const tags = [TG[n.kind] || 'STEP'];
+  if (n.graph) tags.push('FALKORDB');
+  if (n.model) tags.push('MODEL');
+  if (n.offmain) tags.push('NOT REACHED');
+  text(g, x, yy, 'tg', tags.join(' · '));
+  yy += 6;
+  for (const l of n.tl) { yy += 18; text(g, x, yy, 'tt', l); }
+  if (n.sl.length) { yy += 2; for (const l of n.sl) { yy += 15; text(g, x, yy, 'ts', l); } }
+  for (const r of n.rl) {
+    yy += 7; el('line', { class: 'rule', x1: x, x2: n.x1 - pad, y1: yy, y2: yy }, g); yy += 2;
+    for (const l of r.c) { yy += 14; text(g, x, yy, 'tr', l); }
+    for (const l of r.o) { yy += 14; text(g, x, yy, 'trk', l); }
+  }
+  g.addEventListener('click', ev => { if (moved) return; ev.stopPropagation(); select(n.id); });
+  g.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); select(n.id); } });
+}
+function route(a, b, how) {
+  const p = []; let lx, ly;
+  if (how === 'h') { const sx = a.x1, sy = a.cy, tx = b.x0, ty = b.cy; const mx = (sx + tx) / 2; p.push([sx, sy], [mx, sy], [mx, ty], [tx, ty]); lx = sx + 8; ly = sy - 7; }
+  else if (how === 'hl') { const sx = a.x0, sy = a.cy, tx = b.x1, ty = b.cy; const mx = (sx + tx) / 2; p.push([sx, sy], [mx, sy], [mx, ty], [tx, ty]); lx = tx + 8; ly = sy - 7; }
+  else if (how === 'rd') { p.push([a.x1, a.cy], [b.x, a.cy], [b.x, b.y]); lx = a.x1 + 8; ly = a.cy - 7; }
+  else if (how === 'dl') { const tx = b.x < a.x ? b.x1 : b.x0, ty = Math.min(b.cy, b.y + 22); p.push([a.x, a.y1], [a.x, ty], [tx, ty]); lx = a.x + 6; ly = a.y1 + 14; }
+  else if (how === 'via') { const vx = a.x1 + 40, ty = Math.min(b.cy, b.y + 22) + 14; p.push([a.x1, a.cy], [vx, a.cy], [vx, ty], [b.x1, ty]); lx = a.x1 + 6; ly = a.cy - 7; }
+  else {
+    const sx = a.x, sy = a.y1, tx = b.x, ty = b.y;
+    if (Math.abs(sx - tx) < 2) p.push([sx, sy], [tx, ty]);
+    else { const my = ty - sy > 150 ? sy + 30 : ty - Math.min(34, (ty - sy) / 2); p.push([sx, sy], [sx, my], [tx, my], [tx, ty]); }
+    lx = sx + 7; ly = sy + 15;
+  }
+  return { d: 'M' + p.map(q => q.join(' ')).join(' L'), lx, ly };
+}
+const EDGES = E.map(([f, t, label, how]) => {
+  const a = byId[f], b = byId[t], r = route(a, b, how);
+  const g = el('g', { class: 'edge' }, gEdges);
+  el('path', { d: r.d, 'marker-end': 'url(#ah)' }, g);
+  if (label) text(g, r.lx, r.ly, '', label);
+  return { f, t, label: label || '', g };
+});
+ALL.forEach(drawNode);
+
+// counts
+const nDec = ALL.filter(n => n.kind === 'decision' || n.kind === 'rules').length, nGraph = ALL.filter(n => n.graph).length;
+document.getElementById('counts').textContent = `main @ fc051c4 · 4 lanes · ${nDec} decisions · ${nGraph} graph reads · ${REFS.length} references`;
+
+// ---------- view: pan and zoom ----------
+const stage = document.getElementById('stage');
+let view = { x: 0, y: 0, k: 1 };
+function apply() { const w = stage.clientWidth, h = stage.clientHeight; svg.setAttribute('viewBox', `${view.x} ${view.y} ${w / view.k} ${h / view.k}`); }
+function fit(b, pad = 40) {
+  const w = stage.clientWidth || 800, h = stage.clientHeight || 600;
+  const k = Math.min((w - pad * 2) / b.w, (h - pad * 2) / b.h, 1.4);
+  view = { k, x: b.x - (w / k - b.w) / 2, y: b.y - (h / k - b.h) / 2 }; apply();
+}
+function boxOf(ids) {
+  const ns = ids.map(i => byId[i]).filter(Boolean);
+  const x0 = Math.min(...ns.map(n => n.x0)), x1 = Math.max(...ns.map(n => n.x1)), y0 = Math.min(...ns.map(n => n.y)), y1 = Math.max(...ns.map(n => n.y1));
+  return { x: x0 - 30, y: y0 - 60, w: x1 - x0 + 60, h: y1 - y0 + 90 };
+}
+function zoomAt(f, cx, cy) {
+  const k = Math.min(3, Math.max(0.12, view.k * f));
+  const px = view.x + cx / view.k, py = view.y + cy / view.k;
+  view = { k, x: px - cx / k, y: py - cy / k }; apply();
+}
+stage.addEventListener('wheel', ev => { ev.preventDefault(); const r = stage.getBoundingClientRect(); zoomAt(Math.exp(-ev.deltaY * 0.0016), ev.clientX - r.left, ev.clientY - r.top); }, { passive: false });
+const ptrs = new Map(); let moved = false, start = null, pinch = null;
+stage.addEventListener('pointerdown', ev => {
+  ptrs.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+  if (ptrs.size === 1) { moved = false; start = { x: ev.clientX, y: ev.clientY, vx: view.x, vy: view.y }; }
+  if (ptrs.size === 2) { const [p, q] = [...ptrs.values()]; pinch = { d: Math.hypot(p.x - q.x, p.y - q.y), k: view.k }; }
+});
+stage.addEventListener('pointermove', ev => {
+  if (!ptrs.has(ev.pointerId)) return;
+  ptrs.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+  if (ptrs.size === 2 && pinch) {
+    const [p, q] = [...ptrs.values()], r = stage.getBoundingClientRect();
+    const d = Math.hypot(p.x - q.x, p.y - q.y); moved = true;
+    zoomAt((pinch.k * d / pinch.d) / view.k, (p.x + q.x) / 2 - r.left, (p.y + q.y) / 2 - r.top); return;
+  }
+  if (!start) return;
+  const dx = ev.clientX - start.x, dy = ev.clientY - start.y;
+  if (!moved && Math.hypot(dx, dy) > 5) { moved = true; stage.classList.add('drag'); try { stage.setPointerCapture(ev.pointerId); } catch (e) {} }
+  if (moved) { view.x = start.vx - dx / view.k; view.y = start.vy - dy / view.k; apply(); }
+});
+const up = ev => { ptrs.delete(ev.pointerId); if (ptrs.size < 2) pinch = null; if (!ptrs.size) { start = null; stage.classList.remove('drag'); setTimeout(() => { moved = false; }, 0); } };
+stage.addEventListener('pointerup', up); stage.addEventListener('pointercancel', up);
+svg.addEventListener('click', () => { if (!moved) clearSel(); });
+document.getElementById('z-in').onclick = () => zoomAt(1.25, stage.clientWidth / 2, stage.clientHeight / 2);
+document.getElementById('z-out').onclick = () => zoomAt(0.8, stage.clientWidth / 2, stage.clientHeight / 2);
+document.getElementById('z-fit').onclick = () => { fit(BOUNDS); };
+new ResizeObserver(() => apply()).observe(stage);
+
+// ---------- highlighting ----------
+let usesG = null;
+function setLit(ids, edgesOn) {
+  const on = ids ? new Set(ids) : null;
+  for (const n of ALL) n.g.classList.toggle('dim', !!on && !on.has(n.id));
+  for (const e of EDGES) {
+    const hot = edgesOn ? edgesOn(e) : (!!on && on.has(e.f) && on.has(e.t));
+    e.g.classList.toggle('dim', !!on && !hot); e.g.classList.toggle('hot', !!on && hot);
+  }
+  gLanes.querySelectorAll('g[data-lane]').forEach(g => g.classList.toggle('dim', !!on));
+}
+function drawUses(r) {
+  if (usesG) usesG.remove(); usesG = null;
+  if (!r || !r.uses.length) return;
+  usesG = el('g', { class: 'uses' }, gUses);
+  for (const id of r.uses) {
+    const b = byId[id];
+    const sy = r.y, ex = b.x, ey = b.y1;
+    el('path', { d: `M${r.x} ${sy} C ${r.x} ${sy - 160}, ${ex} ${ey + 160}, ${ex} ${ey}`, 'marker-end': 'url(#ah)' }, usesG);
+  }
+}
+function pressed(sel, btn) { document.querySelectorAll(sel).forEach(b => b.setAttribute('aria-pressed', String(b === btn))); }
+function clearModes() { pressed('[data-path]', null); pressed('[data-flag]', null); }
+function clearSel() {
+  for (const n of ALL) n.g.classList.remove('sel');
+  drawUses(null); setLit(null); clearModes(); pressed('[data-lane]', document.getElementById('l-all')); home();
+}
+
+// ---------- the side panel ----------
+const panel = document.getElementById('panel');
+const h = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+function sec(title) { const s = h('div', 'sec'); s.appendChild(h('h3', '', title)); panel.appendChild(s); return s; }
+function linkBtn(id, right) {
+  const n = byId[id], b = h('button');
+  b.appendChild(h('span', '', n.t)); b.appendChild(h('span', '', right || LANES[n.lane] || ''));
+  b.onclick = () => { select(id, true); }; return b;
+}
+function select(id, pan) {
+  const n = byId[id]; if (!n) return;
+  for (const m of ALL) m.g.classList.toggle('sel', m.id === id);
+  clearModes();
+  if (n.kind === 'ref') { setLit([id, ...n.uses]); drawUses(n); }
+  else {
+    const near = new Set([id]); EDGES.forEach(e => { if (e.f === id) near.add(e.t); if (e.t === id) near.add(e.f); });
+    REFS.forEach(r => { if (r.uses.includes(id)) near.add(r.id); });
+    setLit([...near], e => e.f === id || e.t === id); drawUses(null);
+  }
+  panel.innerHTML = '';
+  const chips = h('div', 'chips');
+  const kindLabel = { start: 'Start', step: 'Step', decision: 'Decision', rules: 'Rules', out: 'Result', stop: 'Stops', jump: 'Hands over', ref: 'Reference' }[n.kind];
+  chips.appendChild(h('span', 'chip inv', kindLabel));
+  chips.appendChild(h('span', 'chip', LANES[n.lane]));
+  if (n.graph) chips.appendChild(h('span', 'chip dash', 'Reads FalkorDB'));
+  if (n.model) chips.appendChild(h('span', 'chip', 'Model call'));
+  if (n.offmain) chips.appendChild(h('span', 'chip dash', 'Not reached from the studio'));
+  panel.appendChild(chips);
+  panel.appendChild(h('h2', '', n.t));
+  sec('What happens').appendChild(h('p', '', n.d));
+  if (n.rules && n.rules.length) {
+    const s = sec(n.kind === 'decision' ? 'The decision' : 'The rules'), t = h('table', 'rules');
+    for (const [c, o] of n.rules) { const tr = h('tr'); tr.appendChild(h('td', '', 'if ' + c)); tr.appendChild(h('td', '', '→ ' + o)); t.appendChild(tr); }
+    s.appendChild(t);
+  }
+  if (n.kind === 'ref') {
+    const s = sec('Used at');
+    if (!n.uses.length) s.appendChild(h('p', '', 'Nowhere yet: no lane on main reads it.'));
+    else { const l = h('div', 'links'); n.uses.forEach(u => l.appendChild(linkBtn(u))); s.appendChild(l); }
+  } else {
+    const ins = EDGES.filter(e => e.t === id), outs = EDGES.filter(e => e.f === id);
+    if (outs.length || n.goto) {
+      const s = sec('Leads to'), l = h('div', 'links');
+      outs.forEach(e => l.appendChild(linkBtn(e.t, e.label || 'next')));
+      if (n.goto) l.appendChild(linkBtn(n.goto, 'continues'));
+      s.appendChild(l);
+    }
+    if (ins.length) { const s = sec('Comes from'), l = h('div', 'links'); ins.forEach(e => l.appendChild(linkBtn(e.f, e.label || ''))); s.appendChild(l); }
+    const feeds = REFS.filter(r => r.uses.includes(id));
+    if (feeds.length) { const s = sec('Fed by'), l = h('div', 'links'); feeds.forEach(r => l.appendChild(linkBtn(r.id, 'reference'))); s.appendChild(l); }
+  }
+  if (n.files && n.files.length) { const s = sec('In the code'), ul = h('ul', 'files'); n.files.forEach(f => ul.appendChild(h('li', '', f))); s.appendChild(ul); }
+  if (pan) { const ids = n.kind === 'ref' ? [id, ...n.uses] : [id]; const b = boxOf(ids); const w = stage.clientWidth, hh = stage.clientHeight;
+    if (n.kind === 'ref' && n.uses.length) fit(b, 30); else { view.x = n.x - w / view.k / 2; view.y = n.cy - hh / view.k / 2; apply(); } }
+}
+function home() {
+  panel.innerHTML = '';
+  panel.appendChild(h('h2', '', 'How to read this'));
+  sec('What it shows').appendChild(h('p', '', 'Every path a message can take on main today, from the chat box to the video, with each decision and the rule behind it. Four checks in the router send a message down one of four lanes. Click any box for the full rule and the files that do it.'));
+  const lg = sec('Shapes'), g = h('div', 'legend');
+  const sw = (svgInner, label) => { const s = document.createElementNS(NS, 'svg'); s.setAttribute('viewBox', '0 0 34 20'); s.innerHTML = svgInner; g.appendChild(s); g.appendChild(h('span', '', label)); };
+  const st = 'fill:var(--bg);stroke:var(--ink)';
+  sw(`<rect x="1" y="2" width="32" height="16" rx="1" style="${st};stroke-width:1.2"/>`, 'A step');
+  sw(`<polygon points="7,2 27,2 33,10 27,18 7,18 1,10" style="${st};stroke-width:2"/>`, 'A decision (pointed ends)');
+  sw(`<rect x="1" y="2" width="32" height="16" rx="1" style="${st};stroke-width:1.5;stroke-dasharray:4 3"/>`, 'Reads the FalkorDB graph (dashed)');
+  sw(`<rect x="1" y="2" width="32" height="16" rx="1" style="fill:var(--ink);stroke:var(--ink)"/>`, 'A result you get (filled)');
+  sw(`<rect x="1" y="2" width="32" height="16" rx="1" style="${st};stroke-width:3"/>`, 'Stops and waits for you');
+  sw(`<rect x="1" y="2" width="32" height="16" rx="1" style="${st};stroke-width:1.4;stroke-dasharray:1.5 2.5"/>`, 'Not reached from the studio, or a reference (dotted)');
+  lg.appendChild(g);
+  const p = sec('Start here');
+  const l = h('div', 'links');
+  Object.entries(PATHS).forEach(([k, v]) => { const b = h('button'); b.appendChild(h('span', '', v.t)); b.appendChild(h('span', '', 'trace')); b.onclick = () => walk(k); l.appendChild(b); });
+  p.appendChild(l);
+  sec('Source').appendChild(h('p', '', 'Read from the code on main at fc051c4 (chat.ts, router/, edit/, styles/, tasks/, review/). Dotted boxes are not reached from the studio: on a branch, uncommitted, or only called by scripts.'));
+}
+
+// ---------- modes ----------
+function walk(k) {
+  const p = PATHS[k]; if (!p) return;
+  for (const m of ALL) m.g.classList.remove('sel'); drawUses(null);
+  const set = new Set(p.n);
+  const seq = p.n;
+  setLit(seq, e => { const i = seq.indexOf(e.f); return i >= 0 && set.has(e.t) && (seq[i + 1] === e.t || seq.indexOf(e.t) > i); });
+  pressed('[data-path]', document.querySelector(`[data-path="${k}"]`)); pressed('[data-flag]', null);
+  panel.innerHTML = '';
+  const chips = h('div', 'chips'); chips.appendChild(h('span', 'chip inv', 'Traced message')); panel.appendChild(chips);
+  panel.appendChild(h('h2', '', p.t));
+  sec('Why it goes this way').appendChild(h('p', '', p.why));
+  const s = sec(`The route, ${seq.length} boxes`), ol = h('ol', 'steps');
+  seq.forEach(id => { const li = h('li'); const b = h('button', '', byId[id].t); b.onclick = () => select(id, true); li.appendChild(b); ol.appendChild(li); });
+  s.appendChild(ol);
+  fit(boxOf(seq), 30);
+}
+document.querySelectorAll('[data-path]').forEach(b => b.onclick = () => walk(b.dataset.path));
+document.querySelectorAll('[data-lane]').forEach(b => b.onclick = () => {
+  const lane = b.dataset.lane; pressed('[data-lane]', b); clearModes();
+  for (const m of ALL) m.g.classList.remove('sel'); drawUses(null);
+  if (lane === 'all') { setLit(null); home(); fit(BOUNDS); return; }
+  const ids = ALL.filter(n => n.lane === lane).map(n => n.id);
+  const extra = lane === 'refs' ? [] : ['d1', 'd2', 'd3', 'd4'].filter(d => EDGES.some(e => e.f === d && ids.includes(e.t)));
+  setLit([...ids, ...extra]);
+  gLanes.querySelectorAll('g[data-lane]').forEach(g => g.classList.toggle('dim', g.dataset.lane !== lane));
+  fit(boxOf([...ids, ...extra]), 30);
+  panel.innerHTML = ''; panel.appendChild(h('h2', '', LANES[lane]));
+  const blurb = {
+    auto: 'The default for a plain prompt. Auto doesn’t make a film itself: it picks one of the styles (by keywords for a link, by the script for plain words), may add a kit’s colours, then hands over to that style.',
+    edit: 'Your own clip, edited and playing live in seconds: words and faces, a plan of cuts and framings, library moves and sounds, captions and a clean voice.',
+    style: 'One of six styles runs its own pipeline: read, write, voice, cast from its own set-ups, borrow from the library on weak beats, mix, play live.',
+    crew: 'The original multi-agent path. Slow, and still where “make one like this video” goes. The only lane that checks its own render on main.',
+    refs: 'Where the references and memories feed in. Click one to draw its lines to the boxes that use it.',
+  }[lane];
+  sec('This lane').appendChild(h('p', '', blurb));
+  const s = sec('Boxes'), l = h('div', 'links'); ids.forEach(i => l.appendChild(linkBtn(i, byId[i].kind === 'decision' ? 'decision' : ''))); s.appendChild(l);
+});
+document.querySelectorAll('[data-flag]').forEach(b => b.onclick = () => {
+  const f = b.dataset.flag, was = b.getAttribute('aria-pressed') === 'true';
+  for (const m of ALL) m.g.classList.remove('sel'); drawUses(null); pressed('[data-path]', null);
+  if (was) { pressed('[data-flag]', null); setLit(null); home(); return; }
+  pressed('[data-flag]', b);
+  const ids = ALL.filter(n => f === 'graph' ? n.graph : f === 'model' ? n.model : n.offmain).map(n => n.id);
+  setLit(ids, () => false);
+  panel.innerHTML = '';
+  panel.appendChild(h('h2', '', { graph: 'Where the graph is read', model: 'Where a model is called', off: 'What the studio does not reach' }[f]));
+  sec('Summary').appendChild(h('p', '', {
+    graph: 'Dashed boxes read FalkorDB while a video is made. The library graph is read for the kit match, the edit’s casting, inserts on weak beats and every sound effect; the styles graph holds each style’s memory; feedback memory only steers the old crew.',
+    model: 'The live lanes call a model once or twice: Auto’s director, the style’s brief, the speech-to-text for your clip. The old crew calls models in loops.',
+    off: 'Work that exists but no user reaches from the studio: edit by words and CHECK (on main, called only by scripts), the review step for the styles (uncommitted on your disk), the Launch style, and the teardown notes.',
+  }[f]));
+  const s = sec(`${ids.length} boxes`), l = h('div', 'links'); ids.forEach(i => l.appendChild(linkBtn(i))); s.appendChild(l);
+});
+
+home();
+requestAnimationFrame(() => fit(BOUNDS));
+</script>
+
+</html>
