@@ -4,14 +4,14 @@
  * `(:Asset)-[:IN_TYPE {w, when}]->(:Type)`, and reads it back with `typeKit`, one graph read per film.
  *
  * The slice is computed here, in code, from the same rows the graph is seeded from, so the graph and the catalogue
- * give the same kit: a look's assets (by runtime, by the edit style they SUIT, or by id) and every part a type's
+ * give the same kit (the catalogue answers only under MOOVI_GRAPH_OPTIONAL=1, decision 13): a look's assets (by runtime, by the edit style they SUIT, or by id) and every part a type's
  * references are made of (HAS_PART and their uses). w is today's weight (1 for what a look owns or a reference taught,
  * the cast weight for an edit style's pick); `when` stays null until Ishaan ticks each part's WHEN rule (decision 9).
  *
  * Nothing reads `typeKit` yet except the tests; the router reads it later (W1).
  */
 import { readFileSync } from 'node:fs';
-import { CRAFT, graphOptional, graphOr, licenceTerms, needGraph, run, types as T, type AssetRow } from '@moovi/graph';
+import { CRAFT, MemoryDown, graphOptional, graphOr, licenceTerms, needGraph, run, types as T, type AssetRow } from '@moovi/graph';
 import { TYPES, typeOf, type SliceRule, type TypeId, type TypeSpec } from '@moovi/library/types';
 import { catalogue } from './catalog';
 import { styleCast } from './edit-styles';
@@ -96,7 +96,7 @@ const group = (xs: KitAsset[]) => {
 let cached: { rows: AssetRow[]; ref: ReturnType<typeof referenceParts> } | null = null;
 const source = () => (cached ??= { rows: catalogue().flatMap(s => s.rows), ref: referenceParts() });
 
-/** The kit from the catalogue the graph is seeded from (FalkorDB down): the same slice, the same order. */
+/** The kit from the catalogue the graph is seeded from (tests and local dev only): the same slice, the same order. */
 export function catalogueKit(id: TypeId): TypeKit {
   const spec = typeOf(id);
   const { rows, ref } = source();
@@ -124,11 +124,16 @@ export async function graphKit(id: TypeId): Promise<TypeKit | null> {
 }
 
 /**
- * Everything a film of this type needs: FalkorDB (one health read, then one query); an unseeded graph gets the
- * catalogue. FalkorDB down: the job stops (decision 13); the catalogue only with MOOVI_GRAPH_OPTIONAL=1.
+ * Everything a film of this type needs, in one FalkorDB read (one health read, then one query). FalkorDB is required
+ * (decision 13): when it is down, or the type is not seeded, the job stops with "Moovi's memory is offline". Only with
+ * MOOVI_GRAPH_OPTIONAL=1 (tests, local dev) does the catalogue answer instead, or when asked for (`graph: false`).
  */
 export async function typeKit(id: TypeId, o: { graph?: boolean } = {}): Promise<TypeKit> {
-  if (o.graph === false || (graphOptional() && process.env.MOOVI_LIBRARY === 'catalogue')) return catalogueKit(id);
-  if (await needGraph('type kit')) { const k = await graphKit(id).catch(graphOr(null, 'type kit')); if (k) return k; }
+  if (graphOptional() && (o.graph === false || process.env.MOOVI_LIBRARY === 'catalogue')) return catalogueKit(id);
+  if (await needGraph('type kit')) {
+    const k = await graphKit(id).catch(graphOr(null, 'type kit'));
+    if (k) return k;
+    if (!graphOptional()) throw new MemoryDown(new Error(`type ${id} is not seeded (pnpm --filter @moovi/engine library)`), 'type kit');
+  }
   return catalogueKit(id);
 }

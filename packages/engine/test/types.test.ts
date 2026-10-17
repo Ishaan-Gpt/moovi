@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
-import { ALL, closeMemory, health } from '@moovi/graph';
+import { ALL, MemoryDown, closeMemory, health } from '@moovi/graph';
 import { ANATOMY_ARCS as ANATOMY_SPEC, CLEAR_SIGNAL_ARCS, DARKVOX_ARCS, EDITORIAL_ARCS, LAUNCH_ARC_IDS, TYPES, TYPE_IDS, pendingFields, typeOf, type TypeId } from '@moovi/library/types';
 import { STYLE_LAWS } from '../src/edit/styles';
 import { CM_CAPTION } from '../src/edit/templates/clip-moment';
@@ -102,18 +102,33 @@ test('typeKit: slices are deterministic and sorted strongest first, then id', ()
     for (let i = 1; i < xs.length; i++) assert.ok(xs[i - 1]!.w > xs[i]!.w || (xs[i - 1]!.w === xs[i]!.w && xs[i - 1]!.id < xs[i]!.id), `${id} order`);
 });
 
-test('typeKit: when FalkorDB is down the catalogue answers (no throw, same kit)', async () => {
-  const before = process.env.FALKORDB_URL;
+/** Run with FalkorDB pointed at a closed port and MOOVI_GRAPH_OPTIONAL as given, then put both back. */
+async function graphDown<X>(optional: boolean, f: () => Promise<X>): Promise<X> {
+  const url = process.env.FALKORDB_URL, opt = process.env.MOOVI_GRAPH_OPTIONAL;
   process.env.FALKORDB_URL = 'falkor://127.0.0.1:1';
-  try {
+  if (optional) process.env.MOOVI_GRAPH_OPTIONAL = '1'; else delete process.env.MOOVI_GRAPH_OPTIONAL;
+  try { return await f(); } finally {
+    if (url === undefined) delete process.env.FALKORDB_URL; else process.env.FALKORDB_URL = url;
+    if (opt === undefined) delete process.env.MOOVI_GRAPH_OPTIONAL; else process.env.MOOVI_GRAPH_OPTIONAL = opt;
+    await closeMemory().catch(() => {});
+  }
+}
+
+test('typeKit: FalkorDB down with MOOVI_GRAPH_OPTIONAL=1 (tests, local dev): the catalogue answers, same kit', async () => {
+  await graphDown(true, async () => {
     const k = await typeKit('launch');
     assert.equal(k.source, 'catalogue');
     assert.deepEqual(k.slice, catalogueKit('launch').slice);
     assert.equal((await typeKit('edit', { graph: false })).source, 'catalogue');
-  } finally {
-    if (before === undefined) delete process.env.FALKORDB_URL; else process.env.FALKORDB_URL = before;
-    await closeMemory().catch(() => {});
-  }
+  });
+});
+
+test('typeKit: FalkorDB down without MOOVI_GRAPH_OPTIONAL (production, decision 13): it throws Moovi’s memory is offline', async () => {
+  await graphDown(false, async () => {
+    await assert.rejects(typeKit('launch'), (e: Error) => e instanceof MemoryDown && /Moovi's memory is offline/.test(e.message));
+    // asking for the catalogue is no way around it either
+    await assert.rejects(typeKit('edit', { graph: false }), MemoryDown);
+  });
 });
 
 test('types: the queries are named and documented', () => {

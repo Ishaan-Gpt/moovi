@@ -18,8 +18,7 @@ export async function seedCrossLinks() {
   for (let i = 0; i < cast.length; i += 500) suits += (await run<{ edges: number }>(CRAFT, library.linkAssetStyles, { rows: cast.slice(i, i + 500) }))[0]?.edges ?? 0;
   const tags = Object.entries(X1).flatMap(([n, [, , ids]]) => ids.map(id => ({ id, tag: `x1:${n}` })));
   const tagged = (await run<{ tagged: number }>(CRAFT, library.addAssetTags, { rows: tags }))[0]?.tagged ?? 0;
-  // the type registry is new (W2) and nothing reads it yet: a failure here is reported, never fails the library seed
-  const typed = await seedTypes().catch((e: unknown) => { console.warn(`seedTypes: ${String(e)}`); return { typesError: String(e) }; });
+  const typed = await seedTypes();
   return { cast: cast.length, suits, x1Tagged: tagged, ...typed };
 }
 
