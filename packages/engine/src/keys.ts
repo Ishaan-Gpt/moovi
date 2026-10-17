@@ -112,6 +112,23 @@ const cache = new Map<string, { sig: string; scope: ModelScope }>();
  */
 export function scopeFor(user: string | null | undefined): ModelScope | null {
   if (!user) return null;
+  const own = ownScope(user);
+  // the Claude Code bridge goes first when the user's Claude Code is connected (Ishaan, DECISIONS.md 2); it returns
+  // null otherwise, and a bridge fault never stops a job that has the user's own key
+  if (brainSource) { try { const b = brainSource(user, own); if (b) return b; } catch (e) { console.warn(`[engine] brain scope: ${e instanceof Error ? e.message : e}`); } }
+  return own;
+}
+
+/**
+ * The Claude Code bridge (packages/mcp) registers here: given the user and their own key's scope (or null), it returns
+ * a scope whose runtime is the lane switch (runtime/lane.ts laneRuntime: brain calls to Claude Code, detail calls to
+ * the key or the server model), or null when this user has no Claude Code connected. One source; null unregisters.
+ */
+export type BrainScopeSource = (user: string, own: ModelScope | null) => ModelScope | null;
+let brainSource: BrainScopeSource | null = null;
+export function registerBrainScope(fn: BrainScopeSource | null) { brainSource = fn; }
+
+function ownScope(user: string): ModelScope | null {
   const m = loadModel(user); if (!m) return null;
   const sig = createHash('sha256').update(JSON.stringify([m.provider, m.key, m.baseUrl, m.models])).digest('hex');
   const hit = cache.get(user); if (hit?.sig === sig) return hit.scope;
@@ -133,11 +150,13 @@ export function scopeFor(user: string | null | undefined): ModelScope | null {
  */
 export const keyFailure = (e: unknown) => /\b(401|403|429)\b|invalid.{0,20}key|key not valid|API_KEY_INVALID|unauthori|permission|quota|daily limit|rate limit|insufficient|billing|exhausted/i.test(e instanceof Error ? e.message : String(e));
 let server: Runtime | null | undefined;
-const serverRuntime = () => {
+const serverRuntime = (): Runtime | null => {
   if (server !== undefined) return server;
   const own = process.env[`${config.provider.toUpperCase()}_API_KEY`]?.trim();
   return (server = process.env.MOOVI_FALLBACK !== '0' && config.runtime === 'http' && (own || config.provider === 'ollama') ? httpRuntime() : null);
 };
+/** this machine's own model (null when none is configured): the bridge's server lane for detail work */
+export const serverModel = (): Runtime | null => serverRuntime();
 export function withServerFallback(rt: Runtime, models: Record<Tier, string>): Runtime {
   const tierOf = (id: string) => (Object.keys(models) as Tier[]).find(t => models[t] === id) ?? 'crew';
   const retry = async <T>(what: string, id: string, signal: AbortSignal | undefined, first: () => Promise<T>, again: (s: Runtime, model: string) => Promise<T>) => {

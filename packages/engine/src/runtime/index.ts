@@ -10,6 +10,8 @@ import type { AgentRequest, Runtime } from './types';
 export * from './tool';
 export * from './types';
 export { claudeCodeRuntime } from './claudeCode';
+export * from './lane';
+export * from './budget';
 export { httpRuntime, readAnswer, listModels, type Provider } from './http';
 export { coerce, extractJson, describeShape, nearestEnum } from './coerce';
 export { PRESETS, PROVIDERS, pickProvider, modelFor } from './providers';
