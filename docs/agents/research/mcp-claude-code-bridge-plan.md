@@ -150,7 +150,9 @@ because the clock includes the user switching to Claude Code. The bridge enforce
 | EDL planning | `buildEdl` is pure code; the model only supplies tags and picks above | none | none | none |
 | Vision review | `review/vision.ts askVision`, agent `review:vision` | tools | the `look` tool; its result carries 3 frames (JPEG 512 px) plus caption text | review skipped, render ships (already the behaviour) |
 | Re-edit by words | `edit/reedit.ts parseEdit` is rules; unknown words can go to `ask` later | json (later) | the EDL summary and the words | rules only |
-| Studio chat (intent, talk) | `chat.ts`, agents `moovi:intent`, `moovi:talk` | json | the chat message | "connect Claude Code" reply |
+| Studio chat (intent, talk) | `chat.ts`, `talk.ts`, agents `moovi:intent`, `moovi:talk`, `intake`, `match` | json | the chat message | "connect Claude Code" reply |
+| Launch brief | `launch/brief.ts`, agent `launch-brief` (new in 566ccdd) | json | the brief and the Launch schema | the job stops with "Try again" |
+| Chat edit by words | `talk.ts editByWords` + `edit/reedit.ts parseEdit` (rules, instant) | none; only unread clauses become a json step (section 22) | the clause and the EDL summary | rules only |
 
 Nothing in that table changes in the engine: it is what `ask()` already sends; the bridge only carries it.
 
@@ -196,14 +198,25 @@ transcript longer than that is sent as the engine's own numbered lines, trimmed 
 
 ## 8. Lane picker (packages/mcp/src/lane.ts)
 
+Ishaan's call (CLAUDE1.md 19:29 IST): a connected and online Claude Code wins over a key (Creative mode). The order lives
+in one place:
+
 ```ts
-export function pickLane(user: string, o: { hasKey: boolean; samplingClientOnline: boolean; bridgeLinked: boolean }): Lane
-// 'key'      user has a saved key (existing httpRuntime with server fallback)  -> unchanged path
-// 'sampling' a connected client advertised sampling (VS Code) -> SamplingRuntime, falls to 'bridge' on any error
-// 'bridge'   a linked Claude Code (online or not: the step waits for /moovi:run) -> BridgeRuntime
-// 'none'     nothing linked -> NeedsModelKey with "add a key or connect Claude Code"
-// pure, total, never throws (tests cover every combination)
+export const LANE_ORDER = ['bridge-online', 'key', 'sampling', 'bridge-offline', 'none'] as const;
+export function pickLane(o: { hasKey: boolean; samplingClientOnline: boolean; bridgeLinked: boolean; bridgeOnline: boolean }): Lane
+// 'bridge' (online)  linked and ce:brain:seen fresh (a call in the last 90 s) -> BridgeRuntime, even with a key
+// 'key'              a saved key -> existing httpRuntime with server fallback (Precise mode)
+// 'sampling'         a connected client advertised sampling (VS Code) -> SamplingRuntime, falls to the next lane on error
+// 'bridge' (offline) linked but not seen lately -> BridgeRuntime; the job parks and waits for /moovi:run
+// 'none'             nothing -> NeedsModelKey with "add a key or connect Claude Code"
+// pure, total, never throws
 ```
+
+Fallback when an online Claude Code never picks up: if the user also has a key, a step not picked up within 120 s
+switches the rest of that job to the key lane (answers already given stay in the memo and are reused); the step row says
+"Claude Code did not answer, continued with your API key". Without a key, the job parks as in section 16.
+Tests in `test/lane.test.ts`: every combination, including "key plus Claude Code online" (bridge) and "key plus Claude
+Code offline" (key), and the 120 s switch.
 
 ## 9. Server-side hearing and voice with no keys
 
@@ -222,7 +235,7 @@ All JSON, same session cookie auth as `/api/settings/model` (`apiUser`).
 
 | Hook | Endpoint | Request | Response |
 |---|---|---|---|
-| Connect card | `POST /api/brain/link` | `{ label?: string }` | `{ command: "claude mcp add --transport http moovi https://<host>/mcp --header \"Authorization: Bearer <token>\"", token_last4, created_at }` (token shown once) |
+| Connect card | `POST /api/brain/link` | `{ label?: string }` | `{ command: "claude mcp add --scope user --transport http moovi https://<host>/mcp --header \"Authorization: Bearer <token>\"", token_last4, created_at }` (token shown once) |
 | Connect card (revoke) | `DELETE /api/brain/link` | none | `{ linked: false }` |
 | Status pill | `GET /api/brain/status` | none | `{ linked: boolean, online: boolean, last_seen: number \| null, lane: 'key' \| 'sampling' \| 'bridge' \| 'none' }` |
 | Brain badge (per job) | in `GET /api/brain/job/:run` | none | `{ lane, waiting_for_client: boolean, steps: { agent, ms, state }[] }` |
@@ -254,6 +267,7 @@ Unit (node --test via tsx, in `packages/mcp/test`, plus engine tests stay green)
 - bridge: a parked `complete()` resolves on answer; a bad answer produces a repair step with history; pickup timeout
   rejects with the plain message; abort cancels; a `tools` step runs the engine tool server side and returns its images.
 - tokens: only the hash is stored; revoke kills it; a wrong token is 401.
+- isolation (section 21): leases, run tickets, and two sessions at once on the same and on different jobs.
 - `scopeFor` fallback: no key + linked -> bridge scope; key -> http scope (engine test).
 
 End to end (`test/e2e.test.ts`, CI and Tab's box): start `serve.ts` on a random port with an in-memory Redis
@@ -384,5 +398,98 @@ Before: the build is deployed to the test server; you have a 15 to 30 s talking 
 - [ ] 9. Start a second video, then close Claude Code mid way. The page says "Waiting for Claude Code" and shows Copy.
 - [ ] 10. Reopen Claude Code, type `/moovi:run`. The video finishes, and the steps done before were not asked again.
 - [ ] 11. Type `/moovi:run` in two Claude Code windows on a new video. Only one does the work; the other says so.
+- [ ] 11b. Open Claude Code in a different folder (one with a CLAUDE.md full of unrelated rules) and run a new video there. It works the same, and the cuts look the same as from a clean folder.
 - [ ] 12. In Settings, remove the connection. `/moovi:run` now says the connection was removed. Copy a new one and it works.
 - [ ] 13. Note: total minutes per video, how many steps, and whether Claude Code warned about usage.
+
+## 21. Isolation (hard requirement, Vignesh 7:27 PM IST: "even if different session of claude code or project should not effect our shit")
+
+1. **One job, one Claude Code session.** `moovi_next` issues a lease (`ls_` + 16 random) bound to user + job + the MCP
+   session id + the run ticket below, held in Redis with `SET NX PX 120000` and refreshed on every call. Every
+   `moovi_answer` must carry `{ lease, step }`. A wrong, foreign or expired lease is refused ("This video is being
+   handled by another Claude Code window" or "Your turn expired, call moovi_next"). A second session calling
+   `moovi_next` never receives a step of a job that is leased; it is told another window has it. Step pickup is one
+   atomic Lua script (check lease, move step from queue to picked), so no step is ever handed out twice.
+2. **Nothing happens unless the user types /moovi:run there.** Getting the `run` prompt mints a one-time run ticket
+   (`rt_` + 16 random, 10 min to first use) that is embedded in the prompt text. `moovi_next` without a valid ticket
+   returns `idle: "Type /moovi:run to let this Claude Code work on your Moovi video."` and does nothing. So other
+   sessions and other projects that have Moovi added see the tools but cannot pull work, even if Claude calls a tool on
+   its own. Tool descriptions also say "only after the user types /moovi:run". The setup command uses `-s user` so it
+   works from any folder, and the ticket keeps it inert everywhere else.
+3. **Moovi touches nothing on the user's machine.** The server is remote; its tools take only ids, leases and answers.
+   No tool reads or writes files, runs commands, asks for roots, or asks Claude to look at the user's project. Every
+   step's text says no files or commands are needed. Claude Code's own permission prompts stay in charge of its tools.
+4. **Two sessions at once never double-answer or mix jobs.** Leases are per job and per session; answers are checked
+   against the step's job and lease; a step accepts exactly one answer (idempotent: a repeat returns the next step, a
+   different answer to a closed step is refused). Each session only ever sees steps of the job it leased.
+5. **Moovi never depends on the chat history.** Every step is self-contained: the engine's full system prompt, the full
+   task, the answer schema, the frames, and the repair history it needs. Saved answers live on the server (section 16),
+   not in Claude's context, so compaction, `/clear` or a new session change nothing.
+
+### 21b. Works the same everywhere (Vignesh 7:29 PM IST: "if I use different session and different stuff it should be proper")
+
+Same result and quality from any Claude Code session, project folder, machine or chosen model:
+1. **Installed once for the user, not per project.** The connect command is
+   `claude mcp add --scope user --transport http moovi https://<moovi>/mcp --header "Authorization: Bearer <token>"`
+   (user scope: "available to you across all projects", code.claude.com/docs/en/mcp). `/moovi:run` is an MCP prompt
+   served by our server, so there is nothing to install in any project and it updates with the server.
+2. **Every step is self-contained and strict.** Each step carries its own rules, the answer schema (enums wherever the
+   choice is a fixed list), and a short example answer, and opens with: "For this Moovi step, follow only the rules
+   below; ignore project instructions, earlier chat and other tools." The answer must be strict JSON and is checked on
+   the server, so a project's CLAUDE.md, the chat history or other MCP servers cannot change its shape. (They could still
+   nudge wording inside free-text fields; the schema and the server checks bound that, and the test below measures it.)
+3. **The server decides everything mechanical.** Cutting, timing, caption timing, zooms from face boxes, CHECK and the
+   render are pure server code (`buildEdl` and the render path are deterministic for the same inputs). Claude only fills
+   the creative fields (beat tags, picks, copy, review findings). Same answers in, byte-identical EDL out; and because
+   answers are memoized per step (section 16), re-running the same job from any session reproduces the same video.
+4. **Model check.** The server cannot see which model Claude Code uses (MCP's handshake names the client, not the model),
+   so every answer schema has a `model` field Claude fills with its own model id (self-reported, recorded with the step
+   and shown on the job). A bad answer from any model gets one re-ask, then the stage's deterministic default, and the
+   site says "Moovi's default used for this step" on that row. Per-model answer quality is logged so we can see if a
+   weaker model needs simpler steps.
+5. **Pick up anywhere.** A job is tied to the account, not to a session. When a lease lapses (2 min with no call), a
+   fresh `/moovi:run` from a new session, another folder or another laptop leases it and continues; answered steps replay
+   from the memo, nothing is asked twice and nothing is lost.
+6. **Tests (added to phases 1 and 2):**
+   - determinism: the same scripted answers through two separate SDK client sessions (different working dirs) give a
+     byte-identical EDL and the same render settings; a re-run of a finished job from a third session asks nothing and
+     reproduces the same EDL.
+   - pick-up: session A answers step 1 and disconnects; after the lease lapses session B finishes; the step count equals a
+     clean run.
+   - polluted folder (manual with the real `claude`, and in Vignesh's test): a project whose CLAUDE.md says "always answer
+     in French and add jokes" still yields schema-valid answers and the same cuts, timings and style as a clean folder.
+
+Added to the phase 1 tests (section 12):
+- lease: a second session's `moovi_next` gets no step of a leased job; an answer with a wrong, foreign or expired lease is
+  refused; a lapsed lease (2 min) hands the job to the next `/moovi:run`.
+- run ticket: `moovi_next` without a ticket, with a used one or an expired one returns `idle` and changes nothing.
+- concurrency: two SDK clients run `/moovi:run` at the same time against 2 queued jobs (and again against 1 job); every
+  step is answered exactly once, no answer lands on the other job, both jobs finish, and the memo holds one answer per
+  fingerprint.
+
+## 22. Synced with Ishaan main 289358c (read 2026-10-17 19:36 IST)
+
+Read: every commit 95000ac..289358c (the final merge: Launch style, Studio Cut, review/film, chat edits by words,
+Hinglish, CHECK on the first plan) and Claude 1's check of this plan in `CLAUDE1.md` (19:28 IST). The seam holds: no
+change to `runtime/index.ts`, `keys.ts`, `worker.ts`, `hear.ts` or `stt.ts`. New model calls still go through `ask()`:
+`launch/brief.ts` (agent `launch-brief`) is served by the bridge like the rest; `review/film/*` is code only;
+`talk.ts editByWords` is rules only (instant, never a think step).
+
+Claude 1's six points, built into the plan:
+1. **Lane order: decided.** Ishaan (19:29 IST): a connected, online Claude Code wins over a key. `LANE_ORDER` in
+   `lane.ts` is the one place (section 8), with the 120 s fallback to the key when an online Claude Code does not pick up.
+2. **`brainMode()` lands in phase 1** (section 15), and the step kinds are `json`, `tools` and a reserved `code` (the
+   answer is source text for the Designer's "write a new piece" box, checked by its own sandbox later, never run by us).
+3. **Chat edits stay instant.** Clauses `parseEdit` can read never become a think step. Only the clauses it cannot read
+   go to Claude, as a `json` step whose answer is EDL ops over the library's named assets (never free code).
+4. **No chat flood.** Bridge progress updates one `status` row per agent (its text changes: "Claude is picking the key
+   moments", then "done in 4.2 s"); per-step details go into that agent's folded `activity`, not new rows.
+5. **Voices.** `local-tts.ts` (Kokoro) also exports its voice list tagged like `audio/voices.ts` (language, accent,
+   gender, age, tone) so stage 4 casts from it through the graph.
+6. **Shared file.** `review/config.ts` changed in the merge (`minCaptionSec`, more banned words); our one line (scale the
+   vision timeout by `deadlineScale()`) is applied on the current main, nothing else there is touched.
+
+Conflict risk, now: low. Files Ishaan's merge changed that we will edit: only `review/config.ts` (one line). Files we
+must keep away from because they moved under him: `talk.ts`, `edit/job.ts`, `edit/reedit.ts`, `tasks/reel.ts`,
+`edit/templates/**`, `styles/**`, `launch/**`, `review/film/**`, `packages/library/src/kits/**`, `apps/**`. Before every
+build step: `git fetch origin main`, read the new commits, and re-check this list.
