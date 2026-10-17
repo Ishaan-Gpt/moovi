@@ -37,7 +37,7 @@ test('bridge 14: a real MCP client connects over streamable HTTP with its bearer
   const tools = await client.listTools();
   assert.ok(tools.tools.some(t => t.name === 'moovi_status'));
   const r = await client.callTool({ name: 'moovi_status', arguments: {} });
-  assert.deepEqual(JSON.parse((r.content as { text: string }[])[0]!.text), { connected: true, claude_code: 'off' });
+  assert.deepEqual(JSON.parse((r.content as { text: string }[])[0]!.text), { connected: true, claude_code: 'off', this_window_has_run: false, jobs: [] });
   assert.equal(mcp.sessionsOf('u1').length, 1);
   await transport.terminateSession(); await client.close();
   assert.equal(mcp.sessionsOf('u1').length, 0);

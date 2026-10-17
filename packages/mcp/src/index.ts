@@ -9,3 +9,4 @@ export * from './hub';
 export * from './server';
 export * from './tokens';
 export * from './api';
+export * from './board';

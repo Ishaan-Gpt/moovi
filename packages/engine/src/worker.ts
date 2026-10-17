@@ -1,5 +1,5 @@
 import { hostname } from 'node:os';
-import { byokMode, NeedsModelKey, scopeFor } from './keys';
+import { brainRun, byokMode, NeedsModelKey, primeBrainScope, scopeFor } from './keys';
 import { withModel } from './runtime';
 import { project as P, projectGraph, read } from '@moovi/graph';
 import { group, head } from './heads';
@@ -112,7 +112,9 @@ export class Worker {
       const handler = this.o.handlers[t.kind];
       if (!handler) throw new Error(`No handler for task kind "${t.kind}"`);
       if (run.status === 'planned') await pq(pid, P.setRun, { id: runId, status: 'running', at: Date.now(), brief: null, skill: null, card: null, match: null, error: null });
+      if (run.status === 'planned') await brainRun({ type: 'start', user, project: pid, run: runId, chat: run.chat });
       // the task thinks on its owner's own model (bring your own key); MOOVI_BYOK=optional lets a keyless user use this machine's
+      await primeBrainScope(user);
       const ms = scopeFor(user);
       if (!ms && byokMode() === 'required') throw new NeedsModelKey();
       const go = () => inScope({ project: pid, chat: run.chat, agent, task: id }, () => handler(ctx));
@@ -161,6 +163,7 @@ export class Worker {
       await pq(pid, P.setRun, { id: runId, status: 'failed', error: msg.slice(0, 500), at: Date.now(), brief: null, skill: null, card: null, match: null });
       await say(pid, run.chat, 'moovi', `I couldn’t finish this one: ${t.title.toLowerCase()} failed (${msg.slice(0, 220)}). Ask me to try again, or change the brief.`, 'error');
       await publish(run.chat, { type: 'run', run: { id: runId, n: run.n, status: 'failed' } });
+      await brainRun({ type: 'end', user, project: pid, run: runId, chat: run.chat, ok: false });
       await this.o.onRunEnd?.(pid, run, false);
     } finally {
       clearInterval(beat);
@@ -178,6 +181,7 @@ export class Worker {
     await publish(run.chat, { type: 'run', run: { id: runId, n: run.n, status: s.failed ? 'failed' : 'done' } });
     const still = await pq<{ id: string }>(pid, P.activeRuns);
     if (!still.length) await markActive(pid, false);
+    await brainRun({ type: 'end', user: await ownerOf(pid).catch(() => ''), project: pid, run: runId, chat: run.chat, ok: !s.failed });
     await this.o.onRunEnd?.(pid, run, !s.failed);
   }
 }
