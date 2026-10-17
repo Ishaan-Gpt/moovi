@@ -23,6 +23,10 @@ This is what Ishaan judged better on resend.com, version by version. The log and
 4. **The brand's own look, from its live site** (f5, awaiting a verdict). Read the site capture first: palette, display
    face, logo, the hero's light. Resend is black, with one light beam, a serif display face and a sharp R. A
    reference's world (dump's light grey) is grammar to learn from, never a palette to copy.
+5. **The content wears the brand too** (Ishaan on f5: "white and purple don't match Resend's theme"). The product's
+   own content (emails, cards, buttons, status dots, code colours) is built from the site's ramp, never invented. For
+   Resend: warm stone from black to bone, the Light/Dark toggle swapping the ramp's ends, and colour only from real
+   photos. Run the palette gate in `palette.md` before the first frame.
 
 ## Checks that caught real bugs
 - **A filter must show what it says.** After "Delivered", only delivered items remain; otherwise the viewer reads it as

@@ -31,6 +31,8 @@ isn't used for taste.
 - **f4 (Ishaan: better):** real photos in the emails, and one beat only this product can have (its own code, edited live, re-rendering the preview).
 - **Brand fidelity:** read the brand's real site first (palette, display face, logo). A reference's world (dump's light grey) is grammar to learn from, not a palette to copy.
 
+- **f5 (Ishaan: the colours don't match the brand):** the content wears the brand too. Read the site's CSS colours and fonts before building, and make every hex a ramp token (the skill's palette gate in `palette.md`).
+
 ## Ref 1: dump.cam (x.com/javiiarchive, 20 s) — what it teaches
 - **The product's own UI is the whole film.** There are no headline cards; the only on-screen words are the UI's own
   ("Your dumps.", the filter pills, the search box, "New dump"). The copy lives in the product.

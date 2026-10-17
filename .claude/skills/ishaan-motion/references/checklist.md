@@ -11,6 +11,7 @@
 - [ ] Cuts come in on motion. Big scales are done in log space. Settles are long.
 - [ ] No crossfades, flares, glow-everywhere, camera shake or random particles.
 - [ ] Brand palette and fonts only. Light/dark rhythm reads at speed.
+- [ ] Palette gate passed (palette.md): the site's CSS colours and fonts were read first; every hex in the film is a token from that ramp, the product's own content included (cards, buttons, status, code); colour from real photos only when the brand is monochrome.
 
 ## Timing
 - [ ] Every cut on a bar/half-bar, every slam on a beat, end card on the final chord.

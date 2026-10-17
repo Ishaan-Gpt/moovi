@@ -52,3 +52,21 @@ Then the test: could this palette appear unchanged in another brand's video? If 
 | Verdigris dusk | oxidised copper `#2F6B5E` | smoked plum `#3A2433` | sodium amber `#E2A33B` (sparingly) | ink `#0D1514`, fog `#E6ECE8` | copper roofs at monsoon dusk |
 | Darkroom | safelight red `#8E1B12` | developer brown `#3B2A20` | silver `#C9CCCF` | carbon `#0E0C0B`, fixer white `#EFEDE8` | a photo darkroom |
 Write the chosen palette, its five-palette drill and its ramps into the film's notes before building.
+
+## The palette gate (owner, 2026-10-18: "white and purple don't match Resend's theme; the skill said not to use defaults")
+The miss: the Resend film took the brand's world (black) from the site but invented the **content's** colours (white
+email cards, a purple hero email, blue/green/red status dots). Every colour on screen counts, including the product's
+own content (cards, emails, thumbnails, buttons, status dots, syntax colours) and any "hero" object. The rule had
+been written, but nothing forced it to be checked. Now, before any frame is built:
+1. **Read the site's real palette (30 seconds).** Fetch the page and its CSS, then count the colours and fonts:
+   `curl -sL <site> -o home.html; for u in $(grep -o '/_next/static/[^"]*\.css' home.html | sort -u); do curl -sL "<site>$u" >> all.css; done`
+   `grep -oiE '#[0-9a-f]{6}\b|#[0-9a-f]{3}\b' all.css home.html | cut -d: -f2 | tr A-F a-f | sort | uniq -c | sort -rn | head -25`
+   `grep -oE 'font-family:[^;}]{0,80}' all.css | sort | uniq -c | sort -rn | head`
+   (Other frameworks: take every `<link rel=stylesheet>`.) Resend gave black, white and warm stone greys (#c7c2bc,
+   #ebeced, #a0a0a0, #464a4d), Domaine as the serif, ABC Favorit as the sans and Commit Mono: **no hue at all**.
+2. **Write the drill into the film's notes** (five palettes, then the pick), and then the ramp as tokens (`ST[50…950]`).
+3. **Every colour in the code is a token from that ramp.** Grep the film for hex values; any hex that is not a token,
+   and not inside a real photo or footage, is a bug.
+4. **A monochrome brand stays monochrome.** Colour enters only through real photos and footage. Status dots, syntax
+   colours, buttons and "hero" cards come from the ramp's steps (light end = good or active, dark end = off or failed).
+5. **Self-check on the board:** put the site capture beside our frames. If a colour in ours isn't in theirs, it's wrong.
