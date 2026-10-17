@@ -83,3 +83,15 @@ One line per finished item: date and time (IST), item, what, commit sha.
   direct:edit step through the proxy in 32 s and answered it. Gates: tsc 0 in engine, mcp, graph, library, apps/studio;
   mcp 81 (80 pass, 1 skip); engine 543 (515 pass, 28 skip, 0 fail) on f43ac25 (engine unchanged since). Synced
   origin/main 9198404 (Ishaan: 9198404, bcccee7) with a merge commit.
+- 2026-10-18 03:15 IST · round 4, a 2 GB server works · 89b2da9: Ishaan's live server is 2 GB. `deploy/server-setup.sh`
+  never refuses on low RAM. Swap: when the total swap is under 3 GB on a server with under 3.5 GB of RAM (or there is no
+  swap at all) it adds a 4 GB `/swapfile-moovi` and its fstab line, once; swap already there (a hand made `/swapfile2`)
+  counts, and under 5 GB of free disk it adds nothing and says so. Under 3.5 GB it also adds (only when missing) the
+  77 MB speech model, one video at a time (`MOOVI_SLOTS_*`) and `BUILD_NODE_OPTIONS=--max-old-space-size=2560`, passed to
+  the image build as a build argument (Dockerfile, docker-compose.yml). The build runs alone (`COMPOSE_PARALLEL_LIMIT=1`,
+  `docker compose build studio`) with the worker and the old website stopped, then `up -d` and the seed. Proof: shellcheck
+  0.11 clean at every level, `docker compose config` resolves the build argument, the swap block run against six fake
+  machines (2 GB no swap, 2 GB with a 4 GB `/swapfile2`, 2 GB with 1 GB, 2 GB on a full disk, 16 GB without and with swap)
+  does the right thing in each. `DEPLOY-AWS.md`: "Small server" and the update lines for an existing `/opt/moovi`.
+  Synced origin/main 23ad9c8 (Ishaan: d8e66bd, 23ad9c8) with a merge commit. Gates: tsc 0 in engine, mcp, graph, library,
+  apps/studio; mcp 81 (80 pass, 1 skip); engine 543 (515 pass, 28 skip, 0 fail).
