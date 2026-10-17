@@ -4,7 +4,7 @@ import { color } from '@moovi/brand';
 import { sttAvailable } from '../audio/stt';
 import { mixStyle1, sfxStem } from '../audio/style1';
 import { probe } from '../bench';
-import { buildEdl, type BuildInput } from './build';
+import { buildEdl, type BuildInput, type Face } from './build';
 import { castStyleSfx, isD22, pickEditStyle, styledEdl } from './styles';
 import { castEdl, openLibrary, type CastTrace } from './cast';
 import { envelope, pauses, type Word } from './cut';
@@ -12,6 +12,9 @@ import { keepOf, validateEdl } from './edl';
 import { hear, type Heard } from './hear';
 import { castInserts, openInserts, type InsertTrace } from './inserts';
 import { autoMoves, castMoves } from './moves';
+import { BRIDGE_PROVIDER, directEdit, overridesOf } from './direct';
+import type { Direction } from './direct.schema';
+import { modelScope } from '../runtime';
 import { autoFx, openFx, type AutoFx } from './effects/auto';
 import { EDIT, type PlayerEdl } from './lib';
 import { keepTextInFrame, lookText } from './burned';
@@ -76,6 +79,9 @@ export interface PlanInput {
   template?: 'studio-cut' | 'none';
   /** the brand a Studio Cut names on its title, name and end cards (none: those cards use the spoken words) */
   brand?: { name?: string; url?: string; tagline?: string; logo?: string };
+  /** Claude Code bridge (docs/agents/claude-code-bridge item 11a): the creative choices from ONE brain call (edit/direct.ts).
+   *  'ask' asks for them; a Direction uses it; null or not given in the bridge scope = 'ask', elsewhere the rules */
+  direction?: Direction | 'ask' | null;
 }
 export interface Planned {
   edl: PlayerEdl;
@@ -130,6 +136,22 @@ export function cleanupLevel(brief: string): { level: 'light' | 'tight'; laws: {
   return null;
 }
 
+/** The direction for this edit: given, asked for (the bridge scope, or 'ask'), or null for the rules. Never throws. */
+async function directionFor(o: PlanInput, words: Word[], faces: Face[], burned: boolean): Promise<Direction | null> {
+  const want = o.direction === undefined ? (modelScope()?.provider === BRIDGE_PROVIDER ? 'ask' : null) : o.direction;
+  if (want === null || !words.length) return null;
+  if (want !== 'ask') return want;
+  try {
+    const r = await directEdit({ words, faces, brief: o.brief ?? '', burned, ...(o.signal ? { signal: o.signal } : {}), log: l => console.warn(`[edit] ${l}`) });
+    if (r.note) await o.onNote?.(r.note);
+    return r.value;
+  } catch (e) {
+    if ((e as Error)?.name === 'BrainWaiting') throw e;
+    console.warn(`[edit] direction: ${String((e as Error)?.message ?? e).slice(0, 160)}; the rules instead`);
+    return null;
+  }
+}
+
 export async function planEdit(o: PlanInput): Promise<Planned> {
   const lap: Record<string, number> = {}; let tl = Date.now();
   const done = async (stage: string) => { lap[stage] = +((Date.now() - tl) / 1000).toFixed(2); tl = Date.now(); await o.onDone?.(stage, lap[stage]!); };
@@ -173,14 +195,18 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
   // D1.3: the EDL builder (edit/build.ts): take window, pause and filler cuts snapped to words, a framing per sentence
   const ps = pr.hasAudio ? pauses(await envelope(o.path)) : [];
   const look = await lookP, quiet = await quietP;
+  // the bridge: one brain call directs look, cleanup, tags, moves and caption look; null = the rules below, unchanged
+  const direction = await directionFor(o, words, look.faces, (await textP).length > 0);
+  const ov = direction ? overridesOf(direction) : null;
+  if (direction) { writeFileSync(join(dir, 'direction.json'), JSON.stringify(direction, null, 1)); await o.onNote?.(`direction: ${direction.style}, ${direction.cleanup} (${direction.why})`); }
   if (quiet) writeFileSync(join(dir, 'quiet.json'), JSON.stringify(quiet, null, 1));
   const source = { file, duration: pr.duration, w: pr.width ?? 1080, h: pr.height ?? 1920, fps: pr.fps ?? 30 };
   // a Studio Cut (templates/studio-cut.ts) when you ask for one by name or MOOVI_EDIT_TEMPLATE=studio-cut; it keeps the
   // clip's orientation (a landscape clip is a landscape film). Otherwise the D2.2 styles and the base edit, as before.
-  const sc = editTemplate(o) === 'studio-cut', output = sc && source.w > source.h ? { w: 1920, h: 1080, fps: 30, aspect: '16:9' } : undefined;
+  const sc = (ov?.template ?? editTemplate(o)) === 'studio-cut', output = sc && source.w > source.h ? { w: 1920, h: 1080, fps: 30, aspect: '16:9' } : undefined;
   // D2.2 auto: the style that fits the brief and the clip (edit/styles.ts pickEditStyle), when none was named
-  let style: string | undefined = o.style, styleWhy = o.style ? `asked for ${o.style}` : 'the base edit';
-  if (o.style === 'auto' && !sc) {
+  let style: string | undefined = ov ? ov.style : o.style, styleWhy = ov ? `directed: ${direction!.why}` : o.style ? `asked for ${o.style}` : 'the base edit';
+  if (!ov && o.style === 'auto' && !sc) {
     const p = pickEditStyle({ brief: o.brief ?? '', words: words.map(w => w.word), burned: (await textP).length > 0 });
     style = p.style === 'base' ? undefined : p.style; styleWhy = p.why;
     writeFileSync(join(dir, 'style.json'), JSON.stringify(p, null, 1));
@@ -188,9 +214,9 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
   }
   let edl: PlayerEdl, rough = false;
   try {
-    const lv = cleanupLevel(o.brief ?? '');
+    const lv = ov ? (ov.laws ? { level: 'directed', laws: { pause_max: ov.laws.pause_max ?? 0.4, pause_keep: ov.laws.pause_keep ?? 0.18 } } : null) : cleanupLevel(o.brief ?? '');
     if (lv) await o.onNote?.(`cleanup: ${lv.level} (pauses over ${lv.laws.pause_max} s cut to ${lv.laws.pause_keep} s)`);
-    const bi: BuildInput = { ...(lv ? { laws: lv.laws } : {}), source, words, pauses: ps, ...(quiet ? { quiet: quiet.pauses } : {}), palette, ...(look.faces.length ? { faces: look.faces } : {}), style: { id: 'base', ...(o.caption ? { caption: o.caption } : {}), ...(output ? { output } : {}) }, ...(language ? { language } : {}) };
+    const bi: BuildInput = { ...(lv ? { laws: lv.laws } : {}), source, words, pauses: ps, ...(quiet ? { quiet: quiet.pauses } : {}), palette, ...(look.faces.length ? { faces: look.faces } : {}), style: { id: 'base', ...(o.caption ? { caption: o.caption } : {}), ...(ov?.look !== undefined ? { look: ov.look } : {}), ...(output ? { output } : {}) }, ...(ov?.tags ? { tags: ov.tags } : {}), ...(language ? { language } : {}) };
     const e = isD22(style) ? styledEdl(bi, style, o.handle ? { name: o.handle } : {}) : buildEdl(bi);
     const bad = validateEdl(e).problems.filter(p => !p.startsWith('version'));
     if (bad.length) throw new Error(bad.slice(0, 3).join('; '));
@@ -235,7 +261,7 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
     } catch (e) { console.warn(`[edit] studio cut: ${String((e as Error).message ?? e).slice(0, 160)}`); }
   }
   // D2.7: the X1 moves a style asked for, on the beats they suit (first, so the inserts fit around them)
-  const want = rough || sc ? [] : o.moves ?? autoMoves(edl as never);
+  const want = rough || sc ? [] : ov?.moves ?? o.moves ?? autoMoves(edl as never);
   let moves: string[] = [];
   if (want.length) {
     const before = JSON.stringify(edl);
