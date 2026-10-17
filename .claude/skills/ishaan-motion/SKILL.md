@@ -80,7 +80,7 @@ Measure the BPM and the first downbeat, then cut the track **on bar lines** so t
 The full list with the maths is in `references/motion-feel.md`. The short version:
 1. **No dead stops between keys.** Ease only at the start and end of a move; interior keys flow through.
 2. **Cut in on motion.** A shot starts already moving and never eases in from zero at a cut.
-3. **The camera is never still.** It does a 3–6% push or drift over the whole shot, moving on frame 1 and still moving on the last frame, with 2–4 parallax planes.
+3. **The camera is never still.** It does a 3–6% push or drift over the whole shot, moving on frame 1 and still moving on the last frame, with 2–4 parallax planes. Which move where, its duration and ease, and the smooth-speed law (speed is a curve, never a step): `references/camera.md`.
 4. **Big scale changes in log space:** `s = S0 ** ((1 - t) ** 4)`.
 5. **Stagger with jitter.** Never give a group one shared start frame (use roughly 2–2.5 f at 30 fps, or 40–80 ms).
 6. **Long soft settles:** the last 5% of travel takes about a third of the time.
@@ -153,7 +153,7 @@ The music carries the piece (on a talking head, the voice does: SFX quieter stil
 
 ## Keep improving this skill
 
-**Use this skill on every video job (generate, edit, clone, review); it is meant to grow.** After every reference or review: log what the owner preferred in `references/lessons.md`, fold new grammar into the right reference file (talking heads: `references/talking-head.md`; product launch films: `references/launch.md`), bump `VERSION` and add a `CHANGELOG.md` line. Never let a session end with a lesson only in its own notes.
+**Use this skill on every video job (generate, edit, clone, review); it is meant to grow.** After every reference or review: log what the owner preferred in `references/lessons.md`, fold new grammar into the right reference file (talking heads: `references/talking-head.md`; product launch films: `references/launch.md`; camera by moment: `references/camera.md`), bump `VERSION` and add a `CHANGELOG.md` line. Never let a session end with a lesson only in its own notes.
 
 When a review note teaches something new (for example "UI comes in too fast"), add it to `references/lessons.md` with the date, the symptom, the cause, the fix and a measured number if there is one. Bump `VERSION` and add a line to `CHANGELOG.md`.
 

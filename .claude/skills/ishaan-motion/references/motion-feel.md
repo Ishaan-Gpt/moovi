@@ -42,3 +42,10 @@ Review notes on finished videos are almost never about layout. They are about mo
 - Raycast window cascade: per-element 7–9× → 1× log quartic ease-out over 30–33 f, rows 2–2.5 f apart, containers
   ~1 f before their content. Motion corr 0.79 → 0.96. Row start frames mattered more than curve power.
 - MarkKnd floating keyboard: replacing per-key eases with one drift curve per channel took motion corr from 0.73 to 0.98.
+
+## Smooth as butter (owner, 2026-10-18)
+- A "2× → 0.5× → 2×" instruction means an **easing** (a speed curve), not literal speed plateaus. Build it as one
+  smooth velocity curve that starts and ends at rest: `v ∝ sin²(πu)·(0.15 + 0.85·sin²(2πu))` (`EASES['speed-ramp']`
+  in `@moovi/library/camera`). Check for corners (the second difference of velocity) before showing anything.
+- The hard AE ramp bezier (0.86, 0, 0.07, 1) is for a slam, not for travel. Travel and cursor paths use a soft in-out.
+- Camera taste by moment: `references/camera.md`.

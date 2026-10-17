@@ -82,3 +82,10 @@ canvas with its shadow), plus blurred variants on first use (`blurOf(sprite, px)
 them with `drawImage`. Blur a whole moving layer by drawing it into a small buffer and scaling it back up. Keep colours
 in lookup tables, build patterns once, and warm all sprites at load. Check every frame at 30 fps (`render(f / 30)` in
 headless Chrome) and count frames over 33 ms before calling a preview smooth. Reference: `data/freeform/resend-v9`.
+- **Measure the way it plays** (2026-10-18): drive frames with `requestAnimationFrame` for 30 s and record the gaps
+  between frames. A synchronous loop of `render(t)` over hundreds of frames piles up draw commands and reports
+  multi-second flushes that never happen in playback. Resend v8 played at 11 fps (it hung); v10 plays at 138 fps with
+  a median frame of 3 ms.
+- **Blur variants without filters:** downsample twice and keep the small canvas (it is soft anyway; `drawImage`
+  scales it up). Use 1 px levels at the low end. Convert every sprite and blur level to an `ImageBitmap` at load. Keep
+  one layer buffer allocated for the whole film (resizing a canvas every frame reallocates it).
