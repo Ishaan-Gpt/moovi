@@ -98,3 +98,17 @@ Ishaan's words, in order (it took eight rounds):
 7. v7: "the main highlighted text has the potential to be twice bigger; it usually covers the entire shoulder span,
    centre aligned, and everything else is arranged accordingly".
 8. v8: "Caption 3 matches." Shipped.
+
+## Smoothness (measured 2026-10-18, rAF playback in Chrome on the GPU, 300 frames)
+
+| Preset | before | after |
+|---|---|---|
+| 1.1 | 44.7 fps, 24 frames over 33 ms | 52.4 fps, 8 |
+| 2 | 35 fps, 71 | 57.9 fps, 4 |
+| 3 | 14.5 fps (matte on the render thread, 69 ms a frame) | 47.8 fps, 24 (matte 2.4 ms) |
+
+Words are drawn from cached sprites (shadow, bloom, face), not re-rasterised with live blur filters. Caption 3's person
+matte runs in a Web Worker on a 256 px copy of the frame (CPU delegate; the GPU path stalls inside a worker), the
+renderer composites the latest mask, and until the first mask arrives it segments on the page so a highlight is never
+drawn over the speaker. The face detector runs a few times a second, since a card's place is fixed when it starts.
+Entries leave rest and land at rest (`fromRest`: 1 - (1 - x^1.3)^3), per the owner rule "speed is a curve, never a step".

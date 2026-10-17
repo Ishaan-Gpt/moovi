@@ -107,3 +107,6 @@
 
 ## 1.12.0 (2026-10-18)
 - edit-fundamentals §12, the recipe for a top-tier talking-head edit every time; §13 the motion-graphics gap.
+
+## 1.13.2 (2026-10-18)
+- Lesson: smooth captions in rAF (sprite cache, matte in a worker, measured fps).
