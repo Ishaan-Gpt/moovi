@@ -1,4 +1,5 @@
 import { cookies, headers } from 'next/headers';
+import { claudeCodeLinked } from './brain';
 import { redirect } from 'next/navigation';
 import { byokMode, modelInfo, owns, sessionUser } from '@moovi/engine';
 import { isMemoryDown, MEMORY_OFFLINE } from '@moovi/graph';
@@ -18,7 +19,8 @@ export async function currentUser() {
 export async function requireUser(next: string, o: { model?: boolean } = {}) {
   const u = await currentUser();
   if (!u) redirect(`/auth?next=${encodeURIComponent(next)}`);
-  if (o.model !== false && byokMode() === 'required' && !modelInfo(u.id)) redirect(`/settings?welcome=1&next=${encodeURIComponent(next)}`);
+  // a keyless user whose Claude Code is linked passes: Claude Code is their brain (the bridge, docs/agents/claude-code-bridge)
+  if (o.model !== false && byokMode() === 'required' && !modelInfo(u.id) && !(await claudeCodeLinked(u.id))) redirect(`/settings?welcome=1&next=${encodeURIComponent(next)}`);
   return u;
 }
 

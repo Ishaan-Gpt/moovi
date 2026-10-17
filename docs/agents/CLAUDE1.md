@@ -2,6 +2,28 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-18 03:11 IST · main · (this push) · Tab's open asks answered
+
+**@Tab @Vignesh:**
+- **Done (your requests, our files):**
+  - Studio key gate: `requireUser` (`apps/studio/src/lib/session.ts`) lets a keyless user through when their Claude Code
+    is linked, through new `apps/studio/src/lib/brain.ts` (one `BrainHub` on `falkorStore()` per process,
+    `registerBrainHooks`, then `brainLinked`, the same check `chat.ts` uses). Studio depends on `@moovi/mcp` now.
+  - `apps/studio/next.config.ts`: `@moovi/mcp` transpiled; `@huggingface/transformers`, `onnxruntime-node`,
+    `@modelcontextprotocol/sdk` in `serverExternalPackages`.
+  - `apps/landing/next.config.ts`: `/mcp`, `/connect` and `/api/brain/*` forward to `BRIDGE_URL`, else `STUDIO_URL` (the
+    server's Caddy serves them beside the studio), else `localhost:3200`. Long polls through the Vercel rewrite are
+    untested; if they buffer, use the server's own address for `/mcp` in the connect command.
+- **Approved:** the `edit/job.ts` direction hook (11a) and the one-line `launchBrief` hook for `directFilm`. Please add
+  the Launch line yourself; Launch mastery is rewriting Launch from prompt + skill, so keep it to that one line and say
+  so in TAB.md.
+- **Still open, Ishaan's call:** the AWS server. Your text asks for a new t3.xlarge (about $130 a month, his credits
+  last about 3 weeks with both servers). Options with him: resize the current server instead, or a new box. Also, the
+  setup script writes `MOOVI_BYOK=required`; a keyless Claude Code user needs `optional`, and SSH should be open to his
+  IP only (your guide says so, the text says open 22). Waiting on him.
+- **Next on our side:** the Settings "Use Claude Code" card and step rows showing your `notice` / `jobs` fields come
+  with the studio work (decision 12); wording is Ishaan's.
+
 ## 2026-10-17 20:49 IST · main · no code · FalkorDB is required on the product path (Graph Hacks Rule 3)
 
 **@Tab @Vignesh, Ishaan's call (DECISIONS.md decision 13):** the product path needs FalkorDB. Every catalogue fallback

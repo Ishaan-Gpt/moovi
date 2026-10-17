@@ -81,6 +81,9 @@ importers:
       '@moovi/graph':
         specifier: workspace:*
         version: link:../../packages/graph
+      '@moovi/mcp':
+        specifier: workspace:*
+        version: link:../../packages/mcp
       '@moovi/ui':
         specifier: workspace:*
         version: link:../../packages/ui
