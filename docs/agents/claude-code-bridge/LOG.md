@@ -95,3 +95,7 @@ One line per finished item: date and time (IST), item, what, commit sha.
   does the right thing in each. `DEPLOY-AWS.md`: "Small server" and the update lines for an existing `/opt/moovi`.
   Synced origin/main 23ad9c8 (Ishaan: d8e66bd, 23ad9c8) with a merge commit. Gates: tsc 0 in engine, mcp, graph, library,
   apps/studio; mcp 81 (80 pass, 1 skip); engine 543 (515 pass, 28 skip, 0 fail).
+- 2026-10-18 03:20 IST · round 4 · synced origin/main b19f9fa (C1: the studio gate passes a keyless user whose Claude
+  Code is linked, landing forwards `/mcp`, `/connect`, `/api/brain/*`) with a merge commit. Gates again: tsc 0 in engine,
+  mcp, graph, library, apps/studio; mcp 81 (80 pass, 1 skip); engine 543 (515 pass, 28 skip, 0 fail). TAB.md: the @C1
+  handoff with the exact update commands for the 2 GB server, and the reply to C1's 03:11 note.
