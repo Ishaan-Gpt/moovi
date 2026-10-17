@@ -8,21 +8,37 @@ import { laneRuntime, type LaneFacts, type ModelScope, type Runtime } from '@moo
 import { BRIDGE_PROVIDER } from '@moovi/engine/brain';
 import { bridgeRuntime, type BridgeOptions } from './bridge';
 import type { StepQueue } from './queue';
+import { KEY, type BrainStore } from './store';
 
 export const ONLINE_MS = 90_000;
 
-/** Last pull time per user, kept in memory beside the store (lane facts are read synchronously at every call). */
+/**
+ * Last pull time per user. Lane facts are read synchronously at every call, so the reading lives in memory; with a
+ * store it is also written there (`ce:brain:seen:<user>`), so a process that does not serve /mcp itself (the engine
+ * worker) learns it with `prime(user)` before a job picks its scope (keys.primeBrainScope).
+ */
+export const SEEN_TTL_MS = 30 * 24 * 3600_000;
 export class Presence {
   private seen = new Map<string, number>();
-  constructor(readonly now: () => number = Date.now) {}
-  touch(user: string) { this.seen.set(user, this.now()); }
-  forget(user: string) { this.seen.delete(user); }
+  constructor(readonly now: () => number = Date.now, readonly store?: BrainStore) {}
+  touch(user: string) {
+    const t = this.now();
+    this.seen.set(user, t);
+    void this.store?.set(KEY.seen(user), String(t), SEEN_TTL_MS).catch(() => undefined);
+  }
+  forget(user: string) { this.seen.delete(user); void this.store?.del(KEY.seen(user)).catch(() => undefined); }
+  /** read the shared reading (newest wins); a store that cannot be read leaves the local reading as it is */
+  async prime(user: string): Promise<void> {
+    if (!this.store) return;
+    const v = await this.store.get(KEY.seen(user)).catch(() => null);
+    const t = v === null ? NaN : Number(v);
+    if (Number.isFinite(t) && t > (this.seen.get(user) ?? -Infinity)) this.seen.set(user, t);
+  }
   state(user: string): LaneFacts['claudeCode'] {
     const t = this.seen.get(user); if (t === undefined) return 'off';
     return this.now() - t <= ONLINE_MS ? 'online' : 'linked';
   }
 }
-
 export function brainScope(o: {
   user: string; queue: StepQueue; presence: Presence; job: () => string;
   own: ModelScope | null; server: Runtime | null; byok: LaneFacts['byok'];
