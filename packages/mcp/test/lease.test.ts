@@ -28,7 +28,11 @@ test('lease 9: one job, one session: a second session gets nothing of a leased j
   const ta = await g.mintTicket('u1'), tb = await g.mintTicket('u1');
   const a = await g.pull('u1', 'A', ta); assert.ok('step' in a);
   assert.deepEqual(await g.pull('u1', 'B', tb), { idle: IDLE_OTHER_WINDOW });
-  const a2 = await g.pull('u1', 'A', ta); assert.ok('step' in a2 && a2.lease === (a as { lease: string }).lease, 'same session keeps its lease');
+  const again = await g.pull('u1', 'A', ta);
+  assert.ok('step' in again && again.step.id === a.step.id, 'asking again before answering gives the open step back (item 20)');
+  assert.deepEqual(await g.submit('u1', 'A', a.lease, a.step.id, '{}'), { ok: true });
+  const a2 = await g.pull('u1', 'A', ta); assert.ok('step' in a2 && a2.lease === a.lease && a2.step.id !== a.step.id, 'same session keeps its lease');
+  assert.deepEqual(await g.submit('u1', 'A', a2.lease, a2.step.id, '{}'), { ok: true });
   assert.deepEqual(await g.pull('u1', 'A', ta), { idle: IDLE_NOTHING });
 });
 

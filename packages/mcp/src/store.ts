@@ -30,6 +30,8 @@ export const KEY = {
   link: (user: string) => `ce:brain:link:${user}`,
   job: (job: string) => `ce:brain:job:${job}`,
   jobs: (user: string) => `ce:brain:jobs:${user}`,
+  /** the user's picked, not yet answered steps (a dropped window's step is handed to the window that takes over) */
+  held: (user: string) => `ce:brain:held:${user}`,
 };
 
 /** In memory (tests, one process). `now` is injectable so expiry is testable without waiting. */
