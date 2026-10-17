@@ -1,15 +1,18 @@
-# HTTPS in front of the studio and the Claude Code bridge. SITE_ADDRESS is a domain (a certificate is fetched
+# HTTPS in front of the studio and the Claude Code bridge. The /studio/... bridge paths are the same routes for the
+# Settings card when the website is reached through a proxy of /studio (e.g. a Vercel site that rewrites /studio here).
+# SITE_ADDRESS is a domain (a certificate is fetched
 # automatically) or ":80". The bridge (the worker service) answers /mcp, /connect, /healthz and /api/brain/*; its long
 # polls hold a request up to 45 s, under any load balancer idle timeout of 60 s or more.
 {$SITE_ADDRESS} {
-	encode zstd gzip
-	@bridge path /mcp /mcp/* /connect /healthz /api/brain/*
+	@bridge path /mcp /mcp/* /connect /healthz /api/brain/* /studio/connect /studio/api/brain/*
 	handle @bridge {
 		reverse_proxy worker:3200 {
 			flush_interval -1
 		}
 	}
 	handle {
+		# compression only for the website: the bridge's event streams must reach Claude Code unbuffered
+		encode zstd gzip
 		redir / /studio 302
 		reverse_proxy studio:3100
 	}

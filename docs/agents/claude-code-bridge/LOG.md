@@ -70,3 +70,32 @@ One line per finished item: date and time (IST), item, what, commit sha.
   e2e on vignesh-test-1 (Node path, no Python): 17.2 s, Orbit + Phone Mockup + Before/After + Whip Spin all rendered (render 198 s on 4 cores); output transcript has every word of the raw, none clipped.
   Synced origin/main d29df08 (Ishaan: d29df08, b812ef3, 6917acc, 8cea2e8, aa2dab6, 81beae3, f21e0ff, 6c4527a, 3ff9b89, d601223, 527a33a, 3eb3554) with a merge commit.
   Synced origin/main 4f519d9 (Ishaan: 4f519d9, b62734f, b910043) with a second merge commit before the push to main.
+
+- 2026-10-18 02:58 IST · round 4, deploy fix (own chunk, before anything else) · b7c101b: `docker compose` refused
+  docker-compose.yml (caddy had `depends_on` twice), so no deploy could start; fixed and checked with `docker compose
+  config` and `caddy validate`. server-setup.sh is now safe on an existing server and as an update (keeps the address in
+  .env, adds PUBLIC_URL/SITE_ADDRESS/MOOVI_ORIGINS, stops with a plain message on busy ports, a foreign /opt/moovi, no
+  compose v2, Docker down; `--no-caddy`, `--website`), sets MOOVI_BYOK=optional (the studio gate sends keyless users to
+  Settings under required). Caddy: no compression on the bridge, /studio/connect and /studio/api/brain/* to the bridge
+  (the Settings card through a Vercel rewrite of /studio). `pnpm --filter @moovi/mcp check "<command>"`. Proof: the deploy
+  shape run locally (real Caddy with this Caddyfile on https://localhost:8443 in front of scripts/serve.ts, FalkorDB 6399):
+  the link call through the proxy minted `https://localhost:8443/mcp`, cross-site link 403, an SDK client got a
+  direct:edit step through the proxy in 32 s and answered it. Gates: tsc 0 in engine, mcp, graph, library, apps/studio;
+  mcp 81 (80 pass, 1 skip); engine 543 (515 pass, 28 skip, 0 fail) on f43ac25 (engine unchanged since). Synced
+  origin/main 9198404 (Ishaan: 9198404, bcccee7) with a merge commit.
+- 2026-10-18 03:15 IST · round 4, a 2 GB server works · 89b2da9: Ishaan's live server is 2 GB. `deploy/server-setup.sh`
+  never refuses on low RAM. Swap: when the total swap is under 3 GB on a server with under 3.5 GB of RAM (or there is no
+  swap at all) it adds a 4 GB `/swapfile-moovi` and its fstab line, once; swap already there (a hand made `/swapfile2`)
+  counts, and under 5 GB of free disk it adds nothing and says so. Under 3.5 GB it also adds (only when missing) the
+  77 MB speech model, one video at a time (`MOOVI_SLOTS_*`) and `BUILD_NODE_OPTIONS=--max-old-space-size=2560`, passed to
+  the image build as a build argument (Dockerfile, docker-compose.yml). The build runs alone (`COMPOSE_PARALLEL_LIMIT=1`,
+  `docker compose build studio`) with the worker and the old website stopped, then `up -d` and the seed. Proof: shellcheck
+  0.11 clean at every level, `docker compose config` resolves the build argument, the swap block run against six fake
+  machines (2 GB no swap, 2 GB with a 4 GB `/swapfile2`, 2 GB with 1 GB, 2 GB on a full disk, 16 GB without and with swap)
+  does the right thing in each. `DEPLOY-AWS.md`: "Small server" and the update lines for an existing `/opt/moovi`.
+  Synced origin/main 23ad9c8 (Ishaan: d8e66bd, 23ad9c8) with a merge commit. Gates: tsc 0 in engine, mcp, graph, library,
+  apps/studio; mcp 81 (80 pass, 1 skip); engine 543 (515 pass, 28 skip, 0 fail).
+- 2026-10-18 03:20 IST · round 4 · synced origin/main b19f9fa (C1: the studio gate passes a keyless user whose Claude
+  Code is linked, landing forwards `/mcp`, `/connect`, `/api/brain/*`) with a merge commit. Gates again: tsc 0 in engine,
+  mcp, graph, library, apps/studio; mcp 81 (80 pass, 1 skip); engine 543 (515 pass, 28 skip, 0 fail). TAB.md: the @C1
+  handoff with the exact update commands for the 2 GB server, and the reply to C1's 03:11 note.
