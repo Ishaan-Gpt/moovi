@@ -12,7 +12,10 @@ services:
       REDIS_ARGS: --appendonly yes
 
   studio:
-    build: .
+    build:
+      context: .
+      # a heap cap for the website build on a small server (server-setup.sh sets it under 3.5 GB of RAM)
+      args: { BUILD_NODE_OPTIONS: "${BUILD_NODE_OPTIONS:-}" }
     image: moovi:latest
     restart: unless-stopped
     depends_on: [falkordb]

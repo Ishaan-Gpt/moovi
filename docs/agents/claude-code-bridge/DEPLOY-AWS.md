@@ -20,6 +20,8 @@ Studio and bridge share one address, so the sign-in cookie of the website also s
 
 - EC2 **t3.xlarge** (4 vCPU, 16 GB) or bigger. The speech model and the effects render are CPU heavy; t3.large (8 GB)
   works for one video at a time but is slow. Ubuntu 24.04 LTS, x86_64.
+- A **2 GB server works too** (for example an existing t3.small), slower and one video at a time. It needs swap, which
+  the setup script adds for you (see "Small server" below), and about 15 GB of free disk.
 - Disk: **40 GB gp3** at least (image about 4 GB, the speech model 760 MB, videos grow over time).
 - Security group: inbound 22 (your IP only), 80 and 443 (anywhere). Nothing else.
 - An Elastic IP, and a DNS A record (for example `moovi.example.com`) pointing at it. No domain? Use
@@ -37,6 +39,29 @@ cp .env.example .env
 (or `sudo bash deploy/server-setup.sh [moovi.example.com]` does steps 2 to 4: Docker if missing, swap if none, a `.env`
 with a fresh secret, `SITE_ADDRESS` and `PUBLIC_URL`, the build, the start and the seed. With no address it uses
 `<public-ip>.sslip.io`. See "Updating" below for a server that already runs something.)
+
+### Small server (under 3.5 GB of RAM, for example 2 GB)
+
+The script never refuses a small server. Under 3.5 GB of RAM it:
+
+- brings swap to at least 3 GB: when the total swap is under 3 GB it adds a 4 GB `/swapfile-moovi` and its `/etc/fstab`
+  line, once (a re-run finds it and changes nothing). Swap you added yourself counts: a 4 GB `/swapfile2` already on
+  means nothing is added. A server with no swap at all gets the file at any RAM size. Under 5 GB of free disk it adds
+  nothing and says so.
+- adds to `.env`, only when the key is not there yet: `MOOVI_STT_LOCAL_MODEL=onnx-community/whisper-base_timestamped`
+  (77 MB, about 300 MB of memory, instead of the 760 MB model), `MOOVI_SLOTS_RENDER=1`, `MOOVI_SLOTS_CHROME=1`,
+  `MOOVI_SLOTS_CPU=1`, `MOOVI_SLOTS_LLM=2` (one video at a time) and `BUILD_NODE_OPTIONS=--max-old-space-size=2560`
+  (a heap cap for the website build, passed in as a Docker build argument).
+- builds with `COMPOSE_PARALLEL_LIMIT=1`, stops the worker and the old website during the build so the build has the
+  memory, builds the one image (`docker compose build studio`), then `docker compose up -d` and the seed.
+
+The build takes 10 to 20 minutes on 2 GB; that is normal. To add swap by hand instead (same effect):
+
+```
+sudo fallocate -l 4G /swapfile2 && sudo chmod 600 /swapfile2 && sudo mkswap /swapfile2 && sudo swapon /swapfile2
+echo '/swapfile2 none swap sw 0 0' | sudo tee -a /etc/fstab
+free -h
+```
 
 ## 3. Environment (.env)
 
@@ -108,7 +133,20 @@ the argument), adds `PUBLIC_URL`, `SITE_ADDRESS` and `MOOVI_ORIGINS` when an old
 port 80 or 443 is held by another web server (run it with `--no-caddy`: Moovi then listens on 127.0.0.1:3100 and
 127.0.0.1:3200 only and the script prints the Caddy or nginx routes to add), port 3100 or 3200 is taken, `/opt/moovi`
 exists and is not Moovi, Docker is there without `docker compose` v2, or Docker is not running. It adds swap only when
-the server has none, and installs Docker only when it is missing.
+the server has none (or under 3 GB of it on a server with under 3.5 GB of RAM, see "Small server"), and installs
+Docker only when it is missing.
+
+An existing server in `/opt/moovi` on an old build (no `/mcp`, `/healthz` answers 404), 2 GB or bigger:
+
+```
+cd /opt/moovi
+git pull
+sudo bash deploy/server-setup.sh <its-address, e.g. 65-2-223-240.sslip.io>
+curl https://<its-address>/healthz
+```
+
+The script does the swap, `PUBLIC_URL`/`SITE_ADDRESS`, the rebuild, the restart and the seed. The last line must print
+`ok` (JSON with `"ok":true`). Then each user makes the command in Settings, under Use Claude Code.
 
 Website on another address (for example a Vercel site that rewrites `/studio/*` to this server):
 `sudo bash deploy/server-setup.sh <server-address> --website https://your-site.vercel.app`. Caddy sends

@@ -16,8 +16,9 @@ RUN corepack enable
 WORKDIR /app
 COPY . .
 # dev dependencies too: the worker runs TypeScript through tsx, and the build needs the compilers
+ARG BUILD_NODE_OPTIONS=""
 RUN pnpm install --frozen-lockfile --prod=false \
- && pnpm --filter @moovi/studio build
+ && NODE_OPTIONS="$BUILD_NODE_OPTIONS" pnpm --filter @moovi/studio build
 ENV NODE_ENV=production
 
 VOLUME ["/data"]

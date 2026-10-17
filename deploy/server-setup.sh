@@ -13,7 +13,8 @@
 # --no-caddy: the server already runs a web server on ports 80/443 (nginx, Caddy, ...). Moovi then listens only on
 # 127.0.0.1:3100 (website) and 127.0.0.1:3200 (Claude Code bridge) and the script prints the routes to add to it.
 # Nothing on the server outside the repo folder is changed except: Docker (installed only if missing) and a 4 GB
-# /swapfile (only when the server has no swap at all).
+# /swapfile-moovi with its /etc/fstab line (only when the server has no swap at all, or has under 3.5 GB of RAM and
+# under 3 GB of swap; swap you added yourself, e.g. /swapfile2, counts). A 2 GB server works: it is never refused.
 set -euo pipefail
 
 SITE=""; CADDY=1; WEBSITE=""; NEXT_IS_WEBSITE=0
@@ -90,15 +91,30 @@ fi
 SITE="${SITE#https://}"; SITE="${SITE#http://}"; SITE="${SITE%%/*}"
 say "site address: https://$SITE"
 
-# swap: a safety net for the build and for Chromium spikes, only when the server has none at all
-if [ -z "$(swapon --show --noheadings 2>/dev/null)" ]; then
-  if [ -f /swapfile ]; then swapon /swapfile 2>/dev/null || say "note: /swapfile exists but could not be turned on; continuing without swap"
-  elif fallocate -l 4G /swapfile 2>/dev/null && chmod 600 /swapfile && mkswap /swapfile >/dev/null && swapon /swapfile; then
-    grep -q '^/swapfile ' /etc/fstab || echo '/swapfile none swap sw 0 0' >> /etc/fstab
-    say "added a 4 GB /swapfile"
+# memory: 2 GB servers work (slower) with swap. Under 3.5 GB of RAM the total swap is brought to at least 3 GB with a
+# 4 GB /swapfile-moovi (once; an fstab line keeps it); a server with no swap at all gets it too. Never refuses on low RAM.
+MEMINFO="${MOOVI_MEMINFO:-/proc/meminfo}"; SWAPFILE="${MOOVI_SWAPFILE:-/swapfile-moovi}"; FSTAB="${MOOVI_FSTAB:-/etc/fstab}"
+MEM_MB=$(awk '/^MemTotal:/ {print int($2/1024)}' "$MEMINFO")
+SWAP_MB=$(awk '/^SwapTotal:/ {print int($2/1024)}' "$MEMINFO")
+LOW_MEM=0; [ "$MEM_MB" -lt 3500 ] && LOW_MEM=1
+say "memory: ${MEM_MB} MB RAM, ${SWAP_MB} MB swap"
+if { [ "$LOW_MEM" -eq 1 ] && [ "$SWAP_MB" -lt 3000 ]; } || [ "$SWAP_MB" -eq 0 ]; then
+  if swapon --show=NAME --noheadings 2>/dev/null | grep -qx "$SWAPFILE"; then
+    : # already on
+  elif [ -f "$SWAPFILE" ] && swapon "$SWAPFILE" 2>/dev/null; then
+    say "turned on the existing $SWAPFILE"
   else
-    rm -f /swapfile; say "note: could not add swap on this disk; continuing without it (8 GB of memory or more is fine)"
+    FREE_MB=$(df -Pm / | awk 'NR==2 {print $4}')
+    if [ "$FREE_MB" -lt 5000 ]; then
+      say "note: only ${FREE_MB} MB free on disk, so no swap was added (a build on low memory may fail; free disk or add swap, then run again)"
+    elif { fallocate -l 4G "$SWAPFILE" 2>/dev/null || dd if=/dev/zero of="$SWAPFILE" bs=1M count=4096 status=none; } \
+        && chmod 600 "$SWAPFILE" && mkswap "$SWAPFILE" >/dev/null && swapon "$SWAPFILE"; then
+      say "added a 4 GB $SWAPFILE"
+    else
+      rm -f "$SWAPFILE"; say "note: could not add swap on this disk; continuing"
+    fi
   fi
+  if [ -f "$SWAPFILE" ] && ! grep -q "^$SWAPFILE " "$FSTAB" 2>/dev/null; then echo "$SWAPFILE none swap sw 0 0" >> "$FSTAB"; fi
 fi
 
 if ! command -v docker >/dev/null; then
@@ -129,11 +145,28 @@ if [ -n "$WEBSITE" ]; then setkey WEBSITE_URL "${WEBSITE%/}"; fi
 # saved key), so the server runs with optional: a user with neither a key nor Claude Code is told so when a video starts.
 if grep -q '^MOOVI_BYOK=required' .env; then say "MOOVI_BYOK=required changed to optional (Claude Code users have no key)"; fi
 setkey MOOVI_BYOK optional
+# a small server: one video at a time, the small speech model (77 MB, about 300 MB of memory) instead of the large one
+# (760 MB download, about 1.5 GB of memory), and a heap cap for the website build. Values already in .env are kept.
+addkey() { grep -q "^$1=" .env || echo "$1=$2" >> .env; }
+if [ "$LOW_MEM" -eq 1 ]; then
+  addkey MOOVI_STT_LOCAL_MODEL onnx-community/whisper-base_timestamped
+  addkey MOOVI_SLOTS_RENDER 1
+  addkey MOOVI_SLOTS_CHROME 1
+  addkey MOOVI_SLOTS_CPU 1
+  addkey MOOVI_SLOTS_LLM 2
+  addkey BUILD_NODE_OPTIONS --max-old-space-size=2560
+  say "small server: one video at a time, small speech model, build heap capped (see .env)"
+fi
 
+# one image (studio, worker and seed share it), built on its own; on a small server the worker (Chromium, the speech
+# model) and the old website are stopped during the build so the build has the memory; both come back right after
+export COMPOSE_PARALLEL_LIMIT=1
+if [ "$LOW_MEM" -eq 1 ]; then docker compose stop worker studio >/dev/null 2>&1 || true; fi
+docker compose build studio
 if [ "$CADDY" -eq 1 ]; then
-  docker compose up -d --build
+  docker compose up -d
 else
-  docker compose up -d --build falkordb studio worker
+  docker compose up -d falkordb studio worker
 fi
 # the craft library (effects, styles) into the graph; safe to run again
 docker compose run --rm seed || say "seeding failed; run again: docker compose run --rm seed"
