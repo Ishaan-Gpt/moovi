@@ -68,8 +68,9 @@ export const GROUPING = {
   start: 0.8,
 };
 
-const isStop = (w: string) => /[.!?।]["')\]]*$/.test(w.trim());
-const truncated = (w: string) => /[-–—…]$|\.\.\.$/.test(w.trim());
+const truncated = (w: string) => /[-–—…]["')\]]*$|\.\.\.["')\]]*$/.test(w.trim());
+/** A full stop ends a line; trailing dots ("an agentic...", "an agentic…") are a line broken off, not a full stop. */
+const isStop = (w: string) => /[.!?।]["')\]]*$/.test(w.trim()) && !truncated(w);
 const toks = (ws: Word[]) => ws.map(w => bare(w.word)).filter(t => t && !FILLERS.has(t));
 const r3 = (x: number) => Math.round(x * 1000) / 1000;
 

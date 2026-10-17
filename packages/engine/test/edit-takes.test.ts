@@ -163,3 +163,23 @@ test('takes: "use take 1" by chat is a new version with its own takes.json, and 
   // a pure helper the swap uses: choosing a take records the person's pick
   assert.equal(chooseTake(takes, 0, 1).groups[0]!.why, 'take 1: you chose it');
 });
+
+test('takes: a false start the hearing ends in "..." or "…" is a line broken off, not a full stop (Edit mastering round 1)', () => {
+  // the round-1 clip's words (ishaan-retakes): a false start, then the line said in full and run on into the next one
+  const said1 = (dots: string, gap: number) => {
+    const b = 6.56 + gap;
+    return [W('Moovi.', 3.7, 4.56), W('Now', 4.5, 5.1), W('Moovi', 5.1, 5.32), W('is', 5.32, 5.5), W('an', 5.5, 5.64), W(`agentic${dots}`, 5.64, 6.56),
+      ...['Now,', 'Moovi', 'is', 'an', 'agentic', 'video', 'editor', 'which', 'basically', 'converts', 'your', 'raw', 'clips', 'into', 'finished', 'after', 'effects', 'style', 'animations.'].map((w, k) => W(w, b + k * 0.3, b + k * 0.3 + 0.25))];
+  };
+  for (const [dots, gap] of [['...', 0.49], ['…', 0.49], ['...', 1.2]] as const) {
+    const ws = said1(dots, gap), g = findTakes(ws).groups;
+    assert.equal(g.length, 1, `${dots} ${gap}: ${JSON.stringify(linesOf(ws).map(l => l.map(w => w.word).join(' ')))}`);
+    assert.equal(g[0]!.takes.length, 2);
+    assert.equal(g[0]!.kept, 2);
+    // only the full line plays
+    const e = buildEdl({ source: { ...source, duration: 16 }, words: ws, palette, style: { id: 'base' }, retakes: dropSpans(findTakes(ws)) });
+    assert.ok(!said(e as Edl).includes(`agentic${dots}`), said(e as Edl));
+  }
+  // a line that really ends on a full stop still does
+  assert.equal(linesOf([W('Done.', 0, 0.4), W('Next', 0.6, 0.9), W('one.', 0.95, 1.3)]).length, 2);
+});
