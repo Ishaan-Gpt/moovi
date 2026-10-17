@@ -5,6 +5,10 @@
  * feed the runner's single repair. It never blocks and never throws: no model that sees, no frames, a timeout or any
  * error is written down as `skipped` or `error` and the render ships without it. The model is the engine's own
  * (runtime/ ask, the crew tier, the same door the S1 critic uses); nothing new is added for it.
+ *
+ * Both of Lens's inputs use it (decision 11): CHECK hands it an EDL and the frames of its pixel pass; the film review
+ * hands it a generated film's beat stills (review/film, opt-in) with its own brief. At most 3 frames, as today, unless
+ * the caller asks for more (Creative mode looks at every beat).
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { z } from 'zod';
@@ -44,10 +48,15 @@ export const askVision: VisionFn = async (frames, o) => {
   return a.problems;
 };
 
+/** what the model is told about the film: an edit plan, or any film with its own brief */
+export type VisionSubject = Pick<PlayerEdl, 'output' | 'inserts'> | { brief: string; output?: undefined; inserts?: undefined };
+/** today's limit: the one review looks at up to 3 frames */
+export const VISION_FRAMES = 3;
+
 /** Run the one vision review over the frames; findings become issues tied to the frame's caption chunk or card. */
-export async function visionReview(e: PlayerEdl, frames: VisionFrame[], cfg: ReviewConfig, see?: VisionFn): Promise<VisionResult> {
+export async function visionReview(e: VisionSubject, frames: VisionFrame[], cfg: ReviewConfig, see?: VisionFn, o: { limit?: number } = {}): Promise<VisionResult> {
   const t0 = Date.now(), done = (x: Partial<VisionResult>): VisionResult => ({ issues: [], findings: [], asked: 0, ...x, ms: Date.now() - t0 });
-  const fs = frames.filter(f => f.file && existsSync(f.file)).slice(0, 3);
+  const fs = frames.filter(f => f.file && existsSync(f.file)).slice(0, Math.max(1, Math.round(o.limit ?? VISION_FRAMES)));
   if (!cfg.vision) return done({ skipped: 'off for this style or kit' });
   const flag = process.env.MOOVI_REVIEW_VISION?.trim().toLowerCase();
   if (flag === 'off') return done({ skipped: 'MOOVI_REVIEW_VISION=off' });
@@ -62,7 +71,7 @@ export async function visionReview(e: PlayerEdl, frames: VisionFrame[], cfg: Rev
   const abort = new AbortController();
   let timer: NodeJS.Timeout | undefined;
   try {
-    const brief = `A ${e.output?.w || 720}x${e.output?.h || 1280} talking short with burned-in captions${(e.inserts ?? []).length ? ` and ${(e.inserts ?? []).length} cards` : ''}.`;
+    const brief = 'brief' in e ? e.brief : `A ${e.output?.w || 720}x${e.output?.h || 1280} talking short with burned-in captions${(e.inserts ?? []).length ? ` and ${(e.inserts ?? []).length} cards` : ''}.`;
     const findings = await Promise.race([
       eye(fs, { signal: abort.signal, max: cfg.visionMaxIssues, brief }),
       new Promise<never>((_, rej) => { timer = setTimeout(() => { abort.abort(); rej(new Error(`timed out after ${cfg.visionTimeoutMs} ms`)); }, cfg.visionTimeoutMs); }),

@@ -7,3 +7,5 @@ export * from './contrast';
 export * from './runner';
 export * from './vision';
 export * from './pixels';
+export * from './floor';
+export * from './lens';
