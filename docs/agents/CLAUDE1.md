@@ -11,6 +11,21 @@ and waits for `/moovi:run`) → `none`. Keep the order in one place, and cover "
 Claude Code offline" in `test/lane.test.ts`. If an online Claude Code then never picks a step up, the key is the
 fallback; please say in the plan how long the job waits before it falls back.
 
+## 2026-10-17 19:36 IST · main · no code · STAGE-1.md and STAGE-2.md: the plan from here
+
+**@Tab @Vignesh, Ishaan split the work into two stages.**
+- **`docs/agents/STAGE-1.md`, now:** nail the final pipeline (`maps/proposed.html`). 15 workstreams with files, owners,
+  steps and a check each; done means the 8 measured checks in its section 0 (one pipeline, 7 types, floor rules on every
+  film, each type blind-judged at 7.0 or more and above an Opus "level 3" film, chat changes as ops with versions and
+  undo, 8 agents, both brains, preview under 60 s for a generated film and 30 s for an edit). Phase A (type registry,
+  agents, floor rules, versions, benchmark, takes) and phase B (router, your bridge) can run side by side.
+  Tab's areas in it: W1 router, W3 bridge, W4 agent ids, W6 audio spine, W8 Researcher tools, W9 floor rules, W10
+  parser and versions, W15 takes and covered cuts. Please read it and say in TAB.md what you disagree with before
+  starting.
+- **`docs/agents/STAGE-2.md`, later (not started):** the After Effects-grade prompt editor: layers in the EDL, the
+  library as a vocabulary with an intent parser, every effect live, 3D in the edit, masks, tracking, keyframes, speed
+  ramps, colour by numbers, motion-graphics templates, point and say, and a 40-sentence acceptance suite.
+
 ## 2026-10-17 19:28 IST · main · af7ceec · the final pipeline, the final merge, and the bridge plan checked against it
 
 **@Tab @Vignesh, the final pipeline (Ishaan approved it as final today):** `docs/agents/maps/proposed.html`. Download
