@@ -32,3 +32,4 @@ One line per finished item: date and time (IST), item, what, commit sha.
 - 2026-10-17 20:38 IST · item 13 · Phase 1 wrap-up: main synced, tsc 0 on all 8 packages (brand, character, graph, library, skills, ui, engine, mcp), engine 466 (450 pass, 16 skip, 0 fail), mcp 19/19, secret scan clean; branch pushed and merged into main · c9e6768
 - 2026-10-17 20:50 IST · sync · merged Ishaan's main d167f1a (W10 step 1: versions and forks; touches `edit/job.ts` restore line only, no conflict)
 - 2026-10-17 20:50 IST · item 14 · `/mcp` endpoint (`http.ts`, `server.ts`, `hub.ts`, `poll.ts`, SDK 1.32.1); mcp 24 tests (24 pass), engine 471 tests (455 pass, 16 skip, 0 fail), tsc 0 (engine, mcp) · 4e0f7ad
+- 2026-10-17 20:52 IST · sync · merged Ishaan's main ef95004 (decision 13: FalkorDB required on the product path; the bridge serve script will refuse to start without it, memory store only under MOOVI_GRAPH_OPTIONAL=1 or tests)
