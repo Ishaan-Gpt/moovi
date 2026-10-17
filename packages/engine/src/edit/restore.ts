@@ -66,6 +66,13 @@ export function restoreChain(s: { w: number; h: number; bpp: number }, short = 1
   ].join(',');
 }
 
+/**
+ * The player seeks a deck to every cut, so the file must seek fast: a keyframe every half second and a bitrate cap. Without
+ * them the grade's temporal grain drove crf 18 to 64 Mbps with keyframes 8 s apart, and cuts held 0.5-3.8 s while the
+ * decoder walked from the last keyframe (measured on the test clip, headless Chrome on the GPU).
+ */
+const SEEKABLE = (fps: number) => { const g = String(Math.max(1, Math.round(fps / 2))); return ['-g', g, '-keyint_min', g, '-sc_threshold', '0', '-maxrate', '10M', '-bufsize', '10M']; };
+
 const ff = (args: string[], ms: number) => new Promise<void>((res, rej) =>
   execFile(config.ffmpeg, ['-nostdin', '-hide_banner', '-v', 'error', ...args], { timeout: ms, killSignal: 'SIGKILL', maxBuffer: 8 << 20 }, (e, _o, err) => e ? rej(new Error(String(err).slice(-300) || String(e))) : res()));
 
@@ -77,7 +84,7 @@ export async function restoreVideo(src: string, out: string, p: { w: number; h: 
   const bpp = bitsPerPixel(statSync(src).size, p.duration, p.w, p.h, p.fps), from = { w: p.w, h: p.h, bpp: +bpp.toFixed(3) }, weak = needsRestore(from);
   if (!o.force && !weak && !o.grade) return null;
   const chain = restoreChain(from, 1080, o.grade), t0 = Date.now();
-  await ff(['-y', '-threads', String(o.threads ?? 2), '-i', src, '-vf', chain, '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '18', '-pix_fmt', 'yuv420p', '-c:a', 'copy', '-movflags', '+faststart', out],
+  await ff(['-y', '-threads', String(o.threads ?? 2), '-i', src, '-vf', chain, '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '18', ...SEEKABLE(p.fps), '-pix_fmt', 'yuv420p', '-c:a', 'copy', '-movflags', '+faststart', out],
     Math.max(120_000, p.duration * 20_000));
   const up = weak && Math.min(p.w, p.h) < 1080, k = up ? 1080 / Math.min(p.w, p.h) : 1;
   const to = { w: Math.round(p.w * k / 2) * 2, h: Math.round(p.h * k / 2) * 2 };

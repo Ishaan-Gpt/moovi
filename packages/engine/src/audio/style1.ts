@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { config } from '../config';
 
@@ -115,7 +115,7 @@ export async function sfxStem(events: SfxEvent[], out: string, o: { seed?: numbe
   const pk = absMax(buf), lim = 10 ** (-1 / 20); if (pk > lim) for (let i = 0; i < buf.length; i++) buf[i]! *= lim / pk; // never clip
   const raw = out + '.f32';
   writeFileSync(raw, Buffer.from(buf.buffer));
-  await run(config.ffmpeg, ['-v', 'error', '-y', '-f', 'f32le', '-ar', String(SR), '-ac', '1', '-i', raw, '-t', String(o.duration ?? end), out]);
+  await run(config.ffmpeg, ['-v', 'error', '-y', '-f', 'f32le', '-ar', String(SR), '-ac', '1', '-i', raw, '-t', String(o.duration ?? end), out]).finally(() => rmSync(raw, { force: true }));
   return { file: out, placed: kept.length, dropped: flat.length - kept.length, used };
 }
 

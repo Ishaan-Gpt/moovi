@@ -102,7 +102,12 @@ function drawInserts(t) {
 const fx = $('fx');
 function drawFx(t) { const k = EDIT.transitionAt(E, t).flash; fx.style.opacity = k > 0.01 ? k.toFixed(2) : '0'; return k > 0.01 ? k.toFixed(2) : ''; }
 // the library's sounds (E.sfx, cast by edit/cast.ts from the graph) played as the output clock passes them
-const SFX = (E.sfx || []).filter(s => s.file).map(s => ({ t: s.t, g: Math.min(1, Math.pow(10, ((s.gain_db ?? -24) + 20) / 20)), a: LAYER || STILL ? null : new Audio('/sfx/' + s.file) }));
+// the finished soundtrack (edit/job.ts: voice, bed and the Style 1 stem mixed on the output clock) plays instead of the clip's sound
+const MIX = E.mix && E.mix.file && !LAYER && !STILL ? new Audio('/v/' + E.mix.file) : null;
+if (MIX) MIX.preload = 'auto';
+// stepped sync (never playbackRate: changing it often stalls the element): reseek only past 0.15 s of drift
+function syncMix(t) { if (MIX && playing && !MIX.seeking && Math.abs(MIX.currentTime - t) > 0.15) MIX.currentTime = t; }
+const SFX = (E.sfx || []).filter(s => s.file && !MIX).map(s => ({ t: s.t, g: Math.min(1, Math.pow(10, ((s.gain_db ?? -24) + 20) / 20)), a: LAYER || STILL ? null : new Audio('/sfx/' + s.file) }));
 let sfxT = -1;
 function playSfx(t) { if (sfxT >= 0) for (const s of SFX) if (s.a && s.t > sfxT && s.t <= t) { s.a.currentTime = 0; s.a.volume = s.g; s.a.play().catch(() => {}); } sfxT = t; }
 // the blurred fill behind a 'fit' shot: the visible deck drawn small every frame and blurred by CSS (cheap)
@@ -139,21 +144,21 @@ function frame(now) {
   if (t >= g.t_out && si + 1 < S.length) {
     const due = now, want = S[si + 1].src_in; si++;
     const old = cur; cur = nxt; nxt = old;
-    cur.muted = false; if (cur.paused) cur.play().catch(() => {}); show(cur);
+    cur.muted = !!MIX; if (cur.paused) cur.play().catch(() => {}); show(cur);
     old.muted = true; old.pause(); old.style.transform = '';
     cur.requestVideoFrameCallback((n, md) => M.cuts.push({ hold: +(n - due).toFixed(1), off: +((md.mediaTime - want) * 1000).toFixed(0) }));
     prep(si + 1);
   }
   if (t >= D) { draw(D); stop(); $('p').textContent = 'Replay'; window.__done = true; return; }
-  playSfx(t); draw(t); requestAnimationFrame(frame);
+  playSfx(t); syncMix(t); draw(t); requestAnimationFrame(frame);
 }
 async function start() {
   if (tNow >= D - 0.05) { await place(0); draw(0); }
-  base = tNow; sfxT = tNow; cur.muted = false; await cur.play().catch(e => { cur.muted = true; return cur.play(); });
+  base = tNow; sfxT = tNow; cur.muted = !!MIX; if (MIX) { MIX.currentTime = tNow; MIX.play().catch(() => {}); } await cur.play().catch(e => { cur.muted = true; return cur.play(); });
   if (M.firstFrame === null) cur.requestVideoFrameCallback(n => { M.firstFrame = +(n - M.t0).toFixed(1); });
   playing = true; wall0 = performance.now(); $('p').textContent = 'Pause'; requestAnimationFrame(frame);
 }
-function stop() { playing = false; sfxT = -1; cur.pause(); nxt.pause(); $('p').textContent = 'Play'; }
+function stop() { playing = false; sfxT = -1; if (MIX) MIX.pause(); cur.pause(); nxt.pause(); $('p').textContent = 'Play'; }
 $('p').onclick = () => playing ? stop() : start();
 $('s').oninput = async e => { const was = playing; stop(); const t = +e.target.value / 1000 * D; await place(t); draw(t); if (was) start(); };
 

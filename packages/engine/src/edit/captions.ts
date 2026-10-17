@@ -63,4 +63,5 @@ export const CAPTION_FONTS = [
   ['Instrument Serif', 'instrument-serif-latin-400-italic.woff2', '400', 'italic'],
   ['Geist', 'geist-latin-wght-normal.woff2', '100 900'],
   ['JetBrains Mono', 'jetbrains-mono-latin-wght-normal.woff2', '100 800'],
+  ['Permanent Marker', 'permanent-marker-latin-400-normal.woff2', '400'],
 ].map(([f, file, w, style]) => `@font-face{font-family:'${f}';src:url(/engine/fonts/${file}) format('woff2');font-weight:${w};font-style:${style ?? 'normal'}}`).join('\n');
