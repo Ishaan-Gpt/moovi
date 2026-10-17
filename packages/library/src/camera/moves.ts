@@ -480,7 +480,7 @@ const ENTRIES: readonly Entry[] = [
   M({
     id: 'speed-ramp', name: 'Speed-ramp push (A → 2× → 0.5× → 2× → B)', group: 'edit', ref: 'premium edit grammar (Ishaan, 2026-10-18: "A→2x→0.5x→2x→B, an advanced camera effect at many places")', premium: true,
     aliases: ['speed ramp', 'speed-ramp', 'time ramp', 'time remap', 'fast slow fast', 'ramp push', 'ramped push', 'speed ramp push'],
-    about: 'A push toward a point whose speed is remapped: it leaves already moving at 2× the average, slows to 0.5× through the middle two thirds (the beat the eye reads), then whips into the end at 2×. Same start and end framing as an even push; only time is bent. The speed-ramp ease does the same to any other move.',
+    about: 'A push toward a point on one smooth speed curve: it eases out of rest, speeds up to about 2× the average, glides through the middle at about 0.5× (the beat the eye reads), speeds up again and settles into the end. No corners anywhere: an easing, not a hard time remap. The speed-ramp ease gives the same curve to any other move.',
     use: 'Reveals, a hero flying out of a crowd, a lockup moving to the header, scene-to-scene travel, any move that should feel edited rather than mechanical; pair the fast ends with motion blur and a whoosh, the slow middle with the key word.',
     avoid: 'Calm, sincere beats; moves under 0.5 s (the ramp cannot read); stacking two ramps back to back with no rest.',
     defaults: { duration: 1.6, ease: 'speed-ramp', intensity: 1 }, amount: { value: 1.35, unit: 'x', what: 'end zoom factor' },

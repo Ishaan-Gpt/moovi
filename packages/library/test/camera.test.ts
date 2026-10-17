@@ -194,10 +194,12 @@ test('parser: editor words, aim points and scope', () => {
   assert.deepEqual(parseCamera('orbit left then chase', { scope: 'coded' }).outOfScope, ['chase']);
 });
 
-test('the premium speed ramp: A → 2× → 0.5× → 2× → B, same ends as an even move', () => {
-  const e = EASES['speed-ramp'], v = (u: number) => (e(Math.min(1, u + 0.005)) - e(Math.max(0, u - 0.005))) / 0.01;
+test('the premium speed ramp is a smooth easing: rest → ≈2× → ≈0.5× → ≈2× → rest', () => {
+  const e = EASES['speed-ramp'], v = (u: number) => (e(Math.min(1, u + 0.004)) - e(Math.max(0, u - 0.004))) / (Math.min(1, u + 0.004) - Math.max(0, u - 0.004));
   assert.equal(e(0), 0); assert.equal(e(1), 1);
-  assert.ok(Math.abs(v(0.05) - 2) < 0.15, `start ${v(0.05)}`); assert.ok(Math.abs(v(0.5) - 0.5) < 0.08, `middle ${v(0.5)}`); assert.ok(Math.abs(v(0.95) - 2) < 0.15, `end ${v(0.95)}`);
+  assert.ok(v(0.002) < 0.05 && v(0.998) < 0.05, `starts and ends at rest (${v(0.002)}, ${v(0.998)})`);
+  assert.ok(Math.abs(v(0.31) - 2.1) < 0.15, `fast ${v(0.31)}`); assert.ok(Math.abs(v(0.5) - 0.52) < 0.08, `slow middle ${v(0.5)}`); assert.ok(Math.abs(v(0.69) - 2.1) < 0.15, `fast ${v(0.69)}`);
+  for (let u = 0.02; u < 0.98; u += 0.01) assert.ok(Math.abs(v(u + 0.01) - 2 * v(u) + v(u - 0.01)) < 0.03, `no corner at ${u.toFixed(2)}`);
   const m = CAMERA_MOVES.find(x => x.id === 'speed-ramp'); assert.ok(m && m.premium && m.defaults.ease === 'speed-ramp');
   const call = parseCamera('speed ramp push 1.6s').calls[0]!; assert.equal(call.move, 'speed-ramp'); assert.equal(call.duration, 1.6);
 });
