@@ -55,3 +55,15 @@ keeps take 2 in every look.
 - Atlas: the "MOOVI" card sits on the hairline; an "IN" card half off the right edge.
 - Handmade: the caption drops the name while the term card shows it ("hello guys, i am and"); stray dash and arrow doodles.
 - The source itself (848x478, soft): Fidelity cannot pass about 5.5 on this clip, whatever the edit does.
+
+## Ishaan's verdict, 2026-10-18 (binding for this session)
+
+- The pipeline's edits scored 0/10 by Ishaan: no SFX on captions, no music bed, no continuity, abrupt cuts, no motion
+  graphics, no clips, no camera moves, no effects, no polish.
+- Board v2 (`edit-master-prompt.md` alone, no Moovi styles or templates) was better than the pipeline. Board v3 (the
+  same prompt plus the ishaan-motion skill) was a little better again, still about 2/10 of the way.
+- So the saved looks, templates, kits and rule tables are themselves weak. Do not use them blindly. Expect to scrap
+  about 90% of them; keep only what earns its place against fresh, prompt-led designs.
+- Method from here: design each edit from the prompt and the ishaan-motion laws, one storyboard image board per
+  iteration (under 2 minutes), Ishaan's references as the taste. Boards and their source: `data/master-edit/`
+  (git-ignored): `board.jpg` (v2), `board-v3.jpg` (v3), `src/board-v3.html`.
