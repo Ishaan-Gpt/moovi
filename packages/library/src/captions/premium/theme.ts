@@ -37,10 +37,10 @@ export function litKey(accent: string): { fill: string[]; glow: { color: string;
     glow: {
       color: hex(mid),
       layers: [
-        { r: 0.06, a: 0.4, c: hex(halo) },
-        { r: 0.024, a: 0.6, c: hex(mid) },
-        { r: 0.008, a: 0.65, c: hex(mix(mid, WHITE, 0.2)) },
-        { r: 0.003, a: 0.5, c: hex(mix(mid, WHITE, 0.7)) },
+        { r: 0.06, a: 0.3, c: hex(halo) },
+        { r: 0.024, a: 0.45, c: hex(mid) },
+        { r: 0.008, a: 0.5, c: hex(mix(mid, WHITE, 0.2)) },
+        { r: 0.003, a: 0.4, c: hex(mix(mid, WHITE, 0.7)) },
       ],
     },
   };
@@ -62,4 +62,13 @@ export function accentFromPixels(px: Uint8ClampedArray | Uint8Array): string | n
   bins.forEach((v, i) => { if (v > bins[best]!) best = i; });
   if (!bins[best]) return null;
   return hex(fromHsl([sums[best]! / bins[best]!, 0.9, 0.56]));
+}
+
+/** The key line as metal (Premium Caption 2's gold): a bright top light falling to the accent and a deeper base, no bloom. */
+export function metalKey(accent: string): string[] {
+  const [h, s] = toHsl(rgb(accent));
+  const mid = fromHsl([h, Math.max(s, 0.7), 0.62]);
+  const deep = fromHsl([(h + 352) % 360, Math.max(s, 0.75), 0.46]);
+  // subtle: the top light only lifts the accent a little (the ref reads as gold, not as white fading to gold)
+  return [hex(mix(mid, WHITE, 0.38)), hex(mix(mid, WHITE, 0.14)), hex(mid), hex(deep)];
 }
