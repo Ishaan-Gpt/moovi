@@ -263,14 +263,15 @@ export function buildEdl(i: BuildInput): Edl {
       const punch = n % 2 === 1, face = faceAt((a + b) / 2), f = faceCentre(face, src, out);
       const shot: EdlShot & { rule_id?: string } = { t_in: r4(t), t_out: r4(t + d), src_in: r4(a), src_out: r4(b) };
       let scale: number, cx = r4(f.cx), cy = r4(f.cy);
-      if (wide && !(punch && face)) {
-        // a landscape clip in a vertical film: shown whole over its own blurred fill (2cf18a6); with a face, every
-        // other shot is the close-up the face crop gives, so wide and close alternate
+      if (wide && !faces.length) {
+        // a landscape clip with no face found, in a vertical film: shown whole over its own blurred fill (2cf18a6)
         Object.assign(shot, { layout: 'fit', bg: { mode: 'blur' } });
         scale = punch ? L.punch : 1; cx = 0.5; cy = 0.5;
       } else {
+        // with a face, a landscape clip is cropped full-frame on the face like a vertical one (edit mastery round 2:
+        // the blurred fill strip read as "a tiny subject in mush" on every look; the references never show it)
         shot.layout = 'full';
-        scale = punch && !wide ? L.punch : 1;
+        scale = punch ? L.punch : 1;
       }
       shot.framing = { scale, cx, cy };
       if (d >= 1.6) (shot as { zoom?: unknown }).zoom = [{ t: r4(t), scale: r4(scale * L.push), cx, cy, ease: 'inout', dur: r4(d), rule_id: 'law.slow_push' }];

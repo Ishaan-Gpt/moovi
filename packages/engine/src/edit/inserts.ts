@@ -117,7 +117,7 @@ export function itemsOf(text: string, keys: string[]): string[] {
 }
 
 /** Spoken padding a card never sets. */
-const PAD = new Set('hello hey hi guys okay ok so well um uh like going gonna because also actually basically literally right yeah thing things stuff kind sort start thank thanks please'.split(' '));
+const PAD = new Set('hello hey hi guys okay ok so now well um uh like going gonna because also actually basically literally right yeah thing things stuff kind sort start thank thanks please'.split(' '));
 const weak = (w: string) => STOP.has(w.toLowerCase()) || PAD.has(w.toLowerCase());
 
 /**
@@ -135,7 +135,17 @@ export function headlineOf(ws: { text: string; role?: string }[]): { text: strin
   const scoreOf = (c: typeof all) => c.reduce((s, w) => s + (w.key ? 3 : weak(w.text) ? 0 : 1 + Math.min(1, w.text.length / 10)), 0) - Math.max(0, c.length - 5) * 1.5;
   const ranked = clauses.map(trim).filter(c => c.length).sort((x, y) => scoreOf(y) - scoreOf(x));
   let pick = ranked[0] ?? [];
-  if (pick.length > 5) { const k = Math.max(0, pick.findIndex(w => w.key)); const a = Math.max(0, Math.min(k - 1, pick.length - 5)); pick = trim(pick.slice(a, a + 5)); }
+  // a long clause: the best run of 2 to 5 words that ends where a phrase ends (before a weak word, or the clause's end),
+  // never mid-phrase ("Now MOOVI is an agentic" → "agentic video editor", edit mastery round 2)
+  if (pick.length > 5) {
+    let best = { s: -Infinity, a: 0, b: 5 };
+    for (let a = 0; a < pick.length; a++) for (let b = a + 2; b <= Math.min(pick.length, a + 5); b++) {
+      const run = pick.slice(a, b); if (weak(run[0]!.text) || weak(run.at(-1)!.text)) continue;
+      const s = scoreOf(run) + (b === pick.length || weak(pick[b]!.text) ? 2 : 0);
+      if (s > best.s) best = { s, a, b };
+    }
+    pick = trim(pick.slice(best.a, best.b));
+  }
   // one word alone reads weak: the next strongest clause joins it, in spoken order
   if (pick.length === 1 && ranked[1]) pick = [...pick, ...ranked[1].slice(0, 4)].sort((x, y) => x.i - y.i);
   const out = pick.map(w => ({ text: w.text, key: w.key }));

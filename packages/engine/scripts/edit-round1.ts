@@ -14,17 +14,18 @@
  * from the local data folder, never embedded (no reference media in git).
  */
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, extname, join, relative, resolve } from 'node:path';
 import { chromium } from 'playwright-core';
 import { config } from '../src/config';
 import { planEdit } from '../src/edit/job';
 import { PAGE } from '../src/edit/page';
+import { useRestored } from '../src/edit/restore';
 import { servePlayer } from '../src/s4/player';
 
 const args = process.argv.slice(2), mode = args[0] ?? 'make', flag = (k: string) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : undefined; };
 const REPO = resolve(import.meta.dirname, '..', '..', '..');
-const OUT = join(config.data, 'edit-round1'), JUDGE = join(OUT, 'judge'), REFS = join(REPO, 'data', 'refs');
+const OUT = join(config.data, flag('--out') ?? 'edit-round1'), JUDGE = join(OUT, 'judge'), REFS = join(REPO, 'data', 'refs');
 const RAW = join(config.data, 'raw', 'ishaan');
 mkdirSync(OUT, { recursive: true }); mkdirSync(RAW, { recursive: true });
 
@@ -49,7 +50,7 @@ const REFERENCE = [
 
 const clips = () => {
   // synth/: retake clips spliced from Ishaan's own footage (a false start, a line said twice) until his raw takes land
-  const SYNTH = join(OUT, 'synth'), vids = (d: string) => existsSync(d) ? readdirSync(d).filter(f => /\.(mp4|mov|m4v|webm|mkv)$/i.test(f)).map(f => join(d, f)) : [];
+  const SYNTH = join(config.data, 'edit-round1', 'synth'), vids = (d: string) => existsSync(d) ? readdirSync(d).filter(f => /\.(mp4|mov|m4v|webm|mkv)$/i.test(f)).map(f => join(d, f)) : [];
   const all = [join(REPO, 'docs', 'agents', 'ishaan-test', 'ishaan-test.mp4'), ...vids(SYNTH), ...readdirSync(RAW).filter(f => /\.(mp4|mov|m4v|webm|mkv)$/i.test(f)).map(f => join(RAW, f))];
   const only = flag('--clips')?.split(',');
   return all.map(p => ({ path: p, id: basename(p, extname(p)).replace(/[^a-z0-9]+/gi, '-').toLowerCase().slice(0, 40) })).filter(c => !only || only.includes(c.id));
@@ -61,7 +62,10 @@ const times = (d: number) => [0.06, 0.22, 0.38, 0.54, 0.7, 0.9].map(f => +(f * d
 
 /** Six stills from the live player (window.__render, the same frame playback shows), tiled into one sheet. */
 async function stills(dir: string, duration: number): Promise<string[]> {
-  const e = JSON.parse(readFileSync(join(dir, 'edl.json'), 'utf8')) as { output?: { w: number; h: number } };
+  const e = JSON.parse(readFileSync(join(dir, 'edl.json'), 'utf8')) as { output?: { w: number; h: number }; cuts?: { t: number; dur?: number }[] };
+  // settled frames (decision 16): a still never lands inside a cut's transition (a 0.24 s blur-zoom read as "a glitch")
+  const busy = (t: number) => (e.cuts ?? []).some(c => c.dur && Math.abs(t - c.t) < c.dur + 0.04);
+  const settle = (t: number) => [0, 0.15, -0.15, 0.3, -0.3, 0.45, -0.45].map(d => +(t + d).toFixed(2)).find(x => x > 0 && x < duration && !busy(x)) ?? t;
   const land = (e.output?.w ?? 1080) > (e.output?.h ?? 1920);
   const srv = await servePlayer(dir, 0, PAGE), b = await browser();
   const out: string[] = [];
@@ -70,7 +74,7 @@ async function stills(dir: string, duration: number): Promise<string[]> {
     page.on('pageerror', x => console.log('  pageerror:', String(x).slice(0, 160)));
     await page.goto(srv.url); await page.waitForFunction('window.__ready || window.__error', null, { timeout: 90_000 });
     const err = await page.evaluate('window.__error'); if (err) throw new Error(String(err));
-    for (const [i, t] of times(duration).entries()) {
+    for (const [i, t] of times(duration).map(settle).entries()) {
       await page.evaluate(`window.__render(${t})`);
       const f = join(dir, `still-${i}.jpg`); await page.locator('#frame').screenshot({ path: f, type: 'jpeg', quality: 82 }); out.push(f);
     }
@@ -86,9 +90,15 @@ if (mode === 'make') {
     const dir = join(OUT, c.id, L.id); rmSync(dir, { recursive: true, force: true });
     console.log(`${c.id} · ${L.name}`);
     const notes: string[] = [], t0 = Date.now();
-    const p = await planEdit({ path: c.path, dir, name: basename(c.path), onNote: t => { notes.push(t); }, ...(L.plan.style ? { style: L.plan.style } : {}), brief: L.plan.brief });
+    // the picture pass is the same for every look of a clip (same source, same grade): run once per clip, then copied
+    // (--fresh runs it every time, as the studio does)
+    const CACHE = join(OUT, '_cache', c.id), cached = !args.includes('--fresh') && existsSync(join(CACHE, 'restore.json'));
+    const p = await planEdit({ path: c.path, dir, name: basename(c.path), onNote: t => { notes.push(t); }, ...(L.plan.style ? { style: L.plan.style } : {}), brief: L.plan.brief, ...(cached ? { restore: false } : {}) });
     const toPlan = (Date.now() - t0) / 1000;
-    const [voice, restore, mix] = await Promise.all([p.voice, p.restore, p.mix]);
+    const [voice, restore0, mix] = await Promise.all([p.voice, p.restore, p.mix]);
+    let restore = restore0;
+    if (cached) { restore = { ...JSON.parse(readFileSync(join(CACHE, 'restore.json'), 'utf8')), file: join(dir, 'hd.mp4') }; copyFileSync(join(CACHE, 'hd.mp4'), join(dir, 'hd.mp4')); useRestored(dir, restore!); writeFileSync(join(dir, 'restore.json'), JSON.stringify(restore, null, 1)); }
+    else if (restore) { mkdirSync(CACHE, { recursive: true }); copyFileSync(restore.file, join(CACHE, 'hd.mp4')); writeFileSync(join(CACHE, 'restore.json'), JSON.stringify(restore, null, 1)); }
     const e = JSON.parse(readFileSync(join(dir, 'edl.json'), 'utf8'));
     const fr = await stills(dir, p.duration);
     sheet(fr, join(dir, 'sheet.jpg'));
@@ -98,6 +108,13 @@ if (mode === 'make') {
     writeFileSync(join(OUT, 'runs.json'), JSON.stringify(log, null, 1));
     console.log(`  ${row.ran.style.id ?? 'base'}${row.ran.template ? ` + ${row.ran.template}` : ''} · ${row.duration} s · ${row.shots} shots · caption ${row.ran.caption} · plan ${row.to_plan_s} s${notes.length ? ` · ${notes.join(' | ')}` : ''}`);
   }
+  process.exit(0);
+}
+
+if (mode === 'stills') {
+  // the player changed, the plans did not: new stills and sheets for every output already made
+  const runs = JSON.parse(readFileSync(join(OUT, 'runs.json'), 'utf8')) as { clip: string; look: string; dir: string; duration: number }[];
+  for (const r of runs) { const fr = await stills(r.dir, r.duration); sheet(fr, join(r.dir, 'sheet.jpg')); console.log(`${r.clip} · ${r.look}: sheet`); }
   process.exit(0);
 }
 
@@ -116,10 +133,12 @@ if (mode === 'judge') {
   // every output and every reference sheet in one round, shuffled and lettered; the key stays out of the judge folder
   rmSync(JUDGE, { recursive: true, force: true }); mkdirSync(JUDGE, { recursive: true });
   const runs = JSON.parse(readFileSync(join(OUT, 'runs.json'), 'utf8')) as { clip: string; look: string; dir: string }[];
-  const items = [...runs.map(r => ({ kind: 'ours', id: `${r.clip}/${r.look}`, sheet: join(r.dir, 'sheet.jpg') })), ...REFERENCE.filter(r => existsSync(join(OUT, 'refs', r.id, 'sheet.jpg'))).map(r => ({ kind: 'ref', id: r.id, sheet: join(OUT, 'refs', r.id, 'sheet.jpg') }))];
-  let seed = 20261017; const rnd = () => (seed = (seed * 1103515245 + 12345) % 2 ** 31) / 2 ** 31;
+  // --with a,b: the previous rounds' outputs (data/<a>/runs.json) in the same blind round, for the ratchet
+  const prev = (flag('--with')?.split(',') ?? []).flatMap(o => (JSON.parse(readFileSync(resolve(config.data, o, 'runs.json'), 'utf8')) as { clip: string; look: string; dir: string }[]).map(r => ({ kind: 'ours', id: `${o}:${r.clip}/${r.look}`, sheet: join(r.dir, 'sheet.jpg') })));
+  const items = [...prev, ...runs.map(r => ({ kind: 'ours', id: `${r.clip}/${r.look}`, sheet: join(r.dir, 'sheet.jpg') })), ...REFERENCE.filter(r => existsSync(join(OUT, 'refs', r.id, 'sheet.jpg'))).map(r => ({ kind: 'ref', id: r.id, sheet: join(OUT, 'refs', r.id, 'sheet.jpg') }))];
+  let seed = Number(flag('--seed') ?? 20261017); const rnd = () => (seed = (seed * 1103515245 + 12345) % 2 ** 31) / 2 ** 31;
   for (let i = items.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [items[i], items[j]] = [items[j]!, items[i]!]; }
-  const key = items.map((it, i) => { const letter = String.fromCharCode(65 + i); ff(['-i', it.sheet, '-q:v', '4', join(JUDGE, `${letter}.jpg`)]); return { letter, ...it }; });
+  const key = items.map((it, i) => { const letter = i < 26 ? String.fromCharCode(65 + i) : 'A' + String.fromCharCode(65 + i - 26); ff(['-i', it.sheet, '-q:v', '4', join(JUDGE, `${letter}.jpg`)]); return { letter, ...it }; });
   writeFileSync(join(OUT, 'key.json'), JSON.stringify(key, null, 1));
   console.log(`${key.length} sheets in ${JUDGE}; key in ${join(OUT, 'key.json')}`);
   process.exit(0);
