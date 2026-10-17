@@ -1,0 +1,101 @@
+{
+  "id": "launch-l04",
+  "name": "Launch · Verdict",
+  "about": "Black hype frames alternate with warm cream; one green accent always lands on the key word, often with a hand-drawn underline; chips gain a lock; a black liquid wave wipes; a slot-mask verdict pill; a particle-dust logo. Learned from a health-app launch film (promptsmotion.com).",
+  "from": [
+    "ref:l04"
+  ],
+  "styles": [
+    "brand-promo",
+    "studio-minimal"
+  ],
+  "palette": {
+    "paper": "#F2EEE5",
+    "paperShade": "#EAE5DA",
+    "ink": "#0B0B0B",
+    "text": "#151515",
+    "textDim": "rgba(21,21,21,0.52)",
+    "inkText": "#F2EEE5",
+    "inkTextDim": "rgba(242,238,229,0.52)",
+    "card": "#FFFFFF",
+    "accent": "#3E7B57"
+  },
+  "type": {
+    "display": {
+      "family": "jakarta",
+      "weight": 650,
+      "tracking": -0.035
+    },
+    "accent": {
+      "family": "jakarta",
+      "weight": 650,
+      "tracking": -0.035
+    },
+    "accentSerif": false,
+    "micro": {
+      "family": "mono",
+      "weight": 500,
+      "tracking": 0.14
+    },
+    "ui": {
+      "family": "jakarta",
+      "weight": 550
+    },
+    "wordmark": {
+      "family": "jakarta",
+      "weight": 700,
+      "tracking": -0.04
+    },
+    "numeral": {
+      "family": "jakarta",
+      "weight": 700
+    }
+  },
+  "worlds": [
+    "ink",
+    "paper",
+    "paper",
+    "ink"
+  ],
+  "bg": {
+    "paper": [],
+    "ink": []
+  },
+  "post": {
+    "grain": 0.03
+  },
+  "prefer": {
+    "type": [
+      "effect:type-drop-underline",
+      "effect:type-mask-rise",
+      "effect:type-slot-roll"
+    ],
+    "transitions": [
+      "transition:liquid-wave-wipe",
+      "transition:mask-wipe-up",
+      "transition:whip-pan"
+    ],
+    "cams": [
+      "camera:push-slow",
+      "camera:punch-on-head"
+    ]
+  },
+  "motion": {
+    "engine": "kits/launch (ishaan-motion)",
+    "arrive": {
+      "seconds": 0.55,
+      "ease": "out (0.16,1,0.3,1)"
+    },
+    "stagger": 0.07,
+    "cutOn": "bar"
+  },
+  "frame": {
+    "designW": 1920,
+    "designH": 1080,
+    "ratios": [
+      "16:9",
+      "1:1",
+      "9:16"
+    ]
+  }
+}

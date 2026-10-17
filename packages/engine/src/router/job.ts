@@ -70,6 +70,7 @@ export function autoPickFor(brief: string, kinds: string[], lines: string[]): { 
 }
 export function urlStyleFor(brief: string): ReelInput['style'] {
   const b = brief.toLowerCase();
+  if (/\b(launch(es|ing)?|announce\w*|release|promo|product (film|video)|new feature|keynote)\b/.test(b)) return 'launch';
   if (/\b(story|fable|tale|history|journey|founder)\b/.test(b)) return 'darkvox';
   if (/\b(how (it|they) works?|architecture|under the hood|system|product)\b/.test(b)) return 'anatomy';
   if (/\b(essay|idea|why|metaphor|calm)\b/.test(b)) return 's4';

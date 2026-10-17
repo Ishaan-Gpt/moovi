@@ -45,6 +45,8 @@ export interface RunInput {
   port?: number;
   /** Stop: aborts the run (the next stage never starts, child processes are killed, model calls are cancelled) */
   signal?: AbortSignal;
+  /** Launch: the film's frame (default 16:9; the other styles are vertical) */
+  ratio?: '16:9' | '1:1' | '9:16' | '4:5';
   /** Auto matched the brief to a kit (styles/kit/kits.ts): its palette roles dress the film's library inserts */
   kit?: { id: string; name: string; palette: Record<string, string> };
 }

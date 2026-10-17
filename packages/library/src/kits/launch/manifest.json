@@ -1,0 +1,28 @@
+{
+  "about": "The Launch kit: browser canvas code for the Launch style, loaded in this order (runtime first, the player last). Each pack registers parts with LAUNCH.def(<library asset id>, spec). The same files run in Node (the planner reads plan() hooks in a vm).",
+  "files": [
+    "runtime.js",
+    "worlds.js",
+    "type.js",
+    "trans.js",
+    "cam.js",
+    "ui.js",
+    "fx.js",
+    "setups.js",
+    "end.js",
+    "p-l01.js",
+    "p-l02.js",
+    "p-l03.js",
+    "p-l04.js",
+    "p-l05.js",
+    "p-l06.js",
+    "p-l07.js",
+    "p-l08.js",
+    "p-l09.js",
+    "p-l10.js",
+    "p-l11.js",
+    "p-l12.js",
+    "dev.js"
+  ],
+  "player": "player.js"
+}

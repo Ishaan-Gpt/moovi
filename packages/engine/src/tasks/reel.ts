@@ -26,6 +26,8 @@ const slug = (s: string) => s.replace(/^https?:\/\//, '').replace(/^www\./, '').
 export const styleReel: Handler = async ctx => {
   const inp = ctx.input<ReelInput>();
   const info = styleOf(inp.style);
+  // Launch films are 16:9; every other live style is vertical
+  const fmt = inp.style === 'launch' ? 'landscape' : 'vertical';
   if (!info) throw new Error(`Unknown style "${inp.style}"`);
   const id = `${slug(inp.url ?? inp.brand ?? 'script')}-${ctx.run.id.slice(-6)}`;
   const [c] = await ctx.q<{ version: number | null }>(P.chat, { id: ctx.chat });
@@ -64,10 +66,10 @@ export const styleReel: Handler = async ctx => {
       const ref: LiveRef = { style: inp.style, player: p.player, dir: p.dir, id: p.id, run: ctx.run.id, timings: {}, duration: p.duration };
       mkdirSync(join(ctx.projectDir, 'videos', ctx.chat), { recursive: true });
       writeFileSync(liveRefFile(ctx.projectDir, ctx.chat, version), JSON.stringify(ref, null, 1));
-      await ctx.q(P.setVideo, { id: ctx.run.video, status: 'ready', path: p.dir, poster: null, duration: p.duration, version, style: `live:${inp.style}`, format: 'vertical', at: Date.now() });
+      await ctx.q(P.setVideo, { id: ctx.run.video, status: 'ready', path: p.dir, poster: null, duration: p.duration, version, style: `live:${inp.style}`, format: fmt, at: Date.now() });
       await ctx.q(P.setChat, { id: ctx.chat, title: null, status: 'ready', at: Date.now() });
-      await publish(ctx.chat, { type: 'video', video: { id: ctx.run.video, status: 'ready', version, duration: p.duration, format: 'vertical', live: true } });
-      await ctx.say(`Here it is, playing live: ${p.duration.toFixed(1)} s of ${info.name}, ready ${p.seconds.toFixed(1)} s after you asked.${info.player === 's1-engine' ? '' : ' Lens is still pulling a contact sheet from it.'}`, 'video', { video: ctx.run.video, version, duration: p.duration, format: 'vertical', run: ctx.run.id, live: true, style: inp.style }, 'moovi');
+      await publish(ctx.chat, { type: 'video', video: { id: ctx.run.video, status: 'ready', version, duration: p.duration, format: fmt, live: true } });
+      await ctx.say(`Here it is, playing live: ${p.duration.toFixed(1)} s of ${info.name}, ready ${p.seconds.toFixed(1)} s after you asked.${info.player === 's1-engine' ? '' : ' Lens is still pulling a contact sheet from it.'}`, 'video', { video: ctx.run.video, version, duration: p.duration, format: fmt, run: ctx.run.id, live: true, style: inp.style }, 'moovi');
       announced = true;
     },
   });

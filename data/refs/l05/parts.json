@@ -1,0 +1,2940 @@
+{
+ "reference": {
+  "id": "l05",
+  "url": "https://www.promptsmotion.com/cansincengiz-me-cf68dd",
+  "title": "Mac utility promo (cobalt)",
+  "kind": "app promo, 1:1, 15 s",
+  "seconds": 15.06,
+  "notes": "The most finished: a 3D laptop tells the story (open, lid closes, it sleeps), one idea per beat, a black to cobalt to white colour journey and a frosted ice-blue status-card system with live micro-UI; heavy italic grotesk with serif italic second lines. Studied from what the page shows publicly; rebuilt in Moovi's own code (packages/library/src/kits/launch) with our own fonts, sounds and assets."
+ },
+ "kit": {
+  "file": "packages/library/src/kits/launch/looks/l05.json"
+ },
+ "impl": "packages/library/src/kits/launch/",
+ "styles": [
+  "brand-promo",
+  "studio-minimal"
+ ],
+ "parts": [
+  {
+   "id": "insert:status-card-float",
+   "category": "insert",
+   "role": "floating product with a live status card",
+   "at": null,
+   "name": "Floating product with a live status card",
+   "about": "a two-part line (heavy grotesk, serif italic second half) over a floating product slab that bobs on a soft contact shadow, a frosted ice-blue status card with a live value under it",
+   "energy": 3,
+   "needs": [
+    "product",
+    "ui",
+    "benefit",
+    "success",
+    "calm"
+   ],
+   "params": {
+    "setup": {
+     "family": "object",
+     "kinds": [
+      "demo",
+      "proof",
+      "promise"
+     ],
+     "cams": [
+      "camera:tilt-dolly",
+      "camera:push-slow"
+     ],
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/setups.js#insert:status-card-float"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.95
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.85
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.45
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "end_card:wordmark-cta",
+   "category": "end_card",
+   "role": "wordmark, tagline, address pill",
+   "at": null,
+   "name": "Wordmark, tagline, address pill",
+   "about": "the real app icon pops, the wordmark rises out of its mask beside it, the tagline in serif italic, the address in a black pill the cursor clicks",
+   "energy": 3,
+   "needs": [
+    "cta",
+    "brand"
+   ],
+   "params": {
+    "setup": {
+     "family": "end",
+     "kinds": [
+      "end"
+     ],
+     "cams": [
+      "camera:push-slow"
+     ]
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/end.js#end_card:wordmark-cta"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.95
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.85
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.45
+    }
+   ],
+   "tags": [
+    "launch",
+    "end"
+   ]
+  },
+  {
+   "id": "effect:type-scale-slam",
+   "category": "effect",
+   "role": "scale slam",
+   "at": null,
+   "name": "Scale slam",
+   "about": "the line lands from 1.42x in log space with velocity ghosts and keeps drifting",
+   "energy": 5,
+   "needs": [
+    "hook",
+    "claim",
+    "reveal"
+   ],
+   "params": {
+    "type": {
+     "kinds": [
+      "hook",
+      "reveal",
+      "turn",
+      "stat"
+     ],
+     "maxWords": 5
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/type.js#effect:type-scale-slam"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "transition:zoom-through",
+   "category": "transition",
+   "role": "zoom through",
+   "at": null,
+   "name": "Zoom through",
+   "about": "the shot grows in log space past the camera and burns out in blur; the next settles in from 90% and sharpens",
+   "energy": 4,
+   "needs": [
+    "reveal",
+    "scale",
+    "speed"
+   ],
+   "params": {
+    "transition": {
+     "family": "zoom"
+    },
+    "dur": 0.56
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/trans.js#transition:zoom-through"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "zoom",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "camera:tilt-dolly",
+   "category": "camera",
+   "role": "tilt dolly",
+   "at": null,
+   "name": "Tilt dolly",
+   "about": "a slow dolly in with a slight tilt that levels out, for an object on a floor",
+   "energy": 3,
+   "needs": [
+    "product",
+    "reveal"
+   ],
+   "params": {
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/cam.js#camera:tilt-dolly"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "ui:pill-button",
+   "category": "ui",
+   "role": "pill button",
+   "at": null,
+   "name": "Pill button",
+   "about": "a black (or accent) pill with its label and an arrow, pressing on the cursor's click",
+   "energy": 2,
+   "needs": [
+    "cta",
+    "ui"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/ui.js#ui:pill-button"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.95
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:status-card-frosted",
+   "category": "ui",
+   "role": "frosted status card",
+   "at": null,
+   "name": "Frosted status card",
+   "about": "an ice-blue frosted card with a mono caps label, a big live value counting up and a gradient gauge with a needle",
+   "energy": 2,
+   "needs": [
+    "data",
+    "success",
+    "ui"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/ui.js#ui:status-card-frosted"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.95
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "effect:bloom-soft-corner",
+   "category": "effect",
+   "role": "one soft bloom",
+   "at": null,
+   "name": "One soft bloom",
+   "about": "one big soft bloom of the accent off-centre that breathes slowly (a dark shot's only glow)",
+   "energy": 1,
+   "needs": [
+    "calm",
+    "emotion"
+   ],
+   "params": {
+    "kind": "overlay"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/fx.js#effect:bloom-soft-corner"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "overlay"
+   ]
+  },
+  {
+   "id": "texture:accent-gradient",
+   "category": "texture",
+   "role": "saturated gradient",
+   "at": null,
+   "name": "Saturated gradient",
+   "about": "the accent as a full-frame vertical gradient, deep at the top and light at the bottom (a cobalt world)",
+   "energy": 3,
+   "needs": [
+    "brand",
+    "reveal"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/worlds.js#texture:accent-gradient"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "studio-minimal",
+     "w": 0.85
+    },
+    {
+     "style": "brand-promo",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  },
+  {
+   "id": "insert:laptop-agent-stage",
+   "category": "insert",
+   "role": "the agent two hours into a job",
+   "at": 0,
+   "name": "Agent at work, lid open",
+   "about": "an open laptop drawn in real 3D at three-quarter on a navy stage, its screen live with the brand's site or an agent terminal streaming steps, the two-voice headline above",
+   "energy": 2,
+   "needs": [
+    "problem",
+    "ai",
+    "product",
+    "hook"
+   ],
+   "params": {
+    "yawDeg": -20,
+    "pitchDeg": 20,
+    "lidDeg": 108,
+    "floatAmpPx": 6,
+    "floatPeriodS": 3.2,
+    "stepEveryS": 0.45,
+    "setup": {
+     "family": "device-3d",
+     "kinds": [
+      "problem",
+      "hook",
+      "demo"
+     ],
+     "roles": [
+      "open"
+     ],
+     "cams": [
+      "camera:push-slow",
+      "camera:creep-recoil"
+     ],
+     "weight": 1.2
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#insert:laptop-agent-stage"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.3
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.2
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:laptop-lid-shut",
+   "category": "insert",
+   "role": "'you close the lid'",
+   "at": 1.4,
+   "name": "Lid falls shut",
+   "about": "the open laptop lifts a touch in anticipation, the lid falls shut under gravity with the screen glow dying, lands with a thud and a 2-frame nudge, then settles as a closed slab",
+   "energy": 3,
+   "needs": [
+    "problem",
+    "turn",
+    "product"
+   ],
+   "params": {
+    "liftS": 0.3,
+    "fallS": 0.26,
+    "fallEase": "cubic-bezier(0.55,0,1,0.45)",
+    "glowFadeS": 0.22,
+    "nudgePx": 3,
+    "setup": {
+     "family": "device-3d",
+     "kinds": [
+      "problem",
+      "turn"
+     ],
+     "roles": [
+      "open",
+      "middle"
+     ],
+     "cams": [
+      "camera:anticipation-lift"
+     ],
+     "weight": 1.2
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#insert:laptop-lid-shut"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.3
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:laptop-asleep-zzz",
+   "category": "insert",
+   "role": "'it falls asleep'",
+   "at": 2.6,
+   "name": "Asleep with Z's",
+   "about": "the closed laptop breathing on the dark stage while outlined Z's rise and grow from the lid's far corner every fifth of a second",
+   "energy": 2,
+   "needs": [
+    "problem",
+    "calm",
+    "time"
+   ],
+   "params": {
+    "zEveryS": 0.2,
+    "zLifeS": 0.9,
+    "pitchDeg": 26,
+    "setup": {
+     "family": "device-3d",
+     "kinds": [
+      "problem",
+      "turn"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "cams": [
+      "camera:creep-recoil",
+      "camera:push-slow"
+     ],
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#insert:laptop-asleep-zzz"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.2
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:glyph-punch-sky",
+   "category": "insert",
+   "role": "the drop: the world flips",
+   "at": 4.15,
+   "name": "Glyph punch on the sky",
+   "about": "the brand's initial as a giant heavy glyph with a round dot slams onto a cobalt-to-ice sky with a white shockwave ring, then creeps 3% and recoils into the next beat",
+   "energy": 5,
+   "needs": [
+    "reveal",
+    "brand",
+    "hook"
+   ],
+   "params": {
+    "glyphFracShort": 0.46,
+    "slamFrom": 1.3,
+    "ringS": 0.5,
+    "creep": 0.035,
+    "setup": {
+     "family": "brand-punch",
+     "kinds": [
+      "reveal",
+      "hook"
+     ],
+     "roles": [
+      "open",
+      "middle"
+     ],
+     "cams": [
+      "camera:creep-recoil"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#insert:glyph-punch-sky"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.6
+    },
+    {
+     "style": "atlas",
+     "w": 0.3
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:wordmark-smear-reveal",
+   "category": "insert",
+   "role": "names the product",
+   "at": 4.7,
+   "name": "Wordmark streams in",
+   "about": "the giant glyph shrinks into the first letter of the wordmark while the other letters stream in from the right with a horizontal smear, the dot springs in, the tagline focuses in, and the closed laptop starts rising at the bottom edge",
+   "energy": 4,
+   "needs": [
+    "brand",
+    "reveal",
+    "product"
+   ],
+   "params": {
+    "shrinkS": 0.18,
+    "letterStaggerS": 0.025,
+    "lettersS": 0.21,
+    "taglineBlurPx": 8,
+    "setup": {
+     "family": "brand-punch",
+     "kinds": [
+      "reveal",
+      "promise"
+     ],
+     "roles": [
+      "open",
+      "middle"
+     ],
+     "cams": [
+      "camera:creep-recoil",
+      "camera:push-slow"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#insert:wordmark-smear-reveal"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.3
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:laptop-rise-to-stack",
+   "category": "insert",
+   "role": "from the brand to the product world",
+   "at": 6,
+   "name": "Rise into the stack",
+   "about": "the centred wordmark flies to a corner bug as the closed laptop rises from below turning to three-quarter, then the headline rises and a frosted live status card arrives under it",
+   "energy": 3,
+   "needs": [
+    "product",
+    "reveal",
+    "proof"
+   ],
+   "params": {
+    "flyS": 0.32,
+    "riseS": 0.7,
+    "cardAt": 0.95,
+    "setup": {
+     "family": "device-stack",
+     "kinds": [
+      "reveal",
+      "proof",
+      "turn"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "cams": [
+      "camera:push-slow"
+     ],
+     "weight": 1.15
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#insert:laptop-rise-to-stack"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:laptop-status-claim",
+   "category": "insert",
+   "role": "'still working'",
+   "at": 6.3,
+   "name": "Claim with live status",
+   "about": "headline, the floating closed laptop re-posed to a fresh angle over a light pool, and a frosted ice card with a breathing green dot, a cycling name and a counter ticking up",
+   "energy": 3,
+   "needs": [
+    "proof",
+    "ai",
+    "number",
+    "benefit"
+   ],
+   "params": {
+    "poseYaw": -30,
+    "reposeS": 0.32,
+    "counterS": 1.3,
+    "cycleEveryS": 0.55,
+    "setup": {
+     "family": "device-stack",
+     "kinds": [
+      "proof",
+      "demo",
+      "stat"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "number": "optional",
+     "cams": [
+      "camera:repose-steps",
+      "camera:push-slow"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#insert:laptop-status-claim"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:laptop-thermal-claim",
+   "category": "insert",
+   "role": "'stays cool'",
+   "at": 7.6,
+   "name": "Claim with heat gauge",
+   "about": "the floating laptop turns as a white sheen crosses its lid; the ice card shows a big reading counting up, a heat-gradient gauge with two threshold ticks and mode chips focusing in",
+   "energy": 3,
+   "needs": [
+    "stat",
+    "proof",
+    "calm",
+    "number"
+   ],
+   "params": {
+    "poseYaw": -14,
+    "countS": 0.45,
+    "chipStaggerS": 0.1,
+    "sheenS": 0.9,
+    "setup": {
+     "family": "device-stack",
+     "kinds": [
+      "stat",
+      "proof"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      0,
+      3
+     ],
+     "number": "optional",
+     "cams": [
+      "camera:repose-steps"
+     ],
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#insert:laptop-thermal-claim"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.2
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:laptop-battery-claim",
+   "category": "insert",
+   "role": "'never drains your battery'",
+   "at": 8.9,
+   "name": "Claim with battery floor",
+   "about": "the laptop re-poses to a front view; the ice card holds a battery whose green fill sits above a red threshold line and a percentage that drains a step at a time",
+   "energy": 2,
+   "needs": [
+    "stat",
+    "percent",
+    "promise",
+    "security"
+   ],
+   "params": {
+    "poseYaw": 0,
+    "pitchDeg": 14,
+    "from": 86,
+    "stepEveryS": 0.7,
+    "threshold": 15,
+    "setup": {
+     "family": "device-stack",
+     "kinds": [
+      "stat",
+      "promise",
+      "proof"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "number": "optional",
+     "cams": [
+      "camera:repose-steps"
+     ],
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#insert:laptop-battery-claim"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:laptop-done-sleeps",
+   "category": "insert",
+   "role": "'sleeps when the job is done'",
+   "at": 10.4,
+   "name": "Done, then sleeps",
+   "about": "the laptop turns the other way; a toast with a green check morphs its icon into a dark sleep badge and swaps its text, and two solid Z's rise from the lid",
+   "energy": 2,
+   "needs": [
+    "payoff",
+    "success",
+    "calm",
+    "time"
+   ],
+   "params": {
+    "poseYaw": 20,
+    "swapAt": 1,
+    "iconMorphS": 0.14,
+    "setup": {
+     "family": "device-stack",
+     "kinds": [
+      "promise",
+      "proof",
+      "turn"
+     ],
+     "roles": [
+      "middle",
+      "close"
+     ],
+     "cams": [
+      "camera:push-slow"
+     ],
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#insert:laptop-done-sleeps"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:laptop-claim-carousel",
+   "category": "insert",
+   "role": "four benefits in six seconds",
+   "at": 6,
+   "name": "Claim carousel on one object",
+   "about": "two to four claims from the brand's items on one beat grid: each swap changes the two-voice headline, re-poses the laptop and blurs the one card's content to the next live widget while the glass container stays",
+   "energy": 3,
+   "needs": [
+    "list",
+    "benefit",
+    "product",
+    "proof"
+   ],
+   "params": {
+    "perClaimS": 1.15,
+    "orderS": {
+     "headline": 0,
+     "card": 0.04,
+     "pose": 0.05
+    },
+    "poses": [
+     -30,
+     -14,
+     0,
+     20
+    ],
+    "setup": {
+     "family": "device-stack",
+     "kinds": [
+      "list",
+      "proof"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      2,
+      4
+     ],
+     "cams": [
+      "camera:repose-steps"
+     ],
+     "weight": 1.3
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#insert:laptop-claim-carousel"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:laptop-site-open",
+   "category": "insert",
+   "role": "the product in use",
+   "at": 9,
+   "name": "Lid opens on the site",
+   "about": "on the sky the closed laptop's lid swings open with a slight overshoot and the brand's own site shot lights the screen in perspective (an agent terminal when there is no shot)",
+   "energy": 3,
+   "needs": [
+    "demo",
+    "product",
+    "reveal"
+   ],
+   "params": {
+    "openS": 0.75,
+    "toLidDeg": 104,
+    "litS": 0.4,
+    "setup": {
+     "family": "device-3d",
+     "kinds": [
+      "demo",
+      "reveal",
+      "proof"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "cams": [
+      "camera:push-slow",
+      "camera:creep-recoil"
+     ],
+     "weight": 1.2
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#insert:laptop-site-open"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "end_card:white-address-pill",
+   "category": "end_card",
+   "role": "the close",
+   "at": 12.25,
+   "name": "White card, black address pill",
+   "about": "on white with a faint tint at the top: the big slanted wordmark with its dot, a two-line grotesk over serif italic lockup, a black address pill with an arrow that sharpens from grey, one line of grey fine print, a sheen later crossing the pill",
+   "energy": 2,
+   "needs": [
+    "cta",
+    "brand",
+    "payoff"
+   ],
+   "params": {
+    "order": [
+     "wordmark",
+     "line1",
+     "line2",
+     "pill",
+     "fineprint"
+    ],
+    "blurPx": 14,
+    "wordmarkWidthFrac": 0.66,
+    "sheenAt": 1.9,
+    "setup": {
+     "family": "end-white",
+     "kinds": [
+      "end"
+     ],
+     "roles": [
+      "close"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#end_card:white-address-pill"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.4
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "end"
+   ]
+  },
+  {
+   "id": "effect:type-grotesk-serif-lockup",
+   "category": "effect",
+   "role": "every claim in the film",
+   "at": 0.08,
+   "name": "Grotesk over serif italic",
+   "about": "a two-line headline: the plain words in a heavy tight grotesk, the turn in a light serif italic on the line below; each line rises out of its mask with a short blur, 0.12 s apart, and leaves upward the same way",
+   "energy": 3,
+   "needs": [
+    "claim",
+    "benefit",
+    "answer",
+    "problem"
+   ],
+   "params": {
+    "inS": 0.5,
+    "lineStaggerS": 0.12,
+    "inBlurPx": 8,
+    "inDyEm": 0.62,
+    "outS": 0.16,
+    "outDyEm": -0.42,
+    "type": {
+     "kinds": [
+      "claim",
+      "benefit",
+      "problem",
+      "hook",
+      "promise",
+      "list"
+     ],
+     "minWords": 2,
+     "maxWords": 8
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#effect:type-grotesk-serif-lockup"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-smear-stream",
+   "category": "effect",
+   "role": "the wordmark letters streaming in",
+   "at": 4.7,
+   "name": "Smear stream",
+   "about": "letters stream in from the left one after another, each dragging a horizontal smear of faint ghost copies and sharpening from blur",
+   "energy": 4,
+   "needs": [
+    "brand",
+    "reveal",
+    "energy"
+   ],
+   "params": {
+    "letterStaggerS": 0.022,
+    "letterS": 0.24,
+    "smearEm": 1.4,
+    "ghosts": 3,
+    "type": {
+     "kinds": [
+      "reveal",
+      "hook",
+      "brand"
+     ],
+     "maxWords": 4
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#effect:type-smear-stream"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.3
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-slant-dot-period",
+   "category": "effect",
+   "role": "the slanted wordmark-with-a-dot voice",
+   "at": 4.83,
+   "name": "Slant with a dot period",
+   "about": "words slide in from the right leaning hard, straighten to a heavy forward slant, and the final full stop becomes a round accent dot that springs in",
+   "energy": 3,
+   "needs": [
+    "brand",
+    "cta",
+    "promise"
+   ],
+   "params": {
+    "leanFrom": -0.45,
+    "leanTo": -0.17,
+    "wordStaggerS": 0.06,
+    "dotEm": 0.11,
+    "type": {
+     "kinds": [
+      "promise",
+      "reveal",
+      "end",
+      "hook"
+     ],
+     "maxWords": 5
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#effect:type-slant-dot-period"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.3
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-name-cycle-blur",
+   "category": "effect",
+   "role": "'works with any agent' name cycling",
+   "at": 7,
+   "name": "Name cycle with blur swaps",
+   "about": "the accent word's slot flicks through the brand's items every third of a second with two-frame blur swaps, greyed, then lands on the real word in full colour",
+   "energy": 2,
+   "needs": [
+    "list",
+    "tool",
+    "compare"
+   ],
+   "params": {
+    "everyS": 0.3,
+    "swapS": 0.07,
+    "blurPx": 7,
+    "type": {
+     "kinds": [
+      "list",
+      "proof",
+      "benefit"
+     ],
+     "maxWords": 6
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#effect:type-name-cycle-blur"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "texture:navy-spotlight-floor",
+   "category": "texture",
+   "role": "the pain world before the drop",
+   "at": 0,
+   "name": "Navy spotlight stage",
+   "about": "a near-black navy ground, darkest in the corners, with a faint cool floor lift in an ellipse under the object (a soft light pool on light worlds)",
+   "energy": 1,
+   "needs": [
+    "problem",
+    "stakes",
+    "calm"
+   ],
+   "params": {
+    "floorEllipse": [
+     1.35,
+     0.55
+    ],
+    "vignette": 0.55
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#texture:navy-spotlight-floor"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.2
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.1
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  },
+  {
+   "id": "texture:cobalt-sky-gradient",
+   "category": "texture",
+   "role": "the product world after the drop",
+   "at": 4.15,
+   "name": "Cobalt sky",
+   "about": "a vertical sky from deep indigo through the accent to pale ice at the bottom, built from the brand accent (a pale ice wash on light worlds)",
+   "energy": 2,
+   "needs": [
+    "benefit",
+    "calm",
+    "product",
+    "answer"
+   ],
+   "params": {
+    "stops": [
+     0,
+     0.2,
+     0.5,
+     0.82,
+     1
+    ],
+    "inkMixTop": 0.45,
+    "whiteMixBottom": 0.72
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#texture:cobalt-sky-gradient"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.4
+    },
+    {
+     "style": "handmade",
+     "w": 0.1
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.1
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  },
+  {
+   "id": "effect:corner-wordmark-bug",
+   "category": "effect",
+   "role": "keeps the brand on screen",
+   "at": 6,
+   "name": "Corner wordmark bug",
+   "about": "the brand's slanted wordmark with its dot as a small bug in the top-left corner, sliding in and staying while claims run",
+   "energy": 1,
+   "needs": [
+    "brand",
+    "product"
+   ],
+   "params": {
+    "heightFracShort": 0.045,
+    "inS": 0.4,
+    "kind": "overlay"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#effect:corner-wordmark-bug"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "overlay"
+   ]
+  },
+  {
+   "id": "ui:laptop-open-live",
+   "category": "ui",
+   "role": "the device the agent works on",
+   "at": 0,
+   "name": "Open laptop, live screen",
+   "about": "a silver laptop in real projected 3D at three-quarter with a hinged lid, slate keys, a trackpad, a soft contact shadow and the site shot (or a streaming agent terminal) mapped onto its screen in perspective",
+   "energy": 2,
+   "needs": [
+    "product",
+    "tool",
+    "ai",
+    "demo"
+   ],
+   "params": {
+    "lidDeg": 106,
+    "dist": 3.4,
+    "grid": [
+     8,
+     6
+    ]
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#ui:laptop-open-live"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.3
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.2
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:laptop-closed-float",
+   "category": "ui",
+   "role": "the hero object of every claim",
+   "at": 2.2,
+   "name": "Closed laptop floating",
+   "about": "a closed laptop as a two-layer rounded slab with a light rim, floating on a slow turntable with a contact shadow and a sheen crossing the lid, tinted by the world",
+   "energy": 1,
+   "needs": [
+    "product",
+    "calm",
+    "hidden"
+   ],
+   "params": {
+    "pitchDeg": 24,
+    "turnDegPerS": 2.2,
+    "sheenS": 1.1
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#ui:laptop-closed-float"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.3
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.2
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:agent-step-stream",
+   "category": "ui",
+   "role": "the agent working for hours",
+   "at": 0,
+   "name": "Agent step stream",
+   "about": "a dark terminal with traffic lights where an agent's steps append one by one as green-dotted lines with file paths, change counts in green and red, smooth scrolling and a shimmering working line at the bottom",
+   "energy": 2,
+   "needs": [
+    "ai",
+    "process",
+    "tool",
+    "build"
+   ],
+   "params": {
+    "stepEveryS": 0.42,
+    "lineInS": 0.12,
+    "scrollS": 0.2
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#ui:agent-step-stream"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.6
+    },
+    {
+     "style": "atlas",
+     "w": 0.2
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.1
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.1
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:shimmer-status-line",
+   "category": "ui",
+   "role": "'still working' at a glance",
+   "at": 0,
+   "name": "Shimmer status line",
+   "about": "a dark strip with a spinning star, a verb whose letters catch a light band running across them and a dim elapsed-time meta",
+   "energy": 1,
+   "needs": [
+    "ai",
+    "time",
+    "process"
+   ],
+   "params": {
+    "spinnerFps": 8,
+    "bandEm": 2.2,
+    "bandPeriodS": 1
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#ui:shimmer-status-line"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.6
+    },
+    {
+     "style": "atlas",
+     "w": 0.2
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.1
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.1
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:agent-status-ice-card",
+   "category": "ui",
+   "role": "proves work continues",
+   "at": 6.3,
+   "name": "Live status ice card",
+   "about": "a frosted ice card: a green dot whose halo breathes, a caps state eyebrow, a bold name that cycles with blur swaps, a divider and a counter ticking up",
+   "energy": 2,
+   "needs": [
+    "ai",
+    "proof",
+    "process",
+    "number"
+   ],
+   "params": {
+    "aspect": 0.21,
+    "cycleEveryS": 0.55,
+    "counterS": 1.3,
+    "haloPeriodS": 1
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#ui:agent-status-ice-card"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.2
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:thermal-gauge-ice-card",
+   "category": "ui",
+   "role": "'stays cool'",
+   "at": 7.7,
+   "name": "Heat gauge ice card",
+   "about": "a frosted ice card with a caps label over a big reading that counts up, a green-to-red heat gauge filling with it, two threshold ticks and pale mode chips focusing in one by one",
+   "energy": 2,
+   "needs": [
+    "health",
+    "number",
+    "proof",
+    "calm"
+   ],
+   "params": {
+    "aspect": 0.25,
+    "countS": 0.45,
+    "ticks": [
+     0.78,
+     0.9
+    ],
+    "chipStaggerS": 0.1
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#ui:thermal-gauge-ice-card"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.2
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:battery-threshold-ice-card",
+   "category": "ui",
+   "role": "'never drains your battery'",
+   "at": 9.05,
+   "name": "Battery threshold ice card",
+   "about": "a frosted ice card with a battery whose green fill sits above a red threshold line, a percentage that drains a step at a time with a blur flip, and a red caps note",
+   "energy": 2,
+   "needs": [
+    "percent",
+    "security",
+    "time",
+    "warning"
+   ],
+   "params": {
+    "aspect": 0.2,
+    "stepEveryS": 0.7,
+    "threshold": 15
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#ui:battery-threshold-ice-card"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:done-to-sleep-toast",
+   "category": "ui",
+   "role": "job done, then the machine sleeps",
+   "at": 10.47,
+   "name": "Done-to-sleep toast",
+   "about": "a frosted toast with a round green check, a bold title and a grey meta line; the icon dips and morphs into a dark sleep badge and the text swaps to a calmer status",
+   "energy": 2,
+   "needs": [
+    "success",
+    "payoff",
+    "time"
+   ],
+   "params": {
+    "aspect": 0.2,
+    "iconMorphS": 0.14,
+    "dip": 0.1
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#ui:done-to-sleep-toast"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:address-pill-sheen",
+   "category": "ui",
+   "role": "where to go",
+   "at": 12.87,
+   "name": "Address pill with sheen",
+   "about": "a solid black rounded pill with the site address and an arrow that arrives grey and blurred, sharpens to black, and later a single slanted sheen crosses it",
+   "energy": 2,
+   "needs": [
+    "cta",
+    "product"
+   ],
+   "params": {
+    "materialiseS": 0.22,
+    "blurPx": 9,
+    "sheenS": 0.45
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#ui:address-pill-sheen"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:zzz-outline-trail",
+   "category": "ui",
+   "role": "sleep, idle, done for the day",
+   "at": 2.7,
+   "name": "Sleep Z trail",
+   "about": "heavy slanted Z marks rising and growing from a point: outlined ones every fifth of a second while falling asleep, two solid ones holding once asleep",
+   "energy": 2,
+   "needs": [
+    "calm",
+    "time",
+    "hidden"
+   ],
+   "params": {
+    "everyS": 0.2,
+    "lifeS": 0.9,
+    "slant": -0.24
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#ui:zzz-outline-trail"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.3
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "transition:glyph-fly-at-lens",
+   "category": "transition",
+   "role": "the drop punch",
+   "at": 4,
+   "name": "Glyph flies at the lens",
+   "about": "the brand glyph, translucent, swells at the camera over the old shot in a few frames, one light frame on the cut, and keeps flying past over the new world",
+   "energy": 5,
+   "needs": [
+    "brand",
+    "reveal",
+    "hook"
+   ],
+   "params": {
+    "preS": 0.16,
+    "postS": 0.16,
+    "scale": [
+     0.7,
+     5.5,
+     11
+    ],
+    "transition": {
+     "family": "zoom",
+     "worlds": "change"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#transition:glyph-fly-at-lens"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "zoom",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.6
+    },
+    {
+     "style": "atlas",
+     "w": 0.3
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:disc-burst-ring",
+   "category": "transition",
+   "role": "the dark world flips to the sky on the drop",
+   "at": 4.125,
+   "name": "Disc burst with shockwave",
+   "about": "the next world bursts open in a disc from the centre (or the next shot's entry point), a thin white ring overshooting outward and fading",
+   "energy": 5,
+   "needs": [
+    "reveal",
+    "brand",
+    "payoff"
+   ],
+   "params": {
+    "preS": 0.05,
+    "postS": 0.42,
+    "discFromFrac": 0.2,
+    "ringPx": 16,
+    "transition": {
+     "family": "iris",
+     "worlds": "change"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#transition:disc-burst-ring"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "iris",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:zzz-converge-glyph",
+   "category": "transition",
+   "role": "the sleep marks become the logo",
+   "at": 3.92,
+   "name": "Z's converge into a mark",
+   "about": "three outlined Z's fly from the old shot's exit point to the centre, grow, fill in and burst past the camera onto the new shot",
+   "energy": 4,
+   "needs": [
+    "brand",
+    "reveal",
+    "simplify"
+   ],
+   "params": {
+    "preS": 0.34,
+    "postS": 0.28,
+    "transition": {
+     "family": "morph",
+     "worlds": "change"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#transition:zzz-converge-glyph"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "morph",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.3
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:sky-scroll-to-white",
+   "category": "transition",
+   "role": "from the product world to the CTA",
+   "at": 11.8,
+   "name": "Scroll up into the next world",
+   "about": "the whole shot slides up while its bottom colour stretches below and fades into the next world's ground; the next shot rises through a blur",
+   "energy": 3,
+   "needs": [
+    "cta",
+    "payoff",
+    "calm"
+   ],
+   "params": {
+    "preS": 0.26,
+    "postS": 0.42,
+    "stackDyFrac": -0.78,
+    "titleBlurPx": 14,
+    "transition": {
+     "family": "push",
+     "worlds": "change"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#transition:sky-scroll-to-white"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "push",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.4
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:lid-shut-reveal",
+   "category": "transition",
+   "role": "'close the lid' as a cut",
+   "at": 1.95,
+   "name": "Lid shuts over the frame",
+   "about": "a dark panel hinges down from the top edge like a laptop lid closing toward the lens (its free edge widening, a light rim on it) as the shot dims, then lifts off the next shot",
+   "energy": 3,
+   "needs": [
+    "problem",
+    "turn",
+    "hidden"
+   ],
+   "params": {
+    "preS": 0.3,
+    "postS": 0.34,
+    "spreadFrac": 0.12,
+    "transition": {
+     "family": "mask"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#transition:lid-shut-reveal"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "mask",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.3
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "camera:anticipation-lift",
+   "category": "camera",
+   "role": "sells the lid close",
+   "at": 1.65,
+   "name": "Anticipation lift",
+   "about": "before a mechanical action the shot eases up and toward the object, holds, then the action lands with a tiny two-frame nudge and it settles",
+   "energy": 2,
+   "needs": [
+    "focus",
+    "stakes",
+    "product"
+   ],
+   "params": {
+    "rise": 0.03,
+    "scale": 1.03,
+    "durS": 0.3,
+    "nudgePx": 3,
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#camera:anticipation-lift"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "camera:repose-steps",
+   "category": "camera",
+   "role": "variety on the claim grid",
+   "at": 7.62,
+   "name": "Steps on each claim",
+   "about": "the shot holds, then on each claim change takes a quick eased step in and sideways, with a slow drift between",
+   "energy": 2,
+   "needs": [
+    "list",
+    "benefit",
+    "product"
+   ],
+   "params": {
+    "stepScale": 0.012,
+    "stepPx": 12,
+    "stepS": 0.3,
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#camera:repose-steps"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "camera:creep-recoil",
+   "category": "camera",
+   "role": "the glyph and wordmark holds",
+   "at": 4.25,
+   "name": "Creep, then recoil",
+   "about": "a slow 3.5% log-space creep in over the beat, then a quick 6% recoil in the last fifth of a second that hands the frame to the next beat",
+   "energy": 2,
+   "needs": [
+    "brand",
+    "reveal",
+    "calm"
+   ],
+   "params": {
+    "creep": 0.035,
+    "recoil": 0.06,
+    "recoilS": 0.2,
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l05.js#camera:creep-recoil"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  }
+ ],
+ "uses": [
+  {
+   "id": "ui:zzz",
+   "role": "sleep Z's rising from the lid",
+   "at": 2.7
+  },
+  {
+   "id": "effect:glass-panel",
+   "role": "the icy card container",
+   "at": 6.3
+  },
+  {
+   "id": "effect:count-up",
+   "role": "counters on the cards",
+   "at": 6.4
+  },
+  {
+   "id": "effect:shine-sweep",
+   "role": "the sheen across the lid and the pill",
+   "at": 7.65
+  },
+  {
+   "id": "effect:glide-out",
+   "role": "headline exits upward through a blur",
+   "at": 1.33
+  },
+  {
+   "id": "transition:line-swap",
+   "role": "every headline swap",
+   "at": 1.33
+  },
+  {
+   "id": "camera:push-slow",
+   "role": "slow push on the stage beats",
+   "at": 0
+  }
+ ]
+}

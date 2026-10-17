@@ -1,0 +1,2522 @@
+{
+ "reference": {
+  "id": "l09",
+  "url": "https://www.promptsmotion.com/twoclipping-5cba86",
+  "title": "Shape morphing through UI states",
+  "kind": "UI motion study, 1:1, 14 s",
+  "seconds": 14.06,
+  "notes": "The cleanest morph engine: one shape never cuts, becoming a button, a loader, a check, an island, a player, a slider, a toggle, tabs, a chart, a command palette and a toast under a cursor, with springs that stretch the leading edge. Studied from what the page shows publicly; rebuilt in Moovi's own code (packages/library/src/kits/launch) with our own fonts, sounds and assets."
+ },
+ "kit": {
+  "file": "packages/library/src/kits/launch/looks/l09.json"
+ },
+ "impl": "packages/library/src/kits/launch/",
+ "styles": [
+  "brand-promo",
+  "studio-minimal"
+ ],
+ "parts": [
+  {
+   "id": "ui:toast-notification",
+   "category": "ui",
+   "role": "toast notification",
+   "at": null,
+   "name": "Toast notification",
+   "about": "a glass banner drops from the top with the app icon, a title, a line and \"now\"",
+   "energy": 3,
+   "needs": [
+    "success",
+    "ui"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/ui.js#ui:toast-notification"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.95
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:bar-chart-grow",
+   "category": "ui",
+   "role": "bar chart grows",
+   "at": null,
+   "name": "Bar chart grows",
+   "about": "bars grow from the baseline in order, the hero bar in the accent with its value on top",
+   "energy": 3,
+   "needs": [
+    "growth",
+    "compare",
+    "data"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/ui.js#ui:bar-chart-grow"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.95
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:cursor-arrow",
+   "category": "ui",
+   "role": "cursor",
+   "at": null,
+   "name": "Cursor",
+   "about": "a crisp arrow cursor that glides on gentle arcs, shrinks on press and leaves an accent ring on each click",
+   "energy": 2,
+   "needs": [
+    "ui",
+    "tool"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/ui.js#ui:cursor-arrow"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.95
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "insert:morph-click-to-done",
+   "category": "insert",
+   "role": "button, loader, tick, toast",
+   "at": 0.5,
+   "name": "Click to done",
+   "about": "A black button is clicked, squashes into a spinning loader, resolves into a tick that swells 8%, then stretches into a toast carrying the line; an invisible camera keeps each state filling the frame.",
+   "energy": 3,
+   "needs": [
+    "success",
+    "process",
+    "promise",
+    "ui"
+   ],
+   "params": {
+    "setup": {
+     "family": "morph-ui",
+     "cams": [
+      "camera:cue-spring-nudge",
+      "camera:breathe"
+     ],
+     "weight": 1.2,
+     "kinds": [
+      "turn",
+      "promise",
+      "proof"
+     ],
+     "roles": [
+      "open",
+      "middle",
+      "close"
+     ]
+    },
+    "press_scale": 0.984,
+    "width": "644 -> 222 -> toast",
+    "pop_peak": 1.08,
+    "morph_s": 0.22
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#insert:morph-click-to-done"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:morph-island-to-player",
+   "category": "insert",
+   "role": "island blooms into player, scrub",
+   "at": 1.27,
+   "name": "Island to player",
+   "about": "A spinner opens into a live island with art and bouncing bars, a click blooms it into a black player card, play morphs to pause and the cursor scrubs; the headline sits beside it.",
+   "energy": 3,
+   "needs": [
+    "product",
+    "demo",
+    "media",
+    "ui"
+   ],
+   "params": {
+    "setup": {
+     "family": "morph-ui",
+     "cams": [
+      "camera:cue-spring-nudge",
+      "camera:breathe"
+     ],
+     "weight": 1,
+     "kinds": [
+      "demo",
+      "reveal",
+      "hook"
+     ],
+     "roles": [
+      "open",
+      "middle"
+     ]
+    },
+    "player": "990x629",
+    "height_overshoot": 0.074,
+    "content_stagger_ms": 50
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#insert:morph-island-to-player"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:morph-player-to-volume",
+   "category": "insert",
+   "role": "card collapse onto track + rubber band",
+   "at": 3.7,
+   "name": "Player collapses to volume",
+   "about": "The player card blurs empty and collapses around its own progress bar, which becomes a volume pill; dragged to mute, then past max where the pill rubber-bands and snaps back with a small undershoot.",
+   "energy": 3,
+   "needs": [
+    "control",
+    "scale",
+    "turn",
+    "ui"
+   ],
+   "params": {
+    "setup": {
+     "family": "morph-ui",
+     "cams": [
+      "camera:cue-spring-nudge",
+      "camera:breathe"
+     ],
+     "weight": 1,
+     "kinds": [
+      "turn",
+      "demo",
+      "promise"
+     ],
+     "roles": [
+      "middle"
+     ]
+    },
+    "stretch_max_frac": 0.12,
+    "undershoot_zeta": 0.45
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#insert:morph-player-to-volume"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:morph-switch-to-tabs",
+   "category": "insert",
+   "role": "toggle flips, knob becomes tab marker",
+   "at": 5.28,
+   "name": "Switch to tabs",
+   "about": "A big liquid switch flips on eighth notes, its knob stretching as the leading edge races ahead, then the knob becomes the marker of a segmented control that unrolls with three of the brand items.",
+   "energy": 3,
+   "needs": [
+    "choice",
+    "before-after",
+    "list",
+    "ui"
+   ],
+   "params": {
+    "setup": {
+     "family": "morph-ui",
+     "cams": [
+      "camera:cue-spring-nudge",
+      "camera:breathe"
+     ],
+     "weight": 1,
+     "kinds": [
+      "turn",
+      "list",
+      "problem"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      0,
+      6
+     ]
+    },
+    "flips_beats": [
+     2,
+     3,
+     4
+    ],
+    "lead_omega": 31,
+    "trail_omega": 15
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#insert:morph-switch-to-tabs"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:morph-tabs-to-chart",
+   "category": "insert",
+   "role": "tabs unfold, chart draws, tooltip",
+   "at": 7.25,
+   "name": "Tabs unfold to chart",
+   "about": "The tab marker slides to the last period, the surface unfolds down into a white chart card, the number counts with rolling digits while the line draws, and a tooltip rides the line under the cursor.",
+   "energy": 3,
+   "needs": [
+    "data",
+    "growth",
+    "proof",
+    "number"
+   ],
+   "params": {
+    "setup": {
+     "family": "morph-ui",
+     "cams": [
+      "camera:cue-spring-nudge",
+      "camera:breathe"
+     ],
+     "weight": 1,
+     "kinds": [
+      "stat",
+      "proof",
+      "reveal"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "number": "optional"
+    },
+    "number_h_frac": 0.072,
+    "count_s": 0.6,
+    "draw_s": 0.5
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#insert:morph-tabs-to-chart"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:morph-stat-island",
+   "category": "insert",
+   "role": "loader to stat island",
+   "at": 1.27,
+   "name": "Stat island",
+   "about": "A spinner resolves into a tick, then the circle stretches into a black island whose number counts up in rolling tabular digits beside live bars.",
+   "energy": 3,
+   "needs": [
+    "number",
+    "proof",
+    "growth",
+    "success"
+   ],
+   "params": {
+    "setup": {
+     "family": "morph-ui",
+     "cams": [
+      "camera:cue-spring-nudge",
+      "camera:breathe"
+     ],
+     "weight": 1,
+     "kinds": [
+      "stat",
+      "proof"
+     ],
+     "roles": [
+      "middle",
+      "close"
+     ],
+     "number": "required",
+     "requires": [
+      "number"
+     ]
+    },
+    "island_h": 240
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#insert:morph-stat-island"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:morph-palette-to-toast",
+   "category": "insert",
+   "role": "search, palette, filter, enter, toast",
+   "at": 9.75,
+   "name": "Palette to toast",
+   "about": "A search pill blooms into a command palette of the brand features, typing filters the rows as they collapse, enter inverts the match and the palette collapses around it into a black toast with the line.",
+   "energy": 3,
+   "needs": [
+    "tool",
+    "speed",
+    "success",
+    "list"
+   ],
+   "params": {
+    "setup": {
+     "family": "morph-ui",
+     "cams": [
+      "camera:cue-spring-nudge",
+      "camera:breathe"
+     ],
+     "weight": 1.2,
+     "kinds": [
+      "demo",
+      "reveal",
+      "promise"
+     ],
+     "roles": [
+      "middle",
+      "close"
+     ],
+     "items": [
+      3,
+      6
+     ],
+     "requires": [
+      "items3"
+     ]
+    },
+    "char_s": 0.11,
+    "row_stagger_ms": 40
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#insert:morph-palette-to-toast"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:morph-palette-rows",
+   "category": "insert",
+   "role": "palette blooms with rows",
+   "at": 10.05,
+   "name": "Palette rows",
+   "about": "A search pill blooms into a palette, the request types into its field, the brand features drop in as rows 40 ms apart and the highlight glides down one row per beat; the headline sits beside it.",
+   "energy": 2,
+   "needs": [
+    "list",
+    "tool",
+    "features"
+   ],
+   "params": {
+    "setup": {
+     "family": "morph-ui",
+     "cams": [
+      "camera:cue-spring-nudge",
+      "camera:breathe"
+     ],
+     "weight": 1,
+     "kinds": [
+      "list",
+      "demo"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      3,
+      5
+     ],
+     "requires": [
+      "items3"
+     ]
+    },
+    "rows_max": 5
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#insert:morph-palette-rows"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:morph-headline-pill-grow",
+   "category": "insert",
+   "role": "one shape carrying the words",
+   "at": 0,
+   "name": "Headline grows its pill",
+   "about": "A dot opens and each word of the line arrives inside a black pill that springs wider to hold it while the camera refits; the cursor presses it and a tick pops in at its end.",
+   "energy": 3,
+   "needs": [
+    "hook",
+    "promise",
+    "emphasis"
+   ],
+   "params": {
+    "setup": {
+     "family": "morph-ui",
+     "cams": [
+      "camera:cue-spring-nudge",
+      "camera:breathe"
+     ],
+     "weight": 1.1,
+     "kinds": [
+      "hook",
+      "promise",
+      "turn"
+     ],
+     "roles": [
+      "open",
+      "middle",
+      "close"
+     ]
+    },
+    "word_gap_s": [
+     0.16,
+     0.24
+    ],
+    "px": 92
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#insert:morph-headline-pill-grow"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:morph-ui-relay",
+   "category": "insert",
+   "role": "the full chain",
+   "at": 0,
+   "name": "The relay",
+   "about": "The whole product in one unbroken shape: button, loader, tick, island, player, volume with rubber band, switch, tabs, chart, then a toast with the line, every change landing on a beat.",
+   "energy": 4,
+   "needs": [
+    "demo",
+    "product",
+    "flow",
+    "ui"
+   ],
+   "params": {
+    "setup": {
+     "family": "morph-ui",
+     "cams": [
+      "camera:cue-spring-nudge",
+      "camera:breathe"
+     ],
+     "weight": 1.3,
+     "kinds": [
+      "hook",
+      "demo"
+     ],
+     "roles": [
+      "open",
+      "middle"
+     ]
+    },
+    "beats": 15
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#insert:morph-ui-relay"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "end_card:morph-loop-button",
+   "category": "end_card",
+   "role": "close and loop",
+   "at": 12.6,
+   "name": "Loop back to the button",
+   "about": "The tagline toast swaps its words for the call to action and shrinks back into the black button with a small undershoot; the cursor glides back to hover it and the host fades in below.",
+   "energy": 2,
+   "needs": [
+    "cta",
+    "cycle",
+    "brand"
+   ],
+   "params": {
+    "setup": {
+     "family": "morph-end",
+     "kinds": [
+      "end"
+     ],
+     "roles": [
+      "close"
+     ],
+     "cams": [
+      "camera:cue-spring-nudge",
+      "camera:breathe"
+     ]
+    },
+    "undershoot": 0.023
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#end_card:morph-loop-button"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "end"
+   ]
+  },
+  {
+   "id": "end_card:morph-island-wordmark",
+   "category": "end_card",
+   "role": "brand close",
+   "at": 1.27,
+   "name": "Island wordmark",
+   "about": "A mark tile opens and stretches into a black island carrying the logo, the brand name in the wordmark face and live bars; the host fades in below.",
+   "energy": 2,
+   "needs": [
+    "brand",
+    "cta",
+    "logo"
+   ],
+   "params": {
+    "setup": {
+     "family": "morph-end",
+     "kinds": [
+      "end"
+     ],
+     "roles": [
+      "close"
+     ],
+     "cams": [
+      "camera:cue-spring-nudge",
+      "camera:breathe"
+     ]
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#end_card:morph-island-wordmark"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "end"
+   ]
+  },
+  {
+   "id": "ui:morph-loader-check",
+   "category": "ui",
+   "role": "done",
+   "at": 0.96,
+   "name": "Loader resolves to tick",
+   "about": "A black circle with a turning spinner arc; the arc unwinds, a tick draws itself and the circle swells 8% and settles.",
+   "energy": 2,
+   "needs": [
+    "success",
+    "process",
+    "proof"
+   ],
+   "params": {
+    "arc_deg": 270,
+    "rev_per_s": 1.6,
+    "pop": 1.08
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#ui:morph-loader-check"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:island-live-bars",
+   "category": "ui",
+   "role": "background activity",
+   "at": 1.4,
+   "name": "Island with live bars",
+   "about": "A black pill with a gradient art tile at one end, a label and five white bars bouncing like a live meter at the other.",
+   "energy": 2,
+   "needs": [
+    "product",
+    "live",
+    "media"
+   ],
+   "params": {
+    "bars": 5
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#ui:island-live-bars"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:player-card-scrub",
+   "category": "ui",
+   "role": "media state",
+   "at": 2,
+   "name": "Dark player card",
+   "about": "A black player card with a gradient art tile, title, scrub bar with mono times and controls; play morphs into pause and the cursor scrubs.",
+   "energy": 2,
+   "needs": [
+    "product",
+    "media",
+    "demo"
+   ],
+   "params": {
+    "size": "990x629",
+    "play_pause_s": 0.14
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#ui:player-card-scrub"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:volume-rubber-slider",
+   "category": "ui",
+   "role": "direct manipulation",
+   "at": 4.75,
+   "name": "Rubber-band volume",
+   "about": "A black volume pill whose speaker waves vanish at mute; dragged past max the whole pill stretches with rising resistance and snaps back with an undershoot.",
+   "energy": 2,
+   "needs": [
+    "scale",
+    "control",
+    "growth"
+   ],
+   "params": {
+    "stretch": "d*(1-1/(1+2.6p/w))"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#ui:volume-rubber-slider"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:liquid-switch-flip",
+   "category": "ui",
+   "role": "on/off",
+   "at": 5.52,
+   "name": "Liquid switch",
+   "about": "A big switch whose white knob stretches into a lozenge as its leading edge races ahead; the track blends grey to black with the knob.",
+   "energy": 2,
+   "needs": [
+    "choice",
+    "before-after"
+   ],
+   "params": {
+    "lead_omega": 31,
+    "trail_omega": 15
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#ui:liquid-switch-flip"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:two-spring-tabs",
+   "category": "ui",
+   "role": "pick a period",
+   "at": 6.77,
+   "name": "Two-spring tab marker",
+   "about": "A white segmented control whose black marker moves on two springs, stretching by a third mid-move and landing without bounce; labels turn white under it.",
+   "energy": 2,
+   "needs": [
+    "choice",
+    "compare"
+   ],
+   "params": {
+    "stretch_max": 0.33
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#ui:two-spring-tabs"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:chart-card-tooltip",
+   "category": "ui",
+   "role": "the stat",
+   "at": 7.5,
+   "name": "Chart card with tooltip",
+   "about": "A white card whose big number counts in rolling digits while a black line draws over a soft fill; a black tooltip rides the line under the cursor.",
+   "energy": 2,
+   "needs": [
+    "data",
+    "number",
+    "growth"
+   ],
+   "params": {
+    "number_h_frac": 0.072
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#ui:chart-card-tooltip"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:chart-line-morph",
+   "category": "ui",
+   "role": "compare periods",
+   "at": 9.15,
+   "name": "Chart line morph",
+   "about": "Tapping another period glides the tab marker while the line morphs point by point into a new shape and the number rolls to its new value.",
+   "energy": 2,
+   "needs": [
+    "compare",
+    "data",
+    "before-after"
+   ],
+   "params": {
+    "points": 24
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#ui:chart-line-morph"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:command-palette-filter",
+   "category": "ui",
+   "role": "find the command",
+   "at": 10.45,
+   "name": "Filtering palette",
+   "about": "A white command palette: typing filters the rows live, misses fade and collapse, survivors spring up, the panel refits and enter inverts the match.",
+   "energy": 2,
+   "needs": [
+    "tool",
+    "focus",
+    "speed"
+   ],
+   "params": {
+    "char_s": 0.11
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#ui:command-palette-filter"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:toast-tick-pill",
+   "category": "ui",
+   "role": "done message",
+   "at": 11.95,
+   "name": "Tick toast",
+   "about": "A spinner resolves and stretches into a black pill toast with a white tick disc and one confirmation line.",
+   "energy": 2,
+   "needs": [
+    "success",
+    "proof",
+    "cta"
+   ],
+   "params": {
+    "hold": 0.6
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#ui:toast-tick-pill"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:cursor-invert-dark",
+   "category": "ui",
+   "role": "drives clicks",
+   "at": 0.1,
+   "name": "Inverting cursor",
+   "about": "An arrow cursor that turns white with a dark outline whenever it crosses a black surface and black again on light ground.",
+   "energy": 2,
+   "needs": [
+    "ui",
+    "focus"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#ui:cursor-invert-dark"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "transition:morph-shape-handoff",
+   "category": "transition",
+   "role": "state change",
+   "at": 0.5,
+   "name": "Shape hand-off",
+   "about": "An ink shape covers the last object as the shot blurs out, then springs per axis onto the next shot's first object and melts into it as it sharpens.",
+   "energy": 3,
+   "needs": [
+    "flow",
+    "continuity",
+    "ui"
+   ],
+   "params": {
+    "transition": {
+     "family": "morph"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#transition:morph-shape-handoff"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "morph",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:loader-iris-bloom",
+   "category": "transition",
+   "role": "state change",
+   "at": 0.96,
+   "name": "Loader iris",
+   "about": "The last object squashes into a spinning loader at the centre, the spinner resolves into a tick and the circle opens as a window onto the next shot.",
+   "energy": 3,
+   "needs": [
+    "process",
+    "success",
+    "reveal"
+   ],
+   "params": {
+    "transition": {
+     "family": "iris"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#transition:loader-iris-bloom"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "iris",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:band-stretch-open",
+   "category": "transition",
+   "role": "state change",
+   "at": 1.27,
+   "name": "Band stretch",
+   "about": "A dot pops at the centre, stretches into a band across the frame, and the band opens top and bottom onto the next shot.",
+   "energy": 3,
+   "needs": [
+    "reveal",
+    "flow"
+   ],
+   "params": {
+    "transition": {
+     "family": "mask"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#transition:band-stretch-open"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "mask",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:collapse-onto-bar",
+   "category": "transition",
+   "role": "state change",
+   "at": 3.7,
+   "name": "Collapse onto bar",
+   "about": "The shot squeezes vertically into a slim pill that turns ink, then the next shot grows back out of the bar.",
+   "energy": 3,
+   "needs": [
+    "simplify",
+    "flow"
+   ],
+   "params": {
+    "transition": {
+     "family": "morph"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#transition:collapse-onto-bar"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "morph",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:blur-swap-quick",
+   "category": "transition",
+   "role": "state change",
+   "at": 0.53,
+   "name": "Quick blur swap",
+   "about": "The old shot blurs out in a tenth of a second while it settles back; the new one sharpens in from 96%.",
+   "energy": 3,
+   "needs": [
+    "flow",
+    "simplify"
+   ],
+   "params": {
+    "transition": {
+     "family": "blur"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#transition:blur-swap-quick"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "blur",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:enter-invert-toast",
+   "category": "transition",
+   "role": "state change",
+   "at": 11.52,
+   "name": "Enter to toast",
+   "about": "The frame turns ink like a chosen row and collapses into a toast with a tick, which opens into the next shot.",
+   "energy": 3,
+   "needs": [
+    "success",
+    "cta",
+    "confirm"
+   ],
+   "params": {
+    "transition": {
+     "family": "morph"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#transition:enter-invert-toast"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "morph",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:unfold-from-top-pill",
+   "category": "transition",
+   "role": "state change",
+   "at": 7.25,
+   "name": "Unfold from a tab bar",
+   "about": "A white tab bar drops in at the top, then the surface under it unfolds down over the frame carrying the next shot.",
+   "energy": 3,
+   "needs": [
+    "reveal",
+    "data"
+   ],
+   "params": {
+    "transition": {
+     "family": "wipe"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#transition:unfold-from-top-pill"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "wipe",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "effect:type-stagger-unblur",
+   "category": "effect",
+   "role": "headline",
+   "at": 1.85,
+   "name": "Stagger unblur",
+   "about": "Words arrive in reading order 50 ms apart, each unblurring from 8 px and rising a few pixels from 96% scale.",
+   "energy": 2,
+   "needs": [
+    "headline",
+    "ui",
+    "flow"
+   ],
+   "params": {
+    "type": {
+     "kinds": [
+      "hook",
+      "promise",
+      "demo",
+      "list",
+      "proof"
+     ],
+     "maxWords": 10
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#effect:type-stagger-unblur"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-label-blur-swap",
+   "category": "effect",
+   "role": "headline",
+   "at": 0.53,
+   "name": "Label blur swap",
+   "about": "A short label holds, blurs out in a tenth of a second, and the line sharpens in where it was.",
+   "energy": 2,
+   "needs": [
+    "headline",
+    "ui",
+    "flow"
+   ],
+   "params": {
+    "type": {
+     "kinds": [
+      "turn",
+      "reveal",
+      "promise"
+     ],
+     "maxWords": 10
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#effect:type-label-blur-swap"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-pill-grow",
+   "category": "effect",
+   "role": "headline",
+   "at": 0,
+   "name": "Pill grows with the words",
+   "about": "Words arrive one by one inside an ink pill that springs wider, and taller on a new line, to hold them.",
+   "energy": 2,
+   "needs": [
+    "headline",
+    "ui",
+    "flow"
+   ],
+   "params": {
+    "type": {
+     "kinds": [
+      "hook",
+      "turn",
+      "promise"
+     ],
+     "maxWords": 10
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#effect:type-pill-grow"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "camera:fit-to-state",
+   "category": "camera",
+   "role": "keeps every state filling the frame",
+   "at": 0,
+   "name": "Fit-to-state camera",
+   "about": "Frames the object a beat ends on with a critically damped spring so the scale change rides the morph; capped at 1.3x.",
+   "energy": 2,
+   "needs": [
+    "focus",
+    "ui",
+    "detail"
+   ],
+   "params": {
+    "camera": {},
+    "max_scale": 1.3
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#camera:fit-to-state"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "camera:cue-spring-nudge",
+   "category": "camera",
+   "role": "never still",
+   "at": 0,
+   "name": "Cue spring nudge",
+   "about": "A slow push plus a small damped spring kick on each of the beat cues, so clicks and arrivals are felt in the frame.",
+   "energy": 2,
+   "needs": [
+    "rhythm",
+    "ui",
+    "emphasis"
+   ],
+   "params": {
+    "camera": {},
+    "kick": 0.014
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#camera:cue-spring-nudge"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "texture:studio-scaling-dots",
+   "category": "texture",
+   "role": "anchors the zoom",
+   "at": 0,
+   "name": "Scaling dot studio",
+   "about": "Warm light on the centre and a faint dot grid that slowly zooms, every other dot fading in as the pitch doubles.",
+   "energy": 1,
+   "needs": [
+    "calm",
+    "depth",
+    "ui"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#texture:studio-scaling-dots"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  },
+  {
+   "id": "texture:mesh-art-tile-corner",
+   "category": "texture",
+   "role": "the only colour",
+   "at": 1.4,
+   "name": "Corner art tile",
+   "about": "One mesh-gradient square in the brand hues sits half off the top corner on a long soft shadow, turning slowly.",
+   "energy": 1,
+   "needs": [
+    "brand",
+    "emotion",
+    "colour"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#texture:mesh-art-tile-corner"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.3
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  },
+  {
+   "id": "effect:cursor-glide-press",
+   "category": "effect",
+   "role": "drives the moment",
+   "at": 0.1,
+   "name": "Cursor glide and press",
+   "about": "A cursor glides in on a decelerating arc, presses where the line lands and drifts; white on dark ground.",
+   "energy": 1,
+   "needs": [
+    "ui",
+    "action",
+    "focus"
+   ],
+   "params": {
+    "kind": "overlay"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l09.js#effect:cursor-glide-press"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "overlay"
+   ]
+  }
+ ],
+ "uses": [
+  {
+   "id": "ui:pillButton",
+   "role": "the black base button",
+   "at": 0
+  },
+  {
+   "id": "effect:odometer-total",
+   "role": "rolling digits of the chart number",
+   "at": 7.5
+  },
+  {
+   "id": "ui:chart-line",
+   "role": "the climbing line in the chart card",
+   "at": 7.5
+  },
+  {
+   "id": "effect:typewriter-box",
+   "role": "typing into the palette field",
+   "at": 10.45
+  },
+  {
+   "id": "effect:motion-blur",
+   "role": "blur on fast morphs",
+   "at": 0.55
+  },
+  {
+   "id": "sfx:fs-ui-mouse-2-button-fast-click",
+   "role": "clicks",
+   "at": 0.5
+  },
+  {
+   "id": "sfx:kenney-click",
+   "role": "key ticks while typing",
+   "at": 10.45
+  },
+  {
+   "id": "sfx:ui-pop",
+   "role": "tick pop, rows",
+   "at": 1.07
+  },
+  {
+   "id": "sfx:tonal-notify",
+   "role": "toast",
+   "at": 11.95
+  },
+  {
+   "id": "sfx:fs-whoosh-swosh-whoosh-air-cut",
+   "role": "collapses and blooms",
+   "at": 3.7
+  }
+ ]
+}

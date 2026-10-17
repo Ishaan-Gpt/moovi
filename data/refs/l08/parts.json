@@ -1,0 +1,2824 @@
+{
+ "reference": {
+  "id": "l08",
+  "url": "https://www.promptsmotion.com/melvynx-6cde6c",
+  "title": "Email tool promo reel",
+  "kind": "SaaS promo, 16:9, 45 s",
+  "seconds": 45.1,
+  "notes": "The sharpest copy and a real system with two colours only: red bracketed eyebrow captions that type in and out, a giant year numeral, a full-bleed dot matrix where the hollow dots are the stat, a slot-machine price roll, terminal errors, hub-and-spoke integrations. Studied from what the page shows publicly; rebuilt in Moovi's own code (packages/library/src/kits/launch) with our own fonts, sounds and assets."
+ },
+ "kit": {
+  "file": "packages/library/src/kits/launch/looks/l08.json"
+ },
+ "impl": "packages/library/src/kits/launch/",
+ "styles": [
+  "brand-promo",
+  "studio-minimal"
+ ],
+ "parts": [
+  {
+   "id": "insert:stat-giant",
+   "category": "insert",
+   "role": "giant number",
+   "at": null,
+   "name": "Giant number",
+   "about": "one number from the page, huge, counting up from zero with a lift, an accent hairline drawing under it and a mono label",
+   "energy": 4,
+   "needs": [
+    "number",
+    "proof",
+    "growth",
+    "percent",
+    "money",
+    "time"
+   ],
+   "params": {
+    "setup": {
+     "family": "number",
+     "kinds": [
+      "stat",
+      "proof",
+      "hook"
+     ],
+     "number": "required",
+     "requires": [
+      "number"
+     ],
+     "cams": [
+      "camera:punch-on-head",
+      "camera:push-slow"
+     ],
+     "weight": 1.2
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/setups.js#insert:stat-giant"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.95
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.85
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.45
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "effect:type-slot-roll",
+   "category": "effect",
+   "role": "slot roll",
+   "at": null,
+   "name": "Slot roll",
+   "about": "each word rolls up through a clipped band like a mechanical counter, with a vertical smear mid-roll",
+   "energy": 4,
+   "needs": [
+    "number",
+    "list",
+    "speed"
+   ],
+   "params": {
+    "type": {
+     "kinds": [
+      "list",
+      "stat",
+      "turn",
+      "hook"
+     ],
+     "maxWords": 6
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/type.js#effect:type-slot-roll"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "transition:mask-wipe-up",
+   "category": "transition",
+   "role": "mask wipe up",
+   "at": null,
+   "name": "Mask wipe up",
+   "about": "the next shot rises from below behind a hard mask line and pushes the old one up, with a faint ghost",
+   "energy": 3,
+   "needs": [
+    "steps",
+    "list"
+   ],
+   "params": {
+    "transition": {
+     "family": "mask"
+    },
+    "dur": 0.5
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/trans.js#transition:mask-wipe-up"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "mask",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:bar-wipe",
+   "category": "transition",
+   "role": "bar wipe",
+   "at": null,
+   "name": "Bar wipe",
+   "about": "six bands close from alternating sides with jittered starts and open on the next shot",
+   "energy": 4,
+   "needs": [
+    "list",
+    "steps",
+    "speed"
+   ],
+   "params": {
+    "transition": {
+     "family": "wipe"
+    },
+    "dur": 0.52
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/trans.js#transition:bar-wipe"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "wipe",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "ui:terminal-window",
+   "category": "ui",
+   "role": "terminal window",
+   "at": null,
+   "name": "Terminal window",
+   "about": "a dark terminal: a typed command, output streaming line by line, a green success line",
+   "energy": 2,
+   "needs": [
+    "tool",
+    "process",
+    "ai"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/ui.js#ui:terminal-window"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.95
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "effect:type-bracket-typer",
+   "category": "effect",
+   "role": "every chapter's narration",
+   "at": 4.25,
+   "name": "Bracket Caption Typer",
+   "about": "a sentence sits in accent square brackets and types in letter by letter over its own faint ghost, the payoff words in accent, then backspaces out",
+   "energy": 2,
+   "needs": [
+    "claim",
+    "problem",
+    "reason"
+   ],
+   "params": {
+    "cps": "30-55 (fits the line in about 1.1 s)",
+    "ghost_alpha": 0.13,
+    "bracket": "accent",
+    "out": "backspace at 2.6x speed in the last 0.32 s",
+    "type": {
+     "kinds": [
+      "problem",
+      "turn",
+      "list",
+      "demo",
+      "proof"
+     ],
+     "maxWords": 14
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#effect:type-bracket-typer"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 1
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-billboard-ghost-slide",
+   "category": "effect",
+   "role": "the film's title word",
+   "at": 1.63,
+   "name": "Billboard Ghost Slide",
+   "about": "the line, ideally one huge word, slides in from the right edge with five ghost copies and stops hard, its fill running from a dark accent into ink",
+   "energy": 5,
+   "needs": [
+    "hook",
+    "brand",
+    "claim"
+   ],
+   "params": {
+    "from_x": "+0.46 W",
+    "dur": 1.1,
+    "ease": "expo out",
+    "ghosts": 5,
+    "gradient": "accent mixed 62% to ink, ink from 55%",
+    "type": {
+     "kinds": [
+      "hook",
+      "reveal",
+      "turn"
+     ],
+     "maxWords": 4
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#effect:type-billboard-ghost-slide"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 1
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-ping-kicker",
+   "category": "effect",
+   "role": "opening whisper before the billboard",
+   "at": 0.25,
+   "name": "Ping Dot Kicker",
+   "about": "an accent dot pings with an expanding ring, then a short line drops in word by word on the eighth notes beside it",
+   "energy": 1,
+   "needs": [
+    "hook",
+    "question",
+    "focus"
+   ],
+   "params": {
+    "ring": "r to 4.4 r in 0.55 s",
+    "word_gap_s": 0.25,
+    "word_drop": "0.16 px in 0.14 s",
+    "type": {
+     "kinds": [
+      "hook",
+      "problem",
+      "turn"
+     ],
+     "maxWords": 6
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#effect:type-ping-kicker"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-ink-red-lines",
+   "category": "effect",
+   "role": "the pricing promise",
+   "at": 38.75,
+   "name": "Ink Line, Accent Line",
+   "about": "a two-line promise set ultra tight, the first line in ink and the second in accent, each word rising out of a soft blur",
+   "energy": 3,
+   "needs": [
+    "promise",
+    "contrast",
+    "money"
+   ],
+   "params": {
+    "word_gap_s": 0.1,
+    "line2_delay_s": 0.6,
+    "rise_px": 22,
+    "blur": "9 to 0",
+    "type": {
+     "kinds": [
+      "promise",
+      "turn",
+      "proof"
+     ],
+     "minWords": 4,
+     "maxWords": 12
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#effect:type-ink-red-lines"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 1
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-shimmer-thinking",
+   "category": "effect",
+   "role": "'calculating your bill'",
+   "at": 15.15,
+   "name": "Thinking Shimmer",
+   "about": "a turning sparkle and a quiet grey status line whose letters brighten in a band that keeps sweeping across",
+   "energy": 1,
+   "needs": [
+    "ai",
+    "process",
+    "time"
+   ],
+   "params": {
+    "band": "max(3 px, 25% of the line)",
+    "sweep_s": 1.5,
+    "base": "grey 42%",
+    "type": {
+     "kinds": [
+      "demo",
+      "problem"
+     ],
+     "maxWords": 8
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#effect:type-shimmer-thinking"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "ui:glossy-accent-ball",
+   "category": "ui",
+   "role": "the recurring full stop",
+   "at": 2.17,
+   "name": "Glossy Accent Ball",
+   "about": "a lit accent sphere (one key light, specular, floor bounce) falls, bounces twice and rests on a soft contact shadow",
+   "energy": 3,
+   "needs": [
+    "brand",
+    "focus",
+    "payoff"
+   ],
+   "params": {
+    "fall_s": 0.12,
+    "bounces": [
+     [
+      0.26,
+      1.5
+     ],
+     [
+      0.15,
+      0.45
+     ]
+    ],
+    "squash": 0.18,
+    "d_vs_cap": 0.28
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#ui:glossy-accent-ball"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 1
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:squircle-glyph-icon",
+   "category": "ui",
+   "role": "logo birth",
+   "at": 28.1,
+   "name": "Ball To Squircle Icon",
+   "about": "the glossy ball squashes into a rounded-square app icon and its glyph wipes on from the bottom",
+   "energy": 4,
+   "needs": [
+    "brand",
+    "reveal",
+    "product"
+   ],
+   "params": {
+    "morph_s": 0.25,
+    "corner": "50% to 26%",
+    "glyph_s": 0.3,
+    "shadow": "accent 38%"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#ui:squircle-glyph-icon"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.9
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:digit-odometer-roll",
+   "category": "ui",
+   "role": "'since 2014'",
+   "at": 4.5,
+   "name": "Digit Odometer",
+   "about": "a big number whose digit columns roll like a mechanical counter, lower columns spinning with blur and higher ones stepping; a year rolls backwards",
+   "energy": 3,
+   "needs": [
+    "time",
+    "number",
+    "timeline"
+   ],
+   "params": {
+    "dur": 1.75,
+    "year_back": 12,
+    "colour": "grey 72% to ink"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#ui:digit-odometer-roll"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.9
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.9
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:slot-price-reel",
+   "category": "ui",
+   "role": "the bill grows with the list",
+   "at": 15,
+   "name": "Slot Price Reel",
+   "about": "a drum of rising values turns up one step per eighth note, rows curving away on the cylinder, the last value landing in accent",
+   "energy": 4,
+   "needs": [
+    "money",
+    "growth",
+    "stakes"
+   ],
+   "params": {
+    "step_s": 0.25,
+    "roll_s": 0.14,
+    "row_angle": 0.36,
+    "values": "geometric climb to the number"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#ui:slot-price-reel"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 1
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:wavy-dot-loader",
+   "category": "ui",
+   "role": "fake activity inside the wizard",
+   "at": 7,
+   "name": "Wavy Dot Loader",
+   "about": "a row of dots riding a travelling sine wave, a few flicking hollow: busy and going nowhere",
+   "energy": 2,
+   "needs": [
+    "process",
+    "time",
+    "chaos"
+   ],
+   "params": {
+    "dots": 22,
+    "wavelength": "0.9 row",
+    "speed": "0.6 cycle/s",
+    "hollow_share": 0.2
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#ui:wavy-dot-loader"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:import-wizard-stuck",
+   "category": "ui",
+   "role": "outdated tooling",
+   "at": 6.75,
+   "name": "Stuck Import Wizard",
+   "about": "a big white wizard card with numbered steps, Done / In progress / Pending pills, a wavy loader and a bar that creeps to 99% and freezes",
+   "energy": 2,
+   "needs": [
+    "problem",
+    "time",
+    "process"
+   ],
+   "params": {
+    "progress": "20, 68, 88, 95, 98, 99% over 1.7 s, then a shimmer going nowhere",
+    "steps": "b.data.items (up to 4)"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#ui:import-wizard-stuck"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:agent-terminal-dark",
+   "category": "ui",
+   "role": "the user's agent tries to act",
+   "at": 17.5,
+   "name": "Agent Terminal",
+   "about": "a dark rounded terminal fades from grey to black, an accent prompt types a plain-language command and status lines print under it",
+   "energy": 2,
+   "needs": [
+    "ai",
+    "tool",
+    "process"
+   ],
+   "params": {
+    "cps": 24,
+    "fade_in": 0.35,
+    "caret": "block"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#ui:agent-terminal-dark"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:dashed-link-packets",
+   "category": "ui",
+   "role": "agent trying to reach the tool",
+   "at": 20.75,
+   "name": "Dashed Link Packets",
+   "about": "a marching accent dashed line between two endpoints with glowing packets travelling from sender to receiver",
+   "energy": 2,
+   "needs": [
+    "connect",
+    "flow",
+    "network"
+   ],
+   "params": {
+    "dash": [
+     10,
+     8
+    ],
+    "march_px_s": 30,
+    "packets": 2
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#ui:dashed-link-packets"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.9
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:error-disc-x",
+   "category": "ui",
+   "role": "no access",
+   "at": 22,
+   "name": "Error Disc On The Link",
+   "about": "a glossy accent disc with a white X pops onto a connector with a ring pulse and keeps breathing; the packets die before it",
+   "energy": 4,
+   "needs": [
+    "warning",
+    "problem",
+    "blocked"
+   ],
+   "params": {
+    "d": "up to 96 px",
+    "pop": "spring",
+    "ring": "0.5 d to 1.25 d in 0.5 s"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#ui:error-disc-x"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 1
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:mono-counter-pill",
+   "category": "ui",
+   "role": "capability count",
+   "at": 33,
+   "name": "Mono Counter Pill",
+   "about": "a small black pill in mono reading a climbing count and two dot-separated tags",
+   "energy": 1,
+   "needs": [
+    "number",
+    "proof",
+    "tool"
+   ],
+   "params": {
+    "count": "72% to 100% over 1.2 s"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#ui:mono-counter-pill"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:agent-toolcall-panel",
+   "category": "ui",
+   "role": "the agent works the product",
+   "at": 35,
+   "name": "Agent Tool-Call Panel",
+   "about": "a light panel with a mono header, a tinted prompt row that types the question, and tool-call lines whose status dots turn green as their results print",
+   "energy": 2,
+   "needs": [
+    "ai",
+    "process",
+    "steps"
+   ],
+   "params": {
+    "cps": 26,
+    "line_gap_s": 0.5
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#ui:agent-toolcall-panel"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:query-dot-grid",
+   "category": "ui",
+   "role": "find the hot leads",
+   "at": 35.25,
+   "name": "Query Dot Grid",
+   "about": "a grid of dots fills in diagonally; matches turn accent and grow while the rest fade grey, and a found count lands above",
+   "energy": 3,
+   "needs": [
+    "data",
+    "ai",
+    "filter"
+   ],
+   "params": {
+    "fill": "diagonal 0.35 s",
+    "match_share": 0.2,
+    "match_grow": 1.28
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#ui:query-dot-grid"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:workflow-pill-tick",
+   "category": "ui",
+   "role": "contacts enrolled",
+   "at": 37.75,
+   "name": "Workflow Pill Tick",
+   "about": "a black pill naming a workflow with a pulsing accent dot that turns into a drawn tick when the job is done",
+   "energy": 2,
+   "needs": [
+    "success",
+    "process",
+    "flow"
+   ],
+   "params": {
+    "tick_s": 0.25
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#ui:workflow-pill-tick"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:counter-card-pair",
+   "category": "ui",
+   "role": "contacts grow, fee stays zero",
+   "at": 40.25,
+   "name": "Counter Card Vs Frozen Value",
+   "about": "two white cards: one total rolls up digit by digit, the other holds a frozen accent value with a lock that never moves",
+   "energy": 2,
+   "needs": [
+    "money",
+    "compare",
+    "proof"
+   ],
+   "params": {
+    "count_s": 1.5,
+    "ease": "quart out"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#ui:counter-card-pair"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "insert:billboard-ball-period",
+   "category": "insert",
+   "role": "title of the film",
+   "at": 1.6,
+   "name": "Billboard With A Ball Stop",
+   "about": "one giant word slides in from the right with ghosts; a glossy accent ball drops, bounces twice and rests as its full stop",
+   "energy": 5,
+   "needs": [
+    "hook",
+    "brand",
+    "reveal"
+   ],
+   "params": {
+    "cap_pct_h": 41,
+    "ball_d_vs_cap": 0.28,
+    "setup": {
+     "family": "billboard",
+     "kinds": [
+      "hook",
+      "reveal"
+     ],
+     "roles": [
+      "open",
+      "middle"
+     ],
+     "cams": [
+      "camera:push-slow"
+     ],
+     "weight": 1.3
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#insert:billboard-ball-period"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 1
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:year-odometer-echo",
+   "category": "insert",
+   "role": "'haven't changed since 2014'",
+   "at": 4.25,
+   "name": "Year Rolls Back Over Echo Rows",
+   "about": "a bracket caption types while its echo drifts in faint rows; a huge year rolls backwards (or a total climbs) and the ball lands as its full stop, then greys",
+   "energy": 3,
+   "needs": [
+    "time",
+    "problem",
+    "number"
+   ],
+   "params": {
+    "roll_s": 1.75,
+    "year_back": 12,
+    "setup": {
+     "family": "odometer",
+     "kinds": [
+      "problem",
+      "stat"
+     ],
+     "roles": [
+      "open",
+      "middle"
+     ],
+     "number": "required",
+     "requires": [
+      "number"
+     ],
+     "cams": [
+      "camera:push-slow"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#insert:year-odometer-echo"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.9
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:stuck-import-wizard",
+   "category": "insert",
+   "role": "the old way",
+   "at": 6.6,
+   "name": "Stuck Import Wizard",
+   "about": "a bracket caption over a big import wizard: steps tick, the dot loader keeps waving, the bar creeps to 99% and freezes",
+   "energy": 2,
+   "needs": [
+    "problem",
+    "time",
+    "process"
+   ],
+   "params": {
+    "card": "70% W",
+    "setup": {
+     "family": "wizard",
+     "kinds": [
+      "problem"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      2,
+      4
+     ],
+     "cams": [
+      "camera:push-slow"
+     ],
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#insert:stuck-import-wizard"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:hollow-dot-matrix",
+   "category": "insert",
+   "role": "80% never open",
+   "at": 10,
+   "name": "Hollow Dots Are The Stat",
+   "about": "a full-bleed dot matrix blooms out of the centre around a label window; the stat's share of dots empties to rings in random order; a column wave recolours them accent",
+   "energy": 3,
+   "needs": [
+    "percent",
+    "data",
+    "problem"
+   ],
+   "params": {
+    "bloom_s": 0.85,
+    "hollow_s": 1.3,
+    "per_dot_s": 0.16,
+    "wipe_s": 0.8,
+    "setup": {
+     "family": "dot-matrix",
+     "kinds": [
+      "stat",
+      "problem"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "number": "optional",
+     "cams": [
+      "camera:push-slow"
+     ],
+     "weight": 1.3
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#insert:hollow-dot-matrix"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.9
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.9
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:slot-bill-roll",
+   "category": "insert",
+   "role": "your list grew, so did the bill",
+   "at": 15,
+   "name": "Slot Bill Roll",
+   "about": "a shimmering status line on the left while a drum of rising values turns up on the eighths; the last lands in accent with a ring and the line rewrites to the verdict",
+   "energy": 4,
+   "needs": [
+    "money",
+    "growth",
+    "stakes"
+   ],
+   "params": {
+    "step_s": 0.25,
+    "setup": {
+     "family": "slot",
+     "kinds": [
+      "stat",
+      "problem"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "number": "required",
+     "requires": [
+      "number"
+     ],
+     "cams": [
+      "camera:push-slow"
+     ],
+     "weight": 1.2
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#insert:slot-bill-roll"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 1
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:terminal-error-link",
+   "category": "insert",
+   "role": "your tool can't talk to agents",
+   "at": 17.45,
+   "name": "Terminal Meets A Wall",
+   "about": "an agent terminal types its command, a grey legacy window fades in, packets run the dashed link, an error disc breaks it and the terminal jolts and prints the error",
+   "energy": 4,
+   "needs": [
+    "problem",
+    "ai",
+    "blocked"
+   ],
+   "params": {
+    "error_disc": "up to 96 px",
+    "shake": "9 px, 0.4 s",
+    "setup": {
+     "family": "terminal",
+     "kinds": [
+      "problem"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "requires": [
+      "prompt"
+     ],
+     "cams": [
+      "camera:push-slow"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#insert:terminal-error-link"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:giant-ellipsis-pullback",
+   "category": "insert",
+   "role": "'well... now it can.'",
+   "at": 25,
+   "name": "Giant Word, Ticking Dots, Pull Back",
+   "about": "the first word huge and cropped off the left edge, its ellipsis dots tick in on the eighths with the ball as the third, then the camera snaps back to the whole sentence",
+   "energy": 3,
+   "needs": [
+    "turn",
+    "question",
+    "contrast"
+   ],
+   "params": {
+    "dot_gap_s": 0.25,
+    "pull_s": 0.38,
+    "giant": "min(0.66 H, 0.62 W)",
+    "setup": {
+     "family": "ellipsis",
+     "kinds": [
+      "turn"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "weight": 1.2
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#insert:giant-ellipsis-pullback"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 1
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:ball-burst-icon",
+   "category": "insert",
+   "role": "the drop: the answer arrives",
+   "at": 27.3,
+   "name": "Ball Eats The Line, Bursts Into The Icon",
+   "about": "the ball rolls along the baseline swallowing each word, swells to the centre, bursts with specks and a ring, squashes into the app icon and its glyph wipes on",
+   "energy": 5,
+   "needs": [
+    "reveal",
+    "brand",
+    "payoff"
+   ],
+   "params": {
+    "burst_specks": 40,
+    "ring": "0.45 to 2.4 icon sizes in 0.6 s",
+    "setup": {
+     "family": "logo-birth",
+     "kinds": [
+      "reveal",
+      "turn"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "weight": 1.3
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#insert:ball-burst-icon"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 1
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:icon-wordmark-wipe",
+   "category": "insert",
+   "role": "brand lockup",
+   "at": 28.7,
+   "name": "Icon Slides, Wordmark Wipes",
+   "about": "the centred icon slides left as the wordmark wipes out from behind it with a blur, and the tagline types underneath with an accent tail",
+   "energy": 3,
+   "needs": [
+    "brand",
+    "reveal",
+    "claim"
+   ],
+   "params": {
+    "slide_s": 0.7,
+    "ease": "expo out",
+    "tag_cps": 40,
+    "setup": {
+     "family": "lockup",
+     "kinds": [
+      "reveal"
+     ],
+     "roles": [
+      "middle",
+      "open"
+     ],
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#insert:icon-wordmark-wipe"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.9
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:agent-hub-wires",
+   "category": "insert",
+   "role": "works with the agent you already use",
+   "at": 30.7,
+   "name": "Agents Wired To The Hub",
+   "about": "the app icon in dotted orbit rings, S-curve wires drawing out to four neutral glyph chips, accent packets running in and pulsing the hub, a mono counter pill below",
+   "energy": 3,
+   "needs": [
+    "connect",
+    "network",
+    "integration"
+   ],
+   "params": {
+    "chip_stagger_s": [
+     0,
+     0.25,
+     0.75,
+     1
+    ],
+    "wire_draw_s": 0.5,
+    "packets": "2 per wire",
+    "setup": {
+     "family": "hub",
+     "kinds": [
+      "proof",
+      "list",
+      "demo"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      2,
+      4
+     ],
+     "number": "optional",
+     "cams": [
+      "camera:push-slow"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#insert:agent-hub-wires"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.9
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:query-grid-workflow",
+   "category": "insert",
+   "role": "find them and act",
+   "at": 35,
+   "name": "A Query Filters The Grid",
+   "about": "an agent panel types the question, the dot grid answers (matches turn accent, a count and a tag land), the matches stream out of the grid into a workflow pill that ticks",
+   "energy": 3,
+   "needs": [
+    "demo",
+    "ai",
+    "data"
+   ],
+   "params": {
+    "grid": "11 x 13 (16:9)",
+    "stream_s": 0.5,
+    "setup": {
+     "family": "query-grid",
+     "kinds": [
+      "demo",
+      "proof"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      2,
+      4
+     ],
+     "requires": [
+      "prompt"
+     ],
+     "cams": [
+      "camera:push-slow"
+     ],
+     "weight": 1.2
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#insert:query-grid-workflow"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:promise-counter-cards",
+   "category": "insert",
+   "role": "pay for what you send, never for what you store",
+   "at": 38.7,
+   "name": "Promise And Counter Cards",
+   "about": "a two-line promise in ink then accent, then two white cards: a total rolling up beside a frozen value with a lock",
+   "energy": 3,
+   "needs": [
+    "promise",
+    "money",
+    "compare"
+   ],
+   "params": {
+    "count_s": 1.5,
+    "setup": {
+     "family": "promise",
+     "kinds": [
+      "promise",
+      "proof"
+     ],
+     "roles": [
+      "middle",
+      "close"
+     ],
+     "number": "required",
+     "requires": [
+      "number"
+     ],
+     "cams": [
+      "camera:push-slow"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#insert:promise-counter-cards"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.9
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "end_card:icon-cta-click-terms",
+   "category": "end_card",
+   "role": "close",
+   "at": 42.2,
+   "name": "Lockup, Wide Pill, Click",
+   "about": "app icon and wordmark centred, a wide accent CTA pill grows under it, the cursor glides in and clicks with a ripple, the address small below",
+   "energy": 2,
+   "needs": [
+    "cta",
+    "brand"
+   ],
+   "params": {
+    "pill_in": "0.6 to 1 spring",
+    "click": "press 0.96, ripple 0.45 s",
+    "setup": {
+     "family": "end",
+     "kinds": [
+      "end"
+     ],
+     "roles": [
+      "close"
+     ],
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#end_card:icon-cta-click-terms"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.9
+    }
+   ],
+   "tags": [
+    "launch",
+    "end"
+   ]
+  },
+  {
+   "id": "transition:zoom-into-period",
+   "category": "transition",
+   "role": "title to chapter one",
+   "at": 3.4,
+   "name": "Zoom Into The Full Stop",
+   "about": "the camera accelerates into the outgoing shot's ball until its colour fills the frame, then the colour contracts into the next shot's first object",
+   "energy": 4,
+   "needs": [
+    "focus",
+    "reveal"
+   ],
+   "params": {
+    "pre": 0.45,
+    "post": 0.32,
+    "scale": "log 1 to cover",
+    "transition": {
+     "family": "zoom"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#transition:zoom-into-period"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "zoom",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.9
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:halftone-bloom",
+   "category": "transition",
+   "role": "reveal of the contact list",
+   "at": 10.2,
+   "name": "Halftone Bloom",
+   "about": "a dot matrix grows out of the centre over the shot until the dots merge, then empties from the centre outward onto the next",
+   "energy": 3,
+   "needs": [
+    "scale",
+    "data",
+    "reveal"
+   ],
+   "params": {
+    "pre": 0.42,
+    "post": 0.45,
+    "dot": "0.74 pitch at full",
+    "transition": {
+     "family": "iris",
+     "worlds": "change"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#transition:halftone-bloom"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "iris",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.9
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:glitch-double-cut",
+   "category": "transition",
+   "role": "end of the problem act",
+   "at": 24.75,
+   "name": "Glitch Double Cut",
+   "about": "the last frames double with an offset copy and two slipped slices, a hard cut, and the next shot settles out of one doubled frame",
+   "energy": 3,
+   "needs": [
+    "chaos",
+    "contrast",
+    "problem"
+   ],
+   "params": {
+    "pre": 0.12,
+    "post": 0.12,
+    "offset_px": "6-16",
+    "transition": {
+     "family": "cut"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#transition:glitch-double-cut"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "cut",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.7
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.5
+    },
+    {
+     "style": "atlas",
+     "w": 0.3
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:ball-swallow-burst",
+   "category": "transition",
+   "role": "the drop",
+   "at": 27.5,
+   "name": "Ball Swallows And Bursts",
+   "about": "the accent ball rolls across the shot and swells while the shot collapses into it, then bursts with a ring and specks and the next shot opens out of the burst",
+   "energy": 5,
+   "needs": [
+    "reveal",
+    "payoff",
+    "brand"
+   ],
+   "params": {
+    "pre": 0.5,
+    "post": 0.45,
+    "specks": 36,
+    "transition": {
+     "family": "morph",
+     "worlds": "change"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#transition:ball-swallow-burst"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "morph",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 1
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "camera:pull-back-snap",
+   "category": "camera",
+   "role": "'well...' to 'well... now it can.'",
+   "at": 26.25,
+   "name": "Pull Back Snap",
+   "about": "the shot starts tight on its subject, creeps in, then snaps back to the full frame in a fast ease at the set-up's pull cue",
+   "energy": 3,
+   "needs": [
+    "reveal",
+    "answer",
+    "contrast"
+   ],
+   "params": {
+    "from": 1.28,
+    "dur": 0.32,
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#camera:pull-back-snap"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.9
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "camera:truck-left-push",
+   "category": "camera",
+   "role": "the cropped giant word",
+   "at": 25,
+   "name": "Truck Left With Push",
+   "about": "a slow lateral truck of about 30 px a second with a gentle push, for a held giant word",
+   "energy": 1,
+   "needs": [
+    "calm",
+    "focus",
+    "time"
+   ],
+   "params": {
+    "px_s": 30,
+    "push": 0.025,
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#camera:truck-left-push"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.7
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "texture:echo-marquee-rows",
+   "category": "texture",
+   "role": "'nothing changed' repetition behind the year",
+   "at": 4.6,
+   "name": "Echo Marquee Rows",
+   "about": "the beat's line repeated in faint rows across the frame, alternate rows drifting left and right",
+   "energy": 1,
+   "needs": [
+    "time",
+    "cycle",
+    "problem"
+   ],
+   "params": {
+    "alpha": 0.085,
+    "speed_px_s": [
+     28,
+     -14
+    ],
+    "pitch": "1.75 px"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#texture:echo-marquee-rows"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  },
+  {
+   "id": "effect:ring-burst-on-land",
+   "category": "effect",
+   "role": "the final price lands",
+   "at": 17.1,
+   "name": "Ring Burst On Landing",
+   "about": "two thin accent rings expand and fade behind whatever just landed (the beat's exit object or its centre)",
+   "energy": 2,
+   "needs": [
+    "number",
+    "stakes",
+    "payoff"
+   ],
+   "params": {
+    "r": "30 px to 0.28 H",
+    "dur": 0.55,
+    "stagger": 0.1,
+    "kind": "overlay"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l08.js#effect:ring-burst-on-land"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 1
+    }
+   ],
+   "tags": [
+    "launch",
+    "overlay"
+   ]
+  }
+ ],
+ "uses": [
+  {
+   "id": "camera:crash-zoom-in",
+   "role": "the zoom into the ball after the title word",
+   "at": 3.4
+  },
+  {
+   "id": "effect:odometer-total",
+   "role": "digit roll basis for the year and the contacts counter",
+   "at": 4.5
+  },
+  {
+   "id": "insert:s5-hub",
+   "role": "simpler hub for the agents beat",
+   "at": 31
+  },
+  {
+   "id": "ui:ctaPill",
+   "role": "CTA pill that a cursor clicks",
+   "at": 43
+  },
+  {
+   "id": "camera:push-slow",
+   "role": "the slow push under most beats",
+   "at": 10
+  },
+  {
+   "id": "effect:type-word-blur-rise",
+   "role": "the verdict line after the slot lands and the sentence after the pull back",
+   "at": 17.1
+  },
+  {
+   "id": "ui:cursor-arrow",
+   "role": "cursor glide and click on the CTA",
+   "at": 43.25
+  }
+ ]
+}

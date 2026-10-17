@@ -1,0 +1,2633 @@
+{
+ "reference": {
+  "id": "l06",
+  "url": "https://www.promptsmotion.com/ultimaxbt-bbebf5",
+  "title": "Orange dot motion system",
+  "kind": "motion system film, 16:9, 15 s",
+  "seconds": 15.13,
+  "notes": "One orange dot threads every scene (a toggle, the dot over a letter, a spring graph drawn by the same spring, a flood, a pill, a ring of orbiting type, a halftone field) with three colours and nothing else: continuity as the whole idea. Studied from what the page shows publicly; rebuilt in Moovi's own code (packages/library/src/kits/launch) with our own fonts, sounds and assets."
+ },
+ "kit": {
+  "file": "packages/library/src/kits/launch/looks/l06.json"
+ },
+ "impl": "packages/library/src/kits/launch/",
+ "styles": [
+  "brand-promo",
+  "studio-minimal"
+ ],
+ "parts": [
+  {
+   "id": "insert:dot-period",
+   "category": "insert",
+   "role": "the dot becomes the full stop",
+   "at": null,
+   "name": "The dot becomes the full stop",
+   "about": "the accent dot falls in, squashes and bounces once, then slides to sit as the full stop of the line that writes itself beside it",
+   "energy": 4,
+   "needs": [
+    "reveal",
+    "brand",
+    "focus",
+    "hook"
+   ],
+   "params": {
+    "setup": {
+     "family": "dot",
+     "kinds": [
+      "reveal",
+      "hook",
+      "promise",
+      "turn"
+     ],
+     "cams": [
+      "camera:push-slow",
+      "camera:punch-on-head"
+     ],
+     "weight": 1.15
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/setups.js#insert:dot-period"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.95
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.85
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.45
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "end_card:wordmark-dot-spring",
+   "category": "end_card",
+   "role": "wordmark letters spring, the dot lands",
+   "at": null,
+   "name": "Wordmark letters spring, the dot lands",
+   "about": "the wordmark's letters spring up one by one and the accent dot lands as its full stop; the tagline under it",
+   "energy": 4,
+   "needs": [
+    "cta",
+    "brand"
+   ],
+   "params": {
+    "setup": {
+     "family": "end",
+     "kinds": [
+      "end"
+     ],
+     "cams": [
+      "camera:push-slow",
+      "camera:breathe"
+     ]
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/end.js#end_card:wordmark-dot-spring"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.95
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.85
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.45
+    }
+   ],
+   "tags": [
+    "launch",
+    "end"
+   ]
+  },
+  {
+   "id": "transition:flood-contract-pill",
+   "category": "transition",
+   "role": "flood, then contract (pill)",
+   "at": null,
+   "name": "Flood, then contract (pill)",
+   "about": "a rounded rect floods the frame and contracts into the next shot's pill (a button, a label)",
+   "energy": 4,
+   "needs": [
+    "reveal",
+    "ui"
+   ],
+   "params": {
+    "transition": {
+     "family": "flood"
+    },
+    "dur": 0.72
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/trans.js#transition:flood-contract-pill"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "flood",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:dot-handoff",
+   "category": "transition",
+   "role": "dot hand-off",
+   "at": null,
+   "name": "Dot hand-off",
+   "about": "the shot shrinks into its accent dot, the dot travels on an arc to the next shot and the next shot opens out of it",
+   "energy": 3,
+   "needs": [
+    "connect",
+    "flow",
+    "focus"
+   ],
+   "params": {
+    "transition": {
+     "family": "match"
+    },
+    "dur": 0.68
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/trans.js#transition:dot-handoff"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "match",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "camera:punch-on-head",
+   "category": "camera",
+   "role": "punch on the headline",
+   "at": null,
+   "name": "Punch on the headline",
+   "about": "a slow push with a 5.5% log punch the moment the headline lands",
+   "energy": 4,
+   "needs": [
+    "claim",
+    "number"
+   ],
+   "params": {
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/cam.js#camera:punch-on-head"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "ui:toggle-switch",
+   "category": "ui",
+   "role": "spring toggle",
+   "at": null,
+   "name": "Spring toggle",
+   "about": "a toggle whose knob's two edges ride different springs, so the leading edge stretches ahead",
+   "energy": 3,
+   "needs": [
+    "ui",
+    "choice"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/ui.js#ui:toggle-switch"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.95
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "texture:halftone-edge",
+   "category": "texture",
+   "role": "halftone edges",
+   "at": null,
+   "name": "Halftone edges",
+   "about": "a halftone dot field whose dots grow toward the frame's edges; the centre stays clean",
+   "energy": 2,
+   "needs": [
+    "focus",
+    "scale"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/worlds.js#texture:halftone-edge"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "studio-minimal",
+     "w": 0.85
+    },
+    {
+     "style": "brand-promo",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  },
+  {
+   "id": "ui:toggle-accent-drain",
+   "category": "ui",
+   "role": "the toggle the cursor switches off in the opening macro",
+   "at": 0.47,
+   "name": "Accent Toggle Drain",
+   "about": "a big accent toggle; on the click the knob slides off on two springs and the track drains to a warm grey, handing the accent on",
+   "energy": 2,
+   "needs": [
+    "ui",
+    "simplify",
+    "turn"
+   ],
+   "params": {
+    "aspect": 1.75,
+    "drain_s": 0.12,
+    "knob": "lead edge snap spring, trail edge ui spring 40 ms later"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#ui:toggle-accent-drain"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:bare-axes-target",
+   "category": "ui",
+   "role": "the chart frame the dot drops into",
+   "at": 3.45,
+   "name": "Bare Axes and Target",
+   "about": "two ink axes and one dashed grey target line, no grid or labels, sliding in from the right as the stage for one moving point",
+   "energy": 1,
+   "needs": [
+    "data",
+    "growth",
+    "simplify"
+   ],
+   "params": {
+    "axis_px": 3,
+    "dash_px": [
+     18,
+     13
+    ],
+    "target_at": "rise = height / 1.25"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#ui:bare-axes-target"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:spring-bead-trace",
+   "category": "ui",
+   "role": "the graph drawn by the motion itself",
+   "at": 3.8,
+   "name": "Spring Bead Trace",
+   "about": "the dot rides one damped spring along a steady time axis and draws its own curve with a bead every 1/30 s; the number rises at the overshoot on a short leader",
+   "energy": 3,
+   "needs": [
+    "growth",
+    "number",
+    "proof",
+    "data"
+   ],
+   "params": {
+    "zeta": 0.44,
+    "omega_rad_s": 14,
+    "overshoot": 0.215,
+    "bead_every_s": 0.0333
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#ui:spring-bead-trace"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:word-ring-3d",
+   "category": "ui",
+   "role": "the ring of craft words around the dot",
+   "at": 7.5,
+   "name": "Tilted Word Ring",
+   "about": "capital words with middots stand on a tilted 3D ring round a centre, near side big and bright, far side small, dim and mirrored; spins in from a tiny fast blur to a calm orbit",
+   "energy": 3,
+   "needs": [
+    "list",
+    "cycle",
+    "tool"
+   ],
+   "params": {
+    "ry_over_rx": 0.3,
+    "spin_rad_s": [
+     11,
+     0.6
+    ],
+    "spin_tau_s": 0.2,
+    "grow_s": 0.6
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#ui:word-ring-3d"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "insert:toggle-macro-pullout",
+   "category": "insert",
+   "role": "the opening: the accent leaves the UI and becomes the motif",
+   "at": 0,
+   "name": "Macro Toggle Pull-out",
+   "about": "tight on an accent toggle, the cursor glides in and clicks, the track drains and the camera pulls back 3x to the label whose i now carries the accent dot",
+   "energy": 3,
+   "needs": [
+    "hook",
+    "ui",
+    "simplify",
+    "turn"
+   ],
+   "params": {
+    "close_scale": 3.1,
+    "click_at_s": 0.55,
+    "pullout_s": 0.55,
+    "setup": {
+     "family": "dot-motif",
+     "kinds": [
+      "hook",
+      "turn",
+      "problem"
+     ],
+     "roles": [
+      "open",
+      "middle"
+     ],
+     "weight": 1.2
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#insert:toggle-macro-pullout"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:word-peel-keep",
+   "category": "insert",
+   "role": "turns a phrase into its one word without a cut",
+   "at": 0.95,
+   "name": "Word Peel, One Kept",
+   "about": "the line arrives, then every word but the key one peels off letter by letter along falling curves; the kept word centres and grows to fill the frame with its i dotted in the accent",
+   "energy": 3,
+   "needs": [
+    "simplify",
+    "focus",
+    "before-after"
+   ],
+   "params": {
+    "peel_s": 0.62,
+    "letter_stagger_s": 0.028,
+    "grow_s": 0.9,
+    "kept_width": 0.74,
+    "setup": {
+     "family": "dot-motif",
+     "kinds": [
+      "turn",
+      "reveal",
+      "promise"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#insert:word-peel-keep"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.7
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:dot-hop-word",
+   "category": "insert",
+   "role": "the first groove bar: the motif comes alive",
+   "at": 2.33,
+   "name": "Dot Hops Across a Word",
+   "about": "one huge word; the accent dot drops onto its i, then hops letter to letter on the beat with squash, stretch and a contact shadow, each letter dipping under it, and lands as the full stop",
+   "energy": 4,
+   "needs": [
+    "hook",
+    "brand",
+    "emotion"
+   ],
+   "params": {
+    "anticipation": [
+     1.32,
+     0.8
+    ],
+    "landing": [
+     1.41,
+     0.73
+    ],
+    "hop_beats": 0.93,
+    "word_width": 0.74,
+    "setup": {
+     "family": "dot-motif",
+     "kinds": [
+      "hook",
+      "reveal",
+      "promise"
+     ],
+     "roles": [
+      "open",
+      "middle"
+     ],
+     "weight": 1.2
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#insert:dot-hop-word"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.7
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:spring-trace-chart",
+   "category": "insert",
+   "role": "the curve and the dot share one spring function",
+   "at": 3.8,
+   "name": "Spring Trace Chart",
+   "about": "a bare chart slides in, the dot drops to the origin and rides one damped spring, drawing its own beaded curve, and the brand's number rises at the overshoot",
+   "energy": 3,
+   "needs": [
+    "growth",
+    "proof",
+    "number",
+    "data"
+   ],
+   "params": {
+    "zeta": 0.44,
+    "omega_rad_s": 14,
+    "run_s": [
+     1.6,
+     2.4
+    ],
+    "setup": {
+     "family": "dot-motif",
+     "kinds": [
+      "stat",
+      "proof"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "number": "optional",
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#insert:spring-trace-chart"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:shape-state-beats",
+   "category": "insert",
+   "role": "the shape section: one shape, many states",
+   "at": 5.68,
+   "name": "Shape States on the Beat",
+   "about": "one shape, a state per beat while the ground hard-cuts: accent disc on ink, inverted into a diamond squircle in a guide circle, a paper-ground pill holding the key word, a dot that flies to be the headline's full stop",
+   "energy": 5,
+   "needs": [
+    "turn",
+    "contrast",
+    "build",
+    "reveal"
+   ],
+   "params": {
+    "states": [
+     "disc",
+     "diamond squircle",
+     "pill",
+     "dot"
+    ],
+    "morph_s": 0.15,
+    "pill_aspect": 3.2,
+    "grounds": [
+     "ink",
+     "accent",
+     "paper",
+     "ink"
+    ],
+    "setup": {
+     "family": "dot-motif",
+     "kinds": [
+      "turn",
+      "reveal",
+      "hook"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "weight": 1.3
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#insert:shape-state-beats"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.3
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 1
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:word-ring-orbit",
+   "category": "insert",
+   "role": "lists the craft around the motif",
+   "at": 7.5,
+   "name": "Word Ring Around the Dot",
+   "about": "the brand's items in capitals spin in on a tilted ring round the accent dot and keep orbiting, near letters passing over it; at the end the dot drops through the ring",
+   "energy": 3,
+   "needs": [
+    "list",
+    "cycle",
+    "tool",
+    "layers"
+   ],
+   "params": {
+    "front_px": "0.21 rx",
+    "fall_s": 0.36,
+    "setup": {
+     "family": "dot-motif",
+     "kinds": [
+      "list",
+      "proof"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      3,
+      5
+     ],
+     "requires": [
+      "items3"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#insert:word-ring-orbit"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:halftone-pond-drop",
+   "category": "insert",
+   "role": "the paper answers the dot's landing",
+   "at": 9.42,
+   "name": "Halftone Pond Drop",
+   "about": "top-down on a halftone grid, the dot falls toward the paper with its shadow sliding in under it, lands, ripples cross the grid on two beats and the field parts for the headline",
+   "energy": 3,
+   "needs": [
+    "reveal",
+    "connect",
+    "scale"
+   ],
+   "params": {
+    "pitch_px": 54,
+    "crest": 2.6,
+    "speed_px_s": 1100,
+    "fall_s": 0.5,
+    "setup": {
+     "family": "dot-motif",
+     "kinds": [
+      "reveal",
+      "turn",
+      "promise"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#insert:halftone-pond-drop"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:kicker-title-stat",
+   "category": "insert",
+   "role": "the claim lockup before the end",
+   "at": 11.32,
+   "name": "Kicker, Title, Accent Number",
+   "about": "a left lockup: grey kicker, heavy headline with the accent dot flying in as its full stop, a third line whose number is in the accent; the lines sink back into their slots at the end",
+   "energy": 2,
+   "needs": [
+    "claim",
+    "number",
+    "proof"
+   ],
+   "params": {
+    "x": 0.085,
+    "line_stagger_s": 0.08,
+    "creep_px": 12,
+    "setup": {
+     "family": "dot-motif",
+     "kinds": [
+      "stat",
+      "promise",
+      "proof"
+     ],
+     "roles": [
+      "middle",
+      "close"
+     ],
+     "number": "optional",
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#insert:kicker-title-stat"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:squash-hop-list",
+   "category": "insert",
+   "role": "the hops applied to steps or features",
+   "at": 2.33,
+   "name": "Dot Hops Down a List",
+   "about": "the line on the left, a ruled column of the brand's items in grey on the right; the dot hops down onto each on the beat, the word it lands on turns to ink, dips and slides",
+   "energy": 3,
+   "needs": [
+    "list",
+    "steps",
+    "process"
+   ],
+   "params": {
+    "row_pitch": 1.8,
+    "hop_beats": 0.93,
+    "setup": {
+     "family": "dot-motif",
+     "kinds": [
+      "list",
+      "demo"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      2,
+      4
+     ],
+     "requires": [
+      "items3"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#insert:squash-hop-list"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.7
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:dot-dive-disc-reveal",
+   "category": "insert",
+   "role": "the chart's particle becomes the next scene's stage",
+   "at": 5.05,
+   "name": "Dive into the Dot",
+   "about": "the dot ends a settling beaded trail; the camera dives into it 10x until it is a big disc at the centre, and the line appears inside it",
+   "energy": 4,
+   "needs": [
+    "reveal",
+    "focus",
+    "scale"
+   ],
+   "params": {
+    "dive_s": 0.6,
+    "end_disc": "0.32 of the short side",
+    "setup": {
+     "family": "dot-motif",
+     "kinds": [
+      "reveal",
+      "turn",
+      "promise"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#insert:dot-dive-disc-reveal"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "end_card:kicker-title-period",
+   "category": "end_card",
+   "role": "the closing lockup",
+   "at": 11.32,
+   "name": "Kicker Title Period End",
+   "about": "left-aligned: the tagline as a grey kicker, the brand's name heavy with the accent dot arcing in as its full stop and breathing, the address under it after an accent arrow",
+   "energy": 2,
+   "needs": [
+    "brand",
+    "payoff",
+    "claim"
+   ],
+   "params": {
+    "title": "0.27 H",
+    "dot_flight_s": 0.36,
+    "setup": {
+     "family": "dot-motif",
+     "kinds": [
+      "end"
+     ],
+     "roles": [
+      "close"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#end_card:kicker-title-period"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "end"
+   ]
+  },
+  {
+   "id": "end_card:shape-morph-pill-host",
+   "category": "end_card",
+   "role": "the shape states end as the call to action",
+   "at": 6.58,
+   "name": "Dot Becomes the Button",
+   "about": "the dot turns into a diamond squircle in a guide circle, then levels into an accent pill holding the address while the wordmark rises above; the cursor clicks it",
+   "energy": 3,
+   "needs": [
+    "brand",
+    "payoff",
+    "ui"
+   ],
+   "params": {
+    "states": [
+     "dot",
+     "squircle",
+     "pill"
+    ],
+    "setup": {
+     "family": "dot-motif",
+     "kinds": [
+      "end"
+     ],
+     "roles": [
+      "close"
+     ],
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#end_card:shape-morph-pill-host"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "end"
+   ]
+  },
+  {
+   "id": "effect:type-accent-tittle",
+   "category": "effect",
+   "role": "the motif's home position on a word",
+   "at": 0.63,
+   "name": "Accent Tittle Drop",
+   "about": "lines rise from their masks; the key word's i is dotless and the accent dot drops onto it with a squash (no i: it drops in as the full stop)",
+   "energy": 2,
+   "needs": [
+    "brand",
+    "focus",
+    "idea"
+   ],
+   "params": {
+    "dot": "0.094 em",
+    "fall_s": 0.3,
+    "type": {
+     "kinds": [
+      "hook",
+      "reveal",
+      "promise",
+      "turn"
+     ],
+     "maxWords": 8
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#effect:type-accent-tittle"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-letter-hop",
+   "category": "effect",
+   "role": "the hop rhythm as a type treatment",
+   "at": 2.33,
+   "name": "Letter Hop",
+   "about": "letters spring up from the baseline one by one while the accent dot hops over the line word by word and lands as the full stop",
+   "energy": 4,
+   "needs": [
+    "emotion",
+    "speed",
+    "brand"
+   ],
+   "params": {
+    "letter_gap_s": 0.03,
+    "type": {
+     "kinds": [
+      "hook",
+      "promise",
+      "reveal"
+     ],
+     "maxWords": 7
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#effect:type-letter-hop"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.8
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-peel-in-ribbon",
+   "category": "effect",
+   "role": "the word peel, reversed into an entrance",
+   "at": 0.95,
+   "name": "Peel-in Ribbon",
+   "about": "every letter flies in along a falling curve in reverse, turning with the curve, and lands upright: a ribbon spooling into the line",
+   "energy": 3,
+   "needs": [
+    "build",
+    "reveal",
+    "flow"
+   ],
+   "params": {
+    "letter_gap_s": 0.024,
+    "flight_s": 0.55,
+    "type": {
+     "kinds": [
+      "hook",
+      "turn",
+      "reveal",
+      "problem"
+     ],
+     "maxWords": 8
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#effect:type-peel-in-ribbon"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.8
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-period-arc-land",
+   "category": "effect",
+   "role": "the dot signs the line",
+   "at": 11.32,
+   "name": "Period Arc Landing",
+   "about": "lines rise from their masks, then the accent dot arcs over the line and lands as its full stop with a squash, and keeps breathing",
+   "energy": 3,
+   "needs": [
+    "brand",
+    "payoff",
+    "claim"
+   ],
+   "params": {
+    "flight_s": 0.36,
+    "apex": "0.75 em",
+    "type": {
+     "kinds": [
+      "promise",
+      "end",
+      "stat",
+      "proof"
+     ],
+     "maxWords": 9
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#effect:type-period-arc-land"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-numeral-accent-rise",
+   "category": "effect",
+   "role": "the dry claim line with its numeral in the accent",
+   "at": 12.25,
+   "name": "Accent Numeral Rise",
+   "about": "lines rise from their baselines 80 ms apart; a token with a number rolls up to it in the accent, the rest in ink, and the block keeps creeping up",
+   "energy": 2,
+   "needs": [
+    "number",
+    "claim",
+    "proof"
+   ],
+   "params": {
+    "line_stagger_s": 0.08,
+    "roll_s": 0.7,
+    "creep_px": 10,
+    "type": {
+     "kinds": [
+      "stat",
+      "proof",
+      "promise"
+     ],
+     "maxWords": 8
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#effect:type-numeral-accent-rise"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.9
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-rise-sink-slots",
+   "category": "effect",
+   "role": "the end card's exit into the loop",
+   "at": 13.4,
+   "name": "Rise and Sink Slots",
+   "about": "lines rise out of their slots top first, hold, then sink back into them bottom first at the end of the beat, clearing the frame",
+   "energy": 2,
+   "needs": [
+    "calm",
+    "cycle",
+    "simplify"
+   ],
+   "params": {
+    "sink_s": 0.2,
+    "sink_stagger_s": 0.05,
+    "type": {
+     "kinds": [
+      "problem",
+      "turn",
+      "list",
+      "promise"
+     ],
+     "maxWords": 10
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#effect:type-rise-sink-slots"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "transition:dot-dive-disc",
+   "category": "transition",
+   "role": "the chart's particle becomes the shape section's disc",
+   "at": 5.05,
+   "name": "Dive into the Dot",
+   "about": "the camera dives into A's dot until it is a big disc at the centre; on the cut the disc stands on B's ground and contracts into B's first object",
+   "energy": 4,
+   "needs": [
+    "focus",
+    "reveal",
+    "scale"
+   ],
+   "params": {
+    "pre_s": 0.36,
+    "post_s": 0.4,
+    "end_disc": "0.26 of the short side",
+    "transition": {
+     "family": "zoom",
+     "worlds": "change"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#transition:dot-dive-disc"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "zoom",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:stage-colour-cut",
+   "category": "transition",
+   "role": "the shape section's heartbeat",
+   "at": 5.68,
+   "name": "Stage Colour Cut",
+   "about": "on three quick sub-beats the ground hard-cuts ink, accent, paper while one registered shape stays put as disc, inverted diamond, pill; then B, the pill contracting into its first object",
+   "energy": 5,
+   "needs": [
+    "contrast",
+    "speed",
+    "steps"
+   ],
+   "params": {
+    "sub_beat_s": 0.12,
+    "grounds": [
+     "ink",
+     "accent",
+     "paper"
+    ],
+    "transition": {
+     "family": "cut",
+     "worlds": "change"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#transition:stage-colour-cut"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "cut",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.6
+    },
+    {
+     "style": "atlas",
+     "w": 0.3
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 1
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:figure-ground-invert",
+   "category": "transition",
+   "role": "the loudest beat of the shape section",
+   "at": 6.12,
+   "name": "Figure-ground Invert",
+   "about": "the accent floods out of A's dot; on the cut the dot is a hole of A's old ground in an accent field, which holds a beat and then opens onto B",
+   "energy": 5,
+   "needs": [
+    "contrast",
+    "before-after",
+    "reveal"
+   ],
+   "params": {
+    "pre_s": 0.3,
+    "post_s": 0.44,
+    "hold": 0.3,
+    "transition": {
+     "family": "flood",
+     "worlds": "change"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#transition:figure-ground-invert"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "flood",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.6
+    },
+    {
+     "style": "atlas",
+     "w": 0.2
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 1
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:pill-contract-dot",
+   "category": "transition",
+   "role": "returns the film to one point",
+   "at": 7.05,
+   "name": "Pill Contract to Dot",
+   "about": "A shrinks into a pill on a contrasting ground, the pill squeezes into a dot inside its own fading outline, the dot moves to B's first object and B opens out of it",
+   "energy": 3,
+   "needs": [
+    "simplify",
+    "focus",
+    "calm"
+   ],
+   "params": {
+    "pre_s": 0.36,
+    "post_s": 0.38,
+    "pill_aspect": 2.3,
+    "transition": {
+     "family": "iris",
+     "worlds": "change"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#transition:pill-contract-dot"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "iris",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:halftone-flood",
+   "category": "transition",
+   "role": "flips paper to black, grown from the dot",
+   "at": 10.45,
+   "name": "Halftone Flood",
+   "about": "halftone dots grow out of A's dot in a moving front until they merge into one solid colour past the corners, then break back into dots that shrink away from B's first object",
+   "energy": 4,
+   "needs": [
+    "reveal",
+    "build",
+    "contrast"
+   ],
+   "params": {
+    "pitch_px": 40,
+    "edge_px": 230,
+    "pre_s": 0.42,
+    "post_s": 0.42,
+    "transition": {
+     "family": "flood",
+     "worlds": "change"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#transition:halftone-flood"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "flood",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.9
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:depth-fall-match",
+   "category": "transition",
+   "role": "carries the motif from the ring into the halftone",
+   "at": 9.42,
+   "name": "Depth-fall Match Cut",
+   "about": "A's dot drops out of frame stretching; on the cut we look down at B and the dot falls toward it from close up, shrinking as its shadow slides in under it, landing on B's first object",
+   "energy": 4,
+   "needs": [
+    "reveal",
+    "focus",
+    "scale"
+   ],
+   "params": {
+    "pre_s": 0.3,
+    "post_s": 0.48,
+    "shadow_offset_px": [
+     150,
+     8
+    ],
+    "transition": {
+     "family": "match"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#transition:depth-fall-match"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "match",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:strip-peel-fall",
+   "category": "transition",
+   "role": "the word peel applied to a whole frame",
+   "at": 0.95,
+   "name": "Strip Peel Fall",
+   "about": "A is cut into twelve vertical strips that peel away left to right, each falling and turning along a curve like a ribbon, uncovering B beneath",
+   "energy": 4,
+   "needs": [
+    "before-after",
+    "simplify",
+    "reveal"
+   ],
+   "params": {
+    "strips": 12,
+    "stagger": 0.045,
+    "pre_s": 0.14,
+    "post_s": 0.5,
+    "transition": {
+     "family": "mask",
+     "worlds": "change"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#transition:strip-peel-fall"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "mask",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.6
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.8
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.9
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "camera:click-pullout-expo",
+   "category": "camera",
+   "role": "the click-triggered pull-out from the macro toggle",
+   "at": 0.5,
+   "name": "Click Pull-out",
+   "about": "the shot opens 2.6x tight on a point and, on the set-up's click, pulls back with a hard expo-out, then creeps",
+   "energy": 3,
+   "needs": [
+    "reveal",
+    "hook",
+    "ui"
+   ],
+   "params": {
+    "from_scale": 2.6,
+    "pull_s": 0.5,
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#camera:click-pullout-expo"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "camera:beat-step-push",
+   "category": "camera",
+   "role": "the groove's camera",
+   "at": 1.92,
+   "name": "Beat Step Push",
+   "about": "the camera pushes in a small stiff-spring step on every beat, so the frame pulses with the music and is never still",
+   "energy": 3,
+   "needs": [
+    "speed",
+    "emotion",
+    "steps"
+   ],
+   "params": {
+    "step": 0.014,
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#camera:beat-step-push"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.6
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.9
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "camera:dive-recentre",
+   "category": "camera",
+   "role": "the reframe push onto the kept word",
+   "at": 1.4,
+   "name": "Dive and Recentre",
+   "about": "the shot dives in about 1.2x over the first beat while recentring on the focus, then creeps",
+   "energy": 3,
+   "needs": [
+    "focus",
+    "reveal"
+   ],
+   "params": {
+    "amount": 0.2,
+    "dive_s": 0.85,
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#camera:dive-recentre"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "texture:halftone-ripple-field",
+   "category": "texture",
+   "role": "the halftone pond as a background",
+   "at": 9.9,
+   "name": "Halftone Ripple Field",
+   "about": "a quiet halftone grid on the ground that sends a ripple of swollen dots out from the centre on every bar downbeat",
+   "energy": 2,
+   "needs": [
+    "connect",
+    "network",
+    "calm"
+   ],
+   "params": {
+    "pitch_px": 54,
+    "crest": 2.3,
+    "speed_px_s": 900
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#texture:halftone-ripple-field"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  },
+  {
+   "id": "effect:beaded-spring-timeline",
+   "category": "effect",
+   "role": "the time-sampled trail as a progress line",
+   "at": 3.8,
+   "name": "Beaded Spring Timeline",
+   "about": "a hairline along the bottom; the accent dot steps along it on every beat on a spring, leaving beads every 1/30 s that bunch where it slowed",
+   "energy": 2,
+   "needs": [
+    "process",
+    "time",
+    "steps"
+   ],
+   "params": {
+    "bead_every_s": 0.0333,
+    "zeta": 0.44,
+    "kind": "overlay"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#effect:beaded-spring-timeline"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.7
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.9
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "overlay"
+   ]
+  },
+  {
+   "id": "effect:construction-guides",
+   "category": "effect",
+   "role": "the construction outlines kept on screen while a shape changes",
+   "at": 6.15,
+   "name": "Construction Guides",
+   "about": "thin accent guides (a circle, its rotated square, a dashed crosshair) draw themselves round the centre like a design tool's guides, then fade",
+   "energy": 2,
+   "needs": [
+    "process",
+    "build",
+    "idea"
+   ],
+   "params": {
+    "stroke_px": 1.5,
+    "draw_s": 0.8,
+    "fade_at_s": 1.6,
+    "kind": "overlay"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l06.js#effect:construction-guides"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "overlay"
+   ]
+  }
+ ],
+ "uses": [
+  {
+   "id": "ui:cursor-arrow",
+   "role": "the arrow cursor that glides in and clicks the toggle",
+   "at": 0
+  },
+  {
+   "id": "ui:toggle-switch",
+   "role": "the toggle family the drain variant extends",
+   "at": 0
+  },
+  {
+   "id": "insert:dot-period",
+   "role": "the dot landing as the full stop",
+   "at": 11.32
+  },
+  {
+   "id": "effect:type-mask-rise",
+   "role": "end-card lines rising from their masks",
+   "at": 11.32
+  },
+  {
+   "id": "transition:whip-pan",
+   "role": "the whip that follows the dot into the chart",
+   "at": 3.4
+  },
+  {
+   "id": "transition:flood-contract-circle",
+   "role": "the disc flood between shape states",
+   "at": 5.68
+  },
+  {
+   "id": "texture:dot-grid-editorial",
+   "role": "the static paper dot grid before it reacts",
+   "at": 9.42
+  },
+  {
+   "id": "camera:punch-on-head",
+   "role": "the push onto the kept word",
+   "at": 1.92
+  }
+ ]
+}

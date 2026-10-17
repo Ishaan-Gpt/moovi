@@ -158,6 +158,8 @@
 
 /* a live-preview video: the style's own player in a frame (its play bar sits under the stage) */
 .vpop__frame.is-live { aspect-ratio: auto; width: calc((min(78svh, 760px) - 56px) * 9 / 16); background: var(--ink); } /* the stage is 9:16 above the player's 56 px bar */
+/* a live 16:9 film (Launch): the wide card, the stage 16:9 above the 56 px play bar */
+.vpop__card.is-wide .vpop__frame.is-live { width: 100%; aspect-ratio: auto; height: min(calc((min(1100px, 100vw - 48px) - 12px) * 9 / 16 + 56px), 72svh); }
 .vpop__frame iframe { display: block; width: 100%; height: 100%; border: 0; }
 .vpop__live { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11.5px; color: var(--accent); }
 .vpop__live i { width: 7px; height: 7px; border-radius: 50%; background: var(--pass); box-shadow: 0 0 0 3px color-mix(in oklab, var(--pass) 22%, transparent); }

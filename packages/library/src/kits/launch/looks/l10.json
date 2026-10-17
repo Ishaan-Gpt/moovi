@@ -1,0 +1,106 @@
+{
+  "id": "launch-l10",
+  "name": "Launch · Haze Sting",
+  "about": "An Apple-style sting: haze blue to white, a whip tilt, a glass prompt box out of a menu bar, an app icon with orbiting squares, frosted glass titles clipped to type on stacked cards, a glowing wordmark on black. Learned from a launch sting remake (promptsmotion.com).",
+  "from": [
+    "ref:l10"
+  ],
+  "styles": [
+    "brand-promo",
+    "studio-minimal"
+  ],
+  "palette": {
+    "paper": "#FDFDFB",
+    "paperShade": "#EEF2F8",
+    "ink": "#07080B",
+    "text": "#11182A",
+    "textDim": "rgba(17,24,42,0.52)",
+    "inkText": "#F4F6FB",
+    "inkTextDim": "rgba(244,246,251,0.52)",
+    "card": "#FFFFFF",
+    "haze": "#D3E1F2",
+    "accent": "#3E6BFF"
+  },
+  "type": {
+    "display": {
+      "family": "display",
+      "weight": 600,
+      "tracking": -0.035
+    },
+    "accent": {
+      "family": "display",
+      "weight": 600,
+      "tracking": -0.035
+    },
+    "accentSerif": false,
+    "micro": {
+      "family": "ui",
+      "weight": 500,
+      "tracking": 0.02
+    },
+    "ui": {
+      "family": "ui",
+      "weight": 500
+    },
+    "wordmark": {
+      "family": "display",
+      "weight": 650,
+      "tracking": -0.04
+    },
+    "numeral": {
+      "family": "display",
+      "weight": 650
+    }
+  },
+  "worlds": [
+    "haze",
+    "paper",
+    "haze",
+    "ink"
+  ],
+  "bg": {
+    "haze": [
+      "texture:haze-gradient"
+    ],
+    "paper": [],
+    "ink": [
+      "effect:bloom-soft-corner"
+    ]
+  },
+  "post": {
+    "grain": 0.015
+  },
+  "prefer": {
+    "type": [
+      "effect:type-focus-pull",
+      "effect:type-word-blur-rise"
+    ],
+    "transitions": [
+      "transition:whip-pan",
+      "transition:zoom-through",
+      "transition:rack-focus-swap"
+    ],
+    "cams": [
+      "camera:whip-settle",
+      "camera:push-slow"
+    ]
+  },
+  "motion": {
+    "engine": "kits/launch (ishaan-motion)",
+    "arrive": {
+      "seconds": 0.55,
+      "ease": "out (0.16,1,0.3,1)"
+    },
+    "stagger": 0.07,
+    "cutOn": "bar"
+  },
+  "frame": {
+    "designW": 1920,
+    "designH": 1080,
+    "ratios": [
+      "16:9",
+      "1:1",
+      "9:16"
+    ]
+  }
+}

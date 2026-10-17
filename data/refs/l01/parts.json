@@ -1,0 +1,3081 @@
+{
+ "reference": {
+  "id": "l01",
+  "url": "https://www.promptsmotion.com/twoclipping-221cab",
+  "title": "Photo print app launch film (one continuous take)",
+  "kind": "app launch film, 1:1, 29 s",
+  "seconds": 29.08,
+  "notes": "One photo travels screen to wall in one continuous take: every scene is made from the last (a wordmark squeezes into its dot, an iris, a bento grid unfolding, liquid glass relighting the photo, a phone, a Mac window, a framed print on a real wall). Object-born transitions, a cursor that drives every change, screen-studio zooms that land on the music. Studied from what the page shows publicly; rebuilt in Moovi's own code (packages/library/src/kits/launch) with our own fonts, sounds and assets."
+ },
+ "kit": {
+  "file": "packages/library/src/kits/launch/looks/l01.json"
+ },
+ "impl": "packages/library/src/kits/launch/",
+ "styles": [
+  "brand-promo",
+  "studio-minimal"
+ ],
+ "parts": [
+  {
+   "id": "insert:browser-zoom",
+   "category": "insert",
+   "role": "the real site, screen-studio zoom",
+   "at": null,
+   "name": "The real site, screen-studio zoom",
+   "about": "the brand's real site in a browser window; the camera pushes screen-studio style onto its hero and the cursor clicks the call to action",
+   "energy": 3,
+   "needs": [
+    "product",
+    "ui",
+    "reveal",
+    "proof"
+   ],
+   "params": {
+    "setup": {
+     "family": "browser",
+     "kinds": [
+      "demo",
+      "reveal",
+      "proof"
+     ],
+     "requires": [
+      "hero"
+     ],
+     "cams": [
+      "camera:focus-zoom"
+     ],
+     "weight": 1.2,
+     "clean": true
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/setups.js#insert:browser-zoom"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.95
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.85
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.45
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "effect:type-mask-rise",
+   "category": "effect",
+   "role": "mask-line rise",
+   "at": null,
+   "name": "Mask-line rise",
+   "about": "each line of the headline rises out of a mask line, staggered by line, ease-out 0.62 s with a touch of blur",
+   "energy": 3,
+   "needs": [
+    "hook",
+    "claim",
+    "benefit"
+   ],
+   "params": {
+    "type": {
+     "kinds": [
+      "hook",
+      "problem",
+      "turn",
+      "reveal",
+      "demo",
+      "proof",
+      "promise",
+      "list",
+      "stat"
+     ]
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/type.js#effect:type-mask-rise"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "transition:flood-contract-circle",
+   "category": "transition",
+   "role": "flood, then contract (circle)",
+   "at": null,
+   "name": "Flood, then contract (circle)",
+   "about": "a circle floods out of the last object of the outgoing shot past the corners, holds a beat, then contracts into the first object of the next shot",
+   "energy": 4,
+   "needs": [
+    "reveal",
+    "focus"
+   ],
+   "params": {
+    "transition": {
+     "family": "flood"
+    },
+    "dur": 0.72
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/trans.js#transition:flood-contract-circle"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "flood",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:iris-six-blade",
+   "category": "transition",
+   "role": "six-blade iris",
+   "at": null,
+   "name": "Six-blade iris",
+   "about": "six blades close over the shot around a hexagonal aperture and snap open onto the next",
+   "energy": 4,
+   "needs": [
+    "reveal",
+    "focus"
+   ],
+   "params": {
+    "transition": {
+     "family": "iris",
+     "worlds": "change"
+    },
+    "dur": 0.64
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/trans.js#transition:iris-six-blade"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "iris",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:page-push",
+   "category": "transition",
+   "role": "page push",
+   "at": null,
+   "name": "Page push",
+   "about": "the next shot slides in from the right and pushes the old one out (iOS navigation), a soft shadow on the seam",
+   "energy": 3,
+   "needs": [
+    "steps",
+    "ui",
+    "flow"
+   ],
+   "params": {
+    "transition": {
+     "family": "push"
+    },
+    "dur": 0.5
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/trans.js#transition:page-push"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "push",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "camera:pull-back-slow",
+   "category": "camera",
+   "role": "slow pull back",
+   "at": null,
+   "name": "Slow pull back",
+   "about": "the shot starts 6% in and settles back to full frame over the beat",
+   "energy": 2,
+   "needs": [
+    "reveal",
+    "scale"
+   ],
+   "params": {
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/cam.js#camera:pull-back-slow"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "camera:focus-zoom",
+   "category": "camera",
+   "role": "screen-studio zoom",
+   "at": null,
+   "name": "Screen-studio zoom",
+   "about": "the camera zooms so the moment that matters (the composer, a button) fills the frame between two cues, then backs out",
+   "energy": 3,
+   "needs": [
+    "ui",
+    "focus",
+    "tool"
+   ],
+   "params": {
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/cam.js#camera:focus-zoom"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "camera:log-zoom-through",
+   "category": "camera",
+   "role": "log zoom through",
+   "at": null,
+   "name": "Log zoom through",
+   "about": "a long log-space zoom into a point across the beat (or out of it)",
+   "energy": 4,
+   "needs": [
+    "scale",
+    "hook"
+   ],
+   "params": {
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/cam.js#camera:log-zoom-through"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "ui:browser-window",
+   "category": "ui",
+   "role": "browser window",
+   "at": null,
+   "name": "Browser window",
+   "about": "window chrome with traffic lights and a URL pill with the host, holding the real site shot (or a quiet skeleton)",
+   "energy": 2,
+   "needs": [
+    "product",
+    "ui"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/ui.js#ui:browser-window"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.95
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "insert:wordmark-squeeze-to-pill",
+   "category": "insert",
+   "role": "opening: the brand becomes the first button",
+   "at": 0.52,
+   "name": "Wordmark squeezes into a pill",
+   "about": "The wide heavy wordmark accordions into its own full stop; the stop breathes, launches to centre stretching into a black pill, a label rises inside it and the cursor clicks it.",
+   "energy": 3,
+   "needs": [
+    "brand",
+    "hook",
+    "simplify",
+    "reveal"
+   ],
+   "params": {
+    "squeeze": {
+     "dur": 0.4,
+     "ease": "cubic-bezier(0.65,0,0.5,0.9)"
+    },
+    "word_width_frac": 0.78,
+    "dot_r_px_frac": 0.105,
+    "breath": {
+     "peak": 1.29,
+     "dur": 0.23
+    },
+    "pill": {
+     "w_frac_square": 0.42,
+     "aspect": 0.32,
+     "spring": {
+      "stiffness": 282,
+      "damping": 24,
+      "zeta": 0.71
+     }
+    },
+    "label_rise": 0.2,
+    "click": 2.42,
+    "setup": {
+     "family": "brand-open",
+     "kinds": [
+      "hook"
+     ],
+     "roles": [
+      "open"
+     ],
+     "cams": [
+      "camera:breathe",
+      "camera:push-slow"
+     ],
+     "weight": 1.2
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#insert:wordmark-squeeze-to-pill"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.3
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:pill-iris-photo-burst",
+   "category": "insert",
+   "role": "the button reveals the product picture",
+   "at": 2.33,
+   "name": "Pill iris opens a photo",
+   "about": "A click rounds the black pill into a circle, six lit charcoal blades shut and snap open onto the hero photo, and the circle bursts into a big squircle that slides aside for the headline.",
+   "energy": 4,
+   "needs": [
+    "reveal",
+    "product",
+    "hook",
+    "emotion"
+   ],
+   "params": {
+    "circle_frac": 0.43,
+    "square_frac": 0.66,
+    "blades": {
+     "close": 0.13,
+     "hold": 0.07,
+     "open": 0.18
+    },
+    "burst_spring": {
+     "stiffness": 327,
+     "damping": 15,
+     "zeta": 0.41
+    },
+    "radius": "50% -> 8%",
+    "setup": {
+     "family": "object-reveal",
+     "kinds": [
+      "reveal",
+      "hook",
+      "turn"
+     ],
+     "roles": [
+      "open",
+      "middle"
+     ],
+     "cams": [
+      "camera:breathe"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#insert:pill-iris-photo-burst"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:grid-unfold-bento-zoom",
+   "category": "insert",
+   "role": "one photo becomes a library, then the drop",
+   "at": 3.62,
+   "name": "Grid unfolds, bento, crash zoom",
+   "about": "The photo shrinks to a cell, a 3x3 photo grid unfolds from behind it like a paper map (plus first, corners after), reflows into a bento with the photo as a 2x2 hero, then a click and a 3x log-space crash zoom lands it full frame under the headline.",
+   "energy": 5,
+   "needs": [
+    "list",
+    "reveal",
+    "focus",
+    "hook"
+   ],
+   "params": {
+    "grid_frac": 0.64,
+    "gap_frac": 0.017,
+    "unfold_stagger": 0.02,
+    "corners_at": 0.3,
+    "grid_spring_zeta": 0.8,
+    "reflow": 1.2,
+    "zoom": {
+     "dur": 0.26,
+     "ease": "cubic-bezier(0.6,0.25,0.5,0.9)",
+     "to": "cover"
+    },
+    "setup": {
+     "family": "grid",
+     "kinds": [
+      "list",
+      "reveal",
+      "proof"
+     ],
+     "roles": [
+      "open",
+      "middle"
+     ],
+     "items": [
+      0,
+      6
+     ],
+     "weight": 1.2
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#insert:grid-unfold-bento-zoom"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:glass-word-melt-droplet",
+   "category": "insert",
+   "role": "names the idea over the photo",
+   "at": 6.21,
+   "name": "Glass word melts to a droplet",
+   "about": "Over a full-frame photo the line pops in letter by letter as clear liquid glass that bends the picture, then the letters run together into one glass bead that falls to the bottom of the frame.",
+   "energy": 3,
+   "needs": [
+    "reveal",
+    "idea",
+    "benefit",
+    "flow"
+   ],
+   "params": {
+    "letter_stagger": 0.048,
+    "pop_from": 0.3,
+    "melt": 0.22,
+    "fall": 0.14,
+    "droplet_frac": 0.035,
+    "glass_mag": 1.22,
+    "setup": {
+     "family": "glass",
+     "kinds": [
+      "reveal",
+      "promise",
+      "hook"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "requires": [
+      "hero"
+     ],
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#insert:glass-word-melt-droplet"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:glass-toolbar-relight",
+   "category": "insert",
+   "role": "the product's core edit in one drag",
+   "at": 7.33,
+   "name": "Glass toolbar relights the photo",
+   "about": "A glass bead stretches into a liquid-glass toolbar over the photo; the heart is tapped, adjust is tapped and the bar grows into a glass slider whose lens knob drags 0 to 100 while the picture relights to golden hour.",
+   "energy": 3,
+   "needs": [
+    "demo",
+    "before-after",
+    "tool",
+    "benefit"
+   ],
+   "params": {
+    "toolbar": {
+     "w_frac": 0.62,
+     "aspect": 0.19
+    },
+    "panel": {
+     "w_frac": 0.86,
+     "aspect": 0.22
+    },
+    "drag": {
+     "dur": 0.95,
+     "ease": "cubic-bezier(0.55,0.2,0.35,0.95)"
+    },
+    "lens": {
+     "mag": 1.6
+    },
+    "photo_push": 1.22,
+    "setup": {
+     "family": "glass",
+     "kinds": [
+      "demo",
+      "turn",
+      "proof"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "requires": [
+      "hero"
+     ],
+     "weight": 1.2
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#insert:glass-toolbar-relight"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:glass-lockscreen-player",
+   "category": "insert",
+   "role": "the product living on someone's phone",
+   "at": 11.6,
+   "name": "Glass lock screen",
+   "about": "The wallpaper becomes a lock screen: a date line rises, the big number (or clock) pops in digit by digit as clear glass, and the home bar swells into a glass media player whose play button is tapped.",
+   "energy": 2,
+   "needs": [
+    "stat",
+    "time",
+    "product",
+    "calm"
+   ],
+   "params": {
+    "digits": {
+     "stagger": 0.08,
+     "pop_from": 0.4,
+     "h_frac": 0.26
+    },
+    "player": {
+     "w_frac": 0.74,
+     "aspect": 0.2,
+     "content_delay": 0.14
+    },
+    "play_tap": 1.75,
+    "setup": {
+     "family": "glass",
+     "kinds": [
+      "stat",
+      "demo",
+      "hook"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "number": "optional",
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#insert:glass-lockscreen-player"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:island-pinch-to-window",
+   "category": "insert",
+   "role": "hands the story from phone to computer",
+   "at": 13.96,
+   "name": "Island pinches into a window",
+   "about": "On a pale desk with a brand-coloured silk ribbon, the phone's island stretches like ink, pinches off, flies across and grows into a black window that rolls up like a blind onto a browser start page.",
+   "energy": 4,
+   "needs": [
+    "connect",
+    "flow",
+    "product",
+    "turn"
+   ],
+   "params": {
+    "stretch": 0.18,
+    "pinch": 0.58,
+    "fly": 0.14,
+    "grow_zeta": 0.8,
+    "blind": 0.22,
+    "phone_h_frac": 0.66,
+    "setup": {
+     "family": "devices",
+     "kinds": [
+      "turn",
+      "demo"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#insert:island-pinch-to-window"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:drag-photo-to-tab-hero",
+   "category": "insert",
+   "role": "the photo goes from the phone into the product",
+   "at": 14.95,
+   "name": "Drag a photo onto a tab",
+   "about": "A long press lifts a tilted copy of the phone's photo, it is dragged onto a browser tab, the brand's page pushes in, the copy drops into a dashed zone with a green plus and grows into the page hero while the camera moves in and the headline rises.",
+   "energy": 3,
+   "needs": [
+    "connect",
+    "process",
+    "product",
+    "reveal"
+   ],
+   "params": {
+    "lift": {
+     "scale": 1.08,
+     "tilt_deg": -6
+    },
+    "drag": 0.4,
+    "page_push": 0.26,
+    "drop_badge": "#28C840",
+    "hero_grow_zeta": 0.85,
+    "camera_push": "to fill 0.94",
+    "setup": {
+     "family": "devices",
+     "kinds": [
+      "demo",
+      "reveal"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#insert:drag-photo-to-tab-hero"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:scroll-hero-to-product",
+   "category": "insert",
+   "role": "from a picture to something you can buy",
+   "at": 17.15,
+   "name": "Scroll the hero into a product",
+   "about": "A scroll smears the headline up while the hero flies down into a framed print on a product card (mat and moulding grow out of the photo), the nav pill flies into the CTA, a colour is picked and paints the frame, a bigger size grows it.",
+   "energy": 4,
+   "needs": [
+    "product",
+    "choice",
+    "before-after",
+    "cta"
+   ],
+   "params": {
+    "scroll": {
+     "dur": 0.45,
+     "ease": "cubic-bezier(0.5,0,0.2,1)"
+    },
+    "mat": 0.1,
+    "mould_delay": 0.06,
+    "nav_fly": 0.33,
+    "paint": 0.13,
+    "size_grow": "spring ui",
+    "setup": {
+     "family": "commerce",
+     "kinds": [
+      "demo",
+      "proof",
+      "promise"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "number": "optional",
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#insert:scroll-hero-to-product"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:order-status-morph",
+   "category": "insert",
+   "role": "the purchase journey in a few seconds",
+   "at": 19.55,
+   "name": "One shape tells the order",
+   "about": "Close on the order card: the black button is clicked and one shape morphs through the whole order, a spinner, a tick, a filling progress line with a percent, a van driving a route to a house, then a round badge with a tick.",
+   "energy": 3,
+   "needs": [
+    "process",
+    "timeline",
+    "success",
+    "steps"
+   ],
+   "params": {
+    "button": {
+     "w_frac": 0.78,
+     "aspect": 0.14
+    },
+    "states_t": {
+     "spinner": 0.05,
+     "first": 0.5,
+     "progress": 0.9,
+     "route": 1.45,
+     "badge": 1.92
+    },
+    "width_spring": "zeta 0.8",
+    "badge_frac": 1.9,
+    "setup": {
+     "family": "commerce",
+     "kinds": [
+      "proof",
+      "demo",
+      "promise"
+     ],
+     "roles": [
+      "middle",
+      "close"
+     ],
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#insert:order-status-morph"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:frame-on-wall-iris",
+   "category": "insert",
+   "role": "from screen to wall: the quiet proof",
+   "at": 22.15,
+   "name": "Framed print on a wall",
+   "about": "A black frame hangs on a pale wall under swaying plant shadows; a six-blade iris opens inside it onto the matted print, the frame lifts a little toward camera and a soft light sweep crosses the glass.",
+   "energy": 2,
+   "needs": [
+    "payoff",
+    "home",
+    "proof",
+    "emotion"
+   ],
+   "params": {
+    "frame_h_frac": 0.64,
+    "iris": 0.24,
+    "lift": {
+     "scale": 1.05,
+     "dur": 1.2
+    },
+    "sweep": 0.9,
+    "setup": {
+     "family": "object-reveal",
+     "kinds": [
+      "proof",
+      "promise",
+      "end"
+     ],
+     "roles": [
+      "middle",
+      "close"
+     ],
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#insert:frame-on-wall-iris"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.4
+    },
+    {
+     "style": "handmade",
+     "w": 0.9
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "end_card:pill-dot-wordmark-loop",
+   "category": "end_card",
+   "role": "close and loop point",
+   "at": 26.43,
+   "name": "Pill to dot to wordmark",
+   "about": "The black pill slides into a dot and the wordmark springs back out of it with a 4.7% overshoot, the tagline rising from its mask, landing on the film's first frame so the film loops.",
+   "energy": 3,
+   "needs": [
+    "brand",
+    "cycle",
+    "cta"
+   ],
+   "params": {
+    "slide": 0.25,
+    "letters_spring": {
+     "stiffness": 229,
+     "damping": 21,
+     "zeta": 0.7
+    },
+    "sub_rise": 0.22,
+    "setup": {
+     "family": "brand-close",
+     "kinds": [
+      "end"
+     ],
+     "roles": [
+      "close"
+     ],
+     "weight": 1.2
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#end_card:pill-dot-wordmark-loop"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "end"
+   ]
+  },
+  {
+   "id": "effect:type-glass-pop",
+   "category": "effect",
+   "role": "the feature word over the photo",
+   "at": 6.21,
+   "name": "Liquid-glass letters pop",
+   "about": "Each letter swells from a blob at its baseline into clear glass that magnifies and bends whatever is behind it, with a bright rim, a colour fringe and a soft contact shadow.",
+   "energy": 3,
+   "needs": [
+    "reveal",
+    "benefit",
+    "idea",
+    "product"
+   ],
+   "params": {
+    "stagger": 0.048,
+    "per_letter": 0.15,
+    "scale_from": 0.3,
+    "mag": 1.22,
+    "type": {
+     "kinds": [
+      "reveal",
+      "hook",
+      "promise"
+     ],
+     "maxWords": 4
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#effect:type-glass-pop"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-period-spring",
+   "category": "effect",
+   "role": "the wordmark springing back on the loop",
+   "at": 27.37,
+   "name": "Letters spring out of the full stop",
+   "about": "The line's full stop pops first, then the letters spring out of it leftwards, narrow and short at first and overshooting a hair before settling, the squeeze run backwards.",
+   "energy": 3,
+   "needs": [
+    "brand",
+    "hook",
+    "reveal"
+   ],
+   "params": {
+    "spring": {
+     "stiffness": 229,
+     "damping": 21,
+     "zeta": 0.7
+    },
+    "line_gap": 0.08,
+    "height_from": 0.25,
+    "type": {
+     "kinds": [
+      "hook",
+      "promise",
+      "end"
+     ],
+     "maxWords": 6
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#effect:type-period-spring"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "transition:iris-lit-charcoal",
+   "category": "transition",
+   "role": "the button click opening the photo",
+   "at": 2.33,
+   "name": "Lit charcoal iris",
+   "about": "Six charcoal blades with lit edges spiral shut over the shot around a hexagonal aperture and snap open onto the next one.",
+   "energy": 4,
+   "needs": [
+    "reveal",
+    "focus",
+    "hidden"
+   ],
+   "params": {
+    "close": 0.2,
+    "open": 0.3,
+    "blades": 6,
+    "transition": {
+     "family": "iris",
+     "worlds": "change"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#transition:iris-lit-charcoal"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "iris",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:circle-burst-squircle",
+   "category": "transition",
+   "role": "the opened photo filling the frame",
+   "at": 3.03,
+   "name": "Circle bursts into the next shot",
+   "about": "The next shot appears in a small circle at the last object, springs open past a rounded square with a quarter overshoot and keeps growing to the full frame as its corners straighten.",
+   "energy": 4,
+   "needs": [
+    "reveal",
+    "product",
+    "emotion"
+   ],
+   "params": {
+    "spring": {
+     "stiffness": 327,
+     "damping": 15,
+     "zeta": 0.41
+    },
+    "square_frac": 0.66,
+    "transition": {
+     "family": "morph"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#transition:circle-burst-squircle"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "morph",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:tile-crash-zoom",
+   "category": "transition",
+   "role": "the drop: grid becomes photo",
+   "at": 5.69,
+   "name": "Crash zoom into a tile",
+   "about": "The camera crashes about 3x into the last shot's exit rect in a quarter second, eased in log space with motion ghosts, and the next shot lands still settling from a push.",
+   "energy": 5,
+   "needs": [
+    "focus",
+    "hook",
+    "reveal"
+   ],
+   "params": {
+    "zoom": 3.16,
+    "dur": 0.26,
+    "ease": "cubic-bezier(0.6,0.25,0.5,0.9)",
+    "transition": {
+     "family": "zoom"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#transition:tile-crash-zoom"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "zoom",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:glass-orb-portal",
+   "category": "transition",
+   "role": "from the edit to the next photo",
+   "at": 10.2,
+   "name": "Glass orb portal",
+   "about": "A clear glass orb lifts out of the last object magnifying the shot, the next shot opens inside it, and the orb swells past every corner with its refracting rim leaving last.",
+   "energy": 4,
+   "needs": [
+    "reveal",
+    "idea",
+    "cycle"
+   ],
+   "params": {
+    "orb_frac": 0.49,
+    "mag": 1.4,
+    "expand": "ease-in past the diagonal",
+    "transition": {
+     "family": "iris",
+     "worlds": "change"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#transition:glass-orb-portal"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "iris",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:island-pinch-window",
+   "category": "transition",
+   "role": "phone to computer",
+   "at": 13.96,
+   "name": "Island pinches into a window",
+   "about": "A black capsule stretches like ink, pinches off, the freed blob flies to centre and grows into a black window that rolls up like a blind onto the next shot.",
+   "energy": 4,
+   "needs": [
+    "connect",
+    "flow",
+    "build"
+   ],
+   "params": {
+    "stretch": "x2.2",
+    "pinch_at": 0.6,
+    "grow_zeta": 0.8,
+    "blind": "last half",
+    "transition": {
+     "family": "morph"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#transition:island-pinch-window"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "morph",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:blind-roll-up",
+   "category": "transition",
+   "role": "the black window becomes a browser",
+   "at": 14.69,
+   "name": "Black blind rolls up",
+   "about": "A black blind drops over the shot with a rounded edge and a soft shadow, then rolls up from the bottom to reveal the next shot.",
+   "energy": 3,
+   "needs": [
+    "reveal",
+    "ui",
+    "product"
+   ],
+   "params": {
+    "down": 0.2,
+    "up": 0.28,
+    "edge_r_px": 20,
+    "shadow_px": 26,
+    "transition": {
+     "family": "wipe"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#transition:blind-roll-up"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "wipe",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:flood-contract-frame",
+   "category": "transition",
+   "role": "from screen to wall",
+   "at": 21.72,
+   "name": "Flood contracts into a frame",
+   "about": "Black floods from the last object past every corner, holds, contracts fast-then-soft into a portrait frame whose corners sharpen, and an iris inside the frame opens onto the next shot.",
+   "energy": 5,
+   "needs": [
+    "payoff",
+    "reveal",
+    "home"
+   ],
+   "params": {
+    "flood": 0.18,
+    "contract": {
+     "ease": "cubic-bezier(0.15,0,0.2,1)"
+    },
+    "to": {
+     "w": 0.3,
+     "h": 0.54
+    },
+    "transition": {
+     "family": "flood",
+     "worlds": "change"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#transition:flood-contract-frame"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "flood",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:scroll-smear-push",
+   "category": "transition",
+   "role": "the scroll from hero to product",
+   "at": 17.15,
+   "name": "Scroll smear push",
+   "about": "The shot scrolls up out of frame with a vertical smear of ghosts while the next shot rises in under it like the next section of a page.",
+   "energy": 3,
+   "needs": [
+    "flow",
+    "product",
+    "next"
+   ],
+   "params": {
+    "ease": "cubic-bezier(0.5,0,0.2,1)",
+    "ghosts": 3,
+    "transition": {
+     "family": "push"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#transition:scroll-smear-push"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "push",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:pull-back-bezel",
+   "category": "transition",
+   "role": "the lock screen becomes a phone on a desk",
+   "at": 13.05,
+   "name": "Pull back into a phone",
+   "about": "The shot pulls back in log space into a phone screen while the next world appears around it, a black bezel grows out of the screen edge and the island pops, then the phone glides away to the next shot's anchor.",
+   "energy": 3,
+   "needs": [
+    "product",
+    "reveal",
+    "context"
+   ],
+   "params": {
+    "pull": "log ease-out to 0.66H phone",
+    "bezel": 0.045,
+    "island_pop": "spring",
+    "transition": {
+     "family": "zoom"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#transition:pull-back-bezel"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "zoom",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:paint-sweep-swatch",
+   "category": "transition",
+   "role": "choosing a colour",
+   "at": 18.6,
+   "name": "Paint sweep",
+   "about": "The next shot is painted across the frame from left to right behind a soft brush edge in the brand colour, like picking a swatch.",
+   "energy": 2,
+   "needs": [
+    "choice",
+    "before-after",
+    "change"
+   ],
+   "params": {
+    "band_frac": 0.12,
+    "ease": "cubic-bezier(0.5,0,0.2,1)",
+    "transition": {
+     "family": "wipe"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#transition:paint-sweep-swatch"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "wipe",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "ui:liquid-glass-toolbar",
+   "category": "ui",
+   "role": "editing controls over the photo",
+   "at": 7.62,
+   "name": "Liquid-glass toolbar",
+   "about": "A long clear glass capsule over a photo with share, heart, info and adjust icons; it grows out of a bead, icons pop in, a tapped heart fills white with a pop.",
+   "energy": 2,
+   "needs": [
+    "ui",
+    "tool",
+    "product"
+   ],
+   "params": {
+    "aspect": 0.19,
+    "icon_frac": 0.38,
+    "heart_pop": 1.25
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#ui:liquid-glass-toolbar"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:glass-slider-lens",
+   "category": "ui",
+   "role": "the edit in one drag",
+   "at": 8.3,
+   "name": "Glass slider with a lens knob",
+   "about": "A glass panel with a sun icon, a label and a live value; the knob turns into a magnifying glass lens while dragged 0 to 100 and the photo behind relights to golden hour.",
+   "energy": 3,
+   "needs": [
+    "before-after",
+    "tool",
+    "benefit"
+   ],
+   "params": {
+    "aspect": 0.22,
+    "drag": 0.95,
+    "lens_mag": 1.6
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#ui:glass-slider-lens"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:glass-media-player",
+   "category": "ui",
+   "role": "a live widget on the lock screen",
+   "at": 11.9,
+   "name": "Glass media player",
+   "about": "A wide glass player grown out of the home bar: artwork, title, host, prev/play/next and a moving progress line; play morphs to pause on a tap.",
+   "energy": 2,
+   "needs": [
+    "product",
+    "ui",
+    "calm"
+   ],
+   "params": {
+    "aspect": 0.2,
+    "content_delay": 0.14
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#ui:glass-media-player"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:glass-clock-digits",
+   "category": "ui",
+   "role": "the lock-screen clock",
+   "at": 11.6,
+   "name": "Glass clock digits",
+   "about": "Big clock digits (or any short number) pop in one by one as clear glass over a wallpaper, a date line rising above them.",
+   "energy": 2,
+   "needs": [
+    "time",
+    "stat",
+    "ui"
+   ],
+   "params": {
+    "stagger": 0.08,
+    "pop_from": 0.4
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#ui:glass-clock-digits"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:photo-bento-grid",
+   "category": "ui",
+   "role": "the library of photos",
+   "at": 3.74,
+   "name": "Photo grid that becomes a bento",
+   "about": "A 3x3 grid of photo tiles unfolds from its centre tile and reflows into a bento with the centre as a 2x2 hero carrying a glass label chip; extra tiles pop into the free cells.",
+   "energy": 3,
+   "needs": [
+    "list",
+    "layers",
+    "hierarchy"
+   ],
+   "params": {
+    "gap_frac": 0.017,
+    "tile_r": 0.08
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#ui:photo-bento-grid"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:print-product-card",
+   "category": "ui",
+   "role": "the shop page",
+   "at": 17.6,
+   "name": "Framed-print product card",
+   "about": "A product card: a framed print in a warm panel (mat and moulding grow), a heavy lowercase title, swatches with a sliding ring, a segmented size control, a price and a black CTA.",
+   "energy": 2,
+   "needs": [
+    "product",
+    "choice",
+    "cta"
+   ],
+   "params": {
+    "panel_w": 0.44,
+    "mat": 0.12,
+    "mould": 0.045
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#ui:print-product-card"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:order-status-shape",
+   "category": "ui",
+   "role": "the order's life",
+   "at": 19.55,
+   "name": "Order status shape",
+   "about": "One black button that becomes a spinner, a tick, a progress line with a percent, a van on a route and finally a round badge with a tick.",
+   "energy": 3,
+   "needs": [
+    "process",
+    "timeline",
+    "success"
+   ],
+   "params": {
+    "aspect": 0.14,
+    "badge_frac": 1.9
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#ui:order-status-shape"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:framed-print-mat",
+   "category": "ui",
+   "role": "makes the picture an object",
+   "at": 17.42,
+   "name": "Framed print with growing mat",
+   "about": "A black-framed print whose mat and moulding grow out from the photo edge, then lifts gently with its shadow growing.",
+   "energy": 2,
+   "needs": [
+    "product",
+    "payoff",
+    "home"
+   ],
+   "params": {
+    "mat_frac": 0.12,
+    "mould_frac": 0.045
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#ui:framed-print-mat"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:island-phone-lock",
+   "category": "ui",
+   "role": "the device after the pull-back",
+   "at": 13.35,
+   "name": "Phone with an island",
+   "about": "A phone whose bezel grows out of the screen edge with a light chrome rim, the island pops, the lock screen shows a date, a soft clock and a mini player, a glare crosses the glass.",
+   "energy": 2,
+   "needs": [
+    "product",
+    "device",
+    "reveal"
+   ],
+   "params": {
+    "bezel_frac": 0.045,
+    "corner_frac": 0.17
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#ui:island-phone-lock"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:browser-start-page",
+   "category": "ui",
+   "role": "the computer side",
+   "at": 14.89,
+   "name": "Browser with tabs",
+   "about": "A desktop browser with traffic lights, a sidebar icon, two tabs (one the brand's) and a start page of favourite tiles with initials and a reading list.",
+   "energy": 2,
+   "needs": [
+    "ui",
+    "connect",
+    "product"
+   ],
+   "params": {
+    "bar_frac": 0.07,
+    "tab_w_frac": 0.24
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#ui:browser-start-page"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "camera:tile-crash-zoom-drop",
+   "category": "camera",
+   "role": "the drop: grid becomes photo",
+   "at": 5.6,
+   "name": "Click crash zoom on the drop",
+   "about": "After the click cue the camera crashes about 3x into the beat's focus rect in a quarter second, log-eased so it reads as one hard push, then keeps drifting 1.5%.",
+   "energy": 5,
+   "needs": [
+    "focus",
+    "hook",
+    "reveal"
+   ],
+   "params": {
+    "zoom_max": 3.2,
+    "dur": 0.24,
+    "offset": 0.09,
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#camera:tile-crash-zoom-drop"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "camera:fit-to-action-glide",
+   "category": "camera",
+   "role": "keeps a desktop story readable in a square",
+   "at": 7.33,
+   "name": "Fit-to-action glide",
+   "about": "An unseen camera that eases in log scale onto the beat's focus rect, backs out most of the way at focusOut and is never fully still (noise drift).",
+   "energy": 2,
+   "needs": [
+    "focus",
+    "ui",
+    "process"
+   ],
+   "params": {
+    "fill": 0.72,
+    "ease": "cubic-bezier(0.45,0,0.2,1)",
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#camera:fit-to-action-glide"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "texture:silk-ribbon-desk",
+   "category": "texture",
+   "role": "backdrop for phone, window and shop",
+   "at": 13.1,
+   "name": "Silk ribbon desk",
+   "about": "A pale desk crossed by a folded silk ribbon in the brand colour, fine sheen lines along its folds, drifting slowly.",
+   "energy": 1,
+   "needs": [
+    "calm",
+    "product",
+    "tool"
+   ],
+   "params": {
+    "lines": 90,
+    "sheen": 40
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#texture:silk-ribbon-desk"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.1
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  },
+  {
+   "id": "texture:plant-shadow-wall",
+   "category": "texture",
+   "role": "the real wall the print hangs on",
+   "at": 22.5,
+   "name": "Plant shadows on a wall",
+   "about": "A pale plaster wall with soft leaf shadows from two plants swaying slowly in the light, fine plaster speckle.",
+   "energy": 1,
+   "needs": [
+    "home",
+    "calm",
+    "proof"
+   ],
+   "params": {
+    "shadow_a": 0.22,
+    "blur_px": 7,
+    "sway": 0.012
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#texture:plant-shadow-wall"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.3
+    },
+    {
+     "style": "handmade",
+     "w": 0.9
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.2
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  },
+  {
+   "id": "effect:glass-orb-drift",
+   "category": "effect",
+   "role": "the lens lifting into an orb",
+   "at": 10.2,
+   "name": "Drifting glass orb",
+   "about": "A clear glass sphere drifts slowly across the shot, magnifying and bending what is under it with a bright rim and colour fringe.",
+   "energy": 2,
+   "needs": [
+    "focus",
+    "idea",
+    "product"
+   ],
+   "params": {
+    "r_frac": 0.17,
+    "mag": 1.4,
+    "kind": "overlay"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#effect:glass-orb-drift"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "overlay"
+   ]
+  },
+  {
+   "id": "effect:light-sweep-band",
+   "category": "effect",
+   "role": "the light across the framed print",
+   "at": 24.2,
+   "name": "Light sweep",
+   "about": "One soft warm band of light sweeps across the frame once through the middle of the beat (an intentional sweep, never a lens flare).",
+   "energy": 1,
+   "needs": [
+    "calm",
+    "premium",
+    "payoff"
+   ],
+   "params": {
+    "band_frac": 0.35,
+    "window": [
+     0.25,
+     0.8
+    ],
+    "kind": "overlay"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l01.js#effect:light-sweep-band"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.7
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "overlay"
+   ]
+  }
+ ],
+ "uses": [
+  {
+   "id": "transition:cut-device-pullback",
+   "role": "lock screen pulls back into the phone",
+   "at": 13.05
+  },
+  {
+   "id": "transition:cut-zoom-through",
+   "role": "push through the frame's mat into the photo",
+   "at": 25
+  },
+  {
+   "id": "effect:shine-sweep",
+   "role": "glare across the phone screen during the island pinch",
+   "at": 14.12
+  },
+  {
+   "id": "effect:tilt-settle",
+   "role": "dragged copy settles flat on drop",
+   "at": 16
+  },
+  {
+   "id": "effect:x1-17-glass-type",
+   "role": "glass letterforms under the glass word and the clock",
+   "at": 6.21
+  },
+  {
+   "id": "ui:device-phone",
+   "role": "phone body after the pull-back",
+   "at": 13.5
+  },
+  {
+   "id": "ui:browser",
+   "role": "browser chrome around the shop",
+   "at": 14.9
+  },
+  {
+   "id": "transition:iris-six-blade",
+   "role": "the kit's base iris (our lit version adds blade gradients and edges)",
+   "at": 2.33
+  },
+  {
+   "id": "transition:flood-contract-pill",
+   "role": "black floods back and contracts into the pill before the loop",
+   "at": 26.43
+  },
+  {
+   "id": "camera:focus-zoom",
+   "role": "screen-studio zoom onto the options and the order button",
+   "at": 18.1
+  }
+ ]
+}

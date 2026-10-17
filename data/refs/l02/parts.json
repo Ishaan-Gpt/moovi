@@ -1,0 +1,2895 @@
+{
+ "reference": {
+  "id": "l02",
+  "url": "https://www.promptsmotion.com/xelandre-363f00",
+  "title": "SaaS launch film (signal serif)",
+  "kind": "SaaS launch film, 16:9, 30 s",
+  "seconds": 30.06,
+  "notes": "Type is the hero and the visual is one idea: an orange dot becomes a radar origin, a sweep, ring pulses and finally the logo. Huge soft serif lines roll through masks as an anaphora with orange accent words; the espresso-to-cream flip is the problem-to-solution chapter break. Studied from what the page shows publicly; rebuilt in Moovi's own code (packages/library/src/kits/launch) with our own fonts, sounds and assets."
+ },
+ "kit": {
+  "file": "packages/library/src/kits/launch/looks/l02.json"
+ },
+ "impl": "packages/library/src/kits/launch/",
+ "styles": [
+  "brand-promo",
+  "studio-minimal"
+ ],
+ "parts": [
+  {
+   "id": "insert:headline-hero",
+   "category": "insert",
+   "role": "hero headline",
+   "at": null,
+   "name": "Hero headline",
+   "about": "one line alone, centred and big (9-14% of the frame), an eyebrow above, a quiet sub below; the cast type treatment moves it",
+   "energy": 3,
+   "needs": [
+    "hook",
+    "claim",
+    "payoff",
+    "reveal",
+    "question"
+   ],
+   "params": {
+    "setup": {
+     "family": "type",
+     "kinds": [
+      "hook",
+      "problem",
+      "turn",
+      "reveal",
+      "promise",
+      "list"
+     ],
+     "typeOnly": true,
+     "cams": [
+      "camera:push-slow",
+      "camera:drift-lateral",
+      "camera:punch-on-head",
+      "camera:breathe"
+     ],
+     "weight": 0.95
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/setups.js#insert:headline-hero"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.95
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.85
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.45
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "effect:type-anaphora-stack",
+   "category": "effect",
+   "role": "anaphora stack",
+   "at": null,
+   "name": "Anaphora stack",
+   "about": "phrases arrive one under another; each earlier phrase dims as the next one lands",
+   "energy": 3,
+   "needs": [
+    "list",
+    "steps",
+    "benefit"
+   ],
+   "params": {
+    "type": {
+     "kinds": [
+      "list",
+      "proof",
+      "demo"
+     ],
+     "minWords": 4
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/type.js#effect:type-anaphora-stack"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "camera:drift-lateral",
+   "category": "camera",
+   "role": "lateral drift",
+   "at": null,
+   "name": "Lateral drift",
+   "about": "a slow sideways drift across the beat at 3% scale (direction alternates beat to beat)",
+   "energy": 2,
+   "needs": [
+    "calm",
+    "flow"
+   ],
+   "params": {
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/cam.js#camera:drift-lateral"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "ui:score-ring",
+   "category": "ui",
+   "role": "score ring",
+   "at": null,
+   "name": "Score ring",
+   "about": "a circular ring sweeps while its score counts up in the middle",
+   "energy": 3,
+   "needs": [
+    "number",
+    "proof",
+    "data"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/ui.js#ui:score-ring"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.95
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:list-rows",
+   "category": "ui",
+   "role": "ranked list rows",
+   "at": null,
+   "name": "Ranked list rows",
+   "about": "rows with an avatar, a name, a quiet sub line and a right badge stagger in; the active row lifts onto a card",
+   "energy": 2,
+   "needs": [
+    "list",
+    "people",
+    "ranking"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/ui.js#ui:list-rows"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.95
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:chat-bubble",
+   "category": "ui",
+   "role": "chat bubble",
+   "at": null,
+   "name": "Chat bubble",
+   "about": "a sent or received message bubble that pops from its tail corner",
+   "energy": 3,
+   "needs": [
+    "voices",
+    "quote",
+    "people"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/ui.js#ui:chat-bubble"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.95
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "texture:hairline-grid",
+   "category": "texture",
+   "role": "hairline grid",
+   "at": null,
+   "name": "Hairline grid",
+   "about": "a faint architect's grid with a slightly stronger centre cross",
+   "energy": 1,
+   "needs": [
+    "process",
+    "build"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/worlds.js#texture:hairline-grid"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "studio-minimal",
+     "w": 0.85
+    },
+    {
+     "style": "brand-promo",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  },
+  {
+   "id": "texture:rings-concentric",
+   "category": "texture",
+   "role": "concentric rings",
+   "at": null,
+   "name": "Concentric rings",
+   "about": "faint concentric rings around a point, slowly breathing outward (the radar world)",
+   "energy": 1,
+   "needs": [
+    "focus",
+    "network"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/worlds.js#texture:rings-concentric"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "studio-minimal",
+     "w": 0.85
+    },
+    {
+     "style": "brand-promo",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  },
+  {
+   "id": "texture:mesh-warm",
+   "category": "texture",
+   "role": "warm mesh",
+   "at": null,
+   "name": "Warm mesh",
+   "about": "two or three soft colour fields (peach and the accent's tint) drifting very slowly over cream",
+   "energy": 1,
+   "needs": [
+    "calm",
+    "emotion"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/worlds.js#texture:mesh-warm"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "studio-minimal",
+     "w": 0.85
+    },
+    {
+     "style": "brand-promo",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  },
+  {
+   "id": "texture:corner-ticks",
+   "category": "texture",
+   "role": "corner ticks and time code",
+   "at": null,
+   "name": "Corner ticks and time code",
+   "about": "four thin corner ticks, a mono running time code and the host: camera-frame chrome, used sparingly",
+   "energy": 1,
+   "needs": [
+    "time",
+    "focus"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/worlds.js#texture:corner-ticks"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "studio-minimal",
+     "w": 0.85
+    },
+    {
+     "style": "brand-promo",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  },
+  {
+   "id": "insert:serif-question-night",
+   "category": "insert",
+   "role": "the hook: a late-night question to the founder",
+   "at": 0.3,
+   "name": "Night question",
+   "about": "a centred soft serif question rises word by word on a dark ground, a dim out-of-focus screen glows far behind and a tiny clock races past midnight",
+   "energy": 2,
+   "needs": [
+    "hook",
+    "question",
+    "problem"
+   ],
+   "params": {
+    "word_rise_em": 1,
+    "clock_rate_min_per_s": 3.4,
+    "type_px_frac_h": 0.104,
+    "setup": {
+     "family": "type-hero",
+     "kinds": [
+      "hook",
+      "problem"
+     ],
+     "roles": [
+      "open"
+     ],
+     "cams": [
+      "camera:float-drift",
+      "camera:push-slow"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#insert:serif-question-night"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:prospect-list-grind",
+   "category": "insert",
+   "role": "the manual prospecting grind",
+   "at": 3.7,
+   "name": "Prospect list grind",
+   "about": "a big app window of prospect rows that flick past while the tab strip multiplies and a sent counter climbs against zero replies; a draft is typed, selected and deleted over it",
+   "energy": 3,
+   "needs": [
+    "problem",
+    "tool",
+    "time"
+   ],
+   "params": {
+    "window_w_frac": 0.62,
+    "tabs": [
+     3,
+     28
+    ],
+    "row_flick_s": 0.7,
+    "draft_cps": 28,
+    "setup": {
+     "family": "ui-window",
+     "kinds": [
+      "problem",
+      "demo"
+     ],
+     "roles": [
+      "open",
+      "middle"
+     ],
+     "cams": [
+      "camera:float-drift"
+     ],
+     "weight": 1.2
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#insert:prospect-list-grind"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:sonar-points-light",
+   "category": "insert",
+   "role": "hidden signals already exist",
+   "at": 8.75,
+   "name": "Sonar lights the points",
+   "about": "one accent dot sends thin sonar rings across scattered grey points; each point a ring passes turns accent and blooms",
+   "energy": 2,
+   "needs": [
+    "hidden",
+    "network",
+    "turn"
+   ],
+   "params": {
+    "points": 16,
+    "ring_every_s": 0.34,
+    "first_ring_s": 0.9,
+    "setup": {
+     "family": "dot-field",
+     "kinds": [
+      "turn",
+      "problem",
+      "hook"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "cams": [
+      "camera:float-drift"
+     ],
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#insert:sonar-points-light"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.9
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:radar-signal-sweep",
+   "category": "insert",
+   "role": "the product watching accounts",
+   "at": 11.65,
+   "name": "Radar finds signals",
+   "about": "a radar with a bearing scale and an accent sweep wedge turning clockwise; each signal it passes rings, blooms and slides out a labelled chip",
+   "energy": 3,
+   "needs": [
+    "data",
+    "ai",
+    "list"
+   ],
+   "params": {
+    "sweep_deg_s": 98,
+    "trail_deg": 70,
+    "chip_delay_s": 0.22,
+    "setup": {
+     "family": "radar",
+     "kinds": [
+      "demo",
+      "proof",
+      "list"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      3,
+      6
+     ],
+     "requires": [
+      "items3"
+     ],
+     "cams": [
+      "camera:float-drift",
+      "camera:dive-to-exit"
+     ],
+     "weight": 1.3
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#insert:radar-signal-sweep"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.9
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:radar-lock-target",
+   "category": "insert",
+   "role": "choosing the one lead that matters",
+   "at": 16.7,
+   "name": "Radar lock-on",
+   "about": "the sweep slows onto one signal, corner brackets snap round it with an accent score tag, every other signal blurs away",
+   "energy": 3,
+   "needs": [
+    "focus",
+    "ranking",
+    "reveal"
+   ],
+   "params": {
+    "lock_s": 1,
+    "cull_s": 0.3,
+    "setup": {
+     "family": "radar",
+     "kinds": [
+      "reveal",
+      "proof"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      2,
+      6
+     ],
+     "number": "optional",
+     "cams": [
+      "camera:dive-to-exit"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#insert:radar-lock-target"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.9
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:lead-score-card",
+   "category": "insert",
+   "role": "qualifying a lead",
+   "at": 18.2,
+   "name": "Lead card unfolds",
+   "about": "the accent dot becomes an avatar and a white lead card unfolds around it in real perspective while the score counts up; defocused cards sit further back",
+   "energy": 3,
+   "needs": [
+    "proof",
+    "people",
+    "data"
+   ],
+   "params": {
+    "card_w_frac": 0.46,
+    "rotY_deg": -7.5,
+    "count_s": 0.95,
+    "setup": {
+     "family": "ui-card",
+     "kinds": [
+      "proof",
+      "stat",
+      "demo"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "number": "optional",
+     "cams": [
+      "camera:float-drift"
+     ],
+     "weight": 1.2
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#insert:lead-score-card"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:sequence-draft-send",
+   "category": "insert",
+   "role": "the product writes and sends the message",
+   "at": 19.7,
+   "name": "Message typed and sent",
+   "about": "a sequence card stacks over the lead card, the message ghost-types with an accent caret, the cursor presses Send and the card whips off on speed lines",
+   "energy": 4,
+   "needs": [
+    "demo",
+    "ai",
+    "speed"
+   ],
+   "params": {
+    "cps": 34,
+    "windup_px": -10,
+    "whip_s": 0.16,
+    "setup": {
+     "family": "ui-card",
+     "kinds": [
+      "demo"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "cams": [
+      "camera:float-drift"
+     ],
+     "weight": 1.2
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#insert:sequence-draft-send"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:reply-drop-pulse",
+   "category": "insert",
+   "role": "the payoff: they answered",
+   "at": 22.4,
+   "name": "Reply drops in",
+   "about": "a reply notification drops from above with velocity ghosts and settles on a spring over a defocused inbox; rings pulse from its avatar, then the card leaves only its dot",
+   "energy": 2,
+   "needs": [
+    "success",
+    "people",
+    "promise"
+   ],
+   "params": {
+    "drop_s": 0.3,
+    "ring_period_s": 1,
+    "setup": {
+     "family": "ui-notify",
+     "kinds": [
+      "proof",
+      "promise"
+     ],
+     "roles": [
+      "middle",
+      "close"
+     ],
+     "cams": [
+      "camera:float-drift"
+     ],
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#insert:reply-drop-pulse"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:petal-orbit-mark",
+   "category": "insert",
+   "role": "logo build",
+   "at": 24,
+   "name": "Petals orbit into the mark",
+   "about": "the dot pulses, four coloured quarter petals burst onto an orbit ring, circle, converge and turn ink into the brand mark (or the real logo)",
+   "energy": 4,
+   "needs": [
+    "brand",
+    "reveal",
+    "build"
+   ],
+   "params": {
+    "orbit_deg_s": 200,
+    "converge_s": 0.2,
+    "setup": {
+     "family": "logo-build",
+     "kinds": [
+      "reveal"
+     ],
+     "roles": [
+      "close"
+     ],
+     "cams": [
+      "camera:push-slow"
+     ],
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#insert:petal-orbit-mark"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:clause-chapter-steps",
+   "category": "insert",
+   "role": "the four-step product story in one beat",
+   "at": 11.7,
+   "name": "One clause per chapter",
+   "about": "a numbered chapter index fills hairline by hairline while a big serif clause per item rises and sinks in the corner and a segmented dial counts the steps",
+   "energy": 2,
+   "needs": [
+    "steps",
+    "process",
+    "list"
+   ],
+   "params": {
+    "step_s": 0.95,
+    "setup": {
+     "family": "steps",
+     "kinds": [
+      "list",
+      "demo"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      2,
+      4
+     ],
+     "requires": [
+      "items3"
+     ],
+     "cams": [
+      "camera:float-drift"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#insert:clause-chapter-steps"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:serif-stat-ticker",
+   "category": "insert",
+   "role": "a number to remember",
+   "at": 18.3,
+   "name": "Serif odometer",
+   "about": "one big serif number whose digits roll like a mechanical counter, accent suffix, hairline and label, with the brand signals orbiting at depth",
+   "energy": 3,
+   "needs": [
+    "stat",
+    "proof",
+    "number"
+   ],
+   "params": {
+    "roll_s": 1.2,
+    "setup": {
+     "family": "stat",
+     "kinds": [
+      "stat",
+      "proof"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "number": "required",
+     "requires": [
+      "number"
+     ],
+     "cams": [
+      "camera:push-slow"
+     ],
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#insert:serif-stat-ticker"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "end_card:mark-slide-lockup",
+   "category": "end_card",
+   "role": "close",
+   "at": 25.6,
+   "name": "Mark slides, wordmark, CTA",
+   "about": "the mark spins in and slides left while the wordmark letters reveal behind a mask, the tagline lands at reading pace with its last word in the accent, an accent CTA rises on a soft glow",
+   "energy": 2,
+   "needs": [
+    "cta",
+    "brand",
+    "payoff"
+   ],
+   "params": {
+    "letter_stagger_ms": 35,
+    "tagline_word_s": 0.22,
+    "setup": {
+     "family": "end",
+     "kinds": [
+      "end"
+     ],
+     "roles": [
+      "close"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#end_card:mark-slide-lockup"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "end"
+   ]
+  },
+  {
+   "id": "effect:type-serif-em-rise",
+   "category": "effect",
+   "role": "opening question and every headline",
+   "at": 0.3,
+   "name": "Serif word mask rise",
+   "about": "each word slides up one full em out of its own line mask and stops dead, the accent word a hair late",
+   "energy": 2,
+   "needs": [
+    "hook",
+    "question",
+    "claim"
+   ],
+   "params": {
+    "travel_em": 1,
+    "dur": 0.42,
+    "type": {
+     "kinds": [
+      "hook",
+      "problem",
+      "claim",
+      "turn"
+     ],
+     "maxWords": 14
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#effect:type-serif-em-rise"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-rise-sink",
+   "category": "effect",
+   "role": "clauses that hand over to the next scene",
+   "at": 17.7,
+   "name": "Rise, then sink",
+   "about": "the line rises out of its mask and, before the cut, sinks back down into it word by word",
+   "energy": 2,
+   "needs": [
+    "steps",
+    "process"
+   ],
+   "params": {
+    "in_s": 0.5,
+    "out_s": 0.25,
+    "type": {
+     "kinds": [
+      "list",
+      "demo",
+      "proof",
+      "promise"
+     ],
+     "maxWords": 8
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#effect:type-rise-sink"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-ghost-caret",
+   "category": "effect",
+   "role": "the product writing",
+   "at": 19.9,
+   "name": "Ghost typing",
+   "about": "characters type in with the newest three still fading and an accent caret after them",
+   "energy": 2,
+   "needs": [
+    "ai",
+    "process"
+   ],
+   "params": {
+    "cps": [
+     22,
+     40
+    ],
+    "fade_chars": 3,
+    "type": {
+     "kinds": [
+      "demo",
+      "promise",
+      "hook"
+     ],
+     "maxWords": 10
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#effect:type-ghost-caret"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-speech-cadence",
+   "category": "effect",
+   "role": "tagline and voice-led lines",
+   "at": 26,
+   "name": "Reading-pace words",
+   "about": "words land at a spoken rhythm (syllables and pauses), each rising 14 px; the accent word turns to the accent last",
+   "energy": 1,
+   "needs": [
+    "claim",
+    "brand",
+    "cta"
+   ],
+   "params": {
+    "rise_px": 14,
+    "dur": 0.3,
+    "type": {
+     "kinds": [
+      "promise",
+      "end",
+      "claim",
+      "proof"
+     ],
+     "maxWords": 12
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#effect:type-speech-cadence"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "transition:tilted-spring-rise",
+   "category": "transition",
+   "role": "hook into the UI",
+   "at": 3.7,
+   "name": "Tilted spring rise",
+   "about": "the next shot shoots up from below as a card, tilted a few degrees with vertical ghosts, overshoots and settles level",
+   "energy": 4,
+   "needs": [
+    "reveal",
+    "product",
+    "tool"
+   ],
+   "params": {
+    "post_s": 0.62,
+    "tilt_deg": 3.4,
+    "transition": {
+     "family": "push"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#transition:tilted-spring-rise"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "push",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:drain-collapse-dot",
+   "category": "transition",
+   "role": "the grind collapses to one point",
+   "at": 7.9,
+   "name": "Shot drains into the dot",
+   "about": "the shot breathes, drains to grey, then shrinks with growing blur into one accent dot",
+   "energy": 3,
+   "needs": [
+    "simplify",
+    "contrast",
+    "idea"
+   ],
+   "params": {
+    "pre_s": 0.55,
+    "blur_max": 24,
+    "end_d": 28,
+    "transition": {
+     "family": "morph"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#transition:drain-collapse-dot"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "morph",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:dot-flood-double-iris",
+   "category": "transition",
+   "role": "night flips to day",
+   "at": 11.39,
+   "name": "Dot flood, then day iris",
+   "about": "the accent dot inflates exponentially into a full-frame flash with stepped echo bands, then the next world opens as a disc from the centre",
+   "energy": 5,
+   "needs": [
+    "reveal",
+    "answer",
+    "contrast"
+   ],
+   "params": {
+    "flood_s": 0.17,
+    "iris_s": 0.16,
+    "transition": {
+     "family": "iris",
+     "worlds": "change"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#transition:dot-flood-double-iris"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "iris",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.9
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:send-whip-streaks",
+   "category": "transition",
+   "role": "message sent",
+   "at": 21.8,
+   "name": "Send whip with streaks",
+   "about": "the shot winds back a few px, whips off right in a smear and leaves thin accent and grey streaks that fade",
+   "energy": 5,
+   "needs": [
+    "speed",
+    "success",
+    "flow"
+   ],
+   "params": {
+    "windup_px": -10,
+    "streaks": 8,
+    "transition": {
+     "family": "whip"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#transition:send-whip-streaks"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "whip",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.6
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:dive-into-point",
+   "category": "transition",
+   "role": "radar point becomes the lead",
+   "at": 17.6,
+   "name": "Dive into the point",
+   "about": "the camera dives onto the exit dot in log space and the next shot opens out of that dot as a disc",
+   "energy": 4,
+   "needs": [
+    "focus",
+    "reveal",
+    "detail"
+   ],
+   "params": {
+    "zoom": 6,
+    "transition": {
+     "family": "zoom"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#transition:dive-into-point"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "zoom",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:card-stack-over",
+   "category": "transition",
+   "role": "score card to sequence card",
+   "at": 19.6,
+   "name": "Card stacks over",
+   "about": "the next shot slides up and over as a card while the old one stays behind, higher, smaller, defocused and dimmed",
+   "energy": 2,
+   "needs": [
+    "steps",
+    "layers",
+    "process"
+   ],
+   "params": {
+    "post_s": 0.5,
+    "back_blur": 4,
+    "transition": {
+     "family": "push"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#transition:card-stack-over"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "push",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "camera:float-drift",
+   "category": "camera",
+   "role": "radar and card scenes never freeze",
+   "at": 12,
+   "name": "Float drift",
+   "about": "a slow noise-driven float with a gentle push and a hair of roll, never still",
+   "energy": 1,
+   "needs": [
+    "calm",
+    "product",
+    "focus"
+   ],
+   "params": {
+    "push": 0.014,
+    "drift_px": 16,
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#camera:float-drift"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.9
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "camera:dive-to-exit",
+   "category": "camera",
+   "role": "dive onto the locked radar point",
+   "at": 17.6,
+   "name": "Dive to the exit point",
+   "about": "floats, then in the last half second dives five times closer onto the exit point, ending centred on it",
+   "energy": 4,
+   "needs": [
+    "focus",
+    "detail",
+    "reveal"
+   ],
+   "params": {
+    "amount": 5,
+    "dur_s": 0.55,
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#camera:dive-to-exit"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.9
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "ui:subtitle-pill-karaoke",
+   "category": "ui",
+   "role": "subtitles on both worlds",
+   "at": 4,
+   "name": "Frosted karaoke subtitle",
+   "about": "a dark frosted pill holding the spoken line, the current word lit in the accent",
+   "energy": 1,
+   "needs": [
+    "voice",
+    "caption",
+    "clarity"
+   ],
+   "params": {
+    "px": 26,
+    "tint_alpha": 0.8
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#ui:subtitle-pill-karaoke"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:midnight-clock-ticker",
+   "category": "ui",
+   "role": "late-night grind cue",
+   "at": 0.25,
+   "name": "Time-lapse clock",
+   "about": "an accent dot and a tabular clock racing minutes past midnight, the changed digit rolling",
+   "energy": 1,
+   "needs": [
+    "time",
+    "problem",
+    "stakes"
+   ],
+   "params": {
+    "start": "23:48",
+    "rate_min_per_s": 3.4
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#ui:midnight-clock-ticker"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.7
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:outreach-counters",
+   "category": "ui",
+   "role": "effort without result",
+   "at": 4,
+   "name": "Sent vs replies",
+   "about": "two header pills: sent ticking up, replies frozen at zero in a warm red tint",
+   "energy": 1,
+   "needs": [
+    "number",
+    "problem",
+    "contrast"
+   ],
+   "params": {
+    "count": [
+     12,
+     47
+    ]
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#ui:outreach-counters"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:prospect-list-window",
+   "category": "ui",
+   "role": "manual prospecting",
+   "at": 3.7,
+   "name": "Prospect list window",
+   "about": "a light app window with a multiplying tab strip, search field, counters and avatar rows that flick past with ghosts",
+   "energy": 2,
+   "needs": [
+    "tool",
+    "problem",
+    "list"
+   ],
+   "params": {
+    "design": [
+     1180,
+     660
+    ],
+    "row_h": 86,
+    "flick_s": 0.7
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#ui:prospect-list-window"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:draft-rewrite-popover",
+   "category": "ui",
+   "role": "writing outreach by hand",
+   "at": 5.5,
+   "name": "Draft that gets rewritten",
+   "about": "a compose popover types a message, selects it all in an accent tint, deletes it and starts again",
+   "energy": 2,
+   "needs": [
+    "problem",
+    "emotion",
+    "time"
+   ],
+   "params": {
+    "cps": 28,
+    "retype_cps": 20
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#ui:draft-rewrite-popover"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.3
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:signal-chip-ring",
+   "category": "ui",
+   "role": "each detected signal",
+   "at": 12.55,
+   "name": "Signal chip",
+   "about": "a ring circles a found point, the point blooms in its signal colour and a label chip slides out of blur beside it (with a leader line when nudged)",
+   "energy": 2,
+   "needs": [
+    "data",
+    "list",
+    "proof"
+   ],
+   "params": {
+    "ring_r": [
+     10,
+     48
+    ],
+    "chip_h": 38
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#ui:signal-chip-ring"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.9
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:reticle-score-tag",
+   "category": "ui",
+   "role": "lock-on",
+   "at": 16.7,
+   "name": "Reticle with score tag",
+   "about": "four corner brackets snap round a point with a small accent score tag above",
+   "energy": 2,
+   "needs": [
+    "focus",
+    "ranking",
+    "data"
+   ],
+   "params": {
+    "box": [
+     80,
+     40
+    ],
+    "snap_s": 0.2
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#ui:reticle-score-tag"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.9
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:fit-score-card",
+   "category": "ui",
+   "role": "qualification",
+   "at": 18.3,
+   "name": "Lead score card in perspective",
+   "about": "a white lead card with avatar, name, role, a counting score with signal bars, company, chips and an AI insight line, drawn in per-slice perspective",
+   "energy": 2,
+   "needs": [
+    "data",
+    "ai",
+    "people"
+   ],
+   "params": {
+    "design": [
+     780,
+     400
+    ],
+    "rotY_deg": -7.5,
+    "count_s": 0.95
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#ui:fit-score-card"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:sequence-message-card",
+   "category": "ui",
+   "role": "the AI drafts the message",
+   "at": 19.8,
+   "name": "Sequence message card",
+   "about": "a card with step chips, subject, a ghost-typed body with an accent caret and an accent Send button that presses",
+   "energy": 2,
+   "needs": [
+    "ai",
+    "process",
+    "steps"
+   ],
+   "params": {
+    "design": [
+     760,
+     430
+    ],
+    "cps": 34
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#ui:sequence-message-card"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:reply-notification-drop",
+   "category": "ui",
+   "role": "reply arrived",
+   "at": 22.63,
+   "name": "Reply notification drop",
+   "about": "a reply card drops from above with velocity ghosts, settles on a spring, and two accent rings pulse from its avatar",
+   "energy": 2,
+   "needs": [
+    "success",
+    "people",
+    "time"
+   ],
+   "params": {
+    "design": [
+     640,
+     116
+    ],
+    "ring_period_s": 1
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#ui:reply-notification-drop"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:chapter-index-eyebrow",
+   "category": "ui",
+   "role": "01 / 02 / 03 / 04 chapters",
+   "at": 12,
+   "name": "Numbered chapter eyebrow",
+   "about": "an accent index number, a hairline that draws, and the chapter word sliding in",
+   "energy": 1,
+   "needs": [
+    "steps",
+    "process",
+    "hierarchy"
+   ],
+   "params": {
+    "px": 20
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#ui:chapter-index-eyebrow"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.9
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "texture:peach-glow-cream",
+   "category": "texture",
+   "role": "the product half's ground",
+   "at": 11.65,
+   "name": "Warm glow with arcs",
+   "about": "a slow accent-tinted glow drifting in a corner, corner shade, and giant faint arcs breathing across the frame",
+   "energy": 1,
+   "needs": [
+    "calm",
+    "answer",
+    "product"
+   ],
+   "params": {
+    "glow_r_frac": 0.55
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#texture:peach-glow-cream"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  },
+  {
+   "id": "texture:radar-bearing-scale",
+   "category": "texture",
+   "role": "ground of the detection scene",
+   "at": 11.65,
+   "name": "Radar rings and bearing scale",
+   "about": "hairline rings, a crosshair and an outer degree scale labelled every 30 deg, turning very slowly",
+   "energy": 1,
+   "needs": [
+    "data",
+    "location",
+    "focus"
+   ],
+   "params": {
+    "rings": 5,
+    "tick_deg": 3
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#texture:radar-bearing-scale"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 1
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  },
+  {
+   "id": "effect:avatar-ring-pulse",
+   "category": "effect",
+   "role": "live / just now",
+   "at": 23,
+   "name": "Ring pulse",
+   "about": "two thin accent rings expand from a point and fade, repeating",
+   "energy": 1,
+   "needs": [
+    "success",
+    "people",
+    "time"
+   ],
+   "params": {
+    "period_s": 1,
+    "r": [
+     20,
+     150
+    ],
+    "kind": "overlay"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l02.js#effect:avatar-ring-pulse"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "overlay"
+   ]
+  }
+ ],
+ "uses": [
+  {
+   "id": "effect:word-rise",
+   "role": "base of the serif word mask rise (ours travels a full em, no fade)",
+   "at": 0.3
+  },
+  {
+   "id": "caption:karaoke-pill",
+   "role": "subtitle pill with the spoken word lit",
+   "at": 4
+  },
+  {
+   "id": "effect:motion-blur",
+   "role": "sub-frame ghosts on the card rise, collapse, whip and drop",
+   "at": 3.7
+  },
+  {
+   "id": "ui:cursor",
+   "role": "cursor travels to the Send button",
+   "at": 21.33
+  },
+  {
+   "id": "effect:click-ripple",
+   "role": "Send press",
+   "at": 21.67
+  },
+  {
+   "id": "ui:notification",
+   "role": "reply notification card",
+   "at": 22.63
+  },
+  {
+   "id": "effect:focus-lock",
+   "role": "reticle snap on the target",
+   "at": 16.7
+  },
+  {
+   "id": "effect:count-up",
+   "role": "fit score count",
+   "at": 18.3
+  },
+  {
+   "id": "effect:dim-back",
+   "role": "the back card steps back behind the stacked card",
+   "at": 19.7
+  },
+  {
+   "id": "texture:rings-concentric",
+   "role": "radar ground kept behind later scenes",
+   "at": 12
+  }
+ ]
+}

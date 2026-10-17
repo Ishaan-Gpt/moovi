@@ -33,7 +33,8 @@ export function VideoPopup({ pid, cid, title, version, versions, duration, forma
     const t = setInterval(load, 8000);
     return () => { stop = true; clearInterval(t); };
   }, [live, minimised, pid, cid, version]);
-  const landscape = !live && format === 'landscape';
+  // a live Launch film is 16:9 too (the reel task marks it landscape)
+  const landscape = format === 'landscape';
   const info = ref ? styleOf(ref.style) : null;
   const times = ref ? Object.entries(ref.timings) : [];
 
