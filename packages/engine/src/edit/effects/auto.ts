@@ -98,6 +98,11 @@ function cueFor(fx: FxId, l: FxLine): { at: string | number; params?: Record<str
   return { at: atWord(key) };
 }
 
+/** effects that show the word itself, so they land on it even on the hook line */
+const WORD_FX: ReadonlySet<FxId> = new Set<FxId>(['stat-counter', 'giant-word']);
+/** how late into the first line its effect may start before it is pulled to the line's start, seconds */
+const HOOK_LEAD = 0.6;
+
 const CTA_WORDS = /\b(comment|subscribe|follow|link in (my )?bio|dm me)\b/i;
 
 export interface AutoFx { events: FxEvent[]; picks: { fx: FxId; needs: string[]; line: string; at: number; face?: boolean }[]; missed: string[]; source: 'graph' | 'catalogue' }
@@ -133,6 +138,10 @@ export async function autoFx(words: FxWord[], o: { src?: FxSource; max?: number;
     const best = ranked.find(r => r.id !== 'stat-counter' || /\d|\b(two|three|four|five|six|seven|eight|nine|ten|twenty|thirty|fifty|hundred|thousand)\b/i.test(l.text));
     if (!best) continue;
     const c = cueFor(best.id, l);
+    // the hook moves at once: a pro reel shows something in its first 2.7 s (Ishaan's audit, measured 2026-10-18 on the
+    // live server: Orbit on "introducing" at 2.5 s left the opening a plain talking head), so the first line's effect
+    // starts with the line, not on its longest word; a number or a giant word still waits for its own word
+    if (i === 0 && typeof c.at === 'number' && c.at - l.t0 > HOOK_LEAD && !WORD_FX.has(best.id)) c.at = +(l.t0 + 0.15).toFixed(3);
     cues.push({ fx: best.id, at: c.at, ...(c.params ? { params: c.params } : {}) });
     picks.push({ fx: best.id, needs, line: l.text, at: typeof c.at === 'number' ? c.at : l.t0, ...(o.faces ? { face } : {}) });
     used.add(best.id); last = best.id; lastT = l.t0;
