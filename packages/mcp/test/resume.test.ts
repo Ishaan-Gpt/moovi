@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { directEdit, EXAMPLE_DIRECTION } from '@moovi/engine/brain';
-import { withModel, BrainWaiting, PICKUP_MS } from '@moovi/engine/runtime';
+import { withModel, BrainWaiting, PICKUP_MS, WAIT_MS } from '@moovi/engine/runtime';
 import { brainScope, Gate, IDLE_OTHER_WINDOW, KEY, LEASE_MS, MEMO_TTL_MS, memoryStore, Presence, StepQueue } from '../src/index';
 
 /**
@@ -23,7 +23,9 @@ function rig() {
   const lanes: string[] = [];
   const scope = () => brainScope({ user: 'u1', queue, presence, job: () => 'job-1', own: null, server: null, byok: 'required', bridge: { pollMs: 5, now }, onLane: (a, l) => lanes.push(`${a}>${l}`) });
   const queued = async (n = 1) => { for (let i = 0; i < 400; i++) { if ((await store.range(KEY.queue('u1'))).length >= n) return; await tick(); } throw new Error('no step queued'); };
-  return { clock, store, queue, presence, gate, scope, lanes, queued };
+  /** the wait lane has queued its step (the lane decision is logged before the step is queued) */
+  const waiting = async () => { for (let i = 0; i < 400; i++) { if (lanes.at(-1)?.endsWith('>wait') && (await store.range(KEY.queue('u1'))).length) return; await tick(); } throw new Error('no wait step'); };
+  return { clock, store, queue, presence, gate, scope, lanes, queued, waiting };
 }
 
 test('bridge 20: a window drops holding a step; 2 min later a new /moovi:run takes the same step over and the video finishes', async () => {
@@ -60,7 +62,10 @@ test('bridge 20: dropped between steps, the job parks; the rerun from another wi
   assert.deepEqual(await r.gate.submit('u1', 'sess-A', a.lease, a.step.id, '{"style":"vaporwave"}'), { ok: true });
   await r.queued(); // the engine's one re-ask is queued ... and window A is gone
   r.clock.t += PICKUP_MS;
-  await assert.rejects(first, BrainWaiting, 'no key and nobody picking up: the job parks, it does not fail');
+  await r.waiting(); // no key: the step waits for a /moovi:run (the wait lane, 10 min) ...
+  r.clock.t += WAIT_MS;
+  await assert.rejects(first, BrainWaiting, '... then, with nobody picking up, the job parks; it does not fail');
+  assert.deepEqual(r.lanes, ['direct:edit>claude-code', 'direct:edit>claude-code', 'direct:edit>wait']);
 
   // later, a /moovi:run in a window in another folder; the worker runs the job again
   const tB = await r.gate.mintTicket('u1');
@@ -77,6 +82,21 @@ test('bridge 20: dropped between steps, the job parks; the rerun from another wi
   const third = await withModel(r.scope()!, () => directEdit({ words }));
   assert.equal(JSON.stringify(third), JSON.stringify(out), 'byte for byte the same direction');
   assert.equal((await r.store.range(KEY.queue('u1'))).length, 0);
+});
+
+test('bridge 20: dropped between steps, a /moovi:run within 10 min picks the waiting step up, no rerun needed', async () => {
+  const r = rig(); r.presence.touch('u1');
+  const job = withModel(r.scope()!, () => directEdit({ words }));
+  await r.queued();
+  r.clock.t += PICKUP_MS; // nobody (window A is gone), no key: the step waits in the wait lane
+  await r.waiting();
+  r.clock.t += WAIT_MS - 60_000;
+  const tB = await r.gate.mintTicket('u1');
+  const b = await r.gate.pull('u1', 'sess-B', tB); assert.ok('step' in b);
+  assert.deepEqual(await r.gate.submit('u1', 'sess-B', b.lease, b.step.id, good), { ok: true });
+  const out = await job;
+  assert.equal(out.source, 'brain');
+  assert.deepEqual(r.lanes, ['direct:edit>claude-code', 'direct:edit>wait']);
 });
 
 test('bridge 20: a window that closes cleanly gives the video back at once', async () => {

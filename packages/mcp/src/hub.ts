@@ -58,7 +58,11 @@ export class BrainHub {
       },
     }));
     registerBrainHooks({
-      prime: u => this.presence.prime(u),
+      prime: async u => {
+        await this.presence.prime(u);
+        // connected (a live token) but never polled yet: linked, so the job waits for /moovi:run instead of a refusal
+        if (this.presence.state(u) === 'off' && (await this.tokens.status(u)).linked) this.presence.link(u);
+      },
       linked: async u => (await this.tokens.status(u)).linked,
       run: async e => {
         if (e.type === 'start') await this.board.start({ user: e.user, job: e.run, project: e.project, chat: e.chat, title: e.title ?? null });

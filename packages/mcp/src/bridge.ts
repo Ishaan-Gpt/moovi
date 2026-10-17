@@ -20,6 +20,8 @@ export interface BridgeOptions {
   /** the job (run id) the steps belong to */
   job: () => string;
   pickupMs?: number; answerMs?: number; pollMs?: number;
+  /** the wait lane's pickup window (scope.ts builds a second bridge with it; default WAIT_MS, 10 min) */
+  waitMs?: number;
   /** extra step fields for an agent (images, maxOut), from the caller that built the step */
   extras?: (req: CompleteRequest) => Pick<ThinkStep, 'images' | 'maxOut'> | undefined;
   /** the answer checks; problems = not remembered (item 10 re-asks); default: every answer is accepted */

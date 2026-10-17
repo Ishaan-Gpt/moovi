@@ -15,7 +15,7 @@ function rig(o: { own?: Runtime | null; byok?: 'required' | 'optional'; pickupMs
   const gate = new Gate(store, queue, Date.now, u => presence.touch(u));
   const lanes: string[] = [];
   const own: ModelScope | null = o.own ? { runtime: o.own, models: { director: 'd', crew: 'c', fast: 'f' }, provider: 'test', deadlineScale: 1, drawsWell: true } : null;
-  const scope = () => brainScope({ user: 'u1', queue, presence, job: () => 'job-1', own, server: null, byok: o.byok ?? 'required', bridge: { pollMs: 5, ...(o.pickupMs ? { pickupMs: o.pickupMs } : {}) }, onLane: (a, l) => lanes.push(`${a}>${l}`) });
+  const scope = () => brainScope({ user: 'u1', queue, presence, job: () => 'job-1', own, server: null, byok: o.byok ?? 'required', bridge: { pollMs: 5, ...(o.pickupMs ? { pickupMs: o.pickupMs, waitMs: o.pickupMs } : {}) }, onLane: (a, l) => lanes.push(`${a}>${l}`) });
   return { store, queue, presence, gate, scope, lanes };
 }
 
