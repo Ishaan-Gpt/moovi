@@ -26,7 +26,7 @@ Status: `[ ]` open, `[~]` in progress, `[x]` done (the commit is in LOG.md). **V
 | # | Item | Done means | Proof | V |
 |---|---|---|---|---|
 | 7 | [x] One switch for every AI call (Claude Code / key / wait) | `LANE_ORDER`, `pickLane`, `BRAIN_AGENTS`, `laneRuntime`, `brainMode()` in `engine/src/runtime/lane.ts`; `registerBrainScope` in `keys.ts` (asked before the own key) | `test/lane.test.ts` 7 tests: every lane combination, never throws, 120 s pickup moves on | |
-| 8 | [ ] Job queue saving every step and answer | Redis queue + memo (24 h) by fingerprint; replay on re-run | unit: second run asks nothing | |
+| 8 | [x] Job queue saving every step and answer | `packages/mcp`: `StepQueue` (steps on FalkorDB's Redis side under `ce:brain:`, or in memory), memo 24 h by `fingerprint`, `bridgeRuntime` (brain agents only, memo first, 120 s pickup, 5 min answer) | `packages/mcp/test/queue.test.ts` 7 tests incl. FalkorDB: second run asks nothing | |
 | 9 | [ ] Session lease per job | lease on pick, refreshed per call, 2 min lapse, run tickets | unit: wrong, foreign, expired lease refused; no ticket is idle | |
 | 10 | [ ] Answer checker | strict JSON against the schema, one re-ask with the exact problems, then the safe default (rules) and a "default used" note | unit: bad then good; bad twice gives default | |
 | 11 | [ ] Merge brain calls: 2 per edit, 1 per generate | `directEdit` fills `edit:beats` and the rule pickers' overrides; `directFilm` fills the style brief; BRAIN 2 optional | unit: same direction gives byte-identical EDL; only the allowed agents reach the bridge | |
