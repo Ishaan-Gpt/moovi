@@ -41,7 +41,7 @@ lap(`site loaded, ${shotFiles.length} shots`);
 await page.evaluate('globalThis.__name = (f) => f').catch(() => undefined);
 const site = await page.evaluate(() => {
   const vis = (el: Element) => { const r = el.getBoundingClientRect(); return r.width > 2 && r.height > 2 && r.top < innerHeight * 3; };
-  const hex = (c: string) => { const m = c.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?/); if (!m || (m[4] !== undefined && +m[4] < 0.5)) return null; return '#' + [m[1], m[2], m[3]].map(v => Math.round(+v).toString(16).padStart(2, '0')).join(''); };
+  const hex = (c: string) => { const m = c.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?/); if (!m || (m[4] !== undefined && +m[4] < 0.5)) return null; return '#' + [m[1], m[2], m[3]].map(v => Math.round(+(v ?? 0)).toString(16).padStart(2, '0')).join(''); };
   const W: Record<string, { w: number; role: string }> = {}, add = (h: string | null, w: number, role: string) => { if (!h) return; const k = `${h}|${role}`; (W[k] ??= { w: 0, role }).w += w; };
   add(hex(getComputedStyle(document.body).backgroundColor) ?? hex(getComputedStyle(document.documentElement).backgroundColor) ?? '#ffffff', innerWidth * innerHeight * 2, 'bg');
   for (const el of Array.from(document.querySelectorAll('body *')).slice(0, 4000)) {
