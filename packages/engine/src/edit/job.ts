@@ -12,6 +12,7 @@ import { hear, type Heard } from './hear';
 import { castInserts, openInserts, type InsertTrace } from './inserts';
 import { castMoves } from './moves';
 import { EDIT, type PlayerEdl } from './lib';
+import { keepTextInFrame, lookText } from './burned';
 import { lookFaces } from './look';
 import { roughEdl } from './rough';
 import { ownerGrade, restoreVideo, useRestored, type Restored } from './restore';
@@ -99,6 +100,8 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
 
   // D1.3 look: the speaker's face, beside the hearing (edit/look.ts; [] without a face detector), for crop and punch-ins
   const lookP = lookFaces(o.path, pr.duration);
+  // burned-in text (edit/burned.ts): a clip that carries its own subtitles keeps them, and Moovi draws none over them
+  const textP = lookText(o.path, pr.duration, pr.width ?? 1080, pr.height ?? 1920);
   // the heard pauses (voice.ts quietPauses) beside the hearing: Whisper's word edges get fitted to them in the builder
   const quietP = pr.hasAudio ? quietPauses(o.path, { dir }) : Promise.resolve(null);
   await o.onStage?.('hear', 'timing every word');
@@ -135,6 +138,12 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
     edl = roughEdl(source, words.map(w => ({ word: w.word, t: w.t, end: w.end })), { palette, captionStyle: o.caption ?? 'punch-duo' });
     rough = true;
   }
+  const text = await textP;
+  if (text.length) {
+    edl.source_text = { bands: text.map(b => [b.y0, b.y1] as [number, number]), captions: 'source' };
+    keepTextInFrame(edl);
+    await o.onNote?.('your clip already has captions burned in, so I kept those and did not add a second set');
+  }
   // the library in the edit path: camera:<id> moves (by the needs each beat's tag SERVES, framed on the face keys),
   // sfx by the library's events and transitions on beat changes, all from the FalkorDB graph (catalogue if it is down)
   let cast: CastTrace | null = null;
@@ -170,6 +179,8 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
       else writeFileSync(join(dir, 'inserts.json'), JSON.stringify(ins, null, 1));
     } catch (e) { edl = JSON.parse(before); console.warn(`[edit] inserts: ${String((e as Error).message ?? e).slice(0, 160)}`); ins = null; }
   }
+  // the library's camera moves came after: they keep the clip's own text whole too
+  if (edl.source_text) keepTextInFrame(edl);
   const t = EDIT.timeline(edl);
   if (t.problems.length) throw new Error(`The edit plan is inconsistent: ${t.problems.join('; ')}`);
   writeFileSync(join(dir, 'edl.json'), JSON.stringify(edl, null, 1));

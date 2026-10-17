@@ -151,10 +151,10 @@ export async function renderEdl(o: RenderOpts): Promise<RenderResult> {
     // setpts: a seek lands the first decoded frame a little after 0, so without it the shot's first frame was the black
     // backing (5 black frames at cuts in the D1.8 B1 render); the blur runs on the source frame (a fixed size) before the per-frame scale, at the sigma that lands as the player's
     const blur = shotBlurs(e, r, fps, W, H) ? `gblur@b=sigma=${srcSigma(e, p0)},` : '';
-    // tpad (bounded: an endless pad keeps ffmpeg 7 running after -frames:v): the run always has its n frames, so a
-    // source that ends a few frames early holds its last frame instead of shortening the picture
     // D2.2: the style's library grade (edit/styles.ts writes its ffmpeg filter on the EDL), on the picture only
     const graded = (e as { style_laws?: { grade?: { ffmpeg?: string } | null } }).style_laws?.grade?.ffmpeg;
+    // tpad (bounded: an endless pad keeps ffmpeg 7 running after -frames:v): the run always has its n frames; a source
+    // that ends a few frames early holds its last frame instead of shortening the picture (sm-v1: the last shot came out 12 of 53 frames, the film ended 1.4 s before its voice)
     const graph = `${bg};[0:v]setpts=PTS-STARTPTS,fps=${fps},tpad=stop_mode=clone:stop=${n},${graded ? `${graded},` : ''}sendcmd=f='${cmd.replace(/'/g, "\\'")}',${blur}scale@z=w=${p0.sw}:h=${p0.sh}:flags=bicubic,format=yuv420p[fg];[bg][fg]overlay@o=x=${p0.x}:y=${p0.y}:eof_action=pass:shortest=0[v]`;
     await run(ff, ['-v', 'error', '-y', '-ss', r.seek.toFixed(4), '-i', src, '-filter_complex', graph, '-map', '[v]', '-frames:v', String(n), '-an',
       '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '12', '-g', String(fps), '-pix_fmt', 'yuv420p', '-threads', '2', join(tmp, `s${i}.mp4`)]);

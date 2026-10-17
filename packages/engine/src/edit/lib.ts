@@ -37,6 +37,9 @@ export interface PlayerEdl {
   faces?: { src_t: number; x: number; y: number; w: number; h: number }[];
   /** the D2.2 style layer's notes (edit/styles.ts); caption_hide: outWords indexes a card already shows (the caption drops them) */
   style_laws?: { caption_hide?: number[] } & Record<string, unknown>;
+  /** burned-in text the source already carries (edit/burned.ts): its bands as [top, bottom] fractions of the frame;
+   * captions 'source' means the clip's own subtitles stay and the caption layer draws none */
+  source_text?: { bands: [number, number][]; captions: 'source' | 'ours' };
 }
 
 /** R8's caption schema, the part the player draws (docs/agents/research/R8-captions.md). */
@@ -204,6 +207,7 @@ export function editLib() {
 
   /** The words the caption layer draws: the edit's words less those a style card already shows (style_laws.caption_hide). */
   function captionWords(e: PlayerEdl): Omit<OutWord, 'chunk'>[] {
+    if (e.source_text?.captions === 'source' && e.source_text.bands.length) return [];
     const hide = new Set(e.style_laws?.caption_hide ?? []);
     return outWords(e).filter((_, i) => !hide.has(i));
   }

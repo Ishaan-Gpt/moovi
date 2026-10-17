@@ -230,3 +230,30 @@ test('D2.2 Handmade v4: a named thing keeps its capital in the lower case subtit
   // the player passes the word's role to caseOf
   assert.match(PAGE, /EDIT\.caseOf\(w\.text, [^;]*CW\.words\[w\.i\]\.role === 'title'/);
 });
+
+test('D2.2 Studio Minimal: sm-two captions read on a phone (M connectors, 2 to 4 words together), the hero number never twice', () => {
+  const e = styledEdl(input, 'studio-minimal', { name: '@vignesh' });
+  assert.equal(e.caption_style_id.replace(/^caption:/, ''), 'sm-two');
+  const st = CAPTION_STYLES.find(c => c.id === 'sm-two')!;
+  assert.equal(st.size, 'M'); assert.equal(st.chunk.minWords, 2); assert.equal(st.chunk.maxWords, 4); assert.equal(st.chunk.together, true);
+  const cw = EDIT.captionWords(e as never), ch = EDIT.chunk(cw, st);
+  const sizes = new Map<number, number>(); for (const w of ch.words) sizes.set(w.chunk, (sizes.get(w.chunk) ?? 0) + 1);
+  // a lone word only where nothing can join it (its neighbours are a sentence away); never most of the film
+  assert.ok([...sizes.values()].filter(n => n === 1).length <= 2, JSON.stringify([...sizes.values()]));
+  const nums = (e.inserts ?? []).filter(i => i.kind === 'number');
+  assert.ok(nums.length >= 1);
+  const hidden = new Set((e as { style_laws?: { caption_hide?: number[] } }).style_laws?.caption_hide ?? []);
+  const ow = EDIT.outWords(e as never);
+  for (const n of nums) assert.ok(ow.some((w, i) => hidden.has(i) && w.text.replace(/[.,!?;:]+$/, '') === n.label), n.label);
+  assert.equal(e.end?.kind, 'logo');
+});
+
+test('D2.2: a clip with its own burned-in subtitles gets no second set of captions (edl.source_text)', () => {
+  const e = styledEdl(input, 'studio-minimal', { name: '@vignesh' });
+  assert.ok(EDIT.captionWords(e as never).length > 20);
+  const burned = { ...e, source_text: { bands: [[0.25, 0.31]] as [number, number][], captions: 'source' as const } };
+  assert.equal(EDIT.captionWords(burned as never).length, 0);
+  assert.deepEqual(validateEdl(burned as never).problems.filter(p => !p.startsWith('version')), []);
+  // the player hides the caption over the black logo card
+  assert.match(PAGE, /E\.end\.kind === 'logo' && t >= E\.end\.t0 \? 'hidden'/);
+});

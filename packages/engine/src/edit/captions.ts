@@ -43,6 +43,12 @@ export const CAPTION_STYLES: CaptionStyle[] = [
   { id: 'ed-serif', family: 'editorial', energy: 1, font: { family: 'Instrument Serif', weight: 400, case: 'lower', tracking: 0, italic: true }, size: 'XXL',
     chunk: { mode: 'phrase', maxChars: 20, breakOnPause: 0.6, minWords: 2, maxWords: 5, together: true }, look: { fill: 'paper', stroke: { px: 8, role: 'deep' }, shadow: 'lift' },
     highlight: { rule: 'none', treat: 'colour' }, entry: 'fade', position: 'lower' },
+  // D2.2 Studio Minimal (R4 style 2): tier-two at a size that reads on a phone (connectors M, not S), 2 to 4 words a
+  // group that come up together, the key word heavy and orange; never a lone word (sm-v1: 'uaw' alone, 34 px)
+  { id: 'sm-two', family: 'punch', energy: 4, font: { family: 'Inter', weight: 700, case: 'lower', tracking: -0.01 }, size: 'M',
+    chunk: { mode: '3w', maxChars: 22, breakOnPause: 0.45, minWords: 2, maxWords: 4, together: true }, look: { fill: 'paper', shadow: 'soft' },
+    highlight: { rule: 'keyword', treat: 'colour', role: 'accent' }, entry: 'fade', position: 'chest',
+    key: { family: 'Archivo', weight: 900, case: 'upper', size: 'XL', role: 'accent', line: true } },
   { id: 'sub-box', family: 'subtitle', energy: 1, font: { family: 'Inter', weight: 600, case: 'as-is', tracking: 0 }, size: 'S',
     chunk: { mode: 'line', maxChars: 38, breakOnPause: 0.7 }, look: { fill: 'paper', box: 'block' },
     highlight: { rule: 'none', treat: 'colour' }, entry: 'none', position: 'lower' },
