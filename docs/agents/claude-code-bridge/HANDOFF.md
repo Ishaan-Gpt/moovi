@@ -14,7 +14,7 @@ Read this first if you are picking the work up. Updated by Tab after every item.
   pushing in main as well as in this new branch"; matches Ishaan's CLAUDE.md). Red code goes to the branch only.
 - **Push:** through the GitHub API (git data: blobs, trees, commits, then the ref with `force: false`), never force.
 - **Last sha:** see the newest line in `LOG.md`.
-- **Current state:** Phase 0 and Phase 1 done; Phase 2 in progress: items 14 (`/mcp`: `http.ts`, `server.ts`, `hub.ts`, `poll.ts`) and 15 (`tokens.ts`, `api.ts`) done. See the newest LOG lines.
+- **Current state:** Phase 0 and Phase 1 done; Phase 2 in progress: items 14 (`/mcp`), 15 (tokens, `/api/brain/*`) and 16 (`moovi_next`/`moovi_answer`, `board.ts`, `hub.register()`, engine hooks in `keys.ts`) done. See the newest LOG lines.
   - Contracts: `engine/src/edit/direct.schema.ts`, `engine/src/router/direct-film.schema.ts`, `engine/src/runtime/budget.ts`.
   - Lane switch `engine/src/runtime/lane.ts`; checker `engine/src/runtime/checked.ts`; `keys.registerBrainScope`.
   - Brain calls: `engine/src/edit/direct.ts` (`directEditStep`, `directEdit`, `overridesOf`; `planEdit` asks for a
@@ -27,7 +27,7 @@ Read this first if you are picking the work up. Updated by Tab after every item.
   - Known gaps: Direction `cards` are recorded but not yet placed (inserts.ts casts cards from the graph by tag); the
     edit step sends no keyframes yet (the step supports images, `CompleteRequest` has no image field); BRAIN 2 (final
     look) not wired; `chat.ts` line 20 still checks `loadModel` under MOOVI_BYOK=required.
-- **Next item:** 16 (`moovi_next`/`moovi_answer` on the gate and queue, job board for done/working, engine `primeBrainScope` so the worker sees presence from the store). Then 17 (the `run` prompt), 18 (SDK client end to end). Still open from Phase 1: the Launch hook (11a, waits for Ishaan, requested in TAB.md), Direction `cards` placement, keyframes on the edit step, BRAIN 2 (final look).
+- **Next item:** 17 (the `run` prompt: `/moovi:run` served by the server, minting the run ticket). Then 18 (SDK client end to end, `scripts/serve.ts`). Still open from Phase 1: the Launch hook (11a, waits for Ishaan, requested in TAB.md), Direction `cards` placement, keyframes on the edit step, BRAIN 2 (final look).
 - **Item 12 tests** (`packages/mcp/test/bridge-e2e.test.ts`, 5): a stand-in Claude Code session (ticket, then pull and
   answer through the `Gate`) directs `directEdit` end to end inside `withModel(brainScope(...))`; a second window is
   turned away while the first holds the job, and a bad answer gets exactly one re-ask; no `/moovi:run` ticket means no

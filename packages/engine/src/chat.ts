@@ -4,7 +4,7 @@ import { enqueue, publish } from './bus';
 import { pq, say } from './live';
 import { startRun } from './runs';
 import { abortRun } from './worker';
-import { byokMode, loadModel, scopeFor } from './keys';
+import { brainLinked, byokMode, loadModel, primeBrainScope, scopeFor } from './keys';
 import { withModel } from './runtime';
 import { recordFeedback } from './memory';
 import { routeCombined } from './router/job';
@@ -17,10 +17,12 @@ import { routeEdit } from './router/edit';
  */
 export async function handleCommand(cmd: Command) {
   // bring your own key: work that needs a model waits for the user's key (the studio asks for it at sign-up)
-  if ((cmd.type === 'brief' || cmd.type === 'message') && byokMode() === 'required' && !loadModel(cmd.user)) {
+  // (a user who connected their own Claude Code has a brain too: the bridge lane, packages/mcp)
+  if ((cmd.type === 'brief' || cmd.type === 'message') && byokMode() === 'required' && !loadModel(cmd.user) && !(await brainLinked(cmd.user))) {
     await say(cmd.project, cmd.chat, 'moovi', 'Before the crew can start I need a model to think with. Add your own API key in Settings (Gemini and Groq have free keys), then send this again.', 'error');
     return;
   }
+  if (cmd.type === 'message') await primeBrainScope(cmd.user);
   const ms = cmd.type === 'message' ? scopeFor(cmd.user) : null;
   if (ms) return withModel(ms, () => handle(cmd));
   return handle(cmd);

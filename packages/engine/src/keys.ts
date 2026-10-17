@@ -128,6 +128,28 @@ export type BrainScopeSource = (user: string, own: ModelScope | null) => ModelSc
 let brainSource: BrainScopeSource | null = null;
 export function registerBrainScope(fn: BrainScopeSource | null) { brainSource = fn; }
 
+/**
+ * The bridge's hooks around a job (packages/mcp hub.register): `prime` reads the user's Claude Code presence from the
+ * shared store before the job picks its scope (scopeFor is synchronous); `linked` says the user connected Claude Code
+ * (a keyless user with it linked may start work under MOOVI_BYOK=required); `run` hears a run start and end, so
+ * `/moovi:run` can tell Claude Code the video is ready. Each hook is best effort: a bridge fault never stops a job.
+ */
+export interface BrainHooks {
+  prime?: (user: string) => Promise<void>;
+  linked?: (user: string) => Promise<boolean>;
+  run?: (e: { type: 'start' | 'end'; user: string; project: string; run: string; chat: string; ok?: boolean; title?: string }) => Promise<void> | void;
+}
+let brainHooks: BrainHooks = {};
+export function registerBrainHooks(h: BrainHooks | null) { brainHooks = h ?? {}; }
+const quiet = async <T>(what: string, fn: () => Promise<T> | T | undefined, dflt: T): Promise<T> => {
+  try { return (await fn()) ?? dflt; } catch (e) { console.warn(`[engine] brain ${what}: ${e instanceof Error ? e.message : e}`); return dflt; }
+};
+/** call before scopeFor(user) in a process that does not serve /mcp itself */
+export const primeBrainScope = (user: string | null | undefined) => (user && brainHooks.prime ? quiet('prime', () => brainHooks.prime!(user), undefined) : Promise.resolve(undefined));
+/** whether the user has Claude Code connected (false without the bridge) */
+export const brainLinked = (user: string) => (brainHooks.linked ? quiet('linked', () => brainHooks.linked!(user), false) : Promise.resolve(false));
+export const brainRun = (e: Parameters<NonNullable<BrainHooks['run']>>[0]) => (brainHooks.run ? quiet('run', () => brainHooks.run!(e), undefined) : Promise.resolve(undefined));
+
 function ownScope(user: string): ModelScope | null {
   const m = loadModel(user); if (!m) return null;
   const sig = createHash('sha256').update(JSON.stringify([m.provider, m.key, m.baseUrl, m.models])).digest('hex');
