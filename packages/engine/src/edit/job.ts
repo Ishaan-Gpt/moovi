@@ -17,6 +17,7 @@ import { keepTextInFrame, lookText } from './burned';
 import { lookFaces } from './look';
 import { roughEdl } from './rough';
 import { ownerGrade, restoreVideo, useRestored, type Restored } from './restore';
+import { romanizeWords } from './romanize';
 import { cleanVoice, quietPauses, type CleanVoice } from './voice';
 
 /**
@@ -43,6 +44,8 @@ export interface PlanInput {
   onDone?: (stage: string, seconds: number) => unknown;
   /** something the person should know (no speech key, a weak transcript, the stand-in plan) */
   onNote?: (text: string) => unknown;
+  /** write Hinglish heard in Devanagari in Latin letters for the captions (default true) */
+  romanize?: boolean;
   /** start the voice clean-up (default true) */
   voice?: boolean;
   /** start the picture restore for a weak clip (edit/restore.ts; default true) */
@@ -127,6 +130,11 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
     writeFileSync(join(dir, 'hear.json'), JSON.stringify({ language: heard.language, lang: heard.lang, detected: heard.detected, by: heard.by, prompt: heard.prompt, gate: heard.gate, pieces: heard.pieces, timings: heard.timings }, null, 1));
     if (!heard.gate.ok) await o.onNote?.(`the transcript may be off (${heard.gate.reasons.join('; ')}), so check the captions`);
   } else if (pr.hasAudio) await o.onNote?.('no speech-to-text key, so no cuts or captions from words this time');
+  // Hinglish heard in Devanagari is captioned in Latin letters, as Indian reels are (edit/romanize.ts); times unchanged
+  if (o.romanize !== false && words.length) {
+    const r = await romanizeWords(words, o.signal ? { signal: o.signal } : {});
+    if (r) { writeFileSync(join(dir, 'words.heard.json'), JSON.stringify(words, null, 1)); words = r.words; await o.onNote?.(`Hinglish captions in Latin letters (${r.changed} words written out)`); }
+  }
   writeFileSync(join(dir, 'words.json'), JSON.stringify(words, null, 1));
   await done('hear');
 
