@@ -10,7 +10,9 @@
     "./events": "./src/events.ts",
     "./commands": "./src/commands.ts",
     "./styles": "./src/styles/index.ts",
-    "./styles/serve": "./src/styles/serve.ts"
+    "./styles/serve": "./src/styles/serve.ts",
+    "./runtime": "./src/runtime/index.ts",
+    "./keys": "./src/keys.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
