@@ -62,6 +62,11 @@ locks). If you cannot name the device's verb, the shot is not designed yet.
 - Never cover the face or the mouth with a caption or a graphic; place by the face box, and move the caption when
   a device owns that zone.
 
+- **Captions are in the language as spoken (owner, 2026-10-18).** Hinglish is captioned in Latin letters the way
+  people type it (kya hota hai, yaar, crore), never translated to English; English words the hearing wrote in
+  Devanagari go back to their English spelling ("I believe in", not "aay biliiv in"); plain letters, no diacritics.
+  Moovi: hear.ts re-locks a Hindi speaker, romanize.ts writes the Latin words.
+
 ## 5. Rhythm of layouts
 Full → world → split → world → card → full …: never the same layout twice in a row, a new framing on every cut,
 and at least one beat per 3–4 seconds that changes the frame's structure (not just its zoom).
