@@ -1,5 +1,7 @@
 # Claude Code bridge: log
 
+> **Live progress is on branch `claude-code-bridge`:** https://github.com/Ishaan-Gpt/moovi/tree/claude-code-bridge/docs/agents/claude-code-bridge (this copy on main is a snapshot; the branch is updated after every item).
+
 One line per finished item: date and time (IST), item, what, commit sha.
 
 - 2026-10-17 19:10 IST · plan · bridge plan v1 · d26a0dd

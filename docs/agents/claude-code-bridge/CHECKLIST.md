@@ -1,5 +1,7 @@
 # Claude Code bridge: the checklist
 
+> **Live progress is on branch `claude-code-bridge`:** https://github.com/Ishaan-Gpt/moovi/tree/claude-code-bridge/docs/agents/claude-code-bridge (this copy on main is a snapshot; the branch is updated after every item).
+
 Same numbering Vignesh has on WhatsApp (items 1 to 29). Sub-items (3a, 8b, ...) are the steps inside an item.
 Plan: `../research/mcp-claude-code-bridge-plan.md` (sections 16 to 23 win over earlier ones). Owner: Tab.
 Rules: pull main before every item; study before code; tests per item; `tsc` per package and the full engine suite green

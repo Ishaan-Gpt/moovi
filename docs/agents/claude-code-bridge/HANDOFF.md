@@ -1,5 +1,7 @@
 # Claude Code bridge: handoff
 
+> **Live progress is on branch `claude-code-bridge`:** https://github.com/Ishaan-Gpt/moovi/tree/claude-code-bridge/docs/agents/claude-code-bridge (this copy on main is a snapshot; the branch is updated after every item).
+
 Read this first if you are picking the work up. Updated by Tab after every item.
 
 - **Goal:** users on the Moovi website with no API key connect their Claude Code; per video they type `/moovi:run` and
