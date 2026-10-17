@@ -7,5 +7,5 @@ any box for its rules and code files.
   checks, every decision in the four lanes (Auto, your clip, a picked style, the old crew), where FalkorDB and models
   are used, and where the references feed in. Five traced example messages.
 - `proposed.html`: Ishaan's proposal (not decided, nothing built from it yet). One way in, seven video types, eight
-  stages each owned by one agent, the taste system, the ishaan-motion tree and the mapped library. Every box is
+  stages each owned by one agent (voice casting, the advanced writer), the floor rules, chat edits, the taste system, the ishaan-motion tree and the mapped library. Every box is
   marked as existing, partly built or new. Ishaan's own words behind it are in `../ISHAAN-VISION.md`.

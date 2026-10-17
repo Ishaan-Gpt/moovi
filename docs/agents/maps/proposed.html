@@ -111,7 +111,7 @@ table.cmp td:first-child { color: var(--mute); }
 <div class="app">
   <header>
     <div class="titlerow">
-      <h1>Moovi, proposed: one pipeline, eight agents, taste that compounds</h1>
+      <h1>Moovi, proposed: one pipeline, two brains, eight agents, taste that compounds</h1>
       <span class="meta" id="counts"></span>
     </div>
     <div class="bar">
@@ -120,6 +120,7 @@ table.cmp td:first-child { color: var(--mute); }
         <button data-path="launch" aria-pressed="false">“launch video for cal.com”</button>
         <button data-path="explain" aria-pressed="false">“explain how our API works”</button>
         <button data-path="edit" aria-pressed="false">my talking-head clip</button>
+        <button data-path="change" aria-pressed="false">“use take 2, bigger captions”</button>
         <button data-path="ref" aria-pressed="false">I send a new reference</button>
       </div>
     </div>
@@ -141,6 +142,7 @@ table.cmp td:first-child { color: var(--mute); }
         <button data-status="exists" aria-pressed="false">Exists</button>
         <button data-status="partial" aria-pressed="false">Partly</button>
         <button data-status="new" aria-pressed="false">New</button>
+        <button data-status="modes" aria-pressed="false">Two brains</button>
       </div>
       <div class="grp zoom" role="group" aria-label="Zoom">
         <button id="z-in" title="Zoom in">+</button>
@@ -167,15 +169,17 @@ const TX = [470, 830, 1190, 1550, 1910, 2270, 2630];
 const RX = i => 300 + i * 360;
 
 const BANDS = [
-  { id: 'in', n: '0', t: 'One way in', s: 'MOOVI · EDITOR when you give a video' },
+  { id: 'in', n: '0', t: 'One way in', s: 'MOOVI picks the mode · EDITOR prepares a video' },
   { id: 'type', n: '1', t: 'Pick the type', s: 'MOOVI · one of seven, never a regex guess' },
   { id: 'gather', n: '2', t: 'Gather', s: 'RESEARCHER · the tools decision tree' },
-  { id: 'write', n: '3', t: 'Write', s: 'WRITER · the type’s beat map' },
-  { id: 'sound', n: '4', t: 'Sound', s: 'SOUND · voice, music grid, mapped sfx' },
-  { id: 'design', n: '5', t: 'Design', s: 'DESIGNER · cast every beat from the type’s library' },
+  { id: 'write', n: '3', t: 'Write', s: 'WRITER · arc, hooks, humanize, watch-through' },
+  { id: 'sound', n: '4', t: 'Sound', s: 'SOUND · one of 63 voices, music grid, mapped sfx' },
+  { id: 'design', n: '5', t: 'Design', s: 'DESIGNER · one theme, every beat cast from the type’s library' },
   { id: 'build', n: '6', t: 'Build', s: 'CODE · one clock, no agent' },
-  { id: 'check', n: '7', t: 'Check', s: 'LENS · on every film, never blocks the preview' },
+  { id: 'check', n: '7', t: 'Check', s: 'LENS · the floor rules on every film, never blocks the preview' },
   { id: 'keep', n: '8', t: 'Remember', s: 'KEEPER · your reactions become rules' },
+  { id: 'floor', n: 'F', t: 'The floor rules', s: 'NEVER SHIP THESE · numbers in code, on every film, in both modes' },
+  { id: 'chat', n: 'C', t: 'Change it by chat', s: 'THE LOVABLE PART · a change patches only what it touches' },
   { id: 'taste', n: 'T', t: 'The taste system', s: 'HOW EVERY TYPE GETS BETTER · your only job is references' },
   { id: 'motion', n: 'M', t: 'The ishaan-motion tree', s: 'ONE BRANCH PER TYPE · the taste as numbers and bans' },
   { id: 'lib', n: 'L', t: 'One library, every piece mapped', s: 'FALKORDB · each asset knows its types and its moment' },
@@ -183,31 +187,39 @@ const BANDS = [
 
 const N = [
   // 0 · way in
-  { id: 'in', band: 'in', x: S, top: 0, kind: 'start', agent: 'you', status: 'exists', w: 300, t: 'Your idea, link or video', s: 'one box; no style menu needed',
-    d: 'One input. You can type an idea, paste a link, drop a video, or tap a type card. You never have to write a good prompt: the type and its skill carry the craft.',
+  { id: 'in', band: 'in', x: S, top: 0, kind: 'start', agent: 'you', status: 'exists', w: 320, t: 'Your idea, link, video or references', s: 'one box; attach anything',
+    d: 'One input. Type an idea, paste a link, drop your raw video, attach images or clips, or tap a type card. You never have to write a good prompt: the type and its skill carry the craft.',
     today: 'The studio chat box, plus a style menu and an Auto option. The menu goes; type cards replace it.', goal: 'Goal 2: anyone gets a post-worthy video without worrying about the prompt.' },
-  { id: 'q0', band: 'in', x: S, after: 'in', kind: 'decision', agent: 'moovi', status: 'exists', w: 280, t: 'Did you give a video?', s: '',
-    rules: [['a video file', 'the Editor prepares it first, then the same pipeline'], ['an idea or a link', 'straight to picking the type']],
-    d: 'Editing is generation with your footage as the main track. So a video only adds a preparation layer in front; every stage after it is the same.',
-    today: 'Today an upload goes to a separate edit lane, a picked style to another, a plain brief to Auto, and “like this video” to the old crew: four lanes.', goal: 'One pipeline, as you asked.' },
-  { id: 'p1', band: 'in', x: L, row: 'q0', kind: 'step', agent: 'editor', status: 'exists', t: 'Hear and look', s: 'words, language lock, faces',
-    d: 'Every word timed in the right language, and the speaker’s face found, at the same time.', today: 'edit/hear.ts and edit/look.ts on main (YuNet in Node).' },
-  { id: 'p2', band: 'in', x: L, after: 'p1', kind: 'rules', agent: 'editor', status: 'partial', w: 300, t: 'Clean cut, never a bare jump', s: 'the cover rule',
-    rules: [['slates, retakes, fillers, long pauses', 'cut, at Light / Balanced / Tight'], ['every cut', 'gets a cover: punch-in, transition, motion graphic or B-roll'], ['a cut inside a word', 'never']],
+  { id: 'qb', band: 'in', x: S, after: 'in', kind: 'decision', agent: 'moovi', status: 'partial', w: 340, t: 'Which brain is connected?', s: 'sets the mode for every stage',
+    rules: [['your Claude Code (Opus 5.5) connected from the website', 'Creative mode'], ['your own API key (Groq, OpenRouter, Gemini, OpenAI…) or the server model', 'Precise mode'], ['a local model', 'Precise mode']],
+    d: 'One pipeline, two modes. Precise mode works from slots, closed lists and presets, so a small free model gives the same quality every time. Creative mode lets Opus write: more hooks and drafts, new set-ups and components in code, a deeper review. Both obey the type’s laws, the floor rules and the theme lock. Boxes tagged “2 MODES” say what changes.',
+    today: 'Your own key with fallback to the server’s Groq model exists. Connecting Claude Code from the website is new.', goal: 'Equal floor for everyone; a higher ceiling with Opus.' },
+  { id: 'q0', band: 'in', x: S, after: 'qb', kind: 'decision', agent: 'moovi', status: 'new', w: 340, t: 'What did you give?', s: 'every attachment gets a role',
+    rules: [['a video to edit', 'the Editor prepares it first'], ['images or clips you call references (“like this”)', 'taste for this film; the Designer reads them'], ['logos, photos, clips to use', 'your assets; the Researcher places them'], ['only an idea or a link', 'straight to picking the type']],
+    d: 'If a role is unclear, Moovi asks once. Editing is generation with your footage as the main track, so a video only adds a preparation layer; every stage after it is the same.',
+    today: 'Today any upload goes to the edit lane, “like this” sends it to the old crew, and attachments have no roles.', goal: 'One pipeline, as you asked.' },
+  { id: 'p1', band: 'in', x: L, row: 'q0', kind: 'step', agent: 'editor', status: 'exists', t: 'Hear and look', s: 'words, language lock, faces, burned text',
+    d: 'Every word timed in the right language; the speaker’s face and any burned-in text found, at the same time.', today: 'edit/hear.ts, edit/look.ts, edit/burned.ts on main.' },
+  { id: 'p1t', band: 'in', x: L, after: 'p1', kind: 'rules', agent: 'editor', status: 'new', w: 300, t: 'Find the takes', s: 'pick the best one, or yours',
+    rules: [['the same line said twice or more', 'keep the best take: fluent, no stumble, best energy'], ['you say “use the second take” or “keep this one”', 'that take']],
+    d: 'For a raw recording of yourself: retakes are grouped by what you say, so the edit keeps one of each.', today: 'Slate and false-start cuts exist; grouping retakes and picking among them is new.' },
+  { id: 'p2', band: 'in', x: L, after: 'p1t', kind: 'rules', agent: 'editor', status: 'partial', w: 300, t: 'Clean cut, never a bare jump', s: 'the cover rule',
+    rules: [['slates, fillers, long pauses', 'cut, at Light / Balanced / Tight'], ['every cut', 'gets a cover: punch-in, transition, motion graphic or B-roll'], ['a cut inside a word', 'never']],
     d: 'Cutting is only half; what makes it premium is that no two pieces meet abruptly. The cover is picked by the Designer from the type’s library in stage 5.',
     today: 'Cuts snapped to words exist (edit/build.ts). The cover rule and the three levels are new.' },
-  { id: 'p3', band: 'in', x: L, after: 'p2', kind: 'step', agent: 'editor', status: 'partial', t: 'Grade', s: 'one look per type',
-    d: 'Exposure and colour balanced, then the type’s grade. Asked twice, a grade replaces itself, never stacks.', today: 'Grade presets exist in the kits and Clip Moment; not applied to every edit.' },
+  { id: 'p3', band: 'in', x: L, after: 'p2', kind: 'step', agent: 'editor', status: 'exists', t: 'Upscale and grade', s: 'weak clips restored',
+    d: 'A weak clip is deblocked, cleaned, upscaled to 1080 and sharpened; every clip gets the grade, then the type’s look. Asked twice, a grade replaces itself, never stacks.', today: 'On main: edit/restore.ts, your grade LUT on every clip.' },
   { id: 'p4', band: 'in', x: L, after: 'p3', kind: 'step', agent: 'editor', status: 'exists', t: 'Clean the voice', s: 'denoise, −14 LUFS',
     d: 'The ffmpeg chain: rumble cut, RNNoise, gate, de-ess, compressor, loudness.', today: 'edit/voice.ts on main.' },
   { id: 'p5', band: 'in', x: L, after: 'p4', kind: 'step', agent: 'editor', status: 'partial', t: 'Reframe on the speaker', s: '9:16 from anything',
     d: 'Crops follow the face; a landscape clip sits whole over a blurred fill when no face is known.', today: 'Face crop and blur fill exist; speaker-aware reframe across people is new.' },
   { id: 'p6', band: 'in', x: L, after: 'p5', kind: 'step', agent: 'editor', status: 'new', t: 'Your clip = the main track', s: 'joins the pipeline',
-    d: 'The cleaned clip, its words and faces go forward as the film’s main track. From here an edit is treated exactly like a generated film: typed, written (the transcript is the script), scored, designed, checked.',
+    d: 'The cleaned clip, its words and faces go forward as the film’s main track. From here an edit is treated exactly like a generated film: typed, written, voiced, designed, checked, and changed by chat.',
     today: 'Today the edit lane ends in its own player and never meets the styles.' },
 
   // 1 · type
   { id: 'q1', band: 'type', x: S, after: ['q0', 'p6'], gap: 130, kind: 'decision', agent: 'moovi', status: 'new', w: 330, t: 'Which type of video?', s: 'say it in one line',
+    modes: ['rules first, one small model call if unclear', 'Opus reads the brief and attachments; still states the type in one line'],
     rules: [['you tapped a type card', 'that type'], ['you gave a video', 'Edit'], ['your words name one (launch, showreel, explain, kinetic…)', 'that type'], ['still unclear', 'Moovi picks, says why in one line; asks only if two types fit equally']],
     d: 'The type is the single biggest decision, so it is made openly: Moovi states “A launch film for cal.com, 24 s, cut to music” before anything runs, and you can change it with one tap.',
     today: 'Today keyword regexes pick a style and the reason is only in the server log.', goal: 'No guessing behind your back.' },
@@ -233,7 +245,7 @@ const N = [
     d: 'Words as the picture, timed to the voice or the music.',
     rules: [['style today', 'none; seeds: l02, kin-type caption, the visual renderer’s kinetic captions'], ['references', 'need 5 (have 1)'], ['caption default', 'the type is the caption']] },
   { id: 'k1', band: 'type', x: S, after: 'ty-edit', gap: 80, kind: 'rules', agent: 'moovi', status: 'new', w: 420, graph: true, t: 'Load the type’s kit', s: 'everything the type needs, one read', rel: ['m0', 'l0'],
-    rules: [['its skill', 'the type’s branch of ishaan-motion'], ['its library', 'every asset marked for this type'], ['its beat map', 'length, hook time, beats, end card'], ['its presets', 'captions, grade, music energy, sfx map'], ['its memory', 'what it used lately, your rules']],
+    rules: [['its skill', 'the type’s branch of ishaan-motion'], ['its library', 'every asset marked for this type'], ['its beat map', 'length, hook time, beats, end card'], ['its presets', 'captions, grade, music energy, sfx map'], ['its memory', 'what it used lately, your rules'], ['your references for this film', 'added on top, for this film only']],
     d: 'A type is a skill plus a library plus presets. Loading it is one graph read, so every later stage works from the same, small, mapped set instead of the whole library.',
     today: 'Today each style carries its own code library, the graph is read in four separate places, and kits only pass a palette.' },
 
@@ -242,31 +254,57 @@ const N = [
     d: 'The Researcher decides which tools this film needs and runs them in parallel. Nothing is fetched that the type does not use.',
     today: 'Researcher (site capture) and Asset Hunter (footage) are two agents today; they merge here.' },
   { id: 'g1', band: 'gather', x: R, row: 'g0', kind: 'rules', agent: 'researcher', status: 'partial', w: 380, t: 'Tools decision tree', s: 'use a tool only when it helps',
-    rules: [['a link', 'read the site; brand kit measured from its CSS: colours, logo, fonts'], ['the type shows the product (Launch, UI morph, Explainer)', 'capture screens and a scroll video'], ['…and no link or screens', 'ask once for a link or screenshots'], ['a line names something real and the type uses footage', 'footage finder: Mixkit, Pexels, Pixabay, Commons'], ['nothing real to show, nothing to capture', 'a generated image, or a drawn set-up'], ['a place', 'a map'], ['a hero object', 'a 3D prop'], ['a number', 'a counter or chart component']],
+    modes: ['the tools by rule, fixed queries', 'Opus writes sharper footage and image queries and may draw an image or diagram in code'],
+    rules: [['a link', 'read the site; brand kit measured from its CSS: colours, logo, fonts'], ['the type shows the product (Launch, UI morph, Explainer)', 'capture screens and a scroll video'], ['…and no link or screens', 'ask once for a link or screenshots'], ['your own logos, photos, clips', 'placed first, before any stock'], ['a line names something real and the type uses footage', 'footage finder: Mixkit, Pexels, Pixabay, Commons'], ['nothing real to show, nothing to capture', 'a generated image, or a drawn set-up'], ['a place', 'a map'], ['a hero object', 'a 3D prop'], ['a number', 'a counter or chart component']],
     d: 'Every tool is mapped to the moment it earns its place, so tools are never used for show.',
     today: 'Exists: site capture (research/capture.ts), theme colour, footage finder with 6 sources, maps, render3d. New: brand measured from CSS, image generation (no tool for it in the repo today).' },
 
   // 3 · write
-  { id: 'w1', band: 'write', x: S, after: ['g0', 'g1'], gap: 130, kind: 'rules', agent: 'writer', status: 'partial', w: 380, model: true, t: 'Script into the beat map', s: 'one model call, or the transcript',
-    rules: [['generate', 'one model call fills the type’s beat map'], ['edit', 'your transcript is the script; beats tagged hook, point, proof, number, CTA'], ['every film', 'hook by 2.5 s, one idea per beat, end card 15–25 %']],
-    d: 'Slots, not free writing, so small free models write as well as big ones.', today: 'Each style has its own brief call; Auto has a director call; the edit tags beats by rule.' },
-  { id: 'w2', band: 'write', x: S, after: 'w1', kind: 'decision', agent: 'writer', status: 'partial', t: 'Does the copy pass?', s: 'the copy doctor',
-    rules: [['grammar, invented facts, two ideas in a line, too long', 'fixed by code, else one retry'], ['clean', 'go on']],
-    d: 'Copy was the judges’ main complaint on Launch (“Never wasting time again?”).', today: 'A script doctor exists per style; one shared doctor is new.' },
+  { id: 'w0', band: 'write', x: S, after: ['g0', 'g1'], gap: 130, kind: 'rules', agent: 'writer', status: 'new', w: 440, t: 'Pick the script arc', s: 'a preset per type, plus trending formats',
+    rules: [['Launch', 'hook → problem → reveal → 3 features → proof → CTA'], ['Showreel', 'cold open → build → peak → sign-off'], ['Brand post', 'hook → tension → insight → payoff → CTA'], ['SaaS explainer', 'hook → problem → 3 steps → result → CTA'], ['UI morph', 'promise → the flow → outcome → CTA'], ['Kinetic', 'hook line → build → punchline → CTA'], ['Edit', 'your words, in your order; the strongest line may open as a cold open'], ['trending formats', 'POV, “3 things”, “stop doing X”, before/after: each type lists the ones that fit']],
+    d: 'Each type has 2–3 arcs; the Writer picks by the brief and away from what the type used lately. Arcs and formats are refreshed from your references.',
+    today: 'Scripts are free-form per style, one model call, and you found them boring.' },
+  { id: 'w1', band: 'write', x: S, after: 'w0', kind: 'rules', agent: 'writer', status: 'new', w: 400, model: true, t: 'Write hooks, keep the best', s: 'the first 1.5 s decide the watch',
+    modes: ['3 hooks in one call, scored by code', '10 hooks, Opus ranks them, code checks the winner'],
+    rules: [['a good hook', 'under 8 words, concrete, a number or a tension'], ['banned', '“Ever wondered…”, “In today’s world…”, a question nobody asked']],
+    d: 'The hook is chosen before the rest is written, and the rest is written to pay it off.', today: 'New.' },
+  { id: 'w2', band: 'write', x: S, after: 'w1', kind: 'step', agent: 'writer', status: 'partial', model: true, w: 320, t: 'Draft in the arc', s: 'one idea per line, 12 words max',
+    modes: ['slots filled in one call', 'Opus writes freely inside the arc, then it is cut to the slots'],
+    d: 'Only the brand’s own facts and words. For an edit, the Writer does not rewrite you: it writes only the on-screen text (titles, cards, the CTA).', today: 'A script doctor exists per style.' },
+  { id: 'w3', band: 'write', x: S, after: 'w2', kind: 'rules', agent: 'writer', status: 'new', w: 400, t: 'Humanize', s: 'never sounds like AI',
+    rules: [['AI tells', 'a banned list: unlock, elevate, seamless, game-changer, revolutionize, “not just X, it’s Y”, em dashes'], ['how it sounds', 'contractions, plain words, read aloud by code for rhythm'], ['facts', 'only what the site or you said; no invented years or numbers']],
+    d: 'Checked by code on every line, in both modes.', today: 'New.' },
+  { id: 'w4', band: 'write', x: S, after: 'w3', kind: 'rules', agent: 'writer', status: 'new', w: 400, t: 'Watch-through check', s: 'would you watch it to the end?',
+    rules: [['the hook', 'lands by 1.5 s'], ['every 2–4 s', 'something new: a word, a picture, a number'], ['an open loop', 'opened early, paid off before the CTA'], ['length', '15–35 s unless you ask; an edit keeps your length minus cuts'], ['the CTA', 'one action']],
+    d: 'Retention rules, scored by code.', today: 'New.' },
+  { id: 'w5', band: 'write', x: S, after: 'w4', kind: 'decision', agent: 'writer', status: 'new', w: 300, t: 'Does it pass?', s: '',
+    rules: [['a line fails a check', 'rewrite that line once'], ['it still fails', 'the safest preset line'], ['passes', 'go on']],
+    d: 'Bounded: one rewrite per line.', today: 'New.' },
 
   // 4 · sound
-  { id: 's1', band: 'sound', x: S, after: 'w2', gap: 130, kind: 'rules', agent: 'sound', status: 'partial', w: 380, graph: true, t: 'Voice, music, sound effects', s: 'all timed to one grid',
-    rules: [['voice', 'generate: a voice cast for the type; edit: your cleaned voice'], ['music', 'by the type’s energy; beat grid measured; cuts on bars, drop on the reveal'], ['every sound event', 'its mapped sfx (typing → keys, click → click, card in → pop, cut → air cut, reveal → riser then hit, number → tick)'], ['mix', '−14 LUFS, voice ducks the music']],
-    d: 'Every sound has one job and one moment, so sound is never random.', today: 'The sfx event map exists (assets/sfx/map.json, assetsForEvent). Beat grid exists in Launch only. Music is one fixed bed for most styles.' },
+  { id: 's0', band: 'sound', x: S, after: 'w5', gap: 130, kind: 'rules', agent: 'sound', status: 'partial', w: 420, graph: true, t: 'Cast the voice', s: 'one of 63, chosen for this film',
+    rules: [['the library', '63 voices, each with language, accent, gender, age, tone and what it suits'], ['picked by', 'the type, the brand’s tone, the script’s language, your past choices'], ['Hinglish or an Indian brand', 'Indian English or Hindi voices'], ['two speakers in the script', 'a contrasting pair'], ['your own video', 'your cleaned voice, no TTS']],
+    d: 'You can change it in one tap or by chat (“a deeper voice”). Word timings come with the voice, so everything lands on the words.',
+    today: '63 Edge voices exist with a picker (voices --pick) and are in the graph, but are marked not shippable (an unofficial endpoint) until Kokoro or OpenAI TTS (openai-tts.ts exists) replaces them. Most styles use a fixed voice.' },
+  { id: 's1', band: 'sound', x: S, after: 's0', kind: 'rules', agent: 'sound', status: 'partial', w: 400, graph: true, t: 'Music and sound effects', s: 'timed to one grid',
+    rules: [['music', 'by the type’s energy; beat grid measured; cuts on bars, drop on the reveal'], ['every sound event', 'its mapped sfx (typing → keys, click → click, card in → pop, cut → air cut, reveal → riser then hit, number → tick)'], ['mix', '−14 LUFS, music 18 dB under the voice']],
+    d: 'Every sound has one job and one moment, so sound is never random.', today: 'The sfx event map exists (assets/sfx/map.json, assetsForEvent); a 1,389-line music list is on main; the beat grid exists in Launch only.' },
 
   // 5 · design
-  { id: 'd1', band: 'design', x: S, after: 's1', gap: 130, kind: 'rules', agent: 'designer', status: 'partial', w: 400, graph: true, t: 'Cast every beat', s: 'from the type’s library only',
-    rules: [['set-up', 'the best fit for the beat’s need, minus recent repeats'], ['camera', 'from the type’s motion branch'], ['every cut', 'one main transition for 60–70 %, plus 1–2 accents'], ['effects', '3–5 per film, each only where its rule fires'], ['components', 'cards, counters, lower thirds where the line says them'], ['captions', 'the type’s preset (or your pick)']],
-    d: 'The Designer is the one place taste is applied, and it can only cast pieces the type’s library and skill allow. Same input, same film; a seed varies it so two films of one site differ.',
-    today: 'Styles cast from their own code sets; the edit casts camera, sfx and transitions from the graph; nothing reads the motion skill.' },
+  { id: 'd0', band: 'design', x: S, after: 's1', gap: 130, kind: 'rules', agent: 'designer', status: 'new', w: 420, t: 'Lock the film’s theme', s: 'one film, one look',
+    rules: [['one palette', 'the brand’s measured colours, else the type’s'], ['one type pair', 'display + body, used everywhere'], ['one grade, one motion feel', 'on every beat'], ['pieces from other styles', 're-skinned to the theme before they are cast']],
+    d: 'A film may borrow from two or three styles but must look like one film.', today: 'Kits pass a palette to inserts only; each style keeps its own fonts and colours.' },
+  { id: 'd1', band: 'design', x: S, after: 'd0', kind: 'rules', agent: 'designer', status: 'partial', w: 400, graph: true, t: 'Cast every beat', s: 'from the type’s library, inside the floor',
+    modes: ['casts only from the library, by score', 'casts from the library and may write a new piece (left)'],
+    rules: [['set-up', 'the best fit for the beat’s need, minus recent repeats'], ['camera', 'from the type’s motion branch'], ['every cut', 'one main transition for 60–70 %, plus 1–2 accents'], ['effects', '3–5 per film, each only where its rule fires'], ['components', 'cards, counters, lower thirds where the line says them'], ['captions', 'the type’s preset (or your pick)'], ['your references', 'pieces closest to them score higher']],
+    d: 'The Designer is the one place taste is applied, and it can only cast what the type’s library and skill allow, inside the floor rules. Same input, same film; a seed varies it so two films of one site differ.',
+    today: 'Styles cast from their own code sets; the edit casts camera, sfx and transitions from the graph; nothing reads the motion skill.', rel: ['f0'] },
   { id: 'd2', band: 'design', x: R, row: 'd1', kind: 'decision', agent: 'designer', status: 'exists', w: 300, t: 'Nothing strong for a beat?', s: '',
     rules: [['the best set-up scores low', 'improvise in the type’s grammar; a good one is saved to its library'], ['a strong fit', 'use it']],
     d: 'The library grows with use.', today: 'Exists in the style kit (styles/kit/compose.ts).' },
+  { id: 'd3', band: 'design', x: L, row: 'd1', kind: 'rules', agent: 'designer', status: 'new', w: 300, model: true, t: 'Write a new piece in code', s: 'Creative mode only',
+    rules: [['Opus writes', 'a new set-up, component or transition, inside the type’s laws and the theme'], ['it fails a floor rule', 'dropped'], ['it wins the beat', 'saved to the library for every user']],
+    d: 'This is where Claude Code beats open APIs: bespoke motion written for this film, then kept, so Precise-mode users inherit it.', today: 'New.' },
 
   // 6 · build
   { id: 'b1', band: 'build', x: S, after: ['d1', 'd2'], gap: 130, kind: 'step', agent: 'code', status: 'partial', w: 300, t: 'One clock, live preview', s: 'plays in seconds',
@@ -274,9 +312,10 @@ const N = [
     today: 'Each style has its own player; the edit has its own; MP4 is a separate path for some.' },
 
   // 7 · check
-  { id: 'l1', band: 'check', x: S, after: 'b1', gap: 130, kind: 'rules', agent: 'lens', status: 'partial', w: 400, t: 'Code checks first', s: 'then 3 frames to a model',
-    rules: [['text', 'inside safe zones, above the minimum size, never on the face, one text layer per frame'], ['picture', 'no empty or black frames, no letterbox, no overlaps'], ['sound', 'loudness in band, no clicks'], ['the brief', 'does the film say what you asked?']],
-    d: 'Code computes the score; at most 3 settled frames go to a model.', today: 'The crew’s Lens on main; a review step uncommitted on your disk for the styles.' },
+  { id: 'l1', band: 'check', x: S, after: 'b1', gap: 130, kind: 'rules', agent: 'lens', status: 'partial', w: 400, t: 'Code checks first', s: 'then frames to a model', rel: ['f0'],
+    modes: ['code checks + 3 settled frames to the server model', 'code checks + Opus looks at every beat'],
+    rules: [['the floor rules', 'every rule in band F'], ['the brief', 'does the film say what you asked?'], ['the theme', 'one palette, type pair and grade throughout']],
+    d: 'Code computes the score; frames go to a model only after the code passes.', today: 'CHECK on main (lint, collision map, contrast on real pixels, one repair) runs on edit-by-words and MP4 renders only.' },
   { id: 'l2', band: 'check', x: S, after: 'l1', kind: 'decision', agent: 'lens', status: 'new', t: 'A serious problem?', s: '',
     rules: [['yes', 'one fix: the Designer re-casts that beat'], ['still wrong after one fix', 'ship the best, tell you what’s off'], ['no', 'ship']],
     d: 'Bounded: one fix at most, and the preview never waits for the check.', today: 'New.' },
@@ -290,8 +329,12 @@ const N = [
     rules: [['you change or reject something', 'a rule for you or this type, checked pass/fail next time'], ['a one-off request', 'stays a one-off'], ['what the film used', 'type memory, so the next differs']],
     d: 'Memory that can be checked, not free text.', today: 'Feedback memory feeds only the old crew; style memory exists per style.' },
 
+  // F · floor rules
+  { id: 'f0', band: 'floor', x: S, after: 'm1', gap: 170, kind: 'root', agent: 'lens', status: 'partial', w: 440, t: 'Never ship these', s: 'the Designer prevents, Lens checks',
+    rules: [['how', 'numbers in code, never taste words'], ['when', 'every film and every change, in both modes']],
+    d: 'The basic finesse you asked for: nothing appears too briefly to read, nothing is tiny or empty, and the film looks like one film.', today: 'CHECK on main covers safe zones, collisions, contrast and duplicate cards, for edit-by-words and MP4 renders only.' },
   // T · taste system
-  { id: 'r1', band: 'taste', x: RX(0), after: 'm1', gap: 150, kind: 'start', agent: 'you', status: 'exists', w: 300, t: 'You send a reference', s: 'a reel, a link, a film you love',
+  { id: 'r1', band: 'taste', x: RX(0), after: ['ch1', 'ch2', 'ch3', 'ch4', 'ch5'], gap: 170, kind: 'start', agent: 'you', status: 'exists', w: 300, t: 'You send a reference', s: 'a reel, a link, a film you love',
     d: 'Your only ongoing job.', today: 'ref-intake.ts takes a reel by URL.' },
   { id: 'r2', band: 'taste', x: RX(1), row: 'r1', kind: 'decision', agent: 'moovi', status: 'new', w: 300, t: 'Which type does it teach?', s: '',
     rules: [['fits a type', 'goes to that type'], ['fits none', 'Moovi proposes a new type to you']],
@@ -321,8 +364,32 @@ const N = [
     rules: [['today', 'one skill with 15 reference files'], ['proposed', 'a root of shared laws + one branch per type']],
     d: 'The skill becomes a tree, and the Designer reads the branch of the type it is casting.', today: '.claude/skills/ishaan-motion: taste, motion-feel, look, music-and-sound, shots-and-transitions, talking-head and more.' },
 ];
+const FL = [
+  ['fl-cap', 'Captions', 'readable, always', 'partial', [['on screen', 'at least 0.8 s, and 0.3 s per word'], ['size', '2 lines and 7 words at most'], ['place', 'never on the face; no change mid-word']]],
+  ['fl-tr', 'Transitions', 'seen, not glimpsed', 'new', [['length', '0.25–0.6 s, one direction, eased'], ['never', 'during a key word'], ['after', 'the new frame holds 0.6 s before anything else moves']]],
+  ['fl-text', 'Text', 'big, and never alone', 'partial', [['headline', 'at least 6 % of frame height'], ['body', 'at least 3.5 %'], ['a beat with only text', 'not allowed: add a UI piece, footage, an object or a chart']]],
+  ['fl-comp', 'Components', 'never empty', 'new', [['an image slot with no image', 'swap the component'], ['data', 'real numbers and names only'], ['size', 'at least 40 % of frame width']]],
+  ['fl-theme', 'Theme', 'one film, one look', 'new', [['palette, type, grade', 'one each per film'], ['mixed styles', 're-skinned to the theme']]],
+  ['fl-pace', 'Pacing', 'alive, not frantic', 'partial', [['a visual change', 'every 1.5–4 s'], ['effects', 'at most 1 per 5 s'], ['a frame', 'never held over 4 s without motion']]],
+  ['fl-audio', 'Sound', 'the voice wins', 'partial', [['music', '18 dB under the voice'], ['sfx', 'never on a key word unless it is the accent'], ['loudness', '−14 LUFS, no clicks']]],
+];
+FL.forEach(([id, t, s, st, rules], i) => N.push({ id, band: 'floor', x: TX[i], after: 'f0', gap: 80, kind: 'rules', agent: 'lens', status: st, w: 320, t, s, rules,
+  d: `${t}: a minimum every film meets. The Designer never casts below it; Lens checks it on every film and every change.`, today: st === 'new' ? 'New.' : 'Some of it is in CHECK (review/) on main, not on every path.' }));
+N.push(
+  { id: 'ch1', band: 'chat', x: 300, after: FL.map(f => f[0]), gap: 170, kind: 'start', agent: 'you', status: 'exists', w: 300, t: 'You ask for a change', s: 'type it, or tap a moment and say it',
+    d: 'Any time after the first preview: “use the second take”, “bigger captions”, “change the hook”, “make the end like this” plus a reference.', today: 'The chat box exists.' },
+  { id: 'ch2', band: 'chat', x: 740, row: 'ch1', kind: 'decision', agent: 'moovi', status: 'new', w: 420, t: 'What kind of change?', s: '',
+    rules: [['a word or a caption', 'edit that text'], ['“use this take”, “cut this part”', 're-plan the cuts (edit by words)'], ['“bigger captions”, “warmer”, “faster”', 'change one preset value'], ['a beat’s picture', 're-cast that beat'], ['music or voice', 'swap the track or the voice'], ['“like this” + a reference', 'taste for this film; re-cast the beats it affects'], ['a new direction', 'a new version from the type']],
+    d: 'Moovi says what it understood in one line before it changes anything.', today: 'Today a chat change in the studio re-makes the whole film in the same style.' },
+  { id: 'ch3', band: 'chat', x: 1200, row: 'ch1', kind: 'step', agent: 'code', status: 'partial', w: 300, t: 'Patch only what changed', s: 'a small diff on the film',
+    d: 'Every film is code and data (the plan and its pieces), so a change is a small diff. Untouched beats stay exactly as they were.', today: 'Edit by words re-plans an edit in milliseconds (reedit.ts) but the studio does not call it.' },
+  { id: 'ch4', band: 'chat', x: 1560, row: 'ch1', kind: 'step', agent: 'lens', status: 'partial', w: 300, t: 'Check the changed beats', s: 'the floor rules again',
+    d: 'Only the beats that changed are checked, so it takes seconds.', today: 'CHECK runs on edit-by-words on main.' },
+  { id: 'ch5', band: 'chat', x: 1920, row: 'ch1', kind: 'out', agent: 'code', status: 'new', w: 300, t: 'New version, old one kept', s: 'undo any change',
+    d: 'Every change is a checkpoint; undo restores the exact film. Download any version as MP4.', today: 'New.' },
+);
 const MB = [
-  ['mb-edit', 'Edit branch', 'cover cuts, captions, punch-ins, B-roll', 'partial', 'talking-head.md exists'],
+  ['mb-edit', 'Edit branch', 'takes, cover cuts, captions, punch-ins, B-roll', 'partial', 'talking-head.md exists'],
   ['mb-launch', 'Launch branch', 'music-led, object-born transitions, cursor', 'partial', 'LAUNCH.md laws on ishaan/launch-style'],
   ['mb-reel', 'Showreel branch', 'beat grid, every moment once', 'new', ''],
   ['mb-brand', 'Brand branch', 'paper stage, posters, story arcs', 'partial', 'Editorial and Dark Vox laws in code'],
@@ -337,6 +404,7 @@ N.push({ id: 'l0', band: 'lib', x: S, after: MB.map(m => m[0]), gap: 170, kind: 
   rules: [['every asset gets', 'the types it belongs to · when to use it · what it pairs with · its licence'], ['an asset no type uses', 'flagged, not shipped']],
   d: 'One library; each type sees only its marked slice.', today: 'Assets have SERVES needs and SUITS edit styles; nine read queries are unused; no per-type marks or WHEN rules.' });
 const LB = [
+  ['lc-voice', 'Voices', '63, each with its fit', 'partial', [['each voice', 'language, accent, gender, age, tone, types']], '63 Edge voices in the graph, not shippable until replaced (Kokoro or OpenAI TTS).'],
   ['lc-cap', 'Captions', 'one global preset set', 'new', [['the set', '8–12 premium presets (from captionseasy + the 11 player styles)'], ['per type', '1 default + 2 alternates'], ['picked by', 'type, speech pace, face on screen']], 'Two systems today: 11 player styles and captionseasy looks mapped to them.'],
   ['lc-sfx', 'Sound effects', 'every sound has a trigger', 'partial', [['typing', 'keys'], ['click, card in', 'click, pop'], ['cut, reveal', 'air cut, riser + hit']], 'The event map exists (map.json, about 22 sounds); needs more sounds and per-type marks.'],
   ['lc-fx', 'Video effects', '20 → 40, each with a rule', 'partial', [['each effect', 'when it fires, max per film, which types']], 'Tab’s effects library on vignesh/effects-v1, not on main.'],
@@ -345,41 +413,57 @@ const LB = [
   ['lc-comp', 'Components', 'cards, counters, UI', 'partial', [['each', 'the line it needs (a number, a list, a quote)']], '109 UI pieces; used only on weak beats today.'],
   ['lc-music', 'Music', 'by energy, with a beat grid', 'partial', [['each track', 'energy, measured grid, types, licence']], '30 catalogued, 1 vendored.'],
 ];
-LB.forEach(([id, t, s, st, rules, today], i) => N.push({ id, band: 'lib', x: TX[i], after: 'l0', gap: 80, kind: 'rules', agent: 'keeper', status: st, w: 320, graph: true, t, s, rules, d: `${t}: mapped so the Designer and Sound agents pick them by rule, never at random.`, today }));
+LB.forEach(([id, t, s, st, rules, today], i) => N.push({ id, band: 'lib', x: 330 + i * 340, after: 'l0', gap: 80, kind: 'rules', agent: 'keeper', status: st, w: 310, graph: true, t, s, rules, d: `${t}: mapped so the Designer and Sound agents pick them by rule, never at random.`, today }));
 
 const E = [
-  ['in', 'q0'], ['q0', 'p1', 'a video', 'hl'], ['q0', 'q1', 'an idea or a link'],
-  ['p1', 'p2'], ['p2', 'p3'], ['p3', 'p4'], ['p4', 'p5'], ['p5', 'p6'], ['p6', 'q1', '', 'dl'],
+  ['in', 'qb'], ['qb', 'q0', 'mode set'], ['q0', 'p1', 'a video', 'hl'], ['q0', 'q1', 'an idea or a link'],
+  ['p1', 'p1t'], ['p1t', 'p2'], ['p2', 'p3'], ['p3', 'p4'], ['p4', 'p5'], ['p5', 'p6'], ['p6', 'q1', '', 'dl'],
   ['q1', 'ty-edit'], ['q1', 'ty-launch'], ['q1', 'ty-reel'], ['q1', 'ty-brand'], ['q1', 'ty-saas'], ['q1', 'ty-ui'], ['q1', 'ty-kin'],
   ['ty-edit', 'k1'], ['ty-launch', 'k1'], ['ty-reel', 'k1'], ['ty-brand', 'k1'], ['ty-saas', 'k1'], ['ty-ui', 'k1'], ['ty-kin', 'k1'],
-  ['k1', 'g0'], ['g0', 'g1', 'which tools?', 'h'], ['g0', 'w1'], ['g1', 'w1', 'facts, assets'],
-  ['w1', 'w2'], ['w2', 's1', 'clean'], ['s1', 'd1'], ['d1', 'd2', 'weak beat', 'h'], ['d1', 'b1'], ['d2', 'b1'],
+  ['k1', 'g0'], ['g0', 'g1', 'which tools?', 'h'], ['g0', 'w0'], ['g1', 'w0', 'facts, assets'],
+  ['w0', 'w1'], ['w1', 'w2'], ['w2', 'w3'], ['w3', 'w4'], ['w4', 'w5'], ['w5', 's0', 'passes'],
+  ['s0', 's1'], ['s1', 'd0'], ['d0', 'd1'], ['d1', 'd2', 'weak beat', 'h'], ['d1', 'd3', 'creative mode', 'hl'], ['d1', 'b1'], ['d2', 'b1'], ['d3', 'b1'],
   ['b1', 'l1'], ['l1', 'l2'], ['l2', 'l2y', 'yes', 'h'], ['l2', 'o1', 'no'], ['l2y', 'o1', '', 'dl'], ['o1', 'm1'],
+  ...FL.map(f => ['f0', f[0]]),
+  ['ch1', 'ch2', '', 'h'], ['ch2', 'ch3', '', 'h'], ['ch3', 'ch4', '', 'h'], ['ch4', 'ch5', '', 'h'], ['ch5', 'ch1', 'next change', 'loop', 50],
   ['r1', 'r2', '', 'h'], ['r2', 'r3', '', 'h'], ['r3', 'r4', '', 'h'], ['r4', 'r5', '', 'h'], ['r5', 'r6', 'enough', 'h'], ['r6', 'r7', '', 'h'], ['r7', 'r8', '', 'h'],
   ['r8', 'r9', 'yes'], ['r5', 'r5y', 'not yet'], ['r9', 'r1', 'next reference', 'loop', 70], ['r5y', 'r1', '', 'loop', 40],
   ...MB.map(m => ['m0', m[0]]), ...LB.map(l => ['l0', l[0]]),
 ];
 
+const MID = ['k1', 'g0', 'g1'], WRITE = ['w0', 'w1', 'w2', 'w3', 'w4', 'w5'], TAIL = ['s0', 's1', 'd0', 'd1'];
 const PATHS = {
-  launch: { t: '“A launch video for cal.com”', n: ['in', 'q0', 'q1', 'ty-launch', 'k1', 'g0', 'g1', 'w1', 'w2', 's1', 'd1', 'b1', 'l1', 'l2', 'o1', 'm1'],
-    why: 'The words name the type, so Moovi says “A Launch film for cal.com, about 24 s, cut to music” and loads the Launch kit. The Researcher reads the site, measures the brand, captures screens. The Writer fills the launch beat map, Sound measures the track’s grid, the Designer casts every beat from the Launch library and branch, Lens checks, and it plays.' },
-  explain: { t: '“Explain how our API works”', n: ['in', 'q0', 'q1', 'ty-saas', 'k1', 'g0', 'g1', 'w1', 'w2', 's1', 'd1', 'd2', 'b1', 'l1', 'l2', 'l2y', 'o1', 'm1'],
-    why: '“Explain” names the SaaS explainer. No link, and the type shows the product, so the Researcher asks once for a link or screenshots. A beat with no strong set-up is improvised; Lens finds one serious problem and the Designer re-casts that beat once.' },
-  edit: { t: 'My talking-head clip', n: ['in', 'q0', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'q1', 'ty-edit', 'k1', 'g0', 'g1', 'w1', 's1', 'd1', 'b1', 'l1', 'l2', 'o1', 'm1'],
-    why: 'A video goes through the Editor’s preparation first: words and faces, clean cuts that each get a cover, grade, voice, reframe. Then it is simply the Edit type: the transcript is the script, B-roll comes from the tools tree, the Designer casts covers, captions, effects and components from the Edit library.' },
+  launch: { t: '“A launch video for cal.com”', n: ['in', 'qb', 'q0', 'q1', 'ty-launch', ...MID, ...WRITE, ...TAIL, 'b1', 'l1', 'l2', 'o1', 'm1'],
+    why: 'Precise mode (your Groq key). The words name the type, so Moovi says “A Launch film for cal.com, about 24 s, cut to music”. The Researcher reads the site, measures the brand, captures screens. The Writer picks a launch arc, writes 3 hooks and keeps the best, humanizes and checks watch-through. Sound casts a voice and measures the track’s grid. The Designer locks one theme and casts every beat from the Launch library; Lens checks the floor rules, and it plays.' },
+  explain: { t: '“Explain how our API works”', n: ['in', 'qb', 'q0', 'q1', 'ty-saas', ...MID, ...WRITE, ...TAIL, 'd2', 'd3', 'b1', 'l1', 'l2', 'l2y', 'o1', 'm1'],
+    why: 'Creative mode (your Claude Code). “Explain” names the SaaS explainer. No link, so the Researcher asks once for one. Opus writes 10 hooks and drafts freely inside the arc. On a beat nothing in the library fits, Opus writes a new diagram piece in code; it passes the floor rules and is saved for everyone. Lens finds one serious problem and the Designer re-casts that beat once.' },
+  edit: { t: 'My talking-head clip', n: ['in', 'qb', 'q0', 'p1', 'p1t', 'p2', 'p3', 'p4', 'p5', 'p6', 'q1', 'ty-edit', ...MID, 'w0', 'w3', 'w4', 'w5', ...TAIL, 'b1', 'l1', 'l2', 'o1', 'm1'],
+    why: 'Your raw recording: words, faces and burned text found; retakes grouped and the best kept; cuts made, each with a cover; upscaled and graded; voice cleaned; reframed. Then it is simply the Edit type: your words stay yours, the Writer only writes the on-screen text, your own voice is used, the theme is locked, and B-roll, captions, effects and components are cast from the Edit library.' },
+  change: { t: '“Use take 2, bigger captions”', n: ['ch1', 'ch2', 'ch3', 'ch4', 'ch5'],
+    why: 'Two changes in one message: one re-plans the cuts (edit by words), one changes a caption preset value. Only the affected beats change and are checked; the earlier version stays one tap away.' },
   ref: { t: 'I send a new reference', n: ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8', 'r9'],
     why: 'The reference is assigned to a type, broken into measured parts, and every part is mapped into the library and the type’s motion branch. With five references the type is rebuilt and blind-tested against the best so far; it ships only if it wins.' },
 };
 
 const AGENTS = [
-  ['moovi', 'Moovi', 'Talks to you, picks the type, asks only what matters', 'moovi + the router regexes'],
-  ['editor', 'Editor', 'Prepares a given video (cuts, covers, grade, voice, reframe)', 'editor + the edit lane'],
-  ['researcher', 'Researcher', 'Runs the tools decision tree', 'researcher + asset hunter'],
-  ['writer', 'Writer', 'Fills the beat map, passes the copy doctor', 'scribe + the director call'],
-  ['sound', 'Sound', 'Voice, music grid, mapped sfx, mix', 'voice + the mixer'],
-  ['designer', 'Designer', 'Casts every beat from the type’s library and skill', 'art director + style casting + edit cast'],
-  ['lens', 'Lens', 'Checks every film, one fix, judges the ratchet', 'lens + the uncommitted review'],
+  ['moovi', 'Moovi', 'Talks to you, sets the mode, gives every attachment a role, picks the type, reads chat changes', 'moovi + the router regexes'],
+  ['editor', 'Editor', 'Prepares a given video: takes, cuts with covers, upscale, grade, voice, reframe', 'editor + the edit lane'],
+  ['researcher', 'Researcher', 'Runs the tools decision tree, places your assets', 'researcher + asset hunter'],
+  ['writer', 'Writer', 'Picks the arc, writes hooks, humanizes, checks watch-through', 'scribe + the director call'],
+  ['sound', 'Sound', 'Casts one of 63 voices, music on a grid, mapped sfx, mix', 'voice + the mixer'],
+  ['designer', 'Designer', 'Locks one theme, casts every beat, writes new pieces in Creative mode', 'art director + style casting + edit cast'],
+  ['lens', 'Lens', 'The floor rules on every film and every change, one fix, the ratchet judge', 'lens + CHECK'],
   ['keeper', 'Keeper', 'Memory as rules, the library’s marks', 'keeper + style memory'],
+];
+
+const BRAINS = [
+  ['who', 'your API key (Groq, OpenRouter, Gemini…), the server model, a local model', 'your Claude Code with Opus 5.5'],
+  ['picking the type', 'rules, one small call if unclear', 'reads the brief and attachments'],
+  ['tools', 'by rule, fixed queries', 'sharper queries; may draw images in code'],
+  ['writing', '3 hooks, slots in one call', '10 hooks ranked, free draft cut to the arc'],
+  ['design', 'only library pieces, by score', 'library + new pieces in code, saved for everyone'],
+  ['review', 'code + 3 frames', 'code + every beat'],
+  ['the same in both', 'type laws, floor rules, theme lock, humanize, watch-through', 'type laws, floor rules, theme lock, humanize, watch-through'],
 ];
 
 // ---------- layout ----------
@@ -413,7 +497,7 @@ for (const n of N) {
 // rows share the tallest height so their bottoms line up
 const rows = {};
 for (const n of N) { const k = n.row || n.id; (rows[k] = rows[k] || []).push(n); }
-for (const k in rows) if (rows[k].length > 1 && rows[k].some(n => n.kind === 'type' || n.band === 'taste')) {
+for (const k in rows) if (rows[k].length > 1 && rows[k].some(n => n.kind === 'type' || n.band === 'taste' || n.band === 'chat')) {
   const hm = Math.max(...rows[k].map(n => n.h)); rows[k].forEach(n => { n.h = hm; n.y1 = n.y + hm; n.cy = n.y + hm / 2; });
 }
 // re-run stacking now heights changed
@@ -472,6 +556,7 @@ function drawNode(n) {
   const tags = [TG[n.kind] || 'STEP', AG[n.agent].toUpperCase()];
   if (n.graph) tags.push('FALKORDB');
   if (n.model) tags.push('MODEL');
+  if (n.modes) tags.push('2 MODES');
   text(g, x, yy, 'tg', tags.join(' · '));
   yy += 6;
   for (const l of n.tl) { yy += 18; text(g, x, yy, 'tt', l); }
@@ -507,7 +592,7 @@ const EDGES = E.map(([f, t, label, how, off]) => {
 });
 N.forEach(drawNode);
 const cnt = s => N.filter(n => n.status === s).length;
-document.getElementById('counts').textContent = `proposal · 8 agents · 7 types · ${N.length} boxes: ${cnt('exists')} exist, ${cnt('partial')} partly built, ${cnt('new')} new`;
+document.getElementById('counts').textContent = `proposal · 2 brains · 8 agents · 7 types · ${N.length} boxes: ${cnt('exists')} exist, ${cnt('partial')} partly built, ${cnt('new')} new`;
 
 // ---------- view ----------
 const stage = document.getElementById('stage');
@@ -574,6 +659,7 @@ function select(id, pan) {
   panel.appendChild(h('h2', '', n.t));
   sec('What happens').appendChild(h('p', '', n.d));
   if (n.rules && n.rules.length) { const s = sec(n.kind === 'decision' ? 'The decision' : n.kind === 'type' ? 'The type' : 'The rules'), t = h('table', 'rules'); for (const [c, o] of n.rules) { const tr = h('tr'); tr.appendChild(h('td', '', (n.kind === 'decision' ? 'if ' : '') + c)); tr.appendChild(h('td', '', '→ ' + o)); t.appendChild(tr); } s.appendChild(t); }
+  if (n.modes) { const s = sec('Two brains'), t = h('table', 'rules'); [['Precise mode', n.modes[0]], ['Creative mode', n.modes[1]]].forEach(([a, b]) => { const tr = h('tr'); tr.appendChild(h('td', '', a)); tr.appendChild(h('td', '', b)); t.appendChild(tr); }); s.appendChild(t); }
   if (n.today) sec('From today’s code').appendChild(h('p', '', n.today));
   if (n.goal) sec('Why').appendChild(h('p', '', n.goal));
   const outs = EDGES.filter(e => e.f === id), ins = EDGES.filter(e => e.t === id);
@@ -586,7 +672,7 @@ function select(id, pan) {
 function home() {
   panel.innerHTML = '';
   panel.appendChild(h('h2', '', 'The proposal in one screen'));
-  sec('The idea').appendChild(h('p', '', 'One way in. A video only adds a preparation layer; after that, editing and generating are the same eight stages. You pick one of seven types; a type is a skill, a library slice and presets. Eight agents, each owning one stage, the same eight in the studio and in the code. Your only ongoing job is sending references; the taste system turns them into better types, and a type ships only if it beats the last one blind.'));
+  sec('The idea').appendChild(h('p', '', 'One way in. A video only adds a preparation layer; after that, editing and generating are the same stages. You pick one of seven types; a type is a skill, a library slice, script arcs and presets. Eight agents, each owning one stage, the same eight in the studio and in the code. Two brains: open APIs run Precise mode, your Claude Code runs Creative mode, and both stand on the same floor rules. Every film is code, so a chat change patches only what you asked. Your only ongoing job is sending references.'));
   const c = sec('Today → proposed'), t = h('table', 'cmp');
   const tr0 = h('tr'); tr0.appendChild(h('th', '', 'Today')); tr0.appendChild(h('th', '', 'Proposed')); t.appendChild(tr0);
   [['4 lanes (Auto, edit, style, crew)', '1 pipeline; a video adds 6 prep steps'],
@@ -597,8 +683,16 @@ function home() {
    ['two caption systems', 'one global preset set; 1 default + 2 alternates per type'],
    ['sfx by event, music one fixed bed', 'every sound has a trigger; music by energy on a beat grid'],
    ['review only on the crew', 'Lens on every film, one fix, never blocks'],
-   ['chat floods with every step', 'one line per agent; details fold away']].forEach(([a, b]) => { const r = h('tr'); r.appendChild(h('td', '', a)); r.appendChild(h('td', '', b)); t.appendChild(r); });
+   ['chat floods with every step', 'one line per agent; details fold away'],
+   ['free-form scripts, one call', 'an arc per type, best of several hooks, humanized, watch-through checked'],
+   ['a fixed voice per style', 'one of 63 voices cast per film, or your own'],
+   ['no minimum rules on most paths', 'floor rules on every film and change'],
+   ['styles mixed with their own looks', 'one theme locked per film'],
+   ['a chat change re-makes the whole film', 'it patches only what you asked, with undo'],
+   ['one model path', 'Precise mode (open APIs) and Creative mode (Claude Code)']].forEach(([a, b]) => { const r = h('tr'); r.appendChild(h('td', '', a)); r.appendChild(h('td', '', b)); t.appendChild(r); });
   c.appendChild(t);
+  const br = sec('Two brains'), bt = h('table', 'cmp'); { const r = h('tr'); ['', 'Precise mode', 'Creative mode'].forEach(x => r.appendChild(h('th', '', x))); bt.appendChild(r); }
+  BRAINS.forEach(row => { const r = h('tr'); row.forEach(x => r.appendChild(h('td', '', x))); bt.appendChild(r); }); br.appendChild(bt);
   const ag = sec('The 8 agents'), tb = h('table', 'cmp');
   const th = h('tr'); th.appendChild(h('th', '', 'Agent')); th.appendChild(h('th', '', 'Its one job (replaces)')); tb.appendChild(th);
   AGENTS.forEach(([id, name, job, was]) => { const r = h('tr'); r.appendChild(h('td', '', name)); r.appendChild(h('td', '', `${job} (${was})`)); tb.appendChild(r); });
@@ -650,9 +744,9 @@ document.querySelectorAll('[data-status]').forEach(b => b.onclick = () => {
   const st = b.dataset.status, was = b.getAttribute('aria-pressed') === 'true'; clearAll();
   if (was) { setLit(null); home(); return; }
   pressed('[data-status]', b);
-  const ids = N.filter(n => n.status === st).map(n => n.id); setLit(ids, () => false);
-  panel.innerHTML = ''; panel.appendChild(h('h2', '', { exists: 'Already built', partial: 'Partly built', new: 'To build' }[st]));
-  sec('Summary').appendChild(h('p', '', { exists: 'These work today and move over as they are.', partial: 'Pieces exist in today’s code (often in one style or on a branch); they need finishing or joining.', new: 'Nothing exists yet. This is the build list.' }[st]));
+  const ids = N.filter(n => st === 'modes' ? (n.modes || n.id === 'qb') : n.status === st).map(n => n.id); setLit(ids, () => false);
+  panel.innerHTML = ''; panel.appendChild(h('h2', '', { exists: 'Already built', partial: 'Partly built', new: 'To build', modes: 'Where the two brains differ' }[st]));
+  sec('Summary').appendChild(h('p', '', { exists: 'These work today and move over as they are.', partial: 'Pieces exist in today’s code (often in one style or one path); they need finishing or joining.', new: 'Nothing exists yet. This is the build list.', modes: 'Precise mode (open APIs) and Creative mode (Claude Code) run the same pipeline; these boxes behave differently. The floor rules, theme lock and humanize checks are the same in both.' }[st]));
   const s = sec(`${ids.length} boxes`), l = h('div', 'links'); ids.forEach(i => l.appendChild(linkBtn(i))); s.appendChild(l);
 });
 home();
