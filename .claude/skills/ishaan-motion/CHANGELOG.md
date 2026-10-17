@@ -1,4 +1,5 @@
 # Changelog
+- 1.12.1 (2026-10-18): Launch look L-UI-1 "Product UI" absorbed from Resend v6 (kits/launch-ui, scripts/launch-ui.ts: any site in under a minute).
 - 1.11.1 (2026-10-18): Launch branch references/launch.md (Ishaan's verdicts f1-f5: product UI as the film, chaos to order, bridge element, product-only beat, brand look from the live site).
 
 ## 1.0.0 (2026-10-07)

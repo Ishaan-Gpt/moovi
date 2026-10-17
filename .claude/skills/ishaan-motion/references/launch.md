@@ -35,3 +35,9 @@ This is what Ishaan judged better on resend.com, version by version. The log and
   disappears.
 - **Thumbnails never sit on a title.** Put a photo thumb beside the button, not beside the heading.
 - **Items that fly out must clear the frame completely.** A white sliver at the edge reads as an error.
+
+## Look L-UI-1 "Product UI" (Ishaan, 2026-10-18: "the first good generated reference/look for this style; absorb it")
+Resend v6 became a reusable look: `packages/library/src/kits/launch-ui/` (player + README) and
+`packages/engine/scripts/launch-ui.ts <site>`. The script reads a live site once and makes a playable film in under
+a minute (linear.app: preview at 17 s, board at 24 s). The brand-specific beat stays open for the Director to write.
+For a new launch, start from this look; a new look only when a reference teaches a new grammar.
