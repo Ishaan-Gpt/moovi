@@ -48,10 +48,10 @@ Grade footage that sits under white words (about brightness 0.6). Drawn stand-in
 - **Hide captions while a big-word moment is on screen.** Two text layers fight.
 - **Captions never show punctuation** (owner rule, 2026-10-18): only letters, digits and % $ # & + reach the screen;
   the words keep it for timing and key-word choice.
-- **The premium two-tier glow caption** (Moovi preset 1.1 green / 1.2 red, `packages/library/src/captions/premium`):
+- **Premium Caption 1** (Moovi, variations 1.1 caps / 1.2 sentence-case lead + slanted key; colour is never fixed: one accent, taken from the video, builds the fill ramp and bloom, `packages/library/src/captions/premium`):
   white lead tier, the spoken key word underneath larger in a lit colour. Russo One at 600 (one 400 cut: thicken with a
   ~4.5 % same-colour round stroke, never the browser's synthetic bold, which skips offscreen layers and ghosts the glow);
-  the tiers sit tight (gap ≈ 0.016 of the short edge, no extra leading); a dark shadow bed under the key word and a
+  1.1 words get a little extra space (0.08 em); the tiers sit tight (gap ≈ 0.016 of the short edge, no extra leading); a dark shadow bed under the key word and a
   restrained 4-layer bloom on top (wide hue halo → tight near-white core) so the word reads *highlighted*, not just
   glowy. Entry per word, decoded from the reference reel at 30 fps: pop in at 1.22x and blurred, snap to size on
   1 - exp(-11 s) cos(15 s) (a small undershoot bounce), glow flashes to 1.8x and eases over 0.3 s, the card drifts
