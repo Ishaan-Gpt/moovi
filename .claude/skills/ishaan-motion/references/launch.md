@@ -104,3 +104,19 @@ events and the chores come from the site; the sentence comes from the Director.
   plate, the dinner plates), no word, giant verb or card sits on the face. Place it beside or below the face with a
   margin, using the face detector the edit lane uses. A difference or negative highlight takes its colour from the
   plate behind it, pushed bright, never a fixed hue.
+
+## When Ishaan sends a reference to match, rebuild it shot for shot (owner on f11, 2026-10-18: "2/10, not at all
+## the premium launch video I sent")
+f11 borrowed three ideas from ref 3 and invented its own 22 s film with simplified, hand-drawn UI. That is not a
+rebuild. The procedure:
+1. **Measure the reference first:** frame sheets at 3 fps (10 s per sheet) and scene-cut detection. Ref 3 has
+   **no hard cuts**: one continuous camera take in each section, with cuts only between sections, on the beat.
+   Write the shot table (time, shot, camera, type, transition) before any code.
+2. **Match its structure, length, pacing and camera**, beat for beat. Change only the brand: its words, its product,
+   its palette.
+3. **Real product screens, never drawn UI:** the premium comes from dense, real screens that the camera pushes and pans
+   into. Take them from the brand's own site: product-page screenshots (`/_next/image?url=…product-pages…&w=3840`),
+   blog cover art and the brand's 3D renders (Resend: `screenshot-metrics`, `screenshot-zoom-analytics/audience`,
+   `broadcast-email-header`, and `cube`, `3d-react/broadcast/control` .mp4). Draw UI only where no real screen exists.
+4. **Real moving plates** (clips, not stills) behind the UI: landscapes, sky, night, fields (`media.ts`).
+5. Then compare our stills with the reference at the same times, side by side, before showing anything.
