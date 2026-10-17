@@ -29,7 +29,9 @@ const app = bridgeApp(hub, {
   log: line => console.log(line),
 });
 await new Promise<void>(res => app.http.listen(port, host, res));
-console.log(`[bridge] Claude Code bridge on http://${host}:${port}/mcp · connect page http://${host === '0.0.0.0' ? 'localhost' : host}:${port}/connect`);
+// the sign-in cookie of the website on localhost reaches this port only under the same host name, so print localhost
+const shown = host === '0.0.0.0' || host === '127.0.0.1' || host === '::1' ? 'localhost' : host;
+console.log(`[bridge] Claude Code bridge on http://${shown}:${port}/mcp · connect page http://${shown}:${port}/connect (open it in the browser you are signed in to Moovi with)`);
 if (process.env.MOOVI_BRIDGE_WORKER !== '0') {
   hub.register();
   console.log('[bridge] engine worker starting in this process (brain calls of connected users go to their Claude Code)');

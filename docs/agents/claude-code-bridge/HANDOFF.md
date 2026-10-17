@@ -14,7 +14,7 @@ Read this first if you are picking the work up. Updated by Tab after every item.
   pushing in main as well as in this new branch"; matches Ishaan's CLAUDE.md). Red code goes to the branch only.
 - **Push:** through the GitHub API (git data: blobs, trees, commits, then the ref with `force: false`), never force.
 - **Last sha:** see the newest line in `LOG.md`.
-- **Current state:** Phase 0 and Phase 1 done; Phase 2 in progress: items 14 (`/mcp`), 15 (tokens, `/api/brain/*`), 16 (`moovi_next`/`moovi_answer`, `board.ts`, `hub.register()`, engine hooks) and 17 (the `run` prompt) done. See the newest LOG lines.
+- **Current state:** Phase 0 and Phase 1 done; Phase 2 in progress: items 14 (`/mcp`), 15 (tokens, `/api/brain/*`), 16 (`moovi_next`/`moovi_answer`, `board.ts`, `hub.register()`, engine hooks) 17 (the `run` prompt) and 18 (end to end proof with the SDK client, `app.ts`, `scripts/serve.ts`, `scripts/e2e.ts`) done. See the newest LOG lines.
   - Contracts: `engine/src/edit/direct.schema.ts`, `engine/src/router/direct-film.schema.ts`, `engine/src/runtime/budget.ts`.
   - Lane switch `engine/src/runtime/lane.ts`; checker `engine/src/runtime/checked.ts`; `keys.registerBrainScope`.
   - Brain calls: `engine/src/edit/direct.ts` (`directEditStep`, `directEdit`, `overridesOf`; `planEdit` asks for a
@@ -27,7 +27,7 @@ Read this first if you are picking the work up. Updated by Tab after every item.
   - Known gaps: Direction `cards` are recorded but not yet placed (inserts.ts casts cards from the graph by tag); the
     edit step sends no keyframes yet (the step supports images, `CompleteRequest` has no image field); BRAIN 2 (final
     look) not wired; `chat.ts` line 20 still checks `loadModel` under MOOVI_BYOK=required.
-- **Next item:** 18 (SDK client end to end on a real job: `scripts/serve.ts` and a scripted proof), then `TEST-WITH-CLAUDE-CODE.md` for Vignesh (item 19). Still open from Phase 1: the Launch hook (11a, waits for Ishaan, requested in TAB.md), Direction `cards` placement, keyframes on the edit step, BRAIN 2 (final look).
+- **Next item:** 19, Vignesh tests on his laptop with `TEST-WITH-CLAUDE-CODE.md` (this folder). Watch for: the slash name Claude Code shows for the server prompt (expected `/mcp__moovi__run`), tool permission prompts, and the number of `moovi_next` polls during the render (5 in the proof; a longer `wait_s` or a "come back when done" answer would cut them). Website mount for real users: two rewrite lines requested from Ishaan in `docs/agents/TAB.md` (2026-10-17 22:00). Still open from Phase 1: the Launch hook (11a, waits for Ishaan, requested in TAB.md), Direction `cards` placement, keyframes on the edit step, BRAIN 2 (final look).
 - **Item 12 tests** (`packages/mcp/test/bridge-e2e.test.ts`, 5): a stand-in Claude Code session (ticket, then pull and
   answer through the `Gate`) directs `directEdit` end to end inside `withModel(brainScope(...))`; a second window is
   turned away while the first holds the job, and a bad answer gets exactly one re-ask; no `/moovi:run` ticket means no
@@ -36,7 +36,8 @@ Read this first if you are picking the work up. Updated by Tab after every item.
 
 ## How to run things
 
-- Engine tests: `cd packages/engine && npx tsx --test test/*.test.ts` (FalkorDB tests skip without `FALKORDB_URL`).
+- Engine tests: `cd packages/engine && FALKORDB_URL=falkor://127.0.0.1:6394 npx tsx --env-file=test/graph-optional.env --test test/*.test.ts` (the env file is Ishaan's decision 13: without it the three "FalkorDB down" tests fail).
+- End to end proof: `FALKORDB_URL=... pnpm --filter @moovi/mcp e2e` (needs `OPENAI_API_KEY` or `GROQ_API_KEY` for hearing; with no words the edit runs on rules and no brain step is asked). On Tab's box the speech key came through Tab's own proxy with a preload kept outside the repo.
 - Typecheck one package at a time: `cd packages/<pkg> && npx tsc -p tsconfig.json --noEmit`
   (`pnpm -r typecheck` fails in a non-interactive shell).
 - Bridge tests (from phase 1): `cd packages/mcp && npx tsx --test test/*.test.ts`.
