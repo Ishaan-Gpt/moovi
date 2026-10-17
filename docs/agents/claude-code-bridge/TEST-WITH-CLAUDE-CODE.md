@@ -23,8 +23,8 @@ with no model key of their own:
   (`videos/<chat>/v2.mp4`, 1080x1920, 19.0 s, h264 + aac) after 226 s, and the final `moovi_next` returned `done` with
   the studio link.
 
-One thing the proof needed: a speech key. Without `OPENAI_API_KEY` or `GROQ_API_KEY` the clip has no words, the edit
-runs on Moovi's rules, and Claude Code is never asked (that is by design: no words, nothing to direct).
+Hearing the clip needs no key since Oct 18: with no `GROQ_API_KEY` or `OPENAI_API_KEY`, Moovi runs Whisper on your own
+machine (about 5 s for a 20 s clip). A Groq or OpenAI key is optional: faster on long clips and more accurate.
 
 ## 1. One time setup
 
@@ -47,11 +47,17 @@ exported. Despite the name it only replaces the shared `craft` graph; your accou
 library sounds or camera moves; use `graph:reset`. Without either, a fresh FalkorDB has no craft graph at all; since
 Oct 17 the edit still finishes then (a missing graph reads as empty), but plainer.
 
+No speech key is needed (Gemini does not do speech, and none is required now): the first edit of a talking clip
+downloads Moovi's local speech model once, about 77 MB, into `data/models` (the bridge terminal says
+"downloading the speech model once"), then hears every clip on your machine. A Groq or OpenAI key in `.env.local`
+is optional and faster. `MOOVI_STT=off` turns the local model off; then an edit of a talking clip with no key stops
+with "Moovi needs a speech key to hear your clip" instead of a no-captions edit.
+
 In `.env.local` at the repo root, make sure you have:
 
 ```
 FALKORDB_URL=falkor://127.0.0.1:6380
-OPENAI_API_KEY=sk-...      # or GROQ_API_KEY=...; needed for hearing the clip
+# optional: OPENAI_API_KEY=sk-...  or  GROQ_API_KEY=...  (faster hearing; without one Moovi hears the clip locally)
 ```
 
 Keep the model lines you already have (`MOOVI_RUNTIME`, `MOOVI_PROVIDER`, `ANTHROPIC_API_KEY`): the proof ran with them
@@ -146,8 +152,10 @@ Common ones:
 - `401` or "not connected" in `claude mcp list`: the token was revoked or replaced; make a new command (step 4) and
   run `claude mcp remove moovi --scope user` before adding it again.
 - "Sign in first" on the connect page: you opened it on `127.0.0.1` or in another browser; use `http://localhost:3200/connect`.
-- Claude Code never gets a step: check the bridge terminal (not `dev:engine`) is running, and that `.env.local` has a
-  speech key; with no words heard there is nothing to direct.
+- Claude Code never gets a step: check the bridge terminal (not `dev:engine`) is running. If the bridge terminal shows
+  the speech model download failing, add a Groq or OpenAI key to `.env.local`; with no words heard there is nothing to direct.
+- "Moovi could not hear your clip: Groq refused it (billing or quota...)": the key in `.env.local` or Settings is refused;
+  fix it or remove it (Moovi then hears the clip locally).
 
 ## 8b. Optional extra checks (items 22 and 25, after the first video works)
 

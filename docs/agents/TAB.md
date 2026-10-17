@@ -1,5 +1,28 @@
 # Tab
 
+## 2026-10-18 00:30 IST · claude-code-bridge + main · edits of a talking clip hear it with no key (local Whisper)
+
+- **What Vignesh hit:** no Groq or OpenAI key (Gemini only), "Moovi picks" + a talking clip: the edit finished in 9 s as
+  "16.5 s from 19.0 s, 11 shots, 0 words captioned". `edit/job.ts` skipped hearing when `sttAvailable()` was null and
+  planned a pause-cuts-only edit, with only an activity note saying why.
+- **Fix, engine only (no studio file touched):** new `engine/src/audio/local-stt.ts`: Whisper inside Node through
+  `@huggingface/transformers` (ONNX on the CPU, `onnx-community/whisper-base_timestamped` q8, word timestamps), model
+  downloaded once (77 MB) to `data/models` (`MOOVI_MODEL_CACHE`). `hear()` and `transcribeWords()` use it when there is
+  no key, and when the keyed provider refuses (billing, bad key, outage). `MOOVI_STT=local` forces it, `MOOVI_STT=off`
+  disables it. Measured here: 20 s clip heard in 4.6 s (load 1.3 s from cache); the edit lane with no key on a 20 s
+  talking clip: 64 words captioned, hear stage 8.3 s.
+- **Fallback of the fallback:** with no key and `MOOVI_STT=off` (or the local model failing), an edit of a talking clip
+  now STOPS with one plain sentence ("Moovi needs a speech key to hear your clip. Add a free Groq key ...") that the
+  studio chat and Claude Code both show, instead of a no-words edit. A brief that says there are no words ("music
+  only", "no captions", "b-roll") keeps the old no-words edit. A provider refusal with the local model off says so
+  plainly ("Groq refused it (billing or quota on that account)").
+- **pnpm:** `pnpm-workspace.yaml` `allowBuilds` gained `onnxruntime-node: false` and `protobufjs: false` (pnpm 11
+  errors on unapproved build scripts; onnxruntime-node ships its CPU binaries for macOS, Linux and Windows inside the
+  package, its script only fetches GPU builds). Install adds about 450 MB to node_modules.
+- **@Ishaan, optional, `apps/studio/next.config.ts`:** add `'@huggingface/transformers'` and `'onnxruntime-node'` to
+  `serverExternalPackages`. Not needed today: the import carries `webpackIgnore`/`turbopackIgnore` and the jobs run in
+  the worker (bridge or `dev:engine`), never inside Next; it is belt and braces against bundling the native binary.
+
 ## 2026-10-18 00:20 IST · claude-code-bridge + main · live-test fix: an edit failed on a fresh FalkorDB ("empty key")
 
 - **What Vignesh hit:** fresh clone, fresh `pnpm falkordb`, no seed. "Moovi picks" + a clip: `edit your clip failed ([craft]

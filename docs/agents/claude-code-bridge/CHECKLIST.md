@@ -67,4 +67,4 @@ Status: `[ ]` open, `[~]` in progress, `[x]` done (the commit is in LOG.md). **V
 | 29 | [ ] Final HANDOFF, docs and merge | README in `packages/mcp`, HANDOFF exact, merged to main | LOG.md | |
 
 Server-side no-key work that sits under these items (needed for a keyless account): local Whisper in `hear.ts`
-(with 18), Kokoro voice for generation (with 4/11), Hinglish from a table (with 11).
+(with 18; DONE Oct 18: `audio/local-stt.ts`, no key or a refusing provider hears locally, test `stt-local.test.ts`), Kokoro voice for generation (with 4/11), Hinglish from a table (with 11).
