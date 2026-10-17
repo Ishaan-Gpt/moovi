@@ -29,6 +29,8 @@ The ones the product stands on:
 | One library, cast by need | `seedAssets`, `assetsServing`, `assetsForEvent`, `libraryCounts` | `(:Asset)-[:SERVES]->(:Need)`, `-[:FITS]->(:Event)`, `-[:SUITS]->(:EditStyle)`, `-[:IS_A]->(:Transition)` |
 | A look as one re-skinnable unit | `seedKit`, `kitParts`, `kitsServing` | `(:Kit {palette, type, motion})-[:HAS]->(:Asset)`, `(:Reference)-[:TAUGHT]->(:Kit)` |
 | A reference becomes parts | `addReference`, `addReferenceParts`, `referenceParts` | `(:Reference)-[:HAS_PART {role, at}]->(:Asset)` |
+| A film's type, its looks and its library slice in one read | `typesAll`, `typeKit` | `(:Type)-[:LOOK]->(:Style or :EditStyle)`, `(:Type)-[:REFERENCE]->(:Reference)`, `(:Asset)-[:IN_TYPE {w, when}]->(:Type)` |
+| The Launch library, traceable to its films | `launchParts`, `launchPartStory`, `launchReferences`, `launchFilmParts` | `(:Reference {id: 'ref:lNN'})-[:HAS_PART]->(:Asset)` with runtime launch, `(:Film)-[:USED {role, i}]->(:Asset)` |
 
 ## craft (style knowledge, shared)
 
@@ -2545,6 +2547,217 @@ The kits an asset belongs to (where its palette and type come from).
 MATCH (k:Kit)-[h:HAS]->(:Asset {id: $id})
 RETURN k.id AS kit, h.role AS role
 ORDER BY k.id
+```
+
+## craft: the Launch style (its library, where each part came from, what films used)
+
+### `launchParts` (read-only)
+
+The Launch library: every asset the Launch player draws (runtime launch, not retired), with the needs it serves (strongest first), its params and the references that taught it. The caster reads this once per film.
+
+```cypher
+MATCH (a:Asset)
+WHERE 'launch' IN a.runtime AND coalesce(a.retired, false) = false
+OPTIONAL MATCH (a)-[s:SERVES]->(n:Need)
+WITH a, n, s ORDER BY s.w
+WITH a, collect(n.id) AS needs
+OPTIONAL MATCH (r:Reference)-[:HAS_PART]->(a)
+WITH a, needs, collect(DISTINCT r.id) AS refs
+RETURN a.id AS id, a.category AS category, a.name AS name, a.energy AS energy, a.params AS params, a.tags AS tags, needs, refs
+ORDER BY a.category, a.id
+```
+
+### `launchPartStory` (read-only)
+
+Where a Launch part came from: the references that taught it (with the role and the moment in each), the look kits it belongs to, and the edit styles it suits.
+
+```cypher
+MATCH (a:Asset {id: $id})
+OPTIONAL MATCH (r:Reference)-[h:HAS_PART]->(a)
+OPTIONAL MATCH (k:Kit)-[:HAS]->(a)
+OPTIONAL MATCH (a)-[su:SUITS]->(e:EditStyle)
+RETURN a.id AS id, a.name AS name, a.about AS about, collect(DISTINCT {ref: r.id, title: r.title, role: h.role, at: h.at}) AS taughtBy, collect(DISTINCT k.id) AS kits, collect(DISTINCT {style: e.id, w: su.w}) AS suits
+```
+
+### `launchReferences` (read-only)
+
+The launch references and what each gave the library: parts per category, and the look it taught.
+
+```cypher
+MATCH (r:Reference) WHERE r.id STARTS WITH 'ref:l'
+OPTIONAL MATCH (r)-[:HAS_PART]->(a:Asset)
+WITH r, a.category AS category, count(a) AS n
+WITH r, collect({category: category, n: n}) AS parts
+OPTIONAL MATCH (r)-[:TAUGHT]->(k:Kit)
+RETURN r.id AS id, r.title AS title, r.url AS url, parts, collect(k.id) AS kits
+ORDER BY r.id
+```
+
+### `launchServing` (read-only)
+
+Launch parts of one category ranked for a beat: how many of the beat needs each serves (rank-weighted), then its energy closeness, then id. The caster calls it when a beat needs a part the plan has no rule for.
+
+```cypher
+MATCH (a:Asset {category: $category})-[s:SERVES]->(n:Need)
+WHERE 'launch' IN a.runtime AND coalesce(a.retired, false) = false AND n.id IN $needs
+WITH a, count(n) AS hits, sum(1.0 / s.w) AS weight
+RETURN a.id AS id, a.name AS name, hits, weight, a.energy AS energy
+ORDER BY hits DESC, weight DESC, abs(coalesce(a.energy, 3) - $energy), a.id
+LIMIT $n
+```
+
+### `launchFilmParts` (write)
+
+A Launch film used these parts (set-ups, type treatments, transitions, camera moves, worlds): (:Film)-[:USED {role, i}]->(:Asset) in the craft graph, so the library knows which parts films actually lean on.
+
+```cypher
+MERGE (f:Film {id: $film})
+SET f.style = 'launch', f.at = $at, f.look = $look, f.site = $site
+WITH f
+UNWIND $rows AS r
+MATCH (a:Asset {id: r.id})
+MERGE (f)-[u:USED {role: r.role, i: r.i}]->(a)
+RETURN count(u) AS used
+```
+
+### `launchRecentLooks` (read-only)
+
+The looks the Launch style wore lately (newest first) and the site each film was about: the next film wears another look, and a site seen again never gets its last look.
+
+```cypher
+MATCH (f:Film {style: 'launch'})
+RETURN f.look AS look, f.site AS site, f.at AS at
+ORDER BY f.at DESC
+LIMIT $n
+```
+
+### `launchPartUse` (read-only)
+
+How often each Launch part has been used across films (the caster rests the busiest ones).
+
+```cypher
+MATCH (f:Film {style: 'launch'})-[u:USED]->(a:Asset)
+RETURN a.id AS id, count(u) AS uses, max(f.at) AS last
+ORDER BY uses DESC, a.id
+LIMIT $n
+```
+
+## craft: the type registry (the seven types, their looks and library slices)
+
+### `seedTypes` (write)
+
+Idempotent seed of the seven types: one (:Type) per spec, every field replaced (the specs in code are the truth).
+
+```cypher
+UNWIND $rows AS r
+MERGE (t:Type {id: r.id})
+SET t.name = r.name, t.i = r.i, t.status = r.status, t.spec = r.spec, t.src = r.src
+RETURN count(t) AS types
+```
+
+### `clearTypeLinks` (write)
+
+Before re-linking the types: drop every LOOK and REFERENCE edge a type has.
+
+```cypher
+MATCH (:Type)-[e:LOOK|REFERENCE]->()
+DELETE e
+RETURN count(e) AS dropped
+```
+
+### `linkTypeStyles` (write)
+
+A type wears a generated style as a look: (Type)-[:LOOK {role, i, name, kind}]->(Style). A style node that does not exist yet is created with its name only (existing ones keep theirs).
+
+```cypher
+UNWIND $rows AS r
+MATCH (t:Type {id: r.type})
+MERGE (s:Style {id: r.look})
+ON CREATE SET s.name = r.name
+MERGE (t)-[l:LOOK]->(s)
+SET l.role = r.role, l.i = r.i, l.name = r.name, l.kind = 'style'
+RETURN count(l) AS looks
+```
+
+### `linkTypeEditLooks` (write)
+
+A type wears an edit look: (Type)-[:LOOK {role, i, name, kind}]->(EditStyle).
+
+```cypher
+UNWIND $rows AS r
+MATCH (t:Type {id: r.type})
+MERGE (s:EditStyle {id: r.look})
+MERGE (t)-[l:LOOK]->(s)
+SET l.role = r.role, l.i = r.i, l.name = r.name, l.kind = 'edit-look'
+RETURN count(l) AS looks
+```
+
+### `linkTypeReferences` (write)
+
+A reference belongs to a type (decision 9): (Type)-[:REFERENCE {role}]->(Reference); references not in the graph are skipped.
+
+```cypher
+UNWIND $rows AS r
+MATCH (t:Type {id: r.type}), (ref:Reference {id: r.ref})
+MERGE (t)-[e:REFERENCE]->(ref)
+SET e.role = r.role
+RETURN count(e) AS refs
+```
+
+### `clearTypeAssets` (write)
+
+Before re-marking the library: drop every IN_TYPE edge (the specs and the catalogue are the truth).
+
+```cypher
+MATCH (:Asset)-[e:IN_TYPE]->(:Type)
+DELETE e
+RETURN count(e) AS dropped
+```
+
+### `linkAssetTypes` (write)
+
+An asset is in a type’s slice: (Asset)-[:IN_TYPE {w, when}]->(Type); rows for assets not in the graph are skipped.
+
+```cypher
+UNWIND $rows AS r
+MATCH (a:Asset {id: r.id}), (t:Type {id: r.type})
+MERGE (a)-[e:IN_TYPE]->(t)
+SET e.w = r.w, e.`when` = r.`when`
+RETURN count(e) AS edges
+```
+
+### `typesAll` (read-only)
+
+Every type, in card order, with its status, its looks and how big its library slice is.
+
+```cypher
+MATCH (t:Type)
+OPTIONAL MATCH (t)-[l:LOOK]->(s)
+WITH t, l, s ORDER BY l.i
+WITH t, collect(CASE WHEN s IS NULL THEN null ELSE {id: s.id, name: l.name, role: l.role, kind: l.kind} END) AS looks
+OPTIONAL MATCH (a:Asset)-[:IN_TYPE]->(t)
+WHERE NOT coalesce(a.retired, false)
+RETURN t.id AS id, t.i AS i, t.name AS name, t.status AS status, looks, count(a) AS assets
+ORDER BY i
+```
+
+### `typeKit` (read-only)
+
+Everything a film of one type needs, in one read: the spec (arcs, beat map, presets, tool rules, floor overrides, motion branch), its looks in order, its references, and its library slice (strongest first, then id).
+
+```cypher
+MATCH (t:Type {id: $id})
+OPTIONAL MATCH (t)-[l:LOOK]->(s)
+WITH t, l, s ORDER BY l.i
+WITH t, collect(CASE WHEN s IS NULL THEN null ELSE {id: s.id, name: l.name, role: l.role, kind: l.kind} END) AS looks
+OPTIONAL MATCH (t)-[rl:REFERENCE]->(ref:Reference)
+WITH t, looks, rl, ref ORDER BY ref.id
+WITH t, looks, collect(CASE WHEN ref IS NULL THEN null ELSE {id: ref.id, role: rl.role, title: ref.title} END) AS refs
+OPTIONAL MATCH (a:Asset)-[e:IN_TYPE]->(t)
+WHERE NOT coalesce(a.retired, false)
+WITH t, looks, refs, a, e ORDER BY e.w DESC, a.id
+RETURN t.id AS id, t.name AS name, t.status AS status, t.spec AS spec, looks, refs,
+       collect(CASE WHEN a IS NULL THEN null ELSE {id: a.id, category: a.category, w: e.w, `when`: e.`when`, ship: a.ship} END) AS assets
 ```
 
 

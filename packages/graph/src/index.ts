@@ -1,5 +1,5 @@
 export { read, write, health, onQuery, queryLog, listGraphs, dropGraph, closeMemory, MemoryDown, CRAFT, SYS, STYLES, userGraph, projectGraph, type QueryEvent } from './client';
-export { craft, sys, user, project, styles, media, library, launch, ALL, type Q } from './queries';
+export { craft, sys, user, project, styles, media, library, launch, types, ALL, type Q } from './queries';
 export { run } from './run';
 export { seedCraft, seedStylePackage, seedSignatures, type StylePackageSeed, type SignatureSeed } from './seed';
 export { ensureStylesSchema, ensureCraftSchema, ensureSysSchema, ensureUserSchema, ensureProjectSchema } from './schema';
