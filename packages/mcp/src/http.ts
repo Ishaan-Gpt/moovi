@@ -143,3 +143,23 @@ export function bridgeHttp(o: { mcp: McpHandler; routes?: ((req: IncomingMessage
     }
   });
 }
+
+/** A web standard handler (api.ts) as a route on the Node server: null from the handler = not mine. */
+export function webRoute(fn: (req: Request) => Promise<Response | null>, o: { maxBody?: number } = {}) {
+  const max = o.maxBody ?? 64 * 1024;
+  return async (req: IncomingMessage, res: ServerResponse): Promise<boolean> => {
+    const headers = new Headers();
+    for (const [k, v] of Object.entries(req.headers)) if (typeof v === 'string') headers.set(k, v); else if (Array.isArray(v)) headers.set(k, v.join(', '));
+    let body: Buffer | undefined;
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      const chunks: Buffer[] = []; let size = 0;
+      for await (const c of req) { size += (c as Buffer).length; if (size > max) { res.writeHead(413); res.end(); return true; } chunks.push(c as Buffer); }
+      body = Buffer.concat(chunks);
+    }
+    const out = await fn(new Request(`http://${req.headers.host ?? 'local'}${req.url ?? '/'}`, { method: req.method, headers, ...(body?.length ? { body: new Uint8Array(body) } : {}) }));
+    if (!out) return false;
+    res.writeHead(out.status, Object.fromEntries(out.headers.entries()));
+    res.end(Buffer.from(await out.arrayBuffer()));
+    return true;
+  };
+}
