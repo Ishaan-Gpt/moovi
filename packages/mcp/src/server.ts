@@ -19,7 +19,10 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import type { BrainHub } from './hub';
 import type { SessionCtx } from './http';
-import { IDLE_NO_TICKET, IDLE_OTHER_WINDOW } from './lease';
+import { ANSWER_HOLD_MS, IDLE_NO_TICKET, IDLE_OTHER_WINDOW, WAITING_OTHER_WINDOW } from './lease';
+
+/** how long a second window waits for the video before it stops: the longest a dropped window's lease can hold, plus a minute */
+export const OTHER_WINDOW_WAIT_MS = ANSWER_HOLD_MS + 60_000;
 import { longPoll, WAIT_MAX_MS } from './poll';
 import type { ThinkStep } from './queue';
 
@@ -91,6 +94,8 @@ export function buildMcp(hub: BrainHub, ctx: SessionCtx): McpServer {
   let ticket: string | undefined;
   const leases = new Map<string, string>();
   const watched = new Set<string>();
+  // since when this window has been waiting on a video another window holds (undefined: it is not)
+  let otherSince: number | undefined;
   // item 20: a window that closes gives its videos back at once, so a /mcp__moovi__run in another window goes on right away
   mcp.server.onclose = () => { void hub.gate.release(session, leases).catch(() => undefined); };
 
@@ -103,21 +108,26 @@ export function buildMcp(hub: BrainHub, ctx: SessionCtx): McpServer {
   async function next(waitS: number, extra: Extra): Promise<CallToolResult> {
     if (!(await hub.gate.useTicket(user, session, ticket))) return text({ status: 'idle', message: IDLE_NO_TICKET });
     let blocked = false;
+    const started = hub.now();
     const got = await longPoll<CallToolResult>({
       waitMs: Math.min(waitS * 1000, WAIT_MAX_MS), signal: extra.signal, onProgress: progress(extra),
       attempt: async () => {
+        blocked = false;
         await hub.gate.keepAlive(session, leases);
         const p = await hub.gate.pull(user, session, ticket);
-        if ('step' in p) { leases.set(p.step.job, p.lease); watched.add(p.step.job); return stepView(p.step, p.lease); }
+        if ('step' in p) { otherSince = undefined; leases.set(p.step.job, p.lease); watched.add(p.step.job); return stepView(p.step, p.lease); }
         if (p.idle === IDLE_NO_TICKET) return text({ status: 'idle', message: IDLE_NO_TICKET });
-        if (p.idle === IDLE_OTHER_WINDOW) { blocked = true; return text({ status: 'idle', message: IDLE_OTHER_WINDOW }); }
+        // another window holds the video: keep waiting (it may have been closed without saying so); its lease lapses
+        // 2 min after its last call (5 min 15 s mid answer) and the next pull here takes the video over
+        if (p.idle === IDLE_OTHER_WINDOW) { blocked = true; return null; }
         const running = await hub.board.running(user);
         for (const j of running) watched.add(j.job);
-        // item 21: between steps too, a second window on a video another live window holds is told so (and stops)
+        // item 21: between steps too, a second window on a video another live window holds waits for it the same way
         if (running.length && !running.some(j => leases.has(j.job))) {
           const elsewhere = await Promise.all(running.map(j => hub.gate.heldElsewhere(j.job, session)));
-          if (elsewhere.every(Boolean)) { blocked = true; watched.clear(); return text({ status: 'idle', message: IDLE_OTHER_WINDOW }); }
+          if (elsewhere.every(Boolean)) { blocked = true; return null; }
         }
+        otherSince = undefined;
         if (!watched.size) return null;
         const mine = (await Promise.all([...watched].map(j => hub.board.get(j)))).filter(j => j !== null);
         if (mine.length && mine.every(j => j.state !== 'running')) {
@@ -131,7 +141,12 @@ export function buildMcp(hub: BrainHub, ctx: SessionCtx): McpServer {
       },
     });
     if (got) return got;
-    if (blocked) return text({ status: 'idle', message: IDLE_OTHER_WINDOW });
+    if (blocked) {
+      otherSince ??= started;
+      // a window that is really alive keeps its lease: after OTHER_WINDOW_WAIT_MS of waiting this one stops
+      if (hub.now() - otherSince >= OTHER_WINDOW_WAIT_MS) { otherSince = undefined; watched.clear(); return text({ status: 'idle', message: IDLE_OTHER_WINDOW }); }
+      return text({ status: 'waiting', next: KEEP_GOING, message: WAITING_OTHER_WINDOW });
+    }
     return text(watched.size
       ? { status: 'working', next: KEEP_GOING, message: 'Moovi is working on the video (hearing, cutting, rendering). Call moovi_next again now; do not end your turn or ask the user anything.' }
       : { status: 'waiting', next: KEEP_GOING, message: NOTHING_RUNNING });

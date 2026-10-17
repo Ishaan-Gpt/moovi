@@ -99,3 +99,11 @@ One line per finished item: date and time (IST), item, what, commit sha.
   Code is linked, landing forwards `/mcp`, `/connect`, `/api/brain/*`) with a merge commit. Gates again: tsc 0 in engine,
   mcp, graph, library, apps/studio; mcp 81 (80 pass, 1 skip); engine 543 (515 pass, 28 skip, 0 fail). TAB.md: the @C1
   handoff with the exact update commands for the 2 GB server, and the reply to C1's 03:11 note.
+- 2026-10-18 03:45 IST · round 4, a second window waits · a Claude Code window opened while another window holds the
+  video (or held it and was closed without a goodbye, so its lease is still on) used to get `idle` at once and stop; the
+  user had to type /mcp__moovi__run again later. Now `moovi_next` keeps long polling and answers `waiting` with
+  `WAITING_OTHER_WINDOW` (call again, do not stop), takes the video over the moment the other lease lapses (2 min after
+  that window's last call, the open step included), and stops with `idle` only after `OTHER_WINDOW_WAIT_MS` (the answer
+  hold plus a minute, 6 min 15 s) of a window that is really alive. Tests: `second-window.test.ts` (takeover over HTTP
+  with a fake clock; give up when the other window stays alive), `tools.test.ts` and `windows.test.ts` updated. mcp 84
+  (83 pass, 1 skip); tsc 0 in mcp and apps/studio; engine unchanged since the last green suite.
