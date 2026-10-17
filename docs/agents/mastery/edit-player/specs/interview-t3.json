@@ -1,0 +1,341 @@
+{
+ "name": "Interview take 3 \u00b7 v10 (em5's grammar)",
+ "clip": "../../edit-t3/take3/base/",
+ "why": "em5: a warm graded speaker; one tabletop world the camera pans across, one real printed clip per pain point landing from above, a doodle that draws itself, a handwritten label; light leaks back to the speaker. Starts on his answer (the interviewer's names were misheard).",
+ "start": {
+  "w": "so"
+ },
+ "palette": {
+  "page": "#1b1714",
+  "panel": "#221d19",
+  "panel-ink": "#EDE3D6",
+  "paper": "#EEE4D3",
+  "paper-hi": "#F7F0E3",
+  "paper-lo": "#D9CBB4",
+  "ink": "#33271F"
+ },
+ "theme": {
+  "fall": "rgba(10,8,6,.42)",
+  "ring": "rgba(255,255,255,.75)"
+ },
+ "caption": {
+  "variant": "1.1",
+  "accent": "video"
+ },
+ "music": {
+  "file": "music/bed.mp3",
+  "start": 2,
+  "gain": 0.06
+ },
+ "desk": {
+  "w": 1800,
+  "h": 3000,
+  "items": [
+   {
+    "src": "../../refs/t3/footage/lecture.mp4",
+    "at": {
+     "w": "two",
+     "dt": 0.1
+    },
+    "x": 180,
+    "y": 300,
+    "w": 660,
+    "h": 440,
+    "r": -4,
+    "dx": 190,
+    "dy": 790,
+    "dw": 660,
+    "dh": 280,
+    "doodle": [
+     "M40 70 C 200 10, 440 10, 610 70",
+     "M610 70 l -46 -6 M610 70 l -30 34",
+     "M610 200 C 440 260, 200 260, 40 200",
+     "M40 200 l 46 6 M40 200 l 30 -34",
+     "M300 190 l 66 66 M366 190 l -66 66"
+    ],
+    "label": "two way?",
+    "lx": 300,
+    "ly": 1080,
+    "lr": -5
+   },
+   {
+    "src": "../../refs/t3/footage/hand.mp4",
+    "at": {
+     "w": "i",
+     "after": 14,
+     "dt": 0.1
+    },
+    "x": 980,
+    "y": 1320,
+    "w": 660,
+    "h": 440,
+    "r": 5,
+    "dx": 1060,
+    "dy": 1820,
+    "dw": 400,
+    "dh": 420,
+    "doodle": [
+     "M110 130 C 110 30, 300 30, 300 135 C 300 210, 205 220, 205 300",
+     "M205 370 l 0 4"
+    ],
+    "label": "ask?",
+    "lx": 1470,
+    "ly": 1880,
+    "lr": 6
+   },
+   {
+    "src": "../../refs/t3/footage/vr.mp4",
+    "at": {
+     "w": "don't",
+     "after": 19
+    },
+    "x": 220,
+    "y": 2150,
+    "w": 660,
+    "h": 440,
+    "r": -3,
+    "dx": 260,
+    "dy": 2640,
+    "dw": 340,
+    "dh": 340,
+    "doodle": [
+     "M40 130 h150 v150 h-150 Z",
+     "M120 50 h150 v150 h-150 Z",
+     "M40 130 L120 50 M190 130 L270 50 M190 280 L270 200 M40 280 L120 200"
+    ],
+    "label": "3D",
+    "lx": 640,
+    "ly": 2700,
+    "lr": -6
+   }
+  ]
+ },
+ "beats": [
+  {
+   "from": {
+    "w": "so"
+   },
+   "layers": [
+    {
+     "t": "cam",
+     "z": 1.1,
+     "Y": 0.34,
+     "punch": {
+      "w": "unable"
+     },
+     "by": 1.06
+    }
+   ]
+  },
+  {
+   "from": {
+    "w": "two"
+   },
+   "layers": [
+    {
+     "t": "desk",
+     "focus": [
+      510,
+      730,
+      1.3
+     ],
+     "pip": true
+    }
+   ]
+  },
+  {
+   "from": {
+    "w": "that",
+    "after": 9.9
+   },
+   "layers": [
+    {
+     "t": "cam",
+     "z": 1.06,
+     "Y": 0.34
+    },
+    {
+     "t": "leak",
+     "at": {
+      "w": "that",
+      "after": 9.9
+     }
+    }
+   ]
+  },
+  {
+   "from": {
+    "w": "i",
+    "after": 14
+   },
+   "layers": [
+    {
+     "t": "desk",
+     "focus": [
+      1310,
+      1780,
+      1.3
+     ],
+     "pip": true
+    }
+   ]
+  },
+  {
+   "from": {
+    "w": "as",
+    "after": 17
+   },
+   "layers": [
+    {
+     "t": "cam",
+     "z": 1.12,
+     "Y": 0.34,
+     "punch": {
+      "w": "introvert"
+     },
+     "by": 1.08
+    },
+    {
+     "t": "leak",
+     "at": {
+      "w": "as",
+      "after": 17
+     }
+    }
+   ]
+  },
+  {
+   "from": {
+    "w": "and",
+    "after": 18
+   },
+   "layers": [
+    {
+     "t": "desk",
+     "focus": [
+      550,
+      2565,
+      1.3
+     ],
+     "pip": true
+    }
+   ]
+  },
+  {
+   "from": {
+    "w": "you",
+    "after": 21
+   },
+   "layers": [
+    {
+     "t": "cam",
+     "z": 1.08,
+     "Y": 0.34
+    },
+    {
+     "t": "leak",
+     "at": {
+      "w": "you",
+      "after": 21
+     }
+    }
+   ]
+  }
+ ],
+ "sfx": [
+  {
+   "at": {
+    "w": "two"
+   },
+   "k": "whoosh",
+   "g": 0.4
+  },
+  {
+   "at": {
+    "w": "two",
+    "dt": 0.45
+   },
+   "k": "drop",
+   "g": 0.5
+  },
+  {
+   "at": {
+    "w": "interaction"
+   },
+   "k": "click",
+   "g": 0.45
+  },
+  {
+   "at": {
+    "w": "that",
+    "after": 9.9
+   },
+   "k": "whoosh",
+   "g": 0.35
+  },
+  {
+   "at": {
+    "w": "i",
+    "after": 14
+   },
+   "k": "whoosh",
+   "g": 0.4
+  },
+  {
+   "at": {
+    "w": "i",
+    "after": 14,
+    "dt": 0.55
+   },
+   "k": "drop",
+   "g": 0.5
+  },
+  {
+   "at": {
+    "w": "as",
+    "after": 17
+   },
+   "k": "whoosh",
+   "g": 0.35
+  },
+  {
+   "at": {
+    "w": "introvert"
+   },
+   "k": "hit",
+   "g": 0.5
+  },
+  {
+   "at": {
+    "w": "and",
+    "after": 18
+   },
+   "k": "whoosh",
+   "g": 0.4
+  },
+  {
+   "at": {
+    "w": "don't",
+    "after": 19,
+    "dt": 0.45
+   },
+   "k": "drop",
+   "g": 0.5
+  },
+  {
+   "at": {
+    "w": "3d"
+   },
+   "k": "chime",
+   "g": 0.45
+  },
+  {
+   "at": {
+    "w": "you",
+    "after": 21
+   },
+   "k": "whoosh",
+   "g": 0.35
+  }
+ ]
+}

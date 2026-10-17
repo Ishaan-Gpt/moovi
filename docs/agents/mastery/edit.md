@@ -102,6 +102,9 @@ keeps take 2 in every look.
   - `compare` `{ still: <s>, labels: [a, b], look: <css filter>, at, at2, y }`: the clip's frame raw vs a named look
   - `cascade` `{ items: [{ title, sub, at }], y }` · `tag` `{ name, role, at, hold, x, y }` · `letters` `{ items: [{ ch, at, x, y, size, r }] }`
   - `input` `{ placeholder | typed, from, to, y }` · `sides` `{ stills: [s1, s2], at, y }` · `pill` `{ keyword, at, avatar, y }`
+  - `desk` (one tabletop world for the film) `{ focus: [x, y, scale], pip }` with the spec's top-level `desk: { w, h, items: [{ src, at, x, y, w, h, r, doodle: [svg paths], dx, dy, dw, dh, label, lx, ly, lr }] }`: real clips printed and taped, landing on their words; the camera pans to each
+  - `leak` `{ at }`: a warm light leak sweeping across on its word
+  - spec-level `start` (an anchor: the edit begins on a word) and `theme.fall` (the dark fall-off under the captions); the grade is baked by `build-cut.mjs --grade "<ffmpeg chain>"`
   - `world` (a brand world) `{ stops, img: [{ src, x, y, w, h, enter, at, mask }], text: [{ html, y, at }], pip }` · `wipe` `{ src, at, dur }`
 - Rules the player enforces: one text layer per frame (the caption hides under any text graphic); jump cuts are
   baked (no seeks); stills for cards come from the clip itself.
