@@ -13,3 +13,5 @@ One line per finished item: date and time (IST), item, what, commit sha.
 - 2026-10-17 19:54 IST · item 3, 3a · direct-edit contract, engine 430 tests (414 pass, 16 skip, 0 fail), tsc engine 0 · 2fc20cf
 - 2026-10-17 19:58 IST · item 4 · direct-film contract (Launch first), engine 436 tests (420 pass, 16 skip, 0 fail), tsc engine 0 · 100f33c
 - 2026-10-17 19:59 IST · sync · merged Ishaan's main 7e78abb, dc826d3 (DECISIONS.md: styles become looks of 7 types; one way in, the brain choice is Creative with Claude Code online, else Precise with a key). Docs only, no bridge file touched. `FILM_BRIEFS` keys move from styles to types when the type registry lands
+- 2026-10-17 20:02 IST · sync · merged Ishaan's main 802b539 (DECISIONS.md 3: the Edit type's 5 looks are Base, Atlas, Handmade, Studio Minimal, Studio Cut; same as `liveMenus().looks`). Docs only
+- 2026-10-17 20:02 IST · item 5 · token budget: caps, estimator, trimmer, ledger, engine 442 tests (426 pass, 16 skip, 0 fail), tsc 0 · 5e7001b
