@@ -142,5 +142,5 @@ test('auto-pick, wiring: the upload edit asks for the auto style and renders the
   assert.equal(fxFilmFor({ effects: { events: [ev('stat-counter'), ev('checklist')] }, faces: 0, source: { duration: 20 } }, undefined).go, false);
   const job = readFileSync(join(import.meta.dirname, '../src/edit/job.ts'), 'utf8');
   assert.match(job, /o\.moves \?\? autoMoves\(edl/);
-  assert.match(job, /autoFx\(words\.map/);
+  assert.match(job, /autoFx\(\(kept\.length >= 6 \? kept : words\)\.map/);
 });

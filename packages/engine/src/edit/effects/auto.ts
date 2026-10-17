@@ -54,8 +54,9 @@ export function fxLines(words: FxWord[], gap = 0.6): FxLine[] {
     cur.push(w);
     const next = words[i + 1];
     // a long run-on sentence ("...and you will love it because it will edit...") splits at its clauses, so a 10 s
-    // sentence gets more than one beat (measured 2026-10-18: one effect for 10 s of Vignesh's selfie)
-    const long = cur.length > 3 && w.end - cur[0]!.t >= 2.6 && !!next && (/,$/.test(w.word) || CLAUSE.has(next.word.toLowerCase().replace(/[^a-z]/g, '')));
+    // sentence gets more than one beat (measured 2026-10-18: one effect for 10 s of Vignesh's selfie); a line with a comma
+    // is a list ("first, ..., then ..., and finally ...") and stays whole for the checklist
+    const long = cur.length > 3 && w.end - cur[0]!.t >= 2.6 && !!next && !cur.some(x => /,$/.test(x.word)) && CLAUSE.has(next.word.toLowerCase().replace(/[^a-z]/g, ''));
     if (/[.!?]$/.test(w.word) || (next && next.t - w.end > gap) || long) close();
   });
   close();
