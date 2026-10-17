@@ -14,18 +14,27 @@ Read this first if you are picking the work up. Updated by Tab after every item.
   pushing in main as well as in this new branch"; matches Ishaan's CLAUDE.md). Red code goes to the branch only.
 - **Push:** through the GitHub API (git data: blobs, trees, commits, then the ref with `force: false`), never force.
 - **Last sha:** see the newest line in `LOG.md`.
-- **Current state:** Phase 0 done; Phase 1 items 7 to 11 done (11a half: the Launch hook waits for Ishaan). See the newest LOG lines.
+- **Current state:** Phase 0 done; Phase 1 done: items 7 to 13 (11a half: the Launch hook waits for Ishaan). See the newest LOG lines.
   - Contracts: `engine/src/edit/direct.schema.ts`, `engine/src/router/direct-film.schema.ts`, `engine/src/runtime/budget.ts`.
   - Lane switch `engine/src/runtime/lane.ts`; checker `engine/src/runtime/checked.ts`; `keys.registerBrainScope`.
   - Brain calls: `engine/src/edit/direct.ts` (`directEditStep`, `directEdit`, `overridesOf`; `planEdit` asks for a
     direction when `PlanInput.direction` is 'ask' or the scope's provider is `claude-code-bridge`; null = today's rules)
     and `engine/src/router/direct-film.ts` (`directFilmStep`, `directFilm`, `launchRecord`).
-  - `packages/mcp`: `store.ts`, `queue.ts`, `bridge.ts`, `lease.ts` (`Gate`).
+  - `packages/mcp`: `store.ts`, `queue.ts`, `bridge.ts`, `lease.ts` (`Gate`, `onPull` hook), `scope.ts` (`Presence`: a
+    session that pulled in the last 90 s is online; `brainScope`: the ModelScope for `keys.registerBrainScope`, brain
+    calls to `bridgeRuntime` inside `laneRuntime`, provider `claude-code-bridge`).
+  - `@moovi/engine/brain` (`engine/src/brain.ts`): the two brain calls and their contracts in one import.
   - Known gaps: Direction `cards` are recorded but not yet placed (inserts.ts casts cards from the graph by tag); the
     edit step sends no keyframes yet (the step supports images, `CompleteRequest` has no image field); BRAIN 2 (final
     look) not wired; `chat.ts` line 20 still checks `loadModel` under MOOVI_BYOK=required.
-- **Next item:** 12 (tests in `packages/mcp/test` for the whole bridge: lane, lease, two sessions, bad answer, timeout, end to end with
-  `bridgeRuntime` inside `laneRuntime` inside `withModel` running `directEdit`), then 13 (sync, tsc, suites, push).
+- **Next item:** 14 (Phase 2: the `/mcp` streamable HTTP endpoint with bearer auth, 45 s long poll, progress every
+  10 s). Phase 2 starts only when root says so. Still open from Phase 1: the Launch hook (11a, waits for Ishaan,
+  requested in TAB.md), Direction `cards` placement, keyframes on the edit step, BRAIN 2 (final look).
+- **Item 12 tests** (`packages/mcp/test/bridge-e2e.test.ts`, 5): a stand-in Claude Code session (ticket, then pull and
+  answer through the `Gate`) directs `directEdit` end to end inside `withModel(brainScope(...))`; a second window is
+  turned away while the first holds the job, and a bad answer gets exactly one re-ask; no `/moovi:run` ticket means no
+  work and the step falls to the key after the pickup window; no key and nobody picking up parks the job
+  (`BrainWaiting`); registered through `registerBrainScope` it goes first only for a connected user.
 
 ## How to run things
 

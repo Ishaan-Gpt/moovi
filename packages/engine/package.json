@@ -12,7 +12,8 @@
     "./styles": "./src/styles/index.ts",
     "./styles/serve": "./src/styles/serve.ts",
     "./runtime": "./src/runtime/index.ts",
-    "./keys": "./src/keys.ts"
+    "./keys": "./src/keys.ts",
+    "./brain": "./src/brain.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
