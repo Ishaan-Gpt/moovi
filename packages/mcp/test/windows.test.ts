@@ -92,7 +92,7 @@ test('bridge 21: over HTTP, a second window on the same video is told another wi
     const transport = new StreamableHTTPClientTransport(new URL(`${base}/mcp`), { requestInit: { headers: { Authorization: `Bearer ${token}` } } });
     const client = new Client({ name: 'claude-code-standin', version: '1' });
     await client.connect(transport);
-    await client.getPrompt({ name: 'run' }); // the user typed /moovi:run in this window
+    await client.getPrompt({ name: 'run' }); // the user typed /mcp__moovi__run in this window
     const call = async (name: string, args: Record<string, unknown>) => {
       const res = await client.callTool({ name, arguments: args }, undefined, { timeout: 60_000 });
       return JSON.parse((res.content as { text: string }[])[0]!.text) as Record<string, any>;

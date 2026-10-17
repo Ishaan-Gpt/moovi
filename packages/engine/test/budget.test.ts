@@ -62,3 +62,16 @@ test('budget 5: the video ledger refuses a step over its own cap or the video ca
   const big = new VideoBudget(); const s = big.spend('look', 100, 'y'.repeat(2000));
   assert.equal(s.overOut, true, 'an answer over its output cap is flagged');
 });
+
+// Item 27: texts the provider's count_tokens counted on 2026-10-17 (message wrapper removed). The estimate must never
+// come in under them; the old 3.6 / 1.5 did on every one of these.
+const ESTIMATE_SAMPLES: { name: string; text: string; counted: number }[] = [
+  { name: 'a direct:edit answer (JSON)', counted: 119, text: '{"style":"atlas","why":"a creator intro with two numbers: static looks and number cards carry it","cleanup":"balanced","hook":1,"beats":[{"i":0,"tag":"aside"},{"i":1,"tag":"hook"},{"i":2,"tag":"number"},{"i":3,"tag":"cta"}],"moves":[{"i":1,"id":"05"}],"cards":[{"i":2,"kind":"stat","words":"19 billion transistors"}],"title":"The chip in your pocket","model":"example"}' },
+  { name: 'a direct:edit answer schema (JSON Schema, first 600 chars)', counted: 186, text: '{"$schema": "https://json-schema.org/draft/2020-12/schema", "type": "object", "properties": {"style": {"type": "string", "enum": ["base", "atlas", "handmade", "studio-minimal", "studio-cut"], "description": "the edit look, from the looks menu"}, "why": {"type": "string", "minLength": 1, "maxLength": 160, "description": "one short line: why this look fits this clip"}, "cleanup": {"type": "string", "enum": ["light", "balanced", "tight"], "description": "how hard pauses are cut: light keeps breathing room, tight is snappy"}, "hook": {"type": "integer", "minimum": 0, "maximum": 9007199254740991, "' },
+  { name: 'numbered sentence lines (the transcript a step carries)', counted: 195, text: '0 [0.0s] Most people think a phone camera is just a tiny lens.\n1 [3.9s] It is not.\n2 [5.3s] Inside there are three cameras, a chip that takes nine photos before you even press the button, and software that picks the best parts of each one.\n3 [14.3s] That is why night mode works.\n4 [16.6s] The phone is guessing what the dark should look like, and it guesses really well.\n5 [21.8s] Apple says the chip does about thirty five trillion operations every second.\n6 [26.1s] So next time you take a photo, remember you are not taking one photo.\n7 [31.0s] You are taking nine.\n8 [32.6s] Follow for more tech explained in thirty seconds.' },
+  { name: 'Hinglish', counted: 41, text: 'Main aaj aapko bataunga ki yeh phone itna tez kyun hai. Isme ek naya chip hai jo har second laakhon kaam karta hai.' },
+  { name: 'Hindi', counted: 66, text: 'मैं आज आपको बताऊंगा कि यह फोन इतना तेज़ क्यों है। इसमें एक नया चिप है जो हर सेकंड लाखों काम करता है।' },
+];
+test('budget 27: the estimate is at or above the provider\'s own count on measured samples', () => {
+  for (const s of ESTIMATE_SAMPLES) assert.ok(estimateTokens(s.text) >= s.counted, `${s.name}: estimated ${estimateTokens(s.text)}, counted ${s.counted}`);
+});

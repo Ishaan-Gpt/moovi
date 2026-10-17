@@ -31,7 +31,9 @@ export function directFilmStep(i: DirectFilmInput): { system: string; prompt: st
   ].filter(Boolean).join('\n');
   // the source text fills what is left of the cap (the facts above carry the essentials)
   const room = Math.max(0, BRAIN_CAPS.film.in - estimateTokens(system) - estimateTokens(head) - 50);
-  const source = src.slice(0, Math.max(0, room * 3));
+  // item 27: cut by the same (high) estimate the cap is checked with; a fixed 3 characters per token overshot it
+  let source = src.slice(0, Math.max(0, Math.floor(room * 2.8)));
+  while (source && estimateTokens(source) > room) source = source.slice(0, Math.floor(source.length * 0.9));
   const prompt = source ? `${head}\nSOURCE:\n${source}` : head;
   const tokens = estimateTokens(system) + estimateTokens(prompt);
   return { system, prompt, schema, tokens, fits: tokens <= BRAIN_CAPS.film.in };

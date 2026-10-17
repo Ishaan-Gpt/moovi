@@ -1,5 +1,5 @@
 /**
- * The job board (bridge item 16): what `/moovi:run` needs to know about the user's videos besides their steps, written
+ * The job board (bridge item 16): what `/mcp__moovi__run` needs to know about the user's videos besides their steps, written
  * by the engine side (keys.brainRun from the worker: a run starts, a run ends) and read by the MCP side, so
  * `moovi_next` can say "Moovi is working on it" between steps and "your video is ready" with its link at the end.
  */

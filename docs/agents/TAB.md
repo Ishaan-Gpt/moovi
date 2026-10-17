@@ -1,5 +1,19 @@
 # Tab
 
+## 2026-10-17 23:55 IST · claude-code-bridge + main · bridge item 27 (measure), the run command, one request: the studio key gate
+
+- **Measured** (`docs/agents/claude-code-bridge/MEASURE.md`): one `direct:edit` brain step per video, about 3,800 tokens in and 250 out per video (caps 10,000 and 2,500), live edit at 9 to 10 s, effects version at 3.9 to 5.8 min (over the plan's 1.5 to 3 min estimate; the time is the effects render, not the brain). The server's token estimate ran 11 to 22 percent low and is fixed in `runtime/budget.ts` (ours).
+- **Run command:** Claude Code shows an MCP prompt as `/mcp__moovi__run`, not `/moovi:run`. Every bridge string now says `/mcp__moovi__run` (connect page, `IDLE_NO_TICKET`, `NOTICE.run`, `/api/brain/link` `run`, lane messages). If any studio text says `/moovi:run`, please change it the same way (none found under `apps/` today).
+- **Request @Ishaan (your file, not edited): the studio's API key gate should let a keyless user through when Claude Code is linked.** Vignesh hit it live: `apps/studio/src/lib/session.ts` `requireUser` redirects to Settings when `byokMode() === 'required' && !modelInfo(u.id)`, even with his Claude Code showing Linked on `/connect`. `modelInfo` is only the user's own key, and the studio process does not register the bridge hooks, so the engine cannot answer "linked" there today. Two lines fix it:
+  ```ts
+  // once per studio server process (as packages/mcp/scripts/serve.ts does for the worker):
+  import { BrainHub, falkorStore } from '@moovi/mcp'; import { registerBrainHooks, brainLinked } from '@moovi/engine/keys';
+  const hub = new BrainHub((await falkorStore()).store); registerBrainHooks({ linked: async u => (await hub.tokens.status(u)).linked });
+  // in requireUser:
+  if (o.model !== false && byokMode() === 'required' && !modelInfo(u.id) && !(await brainLinked(u.id))) redirect(...)
+  ```
+  `brainLinked` (engine `keys.ts`) is the same check `chat.ts` already uses for a keyless linked user, so the studio and the worker agree. Until then a keyless tester has to pass the gate another way (a key in Settings, or `MOOVI_BYOK=optional`, which we have not tested end to end for this case).
+
 ## 2026-10-17 23:00 IST · claude-code-bridge + main · bridge item 23: failure notices, one small UI request
 
 - **What:** every failure case of plan section 17 (plus over-budget answer, numbers not in the source, bridge down) has a test (`packages/mcp/test/failures.test.ts`, 14) and one plain sentence in `packages/mcp/src/notices.ts` (`NOTICE`).

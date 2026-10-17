@@ -30,7 +30,7 @@ export function publicOrigin(req: Request): string {
 
 /**
  * Item 23: what each running video's row says (notices.ts), from the real queue: its oldest open brain step, how long
- * it has waited, and whether an earlier video is still being thought about (one /moovi:run takes them in order).
+ * it has waited, and whether an earlier video is still being thought about (one /mcp__moovi__run takes them in order).
  */
 export async function jobNotices(hub: BrainHub, user: string, linked: boolean, claudeCode: NoticeFacts['claudeCode'], hasKey: boolean) {
   const running = (await hub.board.running(user)).sort((a, b) => a.startedAt - b.startedAt);
@@ -61,7 +61,7 @@ export function brainApi(o: BrainApiOptions) {
     try { const b = await req.json() as { label?: unknown }; if (typeof b?.label === 'string') label = b.label; } catch { /* no body is fine */ }
     const { token, record } = await o.hub.tokens.mint(user, label);
     const url = mcpUrl(req);
-    return json({ command: o.hub.connectCommand(url, token), token, url, token_last4: record.last4, created_at: record.createdAt, run: '/moovi:run' });
+    return json({ command: o.hub.connectCommand(url, token), token, url, token_last4: record.last4, created_at: record.createdAt, run: '/mcp__moovi__run' });
   }
 
   async function status(req: Request): Promise<Response> {

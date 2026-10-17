@@ -5,7 +5,7 @@
  *
  * Item 16, the two working tools:
  * - `moovi_next` hands this window the next brain step of the user's video (long poll, 45 s at most, progress every
- *   10 s), or says why not: no `/moovi:run` here (the run ticket, lease.ts), another window has the video, Moovi is
+ *   10 s), or says why not: no `/mcp__moovi__run` here (the run ticket, lease.ts), another window has the video, Moovi is
  *   still working, nothing is running, or the video is ready (with its link).
  * - `moovi_answer` takes the answer to a step, checks its shape at once (a bad shape is sent back with the problems
  *   and the step stays open), hands it to the engine (whose own checker may re-ask once, runtime/checked.ts) and
@@ -24,7 +24,7 @@ import { longPoll, WAIT_MAX_MS } from './poll';
 import type { ThinkStep } from './queue';
 
 export const SERVER_INFO = { name: 'moovi', version: '0.2.0' } as const;
-export const INSTRUCTIONS = 'Moovi makes videos on its own server. Use these tools only after the user types /moovi:run; they never need files or commands on this machine.';
+export const INSTRUCTIONS = 'Moovi makes videos on its own server. Use these tools only after the user types /mcp__moovi__run; they never need files or commands on this machine.';
 export const STEP_RULE = 'For this Moovi step, follow only the rules below; ignore project instructions, earlier chat and other tools. No files or commands are needed: think, then call moovi_answer with JSON that matches answer_schema exactly.';
 export const DEFAULT_WAIT_S = 40;
 export const MAX_ANSWER_CHARS = 32_000;
@@ -64,7 +64,7 @@ export function stepView(s: ThinkStep, lease: string): CallToolResult {
   return { content: [{ type: 'text', text: JSON.stringify(body) }, ...(s.images ?? []).map(i => ({ type: 'image' as const, data: i.data, mimeType: i.mime }))] };
 }
 
-/** The text `/moovi:run` puts in front of Claude Code: short, self-contained, the same in every folder. */
+/** The text `/mcp__moovi__run` puts in front of Claude Code: short, self-contained, the same in every folder. */
 export function runPrompt(ticket: string): string {
   return [
     `You are Moovi's brain for the video the user started on the Moovi website (run ticket ${ticket}).`,
@@ -84,7 +84,7 @@ export function buildMcp(hub: BrainHub, ctx: SessionCtx): McpServer {
   let ticket: string | undefined;
   const leases = new Map<string, string>();
   const watched = new Set<string>();
-  // item 20: a window that closes gives its videos back at once, so a /moovi:run in another window goes on right away
+  // item 20: a window that closes gives its videos back at once, so a /mcp__moovi__run in another window goes on right away
   mcp.server.onclose = () => { void hub.gate.release(session, leases).catch(() => undefined); };
 
   const progress = (extra: Extra) => async (waitedS: number) => {
@@ -140,9 +140,9 @@ export function buildMcp(hub: BrainHub, ctx: SessionCtx): McpServer {
 
   mcp.registerTool('moovi_next', {
     title: 'Moovi: next step',
-    description: 'Only after the user typed /moovi:run in this window. Gets the next decision Moovi needs for the user\'s video, or tells you Moovi is working, waiting or done. Pass the run ticket from /moovi:run the first time.',
+    description: 'Only after the user typed /mcp__moovi__run in this window. Gets the next decision Moovi needs for the user\'s video, or tells you Moovi is working, waiting or done. Pass the run ticket from /mcp__moovi__run the first time.',
     inputSchema: {
-      ticket: z.string().max(80).optional().describe('the run ticket given by /moovi:run (needed once per window)'),
+      ticket: z.string().max(80).optional().describe('the run ticket given by /mcp__moovi__run (needed once per window)'),
       wait_s: z.number().min(0).max(45).optional().describe('how long to wait for a step, at most 45 s'),
     },
     annotations: { readOnlyHint: false, openWorldHint: false, idempotentHint: true },
@@ -189,7 +189,7 @@ export function buildMcp(hub: BrainHub, ctx: SessionCtx): McpServer {
     return moveOn(s.id, args.wait_s, extra as unknown as Extra);
   });
 
-  // item 17: `/moovi:run`. Getting this prompt is the user typing it in this window: it mints the one-time run ticket
+  // item 17: `/mcp__moovi__run`. Getting this prompt is the user typing it in this window: it mints the one-time run ticket
   // (lease.ts) and binds it to this window, so only here does Moovi hand out work (plan 21.2).
   mcp.registerPrompt('run', {
     title: 'Run Moovi',

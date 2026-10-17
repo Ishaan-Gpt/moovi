@@ -1,5 +1,5 @@
 // pnpm --filter @moovi/mcp e2e [clip.mp4]: the bridge item 18 proof. A real MCP client (the SDK, standing in for
-// Claude Code) connects to the bridge over HTTP with a minted token, gets /moovi:run, and is the ONLY brain for a real
+// Claude Code) connects to the bridge over HTTP with a minted token, gets /mcp__moovi__run, and is the ONLY brain for a real
 // upload edit run by the real engine worker on FalkorDB, for a keyless user. Detail work uses this machine's server
 // model if one is set (MOOVI_RUNTIME=http ...), hearing uses the server's speech key. Prints one JSON summary line.
 // Item 27 (measure): E2E_BRAIN=model makes a real Claude model (E2E_BRAIN_MODEL, through MOOVI_BASE_URL with
@@ -44,7 +44,7 @@ const email = 'bridge-e2e@moovi.local', password = 'bridge-e2e-local-only';
 const me = await signIn({ email, password }).catch(() => signUp({ email, password, name: 'Bridge E2E' }));
 if (loadModel(me.id)) { console.error('the e2e user has a model key; the proof needs a keyless user'); process.exit(1); }
 
-// 1. token (what the Connect card shows), 2. Claude Code connects with it, 3. the user types /moovi:run
+// 1. token (what the Connect card shows), 2. Claude Code connects with it, 3. the user types /mcp__moovi__run
 const { token } = await hub.tokens.mint(me.id, 'e2e');
 const client = new Client({ name: 'claude-code-standin', version: '1' });
 await client.connect(new StreamableHTTPClientTransport(new URL(mcpUrl), { requestInit: { headers: { Authorization: `Bearer ${token}` } } }));
@@ -81,7 +81,7 @@ async function modelAnswer(step: Record<string, any>, text: string): Promise<Rec
   const m0 = Date.now();
   const r = await anth('messages', {
     model: BRAIN_MODEL, max_tokens: Number(step.max_out ?? step.maxOut ?? 1500),
-    system: 'You are Claude Code running /moovi:run. The text is a moovi_next result. Reply with ONLY the JSON object for the answer argument of moovi_answer, matching answer_schema. No prose, no code fence.',
+    system: 'You are Claude Code running /mcp__moovi__run. The text is a moovi_next result. Reply with ONLY the JSON object for the answer argument of moovi_answer, matching answer_schema. No prose, no code fence.',
     messages: [{ role: 'user', content: text }],
   });
   const reply = (r.content as { type: string; text?: string }[]).map(b => b.text ?? '').join('');

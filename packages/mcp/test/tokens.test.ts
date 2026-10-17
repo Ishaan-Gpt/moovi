@@ -53,7 +53,7 @@ test('bridge 15: /api/brain/link and /api/brain/status (web handlers)', async ()
   assert.equal(r!.status, 200); assert.equal(r!.headers.get('cache-control'), 'no-store');
   const j = await r!.json() as { command: string; token: string; token_last4: string; run: string };
   assert.equal(j.command, `claude mcp add --scope user --transport http moovi https://moovi.example/mcp --header "Authorization: Bearer ${j.token}"`);
-  assert.equal(j.run, '/moovi:run');
+  assert.equal(j.run, '/mcp__moovi__run');
   const s = await (await call('GET', '/api/brain/status', 'u1'))!.json() as Record<string, unknown>;
   assert.deepEqual({ linked: s.linked, online: s.online, lane: s.lane, last4: s.token_last4, label: s.label }, { linked: true, online: false, lane: 'waiting', last4: j.token_last4, label: 'my laptop' });
   assert.equal(JSON.stringify(s).includes(j.token), false, 'status never shows the token');

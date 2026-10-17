@@ -17,19 +17,22 @@ export const BRAIN_CAPS: Record<BrainCall, Cap> = {
 };
 /** per video, all calls together */
 export const VIDEO_CAP: Cap = { in: 10_000, out: 2500 };
-/** the fixed cost of one /moovi:run (the prompt and the tool descriptions), counted once per video */
+/** the fixed cost of one /mcp__moovi__run (the prompt and the tool descriptions), counted once per video */
 export const RUN_OVERHEAD = 1000;
 
 /**
- * Tokens in a text, estimated high on purpose: about 4 characters per token for Latin text, and 1 token per 1.5
- * characters for everything else (Devanagari, emoji, CJK tokenize much denser). Over-estimating only trims a little
- * more; under-estimating would break the user's budget.
+ * Tokens in a text, estimated high on purpose: 1 token per 2.8 characters for ASCII and 1 per 1.3 for everything
+ * else (Devanagari, emoji, CJK tokenize much denser). Over-estimating only trims a little more; under-estimating
+ * would break the user's budget. Item 27 (2026-10-17, the provider's count_tokens): the old 3.6 / 1.5 ran 11 to 22
+ * percent LOW on what a step really carries (the edit step 2,348 estimated vs 2,624 counted; its JSON schema 667 vs
+ * 770; Hinglish 32 vs 41). 2.8 / 1.3 is at or above the count on every measured sample (2 to 28 percent high on the
+ * step's parts); `ESTIMATE_SAMPLES` in test/budget.test.ts keeps those counts.
  */
 export function estimateTokens(text: string): number {
   if (!text) return 0;
   let ascii = 0, other = 0;
   for (const ch of text) (ch.charCodeAt(0) < 128 ? ascii++ : other++);
-  return Math.ceil(ascii / 3.6 + other / 1.5);
+  return Math.ceil(ascii / 2.8 + other / 1.3);
 }
 
 /** An image's tokens as Claude counts them (width x height / 750), after its own resize to at most 1568 px on the long side. */

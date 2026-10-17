@@ -8,7 +8,7 @@ import { BrainHub, brainScope, Gate, KEY, memoryStore, ONLINE_MS, Presence, Step
 /**
  * Bridge item 24: the lane order with fake clocks. An online Claude Code goes first; a step nobody picks up within
  * 120 s goes to the user's key, else Moovi's server model where allowed (MOOVI_BYOK=optional), else it keeps waiting
- * for a /moovi:run (10 min) and then the job parks. The memo survives a lane switch.
+ * for a /mcp__moovi__run (10 min) and then the job parks. The memo survives a lane switch.
  */
 const W = (word: string, t: number, end: number) => ({ word, t, end });
 const words = [W('This', 0.2, 0.4), W('chip', 0.45, 0.8), W('is', 0.85, 0.95), W('tiny.', 1.0, 1.4), W('It', 2.0, 2.1), W('has', 2.15, 2.3), W('19', 2.35, 2.6), W('billion', 2.65, 3.0), W('transistors.', 3.05, 3.8),
@@ -59,7 +59,7 @@ test('bridge 24: no key, server model allowed (MOOVI_BYOK=optional): the server 
   assert.equal(out.value!.model, 'server'); assert.deepEqual(r.lanes, ['claude-code', 'server']);
 });
 
-test('bridge 24: no key and the server model not allowed (MOOVI_BYOK=required): it waits, and a /moovi:run picks it up', async () => {
+test('bridge 24: no key and the server model not allowed (MOOVI_BYOK=required): it waits, and a /mcp__moovi__run picks it up', async () => {
   const server = stub('server');
   const r = rig({ server: server.rt, byok: 'required' }); r.presence.touch('u1');
   const job = withModel(r.scope()!, () => directEdit({ words }));
@@ -125,6 +125,6 @@ test('bridge 24: connected (a token) but never polled, keyless under MOOVI_BYOK=
     await hub.tokens.mint('u9');
     await primeBrainScope('u9');
     assert.equal(hub.presence.state('u9'), 'linked');
-    assert.equal(scopeFor('u9')?.provider, BRIDGE_PROVIDER, 'the worker gets a scope: the video waits for /moovi:run');
+    assert.equal(scopeFor('u9')?.provider, BRIDGE_PROVIDER, 'the worker gets a scope: the video waits for /mcp__moovi__run');
   } finally { unregister(); }
 });

@@ -18,7 +18,7 @@ export const NOTICE = {
   /** the pill when no Claude Code window has called in the last 90 s */
   offline: 'Claude Code offline',
   /** the command shown with a Copy button beside the two above */
-  run: '/moovi:run',
+  run: '/mcp__moovi__run',
   /** the Settings card when the user has no live connection */
   notConnected: 'Not connected',
   /** Claude Code's error (HTTP 401) for a token that was removed, replaced or never existed */
@@ -49,7 +49,7 @@ export interface NoticeFacts {
   hasKey: boolean;
   /** this video's oldest open brain step, and how long it has waited; null when Moovi is working on its own */
   step: { state: 'queued' | 'picked'; waitedMs: number } | null;
-  /** videos of this user ahead of this one (one /moovi:run takes them in order) */
+  /** videos of this user ahead of this one (one /mcp__moovi__run takes them in order) */
   ahead: number;
   /** the video's state on the server */
   job: 'running' | 'parked' | 'expired' | 'done' | 'failed';
@@ -91,7 +91,7 @@ export function jobNotice(f: NoticeFacts): Notice {
 
 /** The engine's bridge errors in the user's words (null: not a bridge error; the job's own message stands). */
 export function errorNotice(e: unknown): Notice | null {
-  // nobody picked the step up, even after the wait lane: the video parks and resumes on the next /moovi:run
+  // nobody picked the step up, even after the wait lane: the video parks and resumes on the next /mcp__moovi__run
   if (e instanceof BrainWaiting || e instanceof BrainNotPickedUp) return { pill: NOTICE.offline, row: NOTICE.waiting, hint: null, copy: NOTICE.run };
   // picked up but never answered within 5 min: parked the same way, the step is handed out again on the next run
   if (e instanceof BrainTimedOut) return { pill: null, row: NOTICE.waiting, hint: NOTICE.usageLimit, copy: NOTICE.run };
