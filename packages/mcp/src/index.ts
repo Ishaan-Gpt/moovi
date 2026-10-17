@@ -9,4 +9,5 @@ export * from './hub';
 export * from './server';
 export * from './tokens';
 export * from './api';
+export { bridgeApp, falkorStore, type BridgeApp } from './app';
 export * from './board';

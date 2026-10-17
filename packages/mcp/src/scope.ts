@@ -18,15 +18,21 @@ export const ONLINE_MS = 90_000;
  * worker) learns it with `prime(user)` before a job picks its scope (keys.primeBrainScope).
  */
 export const SEEN_TTL_MS = 30 * 24 * 3600_000;
+export const WRITE_EVERY_MS = 10_000;
 export class Presence {
   private seen = new Map<string, number>();
   constructor(readonly now: () => number = Date.now, readonly store?: BrainStore) {}
+  private written = new Map<string, number>();
   touch(user: string) {
     const t = this.now();
     this.seen.set(user, t);
-    void this.store?.set(KEY.seen(user), String(t), SEEN_TTL_MS).catch(() => undefined);
+    // a waiting window pulls every half second; the shared reading only needs to be fresh well inside ONLINE_MS
+    if (this.store && t - (this.written.get(user) ?? -Infinity) >= WRITE_EVERY_MS) {
+      this.written.set(user, t);
+      void this.store.set(KEY.seen(user), String(t), SEEN_TTL_MS).catch(() => undefined);
+    }
   }
-  forget(user: string) { this.seen.delete(user); void this.store?.del(KEY.seen(user)).catch(() => undefined); }
+  forget(user: string) { this.seen.delete(user); this.written.delete(user); void this.store?.del(KEY.seen(user)).catch(() => undefined); }
   /** read the shared reading (newest wins); a store that cannot be read leaves the local reading as it is */
   async prime(user: string): Promise<void> {
     if (!this.store) return;
