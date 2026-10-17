@@ -19,6 +19,7 @@ import { lookFaces } from './look';
 import { roughEdl } from './rough';
 import { ownerGrade, restoreVideo, useRestored, type Restored } from './restore';
 import { romanizeWords } from './romanize';
+import { checkAndRepair } from '../review/runner';
 import { scSfxEvents, studioCutEdl, SC_ID } from './templates/studio-cut';
 import { cleanVoice, quietPauses, type CleanVoice } from './voice';
 
@@ -68,6 +69,8 @@ export interface PlanInput {
   effects?: boolean;
   /** the creator's name or handle for the style's end card */
   handle?: string;
+  /** CHECK on the first plan (review/runner.ts, code only; default true) */
+  check?: boolean;
   /** the edit grammar: 'studio-cut' (asked for by name, or MOOVI_EDIT_TEMPLATE=studio-cut) dresses the plan as a Studio Cut (templates/studio-cut.ts:
    *  stacked captions, a continuous camera, graphics, Style 1 sound and its mix), 'none' keeps the plain cut + library cast */
   template?: 'studio-cut' | 'none';
@@ -115,6 +118,17 @@ export const castMaxZoom = (s: { w: number; h: number }) => Math.min(2, Math.max
 /** The music bed every Studio Cut mixes under the voice (assets/music, CC BY: the credit rides on the EDL's music). */
 const BED = join(import.meta.dirname, '..', '..', 'assets', 'music');
 const editTemplate = (o: PlanInput) => o.template ?? ((process.env.MOOVI_EDIT_TEMPLATE ?? '').trim().toLowerCase() === 'studio-cut' || /\bstudio[ -]?cut\b/i.test(o.brief ?? '') ? 'studio-cut' : 'none');
+
+/**
+ * Cleanup levels (Cardboard's Light / Balanced / Tight): the brief's own words pick how hard the pauses are cut. Balanced
+ * is the default laws (pause over 0.4 s cut to 0.18 s), so a brief that says neither changes nothing. Pure.
+ */
+export function cleanupLevel(brief: string): { level: 'light' | 'tight'; laws: { pause_max: number; pause_keep: number } } | null {
+  const b = brief.toLowerCase();
+  if (/\b(tight|tighter|snappy|snappier|fast[- ]?paced|no pauses|cut (all )?(the )?pauses|jump ?cuts?)\b/.test(b)) return { level: 'tight', laws: { pause_max: 0.28, pause_keep: 0.12 } };
+  if (/\b(light(ly)?|gentle|natural|keep (the )?pauses|breathe|breathing room|don'?t cut much)\b/.test(b)) return { level: 'light', laws: { pause_max: 0.65, pause_keep: 0.26 } };
+  return null;
+}
 
 export async function planEdit(o: PlanInput): Promise<Planned> {
   const lap: Record<string, number> = {}; let tl = Date.now();
@@ -174,7 +188,9 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
   }
   let edl: PlayerEdl, rough = false;
   try {
-    const bi: BuildInput = { source, words, pauses: ps, ...(quiet ? { quiet: quiet.pauses } : {}), palette, ...(look.faces.length ? { faces: look.faces } : {}), style: { id: 'base', ...(o.caption ? { caption: o.caption } : {}), ...(output ? { output } : {}) }, ...(language ? { language } : {}) };
+    const lv = cleanupLevel(o.brief ?? '');
+    if (lv) await o.onNote?.(`cleanup: ${lv.level} (pauses over ${lv.laws.pause_max} s cut to ${lv.laws.pause_keep} s)`);
+    const bi: BuildInput = { ...(lv ? { laws: lv.laws } : {}), source, words, pauses: ps, ...(quiet ? { quiet: quiet.pauses } : {}), palette, ...(look.faces.length ? { faces: look.faces } : {}), style: { id: 'base', ...(o.caption ? { caption: o.caption } : {}), ...(output ? { output } : {}) }, ...(language ? { language } : {}) };
     const e = isD22(style) ? styledEdl(bi, style, o.handle ? { name: o.handle } : {}) : buildEdl(bi);
     const bad = validateEdl(e).problems.filter(p => !p.startsWith('version'));
     if (bad.length) throw new Error(bad.slice(0, 3).join('; '));
@@ -250,6 +266,13 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
       effects = await autoFx(words.map(w => ({ word: w.word, t: w.t, end: w.end })), { src: await openFx(), total: pr.duration, ...(look.faces.length ? { faces: look.faces } : look.why ? {} : { faces: [] }) });
       writeFileSync(join(dir, 'effects.json'), JSON.stringify(effects, null, 1));
     } catch (e) { console.warn(`[edit] effects: ${String((e as Error).message ?? e).slice(0, 160)}`); effects = null; }
+  }
+  // CHECK on the first plan too (review/runner.ts, code only: lint and collision map, at most one repair, the better
+  // version kept): the preview never waits on pixels or a model, and a failure here leaves the plan as it was
+  if (!rough && o.check !== false) {
+    const c = checkAndRepair(edl as never, {});
+    if (c.kept === 'repaired' && validateEdl(c.edl as never).problems.filter(p => !p.startsWith('version')).length === 0 && !EDIT.timeline(c.edl as never).problems.length) edl = c.edl as never;
+    writeFileSync(join(dir, 'check.json'), JSON.stringify({ before: c.before.score, after: c.after?.score ?? null, repaired: c.repaired, kept: c.kept, issues: (c.kept === 'repaired' ? c.after! : c.before).issues.map(i => i.msg), ...(c.error ? { error: c.error } : {}) }, null, 1));
   }
   const t = EDIT.timeline(edl);
   if (t.problems.length) throw new Error(`The edit plan is inconsistent: ${t.problems.join('; ')}`);

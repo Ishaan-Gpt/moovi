@@ -39,7 +39,7 @@ test('lint: filler words, captions over 4 words, the same card twice, and two ov
     { t0: 6, t1: 7, kind: 'stat', frame: 'card_box', label: 'revenue' },
   ] }, 'um so this is the thing we built today and it works');
   const xs = lintEdl(e, reviewConfig(e));
-  assert.deepEqual(kinds(xs), ['banned_word', 'caption_words', 'overlays', 'repeat']);
+  assert.deepEqual(kinds(xs).filter(k => k !== 'caption_time'), ['banned_word', 'caption_words', 'overlays', 'repeat']); // the floor rule also flags this fixture's short chunks
   assert.ok(xs.find(x => x.kind === 'banned_word')!.msg.includes('"um"'));
   assert.equal(xs.find(x => x.kind === 'repeat')!.insert, 2);
   assert.equal(xs.find(x => x.kind === 'overlays')!.insert, 1);

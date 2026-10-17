@@ -1,5 +1,5 @@
 export type Severity = 'error' | 'warn';
-export type IssueKind = 'banned_word' | 'caption_words' | 'repeat' | 'overlays' | 'contrast' | 'face' | 'safe_zone' | 'collision' | 'burned_text' | 'vision';
+export type IssueKind = 'banned_word' | 'caption_words' | 'caption_time' | 'repeat' | 'overlays' | 'contrast' | 'face' | 'safe_zone' | 'collision' | 'burned_text' | 'vision';
 export interface Box { x0: number; y0: number; x1: number; y1: number }
 export interface Issue {
   kind: IssueKind; severity: Severity; t: number; msg: string;

@@ -21,7 +21,7 @@ const mono = DM_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--
 export const metadata: Metadata = {
   title: 'Moovi · the AI video director you hire',
   description: 'Tell Moovi what your video is for. His crew of AI specialists writes it, cuts it, scores it and checks it, and he remembers every note you give.',
-  metadataBase: new URL('https://moovi.example'),
+  metadataBase: new URL('https://moovi-three.vercel.app'),
   openGraph: { title: 'Moovi · the AI video director you hire', description: 'A director, five specialists and a memory graph. Your video, made by a crew.', type: 'website' },
 };
 

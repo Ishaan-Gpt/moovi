@@ -17,6 +17,7 @@ export function lintEdl(e: PlayerEdl, cfg: ReviewConfig, caps: CapBox[] = captio
   for (const c of caps) {
     const bad = bannedIn(c.text, cfg.banned);
     if (bad.length) out.push({ kind: 'banned_word', severity: 'warn', t: c.t, chunk: c.chunk, msg: `caption "${c.text}" carries ${bad.map(b => `"${b}"`).join(', ')}` });
+    if (c.t1 - c.t0 < cfg.minCaptionSec) out.push({ kind: 'caption_time', severity: 'warn', t: c.t, chunk: c.chunk, value: +(c.t1 - c.t0).toFixed(2), msg: `caption "${c.text}" is on screen ${(c.t1 - c.t0).toFixed(2)} s (least ${cfg.minCaptionSec} s to read)` });
     if (c.words > cfg.maxCaptionWords) out.push({ kind: 'caption_words', severity: 'warn', t: c.t, chunk: c.chunk, value: c.words, msg: `caption "${c.text}" shows ${c.words} words (most ${cfg.maxCaptionWords})` });
   }
   const ins = (e.inserts ?? []).map((x, i) => ({ ...x, i })).sort((a, b) => a.t0 - b.t0);

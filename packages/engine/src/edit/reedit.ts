@@ -2,6 +2,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { metricsOf, validateEdl, type Edl, type EdlCut, type EdlRemoved, type EdlShotV0 } from './edl';
 import { castInserts, openInserts, type InsertDraw, type InsertSource } from './inserts';
+import { applyMove, castMoves, X1_MOVES } from './moves';
 import { checkAndRepair, repairEdl } from '../review/runner';
 import { reviewConfig } from '../review/config';
 import { pixelCheckEdl } from '../review/pixels';
@@ -21,6 +22,8 @@ import type { PlayerEdl } from './lib';
  *  - **swap the card at 0:12** (card, insert, graphic, poster): the insert on screen then is re-cast from the library
  *    with a different drawer (or a different picture), same beat, same rules (at most twice, never twice in a row,
  *    off the face); **drop the card at 0:12**; **add a card at 0:12** (casts the beat under that moment);
+ *  - **add a paper cut at 0:04** (any playable X1 move by name: digital zoom, checklist, headline wall, zoom-through,
+ *    chart grow, paper cut, doodle, cover story, glass type): the move at that moment; with no time, on the beat it suits;
  *  - **undo** puts the previous EDL back (reEditDir keeps one step).
  *
  * Every output-timed event (captions, inserts, overlays, beats, cuts, sfx, the end card, zoom keys) follows its own
@@ -32,6 +35,7 @@ export type ReEditOp =
   | { op: 'looser'; strength: number }
   | { op: 'zoom'; k: number; said: 'less' | 'more' | 'none' }
   | { op: 'swap' | 'drop' | 'add'; t: number }
+  | { op: 'move'; n: string; t: number | null }
   | { op: 'undo' };
 export interface ReEditStep { said: string; op: ReEditOp; did: string }
 export interface ReEditResult { edl: Edl; steps: ReEditStep[]; unknown: string[]; problems: string[]; ms: number; duration: { before: number; after: number };
@@ -44,6 +48,19 @@ export interface ReEditOpts { src?: InsertSource; /** quiet stretches in source 
   review?: boolean }
 
 const r3 = (x: number) => Math.round(x * 1000) / 1000;
+/** The words people use for each playable X1 move (edit/moves.ts), most specific first. */
+export const MOVE_WORDS: [string, RegExp][] = [
+  ['13', /\b(paper ?cut|paper[- ]?(tear|rip)|torn paper|tear(ing)? (transition|cut))\b/],
+  ['09', /\bzoom[- ]?through\b/],
+  ['08', /\bheadline ?wall\b/],
+  ['16', /\b(cover story|magazine (header|strip|cover))\b/],
+  ['17', /\bglass( type| card| slab)?\b/],
+  ['14', /\b(doodle( boil)?|marker (ring|circle)|hand[- ]?drawn circle)\b/],
+  ['10', /\b(chart( grow)?|bar chart|growth chart|stat counter)\b/],
+  ['07', /\b(check ?list|tick ?list)\b/],
+  ['05', /\b(digital zoom|punch[- ]?in)\b/],
+];
+export const moveIn = (c: string): string | null => MOVE_WORDS.find(([, re]) => re.test(c))?.[0] ?? null;
 const CARD = '(?:card|insert|graphic|poster|overlay|pop[- ]?up|b-?roll|title)';
 
 /** Seconds from "0:12", "1:05.5", "12s", "12 sec", "at 12". */
@@ -63,6 +80,7 @@ export function parseEdit(words: string): { ops: { said: string; op: ReEditOp }[
     const t = timeOf(c);
     let op: ReEditOp | null = null;
     if (/^(undo|revert|go back|put it back)\b/.test(c)) op = { op: 'undo' };
+    else if (/\b(add|put|use|give|insert|throw in|do|place|want)\b/.test(c) && moveIn(c)) op = { op: 'move', n: moveIn(c)!, t };
     else if (t !== null && new RegExp(`\\b(swap|change|replace|switch|different|another|new)\\b`).test(c) && (new RegExp(`\\b${CARD}s?\\b`).test(c) || /\b(swap|replace)\b/.test(c))) op = { op: 'swap', t };
     else if (t !== null && /\b(drop|remove|delete|kill|lose|cut|get rid of|no)\b/.test(c) && new RegExp(`\\b${CARD}s?\\b`).test(c)) op = { op: 'drop', t };
     else if (t !== null && /\b(add|put|show|give|need)\b/.test(c) && new RegExp(`\\b${CARD}s?\\b`).test(c)) op = { op: 'add', t };
@@ -267,7 +285,7 @@ export async function reEdit(e0: Edl, words: string, o: ReEditOpts & { prev?: Ed
   const before = e0.shots.at(-1)!.t_out;
   const parsed = parseEdit(words), unknown = parsed.unknown;
   // times the person names are read on the edit they watched: undo first, then the card edits, then what retimes
-  const rank = (x: ReEditOp) => x.op === 'undo' ? 0 : x.op === 'swap' || x.op === 'drop' || x.op === 'add' ? 1 : 2;
+  const rank = (x: ReEditOp) => x.op === 'undo' ? 0 : x.op === 'swap' || x.op === 'drop' || x.op === 'add' || x.op === 'move' ? 1 : 2;
   const ops = parsed.ops.map((x, i) => ({ ...x, i })).sort((x, y) => rank(x.op) - rank(y.op) || x.i - y.i);
   let e = clone(e0);
   const steps: ReEditStep[] = [];
@@ -291,6 +309,10 @@ export async function reEdit(e0: Edl, words: string, o: ReEditOpts & { prev?: Ed
     } else if (op.op === 'zoom') {
       const r = scaleZoom(e, op.k);
       e = r.edl; did = r.changed ? `${op.said === 'none' ? 'flattened' : op.said === 'less' ? 'softened' : 'pushed'} ${r.changed} zoom keys and punch-ins` : 'no zoom to change';
+    } else if (op.op === 'move') {
+      const m = X1_MOVES[op.n]!;
+      if (op.t === null) { const [r] = castMoves(e, [op.n]); did = r?.ok ? `added a ${m.name} (${r.why})` : `no beat suits a ${m.name}${r ? `: ${r.why}` : ''}`; }
+      else { const r = applyMove(e, op.n, { t: op.t }); did = r.ok ? `added a ${m.name} at ${clock(op.t)}` : `could not add a ${m.name} at ${clock(op.t)}: ${r.why}`; }
     } else if (op.op === 'drop') {
       const i = insertAt(e, op.t);
       if (i < 0) did = `no card near ${clock(op.t)}`;

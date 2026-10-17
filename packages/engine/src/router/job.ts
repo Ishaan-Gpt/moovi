@@ -80,13 +80,17 @@ export function urlStyleFor(brief: string): ReelInput['style'] {
 async function autoLive(ctx: Parameters<Handler>[0], brief: string) {
   const link = brief.match(/https?:\/\/[^\s)]+/)?.[0] ?? (brief.match(DOMAIN) ? `https://${brief.match(DOMAIN)![0]}` : undefined);
   let reel: ReelInput;
-  if (link) reel = { style: urlStyleFor(brief), url: link };
+  if (link) {
+    reel = { style: urlStyleFor(brief), url: link };
+    await ctx.say(`Auto picked ${reel.style === 's1' ? 'Style 1' : reel.style === 's4' ? 'Editorial' : reel.style === 's5' ? 'Clear Signal' : reel.style === 'darkvox' ? 'Dark Vox' : 'Anatomy'} for ${link}, from the words in your brief. Pick a style to change it.`, 'note', { auto: { style: reel.style, why: 'link keywords' } }, 'moovi');
+  }
   else {
     await ctx.say('Auto: I write the script first, then pick the style that fits it and play it live.', 'note', undefined, 'moovi');
     const d = await direct(brief, secsOf(brief), ['darkvox', 'anatomy'], { signal: ctx.signal });
     const brand = (d.title || brief).replace(/[^\p{L}\p{N} .&'-]/gu, '').trim().split(/\s+/).slice(0, 3).join(' ') || 'Moovi';
     const pick = autoPickFor(brief, d.beats.map(b => b.kind), d.beats.map(b => b.say.trim()));
     console.log(`[auto ${ctx.run.id}] style ${pick.style}: ${pick.why}`);
+    await ctx.say(`Auto picked ${pick.style === 'darkvox' ? 'Dark Vox' : pick.style === 'clip-moment' ? 'Clip Moment' : pick.style === 'anatomy' ? 'Anatomy' : pick.style}: ${pick.why}.`, 'note', { auto: { style: pick.style, why: pick.why } }, 'moovi');
     // Clip Moment's brand pill is the user's own brand only, never a title Auto made up
     reel = { style: pick.style, script: d.beats.map(b => b.say.trim()).join('\n'), ...(pick.style === 'clip-moment' ? {} : { brand }) };
   }

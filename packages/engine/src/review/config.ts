@@ -11,6 +11,8 @@ export interface ReviewConfig {
   banned: string[];
   /** most words one caption shows at once */
   maxCaptionWords: number;
+  /** a caption on screen for less than this many seconds cannot be read (the floor rule; word-timed styles flash by design, so a warning) */
+  minCaptionSec: number;
   /** most overlays (cards, inserts) on screen at the same moment */
   maxOverlays: number;
   /** the same card (kind and label, or asset) twice inside this many seconds is a repeat */
@@ -36,8 +38,9 @@ export interface ReviewConfig {
 }
 
 export const REVIEW_DEFAULTS: ReviewConfig = {
-  banned: ['um', 'uh', 'umm', 'uhh', 'erm', 'hmm', 'mhm', 'you know', 'i mean', 'delve', 'game changer', 'game-changer', 'unlock the power', 'seamless', 'elevate your', 'in today\'s fast-paced world'],
+  banned: ['um', 'uh', 'umm', 'uhh', 'erm', 'hmm', 'mhm', 'you know', 'i mean', 'delve', 'game changer', 'game-changer', 'unlock the power', 'seamless', 'elevate your', 'in today\'s fast-paced world', 'revolutionize', 'revolutionise', 'unleash', 'supercharge', 'next level', 'take it to the next level', 'harness the power', 'ever wondered', 'look no further', 'cutting-edge', 'unlock your'],
   maxCaptionWords: 4,
+  minCaptionSec: 0.45,
   maxOverlays: 1,
   repeatWindow: 8,
   minContrast: 3,
