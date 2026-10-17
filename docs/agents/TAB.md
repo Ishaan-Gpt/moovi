@@ -1,5 +1,7 @@
 # Tab
 
+- 2026-10-17 18:20 IST · main · CHECK (NORTH-STAR step 1) landed: packages/engine/src/review/ runs an anti-slop lint, contrast on real pixels, a dead-zone and collision map, then 1 review of up to 3 frames and at most 1 repair (move caption, backing plate, drop duplicate), best version ships, never blocks; default-on in renderEdl and reEdit; every threshold overridable through style_laws.review so kits plug in.
+
 ## 2026-10-17 12:55 IST · main · auto-pick: the effects, moves, styles and music choose themselves
 
 - **Vignesh's override (Oct 17 12:30 IST, his rule over the review-branch rule for this): merged into main** vignesh/effects-v1 (16 reel effects, clip-moment calm rules, coach voice), vignesh/handmade (with vignesh/atlas: D2.2 Atlas, Handmade v5), vignesh/studio-minimal, and the auto-pick wiring: a generic prompt now picks the reel effects by need from the words and the detected faces (head swirl only where a face is on screen), the X1 moves by beat, the D2.2 style (`style: 'auto'`), clip-moment, and a product-scope music bed; test/auto-pick.test.ts proves each. src/edit and packages/library/src/kits stay separate.

@@ -8,6 +8,8 @@ import { keepOf } from './edl';
 import { EDIT, type PlayerEdl } from './lib';
 import { PAGE } from './page';
 import { cleanVoice } from './voice';
+import { reviewRender, type RenderReview } from '../review/runner';
+import type { ReviewOverride } from '../review/config';
 
 /**
  * D1.8: the MP4 from the EDL. Deterministic, the same geometry the preview player draws (edit/page.ts `draw(t)`):
@@ -24,8 +26,10 @@ import { cleanVoice } from './voice';
  *
  * Writes `out`; returns the stage seconds and counts.
  */
-export interface RenderOpts { dir: string; out: string; w?: number; h?: number; fps?: number; /** shots rendered at once */ jobs?: number; /** player pages drawing the overlay at once */ pages?: number; crf?: number; keepTemp?: boolean }
-export interface RenderResult { out: string; seconds: number; stages: Record<string, number>; frames: number; shots: number; overlays: number; size: number; /** library sounds mixed in */ sfx: number }
+export interface RenderOpts { dir: string; out: string; w?: number; h?: number; fps?: number; /** shots rendered at once */ jobs?: number; /** player pages drawing the overlay at once */ pages?: number; crf?: number; keepTemp?: boolean;
+  /** CHECK (review/): on by default; false skips it; repair false reviews without the one repair render; proof false saves no frames */
+  review?: boolean | { repair?: boolean; proof?: boolean; config?: ReviewOverride } }
+export interface RenderResult { out: string; seconds: number; stages: Record<string, number>; frames: number; shots: number; overlays: number; size: number; /** library sounds mixed in */ sfx: number; /** what CHECK found and whether its one repair shipped */ review?: RenderReview }
 
 /** Where one output frame's picture sits: the source scaled to sw x sh, its top-left at (x, y) of the w x h frame. */
 export interface Place { sw: number; sh: number; x: number; y: number; fit: boolean; /** the transition's motion blur, ffmpeg gblur sigma at this frame size (0 = none) */ blur: number }
@@ -124,7 +128,21 @@ async function pool<T>(items: T[], n: number, fn: (x: T, i: number) => Promise<v
   let i = 0; await Promise.all(Array.from({ length: Math.min(n, items.length) }, async () => { while (i < items.length) { const k = i++; await fn(items[k]!, k); } }));
 }
 
+/**
+ * Render the folder's edl.json to an MP4, then CHECK it (review/runner.ts): code checks and up to 3 frames, at most
+ * one repair render, the better version ships. The check never throws; a failure inside it is on result.review.error.
+ */
 export async function renderEdl(o: RenderOpts): Promise<RenderResult> {
+  const r = await renderOnce(o);
+  if (o.review === false) return r;
+  const ro = typeof o.review === 'object' ? o.review : {};
+  const W = o.w ?? 720, H = o.h ?? 1280;
+  const review = await reviewRender({ dir: o.dir, out: o.out, w: W, h: H, ...(ro.config ? { config: ro.config } : {}), ...(ro.repair === false ? { repair: false } : {}), ...(ro.proof === false ? { proof: false } : {}) },
+    out => renderOnce({ ...o, out }));
+  return { ...r, size: existsSync(o.out) ? statSync(o.out).size : r.size, seconds: +(r.seconds + review.ms / 1000).toFixed(2), stages: { ...r.stages, review: +(review.ms / 1000).toFixed(2) }, review };
+}
+
+async function renderOnce(o: RenderOpts): Promise<RenderResult> {
   const t0 = Date.now(), stages: Record<string, number> = {}; let tl = t0;
   const lap = (k: string) => { stages[k] = +((Date.now() - tl) / 1000).toFixed(2); tl = Date.now(); };
   const e = JSON.parse(readFileSync(join(o.dir, 'edl.json'), 'utf8')) as PlayerEdl;
