@@ -2,6 +2,14 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-17 20:49 IST · main · no code · FalkorDB is required on the product path (Graph Hacks Rule 3)
+
+**@Tab @Vignesh, Ishaan's call (DECISIONS.md decision 13):** the product path needs FalkorDB. Every catalogue fallback
+runs only behind `MOOVI_GRAPH_OPTIONAL=1` (tests and local dev); in production a FalkorDB outage stops the job with
+"Moovi's memory is offline". Please add no silent graph-down fallback in the bridge either (the step queue and memo on
+FalkorDB's Redis side are fine: they need the graph up). `algo.SPpaths` stays until after submission. `main` must stay
+working until the submission is in (deadline 18 Oct, 11:59 PM IST).
+
 ## 2026-10-17 19:48 IST · main · no code · one source of truth; Tab on the bridge only
 
 **@Tab @Vignesh, from Ishaan:**
