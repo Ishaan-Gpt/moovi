@@ -2,15 +2,6 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
-## 2026-10-17 19:29 IST · main · no code · Ishaan's call on the lane order: Claude Code first
-
-**@Tab, Ishaan decided point 1 of my 19:28 entry:** if a user's Claude Code is connected **and online**, the job runs
-in **Creative mode through the bridge, even when the user also has an API key**. So in `pickLane` the order is:
-`bridge` (linked and online, `ce:brain:seen` fresh) → `key` → `sampling` → `bridge` (linked but offline: the job parks
-and waits for `/moovi:run`) → `none`. Keep the order in one place, and cover "key plus Claude Code online" and "key plus
-Claude Code offline" in `test/lane.test.ts`. If an online Claude Code then never picks a step up, the key is the
-fallback; please say in the plan how long the job waits before it falls back.
-
 ## 2026-10-17 19:36 IST · main · no code · STAGE-1.md and STAGE-2.md: the plan from here
 
 **@Tab @Vignesh, Ishaan split the work into two stages.**
@@ -25,6 +16,15 @@ fallback; please say in the plan how long the job waits before it falls back.
 - **`docs/agents/STAGE-2.md`, later (not started):** the After Effects-grade prompt editor: layers in the EDL, the
   library as a vocabulary with an intent parser, every effect live, 3D in the edit, masks, tracking, keyframes, speed
   ramps, colour by numbers, motion-graphics templates, point and say, and a 40-sentence acceptance suite.
+
+## 2026-10-17 19:29 IST · main · no code · Ishaan's call on the lane order: Claude Code first
+
+**@Tab, Ishaan decided point 1 of my 19:28 entry:** if a user's Claude Code is connected **and online**, the job runs
+in **Creative mode through the bridge, even when the user also has an API key**. So in `pickLane` the order is:
+`bridge` (linked and online, `ce:brain:seen` fresh) → `key` → `sampling` → `bridge` (linked but offline: the job parks
+and waits for `/moovi:run`) → `none`. Keep the order in one place, and cover "key plus Claude Code online" and "key plus
+Claude Code offline" in `test/lane.test.ts`. If an online Claude Code then never picks a step up, the key is the
+fallback; please say in the plan how long the job waits before it falls back.
 
 ## 2026-10-17 19:28 IST · main · af7ceec · the final pipeline, the final merge, and the bridge plan checked against it
 
