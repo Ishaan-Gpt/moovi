@@ -1,4 +1,4 @@
-import { run, library as L, CRAFT } from '@moovi/graph';
+import { run, library as L, CRAFT, graphOptional, needGraph } from '@moovi/graph';
 import { detectNeeds, listItems } from '../../styles/kit/needs';
 import { FX, FX_IDS, isFx, type FxId } from './catalog';
 import { FX_NEEDS } from './needs';
@@ -9,7 +9,7 @@ import { fitFx, placeFx, type FxCue, type FxEvent, type FxWord } from './plan';
  * The effects library picks itself (Vignesh, 2026-10-17 12:30 IST: "so it genuinely chooses whenever it is needed").
  * Each effect SERVES some of the shared needs (styles/kit/needs.ts); a clip's spoken lines are read for their needs
  * (detectNeeds, the same words every style uses), the library graph answers which effects serve them
- * (`assetsServing`, category `effect`, runtime `fx`; the catalogue answers the same way when the graph is down), and
+ * (`assetsServing`, category `effect`, runtime `fx`; the catalogue answers only with MOOVI_GRAPH_OPTIONAL=1), and
  * the best one per line becomes a cue on that line's key word. placeFx + fitFx then hold the house rules (one overlay
  * at a time, no type twice in a row, lengths inside each effect's range). Pure apart from the graph call.
  */
@@ -37,13 +37,10 @@ export function graphFx(timeoutMs = 4000): FxSource {
   };
 }
 
-/** The graph when it answers and holds the effects, else the catalogue. */
+/** The graph when it holds the effects (an unseeded graph: the catalogue). Down: the job stops (decision 13). */
 export async function openFx(o: { graph?: boolean } = {}): Promise<FxSource> {
-  if (o.graph === false || process.env.MOOVI_LIBRARY === 'catalogue') return catalogueFx();
-  try {
-    const { health } = await import('@moovi/graph');
-    if ((await health()).ok) { const g = graphFx(); if ((await g.serving(['number'])).length) return g; }
-  } catch { /* down */ }
+  if (o.graph === false || (graphOptional() && process.env.MOOVI_LIBRARY === 'catalogue')) return catalogueFx();
+  if (await needGraph('edit effects: the library')) { const g = graphFx(); if ((await g.serving(['number'])).length) return g; }
   return catalogueFx();
 }
 

@@ -3,12 +3,12 @@
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { craft, sys, user, project, styles, media, voice, library, launch, type Q } from '../src/queries';
+import { craft, sys, user, project, styles, media, voice, library, launch, types, type Q } from '../src/queries';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const block = (q: Q) => `### \`${q.name}\` ${q.ro ? '(read-only)' : '(write)'}\n\n${q.about}\n\n\`\`\`cypher\n${q.cypher}\n\`\`\`\n`;
 const section = (title: string, qs: Q[]) => `## ${title}\n\n${qs.map(block).join('\n')}`;
-const groups = [craft, sys, user, project, styles, media, library, launch].map(g => Object.values(g));
+const groups = [craft, sys, user, project, styles, media, library, launch, types].map(g => Object.values(g));
 
 const md = `# Every Cypher query the engine runs
 
@@ -41,6 +41,7 @@ The ones the product stands on:
 | One library, cast by need | \`seedAssets\`, \`assetsServing\`, \`assetsForEvent\`, \`libraryCounts\` | \`(:Asset)-[:SERVES]->(:Need)\`, \`-[:FITS]->(:Event)\`, \`-[:SUITS]->(:EditStyle)\`, \`-[:IS_A]->(:Transition)\` |
 | A look as one re-skinnable unit | \`seedKit\`, \`kitParts\`, \`kitsServing\` | \`(:Kit {palette, type, motion})-[:HAS]->(:Asset)\`, \`(:Reference)-[:TAUGHT]->(:Kit)\` |
 | A reference becomes parts | \`addReference\`, \`addReferenceParts\`, \`referenceParts\` | \`(:Reference)-[:HAS_PART {role, at}]->(:Asset)\` |
+| A film's type, its looks and its library slice in one read | \`typesAll\`, \`typeKit\` | \`(:Type)-[:LOOK]->(:Style or :EditStyle)\`, \`(:Type)-[:REFERENCE]->(:Reference)\`, \`(:Asset)-[:IN_TYPE {w, when}]->(:Type)\` |
 | The Launch library, traceable to its films | \`launchParts\`, \`launchPartStory\`, \`launchReferences\`, \`launchFilmParts\` | \`(:Reference {id: 'ref:lNN'})-[:HAS_PART]->(:Asset)\` with runtime launch, \`(:Film)-[:USED {role, i}]->(:Asset)\` |
 
 ${section('craft (style knowledge, shared)', groups[0]!)}
@@ -50,7 +51,8 @@ ${section('proj_<pid> (one per project)', groups[3]!)}
 ${section('styles (what every reel style remembers)', groups[4]!)}
 ${section('proj_<pid>: footage and research captures', groups[5]!)}
 ${section('craft: the library (every asset a film or an edit can cast)', groups[6]!)}
-${section('craft: the Launch style (its library, where each part came from, what films used)', groups[7]!)}`;
+${section('craft: the Launch style (its library, where each part came from, what films used)', groups[7]!)}
+${section('craft: the type registry (the seven types, their looks and library slices)', groups[8]!)}`;
 
 const voiced = `
 

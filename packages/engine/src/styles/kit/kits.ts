@@ -4,7 +4,7 @@
  * of them and at least half goes with the run, and the chosen style dresses its library inserts in the kit's palette
  * ROLES (ink, paper, accent, accent2) instead of its own (./borrow.ts). No kit clears the bar: nothing changes.
  */
-import { CRAFT, library as L, run } from '@moovi/graph';
+import { CRAFT, graphOr, library as L, run } from '@moovi/graph';
 import { detectNeeds, type Need } from './needs';
 
 export interface KitPick { id: string; name: string; covered: number; of: number; hits: number; palette: Record<string, string> }
@@ -16,7 +16,7 @@ export function briefNeeds(lines: string[]): Need[] {
   return [...n].sort((a, b) => b[1] - a[1]).map(([x]) => x);
 }
 
-/** The kit for these needs, or null (graph down counts as no kit: Auto never waits on a look). */
+/** The kit for these needs, or null. Graph down: the job stops (decision 13; no kit only with MOOVI_GRAPH_OPTIONAL=1). */
 export async function matchKit(needs: Need[], o: { min?: number; share?: number } = {}): Promise<KitPick | null> {
   if (!needs.length) return null;
   try {
@@ -25,7 +25,7 @@ export async function matchKit(needs: Need[], o: { min?: number; share?: number 
     const [k] = await run<{ palette: string | null }>(CRAFT, L.kitParts, { kit: top.id }, 4000);
     const palette = (() => { try { return JSON.parse(k?.palette ?? '{}') as Record<string, string>; } catch { return {}; } })();
     return { ...top, of: needs.length, palette };
-  } catch { return null; }
+  } catch (e) { return graphOr(null, 'Auto: matching a kit')(e); }
 }
 
 /** A kit's palette roles → the insert palette (./liblayer.ts): its ink on its paper, its accents. */

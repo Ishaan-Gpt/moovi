@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { media as M, project as P, run as runQ, SYS, sys as S, user as U } from '@moovi/graph';
+import { graphOr, media as M, project as P, run as runQ, SYS, sys as S, user as U } from '@moovi/graph';
 import type { Features, Role } from '@moovi/skills';
 import { z } from 'zod';
 import { writeJson } from '../bench';
@@ -159,10 +159,10 @@ export const research: Handler = async ctx => {
       prompt: `QUESTION: ${q.question}\nSTART WITH: ${q.url ?? (q.urls.length ? q.urls.join(', ') : '(search)')}` });
     // a weak model that never opened a page still leaves the film the brief's own site, shot and scroll-captured
     const noop = { signal: ctx.signal, note: () => undefined };
-    if (!pages.size && (q.url || q.urls[0])) await tools[0]!.run({ url: q.url ?? q.urls[0]! } as never, noop).catch(() => undefined);
+    if (!pages.size && (q.url || q.urls[0])) await tools[0]!.run({ url: q.url ?? q.urls[0]! } as never, noop).catch(graphOr(undefined, 'research: reading the page'));
     // and one that read pages but kept nothing gets the sentences that answer the question best, quoted and proven
     if (!facts) for (const [url, pg] of [...new Map([...pages].map(([u, v]) => [v.id, [u, v] as const])).values()]) {
-      for (const s of pickSentences(pg.text, q.question, 2 - facts)) await tools[2]!.run({ text: s.slice(0, 220), url, quote: s } as never, noop).catch(() => undefined);
+      for (const s of pickSentences(pg.text, q.question, 2 - facts)) await tools[2]!.run({ text: s.slice(0, 220), url, quote: s } as never, noop).catch(graphOr(undefined, 'research: keeping a fact'));
       if (facts >= 2) break;
     }
     const caps = shots.map(s => ({ id: s.id, kind: s.kind, path: s.path, video: s.video, seconds: s.seconds ?? null }));

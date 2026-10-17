@@ -1,5 +1,5 @@
 import { createChat } from '@moovi/engine';
-import { apiProject } from '@/lib/session';
+import { apiProject, offline } from '@/lib/session';
 import { chats } from '@/lib/project';
 
 export const runtime = 'nodejs';
@@ -13,7 +13,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ pid: str
 }
 
 /** A new chat in the project: one conversation, one video. */
-export async function POST(req: Request, { params }: { params: Promise<{ pid: string }> }) {
+export const POST = (req: Request, ctx: { params: Promise<{ pid: string }> }) => create(req, ctx).catch(offline);
+
+async function create(req: Request, { params }: { params: Promise<{ pid: string }> }) {
   const { pid } = await params;
   const r = await apiProject(req, pid, { write: true });
   if ('error' in r) return r.error;

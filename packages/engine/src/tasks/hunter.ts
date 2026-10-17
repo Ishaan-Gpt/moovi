@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
-import { CRAFT, library as LIB, media as M, project as P, run, user as U } from '@moovi/graph';
+import { CRAFT, graphOr, library as LIB, media as M, project as P, run, user as U } from '@moovi/graph';
 import { kit } from '@moovi/skills';
 import { z } from 'zod';
 import { ensureDir, probe, sh } from '../bench';
@@ -69,7 +69,7 @@ export const asset: Handler = async ctx => {
     const r = await findClipsOrStill(query, { dir: join(dir, 'footage'), want: 3, tries: 6, skip: seenClip, signal: ctx.signal, w: vertical ? 1080 : 1920, h: vertical ? 1920 : 1080, log: s => ctx.note(s.slice(0, 80)) });
     await ctx.q(M.writeClips, { run: ctx.run.id, at: Date.now(), rows: clipRows(r) });
     // every accepted clip is also a library insert asset with its licence (the EDL's asset_ref and the credits)
-    if (r.accepted.length) await run(CRAFT, LIB.upsertClipAssets, { rows: clipAssetRows(r) }).catch(e => ctx.note(`clip assets: ${(e as Error).message.slice(0, 60)}`));
+    if (r.accepted.length) await run(CRAFT, LIB.upsertClipAssets, { rows: clipAssetRows(r) }).catch(graphOr(e => ctx.note(`clip assets: ${(e as Error).message.slice(0, 60)}`), 'hunter: clip assets'));
     return r;
   };
   const researched = async () => (await ctx.q<{ id: string; kind: string; path: string; video: boolean; seconds: number | null; url: string; title: string; proves: string[] }>(M.runShots, { run: ctx.run.id })).filter(s => existsSync(s.path));

@@ -1,6 +1,7 @@
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { byokMode, modelInfo, owns, sessionUser } from '@moovi/engine';
+import { isMemoryDown, MEMORY_OFFLINE } from '@moovi/graph';
 
 /** The signed-in user (or null), from the httpOnly session cookie, checked against the `sys` graph. */
 export const COOKIE = 'moovi_session';
@@ -30,6 +31,12 @@ export async function requireProject(next: string, pid: string) {
 
 /** API: a JSON error response. */
 export const fail = (status: number, error: string) => Response.json({ error }, { status });
+
+/** API: FalkorDB is down (decision 13): a 503 whose error the chat composer shows. Any other error is thrown on. */
+export function offline(e: unknown): Response {
+  if (isMemoryDown(e)) return fail(503, `${MEMORY_OFFLINE}. Try again in a minute.`);
+  throw e;
+}
 
 /** API: the signed-in user, or a 401. Writes also need a same-site Origin. */
 export async function apiUser(req: Request, opts: { write?: boolean } = {}) {

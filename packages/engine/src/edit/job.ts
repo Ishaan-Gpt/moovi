@@ -1,3 +1,4 @@
+import { stopIfDown } from '@moovi/graph';
 import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
 import { color } from '@moovi/brand';
@@ -241,7 +242,7 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
   if (!rough && !sc && o.library !== false && isD22(style)) {
     // D2.2 styles: the style chose framing and cuts; the library graph gives the sound files for its events
     try { const r = await castStyleSfx(edl as never, await openLibrary()); writeFileSync(join(dir, 'cast.json'), JSON.stringify({ style, ...r }, null, 1)); }
-    catch (e) { console.warn(`[edit] style sounds: ${String((e as Error).message ?? e).slice(0, 160)}`); }
+    catch (e) { stopIfDown(e, 'edit: style sounds'); console.warn(`[edit] style sounds: ${String((e as Error).message ?? e).slice(0, 160)}`); }
   } else if (!rough && !sc && o.library !== false) {
     try {
       const before = JSON.stringify(edl);
@@ -249,7 +250,7 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
       const bad = validateEdl(edl as never).problems.filter(p => !p.startsWith('version'));
       if (bad.length || EDIT.timeline(edl).problems.length) { edl = JSON.parse(before); cast = null; console.warn(`[edit] library cast undone: ${bad.slice(0, 2).join('; ')}`); }
       else writeFileSync(join(dir, 'cast.json'), JSON.stringify(cast, null, 1));
-    } catch (e) { console.warn(`[edit] library cast: ${String((e as Error).message ?? e).slice(0, 160)}`); cast = null; }
+    } catch (e) { stopIfDown(e, 'edit: library cast'); console.warn(`[edit] library cast: ${String((e as Error).message ?? e).slice(0, 160)}`); cast = null; }
   }
   // the Studio Cut dresser (templates/studio-cut.ts): its own camera, stacks, graphics and sound; undone if it breaks the plan
   if (sc && !rough && words.length) {
@@ -259,7 +260,7 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
       const bad = validateEdl(d).problems.filter(p => !p.startsWith('version'));
       if (bad.length || EDIT.timeline(d as never).problems.length) console.warn(`[edit] studio cut undone: ${bad.slice(0, 2).join('; ')}`);
       else edl = d as never;
-    } catch (e) { console.warn(`[edit] studio cut: ${String((e as Error).message ?? e).slice(0, 160)}`); }
+    } catch (e) { stopIfDown(e, 'edit: studio cut'); console.warn(`[edit] studio cut: ${String((e as Error).message ?? e).slice(0, 160)}`); }
   }
   // D2.7: the X1 moves a style asked for, on the beats they suit (first, so the inserts fit around them)
   const want = rough || sc ? [] : ov?.moves ?? o.moves ?? autoMoves(edl as never);
@@ -281,7 +282,7 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
       const bad = validateEdl(edl as never).problems.filter(p => !p.startsWith('version'));
       if (bad.length) { edl = JSON.parse(before); ins = null; console.warn(`[edit] inserts undone: ${bad.slice(0, 2).join('; ')}`); }
       else writeFileSync(join(dir, 'inserts.json'), JSON.stringify(ins, null, 1));
-    } catch (e) { edl = JSON.parse(before); console.warn(`[edit] inserts: ${String((e as Error).message ?? e).slice(0, 160)}`); ins = null; }
+    } catch (e) { stopIfDown(e, 'edit: inserts'); edl = JSON.parse(before); console.warn(`[edit] inserts: ${String((e as Error).message ?? e).slice(0, 160)}`); ins = null; }
   }
   // the library's camera moves came after: they keep the clip's own text whole too
   if (edl.source_text) keepTextInFrame(edl);
@@ -292,7 +293,7 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
     try {
       effects = await autoFx(words.map(w => ({ word: w.word, t: w.t, end: w.end })), { src: await openFx(), total: pr.duration, ...(look.faces.length ? { faces: look.faces } : look.why ? {} : { faces: [] }) });
       writeFileSync(join(dir, 'effects.json'), JSON.stringify(effects, null, 1));
-    } catch (e) { console.warn(`[edit] effects: ${String((e as Error).message ?? e).slice(0, 160)}`); effects = null; }
+    } catch (e) { stopIfDown(e, 'edit: effects'); console.warn(`[edit] effects: ${String((e as Error).message ?? e).slice(0, 160)}`); effects = null; }
   }
   // CHECK on the first plan too (review/runner.ts, code only: lint and collision map, at most one repair, the better
   // version kept): the preview never waits on pixels or a model, and a failure here leaves the plan as it was

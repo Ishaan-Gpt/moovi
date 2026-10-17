@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { freemem } from 'node:os';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { CRAFT, project as P, run as runQ } from '@moovi/graph';
+import { CRAFT, graphOr, project as P, run as runQ } from '@moovi/graph';
 import type { Handler, TaskCtx } from '../ctx';
 import { config } from '../config';
 import type { TaskSpec } from '../scheduler';
@@ -50,8 +50,8 @@ export const visualBuild: Handler = async ctx => {
   await ensureArtifactLibrary();
   const prior = await graphPrior(beats.map((b, i) => needsFor(b, i, beats.length)));
   const rows = ((q: never, p: Record<string, unknown> = {}) => ctx.q(q, p)) as never;
-  const used = await artifactUsage(rows).catch(() => ({}));
-  const ratings = await loadRatings().catch(() => undefined);
+  const used = await artifactUsage(rows).catch(graphOr({}, 'visual: artifact usage'));
+  const ratings = await loadRatings().catch(graphOr(undefined, 'visual: ratings'));
   const opts: PlanOptions = { format: fmt, fps: 30, theme: card?.world === 'dark' ? 'dark' : 'light', seed: hashSeed(ctx.run.id), image: site, logo, clips, photos, brand: B?.product ?? null, used, prior, ratings, picks: BD?.shots.map(s => s.stage ?? null) };
   const plan = planFilm(beats, opts);
   const stored = await storePicks(rows, ctx.run.id, plan);
@@ -111,7 +111,7 @@ export const visualReview: Handler = async ctx => {
     const optsFile = join(ctx.dir, 'visual', 'opts.json'), opts = existsSync(optsFile) ? (JSON.parse(readFileSync(optsFile, 'utf8')) as PlanOptions & { beats: BeatIn[] }) : null;
     const scores = scoreScenes(plan, audit, { clipsAvailable: !!opts?.clips?.length });
     const rows = ((q: never, p: Record<string, unknown> = {}) => ctx.q(q, p)) as never, craftRows = ((q: never, p: Record<string, unknown> = {}) => runQ(CRAFT, q, p)) as never;
-    await storeScores(rows, craftRows, ctx.run.id, plan, scores).catch(e => ctx.activity('note', `scores not kept: ${String(e).slice(0, 100)}`));
+    await storeScores(rows, craftRows, ctx.run.id, plan, scores).catch(graphOr(e => ctx.activity('note', `scores not kept: ${String(e).slice(0, 100)}`), 'visual: keeping scores'));
     const mean = scores.reduce((a, x) => a + x.score, 0) / Math.max(1, scores.length), round = (ctx.task.reopened ?? 0) + 1, bad = failing(scores);
     const notes = [...issues.slice(0, 4).map(i => i.detail), ...scores.filter(x => bad.includes(x.scene)).map(x => `scene ${x.scene + 1} scored ${x.score}/10`)].slice(0, 6);
     const summary = bad.length ? `${bad.length} scene${bad.length > 1 ? 's' : ''} below the bar` : 'every scene above the bar: footage, motion every second, depth, several elements, clean frames';

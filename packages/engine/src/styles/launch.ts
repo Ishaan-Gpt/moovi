@@ -7,7 +7,7 @@
 // Stages: site ∥ capture (real icon + site shots) ∥ brief ∥ music → plan (cast + timing) → audio → live player → sheet.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { CRAFT, launch as LQ, run as runQ } from '@moovi/graph';
+import { CRAFT, graphOr, launch as LQ, run as runQ } from '@moovi/graph';
 import { config } from '../config';
 import { mixLaunch, launchMusic, musicStart, type Music } from '../launch/audio';
 import { LAUNCH_ARCS, launchArc, type LaunchArc } from '../launch/arcs';
@@ -65,7 +65,7 @@ async function recentLooksFor(site: string | undefined): Promise<{ recent: strin
   try {
     const rows = await runQ<{ look: string; site: string | null }>(CRAFT, LQ.launchRecentLooks, { n: 8 }, 4000);
     return { recent: rows.map(r => r.look).filter(Boolean), site: site ? rows.find(r => r.site === site)?.look : undefined };
-  } catch { return { recent: [] }; }
+  } catch (e) { return graphOr({ recent: [] as string[] }, 'Launch: recent looks')(e); }
 }
 
 export async function run(o: RunInput, h: Hooks = {}): Promise<RunResult> {
@@ -131,7 +131,7 @@ export async function run(o: RunInput, h: Hooks = {}): Promise<RunResult> {
   // memory: the style's film (set-ups, arc, site) in the styles graph; the parts it used in the craft graph
   remember('launch', { id: seed, setups: F.beats.map(b => b.setup), arc: arcUsed.id, site: url ? host : undefined });
   const used = F.beats.flatMap(b => [{ id: b.setup, role: 'setup', i: b.i }, { id: b.type, role: 'type', i: b.i }, { id: b.cam.id, role: 'camera', i: b.i }, ...(b.in ? [{ id: b.in.id, role: 'transition', i: b.i }] : []), ...(b.bg ?? []).map(x => ({ id: x.id, role: 'world', i: b.i }))]);
-  await runQ(CRAFT, LQ.launchFilmParts, { film: seed, at: Date.now(), look: lookId, site: url ? host : null, rows: used }, 6000).catch(e => log(`craft graph: film parts not recorded (${String(e).slice(0, 80)})`));
+  await runQ(CRAFT, LQ.launchFilmParts, { film: seed, at: Date.now(), look: lookId, site: url ? host : null, rows: used }, 6000).catch(graphOr(e => log(`craft graph: film parts not recorded (${String(e).slice(0, 80)})`), 'Launch: recording the film'));
 
   const { url: pv, close } = await serveLaunch(dir, port);
   T.to_preview = C.since0();

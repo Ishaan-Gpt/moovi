@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { CRAFT, craft as C, media as M, project as P, run as runQ, user as U } from '@moovi/graph';
+import { CRAFT, craft as C, graphOr, media as M, project as P, stopIfDown, run as runQ, user as U } from '@moovi/graph';
 import { FONTS, PROPS, S1_PRESETS, StyleCard, fallbackCard, kitDocs, type Features } from '@moovi/skills';
 import { z } from 'zod';
 import { cutRate, frames as grabFrames, probe, writeJson } from '../bench';
@@ -126,7 +126,7 @@ async function suggest(ctx: TaskCtx, style: string, roles: string[], k = 3) {
   const flows = await runQ<{ a: string; b: string; w: number }>(CRAFT, C.presetFlows, { style });
   const flow = new Map(flows.map(f => [`${f.a}>${f.b}`, f.w]));
   let rank = new Map<string, number>();
-  try { rank = new Map((await ctx.uq<{ id: string; score: number }>(U.overUse)).map(r => [r.id, r.score])); } catch { /* no past sequences yet */ }
+  try { rank = new Map((await ctx.uq<{ id: string; score: number }>(U.overUse)).map(r => [r.id, r.score])); } catch (e) { stopIfDown(e, 'director: over-use PageRank'); /* no past sequences yet */ }
   const cands = roles.map(r => { const c = presets.filter(p => p.roles.includes(r)); return c.length ? c : presets.filter(p => p.id.endsWith(':lines')); });
   const nodes = [{ id: newId('lat'), slot: -1, preset: 'start', penalty: 0 }];
   const layer = cands.map((cs, i) => cs.map(p => ({ id: newId('lat'), slot: i, preset: p.id, penalty: +((rank.get(p.id) ?? 0) * 4).toFixed(3) })));
@@ -154,9 +154,9 @@ export const board: Handler = async ctx => {
   const isS1 = m.style === 's1';
   const uploads = (await ctx.q<{ id: string; name: string; mime: string }>(P.uploads, { chat: ctx.chat })).filter(u => u.mime.startsWith('image/') || (u.mime.startsWith('video/') && m.features.footage === 'edit'));
   const used = await ctx.uq<{ title: string; angle: string | null }>(U.anglesUsed, { style: null, n: 6 });
-  const shots = await ctx.q<{ kind: string; video: boolean }>(M.runShots, { run: ctx.run.id }).catch(() => [] as { kind: string; video: boolean }[]);
-  const look3dUsed = await ctx.q<{ look: string; scenes: number }>(P.look3dUsage, {}).catch(() => [] as { look: string; scenes: number }[]);
-  const placeUsed = await ctx.q<{ name: string }>(P.placeUsage, { n: 8 }).catch(() => [] as { name: string }[]);
+  const shots = await ctx.q<{ kind: string; video: boolean }>(M.runShots, { run: ctx.run.id }).catch(graphOr([] as { kind: string; video: boolean }[], 'director: run shots'));
+  const look3dUsed = await ctx.q<{ look: string; scenes: number }>(P.look3dUsage, {}).catch(graphOr([] as { look: string; scenes: number }[], 'director: 3D looks used'));
+  const placeUsed = await ctx.q<{ name: string }>(P.placeUsage, { n: 8 }).catch(graphOr([] as { name: string }[], 'director: places used'));
   const tools: Tool[] = [
     tool({ name: 'suggest_sequence', description: 'The cheapest preset orders for the beats (graph: algo.SPpaths over the preset lattice, with this user’s over-use from PageRank). A starting point, not an order.', input: {},
       async run() { return isS1 ? { json: await suggest(ctx, 's1', S.beats.map(b => (b.role === 'end' ? 'cta' : b.role))) } : { text: 'Unique style: no presets are ranked; design each shot from the card.' }; } }),

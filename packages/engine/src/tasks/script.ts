@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { project as P, user as U } from '@moovi/graph';
+import { graphOr, project as P, user as U } from '@moovi/graph';
 import { kit, readingPace, type Word } from '@moovi/skills';
 import { z } from 'zod';
 import { benchStatus, gaps, readJson, transcribe as benchTranscribe, writeJson } from '../bench';
@@ -118,7 +118,7 @@ export const script: Handler = async ctx => {
   if (prevScript && ctx.run.parent) {
     const changed = changedLines(prevScript.beats, S.beats);
     if (changed.length) {
-      await recordFeedback(await filmRef(ctx, ctx.run.parent, prevScript.title), changed.map(c => ({ kind: 'script_line' as const, rejected: true, scene: c.scene, before: c.before, after: c.after, why: fb, source: 'diff' as const }))).catch(e => ctx.activity('note', `feedback not kept: ${String(e).slice(0, 100)}`));
+      await recordFeedback(await filmRef(ctx, ctx.run.parent, prevScript.title), changed.map(c => ({ kind: 'script_line' as const, rejected: true, scene: c.scene, before: c.before, after: c.after, why: fb, source: 'diff' as const }))).catch(graphOr(e => ctx.activity('note', `feedback not kept: ${String(e).slice(0, 100)}`), 'script: keeping feedback'));
       await ctx.activity('tool', `graph · ${changed.length} rewritten line${changed.length === 1 ? '' : 's'} kept as feedback`);
     }
   }

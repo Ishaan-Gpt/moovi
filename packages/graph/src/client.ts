@@ -6,11 +6,50 @@ import { FalkorDB } from 'falkordb';
  * behind every step. If FalkorDB is unreachable we throw `MemoryDown` and the crew refuses to work.
  */
 
+/** The one message a job stops with when FalkorDB is down (the studio shows it in the chat). */
+export const MEMORY_OFFLINE = "Moovi's memory is offline";
+
 export class MemoryDown extends Error {
-  constructor(cause: unknown) {
-    super(`Moovi has no memory: FalkorDB is unreachable (${why(cause)})`);
+  constructor(cause: unknown, where?: string) {
+    super(`${MEMORY_OFFLINE}: FalkorDB is unreachable${where ? ` (at ${where})` : ''} (${why(cause)})`);
     this.name = 'MemoryDown';
   }
+}
+
+/**
+ * Decision 13 (Graph Hacks Rule 3): the product path needs FalkorDB. A local answer that stands in for the graph (the
+ * catalogue, map.json, "no kit") runs only with MOOVI_GRAPH_OPTIONAL=1 (tests and local dev without Docker); the
+ * server never sets it, so there an outage stops the job with MEMORY_OFFLINE. A query error that is not an outage
+ * (an empty graph has no PageRank yet) keeps its local answer either way.
+ */
+export const graphOptional = () => process.env.MOOVI_GRAPH_OPTIONAL === '1';
+
+/** Call where a graph-down fallback would run: throws MemoryDown unless MOOVI_GRAPH_OPTIONAL=1. */
+export function requireGraph(cause: unknown, where: string): void {
+  if (graphOptional()) return;
+  throw isMemoryDown(cause) ? cause : new MemoryDown(cause, where);
+}
+
+/** True for a MemoryDown from any copy of this module (bundlers may load it twice, so not `instanceof`). */
+export const isMemoryDown = (e: unknown): e is MemoryDown => (e as Error | null)?.name === 'MemoryDown';
+
+/** In a catch that also catches other errors: an outage stops the job (unless MOOVI_GRAPH_OPTIONAL=1). */
+export function stopIfDown(e: unknown, where: string): void { if (isMemoryDown(e)) requireGraph(e, where); }
+
+/** A `.catch` handler: an outage stops the job (unless MOOVI_GRAPH_OPTIONAL=1), anything else gets `fallback`. */
+export function graphOr<T>(fallback: T | ((e: unknown) => T), where: string): (e: unknown) => T {
+  return e => {
+    stopIfDown(e, where);
+    return typeof fallback === 'function' ? (fallback as (e: unknown) => T)(e) : fallback;
+  };
+}
+
+/** Is FalkorDB up? true, or (down) false with MOOVI_GRAPH_OPTIONAL=1, else MemoryDown. For sites that pick a source. */
+export async function needGraph(where: string, timeoutMs?: number): Promise<boolean> {
+  const h = await (timeoutMs ? Promise.race([health(), new Promise<{ ok: false; error: string }>(res => setTimeout(() => res({ ok: false, error: `no answer in ${timeoutMs} ms` }), timeoutMs))]) : health());
+  if (h.ok) return true;
+  requireGraph(new Error(h.error ?? 'down'), where);
+  return false;
 }
 
 /** Socket errors often arrive as an AggregateError with an empty message; dig out something a human can read. */
