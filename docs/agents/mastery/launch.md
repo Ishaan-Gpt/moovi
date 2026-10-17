@@ -62,3 +62,4 @@ isn't used for taste.
 - **One accent** (a signal green) on a white world, with dark tiles for the stats. The product's UI appears as frosted
   glass over real photos (the search prompt over a city, signal cards over fog).
 - **End:** the logo with a rule and the line "Nothing changes except everything."
+- launch-ui.ts input (for Tab's directFilm): one site URL in, data.json out {name, host, url, tagline, gridTitle, sub, cta, nav[], cards[], query, colours[{hex,w,role}], fonts{display,displayWeight,ui,cssUrl}, images[], logo, hero}; unchanged since L-UI-1.

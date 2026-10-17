@@ -1,6 +1,9 @@
 # Changelog
+- 1.13.1 (2026-10-18): references/camera.md (which camera move where, durations, eases, the smooth-speed law); motion-feel "smooth as butter"; canvas-engine rAF measuring, filter-free blur variants, bitmaps; launch.md look L-UI-2 "One material" and the f7–f10 lessons.
+- 1.12.3 (2026-10-18): launch.md "smooth, filled, and ramped": sprite/blur-variant rendering rule with measured frame times, the media tools (footage finder + drawn art), the premium speed ramp (camera:speed-ramp).
 - 1.12.2 (2026-10-18): launch.md "a new grammar never costs the craft" (Ishaan on f7: premiumness 10 → 6); the f8 checklist.
 - 1.12.1 (2026-10-18): Launch look L-UI-1 "Product UI" absorbed from Resend v6 (kits/launch-ui, scripts/launch-ui.ts: any site in under a minute).
+- 1.11.2 (2026-10-18): palette gate (read the site CSS first, every hex a ramp token, monochrome brands stay monochrome, content colours count); launch.md item 5.
 - 1.11.1 (2026-10-18): Launch branch references/launch.md (Ishaan's verdicts f1-f5: product UI as the film, chaos to order, bridge element, product-only beat, brand look from the live site).
 
 ## 1.0.0 (2026-10-07)
@@ -80,3 +83,27 @@
 
 ## 1.12.0 (2026-10-18)
 - edit-fundamentals.md: creator-reel devices decoded from em1 (cascade on springs, dim + product on top, the lit one in a row, the post frame, object wipe, comment pill ending), as brand-reskinnable fundamentals.
+
+## 1.11.3 (2026-10-18)
+- Premium Caption 2 (hybrid three-tier, AE glow); lessons: letter vs word spacing, AE glow on every tier, premium faces from a grid, size type by measured cap height.
+
+## 1.11.4 (2026-10-18)
+- Lesson: difference-blend faces and extruded 3D type (Premium Caption 3); check captionseasy looks for a named technique first.
+
+## 1.11.5 (2026-10-18)
+- Lesson: words behind the speaker need a person matte (MediaPipe in the browser); difference faces: invert first, accent over.
+
+## 1.11.6 (2026-10-18)
+- Lesson: negative difference captions are pure (no fill over); 3D type = words on turned perspective planes, not extrusion.
+
+## 1.11.7 (2026-10-18)
+- Premium Caption 3 per the owner's breakdown (stack + shiny negative behind the speaker); lesson: when a look keeps missing, ask for the owner's own breakdown.
+
+## 1.11.8 (2026-10-18)
+- Rule: captions never cover the face. Premium Caption 3 v7: negative colour from the background, reel composition; lesson: an owner breakdown is a description, apply taste.
+
+## 1.11.9 (2026-10-18)
+- Premium Caption 3: the highlight spans the shoulders at neck height; the rest is arranged around it.
+
+## 1.12.0 (2026-10-18)
+- edit-fundamentals §12, the recipe for a top-tier talking-head edit every time; §13 the motion-graphics gap.

@@ -69,6 +69,8 @@ export interface CameraMove {
   scope: CameraScope;
   /** camera code that already existed in the repo and does the same job (style-1 presets, the visual renderer, Dark Vox) */
   existing: readonly string[];
+  /** a premium move (tagged `premium` in the camera graph): what separates a studio edit from an even 1× move */
+  premium?: boolean;
 }
 
 // ── geometry on a base state ──
@@ -475,6 +477,16 @@ const ENTRIES: readonly Entry[] = [
     prompt: { name: dir === 'in' ? 'hard cut to a tighter framing (punch in)' : 'hard cut back to the wider framing', motion: 'no camera move: the shot jumps to a new framing in a single cut', speed: 'instant', framing: 'same angle and subject, only the framing changes', end: dir === 'in' ? 'hold the tighter frame' : 'hold the wide frame' },
     at: (b, p, c) => (s > 0 ? zoom(aim(b, c.at, p), lerpLog(1, c.a, p)) : zoom(aim(b, c.at, 1 - p), lerpLog(c.a, 1, p))),
   })),
+  M({
+    id: 'speed-ramp', name: 'Speed-ramp push (A → 2× → 0.5× → 2× → B)', group: 'edit', ref: 'premium edit grammar (Ishaan, 2026-10-18: "A→2x→0.5x→2x→B, an advanced camera effect at many places")', premium: true,
+    aliases: ['speed ramp', 'speed-ramp', 'time ramp', 'time remap', 'fast slow fast', 'ramp push', 'ramped push', 'speed ramp push'],
+    about: 'A push toward a point on one smooth speed curve: it eases out of rest, speeds up to about 2× the average, glides through the middle at about 0.5× (the beat the eye reads), speeds up again and settles into the end. No corners anywhere: an easing, not a hard time remap. The speed-ramp ease gives the same curve to any other move.',
+    use: 'Reveals, a hero flying out of a crowd, a lockup moving to the header, scene-to-scene travel, any move that should feel edited rather than mechanical; pair the fast ends with motion blur and a whoosh, the slow middle with the key word.',
+    avoid: 'Calm, sincere beats; moves under 0.5 s (the ramp cannot read); stacking two ramps back to back with no rest.',
+    defaults: { duration: 1.6, ease: 'speed-ramp', intensity: 1 }, amount: { value: 1.35, unit: 'x', what: 'end zoom factor' },
+    prompt: { name: 'speed-ramped push in', motion: 'the camera pushes toward the subject, fast at the start, slowing to a crawl through the middle, then snapping forward to the end', speed: 'fast, then slow motion, then fast again (2x, 0.5x, 2x)', framing: 'the subject stays centred while the distance closes', end: 'land tight on the subject' },
+    at: (b, p, c) => zoom(aim(b, c.at, p), lerpLog(1, c.a, p)),
+  }),
   M({
     id: 'pulse', name: 'Beat pulse', group: 'edit', ref: 'style-1 punch-in (1.0 → 1.06 on the key word → 1.02)',
     aliases: ['pulse', 'beat pulse', 'zoom bump', 'bump', 'zoom pulse', 'punch and settle', 'beat zoom'],

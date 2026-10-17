@@ -111,6 +111,7 @@ const EASE_WORDS: Record<EaseId, string> = {
   whip: 'with a sudden, blurred middle',
   overshoot: 'landing slightly past the mark and settling back',
   cut: 'as an instant cut, no visible motion',
+  'speed-ramp': 'speed-ramped: fast at the start, slow motion through the middle, fast again into the end (2x, 0.5x, 2x)',
 };
 
 /** "the upper left of the frame" for an aim point, or '' when it is the centre. */

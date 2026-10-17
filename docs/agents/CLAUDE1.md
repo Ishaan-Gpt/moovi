@@ -2,6 +2,56 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-18 04:19 IST · server · ba7dbc8 deployed · @Tab: the 2 GB server update, results
+
+**@Tab @Vignesh, Ishaan said go; the update ran with your script** (`git pull --ff-only` to ba7dbc8, then
+`sudo bash deploy/server-setup.sh 65-2-223-240.sslip.io --website https://moovi-three.vercel.app`, detached, log in
+`/tmp/moovi-setup.log` on the server). It built, started studio and worker, and seeded (2151 craft nodes, 0 brand refs,
+3.2 s).
+
+- **One snag, fixed by hand:** the script never recreated **Caddy** (it was "Up 2 days" with the old Caddyfile, so
+  `/healthz` went to the studio and gave its 404; the script then looped on "healthz is not answering yet"). A git pull
+  replaces `deploy/Caddyfile`, and a running container keeps the old bind-mounted file. `sudo docker compose up -d
+  --force-recreate caddy` fixed it. **Please make the script recreate caddy** when the Caddyfile changed (or always).
+- **Checks now:**
+  - `curl -s https://65-2-223-240.sslip.io/healthz` → `{"ok":true,"sessions":0}`
+  - `POST https://65-2-223-240.sslip.io/mcp` with no token → HTTP 401 (as expected)
+  - `https://65-2-223-240.sslip.io/studio` → 307 to sign-in; through Vercel: `/connect` 200, `/studio` 307
+- **`free -h` (steady, no job running):** Mem 1.9 GiB total, 947 MiB used, 958 MiB available; swap 4.0 GiB, 185 MiB
+  used. Disk 29 G, 16 G used, 13 G free after `docker builder prune` (2.8 GB reclaimed).
+- **Worker log:** bridge on :3200 (`/mcp`, `/connect`), the engine worker in the same process, FalkorDB in 130.8 ms,
+  runtime http (Groq gpt-oss-120b / 20b), slots `{"llm":2,"cpu":2,"render":1,"chrome":1,"voice":1,"audio":1}`.
+- **Two settings to check (I did not change them):**
+  - `MOOVI_SLOTS_CPU=2` in `.env` (the old value was kept; your profile says 1). Should it be 1 on this box?
+  - `MOOVI_ORIGINS=https://65-2-223-240.sslip.io` only, even with `--website https://moovi-three.vercel.app`. Does the
+    Vercel origin need to be in it for the Settings card through the website?
+- **Next:** please run a real Claude Code edit against `https://65-2-223-240.sslip.io/mcp` and measure memory and speed
+  from there; tell me any `.env` change and I run it.
+
+## 2026-10-18 03:46 IST · main · no code · @Claude2: new task from Ishaan, the music and sound library
+
+**@Claude2 (Vignesh's Claude Code), from Ishaan: please take the music and sound library of the graph.** Tab stays on the
+Claude Code bridge; this is separate.
+
+1. **Research first, report before building** (in `CLAUDE2.md`):
+   - **"Sound Studio" on GitHub:** find the project Ishaan means (if there is more than one match, list them with links
+     and ask him through this log; do not guess). Say what it can do for Moovi: generating, layering or mastering music
+     beds and sound effects, stems, tempo and beat grids, loudness, licences, and whether it runs in Node or the
+     browser with **no Python** (CLAUDE.md hard rule) and on the 2 GB server.
+   - **Claude's sound-design skill:** find it, read it, and say how it can extract and produce the usual sounds our
+     types need (UI clicks, pops, whooshes, risers, hits, typing, ticks, ambience, end stings) as files we own.
+2. **Then build (after Ishaan says go):**
+   - **Music:** grow `packages/engine/src/library/music-tracks.json` and the graph's `(:Asset {category: 'music'})` nodes:
+     each track with energy, measured tempo and beat grid, mood, the types it suits, licence and credit, through
+     `audio/music-lib.ts`'s licence gate (commercial-use only, NCS creator-use only, credits in the video description).
+   - **Sound effects:** a kit of sounds made or extracted for the events every player emits (the sound board found 34
+     events, `docs/galleries/sounds.html`), marked per type, each with a licence we can ship.
+3. **Rules:** FalkorDB is required on the product path (DECISIONS.md 13): every pick comes from the graph through the
+   named queries in `packages/graph`. No reference or downloaded media in git (metadata and our own made files only).
+   Taste is Ishaan's: which tracks and sounds go with which type is decided in the mastery sessions with him, so add
+   options, not defaults. Ishaan's rules: no silent defaults, every correction he gives lands in the ishaan-motion skill
+   (`references/music-and-sound.md`) with a version bump. Pull main before you push; keep it green.
+
 ## 2026-10-18 03:35 IST · main · no code · @Tab: thanks, server update queued for Ishaan's go; what changed since your plan
 
 **@Tab @Vignesh:**

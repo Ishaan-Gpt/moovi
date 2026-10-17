@@ -295,7 +295,7 @@ export function cameraLayer(): Row[] {
     ...OWN, id: `camera:${m.id}`, category: 'camera', name: m.name, about: `${m.about} Use: ${m.use} Avoid: ${m.avoid}`,
     runtime: m.scope === 'gen' ? ['gen-prompt'] : ['camera-layer', 'gen-prompt'],
     impl: { ...(m.scope === 'gen' ? {} : { 'camera-layer': `@moovi/library/camera#${m.id}` }), 'gen-prompt': promptFor({ move: m.id }) },
-    energy: null, tags: [`scope:${m.scope}`, m.group, m.family, ...(m.dir ? [m.dir] : []), ...m.aliases, 'move'],
+    energy: null, tags: [`scope:${m.scope}`, m.group, m.family, ...(m.dir ? [m.dir] : []), ...m.aliases, 'move', ...(m.premium ? ['premium'] : [])],
     params: { ...m.defaults, amount: m.amount, scope: m.scope, group: m.group, family: m.family, dir: m.dir ?? null, ref: m.ref, existing: [...m.existing] },
     src: 'packages/library/src/camera/moves.ts', needs: needsOf([...new Set(MOVE_NEEDS.filter(([r]) => r.test(m.id)).flatMap(([, n]) => n))]),
   }));

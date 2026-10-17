@@ -76,8 +76,18 @@ export const EASES = {
   overshoot: (u: number) => 1 + 2.70158 * (u - 1) ** 3 + 1.70158 * (u - 1) ** 2,
   /** no motion at all: jumps to the end on the first frame (the editor's jump-cut punch-in) */
   cut: (u: number) => (u > 0 ? 1 : 0),
+  /** PREMIUM speed ramp, an EASING (Ishaan, 2026-10-18: "I meant easing, it must be smooth"): A → fast (≈2×) → slow (≈0.5×)
+   *  → fast (≈2×) → B as one smooth speed curve, like a speed graph in After Effects. It starts and ends at rest, has no
+   *  corners anywhere, and the slow glide is where the eye reads. Velocity ∝ sin²(πu)·(0.15 + 0.85·sin²(2πu)). */
+  'speed-ramp': (u: number) => speedRamp(u),
 } as const satisfies Record<string, (u: number) => number>;
 export type EaseId = keyof typeof EASES;
+
+/** the speed-ramp curve: integrate v(u) = sin²(πu)·(0.15 + 0.85·sin²(2πu)) (zero speed at both ends, peaks ≈2.1× the
+ *  average near u = 0.31 and 0.69, ≈0.5× at the middle), normalised to end at 1 */
+const RAMP = (() => { const n = 512, v = (u: number) => Math.sin(Math.PI * u) ** 2 * (0.15 + 0.85 * Math.sin(2 * Math.PI * u) ** 2);
+  const acc = [0]; for (let i = 1; i <= n; i++) acc.push(acc[i - 1]! + v((i - 0.5) / n) / n); const tot = acc[n]!; return acc.map(a => a / tot); })();
+function speedRamp(u: number): number { if (u <= 0) return 0; if (u >= 1) return 1; const f = u * (RAMP.length - 1), i = Math.floor(f); return RAMP[i]! + (RAMP[i + 1]! - RAMP[i]!) * (f - i); }
 
 // ── deterministic noise (handheld, vehicle shake) ──
 

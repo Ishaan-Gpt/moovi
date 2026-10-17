@@ -45,9 +45,12 @@ Grade footage that sits under white words (about brightness 0.6). Drawn stand-in
 - Inside a chunk, **words arrive on their own stamps** (rise ~12 px, blur 9 → 0, grey → white, 0.26 s), and the
   centred line re-flows as each word grows in. White heavy sans (Inter Tight 800, ~66 px), soft dark shadow (blur ~26, 70%).
 - A named term (product, technique) switches that chunk to the condensed face in caps.
+- **Captions never cover the face** (owner, 2026-10-18): place them beside or below it with a margin; use a face detector.
 - **Hide captions while a big-word moment is on screen.** Two text layers fight.
 - **Captions never show punctuation** (owner rule, 2026-10-18): only letters, digits and % $ # & + reach the screen;
   the words keep it for timing and key-word choice.
+- **Premium Caption 3** (Moovi, ref c04): stacked cards composed like the reel (connectors small above-left, the highlight big, the words after it right-aligned below); plain words white Montserrat (content Medium, connectors Regular, smaller); 1-2 highlighted words Montserrat Bold behind the speaker as a shiny negative whose colour comes from the background, pushed bright; each card placed off the face (face detector), beside or below with a margin. Words slide up out of a blur.
+- **Premium Caption 2** (Moovi, ref c03): three tiers, hybrid type: Plus Jakarta Sans SemiBold Italic lead, Antonio 500 key in a soft metallic gradient (slanted), a lighter Medium Italic tail; an After Effects glow (own light blurred wide + tight, screened) on every tier; each word fades in from a heavy blur, no bounce. Colour from the video like Caption 1.
 - **Premium Caption 1** (Moovi, variations 1.1 caps / 1.2 sentence-case lead + slanted key; colour is never fixed: one accent, taken from the video, builds the fill ramp and bloom, `packages/library/src/captions/premium`):
   white lead tier, the spoken key word underneath larger in a lit colour. Russo One at 600 (one 400 cut: thicken with a
   ~4.5 % same-colour round stroke, never the browser's synthetic bold, which skips offscreen layers and ghosts the glow);
