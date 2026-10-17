@@ -12,3 +12,4 @@ One line per finished item: date and time (IST), item, what, commit sha.
 - 2026-10-17 19:54 IST · branch · `claude-code-bridge` from main 711b9d0 (Ishaan: PIPELINE.html single source of truth, docs archived); main banner 5bf0439
 - 2026-10-17 19:54 IST · item 3, 3a · direct-edit contract, engine 430 tests (414 pass, 16 skip, 0 fail), tsc engine 0 · 2fc20cf
 - 2026-10-17 19:58 IST · item 4 · direct-film contract (Launch first), engine 436 tests (420 pass, 16 skip, 0 fail), tsc engine 0 · 100f33c
+- 2026-10-17 19:59 IST · sync · merged Ishaan's main 7e78abb, dc826d3 (DECISIONS.md: styles become looks of 7 types; one way in, the brain choice is Creative with Claude Code online, else Precise with a key). Docs only, no bridge file touched. `FILM_BRIEFS` keys move from styles to types when the type registry lands
