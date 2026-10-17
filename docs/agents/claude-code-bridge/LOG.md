@@ -15,3 +15,5 @@ One line per finished item: date and time (IST), item, what, commit sha.
 - 2026-10-17 19:59 IST · sync · merged Ishaan's main 7e78abb, dc826d3 (DECISIONS.md: styles become looks of 7 types; one way in, the brain choice is Creative with Claude Code online, else Precise with a key). Docs only, no bridge file touched. `FILM_BRIEFS` keys move from styles to types when the type registry lands
 - 2026-10-17 20:02 IST · sync · merged Ishaan's main 802b539 (DECISIONS.md 3: the Edit type's 5 looks are Base, Atlas, Handmade, Studio Minimal, Studio Cut; same as `liveMenus().looks`). Docs only
 - 2026-10-17 20:02 IST · item 5 · token budget: caps, estimator, trimmer, ledger, engine 442 tests (426 pass, 16 skip, 0 fail), tsc 0 · 5e7001b
+- 2026-10-17 20:06 IST · sync · merged Ishaan's main 2cd9af9 (DECISIONS.md 4: the old crew retires; Creative mode's "write a new piece" replaces the shot builders, see open question 2). Docs only
+- 2026-10-17 20:06 IST · item 7 · lane switch: pickLane, BRAIN_AGENTS, laneRuntime, brainMode, registerBrainScope, engine 449 tests (433 pass, 16 skip, 0 fail), tsc 0 · 85e0168

@@ -14,21 +14,20 @@ Read this first if you are picking the work up. Updated by Tab after every item.
   pushing in main as well as in this new branch"; matches Ishaan's CLAUDE.md). Red code goes to the branch only.
 - **Push:** through the GitHub API (git data: blobs, trees, commits, then the ref with `force: false`), never force.
 - **Last sha:** see the newest line in `LOG.md`.
-- **Current state:** Phase 0 done (items 1 to 6). Contracts frozen:
-  - `packages/engine/src/edit/direct.schema.ts` ("direct the edit"): `liveMenus()` (looks: base, atlas, handmade,
-    studio-minimal, studio-cut, matching DECISIONS.md 3; moves from `X1_MOVES`; caption looks from captionseasy filtered
-    to `STYLE_LOOKS`), `directEditSchema()` (strict zod), `directEditJsonSchema()`, `checkDirection()`, `readDirection()`
-    (never throws), `EXAMPLE_DIRECTION`. Look `studio-cut` maps to `planEdit({ template: 'studio-cut' })` in item 11.
-  - `packages/engine/src/router/direct-film.schema.ts` ("direct the film"): `FILM_BRIEFS` (Launch only for now; keys
-    move from styles to the 7 types of DECISIONS.md 1 when that registry lands), `filmMenus()`, `directFilmSchema()`,
-    `readFilmDirection()`, `EXAMPLE_FILM`. The Launch arc stays a server pick (`chooseLaunchArc`), offered first.
-  - `packages/engine/src/runtime/budget.ts`: caps per call (edit 6000/1200, film 5000/1500, look 2000/300) and per
-    video (10000/2500, plus 1000 per /moovi:run), `estimateTokens` (high on purpose), `imageTokens`, `trimTranscript`
-    (keeps every sentence number, shrinks words 30, 12, 6, 3; `fits: false` means use the rules), `VideoBudget`.
-  - Push helper fix: a merge whose tree equals a parent's reuses that tree (the API refuses an empty tree list).
-- **Next item:** 7 (one switch for every AI call: create `packages/mcp` with `lane.ts` (`LANE_ORDER`, `pickLane`), `brain.ts`
-  (`BRAIN_AGENTS`), and in the engine `registerScopeFallback` in `keys.ts` plus `brainMode()`; read `runtime/index.ts`
-  `ask()` and `keys.ts` first).
+- **Current state:** Phase 0 done; Phase 1 item 7 done. See the newest LOG lines for shas.
+  - Contracts: `engine/src/edit/direct.schema.ts` (direct the edit), `engine/src/router/direct-film.schema.ts` (direct
+    the film, Launch first), `engine/src/runtime/budget.ts` (caps, estimator, trimmer, `VideoBudget`).
+  - Lane switch: `engine/src/runtime/lane.ts`. It lives in the engine, not `packages/mcp`, because `keys.scopeFor` needs
+    it and `packages/mcp` depends on the engine (no cycle). Brain calls (`direct:edit`, `direct:film`, `direct:look`) go
+    to Claude Code when online, else the key, else the server (MOOVI_BYOK=optional), else wait (`BrainWaiting`, the job
+    parks). Detail calls never reach Claude Code: key, else the server model. A step not picked up in `PICKUP_MS` (120 s)
+    moves to the next lane. `keys.registerBrainScope(fn)` is asked before the own key (Ishaan: online beats a key); a
+    bridge fault falls back to the own key. `keys.serverModel()` is the server lane.
+  - Not yet changed (needed by item 14): `chat.ts` line 20 checks `loadModel` under MOOVI_BYOK=required, so a keyless
+    user with Claude Code would be asked for a key in chat; switch it to `scopeFor(cmd.user)` (one line).
+- **Next item:** 8 (job queue saving every step and answer: Redis/FalkorDB queue plus a 24 h memo by fingerprint, replay on re-run;
+  decide whether `packages/mcp` is created now, as a workspace package depending on the engine, or the queue starts in
+  `engine/src/runtime/` and moves).
 
 ## How to run things
 
