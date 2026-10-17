@@ -5,7 +5,7 @@ import { AGENT_NAMES, MENTIONABLE, type AgentId } from '@moovi/engine/events';
 
 export interface ComposerHandle { focusWith: (prefix: string) => void }
 
-const ROLE: Record<string, string> = { moovi: 'the director', researcher: 'facts and sources', scribe: 'the words', director: 'the look and the board', hunter: 'real assets', builder: 'the scenes', lens: 'the review', keeper: 'what I remember', video: 'the video itself' };
+const ROLE: Record<string, string> = { moovi: 'the director', editor: 'your own clip', researcher: 'facts, sources and real assets', writer: 'the words', sound: 'voice, music and sound effects', designer: 'the look and the scenes', lens: 'the review', keeper: 'what I remember', video: 'the video itself' };
 
 /**
  * Write to the crew. "@" opens the cast list (Moovi, any agent, or the video); Enter sends, Shift+Enter breaks a line;

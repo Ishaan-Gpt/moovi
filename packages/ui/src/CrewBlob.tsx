@@ -1,11 +1,13 @@
 import { useId } from 'react';
-export type CrewId = 'scribe' | 'cutter' | 'beat' | 'lens' | 'keeper' | 'researcher' | 'director' | 'hunter' | 'builder' | 'editor';
+export type CrewId = 'scribe' | 'cutter' | 'beat' | 'lens' | 'keeper' | 'researcher' | 'director' | 'hunter' | 'builder' | 'editor' | 'writer' | 'sound' | 'designer';
 import { crewIcons } from './icons';
 
 /** Each specialist gets a whisper of its own tint; the material and eyes are Moovi's. */
 const TINT: Record<CrewId | 'moovi', string> = {
   moovi: '#CFE6F7', scribe: '#E3DEFF', cutter: '#CFE6F7', beat: '#D2F5EC', lens: '#E6F2FB', keeper: '#D2F5EC',
   researcher: '#E6F2FB', director: '#E3DEFF', hunter: '#D2F5EC', builder: '#CFE6F7', editor: '#E6F2FB',
+  // the eight agents' new ids wear the tint of the role they took over (Scribe, Beat, Art Director)
+  writer: '#E3DEFF', sound: '#D2F5EC', designer: '#E3DEFF',
 };
 
 /** A small jelly crew member: translucent shell, milky core, embedded navy eyes, a prop badge. */

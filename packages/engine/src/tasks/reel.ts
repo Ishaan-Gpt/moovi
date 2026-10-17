@@ -6,7 +6,7 @@ import { publish } from '../bus';
 import { config } from '../config';
 import type { Handler } from '../ctx';
 import type { AgentId } from '../events';
-import { activity } from '../live';
+import { activity, stageLines } from '../live';
 import { STAGES, styleOf, type StyleId } from '../styles';
 import { recordInserts } from '../styles/kit/borrow';
 import { runStyle, table } from '../styles/run';
@@ -34,6 +34,7 @@ export const styleReel: Handler = async ctx => {
   const version = (c?.version ?? 0) + 1;
   const on = new Map<string, AgentId>();
   const stat = (agent: AgentId, state: 'working' | 'done', text: string) => publish(ctx.chat, { type: 'status', agent, state, text, task: `${ctx.task.id}:${agent}` }).catch(() => undefined);
+  const lines = stageLines(ctx.chat, ctx.task.id);
   let current: string | null = null;
   const t0 = Date.now();
   let announced = false;
@@ -48,12 +49,14 @@ export const styleReel: Handler = async ctx => {
       current = stage;
       const st = STAGES[stage] ?? { text: stage, desk: 'moovi' as const };
       on.set(stage, st.desk);
+      lines.start(st.desk, stage, st.text);
       void stat(st.desk, 'working', st.text);
       void activity(ctx.chat, st.desk, ctx.task.id, 'start', st.text, { scope: stage });
     },
     lap: (stage, seconds) => {
       const st = STAGES[stage] ?? { text: stage, desk: 'moovi' as const };
       void stat(st.desk, 'done', 'done');
+      lines.done(st.desk, stage, Math.round(seconds * 1000), st.text);
       void activity(ctx.chat, st.desk, ctx.task.id, 'done', `${stage} · ${seconds.toFixed(1)} s`, { ms: Math.round(seconds * 1000), scope: stage });
     },
     progress: text => {
@@ -72,7 +75,7 @@ export const styleReel: Handler = async ctx => {
       await ctx.say(`Here it is, playing live: ${p.duration.toFixed(1)} s of ${info.name}, ready ${p.seconds.toFixed(1)} s after you asked.${info.player === 's1-engine' ? '' : ' Lens is still pulling a contact sheet from it.'}`, 'video', { video: ctx.run.video, version, duration: p.duration, format: fmt, run: ctx.run.id, live: true, style: inp.style }, 'moovi');
       announced = true;
     },
-  });
+  }).finally(() => lines.end());
   // Lens checks the film it just made (code checks on one still per beat and on the beat map) while it already plays:
   // a hard deadline, and a review that breaks only says so; it never fails the film. MOOVI_REVIEW=0 turns it off.
   const review = (process.env.MOOVI_REVIEW ?? '1').trim() === '0' ? null : await lens(ctx, inp.style, r);

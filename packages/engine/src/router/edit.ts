@@ -13,7 +13,7 @@ import { FX } from '../edit/effects/catalog';
 import type { FxEvent } from '../edit/effects/plan';
 import { fxLines } from '../edit/effects/auto';
 import { fxMusic } from '../edit/effects/music';
-import { activity } from '../live';
+import { activity, stageLines } from '../live';
 import { startRun } from '../runs';
 import { liveRefFile, type LiveRef } from '../styles/serve';
 
@@ -71,14 +71,15 @@ export const editReel: Handler = async ctx => {
   const [u] = (await ctx.q<Upload>(P.uploads, { chat: ctx.chat })).filter(x => x.id === inp.upload);
   if (!u) throw new Error('The clip to edit is missing');
   const t0 = Date.now();
-  const step = async (stage: string, text: string) => { await publish(ctx.chat, { type: 'status', agent: 'editor', state: 'working', text, task: `${ctx.task.id}:editor` }).catch(() => undefined); void activity(ctx.chat, 'editor', ctx.task.id, 'start', text, { scope: stage }); };
-  const done = (stage: string, s: number) => { void activity(ctx.chat, 'editor', ctx.task.id, 'done', `${stage} · ${s.toFixed(1)} s`, { ms: Math.round(s * 1000), scope: stage }); };
+  const lines = stageLines(ctx.chat, ctx.task.id), said = new Map<string, string>();
+  const step = async (stage: string, text: string) => { said.set(stage, text); lines.start('editor', stage, text); await publish(ctx.chat, { type: 'status', agent: 'editor', state: 'working', text, task: `${ctx.task.id}:editor` }).catch(() => undefined); void activity(ctx.chat, 'editor', ctx.task.id, 'start', text, { scope: stage }); };
+  const done = (stage: string, s: number) => { lines.done('editor', stage, Math.round(s * 1000), said.get(stage) ?? stage); void activity(ctx.chat, 'editor', ctx.task.id, 'done', `${stage} · ${s.toFixed(1)} s`, { ms: Math.round(s * 1000), scope: stage }); };
 
   await ctx.say(`I’ll edit ${u.name}: cut the pauses, punch in on each new thought and caption every word. It plays live as soon as the plan is ready.`, 'note', undefined, 'moovi');
   const dir = join(ctx.dir, 'edit');
   // probe, look, hear, plan, and the voice clean-up started beside the preview: one function, the bench runs it too
   const plan = await planEdit({ path: u.path, dir, name: u.name, signal: ctx.signal, onStage: step, onDone: done, onNote: text => ctx.activity('note', text),
-    style: 'auto', brief: inp.brief ?? '', ...(inp.caption ? { caption: inp.caption } : {}), ...(inp.names?.length ? { names: inp.names } : {}) });
+    style: 'auto', brief: inp.brief ?? '', ...(inp.caption ? { caption: inp.caption } : {}), ...(inp.names?.length ? { names: inp.names } : {}) }).finally(() => lines.end());
   void plan.restore.then(r => r && ctx.activity('note', r.restored
     ? `cleaned and upscaled your clip from ${r.from.w}x${r.from.h} to ${r.to.w}x${r.to.h}${r.graded ? ', graded' : ''} (${r.seconds} s)`
     : `graded your clip (${r.seconds} s)`));

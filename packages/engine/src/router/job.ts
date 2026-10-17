@@ -7,7 +7,7 @@ import { config } from '../config';
 import type { Handler } from '../ctx';
 import type { Command } from '../commands';
 import type { AgentId } from '../events';
-import { activity } from '../live';
+import { activity, stageLines } from '../live';
 import { startRun } from '../runs';
 import { combinedFilm, direct, secsOf } from './film';
 import { styleReel, type ReelInput } from '../tasks/reel';
@@ -39,12 +39,12 @@ export async function routeCombined(cmd: Brief): Promise<boolean> {
 
 /** Which desk shows each stage of the combined film. */
 const DESK: Record<string, { text: string; desk: AgentId }> = {
-  director: { text: 'writing the script', desk: 'director' as AgentId },
-  voice: { text: 'recording voices', desk: 'editor' as AgentId },
-  footage: { text: 'casting footage', desk: 'hunter' as AgentId },
-  captions: { text: 'drawing captions', desk: 'builder' as AgentId },
-  segments: { text: 'building scenes', desk: 'builder' as AgentId },
-  cut: { text: 'cutting the film', desk: 'editor' as AgentId },
+  director: { text: 'writing the script', desk: 'writer' },
+  voice: { text: 'recording voices', desk: 'sound' },
+  footage: { text: 'casting footage', desk: 'researcher' },
+  captions: { text: 'drawing captions', desk: 'designer' },
+  segments: { text: 'building scenes', desk: 'designer' },
+  cut: { text: 'cutting the film', desk: 'editor' },
 };
 
 /**
@@ -115,15 +115,17 @@ export const combinedReel: Handler = async ctx => {
   await ctx.q(P.setChat, { id: ctx.chat, title, status: null, at: Date.now() });
   await publish(ctx.chat, { type: 'title', title });
   await ctx.say(`On it: a ${secsOf(inp.brief)} s film. I write the script, then each beat gets the look that fits it (Style 1, Dark Vox and Anatomy, real footage, the globe, a 3D prop) with word-by-word captions over the whole film. Each step shows here with its time.`, 'note', undefined, 'moovi');
+  const lines = stageLines(ctx.chat, ctx.task.id);
   const r = await combinedFilm({
     brief: inp.brief, id: `${ctx.run.id.slice(-8)}`, signal: ctx.signal,
     log: s => console.log(`[combined ${ctx.run.id}] ${s}`),
     stage: (name, state, secs) => {
-      const st = DESK[name] ?? { text: name, desk: 'moovi' as AgentId };
+      const st = DESK[name] ?? { text: name, desk: 'moovi' };
+      if (state === 'start') lines.start(st.desk, name, st.text); else lines.done(st.desk, name, Math.round((secs ?? 0) * 1000), st.text);
       void stat(st.desk, state === 'start' ? 'working' : 'done', state === 'start' ? st.text : 'done');
       void activity(ctx.chat, st.desk, ctx.task.id, state === 'start' ? 'start' : 'done', state === 'start' ? st.text : `${name} · ${(secs ?? 0).toFixed(1)} s`, { ...(secs !== undefined ? { ms: Math.round(secs * 1000) } : {}), scope: name });
     },
-  });
+  }).finally(() => lines.end());
   const vdir = join(ctx.projectDir, 'videos', ctx.chat); mkdirSync(vdir, { recursive: true });
   const file = join(vdir, `v${version}.mp4`), poster = join(vdir, `v${version}.jpg`);
   copyFileSync(r.out, file);

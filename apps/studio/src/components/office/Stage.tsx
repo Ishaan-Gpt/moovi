@@ -26,14 +26,14 @@ export function Stage({ status, flights, onLanded, inset, above = 0, below = 0, 
   return <Set status={status} flights={flights} onLanded={onLanded} inset={inset} above={above} below={below} mooviState={mooviState} visit={visit} />;
 }
 
-/** The phone's office: nine desks from above, Moovi in the middle; the same live lines as the set. */
-const GRID: AgentId[] = ['researcher', 'scribe', 'director', 'hunter', 'moovi', 'builder', 'lens', 'editor', 'keeper'];
+/** The phone's office: the eight desks from above, Moovi in the middle; the same live lines as the set. */
+const GRID: AgentId[] = ['researcher', 'writer', 'sound', 'designer', 'moovi', 'lens', 'editor', 'keeper'];
 function DeskGrid({ status, above, below, mooviState, visit }: { status: Partial<Record<AgentId, Status>>; above: number; below: number; mooviState: MooviState; visit: AgentId | null }) {
   return (
     <div className="stage stage--grid" aria-label="The office: your crew at work">
       <div className="dgrid" style={{ top: above + 6, bottom: below + 6 }}>
         {GRID.map(id => {
-          const st = status[id] ?? (id === 'editor' ? status.voice : undefined);
+          const st = status[id];
           const state = st?.state ?? 'idle';
           return (
             <div key={id} className={`dcell dcell--${state} ${id === 'moovi' ? 'dcell--moovi' : ''} ${visit === id ? 'is-visited' : ''}`} data-agent={id}>
@@ -83,7 +83,7 @@ function Set({ status, flights, onLanded, inset, above, below, mooviState, visit
       <div className="stage__wall" aria-hidden="true" />
       <div className="stage__floor" aria-hidden="true"><div className="stage__grid" /></div>
       <div className="set" style={{ transform: `translate(${fit.x}px, ${fit.y}px) scale(${fit.k})`, '--k': fit.k } as CSSProperties}>
-        {DESKS.filter(d => d.id !== 'moovi').map(d => <Station key={d.id} desk={d} st={status[d.id] ?? (d.id === 'editor' ? status.voice : undefined)} />)}
+        {DESKS.filter(d => d.id !== 'moovi').map(d => <Station key={d.id} desk={d} st={status[d.id]} />)}
         <DirectorDesk desk={home} st={status.moovi} />
         {/* at home he stands behind his desk; at someone else's he stands in front of it */}
         <div className={`moovi-walk ${target ? 'is-away' : ''}`} style={{ transform: `translate(${mx}px, ${my}px) scale(${ms})`, zIndex: target ? Math.round(my) + 2 : Math.round(home.y), '--s': ms } as CSSProperties}>

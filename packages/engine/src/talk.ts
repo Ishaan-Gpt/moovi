@@ -1,7 +1,7 @@
 import { project as P, user as U, userGraph, run as runQ } from '@moovi/graph';
 import { z } from 'zod';
 import type { Command } from './commands';
-import { AGENT_NAMES, MENTIONABLE, type AgentId } from './events';
+import { AGENT_NAMES, MENTIONABLE, agentOf, type AgentId } from './events';
 import { ownerOf } from './worker';
 import { existsSync, readFileSync, writeFileSync, copyFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -102,7 +102,7 @@ async function consult(pid: string, chat: string, agent: AgentId, text: string, 
   ];
   const r = await ask({ agent: `${agent}:consult`, tier: 'crew', tools, maxTurns: 6, deadlineMs: 120_000,
     system: `You are ${AGENT_NAMES[agent]} in Moovi's crew. The user asked you directly. Answer from your own work (use your tools), briefly and plainly, in first person. If they ask for a change, say what you would change and that Moovi will run it.`,
-    prompt: `The chat so far:\n${ctx.msgs.map(m => `${m.role === 'user' ? 'User' : AGENT_NAMES[(m.agent ?? 'moovi') as AgentId]}: ${m.text}`).join('\n')}\n\nThe user to you: ${text}`,
+    prompt: `The chat so far:\n${ctx.msgs.map(m => `${m.role === 'user' ? 'User' : AGENT_NAMES[agentOf(m.agent)]}: ${m.text}`).join('\n')}\n\nThe user to you: ${text}`,
     schema: { reply: z.string().min(1).max(900) } });
   await say(pid, chat, agent, r.reply);
 }
@@ -124,7 +124,7 @@ async function moovi(pid: string, chat: string, cmd: Msg, ctx: Awaited<ReturnTyp
   ];
   const r = await ask({ agent: 'moovi:talk', tier: 'director', tools, maxTurns: 6, deadlineMs: 150_000,
     system: `You are Moovi, the director of an AI video crew. You talk to the user in the chat: warm, brief, concrete. You can answer questions about the video and the crew's work (use your tools), or turn a request into a change. Changes you can run: "scenes" (rebuild some scenes' visuals), "sound" (music or SFX levels), "script" (new words or a new voice: rewrite, re-voice, re-board everything after), "remake" (start over with the change). Whenever the user edits or turns something down, also list it in notes (kind script_line, voice, style, shot, caption or sound; rejected true when they turned it down, false when they chose it; scene number when it is about one scene; value = the style id or voice name; why = their reason in their own words). ${ready ? 'The video is ready.' : run ? `The current version is ${run.status}.` : 'There is no video yet.'}`,
-    prompt: `The chat so far:\n${ctx.msgs.map(m => `${m.role === 'user' ? 'User' : AGENT_NAMES[(m.agent ?? 'moovi') as AgentId]}: ${m.text}`).join('\n')}\n\nThe user now${cmd.mentions.includes('video') ? ' (about the video)' : ''}: ${cmd.text}`,
+    prompt: `The chat so far:\n${ctx.msgs.map(m => `${m.role === 'user' ? 'User' : AGENT_NAMES[agentOf(m.agent)]}: ${m.text}`).join('\n')}\n\nThe user now${cmd.mentions.includes('video') ? ' (about the video)' : ''}: ${cmd.text}`,
     schema: {
       reply: z.string().min(1).max(700),
       edit: z.object({ mode: z.enum(['none', 'scenes', 'sound', 'script', 'remake']), scenes: z.array(z.number().int().min(1)).max(14), change: z.string().max(600), sound: z.object({ bedLu: z.number().min(0).max(14).nullable(), sfxDb: z.number().min(-6).max(12).nullable() }).nullable(),
