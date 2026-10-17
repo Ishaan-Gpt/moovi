@@ -17,13 +17,13 @@ test('rough EDL: pauses trimmed, shots contiguous, words kept and in order', () 
   const e = roughEdl(SRC, WORDS, { palette: PAL });
   const tl = EDIT.timeline(e);
   assert.deepEqual(tl.problems, []);
-  // speech 1.0–2.2 and 3.7–5.2 plus 0.09 s of breath on each side: 1.38 + 1.68
-  assert.ok(Math.abs(tl.duration - 3.06) < 0.01, `duration ${tl.duration}`);
+  // speech 1.0–2.2 and 3.7–5.2 plus the word pads (0.1 s before, 0.15 s after): 1.45 + 1.75
+  assert.ok(Math.abs(tl.duration - 3.2) < 0.01, `duration ${tl.duration}`);
   const out = EDIT.outWords(e);
   assert.equal(out.length, 6);
   for (let i = 1; i < out.length; i++) assert.ok(out[i]!.t0 >= out[i - 1]!.t0);
-  // the 1.5 s pause is gone: "Four" follows "three." within a breath
-  assert.ok(out[3]!.t0 - out[2]!.t1 < 0.2, `gap ${out[3]!.t0 - out[2]!.t1}`);
+  // the 1.5 s pause is gone: "Four" follows "three." within a breath (the two pads)
+  assert.ok(out[3]!.t0 - out[2]!.t1 < 0.3, `gap ${out[3]!.t0 - out[2]!.t1}`);
   assert.equal(e.words.find(w => w.text === '42')!.role, 'number');
   assert.equal(e.words.find(w => w.text === 'extraordinary')!.role, 'key');
 });

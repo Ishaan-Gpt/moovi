@@ -9,6 +9,7 @@ import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { config } from '../../config';
 import { FX, type FxId } from './catalog';
 import { captionChunks, captionHidden, captionY, duckExpr, giantWordSize, resolveFxParams, sourceTime, statCardTop, type FxEvent, type FxWord } from './plan';
@@ -34,7 +35,7 @@ function run(cmd: string, args: string[], ms = 600_000, input?: Buffer): Promise
 }
 
 export async function probe(file: string): Promise<{ w: number; h: number; dur: number; audio: boolean }> {
-  const j = JSON.parse(await run('ffprobe', ['-v', 'error', '-show_entries', 'stream=codec_type,width,height:format=duration', '-of', 'json', file], 30_000)) as { streams: { codec_type: string; width?: number; height?: number }[]; format: { duration: string } };
+  const j = JSON.parse(await run(config.ffprobe, ['-v', 'error', '-show_entries', 'stream=codec_type,width,height:format=duration', '-of', 'json', file], 30_000)) as { streams: { codec_type: string; width?: number; height?: number }[]; format: { duration: string } };
   const v = j.streams.find(s => s.codec_type === 'video');
   return { w: v?.width ?? 0, h: v?.height ?? 0, dur: parseFloat(j.format.duration) || 0, audio: j.streams.some(s => s.codec_type === 'audio') };
 }
@@ -105,26 +106,73 @@ if want:
 print(json.dumps({'face': face, 'n': len(files)}))
 `;
 
-export interface FxPrep { frames: string; masks: string | null; count: number; srcW: number; srcH: number; face: { x: number; y: number; w: number; h: number } | null; bg: string; dur: number; audio: boolean }
+export interface FxPrep { frames: string; masks: string | null; count: number; srcW: number; srcH: number; face: { x: number; y: number; w: number; h: number } | null; bg: string; dur: number; audio: boolean; /** why the cutout or the python face was skipped, when it was */ note?: string }
+
+/** The python for the optional vision pass: only MOOVI_VISION_PY (Node is the default, nothing to install). Pure. */
+export function visionPythons(env: string | undefined = process.env.MOOVI_VISION_PY): string[] {
+  return env && env.trim() ? [env.trim()] : [];
+}
+
+/**
+ * The face, and the person masks when `masks`: in Node by default (the Node face model, edit/look.ts, and U2-Net-p on
+ * onnxruntime-node, ./cutout.ts), so a fresh Windows, Mac or Linux laptop renders effects with no Python and no
+ * setup; MOOVI_VISION_PY names an optional python with opencv and onnxruntime instead. Without masks the effects
+ * that pass behind the head draw in front of it, so the render never fails on the cutout. Returns why when a part is missing.
+ */
+async function visionPass(o: { frames: string; masks: string | null; fw: number; fh: number; video: string; dur: number; count: number; fps: number; py?: string }): Promise<{ face: { x: number; y: number; w: number; h: number } | null; masks: boolean; note?: string }> {
+  const errs: string[] = [];
+  let seg = '-';
+  if (o.masks) { try { seg = await segModel(); } catch (e) { errs.push(String((e as Error).message ?? e).slice(0, 160)); } }
+  const wantMasks = !!o.masks && seg !== '-';
+  for (const py of o.py ? [o.py] : visionPythons()) {
+    try {
+      const out = await run(py, ['-c', VISION_PY, seg, o.frames, o.masks ?? '-', YUNET, wantMasks ? '1' : '0'], 1_200_000);
+      const j = JSON.parse(out.trim().split('\n').at(-1)!) as { face: number[] | null };
+      const face = j.face ? { x: j.face[0]!, y: j.face[1]!, w: j.face[2]!, h: j.face[3]! } : null;
+      return { face: face ?? await nodeFace(o), masks: wantMasks, ...(errs.length ? { note: `no person cutout (${errs.join('; ')})` } : {}) };
+    } catch (e) { errs.push(`${py}: ${String((e as Error).message ?? e).split('\n').filter(Boolean).slice(-1)[0]?.slice(0, 160) ?? 'failed'}, so the Node pass instead`); }
+  }
+  const face = await nodeFace(o);
+  let masks = false;
+  if (wantMasks) {
+    try { const { nodeMasks } = await import('./cutout'); await nodeMasks({ frames: o.frames, masks: o.masks!, count: o.count, fw: o.fw, fh: o.fh, seg, fps: o.fps }); masks = true; }
+    catch (e) { errs.push(`person cutout: ${String((e as Error).message ?? e).slice(0, 200)}`); }
+  }
+  return { face, masks, ...(errs.length ? { note: errs.join('; ').slice(0, 400) } : {}) };
+}
+
+/** The speaker's face in frame pixels from the Node face model (edit/look.ts), the median box; null when none is seen. */
+async function nodeFace(o: { video: string; dur: number; fw: number; fh: number }): Promise<{ x: number; y: number; w: number; h: number } | null> {
+  try {
+    const { detectFaces } = await import('../look');
+    const raw = await detectFaces(o.video, o.dur, { step: Math.max(0.5, o.dur / 24) });
+    if (!raw.length) return null;
+    const med = (k: number) => { const xs = raw.map(r => r[k]!).sort((a, b) => a - b); return xs[xs.length >> 1]!; };
+    return { x: med(1) * o.fw, y: med(2) * o.fh, w: med(3) * o.fw, h: med(4) * o.fh };
+  } catch (e) { console.warn(`[fx] node face: ${String((e as Error).message ?? e).slice(0, 160)}`); return null; }
+}
 
 /** Frames of the clip at `fps` (upscaled 2x with lanczos and a light sharpen when small), the person masks when wanted, the face, and a blurred still for the background. */
 export async function prepClip(video: string, work: string, o: { fps: number; masks: boolean; py?: string }): Promise<FxPrep> {
   const info = await probe(video);
   const frames = join(work, 'frames'); rmSync(frames, { recursive: true, force: true }); mkdirSync(frames, { recursive: true });
   const up = info.h < 900 ? 2 : 1, fw = Math.round(info.w * up / 2) * 2, fh = Math.round(info.h * up / 2) * 2;
-  await run('ffmpeg', ['-nostdin', '-v', 'error', '-y', '-i', video, '-vf', `fps=${o.fps},scale=${fw}:${fh}:flags=lanczos,unsharp=5:5:0.6`, '-q:v', '3', join(frames, 'f%05d.jpg')], 600_000);
+  await run(config.ffmpeg, ['-nostdin', '-v', 'error', '-y', '-i', video, '-vf', `fps=${o.fps},scale=${fw}:${fh}:flags=lanczos,unsharp=5:5:0.6`, '-q:v', '3', join(frames, 'f%05d.jpg')], 600_000);
   const count = readdirSync(frames).filter(f => f.endsWith('.jpg')).length;
   let masks: string | null = null;
   if (o.masks) { masks = join(work, 'masks'); rmSync(masks, { recursive: true, force: true }); mkdirSync(masks, { recursive: true }); }
-  const py = o.py ?? process.env.MOOVI_VISION_PY ?? 'python3';
-  const out = await run(py, ['-c', VISION_PY, o.masks ? await segModel() : '-', frames, masks ?? '-', YUNET, o.masks ? '1' : '0'], 1_200_000);
-  const j = JSON.parse(out.trim().split('\n').at(-1)!) as { face: number[] | null };
-  const face = j.face ? { x: j.face[0]!, y: j.face[1]!, w: j.face[2]!, h: j.face[3]! } : null;
+  // the person cutout and the face through a python with opencv and onnxruntime when this machine has one; without it
+  // (a fresh Windows laptop has no python3, Vignesh's PC Oct 18) the face comes from the Node face model and the film
+  // renders without the cutout: effects that pass behind the head sit in front of it instead of failing the render
+  const vis = await visionPass({ frames, masks, fw, fh, video, dur: info.dur, count, fps: o.fps, ...(o.py ? { py: o.py } : {}) });
+  if (!vis.masks && masks) { rmSync(masks, { recursive: true, force: true }); masks = null; }
+  const face = vis.face;
+  if (vis.note) console.warn(`[fx] ${vis.note}`);
   const bg = join(work, 'bg.jpg');
   // landscape: the clip's top edge (6%, wall above the head) stretched into the space above the picture; portrait: the frame blurred
   const strip = fh / fw < 1.5;
-  await run('ffmpeg', ['-nostdin', '-v', 'error', '-y', '-i', join(frames, 'f00001.jpg'), '-vf', strip ? `crop=iw:ih*0.06:0:0,scale=${fw}:400,boxblur=24:2` : `scale=${FX_W}:${FX_H}:force_original_aspect_ratio=increase,crop=${FX_W}:${FX_H},boxblur=40:3,eq=brightness=-0.03`, '-q:v', '3', bg], 60_000);
-  return { frames, masks, count, srcW: fw, srcH: fh, face, bg, dur: info.dur, audio: info.audio };
+  await run(config.ffmpeg, ['-nostdin', '-v', 'error', '-y', '-i', join(frames, 'f00001.jpg'), '-vf', strip ? `crop=iw:ih*0.06:0:0,scale=${fw}:400,boxblur=24:2` : `scale=${FX_W}:${FX_H}:force_original_aspect_ratio=increase,crop=${FX_W}:${FX_H},boxblur=40:3,eq=brightness=-0.03`, '-q:v', '3', bg], 60_000);
+  return { frames, masks, count, srcW: fw, srcH: fh, face, bg, dur: info.dur, audio: info.audio, ...(vis.note ? { note: vis.note } : {}) };
 }
 
 export function fxFontCss(): string {
@@ -162,6 +210,23 @@ export function fxSfxCues(events: FxEvent[]): { t: number; file: string; gain: n
   return out.sort((a, b) => a.t - b.t);
 }
 
+/** The browsers to try for the frames, in order: MOOVI_CHROME_PATH, else the configured channel, then Edge (on every Windows PC), then Playwright's own Chromium. Pure. */
+export function fxBrowserTries(c: { path?: string | undefined; channel: string }, platform: string = process.platform): ({ executablePath: string } | { channel: string } | Record<string, never>)[] {
+  if (c.path) return [{ executablePath: c.path }];
+  const ch = [c.channel, ...(platform === 'win32' || platform === 'darwin' ? ['msedge'] : []), 'chrome'].filter((x, i, a) => x && a.indexOf(x) === i);
+  return [...ch.map(channel => ({ channel })), {}];
+}
+
+async function launchFxBrowser(chromium: typeof import('playwright-core').chromium) {
+  const args = ['--no-sandbox', '--disable-dev-shm-usage', '--allow-file-access-from-files', '--disable-web-security', '--force-color-profile=srgb', '--hide-scrollbars'];
+  const errs: string[] = [];
+  for (const t of fxBrowserTries(config.chrome)) {
+    try { return await chromium.launch({ headless: true, ...t, args }); }
+    catch (e) { errs.push(`${'executablePath' in t ? t.executablePath : 'channel' in t ? t.channel : 'bundled chromium'}: ${String((e as Error).message ?? e).split('\n')[0]!.slice(0, 140)}`); }
+  }
+  throw new Error(`no browser to draw the effects (${errs.join('; ')}); install Google Chrome or set MOOVI_CHROME_PATH`);
+}
+
 /** Render the film. Returns the output path and timings. */
 export async function renderFxFilm(f: FxFilm): Promise<{ out: string; frames: number; seconds: number; renderS: number }> {
   const fps = f.fps ?? 30;
@@ -173,20 +238,21 @@ export async function renderFxFilm(f: FxFilm): Promise<{ out: string; frames: nu
   const geo = fxFraming(prep.srcW, prep.srcH, prep.face);
   const caps = captionChunks(f.words);
   const faceBand = { y0: geo.faceBox.y0 / FX_H - 0.02, y1: geo.faceBox.y1 / FX_H + 0.01 };
-  const fileUrl = (p: string) => 'file://' + p;
+  // a real file URL (file:///C:/Users/... on Windows; 'file://' + path is not a URL there)
+  const fileUrl = (p: string) => pathToFileURL(p).href;
   const events = f.events.map(resolveFxParams).map(e => e.fx === 'stat-counter' && !(e.params && 'top' in e.params) ? { ...e, params: { ...(e.params ?? {}), top: statCardTop(geo.faceBox) } } : e).map(e => e.fx === 'giant-word' && !(e.params && 'size' in e.params) ? { ...e, params: { ...(e.params ?? {}), size: giantWordSize(String(e.params?.word ?? 'WOW')) } } : e);
   const data: FxRuntimeData = { frames: fileUrl(prep.frames), masks: prep.masks ? fileUrl(prep.masks) : null, count: prep.count, fps, box: geo.box, face: geo.face, bg: fileUrl(prep.bg), bgMode: geo.feather ? 'strip' : 'cover', faceBox: geo.faceBox, events, captions: caps, titles: f.titles ?? [], fonts: fxFontCss() };
   const html = join(f.work, 'index.html');
   writeFileSync(html, `<!doctype html><html><head><meta charset="utf-8"></head><body></body></html>`);
   const { chromium } = await import('playwright-core');
-  const browser = await chromium.launch({ headless: true, ...(config.chrome.path ? { executablePath: config.chrome.path } : { channel: config.chrome.channel }), args: ['--no-sandbox', '--disable-dev-shm-usage', '--allow-file-access-from-files', '--disable-web-security', '--force-color-profile=srgb', '--hide-scrollbars'] });
+  const browser = await launchFxBrowser(chromium);
   const vfile = join(f.work, 'video.mp4');
   const n = Math.round(dur * fps);
   try {
     const page = await browser.newPage({ viewport: { width: FX_W, height: FX_H }, deviceScaleFactor: 1 });
-    await page.goto('file://' + html);
+    await page.goto(fileUrl(html));
     await page.evaluate(`var __name = function (f) { return f; };\n(${effectsRuntime.toString()})(${JSON.stringify(data)}); ${geo.feather ? `document.getElementById('base').style.maskImage='linear-gradient(to bottom, transparent 0, black 160px)';document.getElementById('cut').style.maskImage='linear-gradient(to bottom, transparent 0, black 160px)';` : ''} window.__fx.ready`);
-    const ff = spawn('ffmpeg', ['-nostdin', '-v', 'error', '-y', '-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'mjpeg', '-i', '-', '-c:v', 'libx264', '-preset', 'medium', '-crf', '19', '-pix_fmt', 'yuv420p', '-r', String(fps), '-movflags', '+faststart', vfile], { stdio: ['pipe', 'ignore', 'pipe'] });
+    const ff = spawn(config.ffmpeg, ['-nostdin', '-v', 'error', '-y', '-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'mjpeg', '-i', '-', '-c:v', 'libx264', '-preset', 'medium', '-crf', '19', '-pix_fmt', 'yuv420p', '-r', String(fps), '-movflags', '+faststart', vfile], { stdio: ['pipe', 'ignore', 'pipe'] });
     let ffErr = ''; ff.stderr.on('data', d => { ffErr += d; });
     const done = new Promise<void>((res, rej) => ff.on('close', c => c === 0 ? res() : rej(new Error('ffmpeg encode: ' + ffErr.slice(-400)))));
     for (let i = 0; i < n; i++) {
@@ -204,7 +270,7 @@ export async function renderFxFilm(f: FxFilm): Promise<{ out: string; frames: nu
   } finally { await browser.close().catch(() => undefined); }
   const renderS = (Date.now() - t0) / 1000;
   await mixAudio(f, prep, dur, join(f.work, 'audio.m4a'));
-  await run('ffmpeg', ['-nostdin', '-v', 'error', '-y', '-i', vfile, '-i', join(f.work, 'audio.m4a'), '-map', '0:v', '-map', '1:a', '-c:v', 'copy', '-c:a', 'copy', '-shortest', '-movflags', '+faststart', f.out], 120_000);
+  await run(config.ffmpeg, ['-nostdin', '-v', 'error', '-y', '-i', vfile, '-i', join(f.work, 'audio.m4a'), '-map', '0:v', '-map', '1:a', '-c:v', 'copy', '-c:a', 'copy', '-shortest', '-movflags', '+faststart', f.out], 120_000);
   return { out: f.out, frames: n, seconds: dur, renderS };
 }
 
@@ -222,7 +288,7 @@ export async function layVoice(lines: { mp3: Buffer; start: number; cut: [number
   });
   parts.push(`${lines.map((_, i) => `[l${i}]`).join('')}amix=inputs=${lines.length}:normalize=0:dropout_transition=0[v]`);
   args.push('-filter_complex', parts.join(';'), '-map', '[v]', '-ac', '1', '-ar', '48000', out);
-  await run('ffmpeg', args, 120_000);
+  await run(config.ffmpeg, args, 120_000);
   lines.forEach((_, i) => rmSync(join(work, `line${String(i).padStart(2, '0')}.mp3`), { force: true }));
   return out;
 }
@@ -233,14 +299,14 @@ export async function remixFxFilm(f: FxFilm): Promise<{ out: string; seconds: nu
   if (!existsSync(vfile)) throw new Error(`no rendered picture in ${f.work}`);
   const src = await probe(f.video), dur = f.duration ?? (await probe(vfile)).dur;
   await mixAudio(f, { audio: src.audio }, dur, join(f.work, 'audio.m4a'));
-  await run('ffmpeg', ['-nostdin', '-v', 'error', '-y', '-i', vfile, '-i', join(f.work, 'audio.m4a'), '-map', '0:v', '-map', '1:a', '-c:v', 'copy', '-c:a', 'copy', '-shortest', '-movflags', '+faststart', f.out], 120_000);
+  await run(config.ffmpeg, ['-nostdin', '-v', 'error', '-y', '-i', vfile, '-i', join(f.work, 'audio.m4a'), '-map', '0:v', '-map', '1:a', '-c:v', 'copy', '-c:a', 'copy', '-shortest', '-movflags', '+faststart', f.out], 120_000);
   return { out: f.out, seconds: dur };
 }
 
 /** integrated loudness (LUFS) of an input over `dur` s from `from` s, read with ffmpeg's loudnorm analysis */
 export async function lufsOf(file: string, dur: number, from = 0): Promise<number> {
   const err = await new Promise<string>((res, rej) => {
-    const p = spawn('ffmpeg', ['-nostdin', '-hide_banner', '-ss', String(from), '-t', dur.toFixed(3), '-i', file, '-vn', '-af', 'loudnorm=print_format=json', '-f', 'null', '-'], { stdio: ['ignore', 'ignore', 'pipe'] });
+    const p = spawn(config.ffmpeg, ['-nostdin', '-hide_banner', '-ss', String(from), '-t', dur.toFixed(3), '-i', file, '-vn', '-af', 'loudnorm=print_format=json', '-f', 'null', '-'], { stdio: ['ignore', 'ignore', 'pipe'] });
     let e = ''; p.stderr.on('data', d => { e += d; if (e.length > 40000) e = e.slice(-20000); });
     p.on('error', rej); p.on('close', () => res(e));
   });
@@ -252,7 +318,7 @@ export async function lufsOf(file: string, dur: number, from = 0): Promise<numbe
 export async function peakOf(file: string, from = 0, dur?: number): Promise<number> {
   const err = await new Promise<string>((res, rej) => {
     const win = [...(from > 0 ? ['-ss', String(from)] : []), ...(dur ? ['-t', dur.toFixed(3)] : [])];
-    const p = spawn('ffmpeg', ['-nostdin', '-hide_banner', ...win, '-i', file, '-af', 'volumedetect', '-f', 'null', '-'], { stdio: ['ignore', 'ignore', 'pipe'] });
+    const p = spawn(config.ffmpeg, ['-nostdin', '-hide_banner', ...win, '-i', file, '-af', 'volumedetect', '-f', 'null', '-'], { stdio: ['ignore', 'ignore', 'pipe'] });
     let e = ''; p.stderr.on('data', d => { e += d; }); p.on('error', rej); p.on('close', () => res(e));
   });
   const m = /max_volume:\s*(-?[\d.]+) dB/.exec(err);
@@ -320,11 +386,11 @@ export async function mixAudio(f: FxFilm, prep: { audio: boolean }, dur: number,
   const raw = out.replace(/\.[a-z0-9]+$/i, '') + '.raw.wav';
   parts.push(`${mixIn.join('')}amix=inputs=${mixIn.length}:normalize=0:dropout_transition=0,atrim=0:${D},apad=whole_dur=${D}[a]`);
   args.push('-filter_complex', parts.join(';'), '-map', '[a]', '-ac', '2', '-ar', '48000', '-c:a', 'pcm_s24le', raw);
-  await run('ffmpeg', args, 300_000);
+  await run(config.ffmpeg, args, 300_000);
   const have = await lufsOf(raw, dur);
   const g = Math.round((FX_MIX.master - have) * 10) / 10;
   const lim = Math.pow(10, FX_MIX.tp / 20).toFixed(3);
-  const master = (gain: number) => run('ffmpeg', ['-nostdin', '-v', 'error', '-y', '-i', raw, '-af', `volume=${gain}dB,alimiter=limit=${lim}:attack=2:release=60:level=disabled,afade=t=out:st=${Math.max(0, dur - FX_MIX.outroFade).toFixed(3)}:d=${FX_MIX.outroFade},aresample=48000`, '-ac', '2', '-ar', '48000', '-c:a', 'aac', '-b:a', '192k', out], 300_000);
+  const master = (gain: number) => run(config.ffmpeg, ['-nostdin', '-v', 'error', '-y', '-i', raw, '-af', `volume=${gain}dB,alimiter=limit=${lim}:attack=2:release=60:level=disabled,afade=t=out:st=${Math.max(0, dur - FX_MIX.outroFade).toFixed(3)}:d=${FX_MIX.outroFade},aresample=48000`, '-ac', '2', '-ar', '48000', '-c:a', 'aac', '-b:a', '192k', out], 300_000);
   await master(g);
   // the limiter takes a little off the top: one measured correction lands it on the target
   const got = await lufsOf(out, dur);

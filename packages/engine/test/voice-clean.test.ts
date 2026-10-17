@@ -26,8 +26,8 @@ test('voice clean-up: a quiet noisy take comes out at about -14 LUFS, peaks unde
 
 test('voice clean-up on the EDL clock: kept ranges cut and joined in one pass, the length is the kept total', async () => {
   const g = cutGraph([{ src_in: 0, src_out: 1 }, { src_in: 2.5, src_out: 4 }], 'anull');
-  assert.match(g, /atrim=start=2\.5000:end=4\.0000/);
-  assert.match(g, /concat=n=2:v=0:a=1\[cut\];\[cut\]anull\[out\]/);
+  assert.match(g, /atrim=start=2\.4920:end=4\.0000/);
+  assert.match(g, /acrossfade=d=0\.0160:c1=qsin:c2=qsin\[cut\];\[cut\]anull\[out\]/);
   const dir = mkdtempSync(join(tmpdir(), 'moovi-voice-'));
   try {
     const src = join(dir, 'take.wav');

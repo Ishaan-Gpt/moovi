@@ -41,8 +41,11 @@ test('effects on the edit: an effect on a cut moment is dropped, the rest land o
 test('effects on the edit: the cut filter trims each shot and joins picture and sound', () => {
   const f = cutFilter(shots, true);
   assert.match(f, /\[0:v\]trim=start=2\.000:end=8\.000/);
-  assert.match(f, /\[0:a\]atrim=start=10\.000:end=20\.000/);
-  assert.match(f, /concat=n=2:v=1:a=1\[v\]\[a\]$/);
+  // the sound: each side of the one real cut borrows 8 ms past it, and a 16 ms crossfade joins them (no time lost)
+  assert.match(f, /\[0:a\]atrim=start=9\.9920:end=20\.0000/);
+  assert.match(f, /\[0:a\]atrim=start=2\.0000:end=8\.0080/);
+  assert.match(f, /acrossfade=d=0\.0160:c1=qsin:c2=qsin\[a\]$/);
+  assert.match(f, /concat=n=2:v=1:a=0\[v\]/);
   assert.match(cutFilter(shots, false), /concat=n=2:v=1:a=0\[v\]$/);
 });
 

@@ -16,6 +16,19 @@ export interface BrainApiOptions {
   mcpUrl?: (req: Request) => string;
   /** whether the user has their own model key (for the lane in status) */
   hasKey?: (user: string) => boolean;
+  /** origins (scheme://host:port) whose pages may call link and status with the user's cookie (the studio's Settings card) */
+  cors?: (origin: string) => boolean;
+}
+
+/** CORS headers for an allowed origin, credentials included (the sign-in cookie). Pure. */
+export const corsHeaders = (origin: string): Record<string, string> => ({
+  'access-control-allow-origin': origin, 'access-control-allow-credentials': 'true', 'access-control-allow-methods': 'GET, POST, DELETE, OPTIONS',
+  'access-control-allow-headers': 'content-type', vary: 'origin',
+});
+
+/** Origins a bridge lets call its API from a page: the listed ones, and any localhost port outside production. Pure. */
+export function corsOrigins(listed: string[], production = process.env.NODE_ENV === 'production'): (origin: string) => boolean {
+  return origin => listed.includes(origin) || (!production && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin));
 }
 
 const json = (body: unknown, status = 200) => Response.json(body, { status, headers: { 'cache-control': 'no-store' } });
@@ -78,9 +91,15 @@ export function brainApi(o: BrainApiOptions) {
   /** route by path: .../api/brain/link and .../api/brain/status (any base path), null for anything else */
   async function handle(req: Request): Promise<Response | null> {
     const p = new URL(req.url).pathname.replace(/\/+$/, '');
-    if (p.endsWith('/api/brain/link')) return link(req);
-    if (p.endsWith('/api/brain/status')) return status(req);
-    return null;
+    const route = p.endsWith('/api/brain/link') ? link : p.endsWith('/api/brain/status') ? status : null;
+    if (!route) return null;
+    // the studio's Settings card on another port of the same host (local dev: the site on :3000, the bridge on :3200)
+    const origin = req.headers.get('origin'), allow = !!origin && !!o.cors?.(origin);
+    if (req.method === 'OPTIONS') return allow ? new Response(null, { status: 204, headers: corsHeaders(origin!) }) : json({ error: 'not allowed' }, 403);
+    const r = await route(req);
+    if (!allow) return r;
+    const h = new Headers(r.headers); for (const [k, v] of Object.entries(corsHeaders(origin!))) h.set(k, v);
+    return new Response(r.body, { status: r.status, headers: h });
   }
   return { link, status, handle };
 }

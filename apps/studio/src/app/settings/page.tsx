@@ -3,9 +3,13 @@ import { byokMode, modelInfo, providerChoices } from '@moovi/engine';
 import { requireUser } from '@/lib/session';
 import { Sidebar } from '@/components/dash/Sidebar';
 import { ModelForm } from '@/components/settings/ModelForm';
+import { ClaudeCodeCard } from '@/components/settings/ClaudeCodeCard';
 
 export const metadata: Metadata = { title: 'Your model' };
 export const dynamic = 'force-dynamic';
+
+/** The bridge's address for the browser: MOOVI_BRIDGE_PUBLIC_URL, else this site's own address on a server, else the dev bridge. */
+const bridgeBase = () => (process.env.MOOVI_BRIDGE_PUBLIC_URL?.trim().replace(/\/+$/, '') ?? (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:3200'));
 
 const safeNext = (n: string | undefined) => (n && /^\/studio(\/|$|\?)/.test(n) && !n.startsWith('//') && !n.startsWith('/studio/settings') ? n : '/studio');
 
@@ -22,6 +26,8 @@ export default async function Settings({ searchParams }: { searchParams: Promise
           <p className="dash__lede muted">Moovi and the crew think on a model you bring. Paste a key from any provider below; Gemini and Groq both give free keys in a minute.</p>
         </header>
         <ModelForm initial={modelInfo(user.id)} choices={providerChoices()} next={safeNext(next)} welcome={!!welcome} required={byokMode() === 'required'} />
+        {/* or no key at all: the user's own Claude Code thinks for Moovi (the bridge, docs/agents/claude-code-bridge) */}
+        <div className="model"><ClaudeCodeCard bridge={bridgeBase()} /></div>
       </main>
     </div>
   );

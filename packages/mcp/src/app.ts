@@ -13,9 +13,9 @@ import { redisStore, type BrainStore, type RedisLike } from './store';
 
 export interface BridgeApp { http: Server; mcp: McpHandler; close: () => Promise<void> }
 
-export function bridgeApp(hub: BrainHub, o: { userOf: BrainApiOptions['userOf']; mcpUrl?: BrainApiOptions['mcpUrl']; hasKey?: (user: string) => boolean; log?: (line: string) => void }): BridgeApp {
+export function bridgeApp(hub: BrainHub, o: { userOf: BrainApiOptions['userOf']; mcpUrl?: BrainApiOptions['mcpUrl']; hasKey?: (user: string) => boolean; cors?: BrainApiOptions['cors']; log?: (line: string) => void }): BridgeApp {
   const mcp = mcpHandler({ verify: t => hub.tokens.verify(t), build: ctx => buildMcp(hub, ctx), ...(o.log ? { log: o.log } : {}) });
-  const api = brainApi({ hub, userOf: o.userOf, ...(o.mcpUrl ? { mcpUrl: o.mcpUrl } : {}), ...(o.hasKey ? { hasKey: o.hasKey } : {}) });
+  const api = brainApi({ hub, userOf: o.userOf, ...(o.mcpUrl ? { mcpUrl: o.mcpUrl } : {}), ...(o.hasKey ? { hasKey: o.hasKey } : {}), ...(o.cors ? { cors: o.cors } : {}) });
   const page = webRoute(async req => {
     const p = new URL(req.url).pathname.replace(/\/+$/, '');
     if (req.method !== 'GET' || (p !== '/connect' && !p.endsWith('/api/brain/connect'))) return null;

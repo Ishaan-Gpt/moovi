@@ -6,7 +6,7 @@
 // `pnpm dev:engine` (MOOVI_BRIDGE_WORKER=0 serves the bridge alone). FalkorDB is required (DECISIONS.md 13).
 import { sessionUser } from '@moovi/engine';
 import { loadModel } from '@moovi/engine/keys';
-import { BrainHub, bridgeApp, falkorStore, memoryStore, sessionCookieAuth, type BrainStore } from '../src/index';
+import { BrainHub, bridgeApp, corsOrigins, falkorStore, memoryStore, sessionCookieAuth, type BrainStore } from '../src/index';
 
 const port = Number(process.env.MOOVI_BRIDGE_PORT ?? 3200), host = process.env.MOOVI_BRIDGE_HOST ?? '127.0.0.1';
 let store: BrainStore;
@@ -22,8 +22,13 @@ try {
 }
 const hub = new BrainHub(store, { publicUrl: process.env.MOOVI_PUBLIC_URL ?? 'http://localhost:3000' });
 const fixed = process.env.MOOVI_BRIDGE_URL?.trim();
+// pages that may call /api/brain/* with the user's cookie: MOOVI_ORIGINS, and in local dev the studio on another
+// localhost port (its Settings card "Use Claude Code")
+const origins = (process.env.MOOVI_ORIGINS ?? '').split(',').map(s => s.trim()).filter(Boolean);
+const devSite = process.env.NODE_ENV === 'production' ? [] : ['http://localhost:3000', 'http://localhost:3100'];
 const app = bridgeApp(hub, {
-  userOf: sessionCookieAuth({ lookup: t => sessionUser(t), origins: (process.env.MOOVI_ORIGINS ?? '').split(',').map(s => s.trim()).filter(Boolean) }),
+  userOf: sessionCookieAuth({ lookup: t => sessionUser(t), origins: [...origins, ...devSite] }),
+  cors: corsOrigins(origins),
   ...(fixed ? { mcpUrl: () => fixed } : {}),
   hasKey: u => !!loadModel(u),
   log: line => console.log(line),

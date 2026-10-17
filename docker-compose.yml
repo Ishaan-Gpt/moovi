@@ -1,5 +1,5 @@
-# Everything Moovi needs on one machine: FalkorDB (memory), the studio (web), the engine worker (makes the films)
-# and Caddy (HTTPS in front of the studio).
+# Everything Moovi needs on one machine: FalkorDB (memory), the studio (web), the engine worker with the Claude Code
+# bridge (makes the films; /mcp for Claude Code) and Caddy (HTTPS in front of both). AWS: docs/agents/claude-code-bridge/DEPLOY-AWS.md
 #   cp .env.example .env   # set MOOVI_SECRET (and SITE_ADDRESS on a server)
 #   docker compose up -d --build
 #   open http://localhost:3100/studio   (or https://<SITE_ADDRESS>/studio on a server)
@@ -24,19 +24,37 @@ services:
       MOOVI_DATA_DIR: /data
     volumes: [data:/data]
 
+  # the engine worker (makes the films) and the Claude Code bridge in ONE process: brain steps of users linked to
+  # Claude Code are routed by the bridge inside the worker, so they cannot run apart. /mcp, /connect and /api/brain/*
+  # reach it through Caddy on the same address as the studio (the sign-in cookie is shared).
   worker:
     image: moovi:latest
     pull_policy: never
     restart: unless-stopped
     depends_on: [falkordb, studio]
-    command: ["pnpm", "--filter", "@moovi/engine", "exec", "tsx", "scripts/worker.ts"]
+    command: ["pnpm", "--filter", "@moovi/mcp", "exec", "tsx", "scripts/serve.ts"]
     env_file: [.env]
     environment:
       FALKORDB_URL: falkor://falkordb:6379
       MOOVI_DATA_DIR: /data
+      MOOVI_BRIDGE_HOST: 0.0.0.0
+      MOOVI_BRIDGE_PORT: "3200"
+      # the public address Claude Code connects to and the website it sends people back to
+      MOOVI_PUBLIC_URL: ${PUBLIC_URL:-http://localhost:3100}
+      MOOVI_BRIDGE_URL: ${PUBLIC_URL:-http://localhost:3100}/mcp
+      MOOVI_ORIGINS: ${PUBLIC_URL:-http://localhost:3100}
+      # models the effects and the cleanup fetch once (face, person cutout, denoise) live on the volume too
+      HOME: /data/home
     # Chromium needs more shared memory than Docker's 64 MB default
     shm_size: 1gb
+    # the speech model (about 760 MB, MOOVI_DATA_DIR/models) is downloaded once onto the volume, not per container
     volumes: [data:/data]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3200/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
 
   # one-shot: seeds the shared craft graph and the style packages, and creates the accounts graph (safe to rerun:
   # it never touches accounts, projects or style memory)
@@ -57,6 +75,7 @@ services:
     restart: unless-stopped
     depends_on: [studio]
     ports: ["80:80", "443:443"]
+    depends_on: [studio, worker]
     environment:
       # a domain (or <ip>.sslip.io) gets a free HTTPS certificate; ":80" serves plain HTTP
       SITE_ADDRESS: ${SITE_ADDRESS:-:80}

@@ -58,6 +58,14 @@ export function fxFilmFor(p: { effects: { events: FxEvent[] } | null; faces: num
   return { go: true, why: `${n} effects fit the words` };
 }
 
+/** The plain reason an effects render failed, for the job's note and the log: the error's last meaningful line. Pure. */
+export function fxReason(e: unknown): string {
+  const m = String((e as Error)?.message ?? e ?? 'unknown error').replace(/\s+at\s.*$/s, '');
+  const lines = m.split('\n').map(l => l.trim()).filter(Boolean);
+  const last = lines.find(l => /error|not found|no such|cannot|enoent|exit|failed|missing|timed out/i.test(l)) ?? lines[0] ?? 'unknown error';
+  return last.length > 220 ? last.slice(0, 217) + '...' : last;
+}
+
 /** If this brief is an edit of the user's own clip, start its run (true); else leave it to the other paths. */
 export async function routeEdit(cmd: Brief, uploads: Upload[]): Promise<boolean> {
   const target = editTarget(cmd, uploads);
@@ -155,17 +163,31 @@ export const editReel: Handler = async ctx => {
       const restored = await plan.restore.catch(() => null), cleaned = await plan.voice.catch(() => null);
       const { renderEditFx } = await import('../edit/effects/onedit');
       const v2 = version + 1, file = join(vdir, `v${v2}.mp4`);
-      const r = await renderEditFx({ video: restored?.file && existsSync(restored.file) ? restored.file : u.path, shots: edl.shots, events: plan.effects.events,
-        words: words.map(w => ({ word: w.word, t: w.t, end: w.end })), out: file, work: join(dir, 'fx-work'), audio: plan.source.hasAudio !== false, voice: cleaned?.file ?? null, music: bed ? { file: bed.file } : null });
+      const base = { video: restored?.file && existsSync(restored.file) ? restored.file : u.path, shots: edl.shots, words: words.map(w => ({ word: w.word, t: w.t, end: w.end })), out: file, audio: plan.source.hasAudio !== false, voice: cleaned?.file ?? null };
+      let r: Awaited<ReturnType<typeof renderEditFx>>;
+      try { r = await renderEditFx({ ...base, events: plan.effects.events, work: join(dir, 'fx-work'), music: bed ? { file: bed.file } : null }); }
+      catch (e1) {
+        // one simpler try before giving up: the source clip, no music bed, no effect that needs the person cutout
+        const why1 = fxReason(e1);
+        console.warn(`[edit] effects edit, first try: ${why1}`);
+        await ctx.activity('note', `effects render hit a problem (${why1}), trying once more without the music and the cutout`);
+        const simple = plan.effects.events.filter(e => !FX[e.fx].behind);
+        r = await renderEditFx({ ...base, video: u.path, events: simple.length ? simple : plan.effects.events, work: join(dir, 'fx-work-2'), music: null });
+      }
       const used = [...new Set(r.events.map(e => FX[e.fx].label))];
       await ctx.q(P.setVideo, { id: ctx.run.video, status: 'ready', path: file, poster, duration: +r.seconds.toFixed(2), version: v2, style: 'edit+fx', format: 'vertical', at: Date.now() });
       await publish(ctx.chat, { type: 'video', video: { id: ctx.run.video, status: 'ready', version: v2, duration: +r.seconds.toFixed(2), format: 'vertical' } });
       await ctx.say(`Here’s your finished edit with effects: ${used.join(', ')}${bed ? `, music: ${bed.pick.track.title}` : ''}.`, 'video', { video: ctx.run.video, version: v2, duration: +r.seconds.toFixed(2), format: 'vertical', run: ctx.run.id, style: 'edit+fx' }, 'moovi');
       fxVersion = v2;
     } catch (e) {
-      console.warn(`[edit] effects edit: ${String((e as Error).message ?? e).slice(0, 200)}`);
-      await ctx.say('The effects did not render onto the edit this time; the live edit above stands.', 'note', undefined, 'moovi');
+      const why = fxReason(e);
+      console.warn(`[edit] effects edit: ${why}`);
+      await ctx.say(`The effects did not render onto the edit this time (${why}); the live edit above stands.`, 'note', undefined, 'moovi');
     }
+  } else {
+    // a skipped effects pass says why, so a plain edit is never a silent surprise
+    console.warn(`[edit] no effects film: ${fx.why}`);
+    await ctx.activity('note', `no effects this time: ${fx.why}`);
   }
   const vids = await ctx.q<{ video: string }>(P.videos), chats = await ctx.q<{ id: string }>(P.chats);
   await runQ(SYS, S.touchProject, { id: ctx.pid, name: null, chats: chats.length, videos: vids.length, poster, at: Date.now() });

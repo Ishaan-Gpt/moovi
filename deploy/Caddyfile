@@ -1,6 +1,16 @@
-# HTTPS in front of the studio. SITE_ADDRESS is a domain (a certificate is fetched automatically) or ":80".
+# HTTPS in front of the studio and the Claude Code bridge. SITE_ADDRESS is a domain (a certificate is fetched
+# automatically) or ":80". The bridge (the worker service) answers /mcp, /connect, /healthz and /api/brain/*; its long
+# polls hold a request up to 45 s, under any load balancer idle timeout of 60 s or more.
 {$SITE_ADDRESS} {
 	encode zstd gzip
-	redir / /studio 302
-	reverse_proxy studio:3100
+	@bridge path /mcp /mcp/* /connect /healthz /api/brain/*
+	handle @bridge {
+		reverse_proxy worker:3200 {
+			flush_interval -1
+		}
+	}
+	handle {
+		redir / /studio 302
+		reverse_proxy studio:3100
+	}
 }

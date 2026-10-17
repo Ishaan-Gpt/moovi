@@ -10,6 +10,7 @@ import { join } from 'node:path';
 import { config } from '../../config';
 import { FX } from './catalog';
 import type { FxEvent, FxWord } from './plan';
+import { joinGraph } from '../xfade';
 
 export interface CutShot { t_in: number; t_out: number; src_in: number; src_out: number }
 
@@ -50,15 +51,16 @@ export function eventsOnEdit(events: FxEvent[], shots: CutShot[], total: number)
   return out;
 }
 
-/** ffmpeg filter that lays the shots end to end, picture and (when `audio`) sound, as [v] and [a]. Pure. */
-export function cutFilter(shots: CutShot[], audio: boolean): string {
+/** ffmpeg filter that lays the shots end to end, picture and (when `audio`) sound, as [v] and [a]: the sound joined with a 16 ms crossfade at each real cut (../xfade.ts), no dip inside a continuous run. Pure. */
+export function cutFilter(shots: CutShot[], audio: boolean, srcDur?: number): string {
   const parts: string[] = [], ins: string[] = [];
   shots.forEach((g, i) => {
     const a = g.src_in.toFixed(3), b = (g.src_in + (g.t_out - g.t_in)).toFixed(3);
     parts.push(`[0:v]trim=start=${a}:end=${b},setpts=PTS-STARTPTS[v${i}]`); ins.push(`[v${i}]`);
-    if (audio) { parts.push(`[0:a]atrim=start=${a}:end=${b},asetpts=PTS-STARTPTS,afade=t=in:d=0.012,afade=t=out:st=${Math.max(0, +b - +a - 0.012).toFixed(3)}:d=0.012[a${i}]`); ins.push(`[a${i}]`); }
   });
-  return `${parts.join(';')};${ins.join('')}concat=n=${shots.length}:v=1:a=${audio ? 1 : 0}${audio ? '[v][a]' : '[v]'}`;
+  parts.push(`${ins.join('')}concat=n=${shots.length}:v=1:a=0[v]`);
+  if (audio) parts.push(joinGraph(shots.map(g => ({ a: g.src_in, b: g.src_in + (g.t_out - g.t_in) })), { input: '[0:a]', label: 'a', d: 0.016, ...(srcDur ? { srcDur } : {}) }));
+  return parts.join(';');
 }
 
 /** The cut itself: `src` laid out by the shots into `out` (H.264 + AAC), on the edit clock. */
