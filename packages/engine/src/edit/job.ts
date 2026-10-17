@@ -1,7 +1,8 @@
-import { copyFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
 import { color } from '@moovi/brand';
 import { sttAvailable } from '../audio/stt';
+import { mixStyle1, sfxStem } from '../audio/style1';
 import { probe } from '../bench';
 import { buildEdl, type BuildInput } from './build';
 import { castStyleSfx, isD22, pickEditStyle, styledEdl } from './styles';
@@ -18,6 +19,7 @@ import { lookFaces } from './look';
 import { roughEdl } from './rough';
 import { ownerGrade, restoreVideo, useRestored, type Restored } from './restore';
 import { romanizeWords } from './romanize';
+import { scSfxEvents, studioCutEdl, SC_ID } from './templates/studio-cut';
 import { cleanVoice, quietPauses, type CleanVoice } from './voice';
 
 /**
@@ -66,6 +68,11 @@ export interface PlanInput {
   effects?: boolean;
   /** the creator's name or handle for the style's end card */
   handle?: string;
+  /** the edit grammar: 'studio-cut' (asked for by name, or MOOVI_EDIT_TEMPLATE=studio-cut) dresses the plan as a Studio Cut (templates/studio-cut.ts:
+   *  stacked captions, a continuous camera, graphics, Style 1 sound and its mix), 'none' keeps the plain cut + library cast */
+  template?: 'studio-cut' | 'none';
+  /** the brand a Studio Cut names on its title, name and end cards (none: those cards use the spoken words) */
+  brand?: { name?: string; url?: string; tagline?: string; logo?: string };
 }
 export interface Planned {
   edl: PlayerEdl;
@@ -96,6 +103,8 @@ export interface Planned {
   voice: Promise<CleanVoice | null>;
   /** the picture restore, running; resolves null when the clip did not need it or it failed */
   restore: Promise<Restored | null>;
+  /** the finished soundtrack (a Studio Cut: voice, bed and the Style 1 stem, mix.m4a), running; null when there is none */
+  mix: Promise<{ file: string; lufs: number } | null>;
 }
 
 export const EDIT_PALETTE = () => ({ ink: color.ink, paper: color.surface, accent: color.ice, accent2: color.frostMid, deep: color.ink, pop: color.iceWhite });
@@ -103,10 +112,17 @@ export const EDIT_PALETTE = () => ({ ink: color.ink, paper: color.surface, accen
 /** How far the library's camera moves may push in on this source (a 478 px tall clip goes soft past about 1.2x). */
 export const castMaxZoom = (s: { w: number; h: number }) => Math.min(2, Math.max(1.2, 1.3 * Math.min(s.w, s.h) / 720));
 
+/** The music bed every Studio Cut mixes under the voice (assets/music, CC BY: the credit rides on the EDL's music). */
+const BED = join(import.meta.dirname, '..', '..', 'assets', 'music');
+const editTemplate = (o: PlanInput) => o.template ?? ((process.env.MOOVI_EDIT_TEMPLATE ?? '').trim().toLowerCase() === 'studio-cut' || /\bstudio[ -]?cut\b/i.test(o.brief ?? '') ? 'studio-cut' : 'none');
+
 export async function planEdit(o: PlanInput): Promise<Planned> {
   const lap: Record<string, number> = {}; let tl = Date.now();
   const done = async (stage: string) => { lap[stage] = +((Date.now() - tl) / 1000).toFixed(2); tl = Date.now(); await o.onDone?.(stage, lap[stage]!); };
   const dir = o.dir; mkdirSync(dir, { recursive: true });
+  // edl.json is rewritten after the plan by the restore and the mix: one at a time, never both reading the same version
+  let queue: Promise<unknown> = Promise.resolve();
+  const patch = (fn: () => void): Promise<void> => { const p = queue.then(fn); queue = p.catch(() => undefined); return p; };
   const file = `src${extname(o.name ?? o.path).toLowerCase() || '.mp4'}`;
   await o.onStage?.('probe', 'measuring your clip');
   copyFileSync(o.path, join(dir, file));
@@ -145,9 +161,12 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
   const look = await lookP, quiet = await quietP;
   if (quiet) writeFileSync(join(dir, 'quiet.json'), JSON.stringify(quiet, null, 1));
   const source = { file, duration: pr.duration, w: pr.width ?? 1080, h: pr.height ?? 1920, fps: pr.fps ?? 30 };
+  // a Studio Cut (templates/studio-cut.ts) when you ask for one by name or MOOVI_EDIT_TEMPLATE=studio-cut; it keeps the
+  // clip's orientation (a landscape clip is a landscape film). Otherwise the D2.2 styles and the base edit, as before.
+  const sc = editTemplate(o) === 'studio-cut', output = sc && source.w > source.h ? { w: 1920, h: 1080, fps: 30, aspect: '16:9' } : undefined;
   // D2.2 auto: the style that fits the brief and the clip (edit/styles.ts pickEditStyle), when none was named
   let style: string | undefined = o.style, styleWhy = o.style ? `asked for ${o.style}` : 'the base edit';
-  if (o.style === 'auto') {
+  if (o.style === 'auto' && !sc) {
     const p = pickEditStyle({ brief: o.brief ?? '', words: words.map(w => w.word), burned: (await textP).length > 0 });
     style = p.style === 'base' ? undefined : p.style; styleWhy = p.why;
     writeFileSync(join(dir, 'style.json'), JSON.stringify(p, null, 1));
@@ -155,7 +174,7 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
   }
   let edl: PlayerEdl, rough = false;
   try {
-    const bi: BuildInput = { source, words, pauses: ps, ...(quiet ? { quiet: quiet.pauses } : {}), palette, ...(look.faces.length ? { faces: look.faces } : {}), style: { id: 'base', ...(o.caption ? { caption: o.caption } : {}) }, ...(language ? { language } : {}) };
+    const bi: BuildInput = { source, words, pauses: ps, ...(quiet ? { quiet: quiet.pauses } : {}), palette, ...(look.faces.length ? { faces: look.faces } : {}), style: { id: 'base', ...(o.caption ? { caption: o.caption } : {}), ...(output ? { output } : {}) }, ...(language ? { language } : {}) };
     const e = isD22(style) ? styledEdl(bi, style, o.handle ? { name: o.handle } : {}) : buildEdl(bi);
     const bad = validateEdl(e).problems.filter(p => !p.startsWith('version'));
     if (bad.length) throw new Error(bad.slice(0, 3).join('; '));
@@ -176,11 +195,11 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
   // the library in the edit path: camera:<id> moves (by the needs each beat's tag SERVES, framed on the face keys),
   // sfx by the library's events and transitions on beat changes, all from the FalkorDB graph (catalogue if it is down)
   let cast: CastTrace | null = null;
-  if (!rough && o.library !== false && isD22(style)) {
+  if (!rough && !sc && o.library !== false && isD22(style)) {
     // D2.2 styles: the style chose framing and cuts; the library graph gives the sound files for its events
     try { const r = await castStyleSfx(edl as never, await openLibrary()); writeFileSync(join(dir, 'cast.json'), JSON.stringify({ style, ...r }, null, 1)); }
     catch (e) { console.warn(`[edit] style sounds: ${String((e as Error).message ?? e).slice(0, 160)}`); }
-  } else if (!rough && o.library !== false) {
+  } else if (!rough && !sc && o.library !== false) {
     try {
       const before = JSON.stringify(edl);
       cast = await castEdl(edl as never, { lib: await openLibrary(), maxZoom: castMaxZoom(source) });
@@ -189,8 +208,18 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
       else writeFileSync(join(dir, 'cast.json'), JSON.stringify(cast, null, 1));
     } catch (e) { console.warn(`[edit] library cast: ${String((e as Error).message ?? e).slice(0, 160)}`); cast = null; }
   }
+  // the Studio Cut dresser (templates/studio-cut.ts): its own camera, stacks, graphics and sound; undone if it breaks the plan
+  if (sc && !rough && words.length) {
+    try {
+      const b = o.brand ?? {};
+      const d = studioCutEdl(edl as never, { maxZoom: castMaxZoom(source), raw: file, ...(b.name ? { brand: b.name } : {}), ...(b.url ? { url: b.url } : {}), ...(b.tagline ? { tagline: b.tagline } : {}), ...(b.logo ? { logo: b.logo } : {}) });
+      const bad = validateEdl(d).problems.filter(p => !p.startsWith('version'));
+      if (bad.length || EDIT.timeline(d as never).problems.length) console.warn(`[edit] studio cut undone: ${bad.slice(0, 2).join('; ')}`);
+      else edl = d as never;
+    } catch (e) { console.warn(`[edit] studio cut: ${String((e as Error).message ?? e).slice(0, 160)}`); }
+  }
   // D2.7: the X1 moves a style asked for, on the beats they suit (first, so the inserts fit around them)
-  const want = rough ? [] : o.moves ?? autoMoves(edl as never);
+  const want = rough || sc ? [] : o.moves ?? autoMoves(edl as never);
   let moves: string[] = [];
   if (want.length) {
     const before = JSON.stringify(edl);
@@ -202,7 +231,7 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
   }
   // D2.5: Style 1 UI cards and Editorial posters on the beats that call for one, cast from the same graph
   let ins: InsertTrace | null = null;
-  if (!rough && o.inserts !== false && o.library !== false) {
+  if (!rough && !sc && o.inserts !== false && o.library !== false) {
     const before = JSON.stringify(edl);
     try {
       ins = await castInserts(edl as never, { src: await openInserts() });
@@ -216,7 +245,7 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
   // the reel effects library (edit/effects): the effects this clip's words call for, cast from the same graph, on the
   // source clock (the effects film renders over the clip itself: router/edit.ts)
   let effects: AutoFx | null = null;
-  if (!rough && o.effects !== false && words.length >= 6) {
+  if (!rough && !sc && o.effects !== false && words.length >= 6) {
     try {
       effects = await autoFx(words.map(w => ({ word: w.word, t: w.t, end: w.end })), { src: await openFx(), total: pr.duration, ...(look.faces.length ? { faces: look.faces } : look.why ? {} : { faces: [] }) });
       writeFileSync(join(dir, 'effects.json'), JSON.stringify(effects, null, 1));
@@ -237,8 +266,27 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
   // load and every render). The zoom cap above stays on the original resolution.
   const restore: Promise<Restored | null> = o.restore !== false
     ? restoreVideo(join(dir, file), join(dir, 'hd.mp4'), { w: source.w, h: source.h, fps: source.fps, duration: pr.duration }, { grade: ownerGrade() ?? undefined })
-      .then(r => { if (r) { useRestored(dir, r); writeFileSync(join(dir, 'restore.json'), JSON.stringify(r, null, 1)); } return r; })
+      .then(r => r && patch(() => useRestored(dir, r)).then(() => r))
+      .then(r => { if (r) { writeFileSync(join(dir, 'restore.json'), JSON.stringify(r, null, 1)); } return r; })
       .catch(e => { console.warn(`[edit] picture restore: ${String((e as Error).message ?? e).slice(0, 160)}`); return null; })
     : Promise.resolve(null);
-  return { edl, words, ...(language ? { language } : {}), heard, faces: look.faces.length, lap, duration: t.duration, source: { ...source, hasAudio: pr.hasAudio }, rough, cast, inserts: ins, moves, style: { id: isD22(style) ? style : null, why: styleWhy }, effects, ...(look.why ? { lookWhy: look.why } : {}), voice, restore };
+  // the Studio Cut's soundtrack once the voice is clean (it is already cut on the film's clock): the Style 1 stem from the
+  // EDL's sound events, the bed 3 LU under the voice, mastered to -14 LUFS (audio/style1.ts); edl.json then names it
+  const isSc = (edl as { template?: { id: string } }).template?.id === SC_ID;
+  const mix: Promise<{ file: string; lufs: number } | null> = isSc
+    ? voice.then(async v => {
+      if (!v) return null;
+      const bed = JSON.parse(readFileSync(join(BED, 'bed.json'), 'utf8')) as { file: string; start?: number; credit?: string };
+      const stem = await sfxStem(scSfxEvents(edl as never), join(dir, 'stem.wav'), { seed: 1, duration: t.duration });
+      const m = await mixStyle1({ voice: v.file, spans: [[0, t.duration]], bed: join(BED, bed.file), bedStart: bed.start ?? 0, stem: stem.file, duration: t.duration, out: join(dir, 'mix.m4a'), dir }); for (const f of ['mix-voice.wav', 'mix-pre.wav']) rmSync(join(dir, f), { force: true });
+      await patch(() => {
+        const f = join(dir, 'edl.json'), e = JSON.parse(readFileSync(f, 'utf8'));
+        e.mix = { file: 'mix.m4a', lufs: +m.lufs.toFixed(1) };
+        e.music = { asset_ref: 'music:funkorama', offset: bed.start ?? 0, gain_db: -21, ...(bed.credit ? { credit: bed.credit } : {}), rule_id: 'sc.music' };
+        writeFileSync(f, JSON.stringify(e, null, 1));
+      });
+      return { file: m.file, lufs: m.lufs };
+    }).catch(e => { console.warn(`[edit] studio cut mix: ${String((e as Error).message ?? e).slice(0, 160)}`); return null; })
+    : Promise.resolve(null);
+  return { mix, edl, words, ...(language ? { language } : {}), heard, faces: look.faces.length, lap, duration: t.duration, source: { ...source, hasAudio: pr.hasAudio }, rough, cast, inserts: ins, moves, style: { id: isD22(style) ? style : null, why: styleWhy }, effects, ...(look.why ? { lookWhy: look.why } : {}), voice, restore };
 }

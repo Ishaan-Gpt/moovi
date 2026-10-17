@@ -17,3 +17,4 @@ subsets (from Fontsource). They are bundled so every render uses the exact same 
 | pacifico-latin-400-normal.woff2 | Pacifico (400) | Vernon Adams, Jacques Le Bailly |
 | roboto-latin-wght-*.woff2 | Roboto (100–900) | Christian Robertson |
 | inter-latin-wght-*.woff2 | Inter (100–900), standard width | Rasmus Andersson |
+| permanent-marker-latin-400-normal.woff2 | Permanent Marker (400) | Font Diner (Apache License 2.0) |

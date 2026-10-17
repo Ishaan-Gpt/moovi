@@ -886,6 +886,21 @@
       "description": "the sound file in packages/engine/assets/sfx (the player plays it; the renderer mixes it)",
       "type": "string"
      },
+     "sound": {
+      "description": "a Style 1 sound id overriding the event first sound (e.g. riser-short), for audio/style1.ts",
+      "type": "string"
+     },
+     "count": {
+      "description": "a cascade: how many items arrive",
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991
+     },
+     "spacing": {
+      "description": "a cascade: seconds between items",
+      "type": "number",
+      "minimum": 0
+     },
      "rule_id": {
       "type": "string",
       "minLength": 1,
@@ -1009,6 +1024,23 @@
     "clean",
     "target_lufs",
     "true_peak"
+   ],
+   "additionalProperties": false
+  },
+  "mix": {
+   "description": "when set the player plays this track and mutes the clip",
+   "type": "object",
+   "properties": {
+    "file": {
+     "type": "string",
+     "description": "the finished soundtrack (voice, bed, sfx stem) in the edit folder, on the output clock"
+    },
+    "lufs": {
+     "type": "number"
+    }
+   },
+   "required": [
+    "file"
    ],
    "additionalProperties": false
   },

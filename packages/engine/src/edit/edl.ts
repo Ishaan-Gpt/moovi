@@ -121,6 +121,8 @@ export const Sfx = z.object({
     ...SFX_MAP_EVENTS]),
   gain_db: z.number().optional(),
   file: z.string().optional().describe('the sound file in packages/engine/assets/sfx (the player plays it; the renderer mixes it)'),
+  sound: z.string().optional().describe('a Style 1 sound id overriding the event first sound (e.g. riser-short), for audio/style1.ts'),
+  count: z.number().int().positive().optional().describe('a cascade: how many items arrive'), spacing: sec.optional().describe('a cascade: seconds between items'),
   rule_id: ruleId,
 });
 
@@ -161,6 +163,7 @@ export const EdlSchema = z.object({
   sfx: z.array(Sfx).optional(),
   music: Music.optional(),
   voice: Voice.optional(),
+  mix: z.object({ file: z.string().describe('the finished soundtrack (voice, bed, sfx stem) in the edit folder, on the output clock'), lufs: z.number().optional() }).optional().describe('when set the player plays this track and mutes the clip'),
   end: End.optional(),
   faces: z.array(Face).optional(),
   beats: z.array(Beat).optional(),
