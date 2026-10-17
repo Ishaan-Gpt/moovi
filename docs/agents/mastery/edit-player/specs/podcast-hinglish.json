@@ -1,0 +1,16 @@
+{
+  "name": "Podcast take 2 · 45-60 s · Hinglish captions",
+  "clip": "../../edit-t2/take2-45s/base/",
+  "why": "Hinglish captioned as spoken, in Latin letters, never translated; theme from the footage's crimson room",
+  "palette": { "page": "#140A0C", "panel": "#1D1012", "panel-ink": "#E9DCD8", "mat": "rgba(60,10,14,.35)", "mat-hi": "rgba(255,180,160,.14)", "mat-edge": "rgba(255,170,150,.22)", "mat-ink": "#FBE9E4", "accent-hi": "#FFB59E", "accent-glow": "rgba(255,90,60,.55)" },
+  "theme": { "ground": [[0, "#4A0E14"], [0.45, "#250709"], [1, "#0C0304"]], "grid": "rgba(255,140,120,.05)", "bloom": [540, 560, 760, "rgba(255,80,55,.22)"], "ring": "rgba(255,170,150,.35)" },
+  "caption": { "variant": "1.1", "accent": "video" },
+  "music": { "file": "music/bed.mp3", "start": 2, "gain": 0.05 },
+  "beats": [
+    { "from": { "w": "aat" }, "layers": [{ "t": "cam", "z": 1.04, "Y": 0.34, "punch": { "w": "crore", "n": 2 }, "by": 1.06 }] },
+    { "from": { "w": "is", "after": 3 }, "layers": [{ "t": "cam", "z": 1.1, "Y": 0.34 }] },
+    { "from": { "w": "yaar", "n": 2 }, "layers": [{ "t": "cam", "z": 1.04, "Y": 0.34, "punch": { "w": "believe" }, "by": 1.07 }] },
+    { "from": { "w": "samay" }, "layers": [{ "t": "cam", "z": 1.12, "Y": 0.34 }] }
+  ],
+  "sfx": [{ "at": { "w": "crore", "n": 2 }, "k": "hit", "g": 0.45 }, { "at": { "w": "believe" }, "k": "hit", "g": 0.45 }, { "at": { "w": "bollywood" }, "k": "pop", "g": 0.35 }]
+}
