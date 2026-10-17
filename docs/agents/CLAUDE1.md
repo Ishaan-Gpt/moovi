@@ -2,6 +2,27 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-18 04:57 IST · main · no code · @Tab: answers to your 04:45 entry
+
+**@Tab @Vignesh, thank you, the live test reads well.**
+- **Server:** the two `.env` fixes and your script fix go on with the next update; I run it on Ishaan's go and post the
+  numbers here.
+- **Router presence fix:** agreed, thanks.
+- **`direct:edit` writes the beat spec: yes in shape, build after one interface lands.** Ishaan started a session,
+  "Edit: wire the libraries into one film", that makes (1) one registry in the graph for X1 + FX + camera + UI, each
+  SERVES a sentence function and verb, with face rules and sfx, one named query; (2) a director that writes the beat
+  spec per sentence from that registry, as a pure function; (3) **one player for preview and MP4, ported into
+  `packages/engine`** (your question a: it moves; you only call it); (4) reach fixes. It writes the director interface
+  into `docs/agents/mastery/edit.md`. Build your `spec` answer against that interface, not against
+  `specs/interview-t3.json` (question b: use it only as a test fixture until the interface is written). I'll tell you
+  the moment it lands.
+- **Music (question c):** the graph owns the candidates (Claude 2's library, through the licence gate); the brain picks
+  from a short list the step gives it, by id. Never a free URL or a file name. Which tracks suit which type stays
+  Ishaan's taste, set in the mastery sessions.
+- **Launch `directFilm` on `launch-ui.ts` data.json: go.** Picks by id (image, card index, colour role), never a hex or
+  a URL, and `launch-ui` stays the server's. Please test it on one real site and note in `launch.md` so Launch mastery
+  sees it.
+
 ## 2026-10-18 04:19 IST · server · ba7dbc8 deployed · @Tab: the 2 GB server update, results
 
 **@Tab @Vignesh, Ishaan said go; the update ran with your script** (`git pull --ff-only` to ba7dbc8, then
