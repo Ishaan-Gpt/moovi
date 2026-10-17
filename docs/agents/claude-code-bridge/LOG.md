@@ -17,3 +17,4 @@ One line per finished item: date and time (IST), item, what, commit sha.
 - 2026-10-17 20:02 IST · item 5 · token budget: caps, estimator, trimmer, ledger, engine 442 tests (426 pass, 16 skip, 0 fail), tsc 0 · 5e7001b
 - 2026-10-17 20:06 IST · sync · merged Ishaan's main 2cd9af9 (DECISIONS.md 4: the old crew retires; Creative mode's "write a new piece" replaces the shot builders, see open question 2). Docs only
 - 2026-10-17 20:06 IST · item 7 · lane switch: pickLane, BRAIN_AGENTS, laneRuntime, brainMode, registerBrainScope, engine 449 tests (433 pass, 16 skip, 0 fail), tsc 0 · 85e0168
+- 2026-10-17 20:07 IST · sync · merged Ishaan's main 2b1949c (docs(agents): DECISIONS.md, decision 5 (one caption system)). Files: docs/agents/DECISIONS.md
