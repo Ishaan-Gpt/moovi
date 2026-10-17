@@ -2,7 +2,7 @@
   "name": "@moovi/mcp",
   "version": "0.1.0",
   "private": true,
-  "description": "The Claude Code bridge: the user's own Claude Code is the brain for a few batched decisions per video (docs/agents/claude-code-bridge). Queue, memo, leases, answer checks; the MCP endpoint comes in phase 2.",
+  "description": "The Claude Code bridge: the user's own Claude Code is the brain for a few batched decisions per video (docs/agents/claude-code-bridge). Queue, memo, leases, answer checks, and the remote MCP endpoint (/mcp) Claude Code connects to.",
   "type": "module",
   "sideEffects": false,
   "exports": {
@@ -13,6 +13,7 @@
     "test": "tsx --test test/*.test.ts"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.1",
     "@moovi/engine": "workspace:*",
     "redis": "5.12.1",
     "zod": "4.6.6"
