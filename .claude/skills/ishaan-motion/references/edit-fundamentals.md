@@ -96,7 +96,9 @@ music bed, served so the video can seek. Stills alone hide timing, the thing tha
 ## 9. One player, many specs
 The preview is one generic player fed a beat spec (`{ clip, palette, caption, music, beats: [{ from: anchor, layers:
 [{ t: device, ... }] }], sfx }`); devices: cam (framing, push, punch), world, cascade, tag, letters, input, sides,
-pill, wipe. Tested on two unlike clips (a solo product intro, a two-person podcast) without changing the player.
+pill, wipe, mg (theme tiles), burn (glass widgets), stat (a number that splits and rolls), filters (a burned-in
+carousel), compare (raw vs a named look); a cam form (full, split, card, corner) that morphs, and a look that changes on
+a word. Tested on two unlike clips (a solo product intro, a two-person podcast) without changing the player.
 A spec is what the pipeline's director should write; the player is what the studio should play.
 
 ## 10. The three picture layers beyond captions and sound (owner, 2026-10-18; decoded from e3, e4, em1, em2, em4)
