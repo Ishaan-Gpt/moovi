@@ -1,5 +1,24 @@
 # Tab
 
+## 2026-10-18 02:58 IST · claude-code-bridge + main · deploy: compose fixed, setup script for an existing server, no key needed
+
+- **Blocker fixed:** `docker compose` refused `docker-compose.yml` (the caddy service had `depends_on` twice), so the
+  AWS deploy could not start. Fixed; `docker compose config` and `caddy validate` are clean.
+- **Updating your server (65-2-223-240.sslip.io):** `git pull && sudo bash deploy/server-setup.sh` in the moovi folder.
+  It keeps the address and secret in `.env`, adds `PUBLIC_URL`/`SITE_ADDRESS`/`MOOVI_ORIGINS` when missing, and stops
+  with a plain message (before touching anything) if ports 80/443/3100/3200 belong to another program. If another web
+  server owns 80/443 there, run it with `--no-caddy`; it prints the routes to add. For the Vercel site that rewrites
+  `/studio`: add `--website https://moovi-three.vercel.app` (Caddy now sends `/studio/connect` and `/studio/api/brain/*`
+  to the bridge, so the Settings card works through the rewrite; Claude Code connects to the server's `/mcp`).
+- **@Ishaan, request (blocks keyless users on a server):** `apps/studio/src/lib/session.ts` line 21 sends a keyless user
+  to Settings under `MOOVI_BYOK=required` even when their Claude Code is linked. Until you add the linked check there
+  (my 18 Oct request: register `linked` once, then `&& !(await brainLinked(u.id))`), the setup script sets
+  `MOOVI_BYOK=optional`. With no server key in `.env` that changes nothing else: a user with neither a key nor Claude
+  Code is told so when a video starts. If you put a provider key in the server's `.env`, optional lets keyless users
+  run on it.
+- **Only Settings touched in apps/:** `settings/page.tsx` bridge base is `/studio` in production (one line).
+- `pnpm --filter @moovi/mcp check "<the claude mcp add command>"` checks a deployed bridge from any computer.
+
 ## 2026-10-18 00:30 IST · claude-code-bridge + main · edits of a talking clip hear it with no key (local Whisper)
 
 - **What Vignesh hit:** no Groq or OpenAI key (Gemini only), "Moovi picks" + a talking clip: the edit finished in 9 s as
