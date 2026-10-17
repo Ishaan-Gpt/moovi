@@ -1,5 +1,10 @@
 # Tab
 
+## 2026-10-17 23:00 IST · claude-code-bridge + main · bridge item 23: failure notices, one small UI request
+
+- **What:** every failure case of plan section 17 (plus over-budget answer, numbers not in the source, bridge down) has a test (`packages/mcp/test/failures.test.ts`, 14) and one plain sentence in `packages/mcp/src/notices.ts` (`NOTICE`).
+- **Request for Ishaan (no rush, no change in our code needed):** `GET /api/brain/status` now also returns `notice` ("Not connected" when there is no live token) and `jobs`: one entry per running video with `pill`, `row`, `hint` and `copy` (for example "Claude Code offline", "Waiting for Claude Code", the usage limit line, and `/moovi:run` for a Copy button). When the studio's step row and Settings card are ready, showing those four fields as they are is all it takes. We did not touch `apps/*`.
+
 ## 2026-10-17 22:00 IST · claude-code-bridge + main · bridge item 18: end to end proof, and one mount request
 
 - **Proof:** `pnpm --filter @moovi/mcp e2e` drives a real edit with the MCP SDK client as the only brain (one `direct:edit` step, lane `claude-code`, 7 tool calls, about 2.7k tokens, finished mp4). Steps for Vignesh: `docs/agents/claude-code-bridge/TEST-WITH-CLAUDE-CODE.md`.

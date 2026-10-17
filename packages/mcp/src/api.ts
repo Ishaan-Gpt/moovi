@@ -6,6 +6,7 @@
  * own session cookie); the token itself never appears again after the POST that minted it.
  */
 import type { BrainHub } from './hub';
+import { jobNotice, NOTICE, type NoticeFacts } from './notices';
 
 export interface BrainApiOptions {
   hub: BrainHub;
@@ -25,6 +26,23 @@ export function publicOrigin(req: Request): string {
   const host = req.headers.get('x-forwarded-host')?.split(',')[0]?.trim() || req.headers.get('host') || u.host;
   const proto = req.headers.get('x-forwarded-proto')?.split(',')[0]?.trim() || u.protocol.replace(':', '');
   return `${proto}://${host}`;
+}
+
+/**
+ * Item 23: what each running video's row says (notices.ts), from the real queue: its oldest open brain step, how long
+ * it has waited, and whether an earlier video is still being thought about (one /moovi:run takes them in order).
+ */
+export async function jobNotices(hub: BrainHub, user: string, linked: boolean, claudeCode: NoticeFacts['claudeCode'], hasKey: boolean) {
+  const running = (await hub.board.running(user)).sort((a, b) => a.startedAt - b.startedAt);
+  const open = await hub.queue.open(user), t = hub.now();
+  const busy = new Set<string>();
+  return running.map(j => {
+    const s = open.find(x => x.job === j.job) ?? null;
+    const ahead = s?.state === 'queued' ? [...busy].length : 0;
+    if (s) busy.add(j.job);
+    const step = s ? { state: s.state as 'queued' | 'picked', waitedMs: t - (s.state === 'picked' ? (s.pickedAt ?? s.createdAt) : s.createdAt) } : null;
+    return { job: j.job, title: j.title, url: j.url, ...jobNotice({ linked, claudeCode, hasKey, step, ahead, job: 'running' }) };
+  });
 }
 
 export function brainApi(o: BrainApiOptions) {
@@ -54,7 +72,7 @@ export function brainApi(o: BrainApiOptions) {
     const cc = o.hub.presence.state(user), key = o.hasKey?.(user) ?? false;
     const online = s.linked && cc === 'online';
     const lane = online ? 'bridge' : key ? 'key' : s.linked ? 'waiting' : 'none';
-    return json({ ...s, online, claude_code: s.linked ? cc : 'off', lane });
+    return json({ ...s, online, claude_code: s.linked ? cc : 'off', lane, notice: s.linked ? null : NOTICE.notConnected, jobs: await jobNotices(o.hub, user, s.linked, s.linked ? cc : 'off', key) });
   }
 
   /** route by path: .../api/brain/link and .../api/brain/status (any base path), null for anything else */

@@ -81,6 +81,16 @@ export class StepQueue {
     return out;
   }
 
+  /** The user's open steps (queued and picked, unanswered), oldest first, for the site's notices (item 23). Read only. */
+  async open(user: string): Promise<ThinkStep[]> {
+    const out: ThinkStep[] = [];
+    for (const key of [KEY.queue(user), KEY.held(user)]) for (const id of await this.store.range(key)) {
+      const s = await this.get(id);
+      if (s && (s.state === 'queued' || s.state === 'picked') && !out.some(o => o.id === s.id)) out.push(s);
+    }
+    return out.sort((a, b) => a.createdAt - b.createdAt);
+  }
+
   /**
    * Hand a picked, unanswered step to `session` (the window that now holds its job, after the old one dropped, or the
    * same window asking again). The answer window starts again; an answer from the old session is refused from now on.

@@ -25,7 +25,7 @@ export const TICKET_MS = 6 * 3600_000;
 export const ANSWER_HOLD_MS = 5 * 60_000 + 15_000;
 
 export const IDLE_NO_TICKET = 'Type /moovi:run to let this Claude Code work on your Moovi video.';
-export const IDLE_OTHER_WINDOW = 'This video is being handled by another Claude Code window.';
+export const IDLE_OTHER_WINDOW = 'Another Claude Code window is already working on this video. You can close this one.';
 export const IDLE_NOTHING = 'Nothing to do right now: Moovi will have the next step shortly.';
 
 interface Ticket { user: string; createdAt: number; session: string | null }

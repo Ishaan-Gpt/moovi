@@ -2,7 +2,7 @@
  * The answer checker for brain calls (Claude Code bridge item 10). Whatever lane answered (the user's Claude Code, their
  * key or the server model), the answer is read strictly against the step's own contract; a bad one gets ONE re-ask
  * that quotes the exact problems; a second bad one (or no answer at all) gets the stage's safe default (the rules), and
- * the result says so, so the site can show "Moovi's default used for this step". The video always finishes.
+ * the result says so, so the site can show "Used Moovi's default for this step". The video always finishes.
  *
  * Determinism: the re-ask carries the first answer and its problems as `history`, so it is its own step with its own
  * memo entry; re-running a job replays both answers from the memo and lands on the same result, asking nothing.
@@ -24,7 +24,7 @@ export interface Checked<T> {
   note?: string;
 }
 
-export const DEFAULT_NOTE = 'Moovi\'s default used for this step';
+export const DEFAULT_NOTE = 'Used Moovi\'s default for this step';
 export const MAX_PROBLEMS_QUOTED = 8;
 
 /** The re-ask turn: the exact problems, then what to send. */
