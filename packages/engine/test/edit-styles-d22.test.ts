@@ -57,7 +57,10 @@ test('D2.2 Atlas: cards beside the head on names and numbers, a sunburst on the 
   assert.ok((e.inserts ?? []).length >= 2);
   assert.ok(e.inserts!.every(i => i.kind === 'card' && i.frame === 'beside_head'));
   for (let k = 1; k < e.inserts!.length; k++) assert.ok(e.inserts![k]!.t0 - e.inserts![k - 1]!.t0 >= 3.5);
-  assert.equal(e.overlays?.[0]?.kind, 'sunburst');
+  // the sunburst only rings a boxed (fit) shot: a landscape clip with no face is fit, a full-frame face gets none
+  assert.equal(e.overlays?.some(o => o.kind === 'sunburst'), false);
+  const boxed = styledEdl({ ...input, faces: [], source: { ...input.source, w: 1920, h: 1080 } }, 'atlas');
+  assert.equal(boxed.overlays?.[0]?.kind, 'sunburst');
   assert.equal(e.end?.kind, 'name'); assert.equal(e.end?.title, '@vignesh');
   assert.equal(e.caption_style_id, 'atlas-two');
   assert.ok(e.inserts!.some(i => /^\d+\|[a-z]+$/.test(i.label!)), JSON.stringify(e.inserts!.map(i => i.label)));
@@ -255,5 +258,5 @@ test('D2.2: a clip with its own burned-in subtitles gets no second set of captio
   assert.equal(EDIT.captionWords(burned as never).length, 0);
   assert.deepEqual(validateEdl(burned as never).problems.filter(p => !p.startsWith('version')), []);
   // the player hides the caption over the black logo card
-  assert.match(PAGE, /E\.end\.kind === 'logo' && t >= E\.end\.t0 \? 'hidden'/);
+  assert.match(PAGE, /E\.end\.kind === 'logo' && t >= E\.end\.t0\) \|\| \(!TPL && INSERTS\.capHidden\(E, t\)\) \? 'hidden'/);
 });

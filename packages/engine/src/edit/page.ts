@@ -57,7 +57,8 @@ async function place(t) {
 
 /* ── one frame ── */
 let chunkKey = -2;
-const SHADOW = { soft: '0 4px 22px rgba(0,0,0,.5)', hard: '0 7px 0 var(--ink)', long: '4px 4px 0 var(--ink),8px 8px 0 var(--ink),12px 12px 0 var(--ink)', '3d': '0 3px 0 var(--deep),0 6px 0 var(--deep),0 9px 0 var(--deep)', glow: '0 0 28px var(--accent)', lift: '0 2px 3px rgba(0,0,0,.8),0 0 16px rgba(0,0,0,.6),0 8px 34px rgba(0,0,0,.5)' };
+// soft: a tight dark edge under the blur, so white words read on a bright wall (edit mastery round 3; was '0 4px 22px rgba(0,0,0,.5)')
+const SHADOW = { soft: '0 2px 4px rgba(0,0,0,.6),0 0 14px rgba(0,0,0,.45),0 6px 26px rgba(0,0,0,.45)', hard: '0 7px 0 var(--ink)', long: '4px 4px 0 var(--ink),8px 8px 0 var(--ink),12px 12px 0 var(--ink)', '3d': '0 3px 0 var(--deep),0 6px 0 var(--deep),0 9px 0 var(--deep)', glow: '0 0 28px var(--accent)', lift: '0 2px 3px rgba(0,0,0,.8),0 0 16px rgba(0,0,0,.6),0 8px 34px rgba(0,0,0,.5)' };
 function styleWord(el, w, s) {
   const f = w.key && ST.key ? ST.key : ST.font, size = EDIT.sizePx(w.key && ST.key ? ST.key.size : ST.size, W);
   el.style.font = LK && !(w.key && ST.key) ? (LK.italic ? 'italic ' : '') + LK.weight + ' ' + size + 'px/1.06 "' + LK.family + '",sans-serif' : (f.italic ? 'italic ' : '') + f.weight + ' ' + size + 'px/1.06 "' + f.family + '",sans-serif';
@@ -129,21 +130,29 @@ if (STYLED) stage.classList.add('st-' + SID);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 function jitter(k, n) { const x = Math.sin(k * 12.9898 + n * 78.233) * 43758.5453; return x - Math.floor(x) - 0.5; }
 function styleInsert(x, t) {
-  const p = EDIT.easeOut((t - x.t0) / 0.28), q = EDIT.easeOut((x.t1 - t) / 0.22), o = Math.min(p, q).toFixed(2), L = esc(x.label || '');
+  // a library insert (edit/inserts.ts) drawn by the style's card says its headline (at most 5 words), not the whole line
+  // its label holds (edit mastery round 2: Handmade set a 15-word sentence down a tall card over the face)
+  const head = x.params && Array.isArray(x.params.words) && x.params.words.length ? x.params.words.map(w => w.text).join(' ') : '';
+  const p = EDIT.easeOut((t - x.t0) / 0.28), q = EDIT.easeOut((x.t1 - t) / 0.22), o = Math.min(p, q).toFixed(2), L = esc(head || x.label || '');
   if (SID === 'atlas') {
     const right = x.side === 'right', dx = ((1 - p) * (right ? 1 : -1) * W * 0.6).toFixed(0);
-    const [big, pill] = String(x.label || '').split('|'), fs = Math.min(150, Math.max(64, Math.floor(W * 0.46 / Math.max(3, String(big).length) * 1.2)));
+    const [big, pill] = String(head || x.label || '').split('|'), fs = Math.min(150, Math.max(64, Math.floor(W * 0.46 / Math.max(3, String(big).length) * 1.2)));
     return '<div class="a-card" style="' + (right ? 'right:' : 'left:') + (W * 0.05).toFixed(0) + 'px;top:' + (H * 0.16).toFixed(0) + 'px;opacity:' + o + ';transform:translateX(' + dx + 'px) rotate(' + (right ? 2 : -2) + 'deg)"><b style="font-size:' + fs + 'px">' + esc(big) + '</b>' + (pill ? '<span class="pill">' + esc(pill) + '</span>' : '') + '</div>';
   }
   if (SID === 'handmade') {
     const s = (0.6 + 0.4 * EDIT.easeOut((t - x.t0) / 0.16)).toFixed(3), r = (jitter(Math.floor(t * 12), 3) * 3).toFixed(2);
     // kept off the face: the card's centre goes to the first of its places (40%, 24%, 56%, 18% of the height) that clears the face in this shot
     const fo = EDIT.faceOutAt(E, t), half = 0.085, clear = y => !fo || y + half < fo.y0 - 0.01 || y - half > fo.y1 + 0.01;
-    const cy = [0.40, 0.24, 0.56, 0.18].find(clear) ?? 0.40;
+    // a full-frame face crop leaves no room above it: then the lower third, over the chest (edit mastery round 2)
+    const cy = [0.40, 0.24, 0.56, 0.18, 0.64].find(clear) ?? 0.64;
     return '<div class="h-card" style="top:' + (cy * 100).toFixed(1) + '%;opacity:' + o + ';transform:translate(-50%,-50%) scale(' + s + ') rotate(' + r + 'deg)"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i><b>' + L + '</b></div>';
   }
   const s = (0.7 + 0.3 * EDIT.easeOut((t - x.t0) / 0.2)).toFixed(3), fl = 0.85 + 0.15 * (Math.floor(t * 20) % 3 === 0 ? 0 : 1);
-  return '<div class="m-num" style="opacity:' + (Math.min(p, q) * fl).toFixed(2) + ';transform:translate(-50%,-50%) scale(' + s + ')"><b>' + L + '</b></div>';
+  // the hero number is 220 px; words come down so the longest fits the frame (never a wall of red over the face)
+  const long = Math.max(...String(head || x.label || '').split(' ').map(w => w.length)), fsz = head ? Math.min(220, Math.floor(W * 0.84 / Math.max(1, long) * 1.6)) : 0;
+  // the hero card clears the face like the Handmade card (its place 36%, else 22%, else the lower third)
+  const fo = EDIT.faceOutAt(E, t), mh = 0.1, my = [0.36, 0.22, 0.64].find(y => !fo || y + mh < fo.y0 - 0.01 || y - mh > fo.y1 + 0.01) ?? 0.64;
+  return '<div class="m-num" style="top:' + (my * 100).toFixed(1) + '%;opacity:' + (Math.min(p, q) * fl).toFixed(2) + ';transform:translate(-50%,-50%) scale(' + s + ')"><b' + (fsz ? ' style="font-size:' + fsz + 'px"' : '') + '>' + L + '</b></div>';
 }
 function drawStyle(t) {
   if (!STYLED) return '';
@@ -209,7 +218,8 @@ function draw(t) {
   cur.style.filter = ((x.blur > 0.5 ? 'blur(' + (x.blur * W / 1080).toFixed(1) + 'px) ' : '') + GRADE).trim();
   drawCaptions(t); drawInserts(t); drawFx(t); drawStyle(t);
   // the logo end card is a black card: no caption over it (sm-v1: 'YEP,' drawn across '@VIGNESH')
-  cap.style.visibility = E.end && E.end.kind === 'logo' && t >= E.end.t0 ? 'hidden' : '';
+  // (and it keeps drawInserts' own hide under a full-frame card: before, this line put the caption back over it)
+  cap.style.visibility = (E.end && E.end.kind === 'logo' && t >= E.end.t0) || (!TPL && INSERTS.capHidden(E, t)) ? 'hidden' : '';
   if (TPL) { TPL.draw(t, cur, g); cap.style.visibility = TPL.hideCaptions(t) ? 'hidden' : ''; }
   if (!STILL) { $('tl').textContent = t.toFixed(1) + ' / ' + D.toFixed(1); $('s').value = String(Math.round(t / D * 1000)); }
 }

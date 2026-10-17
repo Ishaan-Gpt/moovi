@@ -118,7 +118,9 @@ export function editLib() {
   function outWords(e: PlayerEdl): Omit<OutWord, 'chunk'>[] {
     const out: Omit<OutWord, 'chunk'>[] = [];
     for (const w of e.words) {
-      const a = outOf(e, w.src_t0); if (a === null) continue;
+      // a word is captioned when its middle plays too: a cut word that overlaps a kept word's edge by a few ms (a retake's
+      // first "Now" starting 60 ms before "Moovi." ends) is not ("now now, Moovi is", edit mastery round 2)
+      const a = outOf(e, w.src_t0); if (a === null || outOf(e, (w.src_t0 + w.src_t1) / 2) === null) continue;
       const b = outOf(e, Math.max(w.src_t0, w.src_t1 - 0.001));
       out.push({ text: w.text, t0: a, t1: b === null ? a + (w.src_t1 - w.src_t0) : b + 0.001, role: w.role ?? (/\d/.test(w.text) ? 'number' : 'connector') });
     }

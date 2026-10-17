@@ -98,10 +98,9 @@ test('edit builder: faces[] goes into the EDL and the player crops on it; the pu
   const e = buildEdl({ source: land, words: take, pauses, palette, faces });
   assert.deepEqual(e.faces, faces);
   assert.deepEqual(validateEdl(e).problems.filter(p => !p.startsWith('version')), []);
-  // landscape into 9:16: wide shots show the whole frame over the blurred fill, the others are the face crop
-  const kinds = e.shots.map(s => s.layout);
-  assert.ok(kinds.includes('fit') && kinds.includes('full'), kinds.join(','));
-  for (const s of e.shots) if (s.layout === 'fit') assert.equal(s.bg?.mode, 'blur');
+  // landscape into 9:16 with a face: every shot is the full-frame face crop (no blurred fill strip), punch-ins alternate
+  assert.ok(e.shots.every(s => s.layout === 'full'), e.shots.map(s => s.layout).join(','));
+  assert.ok(e.shots.some(s => (s.framing?.scale ?? 1) > 1) && e.shots.some(s => (s.framing?.scale ?? 1) === 1));
   // the player's crop puts the face near the middle of the frame, so the close-up scales around it
   const c = EDIT.cropAt(e, e.shots.find(s => s.layout === 'full')!.t_in);
   assert.ok(c.px > 50 && c.px < 100, JSON.stringify(c));

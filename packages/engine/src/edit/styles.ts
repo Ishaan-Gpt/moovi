@@ -169,7 +169,9 @@ export function applyStyle(e: Edl, id: D22Style, o: StyleOpts = {}): Edl {
       if (w.role === 'number') { hide.push(w.i); if (unit && nx) hide.push(nx.i); }
     }
     const hook = beats.find(b => b.tag === 'hook');
-    if (hook) overlays.push({ t0: r4(hook.t0), t1: r4(Math.min(hook.t1, hook.t0 + 3)), kind: 'sunburst', rule_id: rule('sunburst_on_hook') });
+    // the rays only around a boxed (fit) shot: across a full-frame face they read as clip-art (edit mastery round 2, P4 B)
+    const boxed = hook && out.shots.some(g => g.layout === 'fit' && g.t_in <= hook.t0 + 1e-6 && hook.t0 < g.t_out);
+    if (hook && boxed) overlays.push({ t0: r4(hook.t0), t1: r4(Math.min(hook.t1, hook.t0 + 3)), kind: 'sunburst', rule_id: rule('sunburst_on_hook') });
   } else if (id === 'handmade') {
     let last = -9; const seen = new Set<string>();
     for (const w of keyish) {

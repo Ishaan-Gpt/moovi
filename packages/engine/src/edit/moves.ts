@@ -124,8 +124,10 @@ export function castMoves(e: Edl, want: string[], o: { gap?: number } = {}): Mov
   return out;
 }
 
-/** The order the auto-pick tries moves in: the camera punch, the beat-change cut, then one insert-layer move. */
-export const AUTO_MOVE_ORDER = ['05', '09', '16', '17', '08', '14', '13'];
+/** The order the auto-pick tries moves in: the camera punch, the beat-change cut, then one insert-layer move. 16 (cover
+ *  story) is only cast when asked by name: auto, its masthead was clipped at the edges, repeated the brand in its tabs
+ *  and sat over the face (edit mastery round 2, P2 A). */
+export const AUTO_MOVE_ORDER = ['05', '09', '17', '08', '14', '13'];
 /**
  * The X1 moves an edit gets when no style asked for any (Vignesh, 2026-10-17: the library must be chosen whenever it
  * fits): every move whose tags meet a beat of this edit, in AUTO_MOVE_ORDER, at most `max`, and at most one move that
