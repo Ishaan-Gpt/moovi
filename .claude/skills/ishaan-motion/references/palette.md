@@ -14,7 +14,7 @@ near neighbour of one (same hue family, same role), it is wrong.
 - Neon green or acid lime on black, hot red on black (the creator-reel cliché), gold on black
 - Tailwind slate / zinc / gray as the neutral, pure `#000` / `#FFF` / `#808080` neutrals
 - Yellow highlighter key words (`#FFD23F`, `#FFD84A`) and the green caption box
-A brand palette wins over this list only when the brand **really** owns it (in its logo, site and product). Even then,
+**First source, always: the brand's own website and logo** (owner, 2026-10-18: "ofc take the theme from the website and logo only"). Capture the live site (past its loader), read its CSS tokens, fonts and real assets (logo, character, UI) and build from those; an invented colour next to a brand that has its own is a cheap default. A brand palette wins over this list only when the brand **really** owns it (in its logo, site and product). Even then,
 question it once (rule 0.6): if the brand colour is itself a default, keep it as the brand mark and build the film's
 world around a rare palette that makes the brand colour look chosen.
 
