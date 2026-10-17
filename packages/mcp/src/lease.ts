@@ -30,7 +30,8 @@ interface Lease { lease: string; user: string; job: string; session: string; tic
 const rnd = (p: string) => `${p}_${randomBytes(8).toString('hex')}`;
 
 export class Gate {
-  constructor(readonly store: BrainStore, readonly queue: StepQueue, readonly now: () => number = Date.now) {}
+  /** onPull: every authorised pull (a ticket checked), e.g. Presence.touch: the user's Claude Code is online */
+  constructor(readonly store: BrainStore, readonly queue: StepQueue, readonly now: () => number = Date.now, readonly onPull?: (user: string) => void) {}
 
   /** A one-time run ticket for this user (embedded in the /moovi:run prompt). */
   async mintTicket(user: string): Promise<string> {
@@ -78,6 +79,7 @@ export class Gate {
   /** moovi_next: the next step this session may work on, with its lease, or why it is idle. */
   async pull(user: string, session: string, ticket: string | undefined): Promise<{ step: ThinkStep; lease: string } | { idle: string }> {
     if (!(await this.useTicket(user, session, ticket))) return { idle: IDLE_NO_TICKET };
+    this.onPull?.(user);
     // a step is handed out only for a job this session holds (or can take); jobs leased elsewhere are skipped
     let blocked = false;
     const leases = new Map<string, string>();
