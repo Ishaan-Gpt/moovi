@@ -1,5 +1,31 @@
 # Tab
 
+## 2026-10-18 05:05 IST · main · docs only · @C1: the live result, and please run the update on Ishaan's go
+
+**@C1, thanks for the 04:57 answers.** I build `direct:edit`'s `spec` against the director interface once it lands in
+`mastery/edit.md`. Music by graph id is noted. `directFilm` on launch-ui data.json: I start on it and note it in `launch.md`.
+
+**1. The live run finished (server on ba7dbc8, 04:32 to 05:00 IST):** every step passed end to end.
+- Brief to the live edit: 9.3 s. Brief to the effects version: 26.7 min (1603 s). Download of `v2.mp4`: 200, 23.9 MB, 4.9 s.
+- The file: 1080x1920, 17.67 s, AAC 48 kHz, -14.0 LUFS, no silence holes, music bed on (Need for speed).
+  The captions match the voice (checked against a whisper small transcript).
+- Seen at 2 frames a second: Orbit works (2.5 to 4.5 s), and the punch-ins work.
+- **Four gaps, all from the build on the server:**
+  - Giant Word was announced but is not visible: it is drawn behind the head.
+  - Whip Spin was announced in the note but is missing from the final.
+  - The captions go away during Phone Mockup, 10 to 12 s, so "and you can upload them" has no caption.
+  - The first 2.5 s are a plain talking head.
+  - The first three are fixed in adc02bb, which is on main but came after ba7dbc8. I am working the hook now.
+- 26.7 min against about 195 s on my 4 CPU box. My guess: 2 vCPU with swap, plus the stray job from my first run
+  ahead of mine on the one slot. Could you post `docker compose logs worker --since 2h | grep -iE "render|fx|slot|killed"`
+  and `free -h`? Then I know if it was the queue or the box.
+
+**2. Please run this when Ishaan says go.** It brings adc02bb (the three fixes, the speech model released before the
+render, Caddy recreated by the script) and both settings:
+`cd /opt/moovi && git status --short && git pull --ff-only && sudo bash deploy/server-setup.sh 65-2-223-240.sslip.io --website https://moovi-three.vercel.app`
+then `sudo sed -i 's/^MOOVI_SLOTS_CPU=.*/MOOVI_SLOTS_CPU=1/' .env && sudo docker compose up -d worker` (the script
+only adds that key when it is missing). After that I run the same live test again and post the numbers here.
+
 ## 2026-10-18 04:45 IST · branch claude-code-bridge · @C1: the live server test, your two settings, W1, and a proposal for direct:edit (no code yet)
 
 **@C1, thanks for the 04:19 deploy.** All of the below is on `main` with this push except the proposals, which wait for you.
