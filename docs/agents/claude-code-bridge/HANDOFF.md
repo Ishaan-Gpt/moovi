@@ -14,20 +14,18 @@ Read this first if you are picking the work up. Updated by Tab after every item.
   pushing in main as well as in this new branch"; matches Ishaan's CLAUDE.md). Red code goes to the branch only.
 - **Push:** through the GitHub API (git data: blobs, trees, commits, then the ref with `force: false`), never force.
 - **Last sha:** see the newest line in `LOG.md`.
-- **Current state:** Phase 0 done; Phase 1 items 7 to 10 done. See the newest LOG lines for shas.
+- **Current state:** Phase 0 done; Phase 1 items 7 to 11 done (11a half: the Launch hook waits for Ishaan). See the newest LOG lines.
   - Contracts: `engine/src/edit/direct.schema.ts`, `engine/src/router/direct-film.schema.ts`, `engine/src/runtime/budget.ts`.
-  - Lane switch: `engine/src/runtime/lane.ts`; `keys.registerBrainScope`, `keys.serverModel`.
-  - Checker: `engine/src/runtime/checked.ts` (`askChecked`, in the engine because item 11's `directEdit` uses it; the
-    re-ask is its own memo step, so re-runs replay both answers and land on the same result).
-  - `packages/mcp`: `store.ts`, `queue.ts` (`StepQueue`, memo 24 h, every answer remembered: replay plus the checker is
-    deterministic), `bridge.ts` (`bridgeRuntime`), `lease.ts` (`Gate`: tickets, leases, `pull` = moovi_next,
-    `submit` = moovi_answer).
-  - Ishaan's DECISIONS.md 12 puts the connect card, online pill and /moovi:run panel in Settings (his UI).
-  - Needed later: `chat.ts` line 20 checks `loadModel` under MOOVI_BYOK=required; switch it to `scopeFor(cmd.user)`.
-- **Next item:** 11 (merge the brain calls: `edit/direct.ts directEdit(inputs)` builds the compact step (budget-trimmed sentences, shot
-  lines, menus, schema, example), asks `direct:edit` through `askChecked`, and maps the Direction onto the rule pickers'
-  overrides; `router/direct-film.ts directFilm` fills Launch's brief; 11a: the `planEdit({ direction })` hook in
-  `edit/job.ts`, noted in TAB.md first).
+  - Lane switch `engine/src/runtime/lane.ts`; checker `engine/src/runtime/checked.ts`; `keys.registerBrainScope`.
+  - Brain calls: `engine/src/edit/direct.ts` (`directEditStep`, `directEdit`, `overridesOf`; `planEdit` asks for a
+    direction when `PlanInput.direction` is 'ask' or the scope's provider is `claude-code-bridge`; null = today's rules)
+    and `engine/src/router/direct-film.ts` (`directFilmStep`, `directFilm`, `launchRecord`).
+  - `packages/mcp`: `store.ts`, `queue.ts`, `bridge.ts`, `lease.ts` (`Gate`).
+  - Known gaps: Direction `cards` are recorded but not yet placed (inserts.ts casts cards from the graph by tag); the
+    edit step sends no keyframes yet (the step supports images, `CompleteRequest` has no image field); BRAIN 2 (final
+    look) not wired; `chat.ts` line 20 still checks `loadModel` under MOOVI_BYOK=required.
+- **Next item:** 12 (tests in `packages/mcp/test` for the whole bridge: lane, lease, two sessions, bad answer, timeout, end to end with
+  `bridgeRuntime` inside `laneRuntime` inside `withModel` running `directEdit`), then 13 (sync, tsc, suites, push).
 
 ## How to run things
 
