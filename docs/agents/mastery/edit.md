@@ -77,3 +77,31 @@ keeps take 2 in every look.
 - Generality test: the same player, fed only a spec, edits the first 15 s of a two-person podcast Ishaan sent
   (360x640, through planEdit with FalkorDB up): name tags on the right speaker, the question card, letters on their
   words, the caption accent read from the footage. Player and spec: `docs/agents/mastery/edit-player/`.
+
+## The beat spec (what the director should write; the player at docs/agents/mastery/edit-player/ renders it)
+
+```jsonc
+{
+  "clip": "<dir planEdit wrote: words.json, edl.json (faces, removed), hd.mp4; cut.mp4 + cut.json from build-cut.mjs>",
+  "palette": { "<css var>": "<value>" },            // the brand's own tokens, else derived from the footage
+  "theme": { "ground": [[0, "#hex"], [1, "#hex"]], "grid": "rgba(...)", "bloom": [x, y, r, "rgba(...)"], "ring": "rgba(...)" },
+  "caption": { "variant": "1.1", "accent": "video" | "#hex" },   // Premium Caption 1; hidden whenever a text graphic shows
+  "music": { "file": "music/bed.mp3", "start": 2, "gain": 0.06 },
+  "beats": [ { "from": <anchor>, "noCaption": false, "layers": [ <layer>, ... ] } ],
+  "sfx": [ { "at": <anchor>, "k": "whoosh|pop|hit|click|snap|chime|riser|drop|notify|typing", "g": 0.4 } ]
+}
+```
+- **anchor**: `{ "w": "word", "after": <anchor or seconds>, "n": 1, "dt": 0, "end": false }`, the n-th match of the
+  normalised word at or after `after`; never a typed second for an event.
+- **layers** (drawn in order; every one enters on a spring at its anchor):
+  - `cam` `{ form: full|split|card|corner-br|corner-tl|corner-tr, z, Y, push, punch: <anchor>, by, dim, ground: world|room, looks: [{ at, f: <css filter> }] }`. The form morphs from the previous beat's.
+  - `mg` (full-screen in the theme) `{ chars, scroll, area: [x, y, w, h], row, gap, dimOthers, lit: [{ ch, at, spot: [x, y, scale] }], headline: { html, at, y } }`
+  - `stat` `{ from, to, label, splitAt: <anchor>, toAt: <anchor>, y }`: a number that splits and rolls
+  - `burn` (glass widgets over the picture) `{ items: [{ kind: badge|glass, text, icon: <svg path>, at, x, y, r }] }`
+  - `filters` `{ at, y }`: a burned-in filter carousel landing on its word
+  - `compare` `{ still: <s>, labels: [a, b], look: <css filter>, at, at2, y }`: the clip's frame raw vs a named look
+  - `cascade` `{ items: [{ title, sub, at }], y }` · `tag` `{ name, role, at, hold, x, y }` · `letters` `{ items: [{ ch, at, x, y, size, r }] }`
+  - `input` `{ placeholder | typed, from, to, y }` · `sides` `{ stills: [s1, s2], at, y }` · `pill` `{ keyword, at, avatar, y }`
+  - `world` (a brand world) `{ stops, img: [{ src, x, y, w, h, enter, at, mask }], text: [{ html, y, at }], pip }` · `wipe` `{ src, at, dur }`
+- Rules the player enforces: one text layer per frame (the caption hides under any text graphic); jump cuts are
+  baked (no seeks); stills for cards come from the clip itself.
