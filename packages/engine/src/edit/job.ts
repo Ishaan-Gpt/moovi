@@ -25,6 +25,7 @@ import { romanizeWords } from './romanize';
 import { checkAndRepair } from '../review/runner';
 import { scSfxEvents, studioCutEdl, SC_ID } from './templates/studio-cut';
 import { cleanVoice, quietPauses, type CleanVoice } from './voice';
+import { forksOf, linkInto } from '../change/fork';
 
 /**
  * The upload edit's plan stage, one function: probe, look (faces) beside hear (D1.2), the EDL (D1.3), and the voice
@@ -315,7 +316,8 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
   // load and every render). The zoom cap above stays on the original resolution.
   const restore: Promise<Restored | null> = o.restore !== false
     ? restoreVideo(join(dir, file), join(dir, 'hd.mp4'), { w: source.w, h: source.h, fps: source.fps, duration: pr.duration }, { grade: ownerGrade() ?? undefined })
-      .then(r => r && patch(() => useRestored(dir, r)).then(() => r))
+      // a version forked before the pass finished (change/versions.ts) gets the restored picture too
+      .then(r => r && patch(() => { useRestored(dir, r); for (const f of forksOf(dir)) { linkInto(dir, f, 'hd.mp4'); useRestored(f, r); } }).then(() => r))
       .then(r => { if (r) { writeFileSync(join(dir, 'restore.json'), JSON.stringify(r, null, 1)); } return r; })
       .catch(e => { console.warn(`[edit] picture restore: ${String((e as Error).message ?? e).slice(0, 160)}`); return null; })
     : Promise.resolve(null);

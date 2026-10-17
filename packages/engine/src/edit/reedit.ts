@@ -24,7 +24,8 @@ import type { PlayerEdl } from './lib';
  *    off the face); **drop the card at 0:12**; **add a card at 0:12** (casts the beat under that moment);
  *  - **add a paper cut at 0:04** (any playable X1 move by name: digital zoom, checklist, headline wall, zoom-through,
  *    chart grow, paper cut, doodle, cover story, glass type): the move at that moment; with no time, on the beat it suits;
- *  - **undo** puts the previous EDL back (reEditDir keeps one step).
+ *  - **undo** puts the previous EDL back (reEditDir keeps one step in its folder; change/versions.ts walks every
+ *    version, and **redo** walks forward again).
  *
  * Every output-timed event (captions, inserts, overlays, beats, cuts, sfx, the end card, zoom keys) follows its own
  * source moment through a retime, so nothing drifts off its word. A clause it cannot read is reported, never guessed.
@@ -36,7 +37,8 @@ export type ReEditOp =
   | { op: 'zoom'; k: number; said: 'less' | 'more' | 'none' }
   | { op: 'swap' | 'drop' | 'add'; t: number }
   | { op: 'move'; n: string; t: number | null }
-  | { op: 'undo' };
+  | { op: 'undo' }
+  | { op: 'redo' };
 export interface ReEditStep { said: string; op: ReEditOp; did: string }
 export interface ReEditResult { edl: Edl; steps: ReEditStep[]; unknown: string[]; problems: string[]; ms: number; duration: { before: number; after: number };
   /** CHECK on the new EDL (review/): its score before and after the one repair, what the repair did, which version was kept */
@@ -79,7 +81,8 @@ export function parseEdit(words: string): { ops: { said: string; op: ReEditOp }[
     const more = /\b(even|much|way|a lot|super|really|more and more)\b/.test(c) ? 2 : 1;
     const t = timeOf(c);
     let op: ReEditOp | null = null;
-    if (/^(undo|revert|go back|put it back)\b/.test(c)) op = { op: 'undo' };
+    if (/^(redo|undo (the|that|my) undo|put it back again)\b/.test(c)) op = { op: 'redo' };
+    else if (/^(undo|revert|go back|put it back)\b/.test(c)) op = { op: 'undo' };
     else if (/\b(add|put|use|give|insert|throw in|do|place|want)\b/.test(c) && moveIn(c)) op = { op: 'move', n: moveIn(c)!, t };
     else if (t !== null && new RegExp(`\\b(swap|change|replace|switch|different|another|new)\\b`).test(c) && (new RegExp(`\\b${CARD}s?\\b`).test(c) || /\b(swap|replace)\b/.test(c))) op = { op: 'swap', t };
     else if (t !== null && /\b(drop|remove|delete|kill|lose|cut|get rid of|no)\b/.test(c) && new RegExp(`\\b${CARD}s?\\b`).test(c)) op = { op: 'drop', t };
@@ -285,7 +288,7 @@ export async function reEdit(e0: Edl, words: string, o: ReEditOpts & { prev?: Ed
   const before = e0.shots.at(-1)!.t_out;
   const parsed = parseEdit(words), unknown = parsed.unknown;
   // times the person names are read on the edit they watched: undo first, then the card edits, then what retimes
-  const rank = (x: ReEditOp) => x.op === 'undo' ? 0 : x.op === 'swap' || x.op === 'drop' || x.op === 'add' || x.op === 'move' ? 1 : 2;
+  const rank = (x: ReEditOp) => x.op === 'undo' || x.op === 'redo' ? 0 : x.op === 'swap' || x.op === 'drop' || x.op === 'add' || x.op === 'move' ? 1 : 2;
   const ops = parsed.ops.map((x, i) => ({ ...x, i })).sort((x, y) => rank(x.op) - rank(y.op) || x.i - y.i);
   let e = clone(e0);
   const steps: ReEditStep[] = [];
@@ -295,6 +298,8 @@ export async function reEdit(e0: Edl, words: string, o: ReEditOpts & { prev?: Ed
     let did = '';
     if (op.op === 'undo') {
       if (o.prev) { e = clone(o.prev); did = 'put the previous edit back'; } else did = 'nothing to undo';
+    } else if (op.op === 'redo') {
+      did = 'nothing to redo'; // one folder keeps one step: redo walks the versions (change/versions.ts)
     } else if (op.op === 'tighter') {
       const L = e.laws ?? { pause_max: 0.4, pause_keep: 0.18, hold_max: 2.6, snap_ms: 100 };
       const cap = r3(Math.max(0.1, Math.min(L.pause_max, 0.4) * (op.strength > 1 ? 0.35 : 0.55)));

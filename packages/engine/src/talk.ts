@@ -7,7 +7,8 @@ import { existsSync, readFileSync, writeFileSync, copyFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { publish } from './bus';
 import { projectDir } from './ctx';
-import { parseEdit, reEditDir } from './edit/reedit';
+import { parseEdit } from './edit/reedit';
+import { changeEdit } from './change/versions';
 import { X1_MOVES } from './edit/moves';
 import { liveRefFile, type LiveRef } from './styles/serve';
 import { pq, say, status } from './live';
@@ -58,9 +59,10 @@ export async function talk(cmd: Msg) {
 }
 
 /**
- * A live edit of the user's own clip is changed in place by words (edit/reedit.ts: tighter, less zoom, swap or drop the
- * card at 0:12, add a paper cut at 0:04, undo): a small exact change to its EDL in milliseconds, played as the next
- * version. Nothing is re-made. False when the latest version is not a live edit or no clause is one it can make, so the
+ * A live edit of the user's own clip is changed by words (edit/reedit.ts: tighter, less zoom, swap or drop the card at
+ * 0:12, add a paper cut at 0:04, undo, redo): a small exact change to its EDL in milliseconds, made in the next
+ * version's own folder (change/versions.ts), so every older version still plays as it was and undo walks them all.
+ * Nothing is re-made. False when the latest version is not a live edit or no clause is one it can make, so the
  * message goes to Moovi as before.
  */
 async function editByWords(pid: string, chat: string, user: string, text: string, ctx: Awaited<ReturnType<typeof context>>): Promise<boolean> {
@@ -71,17 +73,18 @@ async function editByWords(pid: string, chat: string, user: string, text: string
   if (ref.style !== 'edit' || !existsSync(join(ref.dir, 'edl.json'))) return false;
   const parsed = parseEdit(text);
   if (!parsed.ops.length) return false;
-  const r = await reEditDir(ref.dir, text);
+  const v = c.version + 1, vdir = join(pd, 'videos', chat);
+  const r = await changeEdit({ projectDir: pd, chat, version: c.version, next: v, words: text });
   const left = r.unknown.length ? ` I could not read “${r.unknown.join('”, “')}”; on your clip I can tighten or loosen the cuts, change the zoom, swap, drop or add a card at a time, and add a ${Object.values(X1_MOVES).map(m => m.name).join(', ')}.` : '';
-  if (!r.written) {
+  if (!r.written || !r.ref) {
     await say(pid, chat, 'editor', `${r.steps.map(s => s.did).join('; ') || 'Nothing changed'}${r.problems.length ? ` (${r.problems.slice(0, 2).join('; ')})` : ''}.${left}`, 'note');
     return true;
   }
-  const v = c.version + 1, vdir = join(pd, 'videos', chat);
-  writeFileSync(liveRefFile(pd, chat, v), JSON.stringify({ ...ref, duration: r.duration.after }, null, 1));
+  // the poster of the version it plays (undo and redo go back to an older one)
+  const shown = r.kind === 'change' ? c.version : r.ref.stack!.states[r.ref.stack!.at]!;
   let poster: string | null = null;
-  try { if (existsSync(join(vdir, `v${c.version}.jpg`))) { copyFileSync(join(vdir, `v${c.version}.jpg`), join(vdir, `v${v}.jpg`)); poster = `${chat}/v${v}.jpg`; } } catch { poster = null; }
-  await pq(pid, P.setVideo, { id: c.video, status: 'ready', path: ref.dir, poster, duration: r.duration.after, version: v, style: 'live:edit', format: 'vertical', at: Date.now() });
+  try { const from = [shown, c.version].map(n => join(vdir, `v${n}.jpg`)).find(existsSync); if (from) { copyFileSync(from, join(vdir, `v${v}.jpg`)); poster = `${chat}/v${v}.jpg`; } } catch { poster = null; }
+  await pq(pid, P.setVideo, { id: c.video, status: 'ready', path: r.ref.dir, poster, duration: r.duration.after, version: v, style: 'live:edit', format: 'vertical', at: Date.now() });
   await publish(chat, { type: 'video', video: { id: c.video, status: 'ready', version: v, duration: r.duration.after, format: 'vertical', live: true } });
   const check = r.review ? ` Checked: ${r.review.after ?? r.review.before}/100${r.review.repaired ? `, and I ${r.review.repaired}` : ''}.` : '';
   await say(pid, chat, 'editor', `Done in ${r.ms} ms, nothing re-made: ${r.steps.map(s => s.did).join('; ')}. Say “undo” to go back.${check}${left}`, 'video', { video: c.video, version: v, duration: r.duration.after, format: 'vertical', live: true, style: 'edit' });
