@@ -201,6 +201,9 @@ importers:
 
   packages/mcp:
     dependencies:
+      '@modelcontextprotocol/sdk':
+        specifier: 1.32.1
+        version: 1.32.1(zod@4.6.6)
       '@moovi/engine':
         specifier: workspace:*
         version: link:../engine

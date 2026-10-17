@@ -3,3 +3,7 @@ export * from './queue';
 export * from './bridge';
 export * from './lease';
 export * from './scope';
+export * from './poll';
+export * from './http';
+export * from './hub';
+export * from './server';
