@@ -70,6 +70,9 @@ const LABEL: Record<string, string> = { Feedback: 'your words', Rule: 'the rule'
 /** Moovi's answer, read off the paths (pure). */
 export function whyAnswer(rows: WhyRow[], ms?: number): string {
   if (!rows.length) return 'I have no recorded decision of that kind in this project yet. Ask me again after the next edit.';
+  // a cause that is a step on a longer path is said with that path, not again on its own
+  const inner = new Set(rows.flatMap(r => r.path.slice(1, -1).map(n => n.id)));
+  rows = rows.filter(r => !inner.has(r.path.at(-1)!.id));
   const top = rows[0]!;
   const chain = (r: WhyRow) => r.path.slice(1).map((n, i) => `${r.rels[i] === 'BECAUSE' ? '' : `${r.rels[i]!.toLowerCase().replace('_', ' ')} `}${LABEL[n.label] ?? n.label} “${n.text}”`).join(', ');
   const more = rows.slice(1, 4).map(r => chain(r)).filter(Boolean);

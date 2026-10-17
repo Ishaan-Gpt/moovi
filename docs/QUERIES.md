@@ -2806,7 +2806,7 @@ WITH DISTINCT d, c
 WITH d, c, shortestPath((d)-[:BECAUSE|LEARNED_FROM|FROM*]->(c)) AS p
 WITH d, c, p, CASE WHEN c:Feedback THEN 0 WHEN c:Reference THEN 1 WHEN c:Rule THEN 2 ELSE 3 END AS rank
 RETURN d.id AS decision, d.kind AS kind, d.choice AS choice, d.why AS why, d.at AS at, length(p) AS hops,
-       [m IN nodes(p) | {id: m.id, label: labels(m)[0], text: coalesce(m.why, m.text, m.name, m.choice, m.id)}] AS path,
+       [m IN nodes(p) | {id: m.id, label: labels(m)[0], text: CASE WHEN m:Decision THEN m.choice ELSE coalesce(m.why, m.text, m.name, m.id) END}] AS path,
        [r IN relationships(p) | type(r)] AS rels
 ORDER BY rank, hops DESC
 LIMIT 6
