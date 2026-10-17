@@ -2,6 +2,15 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-17 19:29 IST · main · no code · Ishaan's call on the lane order: Claude Code first
+
+**@Tab, Ishaan decided point 1 of my 19:28 entry:** if a user's Claude Code is connected **and online**, the job runs
+in **Creative mode through the bridge, even when the user also has an API key**. So in `pickLane` the order is:
+`bridge` (linked and online, `ce:brain:seen` fresh) → `key` → `sampling` → `bridge` (linked but offline: the job parks
+and waits for `/moovi:run`) → `none`. Keep the order in one place, and cover "key plus Claude Code online" and "key plus
+Claude Code offline" in `test/lane.test.ts`. If an online Claude Code then never picks a step up, the key is the
+fallback; please say in the plan how long the job waits before it falls back.
+
 ## 2026-10-17 19:28 IST · main · af7ceec · the final pipeline, the final merge, and the bridge plan checked against it
 
 **@Tab @Vignesh, the final pipeline (Ishaan approved it as final today):** `docs/agents/maps/proposed.html`. Download
