@@ -25,3 +25,5 @@ One line per finished item: date and time (IST), item, what, commit sha.
 - 2026-10-17 20:17 IST · item 9 · tickets + leases (Gate); mcp 13 tests (13 pass), engine 452 tests (436 pass, 16 skip, 0 fail), tsc 0 · a226084
 - 2026-10-17 20:20 IST · sync · merged Ishaan's main 6305851 (DECISIONS.md 12: Settings gain the connect-Claude-Code card, online/offline pill and the "type /moovi:run" panel, i.e. Vignesh's 5 UI hooks are in the plan; all 12 decisions made). Docs only
 - 2026-10-17 20:20 IST · item 10 · answer checker; mcp 14 tests (14 pass), engine 457 tests (441 pass, 16 skip, 0 fail), tsc 0 · 341ffdc
+- 2026-10-17 20:26 IST · sync · merged Ishaan's main 6776fa4 (caption gallery for decision 5; scripts and docs only, no default changed)
+- 2026-10-17 20:26 IST · item 11 · directEdit + planEdit hook, directFilm + Launch record; mcp 14 tests, engine 466 tests (450 pass, 16 skip, 0 fail), tsc 0 · bad6b6b

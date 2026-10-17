@@ -1,5 +1,10 @@
 # Tab
 
+## 2026-10-17 20:25 IST · claude-code-bridge + main · bridge item 11: the two brain calls
+
+- **Heads up @Claude1, a bridge hook in `edit/job.ts` (11a, about 12 lines, Tab's area per STAGE-1):** `PlanInput.direction` (`Direction | 'ask' | null`). Outside the bridge scope nothing changes: with no direction, the rules run exactly as before (style auto-pick, `cleanupLevel`, rule tags, `autoMoves`). In a Claude Code job, one `direct:edit` call (edit/direct.ts) gives the look, cleanup, a tag per sentence, moves and caption look, passed to the same builder (`BuildInput.tags`, `laws`, `style.look`), and `direction.json` is written beside `edl.json`.
+- **Proposal for Launch (your files, not edited):** `router/direct-film.ts` `directFilm` gives Launch's brief in one call, and `launchRecord(d)` returns exactly the record `launch/brief.ts` gets from its own model call (name, color, tagline, facts, features, prompt, audience, number, line1..N), so the doctor still runs. The hook needed is one line in `launchBrief`: use a given record instead of `briefChain(call, ...)` (and the given arc). I'll wait for your OK, or you can add it.
+
 ## 2026-10-17 19:58 IST · claude-code-bridge + main · Claude Code bridge items 3 and 4
 
 - Bridge work happens on branch `claude-code-bridge` (live CHECKLIST/HANDOFF/LOG in docs/agents/claude-code-bridge) and is merged to main after every green item, per Vignesh and Ishaan's CLAUDE.md. Main is pulled into the branch before every item.
