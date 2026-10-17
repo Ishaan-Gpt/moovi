@@ -1,4 +1,8 @@
-# Editing a talking head from first principles (learned 2026-10-17/18, boards v1 → v6 of the owner's intro)
+# Editing a talking head from first principles (learned 2026-10-17/18, boards v1 → v7 of the owner's intro)
+
+**Starting point of this style (owner, 2026-10-18): reference 1, https://www.instagram.com/p/DbS2vcfyQxx/ (em1), with
+Premium Caption 1.** The six earlier Moovi looks (Base, Atlas, Handmade, Studio Minimal, Studio Cut, Auto) are retired as
+starting points; what was good in them is kept below (§8) as fundamentals, not as looks.
 
 What moved the owner from "0/10" to "better": not a template, a method. Every rule below is about *why* a frame
 works, so it applies to any speaker, any script, any brand. Never copy a device from a past film; re-derive it from
@@ -72,3 +76,20 @@ and at least one beat per 3–4 seconds that changes the frame's structure (not 
 ## 7. Show it
 A storyboard board (frame + labelled side panel) to agree the plan, then a playable preview with voice, SFX and the
 music bed, served so the video can seek. Stills alone hide timing, the thing that makes or breaks an edit.
+
+## 8. Kept from the retired looks (fundamentals only)
+- Cut every pause over about 0.4 s down to a breath (0.18 s), fillers with their air, never inside a word; a false
+  start is cut whole when the line is said again (the takes).
+- A new framing on every cut, never two identical framings in a row; a slow push inside long holds.
+- Cards beside the head on named things and numbers, never on the face; the caption drops the words a card already says.
+- A punch-in on a word edge with a hit under it; a white flash only on motion, never more than every third cut.
+- One hero number per section, set big, with a riser into it and a hit on it.
+- Sound: one SFX stem by events (min gap by priority, at most two punches), voice at -18 LUFS, the bed 3 LU under it,
+  the master at -14 LUFS through a limiter; the typing tick under caption words.
+- Grade every upload (the owner's natural-punch LUT); weak sources deblocked and denoised, never a plastic upscale.
+
+## 9. One player, many specs
+The preview is one generic player fed a beat spec (`{ clip, palette, caption, music, beats: [{ from: anchor, layers:
+[{ t: device, ... }] }], sfx }`); devices: cam (framing, push, punch), world, cascade, tag, letters, input, sides,
+pill, wipe. Tested on two unlike clips (a solo product intro, a two-person podcast) without changing the player.
+A spec is what the pipeline's director should write; the player is what the studio should play.

@@ -67,3 +67,13 @@ keeps take 2 in every look.
 - Method from here: design each edit from the prompt and the ishaan-motion laws, one storyboard image board per
   iteration (under 2 minutes), Ishaan's references as the taste. Boards and their source: `data/master-edit/`
   (git-ignored): `board.jpg` (v2), `board-v3.jpg` (v3), `src/board-v3.html`.
+
+## 2026-10-18: Ref 1 is the starting point; the six looks are retired
+
+- Ishaan: "don't refer to the previous 6 styles anymore, just ensure their good parts are in the skill". Their good
+  parts are fundamentals now (ishaan-motion `edit-fundamentals.md` §8). The starting point of this style is reference 1
+  (https://www.instagram.com/p/DbS2vcfyQxx/) with Premium Caption 1.
+- v7 (playable): em1's devices in Moovi's brand, Premium Caption 1 with its typing tick, the pauses cut.
+- Generality test: the same player, fed only a spec, edits the first 15 s of a two-person podcast Ishaan sent
+  (360x640, through planEdit with FalkorDB up): name tags on the right speaker, the question card, letters on their
+  words, the caption accent read from the footage. Player and spec: `docs/agents/mastery/edit-player/`.
