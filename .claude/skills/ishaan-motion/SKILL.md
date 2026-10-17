@@ -167,7 +167,7 @@ When a review note teaches something new (for example "UI comes in too fast"), a
   the cinematic push goes into each insert (§12), not into replacing the speaker with a one-take.
 
 ## 12. Talking-head and voice-led edits (learned 2026-10-16)
-The full playbook is `references/talking-head.md`. The short version:
+The full playbook is `references/talking-head.md`; **the method that decides what goes in each frame is `references/edit-fundamentals.md` (read it first: brand world from the brand, two worlds, devices chosen by sentence meaning, one caption system, build as a spec, never a one-off).** The short version:
 - **The voice is the grid.** Clean the Whisper stamps (monotonic starts, real ends), look words up by normalised text
   and an `after` time, cut slightly before a word, slam exactly on it.
 - **Layouts as data:** `full` / `split` (graphic panel top half, captions on the seam) / `poster` / `card`.

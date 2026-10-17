@@ -65,3 +65,6 @@
 
 ## 1.10.1 (2026-10-18)
 - Lessons: a moving piece is shown as a playable preview (range-capable server); every owner correction lands in the skills unasked.
+
+## 1.11.0 (2026-10-18)
+- New references/edit-fundamentals.md: editing a talking head from first principles (brand world, two worlds, devices by sentence function and verb, one caption system with backdrop-aware contrast, layout rhythm, build as a beat spec).
