@@ -151,6 +151,8 @@ Run these in order on every clip; each step is a rule above, not a taste of one 
    world; ask for cut-outs the code cannot fake (rule 0.1).
 7. **Captions**: Premium Caption 1, accent from the brand or the footage; one text layer per frame; text never covers
    a face (the player projects the face box and moves text clear).
+7b. **Camera speed is a curve, never a step** (owner, 2026-10-18; camera.md): every push, drift and pan starts and ends at
+   rest (an in-out ease over the beat), blur follows speed continuously; a speed ramp is EASES['speed-ramp'].
 8. **Transitions from light and objects**: the world's light sweeps in, prints land with a contact shadow, a warm
    light leak wipes back to the speaker (owner approved the leak, 2026-10-18; a leak on a cut is not the banned
    "lens flare on everything").

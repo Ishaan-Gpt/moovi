@@ -115,7 +115,7 @@ async function grab(times) { for (const s of times) { if (STILLS[s]) continue; V
 const DEVICES = {
   cam: { build: () => ({}), draw: (L, t, b) => { const k = t - b.t0, pz = L.punch ? Math.pow(L.by || 1.08, eo(win(t, at(L.punch) - .02, at(L.punch) + .16))) : 1, land = b.first ? 0 : .035 * (1 - eo(win(k, 0, .18)));
     const to = FORMS[L.form || 'full'], from = FORMS[b.prevForm || 'full'], m = b.prevForm && b.prevForm !== (L.form || 'full') ? eio(win(k, 0, .42)) : 1, r = to.map((v, i) => lerp(from[i], v, m));
-    const full = r[2] >= 1079 && r[3] >= 1919, z = ((L.z || 1.04) + land) * pz + (L.push ?? .01) * k, look = (L.looks || []).filter(x => t >= at(x.at)).map(x => x.f).pop() || '';
+    const full = r[2] >= 1079 && r[3] >= 1919, bd = Math.max(.5, b.t1 - b.t0), z = ((L.z || 1.04) + land) * pz + (L.push ?? .01) * bd * eio(k / bd), look = (L.looks || []).filter(x => t >= at(x.at)).map(x => x.f).pop() || '';
     if (full) { drawVideo(t, { x: 0, y: 0, w: 1080, h: 1920 }, z, L.Y ?? .36, 0, (L.dim || 0) * eo(win(k, 0, .3))); if (TH.fall) { const g = ctx.createLinearGradient(0, 1150, 0, 1920); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, TH.fall); ctx.fillStyle = g; ctx.fillRect(0, 1150, 1080, 770); } return; }
     // behind a shrunk frame: the film's world, or the room itself blurred and dimmed
     if (L.ground === 'room') drawVideo(t, { x: 0, y: 0, w: 1080, h: 1920 }, 1.2, .36, 0, .35, ctx, 24); else ground();
@@ -179,7 +179,7 @@ const DEVICES = {
    * prints stay where they landed.
    */
   desk: { build: (L, b) => { if (!DESK.d) { const D = SPEC.desk; DESK.d = el(`<div class="plane" style="position:absolute;left:0;top:0;width:${D.w}px;height:${D.h}px;transform-origin:0 0"><div class="dlight"></div>${D.items.map((it, i) => `<div class="print" data-i="${i}" style="left:${it.x}px;top:${it.y}px;width:${it.w}px;height:${it.h}px"><video muted loop playsinline preload="auto" src="${it.src}"></video><i class="tape"></i></div><svg class="doodle" data-i="${i}" style="position:absolute;left:${it.dx ?? it.x}px;top:${it.dy ?? it.y + it.h + 20}px" width="${it.dw ?? 400}" height="${it.dh ?? 300}" viewBox="0 0 ${it.dw ?? 400} ${it.dh ?? 300}" fill="none" stroke="var(--ink,#3A2E28)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">${(it.doodle || []).map(d => `<path d="${d}"/>`).join('')}</svg><div class="hand" data-i="${i}" style="left:${it.lx}px;top:${it.ly}px;transform:rotate(${it.lr ?? -4}deg)">${it.label || ''}</div>`).join('')}</div>`, 'left:0;top:0;width:1080px;height:1920px;overflow:hidden'); DESK.d.classList.add('desk'); } return {}; },
-    draw: (L, t, b) => { const D = SPEC.desk, d = DESK.d; show(d); const k = t - b.t0, f = L.focus, pf = b.prevDesk || f, m = b.prevDesk ? eio(win(k, 0, .7)) : 1, c = pf.map((v, i) => lerp(v, f[i], m)), sc = c[2] * (1 + .02 * k);
+    draw: (L, t, b) => { const D = SPEC.desk, d = DESK.d; show(d); const k = t - b.t0, f = L.focus, pf = b.prevDesk || f, m = b.prevDesk ? eio(win(k, 0, .7)) : 1, c = pf.map((v, i) => lerp(v, f[i], m)), bd = Math.max(.5, b.t1 - b.t0), sc = c[2] * (1 + .02 * bd * eio(k / bd));
       d.firstElementChild.style.transform = `translate(${(540 - c[0] * sc).toFixed(1)}px,${(960 - c[1] * sc).toFixed(1)}px) scale(${sc.toFixed(4)})`;
       d.querySelector('.dlight').style.transform = `translateX(${(-200 + t * 26).toFixed(1)}px)`;
       let label = false;
