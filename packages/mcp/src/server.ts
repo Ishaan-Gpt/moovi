@@ -60,6 +60,19 @@ export function stepView(s: ThinkStep, lease: string): CallToolResult {
   return { content: [{ type: 'text', text: JSON.stringify(body) }, ...(s.images ?? []).map(i => ({ type: 'image' as const, data: i.data, mimeType: i.mime }))] };
 }
 
+/** The text `/moovi:run` puts in front of Claude Code: short, self-contained, the same in every folder. */
+export function runPrompt(ticket: string): string {
+  return [
+    `You are Moovi's brain for the video the user started on the Moovi website (run ticket ${ticket}).`,
+    `1. Call moovi_next with {"ticket":"${ticket}"}.`,
+    '2. When it returns status "think": decide as its system and task ask, then call moovi_answer with {"step": the step id, "answer": one JSON object matching answer_schema}. The result\'s "next" says what comes next; handle it the same way.',
+    '3. When it says ok:false with problems: fix the answer and call moovi_answer again with the same step.',
+    '4. When the status is "working" or "waiting": call moovi_next again. Keep going for up to 15 minutes.',
+    '5. Stop at "done" (tell the user the video is ready, with the url), "failed" or "idle" (tell the user the message).',
+    'Do not read or write files or run commands for this: all the work happens on Moovi\'s server. Keep what you say to the user to one short line per step.',
+  ].join('\n');
+}
+
 export function buildMcp(hub: BrainHub, ctx: SessionCtx): McpServer {
   const mcp = new McpServer(SERVER_INFO, { instructions: INSTRUCTIONS });
   const { user, session } = ctx;
@@ -157,6 +170,17 @@ export function buildMcp(hub: BrainHub, ctx: SessionCtx): McpServer {
     if (!r.ok) return text({ ok: false, step: s.id, problems: [r.why] }, true);
     watched.add(s.job);
     return moveOn(s.id, args.wait_s, extra as unknown as Extra);
+  });
+
+  // item 17: `/moovi:run`. Getting this prompt is the user typing it in this window: it mints the one-time run ticket
+  // (lease.ts) and binds it to this window, so only here does Moovi hand out work (plan 21.2).
+  mcp.registerPrompt('run', {
+    title: 'Run Moovi',
+    description: 'Let this Claude Code make the decisions for the video you started on the Moovi website.',
+  }, async () => {
+    ticket = await hub.gate.mintTicket(user);
+    await hub.gate.useTicket(user, session, ticket);
+    return { description: 'Moovi: be the brain for one video', messages: [{ role: 'user', content: { type: 'text', text: runPrompt(ticket) } }] };
   });
 
   mcp.registerTool('moovi_status', {
