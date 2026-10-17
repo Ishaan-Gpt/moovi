@@ -74,3 +74,11 @@ const stagger = (base, i, gap, seed = 1) => base + i * gap + (rand(i * 17 + seed
   frame costs 50–120 ms. Use it only for the determinism check.
 - The app's browser pane caps rAF near 31 fps and throttles when hidden; measure real fps in a foreground browser
   before claiming performance.
+
+## Smooth playback (measured, 2026-10-18)
+Per-frame `ctx.filter = 'blur(...)'` and `shadowBlur` on many draws is what makes a canvas film hang: a Launch film
+spent 165 s on one frame. Bake sprites once instead (`sprite(key, w, h, pad, draw)`, which renders into an offscreen
+canvas with its shadow), plus blurred variants on first use (`blurOf(sprite, px)`, quantised to 0/2/4/7/11/16). Draw
+them with `drawImage`. Blur a whole moving layer by drawing it into a small buffer and scaling it back up. Keep colours
+in lookup tables, build patterns once, and warm all sprites at load. Check every frame at 30 fps (`render(f / 30)` in
+headless Chrome) and count frames over 33 ms before calling a preview smooth. Reference: `data/freeform/resend-v9`.

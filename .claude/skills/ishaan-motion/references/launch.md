@@ -56,3 +56,24 @@ sound was thin. The checklist that brought them back (f8):
 - **Sound:** a tick on every word (render and score read one line list), a whoosh on every move, a riser that ends
   exactly on the drop, a granular shimmer for particles, a short room on the sfx, a breakdown before the end.
 - Check every transition at sub-steps (±0.15 s): no empty frame, nothing drawn on top of a line still on screen.
+
+## Smooth, filled, and ramped (Ishaan on f8, 2026-10-18: "why does it hang so much; make it smooth; why are some cards
+## empty; add Vignesh's pic/clip fetching and Claude's image generation as tools; A→2x→0.5x→2x→B is an advanced camera
+## effect, add it to the camera graph tagged premium")
+- **Never `ctx.filter` blur or `shadowBlur` per draw, per frame.** f8 measured a 165 s stall on one frame. Bake every
+  card, word, email and shadow ONCE into a sprite, with pre-blurred variants (0, 2, 4, 7, 11, 16 px). Each frame only
+  `drawImage`s them, picking the blur level from speed. Whole-layer motion blur is a downsample-and-upscale, not a
+  filter. Dot colours come from a lookup table. Warm every sprite at load (render the film once in 0.25 s steps), so
+  nothing is built mid-playback. Measure it: render every frame at 30 fps and count frames over 33 ms. f9: 896 of 900
+  were under 33 ms, worst 30 ms after a re-run (the 4 slow frames in the first pass were one-off pauses in the
+  headless browser).
+- **No empty card, ever.** Each item asks `src/launch/media.ts`. `realMedia` uses Vignesh's footage finder (clips and
+  photos with licences); `drawnArt` has the brain draw an SVG in the palette's tokens only, rasterised by Chrome.
+  CLI: `scripts/launch-media.ts <dir> name="query|what to draw" …`. Resend: 14 of 14 in 37 s (12 clips, 1 photo,
+  1 drawn). Look at every result: the finder returned a stone coin for "team welcome" (a relevance miss), so re-map
+  or re-query.
+- **The premium speed ramp** (`camera:speed-ramp`, tagged `premium` in the craft graph; ease `speed-ramp` in
+  `@moovi/library/camera`): A → 2× → 0.5× → 2× → B. Velocity is 2× for the first and last sixth and 0.5× for the middle
+  two thirds. Use it on travels and reveals: the row (slow while the cursor clicks), the crane, the swarm gathering,
+  the lockup moving to the header. Put the slow middle where the eye must read, and the fast ends with blur and a
+  whoosh.

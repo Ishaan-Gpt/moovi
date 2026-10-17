@@ -76,8 +76,17 @@ export const EASES = {
   overshoot: (u: number) => 1 + 2.70158 * (u - 1) ** 3 + 1.70158 * (u - 1) ** 2,
   /** no motion at all: jumps to the end on the first frame (the editor's jump-cut punch-in) */
   cut: (u: number) => (u > 0 ? 1 : 0),
+  /** PREMIUM speed ramp (time remap): A → 2× → 0.5× → 2× → B. Leaves already moving at twice the average speed, slows to
+   *  half speed through the middle (the look-at-this moment), whips out at 2× into B: what a premium edit does instead of
+   *  one even 1× move. Velocity is 2× for the first and last sixth and 0.5× for the middle two thirds, joined smoothly. */
+  'speed-ramp': (u: number) => speedRamp(u),
 } as const satisfies Record<string, (u: number) => number>;
 export type EaseId = keyof typeof EASES;
+
+/** the speed-ramp curve: integrate v(u) = 0.5 + 1.5·g(u) (g = 1 near both ends, 0 in the middle, smooth joins), normalised */
+const RAMP = (() => { const n = 512, v = (u: number) => { const sm = (e0: number, e1: number, x: number) => { const k = Math.min(1, Math.max(0, (x - e0) / (e1 - e0))); return k * k * (3 - 2 * k); }; return 0.5 + 1.5 * Math.max(1 - sm(0.1, 0.24, u), sm(0.76, 0.9, u)); };
+  const acc = [0]; for (let i = 1; i <= n; i++) acc.push(acc[i - 1]! + (v((i - 0.5) / n)) / n); const tot = acc[n]!; return acc.map(a => a / tot); })();
+function speedRamp(u: number): number { if (u <= 0) return 0; if (u >= 1) return 1; const f = u * (RAMP.length - 1), i = Math.floor(f); return RAMP[i]! + (RAMP[i + 1]! - RAMP[i]!) * (f - i); }
 
 // ── deterministic noise (handheld, vehicle shake) ──
 

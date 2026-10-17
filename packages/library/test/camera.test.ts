@@ -193,3 +193,11 @@ test('parser: editor words, aim points and scope', () => {
   assert.deepEqual(r.outOfScope, ['tracking', 'orbit-cw']);
   assert.deepEqual(parseCamera('orbit left then chase', { scope: 'coded' }).outOfScope, ['chase']);
 });
+
+test('the premium speed ramp: A → 2× → 0.5× → 2× → B, same ends as an even move', () => {
+  const e = EASES['speed-ramp'], v = (u: number) => (e(Math.min(1, u + 0.005)) - e(Math.max(0, u - 0.005))) / 0.01;
+  assert.equal(e(0), 0); assert.equal(e(1), 1);
+  assert.ok(Math.abs(v(0.05) - 2) < 0.15, `start ${v(0.05)}`); assert.ok(Math.abs(v(0.5) - 0.5) < 0.08, `middle ${v(0.5)}`); assert.ok(Math.abs(v(0.95) - 2) < 0.15, `end ${v(0.95)}`);
+  const m = CAMERA_MOVES.find(x => x.id === 'speed-ramp'); assert.ok(m && m.premium && m.defaults.ease === 'speed-ramp');
+  const call = parseCamera('speed ramp push 1.6s').calls[0]!; assert.equal(call.move, 'speed-ramp'); assert.equal(call.duration, 1.6);
+});

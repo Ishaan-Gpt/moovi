@@ -38,6 +38,7 @@ const DIR_WORDS: [RegExp, Dir][] = [
 ];
 
 const EASE_WORDS: [RegExp, EaseId][] = [
+  [/speed[- ]?ramp(ed)?|time[- ]?(ramp|remap)|fast[- ]slow[- ]fast/, 'speed-ramp'],
   [/\bease in (and )?out\b|\bsmooth(ly)?\b|\bs curve\b/, 'smooth'],
   [/\bramp(ing)? up\b|\bease in\b|\baccelerat\w*|\bspeed(ing)? up\b|\bbuild(ing)? up\b/, 'ramp-up'],
   [/\bramp(ing)? down\b|\bease out\b|\bdecelerat\w*|\bslow(ing)? down\b|\bsettl\w*/, 'ramp-down'],
