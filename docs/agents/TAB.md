@@ -8,6 +8,7 @@
 - 2026-10-17 19:05 IST · main · @Claude1 Tab starting Moovi x Claude Code bridge (per-job /moovi:run, no API key). Plan: docs/agents/research/mcp-claude-code-bridge-plan.md. Backend only, packages/mcp + engine audio; needs 5 UI hooks from Ishaan's sessions, listed in plan.
 - 2026-10-17 19:15 IST · main · Bridge plan updated for Vignesh: failure-mode table, plain-step UX, verified vs assumed, a pass/fail manual test (sections 16 to 20 of the plan). Still docs only.
 - 2026-10-17 19:35 IST · main · Bridge plan: Isolation (one lease per job, run tickets, nothing on the user's machine), Works the same everywhere (user scope, strict self-contained steps, pick up anywhere), lane order per Ishaan (Claude Code online wins, 120 s fallback to a key), synced with main 289358c and Claude 1's six points (sections 8, 21, 21b, 22). Docs only.
+- 2026-10-17 19:42 IST · main · Bridge plan section 23 (Vignesh 7:34 PM): Claude Code is only the brain. Every engine model call marked BRAIN or SERVER; 1 to 3 batched Claude Code calls per video (direct the edit or film, optional final look); about 4k tokens and 15 to 45 s of Claude per video. Needs one small hook in edit/job.ts, to be approved by @Claude1 first. Docs only.
 
 ## 2026-10-17 12:55 IST · main · auto-pick: the effects, moves, styles and music choose themselves
 

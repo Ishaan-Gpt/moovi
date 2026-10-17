@@ -467,7 +467,7 @@ Added to the phase 1 tests (section 12):
   step is answered exactly once, no answer lands on the other job, both jobs finish, and the memo holds one answer per
   fingerprint.
 
-## 22. Synced with Ishaan main 289358c (read 2026-10-17 19:36 IST)
+## 22. Synced with Ishaan main 91b111e (read 2026-10-17 19:40 IST)
 
 Read: every commit 95000ac..289358c (the final merge: Launch style, Studio Cut, review/film, chat edits by words,
 Hinglish, CHECK on the first plan) and Claude 1's check of this plan in `CLAUDE1.md` (19:28 IST). The seam holds: no
@@ -493,3 +493,94 @@ Conflict risk, now: low. Files Ishaan's merge changed that we will edit: only `r
 must keep away from because they moved under him: `talk.ts`, `edit/job.ts`, `edit/reedit.ts`, `tasks/reel.ts`,
 `edit/templates/**`, `styles/**`, `launch/**`, `review/film/**`, `packages/library/src/kits/**`, `apps/**`. Before every
 build step: `git fetch origin main`, read the new commits, and re-check this list.
+
+## 23. Brain only: the fewest calls and tokens (Vignesh 7:34 PM IST; this section wins over sections 2 and 5 where they differ)
+
+Rule: Claude Code makes only the few top-level decisions, in 1 to 3 calls per video. Everything else runs on our server:
+deterministic code first, and where a model is still needed for detail work, Moovi's own server model (the machine's
+configured runtime that `MOOVI_BYOK=optional` already uses; a fast, cheap model on Moovi's key). Speech to text, faces,
+cutting, captions, CHECK and render are server code.
+
+### 23.1 Every model call in the engine (main 91b111e), and where it goes
+
+BRAIN = folded into one of the batched Claude Code calls below. SERVER-CODE = deterministic code. SERVER-LLM = Moovi's
+own server model (detail work, never sent to Claude Code).
+
+| Agent (file) | What it does | Goes to |
+|---|---|---|
+| `edit:beats` (edit/plan.ts) | tag each sentence hook/claim/number/... | BRAIN 1 (edit) |
+| style pick (edit/styles.ts `pickEditStyle`, rules) | which edit look | BRAIN 1 picks from the menu; rules are the default |
+| cleanup level (`cleanupLevel`, rules) | light / balanced / tight | BRAIN 1; rules default |
+| moves and cards (edit/moves.ts, edit/inserts.ts, rules) | which named moves and cards, on which beats, card words | BRAIN 1 (ids from the library menu, card text up to 6 words); rules default |
+| `edit:romanize` (edit/romanize.ts) | Hindi words to Hinglish letters | SERVER-CODE (a transliteration table), SERVER-LLM if unsure |
+| `review:vision` (review/vision.ts) | look at 3 rendered frames | BRAIN 2, optional (only when CHECK flags something, or Creative mode asks); otherwise CHECK code only |
+| `router:director` (router/film.ts), `launch-brief` (launch/brief.ts), `s1url-brief`, `s4-brief`, `s5-brief`, `anatomy-brief`, `darkvox-brief` (styles/*), `moovi:plan`, `researcher` (tasks/plan.ts), `scribe` (tasks/script.ts), `director`, `director:board`, `director:card`, `director:study` (tasks/director.ts), `match` (chat.ts, talk.ts) | the film's direction: style, premise, hook, script lines, beat map, facts | BRAIN 1 (generate): one call in the chosen style's own brief schema |
+| `s1-storyboard`, `s1-scene:*`, `s1-fill` (s1fast), `s4-plan`, `s4-picture`, `darkvox-props` (s4), `darkvox-plan`, `anatomy-plan`, `s5-tags`, `${style}-improvise` (styles/kit/compose.ts), `builder`, `hunter`, `keeper`, crew agents (`tasks/agent.ts`), `voice:cast` | detail work per scene, prop, picture, voice | SERVER-LLM, or SERVER-CODE where the style has a template (Ishaan's deterministic rework) |
+| `router:footage` (router/cast.ts) | rank stock clips per beat | SERVER-CODE (tag overlap score), SERVER-LLM to break ties |
+| `s1-critic`, `lens` (tasks/reel.ts) | review the style film | SERVER-CODE (`review/film`), plus BRAIN 2 when on |
+| `moovi`, `moovi:intent`, `intake`, `moovi:talk`, `${agent}:consult` (chat.ts, talk.ts, tasks/intake.ts) | the studio chat | SERVER-LLM (chat must answer instantly; Claude Code is not in the chat loop) |
+| chat edit words (talk.ts `editByWords`, edit/reedit.ts `parseEdit`) | "tighter", "drop the card at 0:12" | SERVER-CODE; only clauses it cannot read become one small BRAIN call (EDL ops over named assets) |
+| `router:footage-edit`, `editor` (legacy, frozen) | old paths | SERVER (no change) |
+
+### 23.2 The batched calls
+
+**Edit a clip (2 calls, the second optional):**
+- Server first (no Claude): probe, local Whisper, faces, pauses, shot changes, 3 keyframes. About 20 to 40 s for a 30 s clip.
+- **BRAIN 1 "direct the edit".** In: the user's words; the transcript as numbered sentences with start seconds (each
+  sentence capped at 30 words, the whole at 1,500 words; longer clips send every sentence's first 12 words); a shot
+  list (one line per shot: seconds, faces, framing); 3 keyframes at 256 px; the menus as ids with one line each (edit
+  looks, cleanup levels, the library's moves and card kinds, caption looks). Out (strict JSON, enums for every menu):
+  `{ style, why, cleanup, hook_sentence, beats:[{ i, tag }], cuts_keep_extra:[i], moves:[{ i, id }], cards:[{ i, kind, words }], caption_look, title, model }`.
+  The server turns that into the EDL with the same pure builder, so cutting and timing stay exact and repeatable.
+- **BRAIN 2 "final look" (optional).** In: 3 rendered frames at 360 px and CHECK's findings as short lines. Out:
+  `{ ship: boolean, fixes:[{ frame, problem, fix: move|plate|drop|none }] }`. Fed to CHECK's single repair.
+
+**Generate a video (1 call, plus the optional final look):**
+- **BRAIN 1 "direct the film".** In: the brief (and the site's title, description and up to 8 facts the server read),
+  the 7 video types and the style menu. Out: the chosen style's own brief schema (premise, hook, script lines, beat map,
+  facts, palette words). Every detail call after that is SERVER.
+
+**Chat edit (0 or 1 call):** rules first; only unread clauses go to Claude as one call.
+
+### 23.3 Token budget (enforced by the server before a step is sent)
+
+| Call | Input cap | Output cap | Typical (30 s clip) |
+|---|---|---|---|
+| BRAIN 1 edit | 6,000 tokens (text about 4,500 + 3 images at 256 px, about 100 to 150 each) | 1,200 | about 2,500 in, 500 out |
+| BRAIN 1 generate | 5,000 | 1,500 | about 2,000 in, 800 out |
+| BRAIN 2 final look | 2,000 (3 images at 360x640, about 300 each, plus findings) | 300 | about 1,300 in, 150 out |
+| Per video | 10,000 | 2,500 | about 4,000 in, 700 out |
+
+Plus a fixed cost per `/moovi:run`: the prompt and three tool descriptions, about 1,000 tokens. A step over its cap is
+trimmed by the server (sentences shortened, lowest-value lines dropped), never sent raw. No transcript dumps, no EDL
+dumps, no source video, no full-size frames.
+
+### 23.4 Time estimate per video (to measure in Vignesh's Pro test)
+
+| Stage | Who | Seconds (30 s clip) |
+|---|---|---|
+| Hear, faces, shots, keyframes | server | 20 to 40 |
+| BRAIN 1 | Claude Code | 10 to 30 (one turn; about 2,500 tokens in) |
+| Build EDL, captions, CHECK, render | server | 40 to 90 |
+| BRAIN 2 (when on) | Claude Code | 5 to 15 |
+| Repair render (only if needed) | server | 30 to 60 |
+| Total | | about 1.5 to 3 min; Claude Code's share about 15 to 45 s and 2 tool turns |
+
+These are estimates (no Claude Code timing measured yet); the Pro test records the real numbers.
+
+### 23.5 What changes in the plan because of this
+
+- The bridge is no longer a transparent carrier of every `ask()`. A routing table `BRAIN_AGENTS` (one place, in
+  `packages/mcp/src/brain.ts`) says which agents may reach Claude Code; every other `ask()` inside a bridge job runs on
+  the server model. Default: only the batched calls above.
+- Two new engine functions, ours: `edit/direct.ts directEdit(inputs) -> Direction` (builds BRAIN 1's compact input and
+  validates its answer) and `styles/direct.ts directFilm(brief) -> StyleBrief`. Their answers fill the existing calls'
+  slots: `edit:beats` gets its tags from `Direction.beats` without a model call, the rule pickers get `Direction.style`,
+  `cleanup`, `moves`, `cards` as overrides.
+- One hook needed in `edit/job.ts` (`planEdit` accepts an optional `direction`), a file Ishaan's final merge changed:
+  ask Claude 1 to approve the hook (about 10 lines) before we touch it; until then BRAIN 1 answers only the `edit:beats`
+  slot, which needs no change in his files.
+- Server model: SERVER-LLM calls need Moovi's own key on the server (`MOOVI_RUNTIME=http`, a fast cheap model). That is
+  a running cost for Moovi per video (small detail calls only); with no server key, those stages use their code defaults.
+- Sections 2 and 5 still describe the mechanism (park a step, answer, validate, memo); this section decides what is
+  allowed through it.
