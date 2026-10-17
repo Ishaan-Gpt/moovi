@@ -57,3 +57,8 @@
 - Reference R5 (night-glass how-to): R5 shipped at 7.0 against R4's sheet at 4.8 in the same round. Taste gains a "Glass and UI" section
   (live-blur glass, drawn walkthroughs with line icons and a touch dot, removed items turn red). Lessons: the self-check
   side-by-side before the judge, and check every fetched footage poster.
+
+## 1.10.0 (2026-10-18)
+- Rule 0.6, no silent defaults: every default (colour, font, ease, layout, saved style, pipeline rule) is questioned against alternatives.
+- New references/palette.md: the banned AI-default palettes, the 5-palette drill, OKLCH tint ramps, roles, contrast from ramps.
+- §10 storyboard board spec: frame plus a structured side panel, a timeline ribbon, the palette strip (owner: notes under frames read poorly).
