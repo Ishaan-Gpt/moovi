@@ -50,6 +50,7 @@
 - Never copy one reference wholesale; cast per beat from every reference and the catalogue, adapted to this video's palette and content.
 - A component that isn't polished doesn't ship: a soft or haloed cut-out across the whole video reads worse than the original wall. Use background replacement only where its edge quality passes, and only for a span that earns it.
 - Always grade: exposure, white balance, contrast curve, skin protected; low-res sources get a careful sharpen and grain, never a plastic upscale.
+- **Upscale where it is seen:** a low-res source is cropped to the output frame first (9:16 on the face), then AI super-resolution to the output size, then the grade. Interpolation (lanczos/bicubic) is not an upscale; it only makes the blur bigger.
 
 ## Grading (owner's own grade, 2026-10-16; preset kits/motion/grade-presets.json "natural-punch")
 - Never neutralise a room's colour: a warm wall stays warm (temp -4, not a full white balance). My auto-neutral grade was rejected as "very bad".
