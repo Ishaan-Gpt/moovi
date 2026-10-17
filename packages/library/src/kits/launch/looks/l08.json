@@ -1,0 +1,103 @@
+{
+  "id": "launch-l08",
+  "name": "Launch · Bracket Red",
+  "about": "Off-white with black and one signal red: red bracketed eyebrow captions that type in and out, a giant numeral, a full-bleed dot matrix where hollow dots are the stat, a slot-machine price, terminal errors, hub-and-spoke integrations, a CTA pill clicked. Learned from an email tool promo (promptsmotion.com).",
+  "from": [
+    "ref:l08"
+  ],
+  "styles": [
+    "brand-promo",
+    "studio-minimal"
+  ],
+  "palette": {
+    "paper": "#EFEDE8",
+    "paperShade": "#E6E3DD",
+    "ink": "#111111",
+    "text": "#111111",
+    "textDim": "rgba(17,17,17,0.52)",
+    "inkText": "#EFEDE8",
+    "inkTextDim": "rgba(239,237,232,0.52)",
+    "card": "#FFFFFF",
+    "accent": "#E5322D"
+  },
+  "type": {
+    "display": {
+      "family": "display",
+      "weight": 700,
+      "tracking": -0.045
+    },
+    "accent": {
+      "family": "display",
+      "weight": 700,
+      "tracking": -0.045
+    },
+    "accentSerif": false,
+    "micro": {
+      "family": "mono",
+      "weight": 500,
+      "tracking": 0.02
+    },
+    "ui": {
+      "family": "ui",
+      "weight": 500,
+      "tracking": -0.01
+    },
+    "wordmark": {
+      "family": "display",
+      "weight": 800,
+      "tracking": -0.05
+    },
+    "numeral": {
+      "family": "display",
+      "weight": 650,
+      "tracking": -0.06
+    }
+  },
+  "worlds": [
+    "paper",
+    "paper",
+    "paper",
+    "ink"
+  ],
+  "bg": {
+    "paper": [],
+    "ink": []
+  },
+  "post": {
+    "grain": 0.025
+  },
+  "prefer": {
+    "type": [
+      "effect:type-typewriter-caret",
+      "effect:type-slot-roll",
+      "effect:type-mask-rise"
+    ],
+    "transitions": [
+      "transition:mask-wipe-up",
+      "transition:page-push",
+      "transition:bar-wipe"
+    ],
+    "cams": [
+      "camera:push-slow",
+      "camera:focus-zoom"
+    ]
+  },
+  "motion": {
+    "engine": "kits/launch (ishaan-motion)",
+    "arrive": {
+      "seconds": 0.55,
+      "ease": "out (0.16,1,0.3,1)"
+    },
+    "stagger": 0.07,
+    "cutOn": "bar"
+  },
+  "frame": {
+    "designW": 1920,
+    "designH": 1080,
+    "ratios": [
+      "16:9",
+      "1:1",
+      "9:16"
+    ]
+  }
+}

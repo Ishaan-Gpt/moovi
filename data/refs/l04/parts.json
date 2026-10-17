@@ -1,0 +1,2841 @@
+{
+ "reference": {
+  "id": "l04",
+  "url": "https://www.promptsmotion.com/macrohou-33959d",
+  "title": "Health-app launch video",
+  "kind": "app launch film, 16:9, 30 s",
+  "seconds": 29.76,
+  "notes": "The best script of the set: hype, doubt, rules, verdict, learning. Black and cream alternate as the pacing device and one green accent always lands on the key word; punctuation beats (a slot-mask verdict pill, a liquid wave wipe, dust into the logo) are tasteful and earned. Studied from what the page shows publicly; rebuilt in Moovi's own code (packages/library/src/kits/launch) with our own fonts, sounds and assets."
+ },
+ "kit": {
+  "file": "packages/library/src/kits/launch/looks/l04.json"
+ },
+ "impl": "packages/library/src/kits/launch/",
+ "styles": [
+  "brand-promo",
+  "studio-minimal"
+ ],
+ "parts": [
+  {
+   "id": "effect:type-drop-underline",
+   "category": "effect",
+   "role": "last word drops, underline draws",
+   "at": null,
+   "name": "Last word drops, underline draws",
+   "about": "the line rises; its last word drops in late on a spring and a hand-drawn underline writes itself under it",
+   "energy": 3,
+   "needs": [
+    "payoff",
+    "claim",
+    "focus"
+   ],
+   "params": {
+    "type": {
+     "kinds": [
+      "reveal",
+      "promise",
+      "turn",
+      "proof"
+     ],
+     "maxWords": 7,
+     "minWords": 2
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/type.js#effect:type-drop-underline"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "transition:liquid-wave-wipe",
+   "category": "transition",
+   "role": "liquid wave wipe",
+   "at": null,
+   "name": "Liquid wave wipe",
+   "about": "a band of the next world rises with a travelling double sine edge and reveals the next shot",
+   "energy": 3,
+   "needs": [
+    "flow",
+    "calm"
+   ],
+   "params": {
+    "transition": {
+     "family": "wipe",
+     "worlds": "change"
+    },
+    "dur": 0.6
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/trans.js#transition:liquid-wave-wipe"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "wipe",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "ui:feature-chip",
+   "category": "ui",
+   "role": "feature chip",
+   "at": null,
+   "name": "Feature chip",
+   "about": "a white chip with a line icon and a feature name, springing in, gaining an accent outline when locked",
+   "energy": 2,
+   "needs": [
+    "list",
+    "benefit",
+    "ui"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/ui.js#ui:feature-chip"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.95
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:phone-frame",
+   "category": "ui",
+   "role": "phone",
+   "at": null,
+   "name": "Phone",
+   "about": "a modern phone with an island, a status bar and a light along the rim, holding the real mobile site shot",
+   "energy": 2,
+   "needs": [
+    "product",
+    "ui"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/ui.js#ui:phone-frame"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.95
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:progress-dots",
+   "category": "ui",
+   "role": "dotted progress",
+   "at": null,
+   "name": "Dotted progress",
+   "about": "a row of rounded cells that fill in the accent, one by one",
+   "energy": 2,
+   "needs": [
+    "time",
+    "steps",
+    "growth"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/ui.js#ui:progress-dots"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.95
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:line-chart-draw",
+   "category": "ui",
+   "role": "line chart draws",
+   "at": null,
+   "name": "Line chart draws",
+   "about": "a line draws left to right with a travelling end dot and a soft area under it",
+   "energy": 3,
+   "needs": [
+    "growth",
+    "data",
+    "time"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/ui.js#ui:line-chart-draw"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.95
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "texture:split-worlds",
+   "category": "texture",
+   "role": "split worlds",
+   "at": null,
+   "name": "Split worlds",
+   "about": "the frame divided by a seam into two shades of the world (two worlds in one shot)",
+   "energy": 1,
+   "needs": [
+    "compare",
+    "before-after"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/worlds.js#texture:split-worlds"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "studio-minimal",
+     "w": 0.85
+    },
+    {
+     "style": "brand-promo",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  },
+  {
+   "id": "effect:radial-streaks",
+   "category": "effect",
+   "role": "hype burst",
+   "at": null,
+   "name": "Hype burst",
+   "about": "a one-off burst of thin radial streaks behind the subject on a hit (the hype opener), once a film at most",
+   "energy": 5,
+   "needs": [
+    "hook",
+    "chaos",
+    "emotion"
+   ],
+   "params": {
+    "kind": "overlay"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/fx.js#effect:radial-streaks"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "overlay"
+   ]
+  },
+  {
+   "id": "insert:capsule-swarm-claim",
+   "category": "insert",
+   "role": "the hype open: everyone swears it works",
+   "at": 0,
+   "name": "Crowd claim fly-through",
+   "about": "a stream of two-tone capsules, scored tablets, crosses and star rows flies out of a vanishing point past the lens around a centred claim; at the end everything implodes into one accent dot",
+   "energy": 5,
+   "needs": [
+    "hook",
+    "claim",
+    "people",
+    "chaos"
+   ],
+   "params": {
+    "count": 230,
+    "nearSizePx": 140,
+    "farSizePx": 10,
+    "implodeS": 0.28,
+    "setup": {
+     "family": "crowd",
+     "kinds": [
+      "hook",
+      "problem"
+     ],
+     "roles": [
+      "open"
+     ],
+     "cams": [
+      "camera:breathe"
+     ],
+     "weight": 1.2
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#insert:capsule-swarm-claim"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.4
+    },
+    {
+     "style": "atlas",
+     "w": 0.2
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:seed-dot-question",
+   "category": "insert",
+   "role": "turns everyone into you and hands the dot on",
+   "at": 2.25,
+   "name": "Question with a seed dot",
+   "about": "a centred question over the out-of-focus product, the viewer's word in the accent; the accent dot pops out of that word and travels to the centre while the lines pinch shut",
+   "energy": 1,
+   "needs": [
+    "question",
+    "hook",
+    "focus"
+   ],
+   "params": {
+    "holdS": 1.6,
+    "dotPx": 14,
+    "pinchS": 0.22,
+    "setup": {
+     "family": "question",
+     "kinds": [
+      "problem",
+      "turn",
+      "hook"
+     ],
+     "roles": [
+      "open",
+      "middle"
+     ],
+     "cams": [
+      "camera:breathe",
+      "camera:push-slow"
+     ],
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#insert:seed-dot-question"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:mark-beside-statement",
+   "category": "insert",
+   "role": "the brand promise beat",
+   "at": 4,
+   "name": "Mark beside the statement",
+   "about": "the accent dot slides over and swells into the mark (accent to ink), the statement lands beside it, its last word gets a hand-drawn underline, then the mark splits open",
+   "energy": 2,
+   "needs": [
+    "brand",
+    "promise",
+    "claim"
+   ],
+   "params": {
+    "markHeightPct": 22,
+    "underlineS": 0.32,
+    "splitS": 0.25,
+    "setup": {
+     "family": "brand-line",
+     "kinds": [
+      "promise",
+      "reveal"
+     ],
+     "roles": [
+      "open",
+      "middle"
+     ],
+     "cams": [
+      "camera:creep-expo-push",
+      "camera:push-slow"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#insert:mark-beside-statement"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:locked-rule-chips",
+   "category": "insert",
+   "role": "the rules are set up front",
+   "at": 7.05,
+   "name": "Rules sealed with a lock",
+   "about": "glass rule chips with icon badges slide in sheared, one per beat, under the line; an accent outline draws around them from the top centre both ways and a padlock snaps into the gap",
+   "energy": 3,
+   "needs": [
+    "list",
+    "security",
+    "steps",
+    "proof"
+   ],
+   "params": {
+    "chipEveryS": 0.5,
+    "sealDrawS": 0.32,
+    "lockOvershoot": 1.2,
+    "setup": {
+     "family": "chip-list",
+     "kinds": [
+      "list",
+      "proof",
+      "promise"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      2,
+      4
+     ],
+     "requires": [
+      "items3"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#insert:locked-rule-chips"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:tap-to-streak",
+   "category": "insert",
+   "role": "the daily action beat",
+   "at": 11,
+   "name": "One tap builds a streak",
+   "about": "the line and an accent action pill on the left; a tap sends a ring across the frame that reveals a big phone with a habit grid; day tiles fly out of the grid, spinning, into a streak bar",
+   "energy": 3,
+   "needs": [
+    "steps",
+    "product",
+    "time",
+    "growth"
+   ],
+   "params": {
+    "ringS": 0.38,
+    "tiles": 14,
+    "tileEveryS": 0.09,
+    "barCells": 18,
+    "setup": {
+     "family": "device-demo",
+     "kinds": [
+      "demo",
+      "promise",
+      "proof"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      1,
+      6
+     ],
+     "weight": 1.2
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#insert:tap-to-streak"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:verdict-drum-stage",
+   "category": "insert",
+   "role": "the honest verdict",
+   "at": 13.62,
+   "name": "Verdict slot drum",
+   "about": "the line over a wide dark window that spins a drum of outcome pills with ghost smear and dimmed neighbours; it slows on decelerating ticks and lands on one with a settle and a glow ring",
+   "energy": 4,
+   "needs": [
+    "answer",
+    "choice",
+    "stakes",
+    "reveal"
+   ],
+   "params": {
+    "spinS": 1.3,
+    "landOvershootPct": 7,
+    "ghostCopies": 5,
+    "setup": {
+     "family": "verdict",
+     "kinds": [
+      "reveal",
+      "turn",
+      "proof"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      3,
+      5
+     ],
+     "weight": 1.2
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#insert:verdict-drum-stage"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:verdict-phone-closeup",
+   "category": "insert",
+   "role": "the drop: the verdict is real, it is in the app",
+   "at": 16,
+   "name": "Match cut into the app",
+   "about": "the outcome badge inside the phone's result screen fills the frame at 5x on the cut, a focus ring blooms off it, then the camera pulls all the way back to the phone and the line lands beside it",
+   "energy": 4,
+   "needs": [
+    "proof",
+    "product",
+    "reveal",
+    "answer"
+   ],
+   "params": {
+    "closeUpScale": 5,
+    "holdS": 0.5,
+    "pullBackS": 0.36,
+    "setup": {
+     "family": "device-demo",
+     "kinds": [
+      "proof",
+      "reveal",
+      "demo"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "cams": [
+      "camera:breathe"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#insert:verdict-phone-closeup"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:stat-beside-phone",
+   "category": "insert",
+   "role": "the result as one number",
+   "at": 16.95,
+   "name": "Stat beside the phone",
+   "about": "the line and a huge accent number counting up on the left, the phone with its result on the right; the phone's chart then lifts out of the device, draws across the frame and settles big under the number with a wash band",
+   "energy": 3,
+   "needs": [
+    "number",
+    "proof",
+    "stat",
+    "decline"
+   ],
+   "params": {
+    "countS": 0.7,
+    "liftS": 0.5,
+    "bandGrowS": 0.3,
+    "setup": {
+     "family": "stat",
+     "kinds": [
+      "stat",
+      "proof"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "number": "required",
+     "requires": [
+      "number"
+     ],
+     "weight": 1.2
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#insert:stat-beside-phone"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:step-chart-proof",
+   "category": "insert",
+   "role": "shows the change instead of saying it",
+   "at": 18.75,
+   "name": "Before/after step chart",
+   "about": "a jittery accent line runs across the whole frame, passes a wash band, steps down and stays lower, with a dashed before guide, a dotted after guide and the change in an accent pill on the step",
+   "energy": 2,
+   "needs": [
+    "before-after",
+    "proof",
+    "data",
+    "decline"
+   ],
+   "params": {
+    "points": 110,
+    "stepAtPct": 56,
+    "drawS": 1.1,
+    "setup": {
+     "family": "chart",
+     "kinds": [
+      "proof",
+      "stat"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "number": "optional",
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#insert:step-chart-proof"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:branch-picker-graph",
+   "category": "insert",
+   "role": "it learns, then picks the next one",
+   "at": 20.25,
+   "name": "Branch picker graph",
+   "about": "a done root node with a check fans curved edges to candidate pills that pop in; dots flow along the edges, a selection ring hops between candidates on the eighths, then commits: the chosen fills in the accent and its edge thickens",
+   "energy": 3,
+   "needs": [
+    "choice",
+    "ai",
+    "network",
+    "steps"
+   ],
+   "params": {
+    "popStaggerMs": 75,
+    "hops": 8,
+    "hopEveryS": 0.2,
+    "commitS": 0.3,
+    "setup": {
+     "family": "graph",
+     "kinds": [
+      "demo",
+      "list",
+      "turn"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      3,
+      5
+     ],
+     "requires": [
+      "items3"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#insert:branch-picker-graph"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:dust-glyph-reform",
+   "category": "insert",
+   "role": "everything returns to one",
+   "at": 24.75,
+   "name": "Dust re-forms a glyph",
+   "about": "square dust swirls across a black frame, balls up, opens into a ring, settles into the outline of the line's first letter, fills in solid and shrinks into the line itself",
+   "energy": 4,
+   "needs": [
+    "reveal",
+    "idea",
+    "brand"
+   ],
+   "params": {
+    "particles": 1500,
+    "phases": {
+     "swirl": 0.55,
+     "ball": 0.25,
+     "ring": 0.16,
+     "glyph": 0.2,
+     "solid": 0.12,
+     "shrink": 0.3
+    },
+    "setup": {
+     "family": "particles",
+     "kinds": [
+      "reveal",
+      "promise"
+     ],
+     "roles": [
+      "middle",
+      "close"
+     ],
+     "weight": 0.9
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#insert:dust-glyph-reform"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "end_card:split-mark-lockup",
+   "category": "end_card",
+   "role": "mark, wordmark and address",
+   "at": 28,
+   "name": "Split mark lockup",
+   "about": "the seed dot pops in, swells into the mark and splits open; the wordmark rises from a mask under it and the address fades in last, over the out-of-focus product",
+   "energy": 2,
+   "needs": [
+    "brand",
+    "cta",
+    "end"
+   ],
+   "params": {
+    "growS": 0.4,
+    "splitAt": 0.6,
+    "setup": {
+     "family": "lockup",
+     "kinds": [
+      "end"
+     ],
+     "roles": [
+      "close"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#end_card:split-mark-lockup"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "end"
+   ]
+  },
+  {
+   "id": "end_card:wordmark-squeeze-mark",
+   "category": "end_card",
+   "role": "the line collapses into the logo",
+   "at": 26.78,
+   "name": "Wordmark squeezes into the mark",
+   "about": "the wordmark's letters slide into the first letter, which collapses into the dot; the dot swells into the mark, splits, and the wordmark returns small under it with the address",
+   "energy": 2,
+   "needs": [
+    "brand",
+    "end",
+    "simplify"
+   ],
+   "params": {
+    "squeezeS": 0.3,
+    "markAt": 1.25,
+    "setup": {
+     "family": "lockup",
+     "kinds": [
+      "end"
+     ],
+     "roles": [
+      "close"
+     ],
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#end_card:wordmark-squeeze-mark"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "end"
+   ]
+  },
+  {
+   "id": "effect:type-depth-stack",
+   "category": "effect",
+   "role": "the opening claim",
+   "at": 0,
+   "name": "Depth word stack",
+   "about": "words arrive ten a second from in front of the lens, bigger, grey and soft, and snap to size and colour; a centred line re-centres as it grows",
+   "energy": 4,
+   "needs": [
+    "hook",
+    "claim",
+    "quote"
+   ],
+   "params": {
+    "staggerMs": 100,
+    "fromScale": 1.25,
+    "fromAlpha": 0.45,
+    "blurPx": 4,
+    "type": {
+     "kinds": [
+      "hook",
+      "problem"
+     ],
+     "maxWords": 9
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#effect:type-depth-stack"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-tumble-drop",
+   "category": "effect",
+   "role": "brand statement and section lines",
+   "at": 4.2,
+   "name": "Tumbling word drop",
+   "about": "each word drops in from below-right, tilted about ten degrees and half transparent, and springs flat; the accent word lands last",
+   "energy": 3,
+   "needs": [
+    "claim",
+    "brand",
+    "answer"
+   ],
+   "params": {
+    "staggerMs": [
+     50,
+     70
+    ],
+    "fromRotDeg": 10,
+    "accentDelayMs": 140,
+    "type": {
+     "kinds": [
+      "promise",
+      "reveal",
+      "turn",
+      "list"
+     ],
+     "maxWords": 10
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#effect:type-tumble-drop"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    },
+    {
+     "style": "handmade",
+     "w": 0.7
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-tracking-collapse",
+   "category": "effect",
+   "role": "the verdict line",
+   "at": 14,
+   "name": "Tracking collapse",
+   "about": "the line appears spaced wide and soft and condenses to tight tracking, like a held breath",
+   "energy": 3,
+   "needs": [
+    "stakes",
+    "answer",
+    "reveal"
+   ],
+   "params": {
+    "fromTrackingEm": 0.35,
+    "durS": 0.45,
+    "type": {
+     "kinds": [
+      "reveal",
+      "turn",
+      "stat",
+      "end"
+     ],
+     "maxWords": 8
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#effect:type-tracking-collapse"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-pinch-in-accent",
+   "category": "effect",
+   "role": "the still question",
+   "at": 2.25,
+   "name": "Pinch-in with accent flood",
+   "about": "alternate lines close in from opposite sides of their masks, then the accent word floods into colour with a tiny swell",
+   "energy": 1,
+   "needs": [
+    "question",
+    "focus",
+    "hook"
+   ],
+   "params": {
+    "lineGapS": 0.06,
+    "floodAtS": 0.42,
+    "type": {
+     "kinds": [
+      "problem",
+      "hook",
+      "turn"
+     ],
+     "maxWords": 8
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#effect:type-pinch-in-accent"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-grey-settle",
+   "category": "effect",
+   "role": "the it-learns line",
+   "at": 20.65,
+   "name": "Grey settle",
+   "about": "words rise in grey one by one and settle to ink a beat later, the accent word settling to the accent",
+   "energy": 2,
+   "needs": [
+    "steps",
+    "answer",
+    "calm"
+   ],
+   "params": {
+    "staggerMs": 55,
+    "settleDelayS": 0.32,
+    "type": {
+     "kinds": [
+      "demo",
+      "proof",
+      "list",
+      "promise"
+     ],
+     "maxWords": 12
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#effect:type-grey-settle"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "transition:crowd-implode-iris",
+   "category": "transition",
+   "role": "the crowd collapses into one and the question opens from it",
+   "at": 1.75,
+   "name": "Implode to a dot, iris out",
+   "about": "the shot swirls and shrinks into its exit point until only the accent dot is left, then the next world opens out of that dot in an accelerating circle",
+   "energy": 4,
+   "needs": [
+    "focus",
+    "idea",
+    "contrast"
+   ],
+   "params": {
+    "implodeS": 0.3,
+    "irisS": 0.22,
+    "transition": {
+     "family": "iris",
+     "worlds": "change"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#transition:crowd-implode-iris"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "iris",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:split-gap-flythrough",
+   "category": "transition",
+   "role": "through the mark onto the rules board",
+   "at": 6.75,
+   "name": "Fly through the gap",
+   "about": "a slow creep, then the camera rushes in log space (about 9x) into the exit point, the gap in the split mark, and lands on the next shot settling from 106%",
+   "energy": 4,
+   "needs": [
+    "brand",
+    "reveal",
+    "energy"
+   ],
+   "params": {
+    "pushTo": 9,
+    "preS": 0.32,
+    "transition": {
+     "family": "zoom"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#transition:split-gap-flythrough"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "zoom",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:chips-merge-pill",
+   "category": "transition",
+   "role": "many rules become one action",
+   "at": 10.6,
+   "name": "Stack merges into a pill",
+   "about": "the outgoing group of cards loses its text, tints to the accent and cascades up-left in an arc into one pill that lands on the next shot's button",
+   "energy": 3,
+   "needs": [
+    "simplify",
+    "process",
+    "product"
+   ],
+   "params": {
+    "cascadeStaggerMs": 40,
+    "durS": 0.64,
+    "transition": {
+     "family": "morph"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#transition:chips-merge-pill"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "morph",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:tap-ring-reveal",
+   "category": "transition",
+   "role": "the tap that brings in the app",
+   "at": 11.45,
+   "name": "Tap ring reveal",
+   "about": "a soft press at the hand-off point, then a thin ring races out past the frame edge with the next shot inside it",
+   "energy": 3,
+   "needs": [
+    "ui",
+    "product",
+    "steps"
+   ],
+   "params": {
+    "ringS": 0.32,
+    "ringStrokePx": 6,
+    "transition": {
+     "family": "iris"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#transition:tap-ring-reveal"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "iris",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:ink-pour-curtain",
+   "category": "transition",
+   "role": "from the proof world into the black verdict",
+   "at": 13.62,
+   "name": "Ink pour curtain",
+   "about": "a sheet of the next world pours down over the shot with a slow two-lobe liquid edge and a soft shadow, like poured ink",
+   "energy": 4,
+   "needs": [
+    "contrast",
+    "stakes",
+    "reveal"
+   ],
+   "params": {
+    "durS": 0.4,
+    "lobes": 2,
+    "amplitudePct": 7,
+    "transition": {
+     "family": "wipe",
+     "worlds": "change"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#transition:ink-pour-curtain"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "wipe",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:token-match-zoom",
+   "category": "transition",
+   "role": "the drop: from the verdict pill to the same pill in the app",
+   "at": 16,
+   "name": "Token match zoom",
+   "about": "the next shot opens at 6x on the same token the last shot ended on, a focus ring blooms, the camera holds with a drift and pulls all the way back",
+   "energy": 4,
+   "needs": [
+    "proof",
+    "product",
+    "reveal"
+   ],
+   "params": {
+    "closeUpScale": 6,
+    "postS": 0.6,
+    "transition": {
+     "family": "match"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#transition:token-match-zoom"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "match",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:chart-squeeze-dot",
+   "category": "transition",
+   "role": "the result becomes the start of the next test",
+   "at": 20.25,
+   "name": "Squeeze to a dot",
+   "about": "the shot is squeezed from both sides into a squiggle and then a dot at its exit point; the dot arcs to the next shot's entry and the next shot opens out of it",
+   "energy": 3,
+   "needs": [
+    "simplify",
+    "idea",
+    "connect"
+   ],
+   "params": {
+    "squeezeS": 0.34,
+    "postS": 0.34,
+    "transition": {
+     "family": "morph"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#transition:chart-squeeze-dot"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "morph",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:dust-blackhole",
+   "category": "transition",
+   "role": "everything turns to dust and returns to one",
+   "at": 24.45,
+   "name": "Dust black hole",
+   "about": "the shot breaks into square dust that drifts outward and swirls while a disc opens from its exit point and swallows the frame with the next shot inside",
+   "energy": 5,
+   "needs": [
+    "chaos",
+    "reveal",
+    "idea"
+   ],
+   "params": {
+    "cellPx": 20,
+    "preS": 0.22,
+    "postS": 0.36,
+    "transition": {
+     "family": "iris",
+     "worlds": "change"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#transition:dust-blackhole"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "iris",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.6
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "camera:creep-expo-push",
+   "category": "camera",
+   "role": "sets up the fly-through of the mark",
+   "at": 6.75,
+   "name": "Creep, then rush",
+   "about": "a slow creep through the beat, then an exponential push into the beat's exit point in its last third of a second",
+   "energy": 3,
+   "needs": [
+    "energy",
+    "reveal",
+    "brand"
+   ],
+   "params": {
+    "creep": 0.035,
+    "rushTo": 1.7,
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#camera:creep-expo-push"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "camera:closeup-pullback",
+   "category": "camera",
+   "role": "from the token to the device",
+   "at": 16.5,
+   "name": "Close-up pull-back",
+   "about": "the beat opens tight (3x) on its entry token with a drift, then pulls all the way back to the whole shot",
+   "energy": 3,
+   "needs": [
+    "product",
+    "proof",
+    "reveal"
+   ],
+   "params": {
+    "from": 3,
+    "holdS": 0.45,
+    "pullS": 0.4,
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#camera:closeup-pullback"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "ui:habit-week-grid",
+   "category": "ui",
+   "role": "what one tap a day builds",
+   "at": 11.65,
+   "name": "Habit grid phone",
+   "about": "a phone app with an adherence ring, x of y days, a week grid where done days are accent squares and today is outlined, two actions, a trend card and a tab bar; the grid fills live",
+   "energy": 2,
+   "needs": [
+    "time",
+    "health",
+    "ui",
+    "growth"
+   ],
+   "params": {
+    "gridCols": 7,
+    "gridRows": 4
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#ui:habit-week-grid"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:streak-tile-bar",
+   "category": "ui",
+   "role": "the streak toward the goal",
+   "at": 11.75,
+   "name": "Dotted streak bar",
+   "about": "a row of small rounded squares builds left to right ending in an outlined goal box; squares pop solid accent one by one as progress lands",
+   "energy": 2,
+   "needs": [
+    "growth",
+    "time",
+    "steps"
+   ],
+   "params": {
+    "count": 18,
+    "buildS": 0.35
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#ui:streak-tile-bar"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:skew-rule-chips",
+   "category": "ui",
+   "role": "the rules of the experiment",
+   "at": 7.5,
+   "name": "Skew-in glass chips",
+   "about": "glass rule chips with a tinted icon badge slide in from the left sheared and soft, then straighten; the stack re-centres on a spring each time",
+   "energy": 2,
+   "needs": [
+    "list",
+    "steps",
+    "process"
+   ],
+   "params": {
+    "entryS": 0.34,
+    "fromSkew": -0.26,
+    "fromBlurPx": 8
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#ui:skew-rule-chips"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:lock-seal-outline",
+   "category": "ui",
+   "role": "the rules are locked",
+   "at": 9,
+   "name": "Outline lock seal",
+   "about": "an accent outline draws around a group from the top centre in both directions and a padlock pops into the gap and snaps shut",
+   "energy": 3,
+   "needs": [
+    "security",
+    "steps",
+    "proof"
+   ],
+   "params": {
+    "drawS": 0.32,
+    "lockOvershoot": 1.2
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#ui:lock-seal-outline"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:verdict-drum",
+   "category": "ui",
+   "role": "the verdict lands",
+   "at": 14.17,
+   "name": "Verdict drum",
+   "about": "a dark rounded window spinning a vertical drum of outcome pills with motion ghosts; it slows and lands on the target with a settle and a glow ring, neighbours dimmed and narrower",
+   "energy": 4,
+   "needs": [
+    "answer",
+    "choice",
+    "stakes"
+   ],
+   "params": {
+    "spinS": 1.3,
+    "neighbourScale": 0.88
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#ui:verdict-drum"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:result-serif-screen",
+   "category": "ui",
+   "role": "the verdict inside the product",
+   "at": 16,
+   "name": "Serif result screen",
+   "about": "a phone result page set in a text serif: a caps label, a two-line headline, an outcome card with a mint badge, a chart card and a details row",
+   "energy": 2,
+   "needs": [
+    "answer",
+    "proof",
+    "data"
+   ],
+   "params": {
+    "serif": "Fraunces"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#ui:result-serif-screen"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:step-chart-band",
+   "category": "ui",
+   "role": "the change, drawn",
+   "at": 18.75,
+   "name": "Step chart with band",
+   "about": "a jittery accent line that runs high, passes a wash band, steps down and stays lower, with dashed and dotted guides",
+   "energy": 2,
+   "needs": [
+    "before-after",
+    "decline",
+    "data"
+   ],
+   "params": {
+    "points": 100,
+    "stepAtPct": 56
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#ui:step-chart-band"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:option-hop-ring",
+   "category": "ui",
+   "role": "visible deliberation before the pick",
+   "at": 21.375,
+   "name": "Hopping selection ring",
+   "about": "an outline ring hops from option to option as if weighing them, then commits: the chosen fills in the accent, the rest fade",
+   "energy": 3,
+   "needs": [
+    "choice",
+    "ai",
+    "focus"
+   ],
+   "params": {
+    "hops": 6,
+    "hopEveryS": 0.2
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#ui:option-hop-ring"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "texture:paper-grid-80",
+   "category": "texture",
+   "role": "the board the rules are set on",
+   "at": 7,
+   "name": "Quiet paper grid",
+   "about": "a soft 80-unit grid on the paper, every fourth line a touch stronger, fading out toward the edges",
+   "energy": 1,
+   "needs": [
+    "calm",
+    "structure",
+    "process"
+   ],
+   "params": {
+    "spacing": 80
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#texture:paper-grid-80"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  },
+  {
+   "id": "effect:capsule-confetti-stream",
+   "category": "effect",
+   "role": "the crowd as a finish",
+   "at": 0,
+   "name": "Capsule confetti stream",
+   "about": "a lighter stream of capsules, tablets, crosses and star rows flying past the lens over a hype beat",
+   "energy": 4,
+   "needs": [
+    "hook",
+    "chaos",
+    "people"
+   ],
+   "params": {
+    "count": 70,
+    "kind": "overlay"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l04.js#effect:capsule-confetti-stream"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.3
+    },
+    {
+     "style": "atlas",
+     "w": 0.2
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "overlay"
+   ]
+  }
+ ],
+ "uses": [
+  {
+   "id": "transition:collapse-to-point",
+   "role": "headline and confetti implode into the seed dot",
+   "at": 1.75
+  },
+  {
+   "id": "transition:cut-circle-wipe",
+   "role": "cream iris blooms from the seed dot",
+   "at": 2.05
+  },
+  {
+   "id": "insert:s5-underline",
+   "role": "hand-drawn underline under the last word",
+   "at": 5.05
+  },
+  {
+   "id": "transition:cut-zoom-through",
+   "role": "fly through the gap of the mark",
+   "at": 6.75
+  },
+  {
+   "id": "texture:white-grid-board",
+   "role": "faint grid under the rules",
+   "at": 7
+  },
+  {
+   "id": "effect:typewriter-box",
+   "role": "the action line typed with a caret",
+   "at": 11
+  },
+  {
+   "id": "ui:touch-dot",
+   "role": "the press on the action pill",
+   "at": 11.45
+  },
+  {
+   "id": "ui:phone",
+   "role": "the phone carrying the app screens",
+   "at": 11.65
+  },
+  {
+   "id": "ui:phone-frame",
+   "role": "the phone frame every screen sits in",
+   "at": 11.65
+  },
+  {
+   "id": "effect:motion-blur",
+   "role": "ghost smear on the spinning drum",
+   "at": 14.2
+  },
+  {
+   "id": "transition:cut-device-pullback",
+   "role": "pull back from the in-app pill to the phone",
+   "at": 16.5
+  },
+  {
+   "id": "effect:count-up",
+   "role": "the number counts up with one decimal",
+   "at": 17.05
+  },
+  {
+   "id": "effect:grey-to-ink",
+   "role": "words land grey and turn ink",
+   "at": 20.65
+  },
+  {
+   "id": "effect:selection-ring",
+   "role": "the commit pulse on the chosen candidate",
+   "at": 23
+  },
+  {
+   "id": "camera:breathe",
+   "role": "a breath on the long holds",
+   "at": 2.3
+  }
+ ]
+}

@@ -1,0 +1,107 @@
+{
+  "id": "launch-l07",
+  "name": "Launch · Memoir Paper",
+  "about": "Warm editorial paper: a red accent phrase, constellations of floating mono data chips, an italic serif voice, quiet dot grids with one black square, a vertical thread with an in-sync pill, a dot field converging on a black disc. Learned from a product demo on motion.so.",
+  "from": [
+    "ref:l07"
+  ],
+  "styles": [
+    "brand-promo",
+    "studio-minimal"
+  ],
+  "palette": {
+    "paper": "#F3EEE6",
+    "paperShade": "#ECE5DA",
+    "ink": "#161412",
+    "text": "#161412",
+    "textDim": "rgba(22,20,18,0.52)",
+    "inkText": "#F3EEE6",
+    "inkTextDim": "rgba(243,238,230,0.52)",
+    "card": "#FFFFFF",
+    "accent": "#D2402C"
+  },
+  "type": {
+    "display": {
+      "family": "display",
+      "weight": 650,
+      "tracking": -0.035
+    },
+    "accent": {
+      "family": "serif",
+      "italic": true,
+      "weight": 400,
+      "tracking": -0.01
+    },
+    "accentSerif": true,
+    "accentScale": 1.1,
+    "micro": {
+      "family": "mono",
+      "weight": 500,
+      "tracking": 0.12
+    },
+    "ui": {
+      "family": "ui",
+      "weight": 500
+    },
+    "wordmark": {
+      "family": "serif",
+      "italic": true,
+      "weight": 400,
+      "tracking": -0.01
+    },
+    "numeral": {
+      "family": "mono",
+      "weight": 500,
+      "tracking": -0.02
+    }
+  },
+  "worlds": [
+    "paper",
+    "paper",
+    "paper",
+    "ink"
+  ],
+  "bg": {
+    "paper": [
+      "texture:dot-grid-editorial",
+      "texture:paper-fibre"
+    ],
+    "ink": []
+  },
+  "post": {
+    "grain": 0.04
+  },
+  "prefer": {
+    "type": [
+      "effect:type-word-blur-rise",
+      "effect:type-mask-rise"
+    ],
+    "transitions": [
+      "transition:rack-focus-swap",
+      "transition:dot-handoff",
+      "transition:zoom-through"
+    ],
+    "cams": [
+      "camera:breathe",
+      "camera:drift-lateral"
+    ]
+  },
+  "motion": {
+    "engine": "kits/launch (ishaan-motion)",
+    "arrive": {
+      "seconds": 0.55,
+      "ease": "out (0.16,1,0.3,1)"
+    },
+    "stagger": 0.07,
+    "cutOn": "bar"
+  },
+  "frame": {
+    "designW": 1920,
+    "designH": 1080,
+    "ratios": [
+      "16:9",
+      "1:1",
+      "9:16"
+    ]
+  }
+}

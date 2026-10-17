@@ -1,0 +1,2875 @@
+{
+ "reference": {
+  "id": "l11",
+  "url": "https://motion.so/made-with-motion/ornadyne-o1-launch",
+  "title": "Ornadyne O1 launch (motion.so)",
+  "kind": "hardware launch film, 16:9, 56 s",
+  "seconds": 55.63,
+  "notes": "Cinematic hardware grammar: a typed question with a caret on black, archival footage in a rounded CRT bezel with a caption, HUD tracking boxes over real footage, then the product turning slowly on a dark studio floor and a quiet wordmark. Studied from what the page shows publicly; rebuilt in Moovi's own code (packages/library/src/kits/launch) with our own fonts, sounds and assets."
+ },
+ "kit": {
+  "file": "packages/library/src/kits/launch/looks/l11.json"
+ },
+ "impl": "packages/library/src/kits/launch/",
+ "styles": [
+  "brand-promo",
+  "studio-minimal"
+ ],
+ "parts": [
+  {
+   "id": "effect:type-typewriter-caret",
+   "category": "effect",
+   "role": "typed with a caret",
+   "at": null,
+   "name": "Typed with a caret",
+   "about": "the line types at a steady rate with an accent caret that blinks on a fixed clock once it stops",
+   "energy": 2,
+   "needs": [
+    "question",
+    "hook",
+    "ai"
+   ],
+   "params": {
+    "type": {
+     "kinds": [
+      "hook",
+      "problem",
+      "turn"
+     ],
+     "maxWords": 9
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/type.js#effect:type-typewriter-caret"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "transition:flash-cut",
+   "category": "transition",
+   "role": "flash cut",
+   "at": null,
+   "name": "Flash cut",
+   "about": "a three-frame flash on the cut (paper white on light films, the accent on dark), with a hit",
+   "energy": 5,
+   "needs": [
+    "hook",
+    "stakes",
+    "speed"
+   ],
+   "params": {
+    "transition": {
+     "family": "cut"
+    },
+    "dur": 0.14
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/trans.js#transition:flash-cut"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "cut",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "effect:crt-bezel",
+   "category": "effect",
+   "role": "crt bezel",
+   "at": null,
+   "name": "CRT bezel",
+   "about": "the shot sits in a rounded inset frame with scanlines and a soft vignette: archival footage",
+   "energy": 2,
+   "needs": [
+    "timeline",
+    "stakes"
+   ],
+   "params": {
+    "kind": "overlay"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/fx.js#effect:crt-bezel"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "overlay"
+   ]
+  },
+  {
+   "id": "effect:hud-target-lock",
+   "category": "effect",
+   "role": "hud target lock",
+   "at": null,
+   "name": "HUD target lock",
+   "about": "a tracking box whose corners close in on a target, then a mono label types beside it",
+   "energy": 3,
+   "needs": [
+    "focus",
+    "security",
+    "data"
+   ],
+   "params": {
+    "kind": "overlay"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/fx.js#effect:hud-target-lock"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "overlay"
+   ]
+  },
+  {
+   "id": "effect:vignette-soft",
+   "category": "effect",
+   "role": "soft vignette",
+   "at": null,
+   "name": "Soft vignette",
+   "about": "a soft vignette that pulls the eye to the centre (dark beats)",
+   "energy": 1,
+   "needs": [
+    "focus"
+   ],
+   "params": {
+    "kind": "overlay"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/fx.js#effect:vignette-soft"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "overlay"
+   ]
+  },
+  {
+   "id": "insert:typed-question-black",
+   "category": "insert",
+   "role": "the provocation that opens the film",
+   "at": 0,
+   "name": "Typed question on black",
+   "about": "one question types itself in the middle of black at an uneven human pace with a thin grey caret, then the product's glowing seam wakes on the floor below",
+   "energy": 1,
+   "needs": [
+    "question",
+    "hook",
+    "idea"
+   ],
+   "params": {
+    "cps": [
+     8,
+     15
+    ],
+    "jitter": 0.38,
+    "pauseBeforeLastS": 0.42,
+    "caretBlinkHz": 1,
+    "capHeightPct": 7,
+    "setup": {
+     "family": "question",
+     "kinds": [
+      "hook",
+      "problem"
+     ],
+     "roles": [
+      "open"
+     ],
+     "cams": [
+      "camera:push-slow"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#insert:typed-question-black"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:archive-strobe-prints",
+   "category": "insert",
+   "role": "centuries of attempts in under a second",
+   "at": 6.58,
+   "name": "Archive strobe of old prints",
+   "about": "a dozen chipped archival prints with engraved plates flick past one or two frames each, then one print lands, turns and holds over a lowercase line",
+   "energy": 5,
+   "needs": [
+    "timeline",
+    "learn",
+    "history"
+   ],
+   "params": {
+    "images": 16,
+    "framesEach": [
+     1,
+     2
+    ],
+    "fps": 24,
+    "heightPct": [
+     85,
+     100
+    ],
+    "rotDeg": [
+     -2,
+     2
+    ],
+    "setup": {
+     "family": "archive",
+     "kinds": [
+      "problem",
+      "hook",
+      "turn"
+     ],
+     "roles": [
+      "open",
+      "middle"
+     ],
+     "cams": [
+      "camera:push-slow"
+     ],
+     "weight": 0.9
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#insert:archive-strobe-prints"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.7
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.5
+    },
+    {
+     "style": "atlas",
+     "w": 0.9
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.8
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:attempts-reel-crt",
+   "category": "insert",
+   "role": "the history of failure before the answer",
+   "at": 7.25,
+   "name": "Attempts reel in a CRT bezel",
+   "about": "short clips of earlier tries play inside a rounded, bowed old-monitor bezel with scanlines and grain, cutting on phrases while a lowercase narrator swaps below",
+   "energy": 3,
+   "needs": [
+    "timeline",
+    "problem",
+    "before-after"
+   ],
+   "params": {
+    "clipS": 1.15,
+    "clips": [
+     3,
+     4
+    ],
+    "radiusPct": 6,
+    "bowPct": 1.2,
+    "subtitleY": 0.88,
+    "setup": {
+     "family": "archive",
+     "kinds": [
+      "problem",
+      "list"
+     ],
+     "roles": [
+      "open",
+      "middle"
+     ],
+     "cams": [
+      "camera:push-slow",
+      "camera:breathe"
+     ],
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#insert:attempts-reel-crt"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.7
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.5
+    },
+    {
+     "style": "atlas",
+     "w": 0.9
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:waveform-dusk-hover",
+   "category": "insert",
+   "role": "the noise problem made visible",
+   "at": 15.29,
+   "name": "Loud: waveform at dusk",
+   "about": "a small hovering machine bobs against a slate-to-warm dusk while a spiky white waveform across the lower third bursts on each beat and settles",
+   "energy": 3,
+   "needs": [
+    "warning",
+    "problem",
+    "data"
+   ],
+   "params": {
+    "waveY": 0.7,
+    "ampPct": 13,
+    "burstEveryS": 1,
+    "decayS": 0.34,
+    "setup": {
+     "family": "footage",
+     "kinds": [
+      "problem",
+      "stat"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "cams": [
+      "camera:drift-lateral",
+      "camera:push-slow"
+     ],
+     "weight": 0.9
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#insert:waveform-dusk-hover"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.7
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.6
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:detect-box-zoom",
+   "category": "insert",
+   "role": "detectable: the target is found",
+   "at": 18.375,
+   "name": "Detection box zoom track",
+   "about": "the shot racks into focus on a dot on the horizon, a thin glowing box snaps round it with a confidence label, then a long-lens digital zoom tracks in, softening and jittering",
+   "energy": 3,
+   "needs": [
+    "security",
+    "focus",
+    "hidden",
+    "warning"
+   ],
+   "params": {
+    "snapS": 0.06,
+    "zoomFrom": 1,
+    "zoomTo": 3.4,
+    "zoomS": 2.05,
+    "jitterPx": 1.2,
+    "setup": {
+     "family": "footage",
+     "kinds": [
+      "problem",
+      "proof"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#insert:detect-box-zoom"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.6
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.6
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:crash-flash-mono",
+   "category": "insert",
+   "role": "short-lived: everything breaks",
+   "at": 20.33,
+   "name": "Crash flash montage",
+   "about": "four cold black-and-white failures (a tumble with motion ghosts, an impact throwing shards, a spinning horizon, wreckage with smoke) cut with single white and black frames",
+   "energy": 5,
+   "needs": [
+    "problem",
+    "chaos",
+    "warning"
+   ],
+   "params": {
+    "cutsS": [
+     0,
+     0.6,
+     1.1,
+     1.75,
+     2.35
+    ],
+    "whiteFrames": 1,
+    "blackFrames": 1,
+    "sat": 0,
+    "setup": {
+     "family": "footage",
+     "kinds": [
+      "problem"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "weight": 0.9
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#insert:crash-flash-mono"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.6
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.4
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:ground-station-hud",
+   "category": "insert",
+   "role": "the stakes, in the operator's screen",
+   "at": 22.42,
+   "name": "Ground station HUD",
+   "about": "a top-down aerial feed drifts under a full ground-station HUD (compass, flight timer, altitude ladder, telemetry rows from the brand's items, zoom pad) and a red quad locks onto a moving vehicle",
+   "energy": 3,
+   "needs": [
+    "tool",
+    "data",
+    "security",
+    "focus"
+   ],
+   "params": {
+    "panels": [
+     "compass",
+     "timer",
+     "ladder",
+     "telemetry",
+     "zoom"
+    ],
+    "lockAtS": 1.45,
+    "lockSkew": 0.2,
+    "setup": {
+     "family": "hud",
+     "kinds": [
+      "proof",
+      "demo",
+      "stat",
+      "list"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      0,
+      4
+     ],
+     "number": "optional",
+     "cams": [
+      "camera:macro-push-turn",
+      "camera:push-slow"
+     ],
+     "weight": 1.2
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#insert:ground-station-hud"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.6
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.4
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:defocus-flypast-typed",
+   "category": "insert",
+   "role": "show it without showing it",
+   "at": 26.6,
+   "name": "Defocused fly-past reveal",
+   "about": "in a dark studio the product passes behind the line completely out of focus while the reveal line types with a soft glow and a pause before the name",
+   "energy": 2,
+   "needs": [
+    "reveal",
+    "hidden",
+    "product"
+   ],
+   "params": {
+    "dofBlurPx": 34,
+    "cycleS": 2.6,
+    "typeCps": 16,
+    "pauseBeforeNameS": 0.33,
+    "glowPx": 14,
+    "setup": {
+     "family": "reveal",
+     "kinds": [
+      "reveal",
+      "turn"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "cams": [
+      "camera:push-slow"
+     ],
+     "weight": 1.2
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#insert:defocus-flypast-typed"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.3
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:studio-rimlit-profile",
+   "category": "insert",
+   "role": "first look: shape before detail",
+   "at": 30.25,
+   "name": "Rim-lit profile",
+   "about": "the product side-on just above eye level on a dark floor, lit up from black, a thin white rim along its shoulder and a glowing accent seam, the line above",
+   "energy": 1,
+   "needs": [
+    "product",
+    "focus",
+    "reveal"
+   ],
+   "params": {
+    "camElevDeg": 4,
+    "driftDegPerS": 0.8,
+    "upS": 1.8,
+    "downS": 0.5,
+    "hoverPct": 4,
+    "setup": {
+     "family": "studio",
+     "kinds": [
+      "reveal",
+      "demo",
+      "promise"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "cams": [
+      "camera:studio-dolly-steady",
+      "camera:drift-lateral"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#insert:studio-rimlit-profile"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.2
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.1
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.2
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:studio-low-three-quarter",
+   "category": "insert",
+   "role": "the heroic angle, with what it does",
+   "at": 38.5,
+   "name": "Low three-quarter orbit",
+   "about": "a low camera on the product's front three-quarter turning at 3.5 deg/s over a long soft shadow, spec callouts riding points on the object",
+   "energy": 2,
+   "needs": [
+    "product",
+    "benefit",
+    "list"
+   ],
+   "params": {
+    "camElevDeg": 9,
+    "orbitDegPerS": 3.5,
+    "callouts": 3,
+    "setup": {
+     "family": "studio",
+     "kinds": [
+      "reveal",
+      "demo",
+      "list",
+      "proof"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      0,
+      3
+     ],
+     "cams": [
+      "camera:studio-dolly-steady",
+      "camera:push-slow"
+     ],
+     "weight": 1.2
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#insert:studio-low-three-quarter"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.2
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.1
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.2
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:studio-head-on-push",
+   "category": "insert",
+   "role": "symmetry and presence",
+   "at": 41.75,
+   "name": "Head-on push",
+   "about": "a symmetric view along the product's short axis with a steady dolly in from 0.9x to 1.25x while the light comes up",
+   "energy": 2,
+   "needs": [
+    "product",
+    "focus",
+    "build"
+   ],
+   "params": {
+    "camElevDeg": 17,
+    "fromScale": 0.9,
+    "toScale": 1.25,
+    "ease": "cubic-bezier(0.3,0,0.7,1)",
+    "setup": {
+     "family": "studio",
+     "kinds": [
+      "reveal",
+      "promise",
+      "demo"
+     ],
+     "roles": [
+      "middle",
+      "close"
+     ],
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#insert:studio-head-on-push"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.2
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.1
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.2
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:studio-high-three-quarter",
+   "category": "insert",
+   "role": "the detail angle",
+   "at": 35,
+   "name": "High three-quarter",
+   "about": "a high camera looking down on the product turning slowly, its top face and engraved mark catching the strip light, callouts on the object",
+   "energy": 2,
+   "needs": [
+    "product",
+    "layers",
+    "detail"
+   ],
+   "params": {
+    "camElevDeg": 32,
+    "orbitDegPerS": 2.9,
+    "callouts": 3,
+    "setup": {
+     "family": "studio",
+     "kinds": [
+      "demo",
+      "list",
+      "proof",
+      "reveal"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      0,
+      3
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#insert:studio-high-three-quarter"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.3
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.1
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.2
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:plan-view-silhouette-mark",
+   "category": "insert",
+   "role": "the product becomes the answer",
+   "at": 46.25,
+   "name": "Plan view to brand mark",
+   "about": "the product seen straight down dims to a silhouette, then cross-dissolves into the brand's line-art medallion at the same size, the line arriving below",
+   "energy": 3,
+   "needs": [
+    "payoff",
+    "brand",
+    "answer",
+    "before-after"
+   ],
+   "params": {
+    "camElevDeg": 86,
+    "dimS": 0.85,
+    "dissolveS": 0.45,
+    "setup": {
+     "family": "studio",
+     "kinds": [
+      "turn",
+      "promise",
+      "reveal"
+     ],
+     "roles": [
+      "middle",
+      "close"
+     ],
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#insert:plan-view-silhouette-mark"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:hero-angle-suite",
+   "category": "insert",
+   "role": "the product section in one beat",
+   "at": 30.25,
+   "name": "Hero angle suite",
+   "about": "three angles of the product in one dark studio, each lit up from black and ended in black, one feature named per angle with an index, the line on the last",
+   "energy": 2,
+   "needs": [
+    "product",
+    "list",
+    "proof"
+   ],
+   "params": {
+    "angles": 3,
+    "shotS": 2.2,
+    "gapS": 0.45,
+    "setup": {
+     "family": "studio",
+     "kinds": [
+      "reveal",
+      "demo",
+      "list"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      2,
+      3
+     ],
+     "weight": 1.3
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#insert:hero-angle-suite"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.3
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.1
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.2
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "end_card:quiet-wordmark-eyebrow",
+   "category": "end_card",
+   "role": "the quiet close",
+   "at": 49.5,
+   "name": "Quiet wordmark",
+   "about": "on a near-black floor the wordmark focuses in from blur, a small square mark and the tagline sit above it, an accent seam draws beneath, a slow fade",
+   "energy": 1,
+   "needs": [
+    "brand",
+    "payoff",
+    "calm"
+   ],
+   "params": {
+    "wordmarkCapPct": 9,
+    "eyebrowPct": 1.6,
+    "fadeOutS": 0.7,
+    "setup": {
+     "family": "end",
+     "kinds": [
+      "end"
+     ],
+     "roles": [
+      "close"
+     ]
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#end_card:quiet-wordmark-eyebrow"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "end"
+   ]
+  },
+  {
+   "id": "end_card:emblem-pullback",
+   "category": "end_card",
+   "role": "the last image",
+   "at": 51,
+   "name": "Emblem pull-back",
+   "about": "a line-art medallion starts ten times too close so its strokes sweep the frame like ribbons, then pulls back turning until it sits alone as the wordmark fades",
+   "energy": 3,
+   "needs": [
+    "brand",
+    "payoff",
+    "reveal"
+   ],
+   "params": {
+    "fromScale": 10,
+    "toScale": 1,
+    "durS": 1.25,
+    "rotateDeg": -60,
+    "bloomPx": 16,
+    "setup": {
+     "family": "end",
+     "kinds": [
+      "end"
+     ],
+     "roles": [
+      "close"
+     ]
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#end_card:emblem-pullback"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "end"
+   ]
+  },
+  {
+   "id": "effect:type-typed-question",
+   "category": "effect",
+   "role": "the opening question",
+   "at": 0,
+   "name": "Typed question with caret",
+   "about": "a line types itself at an uneven human pace, recentring as it grows, with a thin grey caret that blinks when idle and a held breath before the last character",
+   "energy": 1,
+   "needs": [
+    "question",
+    "hook",
+    "idea"
+   ],
+   "params": {
+    "cps": [
+     8,
+     15
+    ],
+    "jitter": 0.38,
+    "pauseBeforeLastS": 0.42,
+    "type": {
+     "kinds": [
+      "hook",
+      "problem",
+      "turn"
+     ],
+     "maxWords": 9
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#effect:type-typed-question"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-glow-typed-name",
+   "category": "effect",
+   "role": "introducing the product",
+   "at": 27.5,
+   "name": "Glow typed reveal",
+   "about": "the line types at 16 characters a second with a soft bloom pass under the crisp letters and a pause before the last word (the name)",
+   "energy": 2,
+   "needs": [
+    "reveal",
+    "product",
+    "name"
+   ],
+   "params": {
+    "cps": 16,
+    "pauseBeforeNameS": 0.33,
+    "glowPx": 14,
+    "type": {
+     "kinds": [
+      "reveal",
+      "end",
+      "turn"
+     ],
+     "maxWords": 6
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#effect:type-glow-typed-name"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "transition:scanline-power-on",
+   "category": "transition",
+   "role": "from the question into the archive",
+   "at": 6.5,
+   "name": "Scanline power-on",
+   "about": "two frames of white with the old title inverted through fine scanlines, then the next shot settles from a slight vertical stretch",
+   "energy": 4,
+   "needs": [
+    "timeline",
+    "reveal",
+    "hook"
+   ],
+   "params": {
+    "frames": 2,
+    "scanlinePx": 3,
+    "transition": {
+     "family": "cut"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#transition:scanline-power-on"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "cut",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.7
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.6
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:bezel-escape-burst",
+   "category": "transition",
+   "role": "from the past to the real thing",
+   "at": 12.58,
+   "name": "Bezel escape burst",
+   "about": "the shot over-exposes in a stacked radial zoom blur that bursts outward, one black frame, then the clean next shot settles from 1.05x",
+   "energy": 4,
+   "needs": [
+    "reveal",
+    "before-after",
+    "nature"
+   ],
+   "params": {
+    "burstS": 0.2,
+    "steps": 8,
+    "zoomTo": 1.25,
+    "blackFrames": 1,
+    "transition": {
+     "family": "zoom",
+     "worlds": "change"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#transition:bezel-escape-burst"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "zoom",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.6
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:lens-bloom-defocus",
+   "category": "transition",
+   "role": "from nature to today's machines",
+   "at": 14.96,
+   "name": "Lens bloom defocus",
+   "about": "a one-frame exposure dip, then the shot blooms and defocuses with colour fringes, the next shot landing soft and snapping into focus",
+   "energy": 3,
+   "needs": [
+    "contrast",
+    "before-after",
+    "warning"
+   ],
+   "params": {
+    "dipFrames": 1,
+    "blurPx": 18,
+    "fringePx": 6,
+    "transition": {
+     "family": "blur",
+     "worlds": "change"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#transition:lens-bloom-defocus"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "blur",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.6
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:dip-black-breath",
+   "category": "transition",
+   "role": "a pause before the reveal",
+   "at": 26.25,
+   "name": "Dip to black breath",
+   "about": "the picture dips to black and holds a breath of pure black before the next world fades up out of it",
+   "energy": 1,
+   "needs": [
+    "stakes",
+    "emotion",
+    "focus"
+   ],
+   "params": {
+    "dipS": 0.28,
+    "holdS": 0.18,
+    "upS": 0.32,
+    "transition": {
+     "family": "cut"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#transition:dip-black-breath"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "cut",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:silhouette-match-dissolve",
+   "category": "transition",
+   "role": "the product becomes the thing it answers",
+   "at": 47.67,
+   "name": "Silhouette match dissolve",
+   "about": "the outgoing object darkens to a silhouette, then dissolves into the next shot scaled so its entry object starts at the old object's size and place",
+   "energy": 3,
+   "needs": [
+    "payoff",
+    "answer",
+    "before-after"
+   ],
+   "params": {
+    "preDimS": 0.5,
+    "dissolveS": 0.42,
+    "alignBy": "exit and entry anchors",
+    "transition": {
+     "family": "match"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#transition:silhouette-match-dissolve"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "match",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:invert-flicker-steps",
+   "category": "transition",
+   "role": "into the wordmark",
+   "at": 49.08,
+   "name": "Invert flicker steps",
+   "about": "two-frame steps slam the shot to hard mono, then its negative, then the next card in negative, then settled from 1.08x",
+   "energy": 4,
+   "needs": [
+    "brand",
+    "reveal",
+    "contrast"
+   ],
+   "params": {
+    "framesEach": 2,
+    "fps": 24,
+    "settleScale": 1.08,
+    "transition": {
+     "family": "cut"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#transition:invert-flicker-steps"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "cut",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.9
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "camera:surveillance-zoom",
+   "category": "camera",
+   "role": "closing in on the target",
+   "at": 18.4,
+   "name": "Surveillance zoom",
+   "about": "a slow digital zoom into the focus point that jitters a pixel as it goes, like a long-lens feed",
+   "energy": 2,
+   "needs": [
+    "focus",
+    "hidden",
+    "security"
+   ],
+   "params": {
+    "fromScale": 1,
+    "toScale": 1.6,
+    "ease": "cubic-bezier(0.4,0,0.6,1)",
+    "jitterPx": 1,
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#camera:surveillance-zoom"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.5
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.5
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "camera:macro-push-turn",
+   "category": "camera",
+   "role": "into the ground station",
+   "at": 23.375,
+   "name": "Macro push turn",
+   "about": "a push into a screen's readouts with a slight turn and a lateral slide",
+   "energy": 2,
+   "needs": [
+    "tool",
+    "data",
+    "focus"
+   ],
+   "params": {
+    "fromScale": 1.02,
+    "toScale": 1.12,
+    "rollDeg": [
+     -0.9,
+     0.35
+    ],
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#camera:macro-push-turn"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.7
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.6
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "camera:studio-dolly-steady",
+   "category": "camera",
+   "role": "the product angles",
+   "at": 41.75,
+   "name": "Studio dolly",
+   "about": "a steady, near-linear dolly in with a breath of rise, the product-shot move",
+   "energy": 1,
+   "needs": [
+    "product",
+    "calm",
+    "focus"
+   ],
+   "params": {
+    "fromScale": 1,
+    "toScale": 1.14,
+    "ease": "cubic-bezier(0.3,0,0.7,1)",
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#camera:studio-dolly-steady"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.3
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "ui:crt-monitor-bezel",
+   "category": "ui",
+   "role": "frames the past",
+   "at": 7.25,
+   "name": "CRT monitor bezel",
+   "about": "an old monitor: a dark rounded casing around bowed glass with a bright rim, burnt edges, scanlines and grain, playing a clip or its stand-in",
+   "energy": 2,
+   "needs": [
+    "timeline",
+    "learn",
+    "proof"
+   ],
+   "params": {
+    "radiusPct": 6,
+    "bowPct": 1.2,
+    "rimPx": 2
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#ui:crt-monitor-bezel"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.6
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.5
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.7
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:archival-print-plate",
+   "category": "ui",
+   "role": "makes found images feel like history",
+   "at": 6.92,
+   "name": "Archival print plate",
+   "about": "an off-white print with chipped edges, a slight turn and warm foxing, carrying an engraved figure or a sepia photo and a plate number",
+   "energy": 1,
+   "needs": [
+    "timeline",
+    "proof",
+    "learn"
+   ],
+   "params": {
+    "borderPct": 6,
+    "rotDeg": [
+     -3,
+     -1
+    ]
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#ui:archival-print-plate"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.5
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.4
+    },
+    {
+     "style": "atlas",
+     "w": 0.9
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.9
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:hud-compass-rose",
+   "category": "ui",
+   "role": "orientation in the ground station",
+   "at": 22.42,
+   "name": "HUD compass rose",
+   "about": "a dark disc with a turning tick ring, cardinal letters, the craft glyph at the centre and a heading readout",
+   "energy": 2,
+   "needs": [
+    "tool",
+    "location",
+    "data"
+   ],
+   "params": {
+    "ticks": 72,
+    "headingDegPerS": 7
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#ui:hud-compass-rose"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.5
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.4
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:hud-altitude-ladder",
+   "category": "ui",
+   "role": "live telemetry",
+   "at": 22.42,
+   "name": "HUD altitude ladder",
+   "about": "a tall scale of ticks scrolling with the value and an accent-edged pointer box reading it",
+   "energy": 2,
+   "needs": [
+    "data",
+    "tool"
+   ],
+   "params": {
+    "stepUnits": 5,
+    "labelsEvery": 10
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#ui:hud-altitude-ladder"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.5
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.4
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:hud-telemetry-panel",
+   "category": "ui",
+   "role": "the readouts",
+   "at": 22.42,
+   "name": "HUD telemetry panel",
+   "about": "a dark glass panel with a mono title, a blinking record dot and rows of label and value sliding in, the brand's items as live readouts",
+   "energy": 2,
+   "needs": [
+    "data",
+    "list",
+    "tool"
+   ],
+   "params": {
+    "rows": [
+     1,
+     4
+    ]
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#ui:hud-telemetry-panel"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.6
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.5
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:backer-eyebrow-badge",
+   "category": "ui",
+   "role": "credibility at the end",
+   "at": 49.5,
+   "name": "Backer eyebrow badge",
+   "about": "a tiny \"backed by\" line over a small square mark and a name in the accent, sitting quietly above a lockup",
+   "energy": 1,
+   "needs": [
+    "proof",
+    "brand",
+    "people"
+   ],
+   "params": {
+    "markPx": 33,
+    "optIn": true
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#ui:backer-eyebrow-badge"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "effect:waveform-burst",
+   "category": "effect",
+   "role": "loud made visible",
+   "at": 15.29,
+   "name": "Waveform burst",
+   "about": "a thin spiky white waveform across the lower third whose amplitude bursts each second and decays",
+   "energy": 3,
+   "needs": [
+    "warning",
+    "problem",
+    "data"
+   ],
+   "params": {
+    "y": 0.78,
+    "ampPct": 9,
+    "burstEveryS": 1,
+    "decayS": 0.34,
+    "kind": "overlay"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#effect:waveform-burst"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.7
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.6
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "overlay"
+   ]
+  },
+  {
+   "id": "effect:detect-box-snap",
+   "category": "effect",
+   "role": "detectable",
+   "at": 18.375,
+   "name": "Detection box snap",
+   "about": "a thin glowing box with heavy corners snaps round the focus target, follows the camera's zoom and shows a counting confidence label",
+   "energy": 3,
+   "needs": [
+    "security",
+    "focus",
+    "hidden"
+   ],
+   "params": {
+    "snapS": 0.06,
+    "strokePx": 2.4,
+    "kind": "overlay"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#effect:detect-box-snap"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.6
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.6
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "overlay"
+   ]
+  },
+  {
+   "id": "effect:lock-quad-shiver",
+   "category": "effect",
+   "role": "the target is locked",
+   "at": 24.67,
+   "name": "Lock quad shiver",
+   "about": "a thick accent quad, skewed with the screen's perspective, springs onto the target and shivers with the feed",
+   "energy": 3,
+   "needs": [
+    "security",
+    "stakes",
+    "focus"
+   ],
+   "params": {
+    "strokePx": 5,
+    "skew": 0.2,
+    "jitterPx": 1.6,
+    "kind": "overlay"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#effect:lock-quad-shiver"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.5
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.4
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.9
+    }
+   ],
+   "tags": [
+    "launch",
+    "overlay"
+   ]
+  },
+  {
+   "id": "effect:light-up-from-black",
+   "category": "effect",
+   "role": "makes each angle an event",
+   "at": 30.25,
+   "name": "Light-up from black",
+   "about": "the shot starts in black, the light comes up over 1.8 s on an ease-out and drops back over the last 0.6 s",
+   "energy": 1,
+   "needs": [
+    "reveal",
+    "product",
+    "calm"
+   ],
+   "params": {
+    "upS": 1.8,
+    "downS": 0.6,
+    "kind": "overlay"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#effect:light-up-from-black"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "overlay"
+   ]
+  },
+  {
+   "id": "effect:cold-mono-grade",
+   "category": "effect",
+   "role": "the failure look",
+   "at": 20.33,
+   "name": "Cold mono grade",
+   "about": "the shot drained to black and white with lifted greys and grain, so failure reads as evidence",
+   "energy": 2,
+   "needs": [
+    "problem",
+    "warning",
+    "decline"
+   ],
+   "params": {
+    "sat": 0,
+    "lift": 0.05,
+    "grain": 0.08,
+    "kind": "overlay"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#effect:cold-mono-grade"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.5
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.5
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "overlay"
+   ]
+  },
+  {
+   "id": "effect:dusk-haze-grade",
+   "category": "effect",
+   "role": "the threat world",
+   "at": 15.25,
+   "name": "Dusk haze grade",
+   "about": "a soft-light slate-to-warm gradient and a faint haze laid over the shot, the colour of watching something far away",
+   "energy": 1,
+   "needs": [
+    "warning",
+    "location",
+    "calm"
+   ],
+   "params": {
+    "alpha": 0.6,
+    "haze": 0.1,
+    "kind": "overlay"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#effect:dusk-haze-grade"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.6
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.5
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "overlay"
+   ]
+  },
+  {
+   "id": "texture:slate-studio-sweep",
+   "category": "texture",
+   "role": "the product world",
+   "at": 30.25,
+   "name": "Slate studio sweep",
+   "about": "a near-black seamless with a lighter floor in the middle ground and the glow of a strip light from above",
+   "energy": 1,
+   "needs": [
+    "product",
+    "calm",
+    "focus"
+   ],
+   "params": {
+    "horizon": 0.62,
+    "floorLift": 0.085
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l11.js#texture:slate-studio-sweep"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.2
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.1
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.2
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  }
+ ],
+ "uses": [
+  {
+   "id": "transition:cut-flash",
+   "role": "single white and black frames between crash clips",
+   "at": 20.75
+  },
+  {
+   "id": "overlay:grain",
+   "role": "grain inside the CRT bezel and on the mono failures",
+   "at": 7.25
+  },
+  {
+   "id": "camera:rack-focus-in",
+   "role": "the defocused dot racks into the distant machine",
+   "at": 18.29
+  },
+  {
+   "id": "camera:dolly-in",
+   "role": "macro push into the readouts and the head-on push",
+   "at": 23.375
+  },
+  {
+   "id": "camera:orbit",
+   "role": "slow orbit on the three-quarter angles",
+   "at": 35
+  },
+  {
+   "id": "effect:contact-shadow",
+   "role": "soft blob under the hovering product",
+   "at": 30.25
+  },
+  {
+   "id": "end_card:logo",
+   "role": "white wordmark on black",
+   "at": 49.5
+  },
+  {
+   "id": "caption:netflix_sub",
+   "role": "lowercase film subtitles with a soft shadow",
+   "at": 7.25
+  },
+  {
+   "id": "effect:type-typewriter-caret",
+   "role": "typed lines with a caret",
+   "at": 0
+  },
+  {
+   "id": "effect:crt-bezel",
+   "role": "archival footage in a rounded inset frame",
+   "at": 7.25
+  },
+  {
+   "id": "effect:hud-target-lock",
+   "role": "HUD lock corners",
+   "at": 24.67
+  }
+ ]
+}

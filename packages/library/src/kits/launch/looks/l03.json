@@ -1,0 +1,110 @@
+{
+  "id": "launch-l03",
+  "name": "Launch · Folio Ink",
+  "about": "One material threads the film (a stipple of ink particles that dissolves and re-forms), Fig. plate captions, an editorial serif with an italic key word, numbered spaced-caps eyebrows, and a dark-to-paper grade flip at the midpoint. Learned from an e-reader product intro (promptsmotion.com).",
+  "from": [
+    "ref:l03"
+  ],
+  "styles": [
+    "brand-promo",
+    "studio-minimal"
+  ],
+  "palette": {
+    "paper": "#F4F1EA",
+    "paperShade": "#ECE7DE",
+    "ink": "#141210",
+    "inkLift": "#1D1A17",
+    "text": "#151311",
+    "textDim": "rgba(21,19,17,0.52)",
+    "inkText": "#EFEBE3",
+    "inkTextDim": "rgba(239,235,227,0.52)",
+    "card": "#FFFFFF",
+    "accent": "#151311"
+  },
+  "type": {
+    "display": {
+      "family": "serif",
+      "weight": 400,
+      "tracking": -0.012
+    },
+    "accent": {
+      "family": "serif",
+      "italic": true,
+      "weight": 400,
+      "tracking": -0.01
+    },
+    "accentSerif": true,
+    "accentScale": 1.02,
+    "micro": {
+      "family": "mono",
+      "weight": 500,
+      "tracking": 0.22
+    },
+    "ui": {
+      "family": "ui",
+      "weight": 500,
+      "tracking": -0.01
+    },
+    "wordmark": {
+      "family": "serif",
+      "italic": true,
+      "weight": 400,
+      "tracking": -0.02
+    },
+    "numeral": {
+      "family": "serif",
+      "weight": 400,
+      "tracking": -0.012
+    }
+  },
+  "worlds": [
+    "ink",
+    "ink",
+    "paper",
+    "paper"
+  ],
+  "bg": {
+    "paper": [
+      "texture:paper-fibre"
+    ],
+    "ink": [
+      "effect:bloom-soft-corner"
+    ]
+  },
+  "post": {
+    "grain": 0.05,
+    "vignette": 0.18
+  },
+  "prefer": {
+    "type": [
+      "effect:type-word-blur-rise",
+      "effect:type-focus-pull"
+    ],
+    "transitions": [
+      "transition:rack-focus-swap",
+      "transition:zoom-through"
+    ],
+    "cams": [
+      "camera:push-slow",
+      "camera:breathe"
+    ]
+  },
+  "motion": {
+    "engine": "kits/launch (ishaan-motion)",
+    "arrive": {
+      "seconds": 0.55,
+      "ease": "out (0.16,1,0.3,1)"
+    },
+    "stagger": 0.07,
+    "cutOn": "bar"
+  },
+  "frame": {
+    "designW": 1920,
+    "designH": 1080,
+    "ratios": [
+      "16:9",
+      "1:1",
+      "9:16"
+    ]
+  }
+}

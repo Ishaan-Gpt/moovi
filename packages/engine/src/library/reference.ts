@@ -38,7 +38,7 @@ export async function seedReference(file: string) {
     file: null, vendored: false, energy: p.energy ?? null, tags: [...(p.tags ?? []), 'from-reference'], params: p.params ?? {},
     src: P.kit?.draw ?? P.impl, needs: p.needs ?? [], events: p.events ?? [],
     // a kit's part suits its styles a notch below each style's own cast
-    styles: (p.styles ?? P.styles ?? []).map(s => ({ style: typeof s === 'string' ? s : s.style, w: 0.7 })), family: p.family ?? null,
+    styles: (p.styles ?? P.styles ?? []).map(s => (typeof s === 'string' ? { style: s, w: 0.7 } : { style: s.style, w: s.w ?? 0.7 })), family: p.family ?? null,
   }));
   const seeded = await seedLibrary([{ seed: `ref:${P.reference.id}`, rows }]);
   const r = P.reference;
@@ -52,4 +52,14 @@ export async function seedReference(file: string) {
     await run(CRAFT, library.referenceTaught, { ref: `ref:${r.id}`, kit: KIT.id });
   }
   return { ref: r.id, kit: KIT?.id ?? null, ...seeded, linked: linked[0]?.parts ?? 0 };
+}
+
+/**
+ * Re-link a reference's parts and uses (MERGE, idempotent): run after every reference is seeded, so a reference can
+ * use a part another reference taught (the Launch references share parts; each part is defined by exactly one).
+ */
+export async function linkReferenceUses(file: string) {
+  const P = JSON.parse(readFileSync(file, 'utf8')) as PartsFile;
+  const parts = [...P.parts.map(p => ({ id: p.id, role: p.role, at: p.at ?? null, note: null })), ...(P.uses ?? []).map(u => ({ id: u.id, role: u.role, at: u.at ?? null, note: 'existing library asset' }))];
+  return (await run<{ parts: number }>(CRAFT, library.addReferenceParts, { ref: `ref:${P.reference.id}`, rows: parts }))[0]?.parts ?? 0;
 }

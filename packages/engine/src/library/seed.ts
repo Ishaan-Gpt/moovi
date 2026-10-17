@@ -1,7 +1,7 @@
 import { CRAFT, library, run, seedLibrary } from '@moovi/graph';
 import { catalogue } from './catalog';
 import { X1, eventAliases, styleCast } from './edit-styles';
-import { referenceFiles, seedReference } from './reference';
+import { linkReferenceUses, referenceFiles, seedReference } from './reference';
 
 /**
  * The links that span seeds, run after any seed (catalogue, a reference, the camera layer): the EDL's sfx events as
@@ -30,6 +30,8 @@ export async function seedLibraryGraph() {
   const r = await seedLibrary(seeds);
   const refs = [];
   for (const f of referenceFiles()) refs.push((await seedReference(f)).ref);
+  // a reference may use a part a later reference taught: link every reference's uses once all parts exist
+  for (const f of referenceFiles()) await linkReferenceUses(f);
   const x = await seedCrossLinks();
   return { ...r, ...x, references: refs, perCategory: Object.fromEntries(seeds.map(s => [s.seed.replace(/^repo:/, ''), s.rows.length])) };
 }

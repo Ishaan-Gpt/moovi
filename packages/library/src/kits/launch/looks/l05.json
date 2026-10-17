@@ -1,0 +1,110 @@
+{
+  "id": "launch-l05",
+  "name": "Launch · Cobalt Lid",
+  "about": "A 3D product object tells the story on black, a giant glyph punch on a saturated gradient, frosted ice-blue status cards with live micro-UI, heavy italic grotesk with serif italic second lines, a white end card with a black address pill. Learned from a Mac utility promo (promptsmotion.com).",
+  "from": [
+    "ref:l05"
+  ],
+  "styles": [
+    "brand-promo",
+    "studio-minimal"
+  ],
+  "palette": {
+    "paper": "#FFFFFF",
+    "paperShade": "#F3F5F8",
+    "ink": "#050507",
+    "text": "#0A0A0C",
+    "textDim": "rgba(10,10,12,0.52)",
+    "inkText": "#FFFFFF",
+    "inkTextDim": "rgba(255,255,255,0.52)",
+    "card": "#FFFFFF",
+    "accent": "#1F3FE0"
+  },
+  "type": {
+    "display": {
+      "family": "display",
+      "weight": 800,
+      "italic": true,
+      "tracking": -0.045
+    },
+    "accent": {
+      "family": "serif",
+      "italic": true,
+      "weight": 400,
+      "tracking": -0.01
+    },
+    "accentSerif": true,
+    "accentScale": 1.12,
+    "micro": {
+      "family": "mono",
+      "weight": 500,
+      "tracking": 0.14
+    },
+    "ui": {
+      "family": "ui",
+      "weight": 600
+    },
+    "wordmark": {
+      "family": "display",
+      "weight": 900,
+      "italic": true,
+      "tracking": -0.06
+    },
+    "numeral": {
+      "family": "display",
+      "weight": 800,
+      "italic": true
+    }
+  },
+  "worlds": [
+    "ink",
+    "deep",
+    "deep",
+    "paper"
+  ],
+  "bg": {
+    "paper": [],
+    "ink": [
+      "effect:bloom-soft-corner"
+    ],
+    "deep": [
+      "texture:accent-gradient"
+    ]
+  },
+  "post": {
+    "grain": 0.02
+  },
+  "prefer": {
+    "type": [
+      "effect:type-mask-rise",
+      "effect:type-scale-slam"
+    ],
+    "transitions": [
+      "transition:zoom-through",
+      "transition:flash-cut",
+      "transition:mask-wipe-up"
+    ],
+    "cams": [
+      "camera:tilt-dolly",
+      "camera:push-slow"
+    ]
+  },
+  "motion": {
+    "engine": "kits/launch (ishaan-motion)",
+    "arrive": {
+      "seconds": 0.55,
+      "ease": "out (0.16,1,0.3,1)"
+    },
+    "stagger": 0.07,
+    "cutOn": "bar"
+  },
+  "frame": {
+    "designW": 1920,
+    "designH": 1080,
+    "ratios": [
+      "16:9",
+      "1:1",
+      "9:16"
+    ]
+  }
+}

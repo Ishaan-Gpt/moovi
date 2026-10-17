@@ -21,6 +21,7 @@ export async function runStyle(style: StyleId, input: RunInput, hooks: Hooks = {
       case 's5': return (await import('./s5')).run(input, hooks);
       case 'darkvox': return (await import('./darkvox')).run(input, hooks);
       case 'anatomy': return (await import('./anatomy')).run(input, hooks);
+      case 'launch': return (await import('./launch')).run(input, hooks);
       case 'clip-moment': return (await import('./clip-moment')).run(input, hooks);
       default: throw new Error(`Unknown style "${String(style)}"`);
     }

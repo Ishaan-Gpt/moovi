@@ -1,0 +1,107 @@
+{
+  "id": "launch-l01",
+  "name": "Launch · Develop",
+  "about": "Warm off-white paper and black UI, one continuous take where every scene is made from the last: a wide heavy wordmark, liquid glass over real photos, a bento grid, black floods that contract into the next scene. Learned from the photo-print launch film (promptsmotion.com).",
+  "from": [
+    "ref:l01"
+  ],
+  "styles": [
+    "brand-promo",
+    "studio-minimal"
+  ],
+  "palette": {
+    "paper": "#F2F0EB",
+    "paperShade": "#E9E6DF",
+    "ink": "#0B0B0C",
+    "text": "#0E0E0F",
+    "textDim": "rgba(14,14,15,0.52)",
+    "inkText": "#F4F3EF",
+    "inkTextDim": "rgba(244,243,239,0.52)",
+    "card": "#FFFFFF",
+    "accent": "#E8572A"
+  },
+  "type": {
+    "display": {
+      "family": "wide",
+      "weight": 800,
+      "stretch": "expanded",
+      "tracking": -0.03
+    },
+    "accent": {
+      "family": "wide",
+      "weight": 800,
+      "stretch": "expanded",
+      "tracking": -0.03
+    },
+    "accentSerif": false,
+    "micro": {
+      "family": "mono",
+      "weight": 500,
+      "tracking": 0.14
+    },
+    "ui": {
+      "family": "ui",
+      "weight": 500
+    },
+    "wordmark": {
+      "family": "wide",
+      "weight": 800,
+      "stretch": "expanded",
+      "tracking": -0.04
+    },
+    "numeral": {
+      "family": "wide",
+      "weight": 800,
+      "stretch": "expanded"
+    }
+  },
+  "worlds": [
+    "paper",
+    "ink",
+    "paper",
+    "flood"
+  ],
+  "bg": {
+    "paper": [
+      "texture:paper-fibre"
+    ],
+    "ink": [],
+    "flood": []
+  },
+  "post": {
+    "grain": 0.035
+  },
+  "prefer": {
+    "type": [
+      "effect:type-mask-rise",
+      "effect:type-scale-slam"
+    ],
+    "transitions": [
+      "transition:flood-contract-circle",
+      "transition:iris-six-blade",
+      "transition:flood-contract-pill"
+    ],
+    "cams": [
+      "camera:focus-zoom",
+      "camera:push-slow"
+    ]
+  },
+  "motion": {
+    "engine": "kits/launch (ishaan-motion)",
+    "arrive": {
+      "seconds": 0.55,
+      "ease": "out (0.16,1,0.3,1)"
+    },
+    "stagger": 0.07,
+    "cutOn": "bar"
+  },
+  "frame": {
+    "designW": 1920,
+    "designH": 1080,
+    "ratios": [
+      "16:9",
+      "1:1",
+      "9:16"
+    ]
+  }
+}

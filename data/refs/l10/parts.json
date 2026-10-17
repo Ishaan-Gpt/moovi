@@ -1,0 +1,2931 @@
+{
+ "reference": {
+  "id": "l10",
+  "url": "https://www.promptsmotion.com/notdwd-7de38a",
+  "title": "Launch sting (Apple-style)",
+  "kind": "product sting, 1:1, 12 s",
+  "seconds": 12.07,
+  "notes": "Textbook Apple-sting grammar, frame-accurate: haze blue to white, a whip tilt with directional blur, a hard cut on the drop, an app icon with orbiting squares, a glass prompt box springing from the menu bar, frosted glass titles clipped to type on stacked cards, a glowing wordmark. Studied from what the page shows publicly; rebuilt in Moovi's own code (packages/library/src/kits/launch) with our own fonts, sounds and assets."
+ },
+ "kit": {
+  "file": "packages/library/src/kits/launch/looks/l10.json"
+ },
+ "impl": "packages/library/src/kits/launch/",
+ "styles": [
+  "brand-promo",
+  "studio-minimal"
+ ],
+ "parts": [
+  {
+   "id": "insert:prompt-to-result",
+   "category": "insert",
+   "role": "prompt to result",
+   "at": null,
+   "name": "Prompt to result",
+   "about": "a glass composer; the user's request types itself, the cursor sends it, the composer rises and the brand's features arrive as chips",
+   "energy": 4,
+   "needs": [
+    "ai",
+    "ui",
+    "tool",
+    "process",
+    "answer"
+   ],
+   "params": {
+    "setup": {
+     "family": "prompt",
+     "kinds": [
+      "demo",
+      "proof",
+      "hook"
+     ],
+     "requires": [
+      "prompt"
+     ],
+     "cams": [
+      "camera:focus-zoom"
+     ],
+     "weight": 1.3,
+     "seconds": [
+      3,
+      7
+     ]
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/setups.js#insert:prompt-to-result"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.95
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.85
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.45
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "effect:type-focus-pull",
+   "category": "effect",
+   "role": "focus pull",
+   "at": null,
+   "name": "Focus pull",
+   "about": "the line racks in from a deep blur and 105% scale, like a lens finding it",
+   "energy": 2,
+   "needs": [
+    "calm",
+    "reveal",
+    "idea"
+   ],
+   "params": {
+    "type": {
+     "kinds": [
+      "hook",
+      "reveal",
+      "promise",
+      "demo"
+     ]
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/type.js#effect:type-focus-pull"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "transition:whip-pan",
+   "category": "transition",
+   "role": "whip pan",
+   "at": null,
+   "name": "Whip pan",
+   "about": "the shot smears out sideways on a hard ramp and the next smears in from the other side, with velocity ghosts",
+   "energy": 5,
+   "needs": [
+    "speed",
+    "flow"
+   ],
+   "params": {
+    "transition": {
+     "family": "whip"
+    },
+    "dur": 0.36
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/trans.js#transition:whip-pan"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "whip",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "camera:whip-settle",
+   "category": "camera",
+   "role": "whip, then settle",
+   "at": null,
+   "name": "Whip, then settle",
+   "about": "the shot cuts in mid-whip (offset and tilted) and settles into place in half a second",
+   "energy": 5,
+   "needs": [
+    "speed",
+    "hook"
+   ],
+   "params": {
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/cam.js#camera:whip-settle"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "ui:app-icon-tile",
+   "category": "ui",
+   "role": "app icon tile",
+   "at": null,
+   "name": "App icon tile",
+   "about": "the brand's real icon on a rounded-square tile with a gloss and a lift (a monogram on the accent when the site has none), popping on a spring",
+   "energy": 3,
+   "needs": [
+    "brand",
+    "product"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/ui.js#ui:app-icon-tile"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.95
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:prompt-box-glass",
+   "category": "ui",
+   "role": "glass prompt box",
+   "at": null,
+   "name": "Glass prompt box",
+   "about": "an AI composer on liquid glass: placeholder, a typed request with an accent caret, a tool row and a send button that fills and presses",
+   "energy": 3,
+   "needs": [
+    "ai",
+    "ui",
+    "tool"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/ui.js#ui:prompt-box-glass"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.95
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "texture:haze-gradient",
+   "category": "texture",
+   "role": "haze sky",
+   "at": null,
+   "name": "Haze sky",
+   "about": "a cool haze gradient from light blue at the top to paper, with one soft light",
+   "energy": 1,
+   "needs": [
+    "calm",
+    "idea"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/worlds.js#texture:haze-gradient"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "studio-minimal",
+     "w": 0.85
+    },
+    {
+     "style": "brand-promo",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  },
+  {
+   "id": "ui:disc-capsule-lockup",
+   "category": "ui",
+   "role": "identity in the header and the close",
+   "at": 0,
+   "name": "Disc lockup with capsule tag",
+   "about": "A white disc with a hairline rim holding the brand mark, the name in a calm sans and a small dark capsule tag; name and tag sharpen from blur a frame apart while sliding in.",
+   "energy": 1,
+   "needs": [
+    "brand",
+    "product"
+   ],
+   "params": {
+    "disc_diam_frac": 0.122,
+    "tag_stagger_s": 0.067,
+    "slide_px_1080": 15,
+    "blur_from_px": 9
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#ui:disc-capsule-lockup"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:hub-window-floor-glow",
+   "category": "ui",
+   "role": "context around the header",
+   "at": 0.47,
+   "name": "App window with floor glow",
+   "about": "A big light app window that gathers around a header and runs off the frame: a search pill with a shortcut chip, a faint icon column, a line-art content card, a blue glow lifting it from below.",
+   "energy": 2,
+   "needs": [
+    "product",
+    "ui",
+    "layers"
+   ],
+   "params": {
+    "opacity_keys": [
+     [
+      0.467,
+      0
+     ],
+     [
+      0.5,
+      0.53
+     ],
+     [
+      0.634,
+      0.7
+     ],
+     [
+      0.8,
+      1
+     ]
+    ],
+    "radius_frac": 0.086,
+    "bleeds": "right and bottom"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#ui:hub-window-floor-glow"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.4
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.2
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:sky-cover-caption-card",
+   "category": "ui",
+   "role": "course card in the window, the sheet and the stack",
+   "at": 0.5,
+   "name": "Line-art cover card",
+   "about": "A deep-sky line-art card with a frosted tag, a frosted round menu, a white caption block with an ink arrow button and a giant frosted word cut by its bottom edge; lands from 108% out of a 12 px blur.",
+   "energy": 2,
+   "needs": [
+    "product",
+    "learn",
+    "list"
+   ],
+   "params": {
+    "radius_frac_of_short": 0.12,
+    "caption_block": "white, title 600",
+    "enter_scale_from": 1.08,
+    "enter_blur_px": 12
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#ui:sky-cover-caption-card"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:menubar-status-strip",
+   "category": "ui",
+   "role": "the product lives on your computer",
+   "at": 3.353,
+   "name": "Laptop menu bar",
+   "about": "A laptop's black bezel over a deep-sky wallpaper with a translucent navy menu bar: the brand's name and menus on the left; wifi, battery, controls, the brand mark, three accent-family dots and the time on the right.",
+   "energy": 1,
+   "needs": [
+    "product",
+    "tool",
+    "ui"
+   ],
+   "params": {
+    "bar_h_frac": 0.052,
+    "bezel_frac": 0.024,
+    "enter_blur_px": 5
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#ui:menubar-status-strip"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.2
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:frosted-prompt-popover",
+   "category": "ui",
+   "role": "the ask",
+   "at": 4.04,
+   "name": "Frosted prompt popover",
+   "about": "A frosted glass box that refracts the wallpaper springs out of a menu-bar mark with a touch of overshoot and types a request about a character a frame, caret always on, with mic, clip and image tools and an accent send button.",
+   "energy": 3,
+   "needs": [
+    "ai",
+    "tool",
+    "question",
+    "process"
+   ],
+   "params": {
+    "width_frac": 0.69,
+    "aspect": 0.31,
+    "spring": [
+     15,
+     210,
+     1
+    ],
+    "cps": 30,
+    "glass_blur_px": 16
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#ui:frosted-prompt-popover"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:app-icon-orbit-squares",
+   "category": "ui",
+   "role": "the drop: the product as an icon",
+   "at": 2.386,
+   "name": "App icon with orbiting squares",
+   "about": "A navy app icon shrinks onto a pale halo while four rounded squares (white, the accent, a cyan and a mint turned from it) spin in counter-clockwise, slow, and lock into a cross, each with a feature icon.",
+   "energy": 4,
+   "needs": [
+    "product",
+    "brand",
+    "connect",
+    "tool"
+   ],
+   "params": {
+    "icon_px_1080": "276 -> 178",
+    "spin_deg": 240,
+    "lock_s": 0.48,
+    "orbit_r_of_icon": 1.21
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#ui:app-icon-orbit-squares"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:cursor-heading-dive",
+   "category": "ui",
+   "role": "the click on the logo",
+   "at": 0.9,
+   "name": "Cursor turns to its heading",
+   "about": "A black arrow cursor glides in, slows, turns about 35 degrees toward its target and dives onto it, growing by half on hover and shrinking as it presses, an ice ring blooming under the target.",
+   "energy": 2,
+   "needs": [
+    "ui",
+    "focus",
+    "process"
+   ],
+   "params": {
+    "rotate_deg": -35,
+    "hover_scale": 1.55,
+    "press_scale": 0.85
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#ui:cursor-heading-dive"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "insert:haze-header-rise",
+   "category": "insert",
+   "role": "the opening",
+   "at": 0,
+   "name": "Header rises out of haze",
+   "about": "Blue haze clears to a white page while the product header rises hard from low in the frame and drifts on, a big app window gathers around it, the line lands beside the disc and the cursor dives onto it with a push, a one-frame hold and a release.",
+   "energy": 3,
+   "needs": [
+    "brand",
+    "hook",
+    "reveal",
+    "product"
+   ],
+   "params": {
+    "setup": {
+     "family": "l10-header",
+     "kinds": [
+      "hook",
+      "reveal",
+      "promise"
+     ],
+     "roles": [
+      "open",
+      "middle"
+     ],
+     "cams": [
+      "camera:breathe"
+     ],
+     "weight": 1.2
+    },
+    "centre_y_frac": [
+     0.863,
+     0.496
+    ],
+    "decay_per_frame": 0.86,
+    "push": [
+     1,
+     1.2,
+     1.04
+    ]
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#insert:haze-header-rise"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.4
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:app-icon-orbit-cross",
+   "category": "insert",
+   "role": "the drop",
+   "at": 2.386,
+   "name": "App icon locks into a cross",
+   "about": "A navy app icon shrinks onto a halo as four coloured squares spin in and lock into a cross around it, each holding a feature's icon; the line lands beside it; at the end everything collapses into a row and blurs out.",
+   "energy": 4,
+   "needs": [
+    "product",
+    "brand",
+    "connect",
+    "reveal"
+   ],
+   "params": {
+    "setup": {
+     "family": "l10-icon",
+     "kinds": [
+      "reveal",
+      "hook",
+      "promise",
+      "list"
+     ],
+     "roles": [
+      "open",
+      "middle"
+     ],
+     "cams": [
+      "camera:push-slow"
+     ],
+     "weight": 1.15
+    },
+    "lock_s": 0.48,
+    "collapse_blur_px": [
+     0.3,
+     6
+    ]
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#insert:app-icon-orbit-cross"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:menubar-prompt-popover",
+   "category": "insert",
+   "role": "the ask",
+   "at": 3.353,
+   "name": "Ask from the menu bar",
+   "about": "On a laptop's menu bar over a sky wallpaper the cursor presses the product's mark, a frosted prompt springs out and types the request while the scene pans; the line sits large above; the shot leaves on a vertical whip.",
+   "energy": 3,
+   "needs": [
+    "ai",
+    "tool",
+    "question",
+    "process",
+    "demo"
+   ],
+   "params": {
+    "setup": {
+     "family": "l10-menubar",
+     "kinds": [
+      "demo",
+      "problem",
+      "turn"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "requires": [
+      "prompt"
+     ],
+     "cams": [
+      "camera:breathe"
+     ],
+     "weight": 1.2
+    },
+    "pan_px_1080": 125,
+    "whip_px_per_frame_1080": 25
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#insert:menubar-prompt-popover"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:answer-page-key-phrase",
+   "category": "insert",
+   "role": "the key claim",
+   "at": 5.289,
+   "name": "Grey page, one ink phrase",
+   "about": "A white page scrolls into place out of a heavy blur: a breadcrumb and title over the line set large in grey with its key phrase in ink semibold, the features as quiet bullets; a pointer rides the scroll and stops at the phrase.",
+   "energy": 2,
+   "needs": [
+    "answer",
+    "learn",
+    "focus",
+    "claim",
+    "proof"
+   ],
+   "params": {
+    "setup": {
+     "family": "l10-page",
+     "kinds": [
+      "proof",
+      "turn",
+      "promise",
+      "problem"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "cams": [
+      "camera:breathe"
+     ],
+     "weight": 1
+    },
+    "scroll_px_1080": [
+     420,
+     315,
+     210,
+     170,
+     140,
+     116,
+     96,
+     81
+    ],
+    "decay_per_frame": 0.83,
+    "blur_px": [
+     24,
+     0
+    ]
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#insert:answer-page-key-phrase"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.4
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:sheet-card-rise",
+   "category": "insert",
+   "role": "the result card",
+   "at": 6.223,
+   "name": "Result sheet rises",
+   "about": "A white sheet with a grabber and an inset line-art cover rises over a softened page like a phone sheet, unblurring as it lands; the line sits large beside it; at the end it shrinks 5%, rises and the frame blurs out.",
+   "energy": 3,
+   "needs": [
+    "product",
+    "reveal",
+    "result",
+    "learn"
+   ],
+   "params": {
+    "setup": {
+     "family": "l10-sheet",
+     "kinds": [
+      "reveal",
+      "demo",
+      "proof"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "cams": [
+      "camera:breathe"
+     ],
+     "weight": 1
+    },
+    "rise_frac": 0.42,
+    "backdrop_blur_px": 2.5,
+    "exit_blur_px": [
+     1,
+     7
+    ]
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#insert:sheet-card-rise"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:stacked-cards-frosted-titles",
+   "category": "insert",
+   "role": "two features",
+   "at": 7.157,
+   "name": "Stacked cards, frosted titles",
+   "about": "Two line-art cards stacked with frosted tags and caption blocks, each carrying a giant frosted feature word along its bottom edge, sliced by it; the top card lands from 108%, the lower from far below, both out of a 12 px blur.",
+   "energy": 3,
+   "needs": [
+    "list",
+    "product",
+    "benefit",
+    "compare"
+   ],
+   "params": {
+    "setup": {
+     "family": "l10-stack",
+     "kinds": [
+      "list",
+      "demo",
+      "proof"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      2,
+      6
+     ],
+     "cams": [
+      "camera:breathe"
+     ],
+     "weight": 1.15
+    },
+    "card_px_1080": "538x348",
+    "enter_blur_px": 12
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#insert:stacked-cards-frosted-titles"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:logo-disc-freeze",
+   "category": "insert",
+   "role": "brand beat before the close",
+   "at": 8.158,
+   "name": "Logo rises, freezes, shrinks",
+   "about": "The brand disc rises into place with a vertical smear, then holds dead still (the film's one freeze) while the line arrives under it, then shrinks away accelerating.",
+   "energy": 2,
+   "needs": [
+    "brand",
+    "calm",
+    "payoff",
+    "promise"
+   ],
+   "params": {
+    "setup": {
+     "family": "l10-disc",
+     "kinds": [
+      "promise",
+      "reveal",
+      "turn"
+     ],
+     "roles": [
+      "middle",
+      "close"
+     ],
+     "cams": [
+      "camera:breathe"
+     ],
+     "weight": 1
+    },
+    "hold_s": 0.6,
+    "shrink": 0.64,
+    "smear_copies": 8
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#insert:logo-disc-freeze"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:frosted-line-sky-card",
+   "category": "insert",
+   "role": "card titles as the hero",
+   "at": 7.157,
+   "name": "Frosted line on a sky card",
+   "about": "A near full-frame deep-sky card lands from 108% out of a blur and the line is set huge in frosted glass along its bottom edge, the edge slicing the last line; a frosted tag, a menu and a caption block sit at the top.",
+   "energy": 3,
+   "needs": [
+    "hook",
+    "promise",
+    "brand",
+    "reveal"
+   ],
+   "params": {
+    "setup": {
+     "family": "l10-frost",
+     "kinds": [
+      "hook",
+      "promise",
+      "reveal",
+      "turn"
+     ],
+     "roles": [
+      "open",
+      "middle"
+     ],
+     "cams": [
+      "camera:push-slow"
+     ],
+     "weight": 1.2
+    },
+    "glass_blur_px": 12,
+    "lighten": 0.42,
+    "edge_cut_frac": 0.24
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#insert:frosted-line-sky-card"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:frosted-numeral-sky",
+   "category": "insert",
+   "role": "the proof number",
+   "at": 6.2,
+   "name": "Frosted number on the sky",
+   "about": "The stat counts up in huge frosted glass over the deep-sky world, rising into place already moving, a frosted label chip above it and the line in white beneath.",
+   "energy": 4,
+   "needs": [
+    "stat",
+    "proof",
+    "speed"
+   ],
+   "params": {
+    "setup": {
+     "family": "l10-stat",
+     "kinds": [
+      "stat",
+      "proof"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "number": "required",
+     "requires": [
+      "number"
+     ],
+     "cams": [
+      "camera:breathe"
+     ],
+     "weight": 1.15
+    },
+    "count_s": 1,
+    "tick_hz": 15
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#insert:frosted-numeral-sky"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:cover-card-trio",
+   "category": "insert",
+   "role": "features",
+   "at": 7.157,
+   "name": "Three cover cards",
+   "about": "The features as three line-art cards that enter already moving one after another, each with a caption block and a big frosted index cut by its foot, drifting at different speeds; the middle one lifts as the focus.",
+   "energy": 3,
+   "needs": [
+    "list",
+    "product",
+    "benefit"
+   ],
+   "params": {
+    "setup": {
+     "family": "l10-trio",
+     "kinds": [
+      "list",
+      "demo"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      3,
+      6
+     ],
+     "requires": [
+      "items3"
+     ],
+     "cams": [
+      "camera:breathe"
+     ],
+     "weight": 1.1
+    },
+    "stagger_s": 0.09,
+    "decay_per_frame": 0.85
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#insert:cover-card-trio"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "end_card:glow-wordmark-night",
+   "category": "end_card",
+   "role": "the close",
+   "at": 10.027,
+   "name": "Glowing wordmark on black",
+   "about": "A white wordmark slams in as a horizontal zoom streak on a black radial field, glows tight with a wide soft halo, creeps smaller a pixel a frame with the tagline beneath, and collapses with a growing blur on the last beat.",
+   "energy": 3,
+   "needs": [
+    "brand",
+    "payoff",
+    "cta"
+   ],
+   "params": {
+    "setup": {
+     "family": "l10-night",
+     "kinds": [
+      "end"
+     ],
+     "roles": [
+      "close"
+     ],
+     "weight": 1.15
+    },
+    "width_px_1080": [
+     1650,
+     734
+    ],
+    "glow": "tight 4 px + 26 px halo",
+    "collapse_blur_px": 3.5
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#end_card:glow-wordmark-night"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.3
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "end"
+   ]
+  },
+  {
+   "id": "end_card:disc-lockup-haze",
+   "category": "end_card",
+   "role": "a calm close",
+   "at": 0,
+   "name": "Disc lockup on haze",
+   "about": "Haze clears to white as the disc lockup rises hard and drifts, the tagline sharpens under it and the cursor glides in to press the disc inside an ice ring.",
+   "energy": 2,
+   "needs": [
+    "brand",
+    "payoff",
+    "cta",
+    "calm"
+   ],
+   "params": {
+    "setup": {
+     "family": "l10-haze-end",
+     "kinds": [
+      "end"
+     ],
+     "roles": [
+      "close"
+     ],
+     "weight": 1
+    },
+    "decay_per_frame": 0.86
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#end_card:disc-lockup-haze"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.4
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "end"
+   ]
+  },
+  {
+   "id": "effect:type-blur-slide-sharpen",
+   "category": "effect",
+   "role": "name and tag in the header",
+   "at": 0.067,
+   "name": "Blur-slide sharpen",
+   "about": "Each word enters heavily blurred and slides a few pixels sideways into focus, a frame or two after its neighbour.",
+   "energy": 1,
+   "needs": [
+    "brand",
+    "reveal",
+    "calm"
+   ],
+   "params": {
+    "type": {
+     "kinds": [
+      "hook",
+      "reveal",
+      "promise",
+      "end",
+      "proof"
+     ],
+     "maxWords": 8
+    },
+    "blur_from_px": 10,
+    "slide_px_1080": 18,
+    "stagger_s": 0.067,
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#effect:type-blur-slide-sharpen"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-exponential-rise",
+   "category": "effect",
+   "role": "the header rising out of haze",
+   "at": 0,
+   "name": "Exponential rise",
+   "about": "Each line enters already moving from low in the frame, covering 14% of the remaining distance per frame with blur that follows its speed, then drifts on.",
+   "energy": 3,
+   "needs": [
+    "hook",
+    "reveal",
+    "speed"
+   ],
+   "params": {
+    "type": {
+     "kinds": [
+      "hook",
+      "reveal",
+      "promise",
+      "turn",
+      "demo"
+     ]
+    },
+    "decay_per_frame": 0.86,
+    "from_frac": 0.3,
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#effect:type-exponential-rise"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-zoom-smear-arrival",
+   "category": "effect",
+   "role": "end card entry",
+   "at": 10.027,
+   "name": "Zoom streak arrival",
+   "about": "The line slams in as a horizontal zoom streak, faint scaled copies collapsing onto it in eight frames, then creeps smaller.",
+   "energy": 4,
+   "needs": [
+    "brand",
+    "hook",
+    "speed"
+   ],
+   "params": {
+    "type": {
+     "kinds": [
+      "hook",
+      "reveal",
+      "stat",
+      "end",
+      "promise"
+     ],
+     "maxWords": 6
+    },
+    "width_scale": [
+     2.1,
+     1.04
+    ],
+    "frames": 8,
+    "copies": 16,
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#effect:type-zoom-smear-arrival"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-key-phrase-ink",
+   "category": "effect",
+   "role": "the key claim",
+   "at": 5.3,
+   "name": "Key phrase in ink",
+   "about": "The line lands in pale grey like body copy and its key phrase darkens to ink semibold, the only black on the page.",
+   "energy": 2,
+   "needs": [
+    "claim",
+    "focus",
+    "answer"
+   ],
+   "params": {
+    "type": {
+     "kinds": [
+      "proof",
+      "turn",
+      "problem",
+      "promise",
+      "demo"
+     ],
+     "minWords": 4
+    },
+    "grey_mix": 0.3,
+    "ink_at_s": 0.42,
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#effect:type-key-phrase-ink"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.4
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-frosted-glass-letters",
+   "category": "effect",
+   "role": "card titles",
+   "at": 7.157,
+   "name": "Frosted glass letters",
+   "about": "The line is cut from frosted glass: a blurred, lightened copy of what is behind it with a top sheen, an accent caustic at the foot, a 1 px rim and a contact shadow, each line rising out of blur.",
+   "energy": 2,
+   "needs": [
+    "brand",
+    "benefit",
+    "reveal"
+   ],
+   "params": {
+    "type": {
+     "kinds": [
+      "hook",
+      "reveal",
+      "promise",
+      "end"
+     ],
+     "maxWords": 6
+    },
+    "blur_px": 12,
+    "lighten": 0.32,
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#effect:type-frosted-glass-letters"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "transition:pre-beat-hard-cut",
+   "category": "transition",
+   "role": "every cut in the film",
+   "at": 2.386,
+   "name": "Hard cut before the kick",
+   "about": "The outgoing shot accelerates with a growing blur and the cut lands about 0.13 s before the beat, so the new shot is already moving, settling from a 6% push out of a velocity blur.",
+   "energy": 4,
+   "needs": [
+    "speed",
+    "hook",
+    "reveal"
+   ],
+   "params": {
+    "transition": {
+     "family": "cut"
+    },
+    "lead_s": 0.13,
+    "settle_decay": 0.84
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#transition:pre-beat-hard-cut"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "cut",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:whip-tilt-pale-flash",
+   "category": "transition",
+   "role": "ask to answer",
+   "at": 4.54,
+   "name": "Whip tilt through a pale flash",
+   "about": "The shot drifts up then whips away with a vertical streak as everything tints pale; the next arrives smeared from low and settles a sixth of the rest per frame, sharpening.",
+   "energy": 4,
+   "needs": [
+    "speed",
+    "answer",
+    "reveal"
+   ],
+   "params": {
+    "transition": {
+     "family": "whip"
+    },
+    "streak_copies": 8,
+    "next_offset_px_1080": 420,
+    "next_blur_px": 24
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#transition:whip-tilt-pale-flash"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "whip",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:sheet-rise-defocus",
+   "category": "transition",
+   "role": "page to result",
+   "at": 6.223,
+   "name": "Sheet rises over a softened page",
+   "about": "The next shot rises over the outgoing one as a rounded sheet with a grabber, its corners squaring off as it fills the frame, while the page behind blurs 2.5 px and sinks back 4%.",
+   "energy": 3,
+   "needs": [
+    "reveal",
+    "layers",
+    "product"
+   ],
+   "params": {
+    "transition": {
+     "family": "push"
+    },
+    "backdrop_blur_px": 2.5,
+    "sink": 0.04
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#transition:sheet-rise-defocus"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "push",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:shrink-rise-blur-cut",
+   "category": "transition",
+   "role": "sheet and card exits",
+   "at": 6.91,
+   "name": "Shrink, rise, blur to the cut",
+   "about": "The outgoing shot shrinks 5% and rises while the frame blurs from 1 to 7 px and the cut lands at the blur's peak; the next rises the last few pixels out of a blur.",
+   "energy": 3,
+   "needs": [
+    "flow",
+    "calm",
+    "reveal"
+   ],
+   "params": {
+    "transition": {
+     "family": "blur"
+    },
+    "blur_px": [
+     1,
+     7
+    ],
+    "shrink": 0.05
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#transition:shrink-rise-blur-cut"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "blur",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:push-hold-release",
+   "category": "transition",
+   "role": "S1 into the drop",
+   "at": 1.535,
+   "name": "Push, hold a frame, release",
+   "about": "The outgoing shot pushes 20% toward its last object, holds one frame, then pulls back accelerating with a zoom blur; the cut lands mid-release and the next settles from 8%.",
+   "energy": 3,
+   "needs": [
+    "focus",
+    "cta",
+    "speed"
+   ],
+   "params": {
+    "transition": {
+     "family": "zoom"
+    },
+    "push": 1.2,
+    "release_to": 1.04,
+    "hold_frames": 1
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#transition:push-hold-release"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "zoom",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:squares-lock-open",
+   "category": "transition",
+   "role": "icon to menu bar",
+   "at": 2.94,
+   "name": "Squares lock, window opens",
+   "about": "Four rounded squares in the accent family spin in over the outgoing shot and lock into a cross around its last object; after the cut they fly outward and the next shot opens through a growing rounded window.",
+   "energy": 4,
+   "needs": [
+    "connect",
+    "product",
+    "reveal"
+   ],
+   "params": {
+    "transition": {
+     "family": "morph",
+     "worlds": "change"
+    },
+    "spin_deg": 240,
+    "square_frac": 0.13
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#transition:squares-lock-open"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "morph",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "camera:push-hold-release",
+   "category": "camera",
+   "role": "S1 into the drop",
+   "at": 1.535,
+   "name": "Push, hold, release",
+   "about": "The camera eases in 20% toward the beat's focus, holds a single frame, then pulls back to 4% with an accelerating move so the click and the cut land mid-motion.",
+   "energy": 3,
+   "needs": [
+    "focus",
+    "cta",
+    "speed"
+   ],
+   "params": {
+    "camera": {},
+    "in": {
+     "to": 1.2,
+     "dur": 0.465
+    },
+    "hold_frames": 1,
+    "out": {
+     "to": 1.04,
+     "dur": 0.33
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#camera:push-hold-release"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "camera:enter-moving-exit-accelerating",
+   "category": "camera",
+   "role": "the film's grammar",
+   "at": 0,
+   "name": "Enter moving, leave accelerating",
+   "about": "A shot that is already rising and pushing when it starts (14% of the rest per frame), drifts, and leaves on an accelerating rise and push.",
+   "energy": 3,
+   "needs": [
+    "speed",
+    "flow",
+    "focus"
+   ],
+   "params": {
+    "camera": {},
+    "entry_decay": 0.86,
+    "exit_s": 0.35
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#camera:enter-moving-exit-accelerating"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "camera:pan-then-rise-accelerating",
+   "category": "camera",
+   "role": "the menu-bar shot",
+   "at": 3.84,
+   "name": "Pan, then rise accelerating",
+   "about": "A lateral pan of about 125 px that keeps the action composed, then a drift up that keeps gaining speed into the cut.",
+   "energy": 2,
+   "needs": [
+    "flow",
+    "process",
+    "demo"
+   ],
+   "params": {
+    "camera": {},
+    "pan_px_1080": 125
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#camera:pan-then-rise-accelerating"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "texture:sky-line-art",
+   "category": "texture",
+   "role": "wallpaper and card covers",
+   "at": 3.353,
+   "name": "Sky with line art",
+   "about": "A deep navy-to-sky gradient with thin white line drawing (two big circles, a cross of rules, a twinkling four-point sparkle) and a soft cyan glow in one corner; on light worlds the same drawing at a whisper.",
+   "energy": 1,
+   "needs": [
+    "calm",
+    "idea",
+    "brand"
+   ],
+   "params": {
+    "line_px_1080": 1.2,
+    "glow": "cyan turned from the accent"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#texture:sky-line-art"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.1
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  },
+  {
+   "id": "texture:haze-clearing-floor",
+   "category": "texture",
+   "role": "the opening",
+   "at": 0,
+   "name": "Haze clearing to the page",
+   "about": "A pale blue haze that clears to the page over the first second of the beat, with a blue glow at the floor.",
+   "energy": 1,
+   "needs": [
+    "calm",
+    "brand",
+    "reveal"
+   ],
+   "params": {
+    "clear_s": 0.93
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#texture:haze-clearing-floor"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.3
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.1
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  },
+  {
+   "id": "texture:night-vignette-radial",
+   "category": "texture",
+   "role": "the end card",
+   "at": 10.027,
+   "name": "Night radial field",
+   "about": "A near-black field lifted to graphite around the centre and deep black in the corners, the stage for a glowing close.",
+   "energy": 1,
+   "needs": [
+    "brand",
+    "payoff",
+    "calm"
+   ],
+   "params": {
+    "core": "ink + 14% white",
+    "corners": "ink + 70% black"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#texture:night-vignette-radial"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  },
+  {
+   "id": "effect:hover-ice-ring",
+   "category": "effect",
+   "role": "marks the target",
+   "at": 1.77,
+   "name": "Ice ring on hover",
+   "about": "A soft ring of icy light blooms around the thing about to be clicked and breathes while it waits.",
+   "energy": 1,
+   "needs": [
+    "focus",
+    "cta",
+    "calm"
+   ],
+   "params": {
+    "outer_of_r": 1.62,
+    "fade_s": 0.25,
+    "kind": "overlay"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#effect:hover-ice-ring"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.2
+    }
+   ],
+   "tags": [
+    "launch",
+    "overlay"
+   ]
+  },
+  {
+   "id": "effect:blue-floor-glow",
+   "category": "effect",
+   "role": "under the hub window",
+   "at": 0.47,
+   "name": "Blue floor glow",
+   "about": "A faint blue glow rising from the foot of the frame so white UI feels lit from below.",
+   "energy": 1,
+   "needs": [
+    "calm",
+    "product"
+   ],
+   "params": {
+    "height_frac": 0.36,
+    "alpha": 0.85,
+    "kind": "overlay"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#effect:blue-floor-glow"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.3
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.1
+    }
+   ],
+   "tags": [
+    "launch",
+    "overlay"
+   ]
+  },
+  {
+   "id": "effect:exit-blur-ramp",
+   "category": "effect",
+   "role": "sheet exit",
+   "at": 6.91,
+   "name": "Exit blur ramp",
+   "about": "Over the beat's last moments the whole frame blurs from 1 to 7 px, accelerating, so the cut lands at the blur's peak.",
+   "energy": 2,
+   "needs": [
+    "speed",
+    "flow"
+   ],
+   "params": {
+    "blur_px": [
+     1,
+     7
+    ],
+    "dur_s": 0.3,
+    "kind": "overlay"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l10.js#effect:exit-blur-ramp"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "overlay"
+   ]
+  }
+ ],
+ "uses": [
+  {
+   "id": "ui:comment-bar",
+   "role": "the typing glass field with the send arrow inside the popover",
+   "at": 4.04
+  },
+  {
+   "id": "effect:typewriter-box",
+   "role": "prompt typing with caret",
+   "at": 4.04
+  },
+  {
+   "id": "camera:reframe",
+   "role": "the +125 px pan that keeps the popover composed",
+   "at": 3.84
+  },
+  {
+   "id": "effect:glide-out",
+   "role": "sheet and card exits: shrink, rise, blur, cut at the peak",
+   "at": 6.91
+  },
+  {
+   "id": "effect:glide-in",
+   "role": "stacked cards entering with blur 12 -> 0 and scale",
+   "at": 7.157
+  },
+  {
+   "id": "transition:vertical-whip-smear",
+   "role": "logo disc entry smear",
+   "at": 8.158
+  },
+  {
+   "id": "effect:motion-blur",
+   "role": "velocity blur on every move",
+   "at": 0
+  },
+  {
+   "id": "effect:text-glow",
+   "role": "end card glow passes",
+   "at": 10.027
+  },
+  {
+   "id": "effect:x1-17-glass-type",
+   "role": "material for the frosted card titles",
+   "at": 7.157
+  },
+  {
+   "id": "sfx:fs-whoosh-swosh-whoosh-air-cut",
+   "role": "whooshes peaking on cuts",
+   "at": 2.386
+  },
+  {
+   "id": "sfx:fs-impact-soft-hit",
+   "role": "soft impact at the open and transition hits",
+   "at": 0.1
+  },
+  {
+   "id": "sfx:kenney-click",
+   "role": "quiet key ticks while typing",
+   "at": 4.04
+  },
+  {
+   "id": "sfx:fs-ui-mouse-2-button-fast-click",
+   "role": "clicks on the logo and the menu-bar mark",
+   "at": 2.33
+  }
+ ]
+}

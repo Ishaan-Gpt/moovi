@@ -1,0 +1,104 @@
+{
+  "id": "launch-l11",
+  "name": "Launch · Field Report",
+  "about": "Cinematic hardware: a typed question on black with a caret, archival footage in a rounded CRT bezel with a caption, HUD tracking boxes over real recon footage, then the product on a dark studio floor turning slowly, a quiet wordmark. Learned from a hardware launch on motion.so.",
+  "from": [
+    "ref:l11"
+  ],
+  "styles": [
+    "brand-promo",
+    "studio-minimal"
+  ],
+  "palette": {
+    "paper": "#EDEDEA",
+    "paperShade": "#E4E4E0",
+    "ink": "#050505",
+    "inkLift": "#101113",
+    "text": "#0B0B0B",
+    "textDim": "rgba(11,11,11,0.52)",
+    "inkText": "#F2F2F0",
+    "inkTextDim": "rgba(242,242,240,0.52)",
+    "card": "#FFFFFF",
+    "accent": "#FF3B30"
+  },
+  "type": {
+    "display": {
+      "family": "jakarta",
+      "weight": 600,
+      "tracking": -0.02
+    },
+    "accent": {
+      "family": "jakarta",
+      "weight": 600,
+      "tracking": -0.02
+    },
+    "accentSerif": false,
+    "micro": {
+      "family": "mono",
+      "weight": 500,
+      "tracking": 0.14
+    },
+    "ui": {
+      "family": "jakarta",
+      "weight": 500
+    },
+    "wordmark": {
+      "family": "jakarta",
+      "weight": 650,
+      "tracking": -0.03
+    },
+    "numeral": {
+      "family": "jakarta",
+      "weight": 650
+    }
+  },
+  "worlds": [
+    "ink",
+    "ink",
+    "ink",
+    "deep"
+  ],
+  "bg": {
+    "ink": [
+      "effect:vignette-soft"
+    ],
+    "deep": []
+  },
+  "post": {
+    "grain": 0.06,
+    "vignette": 0.2
+  },
+  "prefer": {
+    "type": [
+      "effect:type-typewriter-caret",
+      "effect:type-focus-pull"
+    ],
+    "transitions": [
+      "transition:flash-cut",
+      "transition:rack-focus-swap",
+      "transition:zoom-through"
+    ],
+    "cams": [
+      "camera:push-slow",
+      "camera:tilt-dolly"
+    ]
+  },
+  "motion": {
+    "engine": "kits/launch (ishaan-motion)",
+    "arrive": {
+      "seconds": 0.55,
+      "ease": "out (0.16,1,0.3,1)"
+    },
+    "stagger": 0.07,
+    "cutOn": "bar"
+  },
+  "frame": {
+    "designW": 1920,
+    "designH": 1080,
+    "ratios": [
+      "16:9",
+      "1:1",
+      "9:16"
+    ]
+  }
+}

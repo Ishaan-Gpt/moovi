@@ -8,6 +8,7 @@ import { ICONS } from '../s5/icons';
 import { PAGE as DV_PAGE } from '../darkvox/player';
 import { PAGE as AN_PAGE } from '../anatomy/player';
 import { PAGE as EDIT_PAGE } from '../edit/page';
+import { PAGE_OF as LAUNCH_PAGE } from '../launch/player';
 import type { PlayerKind, StyleId } from './index';
 
 /** What the studio's preview route reads to serve a version (written by the style-reel job): which player, which film. */
@@ -50,6 +51,7 @@ function page(ref: PreviewRef): string {
     case 's5-player': return S5_PAGE;
     case 'darkvox-player': return DV_PAGE;
     case 'anatomy-player': return AN_PAGE;
+    case 'launch-player': return LAUNCH_PAGE();
     case 'edit-player': return EDIT_PAGE;
     case 'mp4': return '<!doctype html><p>This version is a finished MP4.</p>';
   }

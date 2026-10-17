@@ -1,0 +1,2198 @@
+{
+ "reference": {
+  "id": "l12",
+  "url": "https://www.promptsmotion.com/iammxfschr-d68f90",
+  "title": "Database client launch video",
+  "kind": "dev-tool launch film, 16:9, 33 s",
+  "seconds": 32.75,
+  "notes": "Restraint and tight copy: an editorial serif with italic accent words in the product colour beside a dark app window on warm paper; the accent dots recolour the app live, so the feature proof is also the art direction. Studied from what the page shows publicly; rebuilt in Moovi's own code (packages/library/src/kits/launch) with our own fonts, sounds and assets."
+ },
+ "kit": {
+  "file": "packages/library/src/kits/launch/looks/l12.json"
+ },
+ "impl": "packages/library/src/kits/launch/",
+ "styles": [
+  "brand-promo",
+  "studio-minimal"
+ ],
+ "parts": [
+  {
+   "id": "insert:headline-left-ui",
+   "category": "insert",
+   "role": "editorial headline beside a live window",
+   "at": null,
+   "name": "Editorial headline beside a live window",
+   "about": "a left-aligned editorial headline beside a real UI piece on the right (the site in a browser window, a phone, a terminal or a ranked list) that rises in with a soft shadow",
+   "energy": 3,
+   "needs": [
+    "product",
+    "ui",
+    "benefit",
+    "proof",
+    "tool"
+   ],
+   "params": {
+    "setup": {
+     "family": "split-ui",
+     "kinds": [
+      "demo",
+      "proof",
+      "list"
+     ],
+     "cams": [
+      "camera:push-slow",
+      "camera:drift-lateral"
+     ],
+     "weight": 1.15
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/setups.js#insert:headline-left-ui"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.95
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.85
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.45
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:serif-line-relay",
+   "category": "insert",
+   "role": "Open a URL. / You are in your database.",
+   "at": 0,
+   "name": "Serif Line Relay",
+   "about": "a short serif line focuses in, greys and fades, and the second half of the thought replaces it in place, its last word italic in the accent",
+   "energy": 2,
+   "needs": [
+    "hook",
+    "turn",
+    "claim",
+    "calm"
+   ],
+   "params": {
+    "word_blur_px": 12,
+    "rise_px": 10,
+    "word_dur_s": 0.4,
+    "stagger_ms": 80,
+    "grey_out_s": 0.2,
+    "setup": {
+     "family": "serif-statement",
+     "kinds": [
+      "hook",
+      "turn",
+      "promise"
+     ],
+     "roles": [
+      "open",
+      "middle"
+     ],
+     "cams": [
+      "camera:bar-breath-hold",
+      "camera:push-slow"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#insert:serif-line-relay"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:ink-window-url-reveal",
+   "category": "insert",
+   "role": "the dark window appears and its URL types",
+   "at": 3.45,
+   "name": "Ink Window URL Reveal",
+   "about": "a near-black browser window soaks out of the paper (paper to grey to ink while scaling 0.94 to 1), its address types in mono, the product fills it and a grey caption sits under it",
+   "energy": 2,
+   "needs": [
+    "reveal",
+    "product",
+    "tool",
+    "demo"
+   ],
+   "params": {
+    "fill": "paper -> grey -> ink",
+    "scale": "0.94 -> 1",
+    "dur_s": 0.42,
+    "window": "70.8% W x 80% H",
+    "url_cps": 26,
+    "setup": {
+     "family": "product-window",
+     "kinds": [
+      "reveal",
+      "demo"
+     ],
+     "roles": [
+      "open",
+      "middle"
+     ],
+     "cams": [
+      "camera:push-slow",
+      "camera:focus-zoom"
+     ],
+     "weight": 1.3
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#insert:ink-window-url-reveal"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:ink-query-run",
+   "category": "insert",
+   "role": "the product UI inside the window (we make it act)",
+   "at": 4.6,
+   "name": "Query Run In The App",
+   "about": "a serif line over a dark data app; SQL types into the editor bar, the cursor presses Run and the result rows cascade into the grid",
+   "energy": 3,
+   "needs": [
+    "demo",
+    "data",
+    "speed",
+    "tool"
+   ],
+   "params": {
+    "sql_cps": 34,
+    "row_stagger_ms": 28,
+    "setup": {
+     "family": "product-window",
+     "kinds": [
+      "demo",
+      "proof"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "cams": [
+      "camera:focus-zoom",
+      "camera:push-slow"
+     ],
+     "weight": 1.2
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#insert:ink-query-run"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:release-version-lockup",
+   "category": "insert",
+   "role": "the drop: version reveal",
+   "at": 7.05,
+   "name": "Release Version Lockup",
+   "about": "a small accent logo, a giant serif version number whose digits rise one by one through their own masks, an accent rule drawn out from the centre and spaced caps under it",
+   "energy": 3,
+   "needs": [
+    "reveal",
+    "number",
+    "launch",
+    "brand"
+   ],
+   "params": {
+    "numeral_cap_pct_h": 19.4,
+    "travel_px": 85,
+    "digit_dur_s": 0.37,
+    "stagger_ms": 133,
+    "rule": "260 x 5 px over 0.36 s",
+    "setup": {
+     "family": "release-lockup",
+     "kinds": [
+      "reveal",
+      "stat"
+     ],
+     "roles": [
+      "open",
+      "middle"
+     ],
+     "number": "optional",
+     "cams": [
+      "camera:bar-breath-hold"
+     ],
+     "weight": 1.2
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#insert:release-version-lockup"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:accent-picker-recolour",
+   "category": "insert",
+   "role": "make it yours: six accent colours",
+   "at": 8.7,
+   "name": "Accent Picker Recolour",
+   "about": "left serif line with a row of six colour dots; an ink ring hops dot to dot every two beats and the whole dark app beside it and the italic word take the new colour live",
+   "energy": 3,
+   "needs": [
+    "choice",
+    "brand",
+    "custom",
+    "ui"
+   ],
+   "params": {
+    "swap_every_beats": 2,
+    "cross_s": 0.1,
+    "dots": 6,
+    "setup": {
+     "family": "split-ui",
+     "kinds": [
+      "promise",
+      "demo",
+      "turn"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "cams": [
+      "camera:window-side-push"
+     ],
+     "weight": 1.4
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#insert:accent-picker-recolour"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:prefs-sheet-lines",
+   "category": "insert",
+   "role": "your time zone / date format / shortcuts",
+   "at": 14.98,
+   "name": "Preferences Sheet Lines",
+   "about": "two or three short serif lines stack one per beat, each ending in an italic accent word, beside a tall dark preferences sheet that jumps six rows in one smeared scroll",
+   "energy": 2,
+   "needs": [
+    "list",
+    "choice",
+    "custom",
+    "ui"
+   ],
+   "params": {
+    "line_gap_s": 0.28,
+    "sheet": "27% W x 86% H",
+    "scroll": "6 rows in 0.22 s with 4 ghosts",
+    "setup": {
+     "family": "split-ui",
+     "kinds": [
+      "list",
+      "demo"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      2,
+      3
+     ],
+     "cams": [
+      "camera:window-side-push"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#insert:prefs-sheet-lines"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:terminal-one-command",
+   "category": "insert",
+   "role": "updates in one command",
+   "at": 18.52,
+   "name": "Terminal One Command",
+   "about": "a left serif claim beside a black terminal that types a one-word update, streams dim log lines with a progress bar and lands on a green success line",
+   "energy": 2,
+   "needs": [
+    "process",
+    "speed",
+    "success",
+    "tool"
+   ],
+   "params": {
+    "cps": 18,
+    "line_every_s": 0.25,
+    "setup": {
+     "family": "split-ui",
+     "kinds": [
+      "proof",
+      "demo"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "cams": [
+      "camera:window-side-push"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#insert:terminal-one-command"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:production-guard",
+   "category": "insert",
+   "role": "asks before a query writes to production",
+   "at": 23.82,
+   "name": "Production Guard Modal",
+   "about": "the italic word turns alarm red while a dark confirm modal with a red header, the risky statement and a red primary button rises over the dimmed app",
+   "energy": 3,
+   "needs": [
+    "warning",
+    "security",
+    "stakes",
+    "trust"
+   ],
+   "params": {
+    "red_flip_s": 0.25,
+    "modal_in": "grey -> ink + 0.94 -> 1 in 0.32 s",
+    "scrim": 0.55,
+    "setup": {
+     "family": "split-ui",
+     "kinds": [
+      "problem",
+      "proof"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "cams": [
+      "camera:window-side-push",
+      "camera:focus-zoom"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#insert:production-guard"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:works-with-name-swap",
+   "category": "insert",
+   "role": "works with six databases",
+   "at": 26.45,
+   "name": "Works With Name Swap",
+   "about": "spaced caps over one giant serif name that hard-swaps on every beat with a one-frame blank and a quick blur-in, a dark connection chip typing that engine's address under it",
+   "energy": 3,
+   "needs": [
+    "list",
+    "proof",
+    "connect",
+    "compat"
+   ],
+   "params": {
+    "swap_s": "one beat (0.44 at 136 BPM)",
+    "blank_frames": 1,
+    "blur_in": "6 -> 0 px over 0.07 s",
+    "name_band_pct_h": 17,
+    "setup": {
+     "family": "name-swap",
+     "kinds": [
+      "list",
+      "proof"
+     ],
+     "roles": [
+      "middle",
+      "close"
+     ],
+     "items": [
+      3,
+      8
+     ],
+     "cams": [
+      "camera:bar-breath-hold"
+     ],
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#insert:works-with-name-swap"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:offer-line-facts",
+   "category": "insert",
+   "role": "self-hosted, one price, source included",
+   "at": 28.65,
+   "name": "Offer Line With Facts",
+   "about": "one centred serif offer line arriving phrase by phrase, an accent rule drawn from the centre and the key facts in spaced caps under it",
+   "energy": 2,
+   "needs": [
+    "money",
+    "offer",
+    "cta",
+    "claim"
+   ],
+   "params": {
+    "phrase_gap_s": 0.27,
+    "band_pct_h": 8.8,
+    "setup": {
+     "family": "serif-statement",
+     "kinds": [
+      "promise",
+      "proof"
+     ],
+     "roles": [
+      "close",
+      "middle"
+     ],
+     "cams": [
+      "camera:bar-breath-hold",
+      "camera:push-slow"
+     ],
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#insert:offer-line-facts"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "end_card:offer-mono-url-stack",
+   "category": "end_card",
+   "role": "close",
+   "at": 30.3,
+   "name": "Offer Mono URL Stack",
+   "about": "the offer line arrives then eases up while a small accent logo, the web address in mono and a tiny grey note stack under it",
+   "energy": 1,
+   "needs": [
+    "cta",
+    "brand",
+    "offer"
+   ],
+   "params": {
+    "stagger_s": 0.25,
+    "lift": "50% -> 36% H",
+    "setup": {
+     "family": "end",
+     "kinds": [
+      "end"
+     ],
+     "roles": [
+      "close"
+     ]
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#end_card:offer-mono-url-stack"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "end"
+   ]
+  },
+  {
+   "id": "end_card:serif-wordmark-rule",
+   "category": "end_card",
+   "role": "close (wordmark variant of the version lockup)",
+   "at": 30.3,
+   "name": "Serif Wordmark Rule",
+   "about": "the brand name set big in the serif rising letter by letter, a short accent rule drawn from its centre and the address in spaced caps, the tagline in italic",
+   "energy": 2,
+   "needs": [
+    "cta",
+    "brand",
+    "launch"
+   ],
+   "params": {
+    "letter_gap_s": 0.09,
+    "rule_s": 0.36,
+    "setup": {
+     "family": "end",
+     "kinds": [
+      "end"
+     ],
+     "roles": [
+      "close"
+     ]
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#end_card:serif-wordmark-rule"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "end"
+   ]
+  },
+  {
+   "id": "effect:type-serif-focus-rise",
+   "category": "effect",
+   "role": "every headline",
+   "at": 0,
+   "name": "Serif Focus Rise",
+   "about": "words come in out of a 12 px blur with a small rise and grey-to-ink, 80 ms apart; the accent word a touch later and slower",
+   "energy": 2,
+   "needs": [
+    "hook",
+    "claim",
+    "calm"
+   ],
+   "params": {
+    "blur_px": 12,
+    "rise_px": 12,
+    "dur_s": 0.42,
+    "stagger_ms": 80,
+    "type": {
+     "kinds": [
+      "hook",
+      "turn",
+      "promise",
+      "list",
+      "proof",
+      "demo",
+      "reveal"
+     ],
+     "maxWords": 12
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#effect:type-serif-focus-rise"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-italic-accent-late",
+   "category": "effect",
+   "role": "You are in your database.",
+   "at": 1.95,
+   "name": "Italic Accent Late",
+   "about": "the roman words land together, a held breath, then the italic accent word racks into focus from a 16 px blur and a 7 percent scale",
+   "energy": 2,
+   "needs": [
+    "focus",
+    "brand",
+    "claim",
+    "turn"
+   ],
+   "params": {
+    "extra_delay_s": 0.34,
+    "accent_dur_s": 0.62,
+    "type": {
+     "kinds": [
+      "turn",
+      "reveal",
+      "promise",
+      "hook"
+     ],
+     "maxWords": 9,
+     "minWords": 2
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#effect:type-italic-accent-late"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.7
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-accent-own-line",
+   "category": "effect",
+   "role": "Updates in / one command.",
+   "at": 18.6,
+   "name": "Accent On Its Own Line",
+   "about": "a left claim where the italic accent phrase breaks onto the last line by itself and arrives a beat after the rest",
+   "energy": 2,
+   "needs": [
+    "claim",
+    "benefit",
+    "focus"
+   ],
+   "params": {
+    "accent_delay_s": 0.3,
+    "type": {
+     "kinds": [
+      "proof",
+      "promise",
+      "demo",
+      "turn"
+     ],
+     "maxWords": 8,
+     "minWords": 3
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#effect:type-accent-own-line"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-phrase-blur-in",
+   "category": "effect",
+   "role": "Self-hosted. / $79 once. / Source code included.",
+   "at": 28.75,
+   "name": "Phrase Blur In",
+   "about": "the line arrives sentence by sentence, each phrase blurring in together 0.27 s after the last",
+   "energy": 2,
+   "needs": [
+    "money",
+    "claim",
+    "cta",
+    "list"
+   ],
+   "params": {
+    "phrase_gap_s": 0.27,
+    "blur_px": 10,
+    "type": {
+     "kinds": [
+      "promise",
+      "proof",
+      "list",
+      "end"
+     ],
+     "maxWords": 14,
+     "minWords": 3
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#effect:type-phrase-blur-in"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-warning-red-flip",
+   "category": "effect",
+   "role": "production. in red",
+   "at": 23.82,
+   "name": "Warning Red Flip",
+   "about": "the italic accent word lands in the brand colour, then flips to alarm red with a small pop",
+   "energy": 3,
+   "needs": [
+    "warning",
+    "security",
+    "stakes",
+    "contrast"
+   ],
+   "params": {
+    "flip_after_s": 0.55,
+    "flip_s": 0.22,
+    "pop": 1.07,
+    "type": {
+     "kinds": [
+      "problem",
+      "turn",
+      "proof"
+     ],
+     "maxWords": 10
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#effect:type-warning-red-flip"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.9
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-char-mask-rise",
+   "category": "effect",
+   "role": "version numerals 1.3.0",
+   "at": 7.27,
+   "name": "Character Mask Rise",
+   "about": "every character rises out of its own mask one after another with a little blur; dots ride with their digit (made for version numbers and short words)",
+   "energy": 3,
+   "needs": [
+    "number",
+    "reveal",
+    "launch"
+   ],
+   "params": {
+    "travel_px": 85,
+    "dur_s": 0.37,
+    "stagger_ms": 133,
+    "blur_px": 6,
+    "type": {
+     "kinds": [
+      "reveal",
+      "stat",
+      "hook",
+      "end"
+     ],
+     "maxWords": 4
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#effect:type-char-mask-rise"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-centre-rule-settle",
+   "category": "effect",
+   "role": "the rule under the version",
+   "at": 7.57,
+   "name": "Centre Rule Settle",
+   "about": "the line focuses in, then a short accent rule grows outward from the centre of its last line",
+   "energy": 1,
+   "needs": [
+    "focus",
+    "brand",
+    "payoff"
+   ],
+   "params": {
+    "rule_w_px": 260,
+    "rule_h_px": 5,
+    "rule_s": 0.36,
+    "type": {
+     "kinds": [
+      "reveal",
+      "promise",
+      "end",
+      "stat"
+     ],
+     "maxWords": 8
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#effect:type-centre-rule-settle"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "transition:ink-materialise",
+   "category": "transition",
+   "role": "headline -> product window",
+   "at": 3.53,
+   "name": "Ink Materialise",
+   "about": "the outgoing line fades to paper, then a dark slab soaks in where the next window will be, paper to grey to ink while scaling 0.94 to 1, and opens onto the shot",
+   "energy": 2,
+   "needs": [
+    "reveal",
+    "product",
+    "tool"
+   ],
+   "params": {
+    "pre_s": 0.14,
+    "post_s": 0.46,
+    "scale": "0.94 -> 1",
+    "transition": {
+     "family": "morph"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#transition:ink-materialise"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "morph",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:beat-blank-cut",
+   "category": "transition",
+   "role": "every scene change from the drop on, and each name swap",
+   "at": 7.05,
+   "name": "Beat Blank Cut",
+   "about": "a plain cut on the beat: one blank frame of the ground, then the new shot racks in from a 6 px blur over three frames",
+   "energy": 2,
+   "needs": [
+    "steps",
+    "speed",
+    "rhythm"
+   ],
+   "params": {
+    "blank_frames": 1,
+    "blur_px": 6,
+    "blur_s": 0.06,
+    "transition": {
+     "family": "cut"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#transition:beat-blank-cut"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "cut",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.9
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:grey-out-relay",
+   "category": "transition",
+   "role": "line to line",
+   "at": 1.6,
+   "name": "Grey Out Relay",
+   "about": "the finished shot greys and softens into the paper, the next focuses in out of it with a 1 percent settle",
+   "energy": 1,
+   "needs": [
+    "steps",
+    "calm"
+   ],
+   "params": {
+    "pre_s": 0.2,
+    "post_s": 0.3,
+    "blur_px": 10,
+    "transition": {
+     "family": "blur"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#transition:grey-out-relay"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "blur",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "camera:window-side-push",
+   "category": "camera",
+   "role": "long window holds (we do better)",
+   "at": 8.7,
+   "name": "Window Side Push",
+   "about": "a slow 2.4 percent push weighted toward the product side of a split frame, so long window holds breathe",
+   "energy": 1,
+   "needs": [
+    "product",
+    "calm",
+    "focus"
+   ],
+   "params": {
+    "amount": 0.024,
+    "fx": 0.68,
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#camera:window-side-push"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "camera:bar-breath-hold",
+   "category": "camera",
+   "role": "still editorial frames (we add life)",
+   "at": 0,
+   "name": "Bar Breath Hold",
+   "about": "a near-still editorial hold: a 1 percent settle with a faint breath on the bar length, never dead and never moving much",
+   "energy": 1,
+   "needs": [
+    "calm",
+    "type",
+    "brand"
+   ],
+   "params": {
+    "settle": 0.009,
+    "breath": 0.0016,
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#camera:bar-breath-hold"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.7
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "ui:ink-data-grid-app",
+   "category": "ui",
+   "role": "the product itself",
+   "at": 4.6,
+   "name": "Ink Data Grid App",
+   "about": "a dark three-pane data app: connections with env tags, a table list with the selected one in accent, and a dense mono grid with a PK badge, status chips and an accent toolbar button",
+   "energy": 1,
+   "needs": [
+    "data",
+    "tool",
+    "product",
+    "ui"
+   ],
+   "params": {
+    "panes": "20% / 14.5% / rest",
+    "recolour": "o.acc"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#ui:ink-data-grid-app"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.2
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:ink-browser-url-typer",
+   "category": "ui",
+   "role": "open a URL made literal",
+   "at": 3.8,
+   "name": "Ink Browser URL Typer",
+   "about": "a near-black browser frame that soaks in, types its address into a centred pill with a lock, then the product (or the real site shot) fades in under it",
+   "energy": 2,
+   "needs": [
+    "steps",
+    "tool",
+    "product"
+   ],
+   "params": {
+    "cps": 26,
+    "bar_h": "6.5% of window h"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#ui:ink-browser-url-typer"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:connection-env-list",
+   "category": "ui",
+   "role": "environment tags foreshadow the guard",
+   "at": 4.6,
+   "name": "Connection Env List",
+   "about": "a dark connections card: each row an engine icon, a name, a mono host and a prod / stg / dev tag, prod rows with a slow red live dot",
+   "energy": 1,
+   "needs": [
+    "security",
+    "warning",
+    "list",
+    "connect"
+   ],
+   "params": {
+    "row_stagger_s": 0.09,
+    "tags": "prod red, stg amber, dev green"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#ui:connection-env-list"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:accent-swatch-card",
+   "category": "ui",
+   "role": "accent picker",
+   "at": 8.9,
+   "name": "Accent Swatch Card",
+   "about": "a dark accent-colour setting: six dots from the brand hue round the wheel, an ink ring hopping between them, and a live preview button and italic word recolouring with it",
+   "energy": 2,
+   "needs": [
+    "choice",
+    "brand",
+    "ui",
+    "custom"
+   ],
+   "params": {
+    "dots": 6,
+    "swap_s": 0.88,
+    "cross_s": 0.1
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#ui:accent-swatch-card"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:ink-preferences-sheet",
+   "category": "ui",
+   "role": "customisation depth",
+   "at": 15,
+   "name": "Ink Preferences Sheet",
+   "about": "a tall dark preferences sheet with labelled rows, segmented controls, a swatch row, toggles and selects, jumping six rows in one smeared scroll",
+   "energy": 1,
+   "needs": [
+    "ui",
+    "choice",
+    "tool",
+    "custom"
+   ],
+   "params": {
+    "scroll": "6 rows / 0.22 s / 4 ghosts"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#ui:ink-preferences-sheet"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:terminal-update-stream",
+   "category": "ui",
+   "role": "updates in one command",
+   "at": 18.6,
+   "name": "Terminal Update Stream",
+   "about": "a black terminal types a one-word update, streams dim log lines (one with a filling progress bar) and lands on a green ticked success line",
+   "energy": 2,
+   "needs": [
+    "process",
+    "speed",
+    "success"
+   ],
+   "params": {
+    "cps": 18,
+    "line_every_s": 0.25
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#ui:terminal-update-stream"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:production-guard-modal",
+   "category": "ui",
+   "role": "asks before writing to production",
+   "at": 24,
+   "name": "Production Guard Modal",
+   "about": "a dark modal with a red-tinted header and pulsing warning triangle, the risky statement in a code block, a note, Cancel and a red primary button",
+   "energy": 3,
+   "needs": [
+    "warning",
+    "security",
+    "stakes"
+   ],
+   "params": {
+    "in": "grey -> ink, 0.94 -> 1, 0.32 s"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#ui:production-guard-modal"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 1
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "texture:paper-centre-glow",
+   "category": "texture",
+   "role": "every scene",
+   "at": 0,
+   "name": "Paper Centre Glow",
+   "about": "warm paper with a soft brighter ellipse in the middle and slightly darker edges, like a lit print page, drifting slowly with a whisper of grain",
+   "energy": 1,
+   "needs": [
+    "calm",
+    "brand",
+    "simplify"
+   ],
+   "params": {
+    "ellipse": "62% W radius, 0.62 aspect",
+    "drift": "2% W",
+    "grain": 0.022
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l12.js#texture:paper-centre-glow"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.2
+    },
+    {
+     "style": "handmade",
+     "w": 0.7
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  }
+ ],
+ "uses": [
+  {
+   "id": "caption:luxe_serif",
+   "role": "closest existing italic serif accent treatment",
+   "at": 1.95
+  },
+  {
+   "id": "transition:line-swap",
+   "role": "same idea as the grey-out line relay",
+   "at": 1.6
+  },
+  {
+   "id": "ui:browser",
+   "role": "drawn browser window around a real capture",
+   "at": 3.6
+  },
+  {
+   "id": "transition:riser-into-cut",
+   "role": "the riser that ends on the version cut",
+   "at": 7.05
+  },
+  {
+   "id": "ui:card-toggles",
+   "role": "settings rows fallback",
+   "at": 15
+  },
+  {
+   "id": "insert:s5-warning",
+   "role": "warning beat fallback",
+   "at": 23.82
+  },
+  {
+   "id": "effect:motion-blur",
+   "role": "the settings scroll jump",
+   "at": 17
+  },
+  {
+   "id": "insert:headline-left-ui",
+   "role": "editorial headline beside a live window",
+   "at": 8.7
+  },
+  {
+   "id": "effect:type-anaphora-stack",
+   "role": "lines stacking one per beat",
+   "at": 15.25
+  },
+  {
+   "id": "font:instrument-serif",
+   "role": "the display and italic accent serif",
+   "at": 0
+  }
+ ]
+}

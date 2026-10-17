@@ -1,0 +1,107 @@
+{
+  "id": "launch-l12",
+  "name": "Launch · Query Serif",
+  "about": "Warm paper, a large editorial serif with italic accent words in the product colour, dark app windows with soft shadows, a live recolour that is also the feature proof, a terminal update, a red warning modal, a giant serif name, a pricing line. Learned from a database client launch (promptsmotion.com).",
+  "from": [
+    "ref:l12"
+  ],
+  "styles": [
+    "brand-promo",
+    "studio-minimal"
+  ],
+  "palette": {
+    "paper": "#F1EFE9",
+    "paperShade": "#E9E6DE",
+    "ink": "#111113",
+    "text": "#121212",
+    "textDim": "rgba(18,18,18,0.52)",
+    "inkText": "#F1EFE9",
+    "inkTextDim": "rgba(241,239,233,0.52)",
+    "card": "#FFFFFF",
+    "inkCard": "#18181B",
+    "accent": "#8B4DFF"
+  },
+  "type": {
+    "display": {
+      "family": "serif",
+      "weight": 400,
+      "tracking": -0.02
+    },
+    "accent": {
+      "family": "serif",
+      "italic": true,
+      "weight": 400,
+      "tracking": -0.01
+    },
+    "accentSerif": true,
+    "accentScale": 1.04,
+    "micro": {
+      "family": "mono",
+      "weight": 500,
+      "tracking": 0.16
+    },
+    "ui": {
+      "family": "ui",
+      "weight": 500,
+      "tracking": -0.01
+    },
+    "wordmark": {
+      "family": "serif",
+      "weight": 400,
+      "tracking": -0.02
+    },
+    "numeral": {
+      "family": "serif",
+      "weight": 400,
+      "tracking": -0.012
+    }
+  },
+  "worlds": [
+    "paper",
+    "paper",
+    "paper",
+    "paper"
+  ],
+  "bg": {
+    "paper": [
+      "texture:paper-fibre"
+    ],
+    "ink": []
+  },
+  "post": {
+    "grain": 0.03
+  },
+  "prefer": {
+    "type": [
+      "effect:type-mask-rise",
+      "effect:type-word-blur-rise"
+    ],
+    "transitions": [
+      "transition:page-push",
+      "transition:mask-wipe-up",
+      "transition:rack-focus-swap"
+    ],
+    "cams": [
+      "camera:push-slow",
+      "camera:focus-zoom"
+    ]
+  },
+  "motion": {
+    "engine": "kits/launch (ishaan-motion)",
+    "arrive": {
+      "seconds": 0.55,
+      "ease": "out (0.16,1,0.3,1)"
+    },
+    "stagger": 0.07,
+    "cutOn": "bar"
+  },
+  "frame": {
+    "designW": 1920,
+    "designH": 1080,
+    "ratios": [
+      "16:9",
+      "1:1",
+      "9:16"
+    ]
+  }
+}

@@ -1,0 +1,2755 @@
+{
+ "reference": {
+  "id": "l07",
+  "url": "https://motion.so/made-with-motion/memoir-product-demo",
+  "title": "Memoir product demo (motion.so)",
+  "kind": "product demo, 16:9, 50 s",
+  "seconds": 49.76,
+  "notes": "Warm editorial paper with a red accent phrase, constellations of floating mono data chips, an italic serif voice, quiet dot grids with one black square, a vertical thread with an in-sync pill: Linear-tier restraint that still moves on every frame. Studied from what the page shows publicly; rebuilt in Moovi's own code (packages/library/src/kits/launch) with our own fonts, sounds and assets."
+ },
+ "kit": {
+  "file": "packages/library/src/kits/launch/looks/l07.json"
+ },
+ "impl": "packages/library/src/kits/launch/",
+ "styles": [
+  "brand-promo",
+  "studio-minimal"
+ ],
+ "parts": [
+  {
+   "id": "insert:chips-constellation",
+   "category": "insert",
+   "role": "feature chip constellation",
+   "at": null,
+   "name": "Feature chip constellation",
+   "about": "the headline in the middle, the brand's features as white chips with line icons settling on an ellipse around it, each drifting slowly",
+   "energy": 3,
+   "needs": [
+    "list",
+    "benefit",
+    "network",
+    "data"
+   ],
+   "params": {
+    "setup": {
+     "family": "chips",
+     "kinds": [
+      "list",
+      "proof",
+      "demo"
+     ],
+     "items": [
+      3,
+      6
+     ],
+     "requires": [
+      "items3"
+     ],
+     "cams": [
+      "camera:breathe",
+      "camera:push-slow"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/setups.js#insert:chips-constellation"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.95
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.85
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.45
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "transition:rack-focus-swap",
+   "category": "transition",
+   "role": "rack focus swap",
+   "at": null,
+   "name": "Rack focus swap",
+   "about": "the shot racks out of focus while the next racks in: a lens transition for calm beats",
+   "energy": 2,
+   "needs": [
+    "calm",
+    "focus"
+   ],
+   "params": {
+    "transition": {
+     "family": "blur"
+    },
+    "dur": 0.6
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/trans.js#transition:rack-focus-swap"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "blur",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "camera:push-slow",
+   "category": "camera",
+   "role": "slow push",
+   "at": null,
+   "name": "Slow push",
+   "about": "a 4.5% push over the whole beat, moving on the first frame and still moving on the last",
+   "energy": 2,
+   "needs": [
+    "calm",
+    "focus"
+   ],
+   "params": {
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/cam.js#camera:push-slow"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "texture:dot-grid-editorial",
+   "category": "texture",
+   "role": "editorial dot grid",
+   "at": null,
+   "name": "Editorial dot grid",
+   "about": "tiny dots on a strict grid at very low contrast: the paper's quiet structure",
+   "energy": 1,
+   "needs": [
+    "calm",
+    "data"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/worlds.js#texture:dot-grid-editorial"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "studio-minimal",
+     "w": 0.85
+    },
+    {
+     "style": "brand-promo",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  },
+  {
+   "id": "insert:flash-card-montage",
+   "category": "insert",
+   "role": "the cold open: everyone ships now",
+   "at": 0,
+   "name": "Flash Card Montage",
+   "about": "A centred card on paper flicks through product frames every three film frames while the hook builds under it, holds, shrinks to a point, and the line takes the centre.",
+   "energy": 4,
+   "needs": [
+    "hook",
+    "speed",
+    "chaos"
+   ],
+   "params": {
+    "card_w_frac": 0.5,
+    "flash_every_frames": 3,
+    "shrink_s": 0.2,
+    "setup": {
+     "family": "montage",
+     "kinds": [
+      "hook",
+      "problem"
+     ],
+     "roles": [
+      "open"
+     ],
+     "weight": 1.1,
+     "cams": [
+      "camera:settle-push"
+     ]
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#insert:flash-card-montage"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:mono-chip-cloud-hub",
+   "category": "insert",
+   "role": "teams ship faster than ever, as a cloud of rising metrics",
+   "at": 3.25,
+   "name": "Mono Chip Cloud Hub",
+   "about": "An accent people badge pops at the hub while fourteen mono data chips at three depths tick upward around it, far ones soft, near ones passing the lens.",
+   "energy": 3,
+   "needs": [
+    "data",
+    "growth",
+    "speed",
+    "number"
+   ],
+   "params": {
+    "chips": 14,
+    "depths": [
+     0.7,
+     0.85,
+     1
+    ],
+    "far_blur_px": 3,
+    "tick_hz": 12,
+    "stagger_s": 0.06,
+    "setup": {
+     "family": "data-cloud",
+     "kinds": [
+      "proof",
+      "stat",
+      "hook"
+     ],
+     "roles": [
+      "open",
+      "middle"
+     ],
+     "items": [
+      2,
+      6
+     ],
+     "number": "optional",
+     "cams": [
+      "camera:rise-drift-parallax"
+     ],
+     "weight": 1.2
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#insert:mono-chip-cloud-hub"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:week-crosshair-tags",
+   "category": "insert",
+   "role": "new features, new updates, every day",
+   "at": 5.75,
+   "name": "Week Crosshair Tags",
+   "about": "A hairline crosshair with a mono week counter stepping up; accent version tags slide along the line, then one word takes the centre.",
+   "energy": 2,
+   "needs": [
+    "timeline",
+    "time",
+    "steps",
+    "speed"
+   ],
+   "params": {
+    "tag_every_s": 0.35,
+    "week_steps_per_s": 6.5,
+    "setup": {
+     "family": "timeline",
+     "kinds": [
+      "list",
+      "turn",
+      "promise"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      2,
+      6
+     ],
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#insert:week-crosshair-tags"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:watched-black-box",
+   "category": "insert",
+   "role": "nobody sees what you are building, then everyone does",
+   "at": 8.6,
+   "name": "Watched Black Box",
+   "about": "An ink square with a blinking accent caret; almond eyes open around it and multiply into a field that turns to look, and the box shrinks into a glowing accent tile.",
+   "energy": 3,
+   "needs": [
+    "hidden",
+    "problem",
+    "focus",
+    "reveal"
+   ],
+   "params": {
+    "box_side_frac_h": 0.44,
+    "eyes": "6 -> ~240 in 0.75 s",
+    "tile_frac": 0.13,
+    "setup": {
+     "family": "eye-field",
+     "kinds": [
+      "problem",
+      "turn",
+      "reveal"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "weight": 1.2,
+     "cams": [
+      "camera:push-slow"
+     ]
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#insert:watched-black-box"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.7
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:mark-line-draw-reveal",
+   "category": "insert",
+   "role": "the brand reveal mid-film",
+   "at": 12.4,
+   "name": "Mark Line-draw Reveal",
+   "about": "The brand mark draws as one thin line, fills grey then ink, dotted rings breathe out of it and the serif wordmark rises beneath.",
+   "energy": 2,
+   "needs": [
+    "brand",
+    "reveal",
+    "answer"
+   ],
+   "params": {
+    "draw_s": 0.5,
+    "fill_s": 0.32,
+    "wordmark_delay_s": 0.35,
+    "setup": {
+     "family": "brand-reveal",
+     "kinds": [
+      "reveal"
+     ],
+     "roles": [
+      "middle",
+      "close"
+     ],
+     "weight": 0.9
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#insert:mark-line-draw-reveal"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:cli-pill-serif-answer",
+   "category": "insert",
+   "role": "a release note becomes a prompt; the product writes",
+   "at": 14,
+   "name": "CLI Pill, Serif Answer",
+   "about": "A black command pill types a request and docks on a large draft sheet rising out of blur; the answer writes itself in the italic serif voice with feature tags beneath.",
+   "energy": 2,
+   "needs": [
+    "ai",
+    "tool",
+    "answer",
+    "product"
+   ],
+   "params": {
+    "type_cps": 25,
+    "sheet_w_frac": 0.74,
+    "serif_line_stagger_s": 0.12,
+    "setup": {
+     "family": "prompt-result",
+     "kinds": [
+      "demo",
+      "turn"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "requires": [
+      "prompt"
+     ],
+     "weight": 1.2
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#insert:cli-pill-serif-answer"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:focus-pull-post-pair",
+   "category": "insert",
+   "role": "the drafted posts arrive",
+   "at": 18,
+   "name": "Focus-pull Post Pair",
+   "about": "Two draft post cards rise from below out of a heavy blur and settle sharp a beat apart, a third draft soft behind them, each with an accent ship pill.",
+   "energy": 2,
+   "needs": [
+    "product",
+    "reveal",
+    "ui",
+    "cta"
+   ],
+   "params": {
+    "rise_px": 220,
+    "blur_px": "12 -> 0",
+    "stagger_s": 0.2,
+    "setup": {
+     "family": "cards",
+     "kinds": [
+      "demo",
+      "proof"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      2,
+      6
+     ],
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#insert:focus-pull-post-pair"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:spiral-crowd-compare",
+   "category": "insert",
+   "role": "whether you are 3 or 300",
+   "at": 20,
+   "name": "Spiral Crowd Compare",
+   "about": "A few dots become hundreds on a golden-angle spiral while a small number, a connector and a big accent number land at the left, centre and right.",
+   "energy": 3,
+   "needs": [
+    "scale",
+    "compare",
+    "number",
+    "people"
+   ],
+   "params": {
+    "dots": 400,
+    "spread_s": 1,
+    "angle_deg": 137.5,
+    "stagger_s": 0.35,
+    "setup": {
+     "family": "compare",
+     "kinds": [
+      "stat",
+      "proof"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "number": "optional",
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#insert:spiral-crowd-compare"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.9
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:peach-sky-dashboard",
+   "category": "insert",
+   "role": "the product working",
+   "at": 22.4,
+   "name": "Peach-sky Dashboard",
+   "about": "A calm dashboard under an accent-tinted sky: mono tabs, big ticking counters, thin meters, a serif suggestion card typing its reply and an approve bar the cursor confirms.",
+   "energy": 2,
+   "needs": [
+    "product",
+    "data",
+    "ui",
+    "growth"
+   ],
+   "params": {
+    "counter_px": 84,
+    "approve_slide_s": 0.3,
+    "reply_cps": 30,
+    "setup": {
+     "family": "dashboard",
+     "kinds": [
+      "demo",
+      "proof"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      2,
+      6
+     ],
+     "number": "optional",
+     "weight": 1.3,
+     "cams": [
+      "camera:focus-zoom"
+     ]
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#insert:peach-sky-dashboard"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.4
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:blank-composer-to-settings",
+   "category": "insert",
+   "role": "no more blank posts; your setup in seconds",
+   "at": 28,
+   "name": "Blank Composer to Settings",
+   "about": "An empty skeleton post with a blinking caret grows into a wide settings window: serif title, numbered mono menu with an accent bar, fields filling in the accent, a voice line typing.",
+   "energy": 2,
+   "needs": [
+    "simplify",
+    "tool",
+    "ui",
+    "problem"
+   ],
+   "params": {
+    "grow_s": 0.45,
+    "field_stagger_s": 0.2,
+    "type_cps": 20,
+    "setup": {
+     "family": "app-window",
+     "kinds": [
+      "problem",
+      "demo"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      3,
+      6
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#insert:blank-composer-to-settings"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:dot-streams-in-sync",
+   "category": "insert",
+   "role": "no more pulling in different directions",
+   "at": 32.6,
+   "name": "Dot Streams In Sync",
+   "about": "Two labelled dot streams scroll down, drift apart, then slide together onto one accent thread with ink beads and an italic serif pill, far streams soft in the distance.",
+   "energy": 3,
+   "needs": [
+    "connect",
+    "compare",
+    "flow",
+    "simplify"
+   ],
+   "params": {
+    "dot_px": 10,
+    "pitch_px": 46,
+    "scroll_px_s": 300,
+    "separation_px": "40 -> 240 -> 0",
+    "setup": {
+     "family": "merge",
+     "kinds": [
+      "turn",
+      "promise"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      2,
+      6
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#insert:dot-streams-in-sync"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:crosshair-commit-ticker",
+   "category": "insert",
+   "role": "the engine running alongside the team",
+   "at": 35.6,
+   "name": "Crosshair Commit Ticker",
+   "about": "A hairline crosshair; dots step down one side while mono commit cards stack in on the other, an accent arm flicking out to each new one.",
+   "energy": 2,
+   "needs": [
+    "process",
+    "timeline",
+    "build",
+    "tool"
+   ],
+   "params": {
+    "every_s": 0.5,
+    "card_slide_s": 0.25,
+    "arm_s": 0.15,
+    "setup": {
+     "family": "feed",
+     "kinds": [
+      "list",
+      "proof",
+      "demo"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      3,
+      6
+     ],
+     "weight": 1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#insert:crosshair-commit-ticker"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:doc-team-hub",
+   "category": "insert",
+   "role": "keeping everyone on the same page",
+   "at": 38.6,
+   "name": "Document Team Hub",
+   "about": "A titled sheet in the middle with six team nodes on hairline connectors; nodes light in the accent one by one while the grey lines on the sheet turn to ink.",
+   "energy": 2,
+   "needs": [
+    "connect",
+    "network",
+    "people",
+    "process"
+   ],
+   "params": {
+    "nodes": 6,
+    "light_every_s": 0.25,
+    "setup": {
+     "family": "hub",
+     "kinds": [
+      "list",
+      "promise",
+      "proof"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      4,
+      6
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#insert:doc-team-hub"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.9
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:gaze-converge-disc",
+   "category": "insert",
+   "role": "help the world notice: the eyes converge",
+   "at": 43.7,
+   "name": "Gaze-converge Disc",
+   "about": "A black disc with a glowing accent core shrinks to the centre while a field of eyes turns to look at it; the disc is the exit a flood can swell out of.",
+   "energy": 3,
+   "needs": [
+    "focus",
+    "people",
+    "payoff",
+    "global"
+   ],
+   "params": {
+    "disc": "0.19 -> 0.085 short side",
+    "shrink_s": 0.7,
+    "core_pulse_hz": 1.2,
+    "setup": {
+     "family": "eye-field",
+     "kinds": [
+      "promise",
+      "turn"
+     ],
+     "roles": [
+      "middle",
+      "close"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#insert:gaze-converge-disc"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.7
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "end_card:mark-serif-url-lockup",
+   "category": "end_card",
+   "role": "the closing lockup",
+   "at": 47.5,
+   "name": "Mark, Serif Wordmark, URL",
+   "about": "The mark draws and fills with one accent flash frame, the italic serif wordmark rises, the tagline lands and the address types in mono; the last frames cut to ink.",
+   "energy": 1,
+   "needs": [
+    "brand",
+    "cta",
+    "payoff"
+   ],
+   "params": {
+    "flash_frames": 2,
+    "url_cps": 40,
+    "black_cut_s": 0.15,
+    "setup": {
+     "family": "end",
+     "kinds": [
+      "end"
+     ],
+     "roles": [
+      "close"
+     ]
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#end_card:mark-serif-url-lockup"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "end"
+   ]
+  },
+  {
+   "id": "effect:type-letter-fade-light",
+   "category": "effect",
+   "role": "the quiet statements",
+   "at": 2,
+   "name": "Letter Fade Statement",
+   "about": "A quiet statement appears letter by letter, each fading up from nothing 40 ms after the last.",
+   "energy": 1,
+   "needs": [
+    "claim",
+    "focus",
+    "calm"
+   ],
+   "params": {
+    "per_letter_ms": 40,
+    "letter_fade_s": 0.15,
+    "type": {
+     "kinds": [
+      "hook",
+      "turn",
+      "promise"
+     ],
+     "maxWords": 6
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#effect:type-letter-fade-light"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-serif-output-lines",
+   "category": "effect",
+   "role": "the AI output in a literary voice",
+   "at": 16,
+   "name": "Serif Output Lines",
+   "about": "What the product writes: each line rises from its own mask 120 ms apart, ink drying from grey, an accent caret waiting at the end.",
+   "energy": 2,
+   "needs": [
+    "ai",
+    "answer",
+    "product"
+   ],
+   "params": {
+    "stagger_ms": 120,
+    "rise_s": 0.34,
+    "type": {
+     "kinds": [
+      "demo",
+      "reveal",
+      "proof"
+     ],
+     "maxWords": 14
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#effect:type-serif-output-lines"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.8
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-word-step-caption",
+   "category": "effect",
+   "role": "the hook caption",
+   "at": 0,
+   "name": "Word Step Caption",
+   "about": "Words land one at a time like a voice speaking them, a fade and an 8 px rise in 0.12 s, the key phrase in the accent.",
+   "energy": 2,
+   "needs": [
+    "claim",
+    "hook",
+    "problem"
+   ],
+   "params": {
+    "word_gap_s": 0.16,
+    "word_in_s": 0.12,
+    "rise_px": 8,
+    "type": {
+     "kinds": [
+      "hook",
+      "problem",
+      "list",
+      "turn"
+     ],
+     "maxWords": 10
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#effect:type-word-step-caption"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.9
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-vo-chunk-swap",
+   "category": "effect",
+   "role": "narration chunks carried through every scene",
+   "at": 2.75,
+   "name": "VO Chunk Swap",
+   "about": "The line arrives one to three words at a time, each chunk swapped in place at the centre, then the whole line settles into its slot.",
+   "energy": 1,
+   "needs": [
+    "voices",
+    "steps",
+    "learn"
+   ],
+   "params": {
+    "chunk_words": 3,
+    "chunk_s": 0.32,
+    "type": {
+     "kinds": [
+      "hook",
+      "list",
+      "turn",
+      "promise"
+     ],
+     "minWords": 4,
+     "maxWords": 12
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#effect:type-vo-chunk-swap"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "transition:horizontal-blur-smear",
+   "category": "transition",
+   "role": "clears the CLI scene",
+   "at": 17.4,
+   "name": "Horizontal Blur Smear",
+   "about": "The shot smears sideways in a heavy motion blur and is gone; the next arrives from a lighter smear on the other side.",
+   "energy": 3,
+   "needs": [
+    "speed",
+    "steps"
+   ],
+   "params": {
+    "dur_s": 0.35,
+    "blur_px": 40,
+    "travel_frac": 0.12,
+    "transition": {
+     "family": "whip"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#transition:horizontal-blur-smear"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "whip",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:ink-disc-swell",
+   "category": "transition",
+   "role": "exit from the eye field to the logo",
+   "at": 46.4,
+   "name": "Ink Disc Swell",
+   "about": "An ink disc with an accent core swells from the last object past every corner, then opens from the centre as a ring onto the next shot.",
+   "energy": 4,
+   "needs": [
+    "reveal",
+    "contrast",
+    "payoff"
+   ],
+   "params": {
+    "swell_s": 0.22,
+    "open_s": 0.4,
+    "transition": {
+     "family": "flood",
+     "worlds": "change"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#transition:ink-disc-swell"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "flood",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.9
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:placeholder-sheet-morph",
+   "category": "transition",
+   "role": "entrance of the strategy document",
+   "at": 38.6,
+   "name": "Placeholder Sheet Morph",
+   "about": "A blank sheet with a faint cross scales up over the shot, the cross dissolves and the sheet opens to the full frame with the next shot inside.",
+   "energy": 2,
+   "needs": [
+    "reveal",
+    "build",
+    "product"
+   ],
+   "params": {
+    "scale": "0.7 -> 1",
+    "open_s": 0.48,
+    "transition": {
+     "family": "morph"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#transition:placeholder-sheet-morph"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "morph",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:card-shrink-to-point",
+   "category": "transition",
+   "role": "the cold-open card vanishing",
+   "at": 2,
+   "name": "Card Shrink to Point",
+   "about": "The shot becomes a rounded card on the next ground and shrinks into a point at its last object; the next settles in from a 3% push.",
+   "energy": 3,
+   "needs": [
+    "speed",
+    "hook",
+    "steps"
+   ],
+   "params": {
+    "card_scale": 0.62,
+    "shrink_s": 0.2,
+    "transition": {
+     "family": "zoom"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#transition:card-shrink-to-point"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "zoom",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:accent-flash-frame",
+   "category": "transition",
+   "role": "the one loud colour hit before the logo",
+   "at": 47.25,
+   "name": "Accent Flash Frame",
+   "about": "Two frames of the whole screen in the accent with the mark outlined in a lighter tint: the one loud colour hit before a reveal.",
+   "energy": 4,
+   "needs": [
+    "brand",
+    "reveal",
+    "emotion"
+   ],
+   "params": {
+    "frames": 2,
+    "transition": {
+     "family": "cut"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#transition:accent-flash-frame"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "cut",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.6
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 1
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "camera:rise-drift-parallax",
+   "category": "camera",
+   "role": "the data cloud rising",
+   "at": 3.25,
+   "name": "Rise Drift",
+   "about": "A slow upward drift with a gentle 2.5% push, so depth-staggered layers separate as the field rises.",
+   "energy": 2,
+   "needs": [
+    "growth",
+    "data",
+    "calm"
+   ],
+   "params": {
+    "rise_px": 60,
+    "push": 0.025,
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#camera:rise-drift-parallax"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "camera:settle-push",
+   "category": "camera",
+   "role": "slow pushes on every held scene",
+   "at": 0,
+   "name": "Settle Push",
+   "about": "The shot lands from 5% in on an ease-out, then keeps pushing 2.5% to the last frame.",
+   "energy": 1,
+   "needs": [
+    "calm",
+    "focus"
+   ],
+   "params": {
+    "settle_s": 0.8,
+    "from": 1.05,
+    "push": 0.025,
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#camera:settle-push"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "effect:almond-eye-field",
+   "category": "effect",
+   "role": "the audience motif",
+   "at": 9.75,
+   "name": "Almond Eye Field",
+   "about": "Almond eyes open outward from the subject and turn their gaze onto it, a blink wave crossing the field; the type band stays clear.",
+   "energy": 3,
+   "needs": [
+    "people",
+    "focus",
+    "hidden",
+    "global"
+   ],
+   "params": {
+    "pitch_px": 112,
+    "spawn_s": 0.75,
+    "gaze_s": 0.55,
+    "kind": "overlay"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#effect:almond-eye-field"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.8
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "overlay"
+   ]
+  },
+  {
+   "id": "effect:spiral-dot-vortex",
+   "category": "effect",
+   "role": "a crowd of hundreds",
+   "at": 20,
+   "name": "Spiral Dot Vortex",
+   "about": "A calm golden-angle crowd of dots spreads from the centre behind the beat, thinned where the type sits.",
+   "energy": 3,
+   "needs": [
+    "scale",
+    "people",
+    "growth"
+   ],
+   "params": {
+    "dots": 400,
+    "spread_s": 1,
+    "angle_deg": 137.5,
+    "kind": "overlay"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#effect:spiral-dot-vortex"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.9
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "overlay"
+   ]
+  },
+  {
+   "id": "texture:peach-sky-wash",
+   "category": "texture",
+   "role": "the dashboard sky",
+   "at": 22.4,
+   "name": "Peach Sky Wash",
+   "about": "A soft accent-tinted sky at the top fading into the paper by the middle, with a faint vignette.",
+   "energy": 1,
+   "needs": [
+    "calm",
+    "product"
+   ],
+   "params": {
+    "sky_to_frac_h": 0.55,
+    "vignette": 0.05
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#texture:peach-sky-wash"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.4
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  },
+  {
+   "id": "texture:dot-lattice-black-square",
+   "category": "texture",
+   "role": "the field around the building tile",
+   "at": 11,
+   "name": "Dot Lattice, One Square",
+   "about": "A strict quiet dot lattice with one cell holding a small ink square that breathes.",
+   "energy": 1,
+   "needs": [
+    "calm",
+    "focus",
+    "structure"
+   ],
+   "params": {
+    "pitch_px": 54,
+    "dot_px": 4
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#texture:dot-lattice-black-square"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  },
+  {
+   "id": "ui:mono-counter-chip",
+   "category": "ui",
+   "role": "the building block of the constellation",
+   "at": 3.25,
+   "name": "Mono Counter Chip",
+   "about": "A rounded chip with a big monospaced number ticking up, its unit smaller and a spaced caps label; depth blurs and greys it.",
+   "energy": 2,
+   "needs": [
+    "number",
+    "data",
+    "proof"
+   ],
+   "params": {
+    "number_px": 84,
+    "label_px_ratio": 0.22,
+    "tick_hz": 12
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#ui:mono-counter-chip"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:people-badge-disc",
+   "category": "ui",
+   "role": "teams as one object",
+   "at": 3,
+   "name": "People Badge Disc",
+   "about": "An accent disc with a three-person glyph pops with an 8% overshoot on a soft coloured shadow.",
+   "energy": 3,
+   "needs": [
+    "people",
+    "brand",
+    "focus"
+   ],
+   "params": {
+    "overshoot": 0.08,
+    "pop_s": 0.25
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#ui:people-badge-disc"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.8
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:black-box-caret",
+   "category": "ui",
+   "role": "work no one can see",
+   "at": 8.6,
+   "name": "Black Box with Caret",
+   "about": "A plain ink square on a heavy soft shadow with a thin accent caret blinking in its middle.",
+   "energy": 1,
+   "needs": [
+    "hidden",
+    "problem",
+    "build"
+   ],
+   "params": {
+    "caret_blink_hz": 1
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#ui:black-box-caret"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:glow-label-tile",
+   "category": "ui",
+   "role": "building becomes visible",
+   "at": 11,
+   "name": "Glowing Label Tile",
+   "about": "A small square turns from ink to the accent, gains a pulsing glow and an italic serif word inside.",
+   "energy": 2,
+   "needs": [
+    "focus",
+    "reveal",
+    "success"
+   ],
+   "params": {
+    "turn_s": 0.5,
+    "glow_px": 46
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#ui:glow-label-tile"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.9
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:terminal-command-pill",
+   "category": "ui",
+   "role": "the input",
+   "at": 14,
+   "name": "Terminal Command Pill",
+   "about": "A black rounded pill grows from its left edge and types a mono command after a chevron; a status chip with an accent dot lands under it.",
+   "energy": 2,
+   "needs": [
+    "tool",
+    "product",
+    "ai"
+   ],
+   "params": {
+    "type_cps": 25,
+    "grow_s": 0.3
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#ui:terminal-command-pill"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:post-draft-card",
+   "category": "ui",
+   "role": "the deliverable",
+   "at": 18.5,
+   "name": "Post Draft Card",
+   "about": "An off-white post draft: channel name in the serif voice, a mono count, the body and a footer with an accent ship pill.",
+   "energy": 2,
+   "needs": [
+    "product",
+    "ui",
+    "cta"
+   ],
+   "params": {
+    "radius_px": 18,
+    "footer_frac": 0.24
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#ui:post-draft-card"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:serif-suggestion-card",
+   "category": "ui",
+   "role": "one AI suggestion",
+   "at": 23.25,
+   "name": "Serif Suggestion Card",
+   "about": "A white card with a mono label and an accent step pill, an italic serif title, the body and a reply box typing behind an ink bar.",
+   "energy": 2,
+   "needs": [
+    "ai",
+    "idea",
+    "product"
+   ],
+   "params": {
+    "title_px": 64,
+    "reply_cps": 30
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#ui:serif-suggestion-card"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:approve-action-bar",
+   "category": "ui",
+   "role": "human-in-the-loop approve",
+   "at": 25.3,
+   "name": "Approve Action Bar",
+   "about": "A floating pill bar slides up with skip, a selected count and an accent confirm button that collapses to a check on the click.",
+   "energy": 3,
+   "needs": [
+    "choice",
+    "cta",
+    "success"
+   ],
+   "params": {
+    "slide_s": 0.32,
+    "collapse_s": 0.22
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#ui:approve-action-bar"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:skeleton-post-composer",
+   "category": "ui",
+   "role": "staring at a blank post",
+   "at": 28,
+   "name": "Skeleton Post Composer",
+   "about": "An empty post box made only of soft skeleton shapes with an accent caret blinking where the words should be.",
+   "energy": 1,
+   "needs": [
+    "problem",
+    "hidden",
+    "calm"
+   ],
+   "params": {
+    "caret_blink_hz": 1
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#ui:skeleton-post-composer"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:settings-voice-window",
+   "category": "ui",
+   "role": "setup in seconds",
+   "at": 30.2,
+   "name": "Settings Voice Window",
+   "about": "A wide settings window: serif title, a numbered mono menu with an accent bar, fields filling in the accent and a voice line that types itself.",
+   "energy": 2,
+   "needs": [
+    "tool",
+    "ui",
+    "simplify"
+   ],
+   "params": {
+    "field_stagger_s": 0.2,
+    "type_cps": 20
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l07.js#ui:settings-voice-window"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  }
+ ],
+ "uses": [
+  {
+   "id": "texture:paper-fibre",
+   "role": "the warm paper ground of the whole film",
+   "at": 0
+  },
+  {
+   "id": "texture:dot-grid-editorial",
+   "role": "the quiet dot grid the eye field resolves into",
+   "at": 11
+  },
+  {
+   "id": "camera:push-slow",
+   "role": "slow 2-4% pushes on every held scene",
+   "at": 0
+  },
+  {
+   "id": "effect:type-mask-rise",
+   "role": "the giant centre word and the closing statement",
+   "at": 7.25
+  }
+ ]
+}

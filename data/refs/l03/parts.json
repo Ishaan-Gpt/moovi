@@ -1,0 +1,2704 @@
+{
+ "reference": {
+  "id": "l03",
+  "url": "https://www.promptsmotion.com/bogdandragomir-35e024",
+  "title": "E-reader product intro synced to music",
+  "kind": "product intro, 16:9, 15 s",
+  "seconds": 15.05,
+  "notes": "A single material (a stipple of ink particles) runs the whole film: it dissolves to dither, streams as a cloud, re-forms as icons and returns as the e-reader screen. Fig. plate captions, an editorial serif with an italic key word, numbered spaced-caps eyebrows and a dark-to-paper grade flip at the midpoint. Studied from what the page shows publicly; rebuilt in Moovi's own code (packages/library/src/kits/launch) with our own fonts, sounds and assets."
+ },
+ "kit": {
+  "file": "packages/library/src/kits/launch/looks/l03.json"
+ },
+ "impl": "packages/library/src/kits/launch/",
+ "styles": [
+  "brand-promo",
+  "studio-minimal"
+ ],
+ "parts": [
+  {
+   "id": "effect:type-word-blur-rise",
+   "category": "effect",
+   "role": "word-by-word blur rise",
+   "at": null,
+   "name": "Word-by-word blur rise",
+   "about": "word by word, each word rises a few px out of blur and grey into ink; centred lines re-flow as they grow",
+   "energy": 2,
+   "needs": [
+    "calm",
+    "idea",
+    "benefit"
+   ],
+   "params": {
+    "type": {
+     "kinds": [
+      "hook",
+      "problem",
+      "demo",
+      "proof",
+      "promise",
+      "list",
+      "reveal"
+     ]
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/type.js#effect:type-word-blur-rise"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "camera:breathe",
+   "category": "camera",
+   "role": "breathing hold",
+   "at": null,
+   "name": "Breathing hold",
+   "about": "a near-still camera that breathes (1.5% scale wave and a little drift): for calm editorial beats",
+   "energy": 1,
+   "needs": [
+    "calm"
+   ],
+   "params": {
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/cam.js#camera:breathe"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "texture:paper-fibre",
+   "category": "texture",
+   "role": "paper fibre",
+   "at": null,
+   "name": "Paper fibre",
+   "about": "a printed sheet: two scales of mottling and fine fibres multiplied in lightly, a light from the top left",
+   "energy": 1,
+   "needs": [
+    "calm",
+    "build"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/worlds.js#texture:paper-fibre"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "studio-minimal",
+     "w": 0.85
+    },
+    {
+     "style": "brand-promo",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  },
+  {
+   "id": "effect:grain-fine",
+   "category": "effect",
+   "role": "fine grain",
+   "at": null,
+   "name": "Fine grain",
+   "about": "a fine moving film grain over one beat (the film keeps its own lighter grain)",
+   "energy": 1,
+   "needs": [
+    "calm"
+   ],
+   "params": {
+    "kind": "overlay"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/fx.js#effect:grain-fine"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "overlay"
+   ]
+  },
+  {
+   "id": "insert:microcapsule-specimen",
+   "category": "insert",
+   "role": "the opening macro: the material before the product",
+   "at": 0,
+   "name": "Microcapsule Specimen",
+   "about": "One glass sphere of shaded ink pellets turning slowly on a dark plate, neighbour spheres out of focus, the pellets flipping white and back on the beat, a Fig. caption blurring in under it.",
+   "energy": 2,
+   "needs": [
+    "hook",
+    "idea",
+    "focus",
+    "hidden"
+   ],
+   "params": {
+    "capsule_r_frac_h": 0.33,
+    "pellets": 900,
+    "flip_s": 0.08,
+    "jitter_ms": 30,
+    "neighbour_pitch": "2.15 R, blurred once",
+    "setup": {
+     "family": "specimen",
+     "kinds": [
+      "hook",
+      "reveal"
+     ],
+     "roles": [
+      "open"
+     ],
+     "cams": [
+      "camera:plate-creep",
+      "camera:push-slow"
+     ],
+     "weight": 1.1
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#insert:microcapsule-specimen"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.6
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.2
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:capsule-pixel-pullback",
+   "category": "insert",
+   "role": "the bridge from material to product: 75x in 1.35 s into the drop",
+   "at": 1.3,
+   "name": "Capsule-to-Pixel Pull-back",
+   "about": "The camera rises off one capsule until it is a cell in a grid of coin discs that flip as they shrink; the grid becomes the dot mesh of a screen whose lit pixels are the headline, splits 2x2 on the drop and snaps to crisp type.",
+   "energy": 4,
+   "needs": [
+    "scale",
+    "reveal",
+    "product",
+    "layers"
+   ],
+   "params": {
+    "pitch_px": [
+     560,
+     9,
+     4.5
+    ],
+    "dur_s": 1.35,
+    "ease": "log-space cubic in-out",
+    "snap_after_split_s": 0.42,
+    "setup": {
+     "family": "powers-of-ten",
+     "kinds": [
+      "hook",
+      "reveal",
+      "turn"
+     ],
+     "roles": [
+      "open",
+      "middle"
+     ],
+     "weight": 1.3
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#insert:capsule-pixel-pullback"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.6
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:stipple-inbox-collect",
+   "category": "insert",
+   "role": "the inbox filling up, one source per beat",
+   "at": 3.05,
+   "name": "Stipple Inbox Collect",
+   "about": "A chapter claim on the left; on the right a crop-marked panel with an address field; dotted icons fly in on comets of fine dots, one a beat then a half-beat, and print each row where they land.",
+   "energy": 3,
+   "needs": [
+    "list",
+    "flow",
+    "process",
+    "product"
+   ],
+   "params": {
+    "comet_s": 0.65,
+    "tail_dots": 420,
+    "cadence_s": [
+     0.62,
+     0.32
+    ],
+    "row_pitch_px": 118,
+    "setup": {
+     "family": "list-collect",
+     "kinds": [
+      "list",
+      "demo",
+      "proof"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      2,
+      5
+     ],
+     "requires": [
+      "items3"
+     ],
+     "cams": [
+      "camera:drift-lateral",
+      "camera:breathe"
+     ]
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#insert:stipple-inbox-collect"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:ink-cloud-sources",
+   "category": "insert",
+   "role": "the ways content arrives, each pouring into the list",
+   "at": 5,
+   "name": "Ink-cloud Sources",
+   "about": "Four dotted source icons hang teardrops of ink that boil gently; each cloud stretches into streaks that pour across into a list row and settle as its title.",
+   "energy": 3,
+   "needs": [
+    "flow",
+    "connect",
+    "list",
+    "build"
+   ],
+   "params": {
+    "cloud_dots": 820,
+    "boil_hz": 12,
+    "stream_s": 0.3,
+    "flare": 1.7,
+    "cadence_s": 0.31,
+    "setup": {
+     "family": "list-collect",
+     "kinds": [
+      "list",
+      "process",
+      "demo"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      2,
+      4
+     ],
+     "requires": [
+      "items3"
+     ]
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#insert:ink-cloud-sources"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.5
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:contents-sheet-issue",
+   "category": "insert",
+   "role": "the product output: one typeset issue",
+   "at": 7.6,
+   "name": "Contents Sheet Issue",
+   "about": "A white sheet lifts in: masthead line, italic serif title over a rule, numbered entries printing as dots; six pages fan out behind it with page numbers and spaced-caps tabs.",
+   "energy": 3,
+   "needs": [
+    "list",
+    "product",
+    "payoff",
+    "hierarchy"
+   ],
+   "params": {
+    "sheet_h_frac": 0.8,
+    "entries": 6,
+    "fan_deg_step": 3,
+    "fan_s": 0.55,
+    "stagger_ms": 40,
+    "setup": {
+     "family": "document",
+     "kinds": [
+      "reveal",
+      "list",
+      "proof"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      3,
+      6
+     ]
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#insert:contents-sheet-issue"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    },
+    {
+     "style": "handmade",
+     "w": 0.8
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:tabbed-page-fan",
+   "category": "insert",
+   "role": "shows depth: every saved item is a page",
+   "at": 8.15,
+   "name": "Tabbed Page Fan",
+   "about": "A hero article page with a drop cap stands front and centre while six sheets swing out behind it, each turned three degrees further, then fold back on the bar.",
+   "energy": 3,
+   "needs": [
+    "list",
+    "layers",
+    "build",
+    "proof"
+   ],
+   "params": {
+    "count": 6,
+    "angle_step_deg": 3,
+    "max_deg": 18,
+    "dur_s": 0.55,
+    "fold_s": 0.25,
+    "setup": {
+     "family": "document",
+     "kinds": [
+      "list",
+      "proof",
+      "promise"
+     ],
+     "roles": [
+      "middle"
+     ],
+     "items": [
+      3,
+      6
+     ]
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#insert:tabbed-page-fan"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.9
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:spine-reader-deliver",
+   "category": "insert",
+   "role": "turns the output into the device it arrives on",
+   "at": 10,
+   "name": "Page to Spine Reader",
+   "about": "A white page arrives, grows a bezel and a dark spine into an e-reader, and an e-ink scan band turns its paper grey while the contents stay registered.",
+   "energy": 3,
+   "needs": [
+    "product",
+    "before-after",
+    "answer"
+   ],
+   "params": {
+    "morph_s": 0.3,
+    "scan_s": 0.32,
+    "scan_band_frac": 0.26,
+    "setup": {
+     "family": "device",
+     "kinds": [
+      "reveal",
+      "demo",
+      "promise"
+     ],
+     "roles": [
+      "middle",
+      "close"
+     ]
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#insert:spine-reader-deliver"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:reader-duo-refresh",
+   "category": "insert",
+   "role": "delivery: the issue lands on two devices",
+   "at": 11,
+   "name": "Reader Duo Refresh",
+   "about": "The slate shrinks to make room as a black pocket reader slides in and refreshes (black flash, dither band) to the new cover; a banner prints on the slate and its page turns to a drop-cap article.",
+   "energy": 3,
+   "needs": [
+    "product",
+    "success",
+    "compare",
+    "speed"
+   ],
+   "params": {
+    "slide_s": 0.4,
+    "ease": "expo out",
+    "refresh_black_s": 0.1,
+    "reveal_s": 0.18,
+    "setup": {
+     "family": "device",
+     "kinds": [
+      "demo",
+      "proof",
+      "promise"
+     ],
+     "roles": [
+      "middle",
+      "close"
+     ]
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#insert:reader-duo-refresh"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:flip-dot-board",
+   "category": "insert",
+   "role": "makes one word mechanical and alive",
+   "at": 1.6,
+   "name": "Flip-dot Board",
+   "about": "A wall of coin discs turns over left to right to spell the key word in lit faces; a few coins keep flipping and the full line sits beneath.",
+   "energy": 3,
+   "needs": [
+    "hook",
+    "data",
+    "build",
+    "brand"
+   ],
+   "params": {
+    "pitch_frac_h": 0.033,
+    "flip_s": 0.14,
+    "wave_s": 0.55,
+    "ambient_share": 0.04,
+    "setup": {
+     "family": "type-wall",
+     "kinds": [
+      "hook",
+      "turn",
+      "stat"
+     ],
+     "roles": [
+      "open",
+      "middle"
+     ],
+     "weight": 0.9
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#insert:flip-dot-board"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.7
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.5
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "insert:stat-dot-print",
+   "category": "insert",
+   "role": "a number told in the material voice",
+   "at": 12.9,
+   "name": "Dot-printed Stat",
+   "about": "One giant number prints as halftone dots that thicken into ink inside crop marks, lands grey and steps to full black, with a numbered eyebrow and a spaced-caps label.",
+   "energy": 3,
+   "needs": [
+    "stat",
+    "proof",
+    "focus"
+   ],
+   "params": {
+    "print_s": 0.75,
+    "settle": "grey 55% -> ink in 2 frames",
+    "setup": {
+     "family": "stat",
+     "kinds": [
+      "stat",
+      "proof"
+     ],
+     "number": "required",
+     "requires": [
+      "number"
+     ]
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#insert:stat-dot-print"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "setup"
+   ]
+  },
+  {
+   "id": "end_card:dot-printed-wordmark",
+   "category": "end_card",
+   "role": "the closing lockup",
+   "at": 12.9,
+   "name": "Dot-printed Wordmark",
+   "about": "The italic wordmark prints left to right in grey dots, the tagline and address print under it, the mark settles to full ink and the address snaps bigger with the accent dot in it.",
+   "energy": 2,
+   "needs": [
+    "brand",
+    "cta",
+    "payoff"
+   ],
+   "params": {
+    "print_s": 0.45,
+    "settle_at": 0.8,
+    "url_swap_at": 1.35,
+    "setup": {
+     "family": "end",
+     "kinds": [
+      "end"
+     ],
+     "roles": [
+      "close"
+     ]
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#end_card:dot-printed-wordmark"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.7
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "end"
+   ]
+  },
+  {
+   "id": "effect:type-glyph-dither-swap",
+   "category": "effect",
+   "role": "every chapter change of eyebrow and headline",
+   "at": 5,
+   "name": "Glyph Dither Swap",
+   "about": "The line arrives letter by letter, each glyph dithering in through square blocks with ghost blocks flickering just ahead.",
+   "energy": 3,
+   "needs": [
+    "before-after",
+    "steps",
+    "build"
+   ],
+   "params": {
+    "stagger_ms_per_glyph": 22,
+    "glyph_s": 0.25,
+    "type": {
+     "kinds": [
+      "hook",
+      "turn",
+      "list",
+      "promise",
+      "reveal"
+     ],
+     "maxWords": 9
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#effect:type-glyph-dither-swap"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-dot-print",
+   "category": "effect",
+   "role": "how text lands in this world",
+   "at": 12.9,
+   "name": "Dot-print Type",
+   "about": "Each word lays down as a sparse halftone of dots that thickens left to right into solid ink, glyph by glyph.",
+   "energy": 2,
+   "needs": [
+    "build",
+    "reveal",
+    "brand"
+   ],
+   "params": {
+    "stagger_ms_per_glyph": 30,
+    "dot_pitch": "px/22",
+    "type": {
+     "kinds": [
+      "hook",
+      "reveal",
+      "promise",
+      "proof"
+     ],
+     "maxWords": 8
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#effect:type-dot-print"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-ink-settle",
+   "category": "effect",
+   "role": "a second quiet hit after the words land",
+   "at": 13.45,
+   "name": "Ink Settle",
+   "about": "The line rises from a soft blur in mid grey, holds, then steps to full ink in two frames like e-ink settling its contrast.",
+   "energy": 1,
+   "needs": [
+    "focus",
+    "calm",
+    "brand"
+   ],
+   "params": {
+    "hold_s": 0.75,
+    "step_s": 0.1,
+    "type": {
+     "kinds": [
+      "promise",
+      "problem",
+      "turn",
+      "reveal"
+     ],
+     "maxWords": 10
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#effect:type-ink-settle"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "effect:type-screen-door-snap",
+   "category": "effect",
+   "role": "the moment the product becomes real",
+   "at": 3.75,
+   "name": "Screen-door Snap",
+   "about": "The line dissolves in as e-ink dots on a faint lattice, sits as dots, then snaps to crisp vector type on the beat.",
+   "energy": 3,
+   "needs": [
+    "reveal",
+    "focus",
+    "answer"
+   ],
+   "params": {
+    "dot_pitch": "px/20",
+    "snap_at_s": 0.78,
+    "type": {
+     "kinds": [
+      "hook",
+      "reveal",
+      "turn"
+     ],
+     "maxWords": 8
+    },
+    "kind": "type"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#effect:type-screen-door-snap"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "type"
+   ]
+  },
+  {
+   "id": "transition:dither-dissolve-sweep",
+   "category": "transition",
+   "role": "exit of the dot field into chapter 01",
+   "at": 2.6,
+   "name": "Dither Dissolve Sweep",
+   "about": "The old shot drops out in square cells with a noisy front biased left to right, the next shot behind it.",
+   "energy": 3,
+   "needs": [
+    "reveal",
+    "process",
+    "build"
+   ],
+   "params": {
+    "dur_s": 0.32,
+    "cell_px": 8,
+    "transition": {
+     "family": "mask"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#transition:dither-dissolve-sweep"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "mask",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.7
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:dither-wipe-flip",
+   "category": "transition",
+   "role": "the one grade flip, dark to paper",
+   "at": 7.5,
+   "name": "Dither Wipe World Flip",
+   "about": "A wide band of square dither cells sweeps across, flipping one world to the other; inside the band cells flicker between both, a few drawn as hollow squares.",
+   "energy": 4,
+   "needs": [
+    "before-after",
+    "contrast",
+    "reveal"
+   ],
+   "params": {
+    "dur_s": 0.34,
+    "band_frac_w": 0.24,
+    "cell_px": 11,
+    "hollow_share": 0.1,
+    "transition": {
+     "family": "wipe",
+     "worlds": "change"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#transition:dither-wipe-flip"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "wipe",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:dither-ring-iris",
+   "category": "transition",
+   "role": "closes the film into the end card",
+   "at": 12.65,
+   "name": "Dither Ring Iris",
+   "about": "From the last point of the old shot a thick ring of ink and grey dither cells expands past the frame, the new shot already inside it.",
+   "energy": 4,
+   "needs": [
+    "reveal",
+    "payoff",
+    "brand"
+   ],
+   "params": {
+    "dur_s": 0.42,
+    "ring_px": 120,
+    "cell_px": 10,
+    "ease": "in",
+    "transition": {
+     "family": "iris"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#transition:dither-ring-iris"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "iris",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.7
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:screen-door-resolve",
+   "category": "transition",
+   "role": "the dot field becoming the interface",
+   "at": 3.75,
+   "name": "Screen-door Resolve",
+   "about": "The new shot appears as a coarse e-ink dot screen, steps to a finer one, then snaps crisp.",
+   "energy": 3,
+   "needs": [
+    "reveal",
+    "focus",
+    "answer"
+   ],
+   "params": {
+    "pitch_px": [
+     12,
+     6
+    ],
+    "snap_at": 0.72,
+    "transition": {
+     "family": "cut"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#transition:screen-door-resolve"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "cut",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:row-registered-match",
+   "category": "transition",
+   "role": "the list becoming the contents page",
+   "at": 7.5,
+   "name": "Row-registered Match",
+   "about": "The frame hands over in horizontal strips, top to bottom, each printing left to right with a hairline, so rows and lines stay registered across the change.",
+   "energy": 3,
+   "needs": [
+    "before-after",
+    "process",
+    "list"
+   ],
+   "params": {
+    "strip_px": 72,
+    "dur_s": 0.42,
+    "transition": {
+     "family": "match"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#transition:row-registered-match"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "match",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:eink-refresh-cut",
+   "category": "transition",
+   "role": "the issue arriving like a screen refresh",
+   "at": 11.55,
+   "name": "E-ink Refresh Cut",
+   "about": "The old shot darkens through an ordered dither to solid ink, holds a tenth of a second, then a ragged band uncovers the new shot from the top over a fading ghost.",
+   "energy": 3,
+   "needs": [
+    "product",
+    "speed",
+    "success"
+   ],
+   "params": {
+    "black_s": 0.1,
+    "reveal_s": 0.2,
+    "cell_px": 9,
+    "transition": {
+     "family": "cut"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#transition:eink-refresh-cut"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "cut",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.6
+    },
+    {
+     "style": "atlas",
+     "w": 0.3
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "transition:page-to-reader-morph",
+   "category": "transition",
+   "role": "the page becoming the device",
+   "at": 10,
+   "name": "Page-to-reader Morph",
+   "about": "The old shot shrinks into a page that grows a bezel and a dark spine, an e-ink scan crosses it, the new shot fills the screen and the device opens out past the frame.",
+   "energy": 3,
+   "needs": [
+    "product",
+    "before-after",
+    "answer"
+   ],
+   "params": {
+    "scale_min": 0.58,
+    "dur_s": 0.74,
+    "transition": {
+     "family": "morph"
+    }
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#transition:page-to-reader-morph"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "family": "morph",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 1
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "transition"
+   ]
+  },
+  {
+   "id": "camera:powers-of-ten-pull",
+   "category": "camera",
+   "role": "material to product in one move",
+   "at": 1.3,
+   "name": "Powers-of-ten Pull",
+   "about": "A long log-space pull back from 6x to 1x with a cubic in-out, then a 1% creep so it never stops.",
+   "energy": 4,
+   "needs": [
+    "scale",
+    "reveal",
+    "layers"
+   ],
+   "params": {
+    "from": 6,
+    "dur_s": 1.4,
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#camera:powers-of-ten-pull"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.6
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "camera:plate-creep",
+   "category": "camera",
+   "role": "keeps the opening macro alive",
+   "at": 0,
+   "name": "Plate Creep",
+   "about": "A held specimen plate that still breathes: a 1% push with a sub-pixel shimmer.",
+   "energy": 1,
+   "needs": [
+    "focus",
+    "calm",
+    "hidden"
+   ],
+   "params": {
+    "push": 0.012,
+    "shimmer_px": 1.6,
+    "camera": {}
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#camera:plate-creep"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.7
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "camera"
+   ]
+  },
+  {
+   "id": "ui:dot-lattice-icon",
+   "category": "ui",
+   "role": "the sources content comes from",
+   "at": 3.05,
+   "name": "Dot-lattice Icons",
+   "about": "Line icons sampled onto a fine dot lattice so they read as e-ink pixels; they print in and bob gently, a spaced-caps caption under each.",
+   "energy": 2,
+   "needs": [
+    "tool",
+    "connect",
+    "list"
+   ],
+   "params": {
+    "lattice": "size/34",
+    "stroke": 2.1
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#ui:dot-lattice-icon"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.6
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:colophon-field",
+   "category": "ui",
+   "role": "the one setting as editorial type",
+   "at": 2.6,
+   "name": "Colophon Address Field",
+   "about": "A form field set like a magazine colophon: tiny spaced-caps label, a large italic serif value typing with a caret, a hairline rule and the next label.",
+   "energy": 1,
+   "needs": [
+    "ui",
+    "product",
+    "home"
+   ],
+   "params": {
+    "label_px": 19,
+    "value_px": "up to 110",
+    "rule_px": 1
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#ui:colophon-field"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:ruled-source-list",
+   "category": "ui",
+   "role": "the inbox filling up",
+   "at": 3.7,
+   "name": "Ruled Source List",
+   "about": "Rows with a dotted icon, a serif title printing as dots, a spaced-caps source and a hairline, landing a beat then a half-beat apart.",
+   "energy": 2,
+   "needs": [
+    "list",
+    "steps",
+    "ui",
+    "proof"
+   ],
+   "params": {
+    "row_pitch_px": 130,
+    "cadence_s": [
+     0.31,
+     0.16
+    ]
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#ui:ruled-source-list"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:magazine-contents-sheet",
+   "category": "ui",
+   "role": "the product output as one page",
+   "at": 7.6,
+   "name": "Magazine Contents Sheet",
+   "about": "A white sheet with masthead line and issue number, an italic serif title over a rule, an in-this-issue label and numbered entries that print in.",
+   "energy": 2,
+   "needs": [
+    "list",
+    "product",
+    "hierarchy"
+   ],
+   "params": {
+    "aspect": 0.74,
+    "entries": 6
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#ui:magazine-contents-sheet"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 1
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    },
+    {
+     "style": "handmade",
+     "w": 0.8
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:spine-e-reader",
+   "category": "ui",
+   "role": "the hero device",
+   "at": 10.2,
+   "name": "Spine E-reader",
+   "about": "A slate e-reader with a dark spine and an inset e-ink screen, arriving as a plain page, growing its bezel, then scanning grey.",
+   "energy": 2,
+   "needs": [
+    "product",
+    "home",
+    "learn"
+   ],
+   "params": {
+    "aspect": 0.76,
+    "spine_frac": 0.055,
+    "inset_frac": 0.05
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#ui:spine-e-reader"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:pocket-e-reader",
+   "category": "ui",
+   "role": "a second device",
+   "at": 11,
+   "name": "Pocket E-reader",
+   "about": "A small black reader slides in with an expo ease and does a full refresh to the issue cover.",
+   "energy": 2,
+   "needs": [
+    "product",
+    "compare",
+    "people"
+   ],
+   "params": {
+    "aspect": 0.72,
+    "slide_s": 0.4,
+    "refresh_s": 0.28
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#ui:pocket-e-reader"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:dither-print-banner",
+   "category": "ui",
+   "role": "new issue delivered",
+   "at": 11.65,
+   "name": "Dither-print Banner",
+   "about": "A black status bar with spaced-caps text prints itself across the top of a reader screen in dither cells.",
+   "energy": 2,
+   "needs": [
+    "success",
+    "time",
+    "ui"
+   ],
+   "params": {
+    "print_s": 0.2,
+    "cell": "h/5"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#ui:dither-print-banner"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.7
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:drop-cap-article",
+   "category": "ui",
+   "role": "the reading moment",
+   "at": 11.9,
+   "name": "Drop-cap Article Screen",
+   "about": "An article page with a title, a three-line drop cap and justified body lines, uncovered by a fast top-down dither scramble.",
+   "energy": 2,
+   "needs": [
+    "learn",
+    "product",
+    "calm"
+   ],
+   "params": {
+    "drop_cap_lines": 3,
+    "swap_s": 0.15
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#ui:drop-cap-article"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.5
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:fig-plate-caption",
+   "category": "ui",
+   "role": "names a subject without a headline",
+   "at": 0.3,
+   "name": "Fig. Plate Caption",
+   "about": "An italic Fig. number then a roman serif sentence, centred like a printed science plate, blurring in.",
+   "energy": 1,
+   "needs": [
+    "learn",
+    "idea",
+    "focus"
+   ],
+   "params": {
+    "px": 54,
+    "blur_in_s": 0.45
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#ui:fig-plate-caption"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.6
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.9
+    },
+    {
+     "style": "night-desk",
+     "w": 0.6
+    },
+    {
+     "style": "handmade",
+     "w": 0.7
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.2
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:numbered-eyebrow",
+   "category": "ui",
+   "role": "chapter navigation",
+   "at": 2.6,
+   "name": "Numbered Spaced Eyebrow",
+   "about": "A two-digit chapter number, a middle dot and one spaced-caps word that type in with a block caret.",
+   "energy": 1,
+   "needs": [
+    "steps",
+    "process",
+    "hierarchy"
+   ],
+   "params": {
+    "tracking_em": 0.25,
+    "char_ms": 22
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#ui:numbered-eyebrow"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.6
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.5
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "ui:middot-subline",
+   "category": "ui",
+   "role": "the how under each chapter claim",
+   "at": 5.25,
+   "name": "Middot Feature Sub-line",
+   "about": "Three or four items in spaced caps separated by middle dots, typing left to right.",
+   "energy": 1,
+   "needs": [
+    "list",
+    "tool",
+    "benefit"
+   ],
+   "params": {
+    "tracking_em": 0.2,
+    "char_ms": 12
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#ui:middot-subline"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.9
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.8
+    },
+    {
+     "style": "night-desk",
+     "w": 0.8
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "ui"
+   ]
+  },
+  {
+   "id": "effect:screen-door-dots",
+   "category": "effect",
+   "role": "keeps a chapter inside the material",
+   "at": 2.6,
+   "name": "Screen-door Dots",
+   "about": "The whole frame redrawn through a round e-ink dot screen, unlit gaps faintly visible, as if shot macro on the display.",
+   "energy": 2,
+   "needs": [
+    "product",
+    "focus",
+    "hidden"
+   ],
+   "params": {
+    "pitch_px": 5,
+    "cost": "one downsample + one pattern fill",
+    "kind": "overlay"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#effect:screen-door-dots"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.7
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.5
+    },
+    {
+     "style": "atlas",
+     "w": 0.4
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "overlay"
+   ]
+  },
+  {
+   "id": "effect:crop-mark-frame",
+   "category": "effect",
+   "role": "frames content like a proof sheet",
+   "at": 2.85,
+   "name": "Crop-mark Frame",
+   "about": "Printer crop marks, two hairline ticks per corner that never touch, frame the picture instead of a box, drawing on as the beat opens.",
+   "energy": 1,
+   "needs": [
+    "focus",
+    "ui",
+    "product"
+   ],
+   "params": {
+    "tick_px": 26,
+    "gap_px": 12,
+    "kind": "overlay"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#effect:crop-mark-frame"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.7
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.9
+    },
+    {
+     "style": "atlas",
+     "w": 0.7
+    },
+    {
+     "style": "night-desk",
+     "w": 0.7
+    },
+    {
+     "style": "handmade",
+     "w": 0.8
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.6
+    }
+   ],
+   "tags": [
+    "launch",
+    "overlay"
+   ]
+  },
+  {
+   "id": "texture:charcoal-centre-lift",
+   "category": "texture",
+   "role": "the before world",
+   "at": 0,
+   "name": "Charcoal Centre Lift",
+   "about": "Warm charcoal with a soft lift in the centre and darker edges: the ink half of the film.",
+   "energy": 1,
+   "needs": [
+    "calm",
+    "focus",
+    "contrast"
+   ],
+   "params": {},
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#texture:charcoal-centre-lift"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.8
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.8
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.5
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.3
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  },
+  {
+   "id": "texture:bokeh-disc-field",
+   "category": "texture",
+   "role": "depth behind a specimen",
+   "at": 0,
+   "name": "Bokeh Disc Field",
+   "about": "Out-of-focus discs of a neighbouring grid, blurred once and drifting very slowly, like a microscope plate.",
+   "energy": 1,
+   "needs": [
+    "hidden",
+    "idea",
+    "focus"
+   ],
+   "params": {
+    "pitch_frac": 0.55,
+    "blur": "7% of pitch"
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#texture:bokeh-disc-field"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.7
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.5
+    },
+    {
+     "style": "atlas",
+     "w": 0.5
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.3
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.2
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  },
+  {
+   "id": "texture:flip-dot-coins",
+   "category": "texture",
+   "role": "the screen thinking in the background",
+   "at": 1.6,
+   "name": "Flip-dot Coins",
+   "about": "A quiet field of coin discs on a lattice; a few turn over now and then.",
+   "energy": 1,
+   "needs": [
+    "data",
+    "build",
+    "network"
+   ],
+   "params": {
+    "pitch_px": 30,
+    "flipping_share": 0.03
+   },
+   "impl": {
+    "launch": "packages/library/src/kits/launch/p-l03.js#texture:flip-dot-coins"
+   },
+   "runtime": [
+    "launch"
+   ],
+   "licence": "MIT",
+   "styles": [
+    {
+     "style": "brand-promo",
+     "w": 0.7
+    },
+    {
+     "style": "studio-minimal",
+     "w": 0.5
+    },
+    {
+     "style": "atlas",
+     "w": 0.6
+    },
+    {
+     "style": "night-desk",
+     "w": 0.9
+    },
+    {
+     "style": "handmade",
+     "w": 0.4
+    },
+    {
+     "style": "crimson-cutout",
+     "w": 0.4
+    }
+   ],
+   "tags": [
+    "launch",
+    "texture"
+   ]
+  }
+ ],
+ "uses": [
+  {
+   "id": "texture:paper-fibre",
+   "role": "paper ground of the second half",
+   "at": 7.5
+  },
+  {
+   "id": "effect:grain-fine",
+   "role": "fine grain over both worlds",
+   "at": 0
+  },
+  {
+   "id": "camera:push-slow",
+   "role": "slow push on the chapter holds",
+   "at": 2.6
+  },
+  {
+   "id": "camera:log-zoom-through",
+   "role": "the powers-of-ten pull (generic)",
+   "at": 1.3
+  },
+  {
+   "id": "effect:type-word-blur-rise",
+   "role": "the Fig. caption blur-in",
+   "at": 0.3
+  }
+ ]
+}
