@@ -45,8 +45,12 @@ Read this first if you are picking the work up. Updated by Tab after every item.
   refused); the same video from two folders gets a byte-identical step view, the same answer and a byte-identical EDL
   (`buildEdl` is re-exported from `@moovi/engine/brain` for this); over HTTP a second window is told "another window"
   between steps and gets the video when the first window closes.
-- **Next item:** 22 (junk or hostile CLAUDE.md cannot change decisions beyond the strict JSON), then 23 (the failure
-  table). Item 19 (Vignesh's test) runs in parallel.
+- **Item 22 done (server side):** `packages/mcp/test/hostile.test.ts`: hostile answers (an extra key, an off-menu
+  look, a sentence that does not exist) get one re-ask then the default; hostile free text gives the same overrides and
+  EDL as a clean answer; at the door (HTTP) prose, oversize and off-menu answers are refused and the step stays open.
+  The manual check with a real junk CLAUDE.md is in `TEST-WITH-CLAUDE-CODE.md` section 8b for Vignesh.
+- **Next item:** 23 (each row of plan section 17 plus the brief's cases: a test and a clear user message). Item 19
+  (Vignesh's test) runs in parallel.
 - **Item 12 tests** (`packages/mcp/test/bridge-e2e.test.ts`, 5): a stand-in Claude Code session (ticket, then pull and
   answer through the `Gate`) directs `directEdit` end to end inside `withModel(brainScope(...))`; a second window is
   turned away while the first holds the job, and a bad answer gets exactly one re-ask; no `/moovi:run` ticket means no
