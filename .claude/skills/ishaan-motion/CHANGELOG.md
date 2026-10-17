@@ -72,3 +72,9 @@
 
 ## 1.11.1 (2026-10-18)
 - Captions: never punctuation; the premium two-tier glow caption (Moovi 1.1 green / 1.2 red) spec in talking-head.md; lessons on bloom vs stacked shadows, decoding a font from a zoomed reference, one-cut fonts thickened by stroke, reading motion from a reel at 30 fps.
+
+## 1.11.2 (2026-10-18)
+- Premium Caption 1 shipped as two variations whose colour comes from the video (one accent → fill ramp + bloom); 1.1 word spacing.
+
+## 1.12.0 (2026-10-18)
+- edit-fundamentals.md: creator-reel devices decoded from em1 (cascade on springs, dim + product on top, the lit one in a row, the post frame, object wipe, comment pill ending), as brand-reskinnable fundamentals.

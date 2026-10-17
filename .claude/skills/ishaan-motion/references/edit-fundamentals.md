@@ -35,6 +35,20 @@ its **one hero word**. Then run the 5-idea drill (ideation.md) per sentence and 
 The verb is acted out ("drop" → things fall into the input; "upload" → the send is pressed; "lock in" → something
 locks). If you cannot name the device's verb, the shot is not designed yet.
 
+### Devices that carry over from creator reels (decoded from em1, DbS2vcfyQxx; re-skin in the brand's material, never copy)
+- **Cascade on springs:** one card per spoken item drops in beside the head, alternating sides, a small undershoot,
+  then holds; the list builds itself on the words.
+- **Dim the room, the product on top:** the footage darkens to about 60%, the product's real input or screen rises
+  over it, a touch dot taps the control the words name; the speaker keeps talking underneath.
+- **The lit one in a row:** three takes side by side, the middle one live and lit, the others grey: "this one".
+- **The post frame:** the speaker's own clip inside the platform's story/post chrome (progress bars, avatar,
+  handle) for any "post / upload / share" line.
+- **An object wipe:** the brand's own object (logo, mascot, prop) whips across with motion blur as the cut between
+  worlds, instead of a crossfade.
+- **The comment pill ending:** the speaker's avatar, the keyword typed letter by letter, the send pulses on the
+  last word.
+- **Captions step aside** wherever a brand graphic already says the words (the world-B reveal).
+
 ## 4. One caption system, derived from the brand's type
 - Two tiers: the connecting words small, the hero word large; the words arrive on their own stamps.
 - The faces come from the brand (its display + text fonts); the hero word may switch to the brand's display face.

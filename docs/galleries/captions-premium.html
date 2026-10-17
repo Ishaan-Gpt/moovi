@@ -1,0 +1,455 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Premium captions</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Russo+One&family=Poppins:wght@800&display=block">
+<style>
+:root{--bg:#0B0D10;--ink:#F7FAFD;--dim:#8A96A3;--line:#1F2630;--ice:#CFE6F7}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,sans-serif}
+main{max-width:1100px;margin:0 auto;padding:24px 16px}
+h1{font-size:18px;font-weight:600;margin:0 0 4px}p{color:var(--dim);margin:0 0 16px}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+nav button{background:none;border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:999px;cursor:pointer}
+nav button[aria-pressed=true]{border-color:var(--ice);color:var(--ice)}
+.stage{position:relative;width:100%;aspect-ratio:848/478;background:#000;border-radius:8px;overflow:hidden}
+.stage video,.stage canvas{position:absolute;inset:0;width:100%;height:100%}.stage canvas{pointer-events:none}
+#still{display:none}
+</style></head><body><main>
+<h1>Premium Caption 1</h1><p>Two variations, one built-in look. The key line takes its colour from the video (or any accent), painted live by the code the MP4 uses.</p>
+<nav id="nav"></nav>
+<nav id="acc"><button id="fromVideo">Accent from video</button><input id="pick" type="color" aria-label="Accent"></nav>
+<div class="stage" id="stage"><video id="v" src="../agents/ishaan-test/ishaan-test.mp4" playsinline loop controls></video><canvas id="c"></canvas></div>
+<canvas id="still"></canvas>
+</main><script type="module">
+/**
+ * One accent → the whole lit key line (fill ramp, bloom layers): Premium Caption 1 takes its colour from the video
+ * it sits on instead of a fixed green or red. Pure (no DOM), inlined by the gallery and the MP4 path like draw.ts.
+ */
+const hex = (c) => '#' + c.map(v => Math.round(Math.min(255, Math.max(0, v))).toString(16).padStart(2, '0')).join('').toUpperCase();
+const rgb = (h) => { const n = parseInt(h.replace('#', ''), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
+const mix = (a, b, k) => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
+function toHsl([r, g, b]) {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
+    if (!d)
+        return [0, 0, l];
+    const s = d / (1 - Math.abs(2 * l - 1));
+    const h = mx === r ? ((g - b) / d + 6) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    return [h * 60, s, l];
+}
+function fromHsl([h, s, l]) {
+    const c = (1 - Math.abs(2 * l - 1)) * s, x = c * (1 - Math.abs(((h / 60) % 2) - 1)), m = l - c / 2;
+    const [r, g, b] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
+    return [(r + m) * 255, (g + m) * 255, (b + m) * 255];
+}
+const WHITE = [255, 255, 255];
+/** The key line lit in `accent`: a top-lit fill ramp and a bloom from a deeper, hue-shifted halo to a near-white core. */
+function litKey(accent) {
+    const [h, s] = toHsl(rgb(accent));
+    // the accent pushed to a lit, saturated mid (any video colour reads as light, not paint)
+    const mid = fromHsl([h, Math.max(s, 0.85), 0.56]);
+    const deep = fromHsl([h, Math.max(s, 0.9), 0.44]);
+    const halo = fromHsl([(h + 345) % 360, 1, 0.46]);
+    return {
+        fill: [hex(mix(mid, WHITE, 0.75)), hex(mix(mid, WHITE, 0.3)), hex(mid), hex(deep)],
+        glow: {
+            color: hex(mid),
+            layers: [
+                { r: 0.06, a: 0.4, c: hex(halo) },
+                { r: 0.024, a: 0.6, c: hex(mid) },
+                { r: 0.008, a: 0.65, c: hex(mix(mid, WHITE, 0.2)) },
+                { r: 0.003, a: 0.5, c: hex(mix(mid, WHITE, 0.7)) },
+            ],
+        },
+    };
+}
+/**
+ * The video's own accent: the strongest saturated hue in a frame's pixels (RGBA), weighted by saturation, lifted to
+ * a lit colour. Skin and walls are low-saturation and mostly fall out; null when the frame has no colour to take.
+ */
+function accentFromPixels(px) {
+    const bins = new Array(24).fill(0), sums = new Array(24).fill(0);
+    for (let i = 0; i < px.length; i += 16) {
+        const [h, s, l] = toHsl([px[i], px[i + 1], px[i + 2]]);
+        if (s < 0.4 || l < 0.15 || l > 0.85)
+            continue;
+        const b = Math.floor(h / 15) % 24, w = s * s;
+        bins[b] += w;
+        sums[b] += h * w;
+    }
+    let best = 0;
+    bins.forEach((v, i) => { if (v > bins[best])
+        best = i; });
+    if (!bins[best])
+        return null;
+    return hex(fromHsl([sums[best] / bins[best], 0.9, 0.56]));
+}
+
+/**
+ * Premium caption presets (caption mastery, 2026-10-18): one preset per reference Ishaan sends, approved by him.
+ * Each preset is two things that describe the same caption: a captionseasy look (a base look number plus `--set`
+ * overrides, valid keys only) and the Moovi player spec that `draw.ts` paints on a canvas, the same code in the live
+ * preview and in the MP4 path (Chromium). None of these is a product default; wiring them into types comes later.
+ */
+
+/** The entry decoded from the reference reel (c02, 30 fps): ~5 frames from 1.22x and soft to sharp, a small bounce. */
+/** The entry decoded from the reference reel (c02, 30 fps): ~5 frames from 1.22x and soft to sharp, a small bounce. */
+const REEL_ENTER = { scaleFrom: 1.22, decay: 11, freq: 15, blur: 0.01, blurS: 0.16, fadeS: 0.06, flash: 0.8, flashS: 0.3, drift: -0.025 };
+/** The accents of the two references, for previews only: the product takes the accent from the video (theme.ts). */
+const REF_ACCENTS = { '1.1': '#52F42E', '1.2': '#FF3434' };
+/**
+ * Premium Caption 1 (refs c01 and the reel DbS2vcfyQxx, approved by Ishaan 2026-10-18): a white lead tier and the
+ * spoken key word lit underneath, in any accent (the video's own, from `accentFromPixels`).
+ *   1.1  both tiers caps, Russo One 600, a little extra word space
+ *   1.2  sentence-case white lead (Poppins 800) over a slanted key line
+ * Ishaan's pick: Russo One at 600. It has one cut (400); a 4.5 % same-colour stroke thickens it to 600 identically on
+ * every layer (the browser's synthetic bold skips offscreen layers, which ghosted the glow).
+ */
+function premiumCaption1(variant, accent = REF_ACCENTS[variant]) {
+    const lit = litKey(accent);
+    const key = {
+        font: 'Russo One', weight: 400, round: 0.045, size: 0.1, tracking: -0.005, fill: lit.fill,
+        // a dark bed under the word, then the bloom: the word reads highlighted, not just glowing
+        shadow: { color: 'rgba(0,0,0,0.75)', blur: 0.04, dy: 0.01 },
+        glow: lit.glow,
+        sheen: 0.25,
+    };
+    const lead = variant === '1.1'
+        ? { font: 'Russo One', weight: 400, round: 0.045, size: 0.07, tracking: -0.01, wordGap: 0.08, fill: ['#FFFFFF', '#FFFFFF', '#D9DDE3'], shadow: { color: 'rgba(0,0,0,0.7)', blur: 0.03, dy: 0.008 } }
+        : { font: 'Poppins', weight: 800, casing: 'none', size: 0.068, tracking: -0.01, fill: ['#FFFFFF', '#FFFFFF', '#E2E2E6'], shadow: { color: 'rgba(0,0,0,0.7)', blur: 0.03, dy: 0.008 } };
+    return {
+        id: `premium-1-${variant.replace('.', '-')}`,
+        name: `Premium Caption ${variant}`,
+        ref: 'c01.png; reel DbS2vcfyQxx (0 s green, 4.9 s red)',
+        fonts: variant === '1.1' ? ['Russo+One'] : ['Russo+One', 'Poppins:wght@800'],
+        tiers: [lead, variant === '1.1' ? { ...key, wordGap: 0.08 } : { ...key, skew: 0.2 }],
+        y: 0.8,
+        gap: 0.016,
+        maxWords: 4,
+        enter: REEL_ENTER,
+        captionseasy: {
+            look: 34,
+            set: {
+                fontId: 'Russo One', fontWeight: 600, casing: 'upper', letterSpacing: -1, lineHeight: 1,
+                'fill.color': '#FFFFFF', 'active.color': lit.glow.color, 'hero.scale': 1.43, 'hero.fontId': 'Russo One',
+                'shadow.enabled': true, 'shadow.color': 'rgba(0,0,0,0.7)',
+                'glow.enabled': true, 'glow.color': lit.glow.color, 'glow.radius': 24,
+                'position.y': 0.8, maxWordsPerCard: 4, 'entrance.type': 'pop',
+            },
+        },
+    };
+}
+const PREMIUM_PRESETS = [premiumCaption1('1.1'), premiumCaption1('1.2')];
+
+const STOP = new Set(('a an the and or but so to of in on at for is are am was be it i we you he she they my your our ' +
+    'this that with as by from now just then very really can will do does basically which').split(' '));
+/** how strongly a word carries the line: the one the voice hits goes to the key tier */
+function weight(w, i) {
+    const bare = w.text.replace(/[^\p{L}\p{N}]/gu, '');
+    const low = bare.toLowerCase();
+    if (!bare)
+        return -9;
+    let s = Math.min(bare.length, 9) / 3;
+    if (STOP.has(low))
+        s -= 4;
+    if (/\d/.test(bare))
+        s += 3;
+    if (i > 0 && /^\p{Lu}/u.test(bare))
+        s += 2;
+    if (/[!?]$/.test(w.text))
+        s += 1.5;
+    return s;
+}
+/** Cards: phrases split at punctuation and pauses; each card ends on its key word, the strongest within `maxWords`. */
+function cards(words, maxWords) {
+    const phrases = [];
+    let cur = [];
+    words.forEach((w, i) => {
+        cur.push(w);
+        const next = words[i + 1];
+        if (!next || /[.,!?;:]$/.test(w.text) || next.t - w.end > 0.35) {
+            phrases.push(cur);
+            cur = [];
+        }
+    });
+    const out = [];
+    for (let p of phrases) {
+        while (p.length) {
+            const win = p.slice(0, maxWords);
+            // the voice leans on the end of a phrase: a small bias to later words
+            const score = (i) => weight(win[i], i) + (i === p.length - 1 ? 0.6 : 0);
+            let k = 0;
+            win.forEach((_, i) => { if (score(i) >= score(k))
+                k = i; });
+            // one short word that closes the phrase rides with the key ("DID IT!")
+            const cut = p.length - k - 1 === 1 && p[k + 1].text.replace(/\W/g, '').length <= 3 && /[.!?]$/.test(p[k + 1].text) ? k + 2 : k + 1;
+            const seg = p.slice(0, cut);
+            out.push({ lead: seg.slice(0, k), key: seg.slice(k), t0: seg[0].t, t1: seg[seg.length - 1].end });
+            p = p.slice(cut);
+        }
+    }
+    // a card holds until the next one starts (at most 0.9 s past its last word)
+    out.forEach((c, i) => { const n = out[i + 1]; c.t1 = n ? Math.min(n.t0, c.t1 + 0.9) : c.t1 + 0.6; });
+    return out;
+}
+/**
+ * Captions never show punctuation (Ishaan, 2026-10-18): only letters, digits and the symbols that carry meaning
+ * (% $ # & +) reach the screen. The words keep it for timing and key-word choice.
+ */
+const bare = (s) => s.replace(/[^\p{L}\p{N}%$#&+ ]/gu, '');
+const cased = (tier, s) => (tier.casing === 'none' ? bare(s) : bare(s).toUpperCase());
+const clamp = (x) => Math.min(Math.max(x, 0), 1);
+/** the font of the last `font()` call, applied as-is to offscreen layers (`ctx.font` reads back without the stretch) */
+let face = { font: '', stretch: 'normal', spacing: '0px' };
+function setFace(c) {
+    c.font = face.font;
+    c.fontStretch = face.stretch;
+    c.letterSpacing = face.spacing;
+}
+function font(ctx, tier, S, k = 1) {
+    const px = (tier.size * S / 0.72) * k; // cap height ≈ 0.72 em in a heavy grotesk
+    face = { font: `${tier.weight} ${px}px "${tier.font}"`, stretch: tier.stretch ?? 'normal', spacing: `${tier.tracking * px}px` };
+    setFace(ctx);
+    return px;
+}
+function fillStyle(ctx, tier, y, px) {
+    if (typeof tier.fill === 'string')
+        return tier.fill;
+    const g = ctx.createLinearGradient(0, y - px * 0.74, 0, y);
+    tier.fill.forEach((c, i, a) => g.addColorStop(i / (a.length - 1), c));
+    return g;
+}
+/**
+ * The bloom: the word drawn once into its own layer, then laid back blurred at each radius in screen mode, wide and
+ * faint to tight and hot, so the light falls off like a lens bloom instead of stacked shadow rings.
+ */
+function bloom(ctx, tier, text, x, y, px, S, alpha) {
+    const g = tier.glow;
+    const pad = Math.ceil(Math.max(...g.layers.map(l => l.r)) * S * 2.5);
+    const w = Math.ceil(ctx.measureText(text).width) + pad * 2, h = Math.ceil(px * 1.3) + pad * 2;
+    const off = new OffscreenCanvas(w, h);
+    const o = off.getContext('2d');
+    setFace(o);
+    o.fillStyle = '#fff';
+    o.fillText(text, pad, pad + px);
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen';
+    // each layer carries its own hue (emerald halo, lime body, near-white core): the white mask tinted per layer
+    const tint = new OffscreenCanvas(w, h), tc = tint.getContext('2d');
+    for (const l of g.layers) {
+        tc.globalCompositeOperation = 'copy';
+        tc.drawImage(off, 0, 0);
+        tc.globalCompositeOperation = 'source-in';
+        tc.fillStyle = l.c ?? g.color;
+        tc.fillRect(0, 0, w, h);
+        ctx.globalAlpha = alpha * l.a;
+        ctx.filter = `blur(${l.r * S}px)`;
+        ctx.drawImage(tint, x - pad, y - px - pad);
+    }
+    ctx.restore();
+}
+/** soft corners: the word stroked in its own fill with round joins, so square cuts read as rounded squares */
+function round(c, tier, text, x, y, px) {
+    if (!tier.round)
+        return;
+    c.save();
+    c.lineJoin = 'round';
+    c.lineWidth = tier.round * px;
+    c.strokeStyle = c.fillStyle;
+    c.strokeText(text, x, y);
+    c.restore();
+}
+function paintWord(ctx, tier, text, x, y, px, S, alpha, glowGain = 1) {
+    ctx.save();
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    if (tier.shadow) {
+        ctx.globalAlpha = alpha;
+        ctx.shadowColor = tier.shadow.color;
+        ctx.shadowBlur = tier.shadow.blur * S;
+        ctx.shadowOffsetY = tier.shadow.dy * S;
+        ctx.fillStyle = '#000';
+        ctx.fillText(text, x, y);
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetY = 0;
+    }
+    if (tier.glow)
+        bloom(ctx, tier, text, x, y, px, S, alpha * glowGain);
+    ctx.globalAlpha = alpha;
+    if (tier.edge) {
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = tier.edge.color;
+        ctx.lineWidth = tier.edge.width * S / 1080;
+        ctx.strokeText(text, x, y);
+    }
+    if (!tier.sheen) {
+        ctx.fillStyle = fillStyle(ctx, tier, y, px);
+        round(ctx, tier, text, x, y, px);
+        ctx.fillText(text, x, y);
+        ctx.restore();
+        return;
+    }
+    // the letters lit from inside: on their own layer, the fill, then their shape blurred white and kept only inside
+    // the letters (strongest at the core, falling off to the gradient at the edges)
+    const pad = Math.ceil(px * 0.2);
+    const w = Math.ceil(ctx.measureText(text).width) + pad * 2, h = Math.ceil(px * 1.3) + pad * 2;
+    const layer = new OffscreenCanvas(w, h), o = layer.getContext('2d');
+    setFace(o);
+    const by = pad + px;
+    o.fillStyle = fillStyle(o, tier, by, px);
+    round(o, tier, text, pad, by, px);
+    o.fillText(text, pad, by);
+    o.globalCompositeOperation = 'source-atop';
+    o.globalAlpha = tier.sheen;
+    o.filter = `blur(${px * 0.07}px)`;
+    o.fillStyle = '#FFFFFF';
+    o.fillText(text, pad, by - px * 0.03);
+    ctx.drawImage(layer, x - pad, y - by);
+    ctx.restore();
+}
+/**
+ * One tier centred at `cy` (its cap middle). Each word enters on its own onset (`p.enter`, decoded from the reference
+ * reel at 30 fps): it pops in large and soft, snaps to size on a damped spring (a small undershoot, the bounce), and its
+ * glow flashes on arrival then eases. Words not yet spoken keep their place.
+ */
+function tierLine(ctx, p, tier, ws, t, W, cy, S) {
+    if (!ws.length)
+        return;
+    let px = font(ctx, tier, S);
+    const text = cased(tier, ws.map(w => w.text).join(' '));
+    const k = tier.wide ?? 1;
+    const fit = Math.min(1, (W * 0.9) / (ctx.measureText(text).width * k));
+    if (fit < 1)
+        px = font(ctx, tier, S, fit);
+    const full = ctx.measureText(text).width * k;
+    const base = cy + px * 0.36;
+    const space = ctx.measureText(' ').width * k + (tier.wordGap ?? 0) * px * k;
+    let x = W / 2 - full / 2;
+    for (const w of ws) {
+        const s = cased(tier, w.text);
+        const wd = ctx.measureText(s).width * k;
+        const e = t - w.t;
+        if (e >= 0) {
+            const r = p.enter;
+            // damped spring 1 - exp(-decay e) cos(freq e): from scaleFrom down through 1, a little under, back to 1
+            const spring = 1 - Math.exp(-r.decay * e) * Math.cos(r.freq * e);
+            const sc = r.scaleFrom + (1 - r.scaleFrom) * spring;
+            const pull = clamp(1 - e / r.blurS);
+            const flash = 1 + r.flash * Math.exp(-e / r.flashS);
+            ctx.save();
+            ctx.translate(x, 0);
+            ctx.scale(k, 1);
+            const cx = wd / k / 2, cyw = base - px * 0.36;
+            ctx.translate(cx, cyw);
+            ctx.scale(sc, sc);
+            if (tier.skew)
+                ctx.transform(1, 0, -tier.skew, 1, 0, 0);
+            ctx.translate(-cx, -cyw);
+            // focus pull: the word arrives soft and sharpens as it lands
+            if (pull > 0)
+                ctx.filter = `blur(${pull * r.blur * S}px)`;
+            paintWord(ctx, tier, s, 0, base, px, S, clamp(e / r.fadeS), flash);
+            ctx.restore();
+        }
+        x += wd + space;
+    }
+}
+/** Paint the caption for time `t` (s) on a W x H canvas. */
+function drawCaption(ctx, p, list, t, W, H) {
+    const c = list.find(c => t >= c.t0 && t < c.t1);
+    if (!c)
+        return;
+    const S = Math.min(W, H);
+    const [t1, t2] = p.tiers;
+    const h1 = c.lead.length ? t1.size * S : 0;
+    const h2 = t2.size * S;
+    const gap = c.lead.length ? p.gap * S : 0;
+    const top = p.y * H - (h1 + gap + h2) / 2;
+    // the hold: the whole card settles slowly smaller while it is up (the reference's drift)
+    const d = 1 + p.enter.drift * (t - c.t0);
+    ctx.save();
+    ctx.translate(W / 2, p.y * H);
+    ctx.scale(d, d);
+    ctx.translate(-W / 2, -p.y * H);
+    tierLine(ctx, p, t1, c.lead, t, W, top + h1 / 2, S);
+    tierLine(ctx, p, t2, c.key, t, W, top + h1 + gap + h2 / 2, S);
+    ctx.restore();
+}
+/** The word onsets that get a Style 1 typing tick (one per word, the owner's rule in sfx-style1/map.json "word"). */
+function ticks(list) {
+    return list.flatMap(c => [...c.lead, ...c.key].map(w => w.t));
+}
+
+const WORDS = [{"text":"Hello","t":0.94,"end":1.12},{"text":"guys,","t":1.12,"end":1.76},{"text":"I","t":1.76,"end":1.78},{"text":"am","t":1.78,"end":1.88},{"text":"Ishaan","t":1.88,"end":2.28},{"text":"and","t":2.28,"end":2.76},{"text":"we","t":2.76,"end":3},{"text":"are","t":3,"end":3.14},{"text":"introducing","t":3.14,"end":3.7},{"text":"Moovi.","t":3.7,"end":4.58},{"text":"Now,","t":4.95,"end":5.19},{"text":"Moovi","t":5.19,"end":5.43},{"text":"is","t":5.43,"end":5.55},{"text":"an","t":5.55,"end":5.67},{"text":"agentic","t":5.67,"end":6.13},{"text":"video","t":6.13,"end":6.91},{"text":"editor","t":6.91,"end":7.31},{"text":"which","t":7.31,"end":7.87},{"text":"basically","t":7.87,"end":8.23},{"text":"converts","t":8.23,"end":8.75},{"text":"your","t":8.75,"end":8.95},{"text":"raw","t":8.95,"end":9.15},{"text":"clips","t":9.15,"end":9.43},{"text":"into","t":9.43,"end":9.65},{"text":"finished","t":9.65,"end":10.05},{"text":"after","t":10.05,"end":10.31},{"text":"effects","t":10.31,"end":10.65},{"text":"style","t":10.65,"end":10.93},{"text":"animations","t":10.93,"end":11.37},{"text":"and","t":11.37,"end":11.89},{"text":"you","t":11.89,"end":11.97},{"text":"can","t":11.97,"end":12.09},{"text":"upload","t":12.09,"end":12.35},{"text":"them","t":12.35,"end":12.55},{"text":"to","t":12.55,"end":12.73},{"text":"Instagram","t":12.73,"end":13.09},{"text":"to","t":13.09,"end":13.49},{"text":"get","t":13.49,"end":13.69},{"text":"really","t":13.69,"end":14.19},{"text":"good","t":14.19,"end":14.43},{"text":"results.","t":14.43,"end":15.13},{"text":"So","t":15.36,"end":15.56},{"text":"lock","t":15.56,"end":15.94},{"text":"in","t":15.94,"end":16.1},{"text":"and","t":16.1,"end":16.86},{"text":"watch","t":16.86,"end":17.38},{"text":"Moovi","t":17.38,"end":17.68},{"text":"rock.","t":17.68,"end":18.4}];
+const v = document.getElementById('v'), c = document.getElementById('c'), ctx = c.getContext('2d');
+let variant = '1.1', accent = REF_ACCENTS['1.1'], preset = premiumCaption1(variant, accent), list = cards(WORDS, preset.maxWords);
+const nav = document.getElementById('nav'), pick = document.getElementById('pick');
+const set = () => { preset = premiumCaption1(variant, accent); list = cards(WORDS, preset.maxWords); pick.value = accent.toLowerCase(); };
+for (const vr of ['1.1', '1.2']) {
+  const b = document.createElement('button'); b.textContent = 'Premium Caption ' + vr; b.setAttribute('aria-pressed', String(vr === variant));
+  b.onclick = () => { variant = vr; set(); [...nav.querySelectorAll('.vr')].forEach(x => x.setAttribute('aria-pressed', String(x === b))); };
+  b.className = 'vr'; nav.append(b);
+}
+// the video's own accent: the strongest saturated hue across a few frames
+async function videoAccent(at = [2, 6, 10, 14]) {
+  const k = document.createElement('canvas'); k.width = 160; k.height = 90; const g = k.getContext('2d', { willReadFrequently: true });
+  const back = v.currentTime, all = [];
+  for (const t of at) { v.currentTime = t; await new Promise(r => v.addEventListener('seeked', r, { once: true })); g.drawImage(v, 0, 0, 160, 90); all.push(...g.getImageData(0, 0, 160, 90).data); }
+  v.currentTime = back;
+  return accentFromPixels(new Uint8ClampedArray(all));
+}
+document.getElementById('fromVideo').onclick = async () => { accent = (await videoAccent()) || accent; set(); };
+pick.oninput = () => { accent = pick.value.toUpperCase(); set(); };
+const acc = document.getElementById('acc');
+for (const [label, a] of [['Ref green', REF_ACCENTS['1.1']], ['Ref red', REF_ACCENTS['1.2']]]) {
+  const b = document.createElement('button'); b.textContent = label; b.onclick = () => { accent = a; set(); }; acc.append(b);
+}
+set();
+const pb = document.createElement('button'); pb.textContent = 'Play / pause'; pb.onclick = () => v.paused ? v.play() : v.pause(); nav.append(pb);
+// Style 1 typing: one onset slice of typing.mp3 per word (sfx-style1/map.json: slices onsets, 60 ms, align start)
+const ac = new AudioContext(); let buf = null, onsets = [];
+fetch('../../packages/engine/assets/sfx-style1/typing.mp3').then(r => r.arrayBuffer()).then(b => ac.decodeAudioData(b)).then(b => {
+  buf = b; const d = b.getChannelData(0), hop = Math.round(b.sampleRate * 0.005); let prev = 0, last = -1;
+  for (let i = 0; i + hop < d.length; i += hop) { let e = 0; for (let j = i; j < i + hop; j++) e += d[j] * d[j]; e = Math.sqrt(e / hop);
+    if (e > 0.05 && e > prev * 2.5 && i / b.sampleRate - last > 0.08) { onsets.push(i / b.sampleRate); last = i / b.sampleRate; } prev = e; }
+});
+let lastT = 0, tick = 0;
+function typeTick() {
+  if (!buf || !onsets.length) return; ac.resume();
+  const s = ac.createBufferSource(), g = ac.createGain(); s.buffer = buf; s.connect(g); g.connect(ac.destination);
+  const at = onsets[tick++ % onsets.length], now = ac.currentTime;
+  g.gain.setValueAtTime(0.9, now); g.gain.setValueAtTime(0.9, now + 0.05); g.gain.linearRampToValueAtTime(0, now + 0.06);
+  s.start(now, at, 0.06);
+}
+function sfx() {
+  const now = v.currentTime;
+  if (!v.paused && now > lastT && now - lastT < 1) for (const w of ticks(list)) if (w > lastT && w <= now) typeTick();
+  lastT = now;
+}
+setInterval(sfx, 15);
+function frame() {
+  const r = c.getBoundingClientRect(), d = devicePixelRatio || 1;
+  if (c.width !== Math.round(r.width * d)) { c.width = Math.round(r.width * d); c.height = Math.round(r.height * d); }
+  ctx.clearRect(0, 0, c.width, c.height);
+  drawCaption(ctx, preset, list, v.currentTime, c.width, c.height);
+  requestAnimationFrame(frame);
+}
+Promise.all(PREMIUM_PRESETS.flatMap(p => p.tiers.map(t => document.fonts.load(t.weight + ' ' + (t.stretch || 'normal') + ' 40px "' + t.font + '"')))).finally(() => requestAnimationFrame(frame));
+// still: the frame at t (video + caption) at 2x, beside the reference when one is given
+window.still = async (vr, t, refUrl, acc) => {
+  const a = acc === 'video' ? (await videoAccent()) || REF_ACCENTS[vr] : acc || REF_ACCENTS[vr];
+  const p = premiumCaption1(vr, a); const l = cards(WORDS, p.maxWords);
+  await Promise.all(p.tiers.map(t => document.fonts.load(t.weight + ' ' + (t.stretch || 'normal') + ' 40px "' + t.font + '"')));
+  v.currentTime = t; await new Promise(r => v.addEventListener('seeked', r, { once: true }));
+  const W = 1696, H = 956, f = document.createElement('canvas'); f.width = W; f.height = H;
+  const g = f.getContext('2d'); g.drawImage(v, 0, 0, W, H); drawCaption(g, p, l, t, W, H);
+  const s = document.getElementById('still'); s.style.display = 'block';
+  if (!refUrl) { s.width = W; s.height = H; s.getContext('2d').drawImage(f, 0, 0); return; }
+  const ref = new Image(); ref.src = refUrl; await ref.decode();
+  const h = 600, rw = Math.round(ref.width * h / ref.height), sh = Math.round(W * ref.height / ref.width);
+  s.width = rw * 2 + 24; s.height = h; const k = s.getContext('2d'); k.fillStyle = '#0B0D10'; k.fillRect(0, 0, s.width, h);
+  k.drawImage(ref, 0, 0, rw, h);
+  k.drawImage(f, 0, H - sh, W, sh, rw + 24, 0, rw, h);
+};
+</script></body></html>

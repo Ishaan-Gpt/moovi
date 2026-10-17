@@ -47,6 +47,8 @@ export interface RunInput {
   signal?: AbortSignal;
   /** Launch: the film's frame (default 16:9; the other styles are vertical) */
   ratio?: '16:9' | '1:1' | '9:16' | '4:5';
+  /** Launch, judge rounds only: pin the look, the arc and the casting seed so two code versions make the same film */
+  pin?: { look?: string; arc?: string; seed?: string; /** a saved brief (JSON): read when it exists, else written */ brief?: string };
   /** Auto matched the brief to a kit (styles/kit/kits.ts): its palette roles dress the film's library inserts */
   kit?: { id: string; name: string; palette: Record<string, string> };
 }

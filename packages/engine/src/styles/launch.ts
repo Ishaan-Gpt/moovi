@@ -5,7 +5,7 @@
 // arcs, and casts every beat (set-up, type treatment, world, camera, transition) away from the style's recent films.
 // Music-led: the film is laid on the track's bar grid and the drop lands on the reveal.
 // Stages: site ∥ capture (real icon + site shots) ∥ brief ∥ music → plan (cast + timing) → audio → live player → sheet.
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { CRAFT, graphOr, launch as LQ, run as runQ } from '@moovi/graph';
 import { config } from '../config';
@@ -74,7 +74,7 @@ export async function run(o: RunInput, h: Hooks = {}): Promise<RunResult> {
   const C = clock(h), { T, log } = C, lap = C.lap;
   const id = o.id ?? (url ? hostSlug(url) : slug(o.brand ?? 'script'));
   const dir = join(config.data, 'launch', id); mkdirSync(dir, { recursive: true });
-  const seed = `${id}:${Date.now()}`;
+  const seed = o.pin?.seed ?? `${id}:${Date.now()}`;
   const ratio = o.ratio;
   const [W, H] = ratio === '1:1' ? [1080, 1080] : ratio === '9:16' ? [1080, 1920] : ratio === '4:5' ? [1080, 1350] : [1920, 1080];
   const host = url ? new URL(url).hostname.replace(/^www\./, '') : (o.brand ? `${slug(o.brand)}.com` : 'moovi.app');
@@ -88,15 +88,17 @@ export async function run(o: RunInput, h: Hooks = {}): Promise<RunResult> {
   const sig = signals(text);
   const prevSite = url ? siteFilms('launch', host) : [];
   const rl = await recentLooksFor(url ? host : undefined);
-  const lookId = chooseLook(sig, text, seed, rl.recent, rl.site);
-  const arc = chooseLaunchArc(sig, { prompt: /\b(ai|prompt|ask|type|generate|search)\b/i.test(text), number: /\d/.test(text) }, [...new Set([...prevSite.map(f => f.arc ?? ''), ...recentArcs('launch')])].filter(Boolean), seed);
+  const lookId = o.pin?.look ?? chooseLook(sig, text, seed, rl.recent, rl.site);
+  const arc = o.pin?.arc ? launchArc(o.pin.arc) : chooseLaunchArc(sig, { prompt: /\b(ai|prompt|ask|type|generate|search)\b/i.test(text), number: /\d/.test(text) }, [...new Set([...prevSite.map(f => f.arc ?? ''), ...recentArcs('launch')])].filter(Boolean), seed);
   log(`look ${lookId} (${looks()[lookId]?.name}), arc ${arc.id} (${arc.name})`);
 
   // brief ∥ capture ∥ music
   s = Date.now(); C.begin('brief');
   const capP: Promise<Captured | null> = url ? captureSite(url, dir, { signal: o.signal, log }).catch(() => null) : Promise.resolve(null);
   const musicP: Promise<Music | null> = launchMusic(lookId, seed, { signal: o.signal, log }).catch(() => null);
-  const brief: LaunchBrief = url && site ? await launchBrief({ url, site: { ...site, html: site.html }, arc, signal: o.signal, log }) : scriptBrief(o.script!, { brand: o.brand, color: o.color, arc: launchArc(arc.id) });
+  const pinned = o.pin?.brief && existsSync(o.pin.brief) ? JSON.parse(readFileSync(o.pin.brief, 'utf8')) as LaunchBrief : null;
+  const brief: LaunchBrief = pinned ?? (url && site ? await launchBrief({ url, site: { ...site, html: site.html }, arc, signal: o.signal, log }) : scriptBrief(o.script!, { brand: o.brand, color: o.color, arc: launchArc(arc.id) }));
+  if (o.pin?.brief && !pinned) writeFileSync(o.pin.brief, JSON.stringify(brief, null, 1));
   if (!url && o.script) { const ls = brief.lines; if (ls.length !== arc.slots.length) log(`your script has ${ls.length} lines; the ${arc.id} arc has ${arc.slots.length} slots: lines are used in order`); }
   writeFileSync(join(dir, 'script.txt'), `# ${brief.name} (${url ?? 'script'}) colour ${brief.color} look ${lookId} arc ${arc.id} (${brief.source}). Features: ${brief.features.join(' | ')}. Prompt: ${brief.prompt}. Number: ${JSON.stringify(brief.number)}\n${brief.lines.join('\n')}\n`);
   log(`brand ${brief.name} ${brief.color} (${brief.source}) · features: ${brief.features.join(' | ')}${brief.prompt ? ` · prompt "${brief.prompt}"` : ''}${brief.number ? ` · number ${JSON.stringify(brief.number)}` : ''}\n${brief.lines.map((l, i) => `  ${arc.slots[i]?.kind}: ${l}`).join('\n')}`);
@@ -114,7 +116,7 @@ export async function run(o: RunInput, h: Hooks = {}): Promise<RunResult> {
   if (cap?.hero) images.hero = `/v/${cap.hero}`; if (cap?.mobile) images.mobile = `/v/${cap.mobile}`; if (cap?.logo) images.logo = `/v/${cap.logo}`;
   // a script film has as many beats as its lines (cut to the arc), a site film exactly the arc
   const arcUsed: LaunchArc = !url && brief.lines.length < arc.slots.length ? { ...arc, slots: [...arc.slots.slice(0, Math.max(1, brief.lines.length - 1)), arc.slots.at(-1)!] } : arc;
-  const recent = recentSetups('launch');
+  const recent = o.pin ? [] : recentSetups('launch');
   const cast = castFilm({ arc: arcUsed, brief, look, lib, seed, bar: 240 / bpm, images: { hero: cap?.hero ?? '', mobile: cap?.mobile ?? '', logo: cap?.logo ?? '' }, recent });
   log(`cast:\n  ${cast.why.join('\n  ')}`);
   const F = timeFilm({ id, W, H, look, bpm, specs: cast.specs, brand: { name: brief.name, host, tagline: brief.tagline, color: look.accent }, images, audio: '/v/master.wav', seed });

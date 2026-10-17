@@ -238,7 +238,7 @@
       if (o.glass === false) L.card(c, x, y, w, h, h * 0.28, { fill: lightBase(P), lift: 0.35, u: S.u }); else glassCard(S, x, y, w, h, h * 0.28);
       if (!o.noText) {
         L.circle(c, x + h * 0.52, y + h / 2, h * 0.27, mintOf(P)); L.icon(c, L.iconFor(s, i), x + h * 0.52, y + h / 2, h * 0.3, i === n - 1 ? P.accent : deepOf(P), 2);
-        L.text(c, S.look, s, x + h * 0.98, y + h / 2 + h * 0.12, { role: 'ui', px: h * 0.37, weight: 620, color: i === n - 1 ? P.accent : (darkW(P) ? P.bg : P.fg), maxW: w - h * 1.2 });
+        L.text(c, S.look, s, x + h * 0.98, y + h / 2 + h * 0.12, { role: 'ui', px: h * 0.37, weight: 620, color: i === n - 1 ? (darkW(P) ? L.readable(P.accent, P.bg) : P.accent) : (o.glass === false ? L.onColor(lightBase(P)) : P.fg), maxW: w - h * 1.2 });
       }
       c.restore();
     });
@@ -651,7 +651,7 @@
     draw(S) {
       const c = S.ctx, b = S.b, P = S.P, tk = toks(b), first = (tk[0] && tk[0].s) || brandOf(S).name || 'A', ch = first[0];
       const fpx = Math.min(S.H * 0.44, S.W * 0.4), t = S.lt - S.at('dust');
-      const px = hp(S, b, 96), lay = L.layout(c, S.look, tk.length ? tk : [{ s: ch }], { px, maxW: S.W * 0.8, x: S.W / 2, y: S.H / 2 - px * 0.55, align: 'center', maxLines: 2 });
+      const px = hp(S, b, 120), lay = L.layout(c, S.look, tk.length ? tk : [{ s: ch }], { px, maxW: S.W * 0.8, x: S.W / 2, y: S.H / 2 - px * 0.55, align: 'center', maxLines: 2 });
       const w0 = lay.words[0]; L.setFont(c, S.look, w0.role, w0.px); try { c.letterSpacing = w0.tr.toFixed(2) + 'px'; } catch (e) { /* */ }
       const chW = c.measureText(ch).width; reset(c);
       const gp = glyphPts(S, ch, fpx, 1500);

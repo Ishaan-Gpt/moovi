@@ -271,9 +271,9 @@
     }
     if (o.word) {
       const clip = cx => { L.rr(cx, x, y, w, h, r); cx.clip(); };
-      let px = h * 0.42; const wd = runW(S, o.word, px, 750); if (wd > w * 0.9) px *= w * 0.9 / wd;
+      let px = h * 0.3; const wd = runW(S, o.word, px, 750); if (wd > w * 0.86) px *= w * 0.86 / wd;
       const k = o.wordK == null ? 1 : o.wordK;
-      glassWord(S, o.word, x + pad * 0.7, y + h + px * 0.2 + (1 - k) * px * 0.9, px, { weight: 750, clip, shadow: false, lighten: 0.3, blur: 10, a: clamp(k * 1.5), tint: cyan(S), tintA: 0.1, dark: false });
+      glassWord(S, o.word, x + pad * 0.7, y + h - pad * 0.7 + (1 - k) * px * 0.9, px, { weight: 750, clip, shadow: false, lighten: 0.3, blur: 10, a: clamp(k * 1.5), tint: cyan(S), tintA: 0.1, dark: false });
     }
     if (o.meta) L.text(c, S.look, o.meta, x + pad, y + h - pad * 0.7, { role: 'micro', px: ch * 0.36, color: rgba('#FFFFFF', 0.62), tracking: 0.1, upper: true });
     c.save(); L.rr(c, x + 0.5, y + 0.5, w - 1, h - 1, r); c.strokeStyle = rgba('#FFFFFF', 0.22); c.lineWidth = 1 * S.u; c.stroke(); c.restore();
@@ -624,7 +624,7 @@
   });
 
   /* 8. frosted line on a sky card: a near full-frame deep-sky card lands from 108% out of a 12 px blur; the line is
-     set huge in frosted glass along its bottom edge so the edge slices the last line; a frosted tag, a menu and a
+     set huge in frosted glass along its bottom edge (whole, a margin above the edge); a frosted tag, a menu and a
      caption block sit at the top */
   L.def('insert:frosted-line-sky-card', {
     kind: 'setup',
@@ -646,7 +646,7 @@
       const tk = toks(b); if (!tk.length) return;
       let px = Math.min(0.3 * S.H, (isWide(S) ? 0.2 : 0.17) * m * (nWords(b) <= 2 ? 1.3 : 1));
       const lay = L.layout(c, S.look, tk.map(t => ({ s: t.s, weight: 750 })), { role: 'display', px, min: px * 0.35, maxW: w * 0.88, x: x + pad * 0.6, y: 0, align: 'left', maxLines: 3, lineH: 0.92 });
-      px = lay.px; const base = y + h + px * 0.24 - (lay.lines - 1) * lay.lh;
+      px = lay.px; const base = y + h - pad * 1.1 - px * 0.22 - (lay.lines - 1) * lay.lh; // whole inside the card: a sliced headline reads as an accident in a still
       for (let li = 0; li < lay.lines; li++) {
         const wk = E.out(prog(lt, S.at('head') + li * 0.1, 0.55)); if (wk <= 0) continue;
         const ws = lay.words.filter(q => q.li === li), s0 = ws.map(q => q.s).join(' '), ly = base + li * lay.lh + (1 - wk) * px * 0.8 - lt * 5 * S.u;

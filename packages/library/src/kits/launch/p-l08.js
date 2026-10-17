@@ -629,7 +629,7 @@
       const b = S.b, c = S.ctx, n = numOf(b) || { value: 2014 }, tall = isTall(S);
       const to = typeof n.value === 'number' ? n.value : 0, year = Number.isInteger(to) && to > 1900 && to < 2100 && !n.prefix && !n.suffix;
       const px = Math.min(S.H * 0.36, S.W * (tall ? 0.3 : 0.24)), cpx = 42 * S.u, capY = S.H / 2 - px * 0.62 - cpx;
-      L.get('texture:echo-marquee-rows').draw(S, { y: S.H / 2, rows: Math.ceil(S.H / (cpx * 1.6)) + 1, text: joinT(toks(b)), px: cpx * 0.92 });
+      // (no echo rows of the caption behind the number: one text layer per frame)
       const lay = bracketCaption(S, toks(b), S.W / 2, capY - cpx * 0.8, cpx, S.at('head'), { maxW: S.W * (tall ? 0.8 : 0.66), maxLines: 2 });
       const top = (lay ? lay.bottom : capY) + 34 * S.u;
       const from = year ? to + 12 : 0, k = (year ? E.settle : E.out)(prog(S.lt, S.at('roll'), 1.75)), v = lerp(from, to, k);
@@ -754,7 +754,7 @@
     plan(b, F) { const n = toks(b).length, pull = 1.05, rest = pull + 0.38; return { cues: { d1: 0.15, d2: 0.4, d3: 0.65, pull, rest, head: rest, headDone: rest + Math.max(0, n - 1) * 0.1 + 0.4 }, events: [{ at: 0.15, event: 'pop' }, { at: 0.4, event: 'pop' }, { at: 0.65, event: 'accent' }, { at: pull, event: 'slide-out' }, ...(n > 1 ? [{ at: rest, event: 'word' }] : [])], exit: { kind: 'dot', x: 0.5, y: 0.5, r: 0.02 }, min: rest + 1.2 }; },
     draw(S) {
       const b = S.b, c = S.ctx, tk = toks(b); if (!tk.length) return;
-      const first = tk[0].s.replace(/[.,!?…]+$/, ''), rest = trimStop(tk.slice(1)), spx = (isWide(S) ? 92 : 84) * S.u;
+      const first = tk[0].s.replace(/[.,!?…]+$/, ''), rest = trimStop(tk.slice(1)), spx = (isWide(S) ? 138 : 118) * S.u;
       const tokens = [{ s: first + '...' }, ...rest];
       const lay = L.layout(c, S.look, tokens, { px: spx, maxW: S.W * 0.84, x: S.W / 2, y: S.H / 2 - spx * 0.6, align: 'center', maxLines: 2 });
       const w0 = lay.words[0], px = lay.px; L.setFont(c, S.look, w0.role, w0.px); try { c.letterSpacing = w0.tr.toFixed(2) + 'px'; } catch (e) { /* */ }
