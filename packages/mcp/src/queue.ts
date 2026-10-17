@@ -53,12 +53,14 @@ export class StepQueue {
   }
 
   /** The user's oldest queued step, marked picked by `session`; null when there is none. Expired ids are skipped. */
-  async next(user: string, session: string, filter?: (s: ThinkStep) => boolean): Promise<ThinkStep | null> {
+  async next(user: string, session: string, filter?: (s: ThinkStep) => boolean | Promise<boolean>): Promise<ThinkStep | null> {
     const ids = await this.store.range(KEY.queue(user));
     for (const id of ids) {
       const s = await this.get(id);
       if (!s || s.state !== 'queued') { await this.store.remove(KEY.queue(user), id); continue; }
-      if (filter && !filter(s)) continue;
+      if (filter && !(await filter(s))) continue;
+      // exactly once, even with two pollers at the same moment: the first to set the pick key owns the step
+      if (!(await this.store.setNx(KEY.pick(id), session, STEP_TTL_MS))) continue;
       await this.store.remove(KEY.queue(user), id);
       s.state = 'picked'; s.pickedAt = this.now(); s.pickedBy = session;
       await this.put(s);

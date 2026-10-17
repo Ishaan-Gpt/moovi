@@ -21,3 +21,5 @@ One line per finished item: date and time (IST), item, what, commit sha.
 - 2026-10-17 20:13 IST · sync · merged Ishaan's main 9f9d0c5, 09adf51 (DECISIONS.md 6, 7) and 90aeec7 (W4: eight pipeline agents, stage lines). 90aeec7 touches `router/edit.ts` and `router/job.ts` (stage lines and agent desks only; no lane, model or EDL change); suite green after the merge
 - 2026-10-17 20:13 IST · item 8 · queue + memo + bridge runtime (packages/mcp), engine 452 tests (436 pass, 16 skip, 0 fail), tsc 0 · 4f7aee2
 - 2026-10-17 20:14 IST · sync · merged Ishaan's main 2a41c0a (DECISIONS.md 8: voices). Docs only
+- 2026-10-17 20:17 IST · sync · merged Ishaan's main 67d6222, 761ee21, f2b1f65 (DECISIONS.md 9 to 11; 11: one Lens, BRAIN 2 "final look" feeds its single repair). Docs only
+- 2026-10-17 20:17 IST · item 9 · tickets + leases (Gate); mcp 13 tests (13 pass), engine 452 tests (436 pass, 16 skip, 0 fail), tsc 0 · a226084

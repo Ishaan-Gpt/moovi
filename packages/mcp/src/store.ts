@@ -24,6 +24,8 @@ export const KEY = {
   memo: (user: string, fp: string) => `ce:brain:memo:${user}:${fp}`,
   lease: (job: string) => `ce:brain:lease:${job}`,
   seen: (user: string) => `ce:brain:seen:${user}`,
+  ticket: (t: string) => `ce:brain:ticket:${t}`,
+  pick: (step: string) => `ce:brain:pick:${step}`,
 };
 
 /** In memory (tests, one process). `now` is injectable so expiry is testable without waiting. */
