@@ -12,6 +12,17 @@ export function hexRgb(c: string): [number, number, number] | null {
   const h = m[1]!.length === 3 ? m[1]!.split('').map(x => x + x).join('') : m[1]!;
   return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
 }
+const NAMED: Record<string, [number, number, number]> = { white: [255, 255, 255], black: [0, 0, 0], red: [255, 0, 0], yellow: [255, 255, 0], gold: [255, 215, 0], orange: [255, 165, 0], lime: [0, 255, 0], cyan: [0, 255, 255], aqua: [0, 255, 255], magenta: [255, 0, 255], fuchsia: [255, 0, 255], blue: [0, 0, 255], green: [0, 128, 0] };
+/** A CSS colour as the caption looks write it (#rgb, #rrggbb, #rrggbbaa, rgb()/rgba(), a few names), or null. */
+export function cssRgb(c: string | null | undefined): [number, number, number] | null {
+  if (typeof c !== 'string') return null;
+  const s = c.trim().toLowerCase();
+  const h8 = /^#?([0-9a-f]{6})[0-9a-f]{2}$/.exec(s); if (h8) return hexRgb(h8[1]!);
+  const hx = hexRgb(s); if (hx) return hx;
+  const m = /^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)/.exec(s);
+  if (m) return [m[1], m[2], m[3]].map(v => Math.max(0, Math.min(255, Math.round(Number(v))))) as [number, number, number];
+  return NAMED[s] ?? null;
+}
 const lin = (v: number) => { const s = v / 255; return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4); };
 export const luminance = (r: number, g: number, b: number) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
 export const ratio = (l1: number, l2: number) => (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);

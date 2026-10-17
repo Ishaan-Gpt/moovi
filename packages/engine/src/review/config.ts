@@ -25,6 +25,14 @@ export interface ReviewConfig {
   frames: number;
   /** repairs the runner may make (at most 1 is applied) */
   repairs: { move: boolean; plate: boolean; dropDuplicate: boolean };
+  /** the one vision review of the sampled frames (NORTH-STAR CHECK): off skips it; it is skipped anyway with no model that sees */
+  vision: boolean;
+  /** the vision review's budget in ms; past it the render ships without it */
+  visionTimeoutMs: number;
+  /** most findings the vision review may add */
+  visionMaxIssues: number;
+  /** a finding at or above this severity (1..5) counts as an error, below it as a warning */
+  visionMinSeverity: number;
 }
 
 export const REVIEW_DEFAULTS: ReviewConfig = {
@@ -37,6 +45,10 @@ export const REVIEW_DEFAULTS: ReviewConfig = {
   faceOverlap: 0,
   frames: 3,
   repairs: { move: true, plate: true, dropDuplicate: true },
+  vision: true,
+  visionTimeoutMs: 45_000,
+  visionMaxIssues: 5,
+  visionMinSeverity: 3,
 };
 
 export type ReviewOverride = Partial<Omit<ReviewConfig, 'safe' | 'repairs'>> & { safe?: Partial<ReviewConfig['safe']>; repairs?: Partial<ReviewConfig['repairs']> };
@@ -48,12 +60,15 @@ export function reviewConfig(e: Pick<PlayerEdl, 'style_laws'> | null | undefined
   for (const o of [...more, fromEdl]) {
     if (!o || typeof o !== 'object') continue;
     if (Array.isArray(o.banned)) out.banned = o.banned.filter(x => typeof x === 'string').map(x => x.toLowerCase());
-    for (const k of ['maxCaptionWords', 'maxOverlays', 'repeatWindow', 'minContrast', 'faceOverlap', 'frames'] as const) {
+    if (typeof o.vision === 'boolean') out.vision = o.vision;
+    for (const k of ['maxCaptionWords', 'maxOverlays', 'repeatWindow', 'minContrast', 'faceOverlap', 'frames', 'visionTimeoutMs', 'visionMaxIssues', 'visionMinSeverity'] as const) {
       const v = o[k]; if (typeof v === 'number' && Number.isFinite(v) && v >= 0) out[k] = v;
     }
     if (o.safe) for (const k of ['top', 'bottom', 'right'] as const) { const v = o.safe[k]; if (typeof v === 'number' && v >= 0 && v < 0.5) out.safe[k] = v; }
     if (o.repairs) for (const k of ['move', 'plate', 'dropDuplicate'] as const) { const v = o.repairs[k]; if (typeof v === 'boolean') out.repairs[k] = v; }
   }
   out.frames = Math.min(3, Math.max(0, Math.round(out.frames)));
+  out.visionMaxIssues = Math.min(10, Math.round(out.visionMaxIssues));
+  out.visionTimeoutMs = Math.min(120_000, out.visionTimeoutMs);
   return out;
 }

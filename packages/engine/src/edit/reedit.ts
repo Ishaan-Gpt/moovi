@@ -2,7 +2,10 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { metricsOf, validateEdl, type Edl, type EdlCut, type EdlRemoved, type EdlShotV0 } from './edl';
 import { castInserts, openInserts, type InsertDraw, type InsertSource } from './inserts';
-import { checkAndRepair } from '../review/runner';
+import { checkAndRepair, repairEdl } from '../review/runner';
+import { reviewConfig } from '../review/config';
+import { pixelCheckEdl } from '../review/pixels';
+import type { PlayerEdl } from './lib';
 
 /**
  * D2.8, edit by words: "tighter", "less zoom", "swap the card at 0:12" change a finished EDL and the player replays it.
@@ -33,7 +36,9 @@ export type ReEditOp =
 export interface ReEditStep { said: string; op: ReEditOp; did: string }
 export interface ReEditResult { edl: Edl; steps: ReEditStep[]; unknown: string[]; problems: string[]; ms: number; duration: { before: number; after: number };
   /** CHECK on the new EDL (review/): its score before and after the one repair, what the repair did, which version was kept */
-  review?: { before: number; after: number | null; repaired: string | null; kept: 'original' | 'repaired'; issues: string[] } }
+  review?: { before: number; after: number | null; repaired: string | null; kept: 'original' | 'repaired'; issues: string[];
+    /** reEditDir only: contrast on the footage under up to 3 caption boxes (no render), and the plate it added when no repair was spent yet */
+    pixels?: { frames: { t: number; contrast?: number }[]; issues: string[]; repaired: string | null; ms: number; skipped?: string; error?: string } } }
 export interface ReEditOpts { src?: InsertSource; /** quiet stretches in source seconds (the planner's quiet.json pauses) */ quiet?: [number, number][];
   /** CHECK on the edited EDL, on by default (false skips it); its repairs here move the caption, never drop a card the person asked for */
   review?: boolean }
@@ -338,6 +343,18 @@ export async function reEditDir(dir: string, words: string, o: ReEditOpts = {}):
   const qf = join(dir, 'quiet.json');
   const quiet = o.quiet ?? (existsSync(qf) ? ((JSON.parse(readFileSync(qf, 'utf8')) as { pauses?: [number, number][] }).pauses ?? []) : []);
   const r = await reEdit(cur, words, { ...o, prev, quiet });
+  // CHECK part 2: the pixels under the captions of the edited EDL (source footage placed as the render places it);
+  // a low read gets the backing plate only when the code check spent no repair (at most one repair per edit)
+  if (r.review && o.review !== false) {
+    const pe = r.edl as unknown as PlayerEdl, cfg = reviewConfig(pe, { repairs: { dropDuplicate: false } });
+    const pc = await pixelCheckEdl(pe, dir, { cfg });
+    let repaired: string | null = null;
+    if (pc.issues.length && r.review.kept !== 'repaired') {
+      const fix = repairEdl(pe, pc.issues, { ...cfg, repairs: { move: false, plate: true, dropDuplicate: false } });
+      if (fix && validateEdl(fix.edl as unknown as Edl).problems.length === 0) { r.edl = fix.edl as unknown as Edl; repaired = fix.did; r.review = { ...r.review, repaired: fix.did, kept: 'repaired' }; }
+    }
+    r.review.pixels = { frames: pc.frames, issues: pc.issues.map(i => i.msg), repaired, ms: pc.ms, ...(pc.skipped ? { skipped: pc.skipped } : {}), ...(pc.error ? { error: pc.error } : {}) };
+  }
   const changed = JSON.stringify(r.edl) !== JSON.stringify(cur);
   const written = changed && r.problems.length === 0;
   if (written) {
@@ -346,7 +363,7 @@ export async function reEditDir(dir: string, words: string, o: ReEditOpts = {}):
     writeFileSync(file, JSON.stringify(r.edl, null, 1));
   }
   const hist = existsSync(log) ? JSON.parse(readFileSync(log, 'utf8')) as unknown[] : [];
-  hist.push({ at: new Date().toISOString(), words, steps: r.steps, unknown: r.unknown, problems: r.problems, ms: r.ms, duration: r.duration, written });
+  hist.push({ at: new Date().toISOString(), words, steps: r.steps, unknown: r.unknown, problems: r.problems, ms: r.ms, duration: r.duration, written, ...(r.review ? { review: r.review } : {}) });
   writeFileSync(log, JSON.stringify(hist, null, 1));
   return { ...r, written };
 }

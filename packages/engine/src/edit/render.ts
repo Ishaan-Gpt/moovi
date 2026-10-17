@@ -10,6 +10,7 @@ import { PAGE } from './page';
 import { cleanVoice } from './voice';
 import { reviewRender, type RenderReview } from '../review/runner';
 import type { ReviewOverride } from '../review/config';
+import { captionBoxes, type MeasuredCap } from '../review/geometry';
 
 /**
  * D1.8: the MP4 from the EDL. Deterministic, the same geometry the preview player draws (edit/page.ts `draw(t)`):
@@ -29,7 +30,8 @@ import type { ReviewOverride } from '../review/config';
 export interface RenderOpts { dir: string; out: string; w?: number; h?: number; fps?: number; /** shots rendered at once */ jobs?: number; /** player pages drawing the overlay at once */ pages?: number; crf?: number; keepTemp?: boolean;
   /** CHECK (review/): on by default; false skips it; repair false reviews without the one repair render; proof false saves no frames */
   review?: boolean | { repair?: boolean; proof?: boolean; config?: ReviewOverride } }
-export interface RenderResult { out: string; seconds: number; stages: Record<string, number>; frames: number; shots: number; overlays: number; size: number; /** library sounds mixed in */ sfx: number; /** what CHECK found and whether its one repair shipped */ review?: RenderReview }
+export interface RenderResult { out: string; seconds: number; stages: Record<string, number>; frames: number; shots: number; overlays: number; size: number; /** library sounds mixed in */ sfx: number; /** what CHECK found and whether its one repair shipped */ review?: RenderReview;
+  /** each caption chunk's box as the player page drew it, in output fractions (CHECK reads these instead of estimating) */ capRects?: MeasuredCap[] }
 
 /** Where one output frame's picture sits: the source scaled to sw x sh, its top-left at (x, y) of the w x h frame. */
 export interface Place { sw: number; sh: number; x: number; y: number; fit: boolean; /** the transition's motion blur, ffmpeg gblur sigma at this frame size (0 = none) */ blur: number }
@@ -137,9 +139,25 @@ export async function renderEdl(o: RenderOpts): Promise<RenderResult> {
   if (o.review === false) return r;
   const ro = typeof o.review === 'object' ? o.review : {};
   const W = o.w ?? 720, H = o.h ?? 1280;
-  const review = await reviewRender({ dir: o.dir, out: o.out, w: W, h: H, ...(ro.config ? { config: ro.config } : {}), ...(ro.repair === false ? { repair: false } : {}), ...(ro.proof === false ? { proof: false } : {}) },
+  const review = await reviewRender({ dir: o.dir, out: o.out, w: W, h: H, measured: r.capRects ?? null, ...(ro.config ? { config: ro.config } : {}), ...(ro.repair === false ? { repair: false } : {}), ...(ro.proof === false ? { proof: false } : {}) },
     out => renderOnce({ ...o, out }));
   return { ...r, size: existsSync(o.out) ? statSync(o.out).size : r.size, seconds: +(r.seconds + review.ms / 1000).toFixed(2), stages: { ...r.stages, review: +(review.ms / 1000).toFixed(2) }, review };
+}
+
+/**
+ * Each caption chunk's box as the player page draws it: the page draws the chunk's middle moment (window.__over) and
+ * the union of what it put in #cap (words, highlight boxes, a plate) is read back, skipping full-width wrappers. In
+ * output fractions. A chunk the page drew nothing for is left out (the review estimates it).
+ */
+export async function measureCaps(page: { evaluate: (js: string) => Promise<unknown> }, e: PlayerEdl, W: number, H: number): Promise<MeasuredCap[]> {
+  const caps = captionBoxes(e, W, H);
+  if (!caps.length) return [];
+  const js = `(async (ts, W, H) => { const out = []; for (const t of ts) { await window.__over(t); const cap = document.getElementById('cap'); let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+    for (const el of cap ? cap.querySelectorAll('*') : []) { const r = el.getBoundingClientRect(); if (r.width < 1 || r.height < 1 || r.width >= W * 0.98) continue; x0 = Math.min(x0, r.left); y0 = Math.min(y0, r.top); x1 = Math.max(x1, r.right); y1 = Math.max(y1, r.bottom); }
+    out.push(x1 > x0 ? [x0 / W, y0 / H, x1 / W, y1 / H] : null); } return out; })(${JSON.stringify(caps.map(c => c.t))}, ${W}, ${H})`;
+  const got = await page.evaluate(js) as ([number, number, number, number] | null)[];
+  const r4 = (v: number) => +Math.max(0, Math.min(1, v)).toFixed(4);
+  return caps.flatMap((c, k) => { const b = got[k]; return b ? [{ chunk: c.chunk, t: c.t, x0: r4(b[0]), y0: r4(b[1]), x1: r4(b[2]), y1: r4(b[3]) }] : []; });
 }
 
 async function renderOnce(o: RenderOpts): Promise<RenderResult> {
@@ -179,7 +197,7 @@ async function renderOnce(o: RenderOpts): Promise<RenderResult> {
   });
 
   // 2. captions and inserts from the player page, distinct frames only (alongside the picture)
-  let overlays = 0, sfxCount = 0;
+  let overlays = 0, sfxCount = 0, capRects: MeasuredCap[] = [];
   const over = (async () => {
     const srv = await servePlayer(o.dir, 0, PAGE);
     const b = await chromium.launch({ headless: true, ...(config.chrome.path ? { executablePath: config.chrome.path } : { channel: config.chrome.channel }) });
@@ -192,6 +210,8 @@ async function renderOnce(o: RenderOpts): Promise<RenderResult> {
       };
       const pages = await Promise.all(Array.from({ length: Math.max(1, o.pages ?? 3) }, open));
       const ts = Array.from({ length: N }, (_, j) => +((j + 0.5) / fps).toFixed(4));
+      // CHECK part 2: each caption chunk measured where the page draws it (its words' boxes), for the review; never fails the render
+      if (o.review !== false) { const t1 = Date.now(); capRects = await measureCaps(pages[0]!, e, W, H).catch(() => []); stages.measure = +((Date.now() - t1) / 1000).toFixed(2); }
       const keys = await pages[0]!.evaluate(`window.__overKeys(${JSON.stringify(ts)})`) as string[];
       // one screenshot per distinct drawn state, spread over the pages
       const first = new Map<string, number>(); keys.forEach((k, j) => { if (!first.has(k)) first.set(k, j); });
@@ -225,5 +245,5 @@ async function renderOnce(o: RenderOpts): Promise<RenderResult> {
     '-c:v', 'libx264', '-preset', 'veryfast', '-crf', String(o.crf ?? 20), '-pix_fmt', 'yuv420p', '-movflags', '+faststart', o.out]);
   lap('encode');
   if (!o.keepTemp) rmSync(tmp, { recursive: true, force: true });
-  return { out: o.out, seconds: +((Date.now() - t0) / 1000).toFixed(2), stages, frames: N, shots: ranges.length, overlays, size: statSync(o.out).size, sfx: sfxCount };
+  return { out: o.out, seconds: +((Date.now() - t0) / 1000).toFixed(2), stages, frames: N, shots: ranges.length, overlays, size: statSync(o.out).size, sfx: sfxCount, ...(capRects.length ? { capRects } : {}) };
 }
