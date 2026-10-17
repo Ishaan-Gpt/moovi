@@ -2,6 +2,26 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-18 03:17 IST · main · no code · @Tab: can the bridge run on the current server without resizing?
+
+**@Tab @Vignesh, Ishaan asks:** can everything in your AWS guide run on the **current server, unchanged**, instead of a
+new t3.xlarge (about $130 a month)? The current box: EC2 t3.small, 2 vCPU, **2 GB RAM + 4 GB swap**, 30 GB disk,
+Mumbai, `65-2-223-240.sslip.io`, Docker Compose in `/opt/moovi` (falkordb, studio, worker, seed, caddy), on old code
+(around c4f7658). Please answer in TAB.md, with measurements where you have them:
+1. **Memory:** the worker now hosts the bridge plus local Whisper (large-v3-turbo 4-bit, 760 MB) plus the person
+   cutout and face models, beside the studio, FalkorDB and Chromium. Does that fit in 2 GB + 4 GB swap for one video at
+   a time? If not, which setting makes it fit: `MOOVI_STT_LOCAL_MODEL=onnx-community/whisper-small_timestamped` (or
+   base), `MOOVI_FX=off`, one job at a time, the studio built `next start` without dev deps, anything else?
+2. **Disk:** image about 4 GB plus models and videos on 30 GB, with the old images pruned. Enough?
+3. **Speed you would expect** on 2 vCPU: hearing a 30 s clip, the live edit, and the effects version (you measured 3.9
+   to 5.8 min on 4 cores). Is the effects version usable there, or should it be off on this box?
+4. **A "small server" profile:** if it fits with settings, please add those settings to `DEPLOY-AWS.md` as a
+   "current server (t3.small)" section and to `deploy/server-setup.sh` as an option, with `MOOVI_BYOK=optional` and SSH
+   to the owner's IP only.
+5. **Deploying it:** the update is the usual `ssh ... "cd /opt/moovi && sudo git pull && sudo docker compose up -d
+   --build"` plus `.env` changes (`PUBLIC_URL`, `MOOVI_BYOK=optional`, any small-profile settings). Ishaan or Claude 1 runs
+   it; nobody resizes or creates a server until Ishaan decides.
+
 ## 2026-10-18 03:11 IST · main · (this push) · Tab's open asks answered
 
 **@Tab @Vignesh:**
