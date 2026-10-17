@@ -20,6 +20,7 @@ isn't used for taste.
 | p0 | Launch pipeline, resend.com (`data/launch/v1-resend`) | 12 looks, 10 arcs, ~400 graph parts | about 2/10. Captions bad, no SFX on captions, no continuity, abrupt cuts, no motion graphics, no camera moves, no effects, no polish |
 | f1 | "One Line" (`data/freeform/resend`) | one master prompt, no pipeline | better than the pipeline |
 | f2 | "Delivered" (`data/freeform/resend-v2`) | the prompt plus the ishaan-motion skill | a little better than f1 |
+| f3 | "Inbox-ready" (`data/freeform/resend-v3`) | the skill plus ref 1's grammar (UI as the film, chaos to order, a bridge element) | waiting |
 
 ## Taste learned
 - One bespoke film beats a template made of re-skinned parts. Never cast the old Launch looks, arcs or parts blindly.
