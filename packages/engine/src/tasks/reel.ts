@@ -11,6 +11,7 @@ import { STAGES, styleOf, type StyleId } from '../styles';
 import { recordInserts } from '../styles/kit/borrow';
 import { runStyle, table } from '../styles/run';
 import { liveRefFile, type LiveRef } from '../styles/serve';
+import { reviewFilm, reviewLine, type Review } from '../review/film';
 
 export interface ReelInput { style: StyleId; url?: string; script?: string; brand?: string; /** Auto's kit match (styles/kit/kits.ts) */ kit?: { id: string; name: string; palette: Record<string, string> } }
 
@@ -70,7 +71,10 @@ export const styleReel: Handler = async ctx => {
       announced = true;
     },
   });
-  r.close(); // the studio serves the film itself; the local preview server was only for the contact sheet
+  // Lens checks the film it just made (code checks on one still per beat and on the beat map) while it already plays:
+  // a hard deadline, and a review that breaks only says so; it never fails the film. MOOVI_REVIEW=0 turns it off.
+  const review = (process.env.MOOVI_REVIEW ?? '1').trim() === '0' ? null : await lens(ctx, inp.style, r);
+  r.close(); // the studio serves the film itself; the local preview server was only for the contact sheet and the review
   // the inserts the style borrowed from the library graph, in this project's graph (Scene)-[:USES_ARTIFACT {slot: 'library'}]
   const borrowed = await recordInserts((q, p) => ctx.q(q, p), ctx.run.id, inp.style, r.dir).catch(e => { console.warn(`[reel] library inserts: ${String(e).slice(0, 120)}`); return 0; });
   if (borrowed) console.log(`[reel ${ctx.run.id}] ${borrowed} library insert(s) recorded`);
@@ -92,5 +96,34 @@ export const styleReel: Handler = async ctx => {
   if (!announced) throw new Error('the preview never came up');
   const rows = Object.entries(r.timings).map(([k, v]) => `${k} ${v.toFixed(1)} s`).join(' · ');
   await ctx.say(`Timings, stage by stage: ${rows}.`, 'note', { timings: r.timings, table: table({ studio: r.timings }) }, 'moovi');
-  return { output: { style: inp.style, id: r.id, dir: r.dir, player: r.player, version, timings: r.timings, duration: r.duration, sheet: r.sheet ?? null }, note: `${info.name} ready in ${(r.timings.to_preview ?? r.timings.total ?? 0).toFixed(1)} s` };
+  return { output: { style: inp.style, id: r.id, dir: r.dir, player: r.player, version, timings: r.timings, duration: r.duration, sheet: r.sheet ?? null, review: review && { issues: review.issues.length, blocking: review.blocking, seconds: review.seconds } }, note: `${info.name} ready in ${(r.timings.to_preview ?? r.timings.total ?? 0).toFixed(1)} s` };
 };
+
+const REVIEW_MS = 60_000;
+
+/** The review at Lens's desk, posted to the chat as a note the studio draws as a chip. Null when it broke or ran out of time. */
+async function lens(ctx: Parameters<Handler>[0], style: StyleId, r: Awaited<ReturnType<typeof runStyle>>): Promise<Review | null> {
+  const task = ctx.task.id;
+  void publish(ctx.chat, { type: 'status', agent: 'lens', state: 'working', text: 'checking frames', task: `${task}:lens` }).catch(() => undefined);
+  void activity(ctx.chat, 'lens', task, 'start', 'checking every beat', { scope: 'review' });
+  const ac = new AbortController(), stop = () => ac.abort();
+  ctx.signal?.addEventListener('abort', stop, { once: true });
+  const timer = setTimeout(stop, REVIEW_MS);
+  try {
+    // the sampler only looks at the signal between stills: the race is what makes the deadline hard
+    const rv = await Promise.race([
+      reviewFilm({ style, id: r.id, dir: r.dir, pv: r.preview, signal: ac.signal, log: s => console.log(`[reel ${ctx.run.id}] ${s}`) }),
+      new Promise<never>((_, rej) => { if (ac.signal.aborted) rej(new Error('stopped')); else ac.signal.addEventListener('abort', () => rej(new Error(`no answer in ${REVIEW_MS / 1000} s`)), { once: true }); }),
+    ]);
+    void activity(ctx.chat, 'lens', task, 'done', `review · ${rv.seconds.toFixed(1)} s`, { ms: Math.round(rv.seconds * 1000), scope: 'review' });
+    await ctx.say(reviewLine(rv), 'note', { review: { frames: rv.frames.length, seconds: rv.seconds, blocking: rv.blocking, issues: rv.issues.map(i => ({ sev: i.sev, code: i.code, t: i.t ?? null, text: i.text })) } }, 'lens' as AgentId);
+    return rv;
+  } catch (e) {
+    console.warn(`[reel ${ctx.run.id}] review: ${String(e instanceof Error ? e.message : e).slice(0, 160)}`);
+    void activity(ctx.chat, 'lens', task, 'done', 'review skipped', { scope: 'review' });
+    return null;
+  } finally {
+    clearTimeout(timer); ctx.signal?.removeEventListener('abort', stop);
+    void publish(ctx.chat, { type: 'status', agent: 'lens', state: 'done', text: 'done', task: `${task}:lens` }).catch(() => undefined);
+  }
+}

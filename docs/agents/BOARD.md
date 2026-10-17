@@ -16,6 +16,7 @@ Files you are editing go in the Files column so nobody else touches them.
 | R8 | 50 caption styles as JSON-shaped specs (font, case, chunking, highlight rule, entry motion, position), each tagged with the edit styles it suits, whether it needs word timing, original or reference-inspired. | Claude 1 | done | `research/R8-captions.md` | read only |
 | R9 | Benchmark footage set and edit score: 8 to 10 raw clips (selfie, noisy room, slate, landscape, 60 s+, two speakers, non-English) with their word truth, and a scoring sheet per style (cut rate, words right, caption safe zones, loudness, seconds). Every build is measured on it. | Tab | done | [`research/R9-benchmark-set.md`](research/R9-benchmark-set.md): 9 clips (B1 local, B2 to B9 openly licensed, fetched at run time), metrics, score script outline, SPEED.md gate table | read only |
 | R10 | Live edit preview: can the browser player show the source clip plus an EDL overlay (captions, zoom keys, b-roll, cards) at 30 fps on the deploy server, how long until first frame, and what must stay an encode. | Claude 1 | done | `research/R10-preview.md` | read only |
+| R11 | OpenDesign teardown (Apache-2.0 repo + open-design.ai via REA): how it directs, checks quality, captures brands, builds motion and sells; a ranked 20-item plan for Moovi; a website-promo test in their HyperFrames format. | Claude (Ishaan's session) | done | [`research/R11-open-design.md`](research/R11-open-design.md), notes in `research/open-design-notes/` | read only |
 
 ## Waiting on someone outside the agents
 
