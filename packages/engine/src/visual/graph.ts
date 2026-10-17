@@ -1,4 +1,4 @@
-import { CRAFT, craft as C, project as P, run as runQ } from '@moovi/graph';
+import { CRAFT, craft as C, graphOr, project as P, run as runQ } from '@moovi/graph';
 import { ARTIFACTS, byId } from './artifacts';
 import type { Need } from '../styles/kit/needs';
 import type { VPlan } from './types';
@@ -13,7 +13,7 @@ const craftRows: Rows = (q, p = {}) => runQ(CRAFT, q, p) as never;
 
 /** Seed the library when the graph holds fewer artifacts than the code (idempotent; safe to call before every film). */
 export async function ensureArtifactLibrary(rows: Rows = craftRows): Promise<{ seeded: boolean; artifacts: number }> {
-  const [c] = await rows<{ n: number }>(C.artifactCount).catch(() => [{ n: 0 }]);
+  const [c] = await rows<{ n: number }>(C.artifactCount).catch(graphOr([{ n: 0 }], 'visual: artifact library'));
   if ((c?.n ?? 0) >= ARTIFACTS.length) return { seeded: false, artifacts: c!.n };
   await rows(C.seedArtifacts, { rows: ARTIFACTS.map(a => ({ id: a.id, kind: a.kind, name: a.name, roles: a.role.join(','), wants: a.wants, cost: a.cost, glyph: a.glyph ?? null, needs: a.needs })) });
   return { seeded: true, artifacts: ARTIFACTS.length };

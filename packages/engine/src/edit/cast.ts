@@ -1,5 +1,5 @@
 import { basename } from 'node:path';
-import { CRAFT, health, library as L, licenceTerms, run, type AssetRow } from '@moovi/graph';
+import { CRAFT, graphOptional, library as L, licenceTerms, needGraph, run, type AssetRow } from '@moovi/graph';
 import { CAMERA_MOVES, toEdlZoom, type CameraCall } from '@moovi/library/camera';
 import { sfxMap } from '../audio/mix';
 import { cameraLayer, catalogue } from '../library/catalog';
@@ -65,11 +65,10 @@ export function graphLib(): Lib {
   };
 }
 
-/** FalkorDB when it is up (one health read, at most about 4 s when it is down), else the catalogue. */
+/** FalkorDB (one health read). Down: the job stops (decision 13); the catalogue only with MOOVI_GRAPH_OPTIONAL=1. */
 export async function openLibrary(o: { graph?: boolean } = {}): Promise<Lib> {
-  if (o.graph === false || process.env.MOOVI_LIBRARY === 'catalogue') return catalogueLib();
-  try { if ((await health()).ok) return graphLib(); } catch { /* down */ }
-  return catalogueLib();
+  if (o.graph === false || (graphOptional() && process.env.MOOVI_LIBRARY === 'catalogue')) return catalogueLib();
+  return (await needGraph('edit cast: the library')) ? graphLib() : catalogueLib();
 }
 
 /** What each beat tag needs from the library (the graph's :Need ids). */

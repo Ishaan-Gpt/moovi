@@ -7,6 +7,7 @@ import { bedStem, castStem, sfxStem, type Ev } from '../../audio/mix';
 import { fetchMusic, lufsOf, musicFilter, musicMixPlan, musicWant, pickMusic, MUSIC_MIX, MUSIC_TRACKS, type MusicMixPlan, type MusicPick } from '../../audio/music-lib';
 import { checkClip, clipId, fetchClip, rank, type Clip, type ClipCandidate } from '../../footage';
 import { clipAssetId } from '../../footage/graph';
+import { graphOr, stopIfDown } from '@moovi/graph';
 import type { MusicScope } from '../../audio/music-lib';
 import { mixkit } from '../../footage/sources';
 import { validateEdl } from '../edl';
@@ -141,7 +142,7 @@ export async function licenceOf(c: Pick<ClipCandidate, 'ref' | 'page'>, g?: Grap
   // an unknown (a rate limit, a challenge page) is asked again, but not inside CM_GATE.unknownRetryMs: one run that meets
   // the same clip in three beats asks Mixkit once
   if (hit && Date.now() - Date.parse(hit.at) < CM_GATE.unknownRetryMs) return 'unknown';
-  const fromGraph = await g?.licence(c.ref).catch(() => null);
+  const fromGraph = await g?.licence(c.ref).catch(graphOr(null, 'clip moment: a licence'));
   if (fromGraph) { verdicts[c.ref] = { v: fromGraph, at: new Date().toISOString() }; return fromGraph; }
   let v: 'free' | 'restricted' | 'unknown' = 'unknown', tags: string[] = [];
   try {
@@ -223,8 +224,8 @@ interface GraphIo { licence(ref: string): Promise<'free' | 'restricted' | null>;
 async function graphIo(log: (s: string) => void): Promise<GraphIo | null> {
   try {
     const g = await import('@moovi/graph');
-    const h = await Promise.race([g.health(), new Promise<{ ok: false }>(res => setTimeout(() => res({ ok: false }), 1500))]);
-    if (!h.ok) { log('graph: down, using the file cache and the kit sfx table'); return null; }
+    // decision 13: down = the job stops; the file cache and the kit sfx table only with MOOVI_GRAPH_OPTIONAL=1
+    if (!(await g.needGraph('clip moment: the library', 1500))) { log('graph: down, using the file cache and the kit sfx table'); return null; }
     const LIC = { free: 'Mixkit Stock Video Free License', restricted: 'Mixkit Restricted License' };
     return {
       async licence(ref) {
@@ -286,7 +287,7 @@ async function graphIo(log: (s: string) => void): Promise<GraphIo | null> {
         return n;
       },
     };
-  } catch (e) { log(`graph: ${(e as Error).message.slice(0, 120)}`); return null; }
+  } catch (e) { stopIfDown(e, 'clip moment: the library'); log(`graph: ${(e as Error).message.slice(0, 120)}`); return null; }
 }
 
 /** Run promises at most `n` at a time, in order. */
@@ -343,7 +344,7 @@ export async function makeClipMoment(i: CmRunInput): Promise<CmRunResult> {
   const fetchBeat = async (b: CmScript['beats'][number], bi: number): Promise<(Clip & { query: string; score: number })[]> => {
     const ladder = [...new Set([...(Array.isArray(b.broll) ? b.broll : b.broll ? [b.broll] : [])])], want = Math.max(1, b.clips ?? 1), tr = trace[bi]!;
     const out: (Clip & { query: string; score: number })[] = [];
-    const known = g ? await g.serving(footageNeeds(b.say, ladder)).catch(() => [] as ClipCandidate[]) : [];
+    const known = g ? await g.serving(footageNeeds(b.say, ladder)).catch(graphOr([] as ClipCandidate[], 'clip moment: kept clips')) : [];
     // clips the script names (a Mixkit id and its title) go first: no search, the same licence gate, the same checks
     const pins = (b.pin ?? []).filter(p => !used.has(p.ref));
     if (pins.length) {
@@ -428,7 +429,7 @@ export async function makeClipMoment(i: CmRunInput): Promise<CmRunResult> {
 
   // the library casts the 3D: camera moves for the shots and component entrances, 3D objects for ideas (graph down: the
   // plan's own library ids, said so in the trace)
-  const lib = g ? await g.cast3d(script).catch(e => ({ script: script!, notes: [`graph cast failed: ${(e as Error).message.slice(0, 80)}`] })) : { script, notes: ['graph down: the plan\'s library ids'] };
+  const lib = g ? await g.cast3d(script).catch(graphOr(e => ({ script: script!, notes: [`graph cast failed: ${(e as Error).message.slice(0, 80)}`] }), 'clip moment: the 3D cast')) : { script, notes: ['graph down: the plan\'s library ids'] };
   script = lib.script;
   // stills for a filmstrip: one frame from each of three clips picked for other beats
   const stills: Record<number, string[]> = {};
@@ -476,7 +477,7 @@ export async function makeClipMoment(i: CmRunInput): Promise<CmRunResult> {
   let musicPick: MusicPick | null = null, musicPlan: MusicMixPlan | null = null, musicFile = '', musicNote = '', voiceLufs: number | null = null, musicLufs: number | null = null;
   try {
     const want = cmMusicWant(i, { lines, seconds: D0, dropTarget, seed: topic ?? lines[0] ?? 'clip-moment' });
-    const hits = g ? await g.music(want.needs).catch(() => null) : null;
+    const hits = g ? await g.music(want.needs).catch(graphOr(null, 'clip moment: music')) : null;
     // a track named by the caller (the library id) is still licence-gated; else the graph's pick
     const named = i.music?.id ? MUSIC_TRACKS.filter(t => t.id === i.music!.id) : null;
     if (named && !named.length) throw new Error(`music ${i.music!.id}: not in the library`);
@@ -544,7 +545,7 @@ export async function makeClipMoment(i: CmRunInput): Promise<CmRunResult> {
     const rows = [...picks.map(p => ({ ref: p.ref, title: p.title, page: p.page, url: `https://assets.mixkit.co/videos/${p.ref}/${p.ref}-720.mp4`, query: p.query, licence: 'free' as const })),
       ...rejected.filter(r => verdictsNow[r.ref]?.v === 'restricted').map(r => ({ ref: r.ref, title: `mixkit ${r.ref}`, page: `https://mixkit.co/free-stock-video/${r.ref}/`, url: '', query: topic ?? 'footage', licence: 'restricted' as const }))];
     const uniq = [...new Map(rows.map(r => [r.ref, r])).values()];
-    graph = await g.keep(uniq).then(n => `${n} clips kept as assets`).catch(e => `write failed: ${(e as Error).message.slice(0, 80)}`);
+    graph = await g.keep(uniq).then(n => `${n} clips kept as assets`).catch(graphOr(e => `write failed: ${(e as Error).message.slice(0, 80)}`, 'clip moment: keeping clips'));
   }
   lap('edl');
   T.total = r3(Object.entries(T).filter(([k]) => k !== 'voice' && k !== 'clips').reduce((a, [, v]) => a + v, 0) + Math.max(T.voice ?? 0, T.clips ?? 0));

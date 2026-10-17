@@ -9,7 +9,7 @@
  * ids it would pick); a hint is a bonus, never a requirement, so a weak model can only help.
  */
 import { createHash } from 'node:crypto';
-import { ensureStylesSchema, run, STYLES, styles as G } from '@moovi/graph';
+import { ensureStylesSchema, graphOr, run, STYLES, styles as G } from '@moovi/graph';
 import type { Need } from './needs';
 
 export type Role = 'open' | 'middle' | 'close';
@@ -141,7 +141,7 @@ export async function loadMemory(style: string, n = 40): Promise<Snapshot> {
   const [films, kept, hot] = await Promise.all([
     run<FilmMemory>(STYLES, G.recentFilms, { style, n }),
     run<{ id: string; data: string; uses: number }>(STYLES, G.grownSetups, { style }),
-    run<{ id: string; score: number }>(STYLES, G.overUsed, { style, n: 6 }).catch(() => []), // an empty graph has no ranks yet
+    run<{ id: string; score: number }>(STYLES, G.overUsed, { style, n: 6 }).catch(graphOr([], 'style memory: PageRank')), // an empty graph has no ranks yet
   ]);
   const s: Snapshot = {
     films: films.map(f => ({ ...f, setups: (f.setups ?? []).filter(Boolean) })),

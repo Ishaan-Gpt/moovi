@@ -1,4 +1,4 @@
-import { run as runQ, SYS, sys as S } from '@moovi/graph';
+import { graphOr, run as runQ, SYS, sys as S } from '@moovi/graph';
 
 /**
  * Place names → coordinates, with Nominatim (OpenStreetMap's geocoder) under its usage policy: at most one request a
@@ -52,7 +52,7 @@ export function geocode(name: string, deps: GeoDeps = {}): Promise<Place | null>
 
 async function lookup(name: string, key: string, deps: GeoDeps): Promise<Place | null> {
   const cache = deps.cache ?? graphCache, f = deps.fetch ?? fetch;
-  const cached = await cache.get(key).catch(() => null);
+  const cached = await cache.get(key).catch(graphOr(null, 'maps: the place cache'));
   if (cached) return cached;
   await throttle({ now: deps.now ?? Date.now, sleep: deps.sleep ?? (ms => new Promise(r => setTimeout(r, ms))) });
   const url = `${ENDPOINT}?${new URLSearchParams({ q: name, format: 'jsonv2', limit: '1', addressdetails: '1', 'accept-language': 'en' })}`;
@@ -69,7 +69,7 @@ async function lookup(name: string, key: string, deps: GeoDeps): Promise<Place |
     bbox: bb && bb.length === 4 && bb.every(Number.isFinite) ? [bb[0]!, bb[1]!, bb[2]!, bb[3]!] : null,
   };
   if (!Number.isFinite(place.lat) || !Number.isFinite(place.lon)) return null;
-  await cache.put(place).catch(() => undefined);
+  await cache.put(place).catch(graphOr(undefined, 'maps: the place cache'));
   return place;
 }
 

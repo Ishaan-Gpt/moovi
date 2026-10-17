@@ -1,4 +1,4 @@
-import { CRAFT, library as L, run } from '@moovi/graph';
+import { CRAFT, graphOptional, library as L, needGraph, run } from '@moovi/graph';
 import { catalogue } from '../library/catalog';
 import { LIBRARY as S4 } from '../s4/library';
 import { library as pictures, score as pictureScore } from '../s4/library-pics';
@@ -255,11 +255,10 @@ function nextToSame(out: NonNullable<Edl['inserts']>, t0: number, draw: InsertDr
   return (!!before && drawOf(before) === draw) || (!!after && drawOf(after) === draw);
 }
 
-/** FalkorDB when it answers, else the catalogue. */
+/** FalkorDB. Down: the job stops (decision 13); the catalogue only with MOOVI_GRAPH_OPTIONAL=1. */
 export async function openInserts(o: { graph?: boolean } = {}): Promise<InsertSource> {
-  if (o.graph === false || process.env.MOOVI_LIBRARY === 'catalogue') return catalogueInserts();
-  try { const { health } = await import('@moovi/graph'); if ((await health()).ok) return graphInserts(); } catch { /* down */ }
-  return catalogueInserts();
+  if (o.graph === false || (graphOptional() && process.env.MOOVI_LIBRARY === 'catalogue')) return catalogueInserts();
+  return (await needGraph('edit inserts: the library')) ? graphInserts() : catalogueInserts();
 }
 
 /** Does any full-frame insert with hidden captions cover output time t? (the caption layer steps aside) */

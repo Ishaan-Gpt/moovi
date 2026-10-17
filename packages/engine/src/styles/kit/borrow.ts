@@ -16,7 +16,7 @@ import { copyFileSync, existsSync, readFileSync, rmSync, writeFileSync } from 'n
 import { join, resolve } from 'node:path';
 import { castSounds } from '../../audio/sounds';
 import { config } from '../../config';
-import { CRAFT, library as L, project as P, run } from '@moovi/graph';
+import { CRAFT, library as L, project as P, requireGraph, run } from '@moovi/graph';
 import { byId, type Artifact } from '../../visual/artifacts';
 import { contentFor, numbersOf } from '../../visual/plan';
 import type { Content } from '../../visual/types';
@@ -90,6 +90,7 @@ export async function borrow(beats: BorrowBeat[], o: { seed: string; share?: num
   try {
     rows = await Promise.all(asks.map(b => run<Row & { impl?: string | null }>(CRAFT, L.assetsServing, { needs: b.needs.slice(0, 5), category: 'ui', runtime: 'visual', shipOnly: true, n: 24 }, o.timeoutMs ?? 4000)));
   } catch (e) {
+    requireGraph(e, 'library inserts: borrowing'); // decision 13
     return { inserts: [], asked: asks.length, ms: Math.round(performance.now() - t0), why: `FalkorDB did not answer (${String(e instanceof Error ? e.message : e).slice(0, 100)})` };
   }
   // the graph ranks each beat's pieces; the weakest beats choose first; the film's seed breaks ties so two films borrow differently

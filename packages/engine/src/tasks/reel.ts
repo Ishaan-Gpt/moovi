@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { project as P, run as runQ, SYS, sys as S } from '@moovi/graph';
+import { graphOr, project as P, run as runQ, SYS, sys as S } from '@moovi/graph';
 import { publish } from '../bus';
 import { config } from '../config';
 import type { Handler } from '../ctx';
@@ -82,7 +82,7 @@ export const styleReel: Handler = async ctx => {
   const review = (process.env.MOOVI_REVIEW ?? '1').trim() === '0' ? null : await lens(ctx, inp.style, r);
   r.close(); // the studio serves the film itself; the local preview server was only for the contact sheet and the review
   // the inserts the style borrowed from the library graph, in this project's graph (Scene)-[:USES_ARTIFACT {slot: 'library'}]
-  const borrowed = await recordInserts((q, p) => ctx.q(q, p), ctx.run.id, inp.style, r.dir).catch(e => { console.warn(`[reel] library inserts: ${String(e).slice(0, 120)}`); return 0; });
+  const borrowed = await recordInserts((q, p) => ctx.q(q, p), ctx.run.id, inp.style, r.dir).catch(graphOr(e => { console.warn(`[reel] library inserts: ${String(e).slice(0, 120)}`); return 0; }, 'reel: library inserts'));
   if (borrowed) console.log(`[reel ${ctx.run.id}] ${borrowed} library insert(s) recorded`);
   for (const d of new Set(on.values())) void stat(d, 'done', 'done');
 

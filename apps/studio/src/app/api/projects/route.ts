@@ -1,5 +1,5 @@
 import { createChat, createProject, listProjects } from '@moovi/engine';
-import { apiUser } from '@/lib/session';
+import { apiUser, offline } from '@/lib/session';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -11,7 +11,9 @@ export async function GET(req: Request) {
 }
 
 /** A new project: its own graph, an untitled name (Moovi names it from the first brief), and its first chat. */
-export async function POST(req: Request) {
+export const POST = (req: Request) => create(req).catch(offline);
+
+async function create(req: Request) {
   const r = await apiUser(req, { write: true });
   if ('error' in r) return r.error;
   const b = await req.json().catch(() => ({})) as { name?: string };

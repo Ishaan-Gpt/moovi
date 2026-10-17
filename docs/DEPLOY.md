@@ -72,6 +72,7 @@ studio. The studio itself does **not** belong on Vercel: it needs the shared dis
 | `MOOVI_BYOK` | `required` (default): every user brings their own key. `optional`: keyless users run on the server's model (`MOOVI_RUNTIME`, `MOOVI_PROVIDER` and a key). |
 | `MOOVI_ORIGINS` | your public origin(s), comma-separated: the studio refuses cross-site writes from anything else. |
 | `FALKORDB_URL` | FalkorDB's address. Use a password in production (`falkor://default:<password>@host:6379`). |
+| `MOOVI_GRAPH_OPTIONAL` | **Never set it in production** (not in `docker-compose.yml`, not in `/opt/moovi/.env`). The product path needs FalkorDB (decision 13, Graph Hacks Rule 3): when it is down a job stops with "Moovi's memory is offline" and the studio shows that in the chat. `1` lets the catalogue, map.json and "no kit" stand in for the graph; the engine tests (`test/graph-optional.env`) and local dev without Docker (`.env.example`) set it. |
 | `MOOVI_CHROME_PATH` | `/usr/bin/chromium` in the Docker image (already set there). |
 
 ## What runs where, per film

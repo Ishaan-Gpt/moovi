@@ -17,7 +17,7 @@
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
-    "test": "tsx --test test/*.test.ts",
+    "test": "tsx --env-file=test/graph-optional.env --test test/*.test.ts",
     "reset": "tsx --env-file-if-exists=../../.env.local scripts/reset.ts",
     "worker": "tsx --env-file-if-exists=../../.env.local scripts/worker.ts",
     "run": "tsx --env-file-if-exists=../../.env.local scripts/run.ts",

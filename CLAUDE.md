@@ -58,6 +58,11 @@ Tools: `docs/VOICE.md`, `docs/3D.md`, `docs/MAPS.md`. Brand and character: `docs
   `packages/character`, `packages/ui`. Dependency direction `brand ← character ← apps`; packages export TS source.
 - After changes: `pnpm typecheck`; engine tests `pnpm --filter @moovi/engine test` (165 tests, some need FalkorDB);
   local FalkorDB: `pnpm falkordb` (port 6380); local settings in `.env.local` (see `.env.example`).
+- **FalkorDB is required on the product path** (decision 13): a graph outage stops the job with "Moovi's memory is
+  offline" (`requireGraph` / `graphOr` / `needGraph` in `packages/graph/src/client.ts`). Local fallbacks (catalogue,
+  map.json, "no kit") run only with `MOOVI_GRAPH_OPTIONAL=1`: the engine test script sets it
+  (`test/graph-optional.env`), `.env.example` sets it for local dev without Docker, the server never does. Never add a
+  silent graph fallback; use those helpers.
 
 ## Styles and pipelines (today's code, being reshaped by Stage 1)
 

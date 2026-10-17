@@ -1,6 +1,6 @@
 import { LEGACY_AGENT, MENTIONABLE, newId, sendCommand, userSay } from '@moovi/engine';
 import { styleOf } from '@moovi/engine/styles';
-import { apiProject, fail } from '@/lib/session';
+import { apiProject, fail, offline } from '@/lib/session';
 import { chat } from '@/lib/project';
 
 export const runtime = 'nodejs';
@@ -13,7 +13,10 @@ type Body = { kind: 'brief' | 'message' | 'answer' | 'stop'; text?: string; uplo
   /** one of the four live-preview styles (the brief box's picker): its pipeline runs as one engine job */
   style?: { id?: string; url?: string; script?: string; brand?: string } };
 
-export async function POST(req: Request, { params }: { params: Promise<{ pid: string; cid: string }> }) {
+/** FalkorDB down: the composer shows "Moovi's memory is offline" (decision 13). */
+export const POST = (req: Request, ctx: { params: Promise<{ pid: string; cid: string }> }) => send(req, ctx).catch(offline);
+
+async function send(req: Request, { params }: { params: Promise<{ pid: string; cid: string }> }) {
   const { pid, cid } = await params;
   const r = await apiProject(req, pid, { write: true });
   if ('error' in r) return r.error;

@@ -9,12 +9,12 @@
  * the graph too: the asset whose `impl.mixer` lists that key plays it.
  *
  * The film's dir gets sound.json: where the cast came from, the assets per event and how often each sounded (the
- * film's sfx credits come from these ids). If FalkorDB does not answer, the stem falls back to map.json and
- * sound.json says so (a film never loses its sound to a graph hiccup).
+ * film's sfx credits come from these ids). If FalkorDB does not answer, the job stops ("Moovi's memory is offline",
+ * decision 13); only with MOOVI_GRAPH_OPTIONAL=1 (tests, local dev) the stem falls back to map.json and sound.json says so.
  */
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { CRAFT, library, run } from '@moovi/graph';
+import { CRAFT, library, requireGraph, run } from '@moovi/graph';
 import { config, REPO } from '../config';
 import { sfxMap, type Ev, type SfxMap } from './mix';
 
@@ -63,6 +63,7 @@ export async function castSounds(events: Ev[], o: { timeoutMs?: number } = {}): 
       keys.length ? run<SfxRow>(CRAFT, library.assetsByCategory, { category: 'sfx', runtime: 'mixer', shipOnly: true }, o.timeoutMs ?? 4000) : Promise.resolve([]),
     ]);
   } catch (e) {
+    requireGraph(e, 'sound: casting the sfx'); // decision 13: map.json stands in only with MOOVI_GRAPH_OPTIONAL=1
     return fallback(`FalkorDB did not answer (${String(e instanceof Error ? e.message : e).slice(0, 100)})`);
   }
   const map: SfxMap = { ...base, sounds: { ...base.sounds }, events: { ...base.events } };
