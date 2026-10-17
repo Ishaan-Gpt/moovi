@@ -135,3 +135,33 @@ the caption is hidden for that span. Two texts in one frame is bad taste.
 - Objects land (motion blur in, a contact shadow), framing props slide in from the corners; light is the transition
   (the world's light sweeps in, a light leak wipes out).
 - Photoreal objects need real cut-outs (rule 0.1): fetch or generate them, never flat stand-ins.
+
+## 12. The recipe: a top-tier talking-head edit, every time (owner: v10 "better", 2026-10-18)
+Run these in order on every clip; each step is a rule above, not a taste of one video.
+1. **Prepare through the pipeline** (planEdit): hear in the spoken language (Hinglish stays Hinglish in Latin
+   letters), faces, takes, cuts; then bake the cuts and the grade into one file (`build-cut.mjs --grade`), so the
+   preview plays straight and the grade costs nothing at play time.
+2. **Grade first** (§11): highlights down, blue out, saturation up about 20 %, a dark fall-off under the captions.
+3. **Theme**: the brand's own site and logo; with no brand, the footage's own colours (palette.md). One material for
+   every graphic.
+4. **Start where the speaker's line starts** (a misheard or off-topic opening is cut, never captioned wrong).
+5. **Write the beat spec** sentence by sentence (§3): function, verb, hero word → layout and device; the abstract
+   middle goes to one full-screen world used once (§11), the payoff back to the speaker, tighter.
+6. **Real material only** where a thing is shown: fetch licensed footage (ref-footage.ts) and print it into the
+   world; ask for cut-outs the code cannot fake (rule 0.1).
+7. **Captions**: Premium Caption 1, accent from the brand or the footage; one text layer per frame; text never covers
+   a face (the player projects the face box and moves text clear).
+8. **Transitions from light and objects**: the world's light sweeps in, prints land with a contact shadow, a warm
+   light leak wipes back to the speaker (owner approved the leak, 2026-10-18; a leak on a cut is not the banned
+   "lens flare on everything").
+9. **Sound**: Style 1's typing tick under caption words, a whoosh per world change, a drop per landing, a hit per
+   punch, the bed under it all.
+10. **Check it plays**: `perf.ts` paired runs (no frozen clock over 100 ms), then send the playable link and ask
+    "better or worse, what is off?".
+
+## 13. Known gap: the full-screen motion graphics (owner: "1/10 compared to the reference", 2026-10-18)
+The tabletop world lands the idea but not the craft. What em5's has and ours lacks: photoreal 3D objects with real
+light and contact shadows, depth of field and two or three parallax planes, physical drops that bounce and settle,
+props entering from the corners, light that moves across the surface, a hand-drawn layer that interacts with the
+objects. This is its own discipline (a motion-graphics mastery); until then, keep the world short and prefer real
+footage prints over drawn objects.

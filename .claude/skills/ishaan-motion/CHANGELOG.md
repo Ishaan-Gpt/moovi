@@ -81,3 +81,6 @@
 
 ## 1.12.0 (2026-10-18)
 - edit-fundamentals.md: creator-reel devices decoded from em1 (cascade on springs, dim + product on top, the lit one in a row, the post frame, object wipe, comment pill ending), as brand-reskinnable fundamentals.
+
+## 1.13.0 (2026-10-18)
+- edit-fundamentals §12, the recipe for a top-tier talking-head edit every time; §13 the motion-graphics gap.

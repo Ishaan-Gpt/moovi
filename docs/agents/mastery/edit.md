@@ -109,3 +109,9 @@ keeps take 2 in every look.
 - Rules the player enforces: text never covers a face (every drawn picture projects its face box; text graphics move
   below it with a 44 px margin, the caption below or else above it); one text layer per frame (the caption hides under any text graphic); jump cuts are
   baked (no seeks); stills for cards come from the clip itself.
+
+## 2026-10-18: v10 "better" (em5's grammar on a new interview take)
+- Kept: the baked grade, one tabletop world with real printed clips that land, self-drawing doodles, a warm light
+  leak back to the speaker (Ishaan noticed and liked it), starting on the speaker's own line.
+- The recipe for every edit is in ishaan-motion `edit-fundamentals.md` §12; the known gap (full-screen motion
+  graphics, "1/10 compared to the reference") is §13, proposed as its own mastery.
