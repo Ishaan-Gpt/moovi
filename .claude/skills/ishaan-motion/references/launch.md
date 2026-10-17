@@ -41,3 +41,18 @@ Resend v6 became a reusable look: `packages/library/src/kits/launch-ui/` (player
 `packages/engine/scripts/launch-ui.ts <site>`. The script reads a live site once and makes a playable film in under
 a minute (linear.app: preview at 17 s, board at 24 s). The brand-specific beat stays open for the Director to write.
 For a new launch, start from this look; a new look only when a reference teaches a new grammar.
+
+## A new grammar never costs the craft (Ishaan on f7, 2026-10-18: "it nerfed all premiumness from 10/10 to 6/10:
+## animations, transitions, sfx, effects")
+Taking a new reference's grammar (ref 2: one material runs the film) must keep every premium layer of the best film so
+far. f7 lost them: its scenes appeared and faded (a slideshow), the camera barely moved, there was no cursor, and the
+sound was thin. The checklist that brought them back (f8):
+- **Every scene is born from the last:** the lockup shrinks into the header, the row's cards morph into the tiles, the
+  camera cranes from the tiles into the field, the pins' labels fly into the cloud, the cloud implodes to the dot that
+  becomes the logo. Never a fade or a cut-to-empty between scenes.
+- **The camera never stops:** a slow push all film, a punch on the drop, whips and cranes with motion blur from speed.
+- **The cursor drives:** hover lifts (photo zoom, growing shadow), clicks with a ripple, a flare on hover.
+- **Every arrival:** a spring, a blur-in, a shadow that grows; a hero flies out of the material toward the lens in log scale.
+- **Sound:** a tick on every word (render and score read one line list), a whoosh on every move, a riser that ends
+  exactly on the drop, a granular shimmer for particles, a short room on the sfx, a breakdown before the end.
+- Check every transition at sub-steps (±0.15 s): no empty frame, nothing drawn on top of a line still on screen.
