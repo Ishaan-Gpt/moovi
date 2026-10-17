@@ -38,7 +38,7 @@ Status: `[ ]` open, `[~]` in progress, `[x]` done (the commit is in LOG.md). **V
 
 | # | Item | Done means | Proof | V |
 |---|---|---|---|---|
-| 14 | [ ] `/mcp` endpoint | streamable HTTP, bearer auth, 45 s long poll, progress every 10 s | SDK client over HTTP | |
+| 14 | [x] `/mcp` endpoint | `packages/mcp/src/http.ts` `mcpHandler`/`bridgeHttp`: streamable HTTP at `/mcp`, bearer on every request, one MCP session per Claude Code window bound to the token's user (403 for another user, 401 closes a revoked one, 404 means reconnect), idle sweep; `poll.ts` `longPoll` (45 s cap, progress every 10 s); `server.ts` `buildMcp`, `hub.ts` `BrainHub` | `test/http.test.ts` (5): SDK client over HTTP | |
 | 15 | [ ] Connect Claude Code token per user, revocable | mint (shown once), sha256 stored, revoke, last seen; `/api/brain/link`, `/api/brain/status` | unit + curl | |
 | 16 | [ ] `moovi_next` / `moovi_answer` | steps out, answers in, idempotent, isolation rules (plan 21) | SDK client tests | |
 | 17 | [ ] `/moovi:run` served from the server | MCP prompt `run` with a one-time run ticket | SDK client lists and gets the prompt | |

@@ -30,3 +30,5 @@ One line per finished item: date and time (IST), item, what, commit sha.
 - 2026-10-17 20:38 IST · sync · origin/main 90881fa was our own item 11 merge; no new Ishaan commits (fast forward)
 - 2026-10-17 20:38 IST · item 12 · full bridge tests (`bridge-e2e.test.ts` 5: end to end, second window, bad answer re-ask, no ticket to key, park without key, registered scope) with `scope.ts` and `@moovi/engine/brain`; mcp 19 tests (19 pass), engine 466 tests (450 pass, 16 skip, 0 fail) · c9e6768
 - 2026-10-17 20:38 IST · item 13 · Phase 1 wrap-up: main synced, tsc 0 on all 8 packages (brand, character, graph, library, skills, ui, engine, mcp), engine 466 (450 pass, 16 skip, 0 fail), mcp 19/19, secret scan clean; branch pushed and merged into main · c9e6768
+- 2026-10-17 20:50 IST · sync · merged Ishaan's main d167f1a (W10 step 1: versions and forks; touches `edit/job.ts` restore line only, no conflict)
+- 2026-10-17 20:50 IST · item 14 · `/mcp` endpoint (`http.ts`, `server.ts`, `hub.ts`, `poll.ts`, SDK 1.32.1); mcp 24 tests (24 pass), engine 471 tests (455 pass, 16 skip, 0 fail), tsc 0 (engine, mcp) · 4e0f7ad
