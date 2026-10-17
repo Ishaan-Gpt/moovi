@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { z } from 'zod';
 import { probe } from '../bench';
@@ -7,6 +7,7 @@ import { config } from '../config';
 import { ask } from '../runtime';
 import { buildEdl, sentences, type BuildInput, type Face, type Laws } from './build';
 import { envelope, pauses, type Word } from './cut';
+import { dropSpans, findTakes } from './takes';
 import { quietPauses } from './voice';
 import { lookFaces } from './look';
 import { validateEdl, type Edl, type EdlBeat } from './edl';
@@ -81,7 +82,10 @@ export async function planEdit(o: PlanOpts): Promise<Plan> {
   }
   lap('tags');
   const source = { file: o.file ?? 'src.mp4', duration: pr.duration, w: pr.width ?? 1080, h: pr.height ?? 1920, fps: pr.fps ?? 30 };
-  const edl = buildEdl({ source, words, pauses: ps, ...(quiet ? { quiet: quiet.pauses } : {}), palette: o.palette, ...(look.faces.length ? { faces: look.faces } : {}), ...(tags ? { tags } : {}), ...(o.style ? { style: o.style } : {}), ...(o.laws ? { laws: o.laws } : {}), ...(o.seed !== undefined ? { seed: o.seed } : {}) });
+  // W15: retakes keep their best take (edit/takes.ts); nothing changes when no line is said twice
+  const takes = findTakes(words);
+  if (takes.groups.length) writeFileSync(join(o.dir, 'takes.json'), JSON.stringify(takes, null, 1));
+  const edl = buildEdl({ ...(takes.groups.length ? { retakes: dropSpans(takes) } : {}), source, words, pauses: ps, ...(quiet ? { quiet: quiet.pauses } : {}), palette: o.palette, ...(look.faces.length ? { faces: look.faces } : {}), ...(tags ? { tags } : {}), ...(o.style ? { style: o.style } : {}), ...(o.laws ? { laws: o.laws } : {}), ...(o.seed !== undefined ? { seed: o.seed } : {}) });
   const { problems } = validateEdl(edl);
   lap('build');
   timings.total = +((Date.now() - t0) / 1000).toFixed(3);

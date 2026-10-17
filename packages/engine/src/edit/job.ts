@@ -23,6 +23,7 @@ import { lookFaces } from './look';
 import { roughEdl } from './rough';
 import { ownerGrade, restoreVideo, useRestored, type Restored } from './restore';
 import { romanizeWords } from './romanize';
+import { dropSpans, findTakes } from './takes';
 import { checkAndRepair } from '../review/runner';
 import { scSfxEvents, studioCutEdl, SC_ID } from './templates/studio-cut';
 import { cleanVoice, quietPauses, type CleanVoice } from './voice';
@@ -202,6 +203,12 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
   const ov = direction ? overridesOf(direction) : null;
   if (direction) { writeFileSync(join(dir, 'direction.json'), JSON.stringify(direction, null, 1)); await o.onNote?.(`direction: ${direction.style}, ${direction.cleanup} (${direction.why})`); }
   if (quiet) writeFileSync(join(dir, 'quiet.json'), JSON.stringify(quiet, null, 1));
+  // W15: a line said twice or more keeps its best take (edit/takes.ts); takes.json holds every take, "use take 2" swaps
+  const takes = findTakes(words);
+  if (takes.groups.length) {
+    writeFileSync(join(dir, 'takes.json'), JSON.stringify(takes, null, 1));
+    await o.onNote?.(`takes: ${takes.groups.map(g => `${g.takes.length} of “${g.takes[0]!.text.split(/\s+/).slice(0, 5).join(' ')}…”, kept ${g.why}`).join('; ')} (say “use take 1” to swap)`);
+  }
   const source = { file, duration: pr.duration, w: pr.width ?? 1080, h: pr.height ?? 1920, fps: pr.fps ?? 30 };
   // a Studio Cut (templates/studio-cut.ts) when you ask for one by name or MOOVI_EDIT_TEMPLATE=studio-cut; it keeps the
   // clip's orientation (a landscape clip is a landscape film). Otherwise the D2.2 styles and the base edit, as before.
@@ -218,7 +225,7 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
   try {
     const lv = ov ? (ov.laws ? { level: 'directed', laws: { pause_max: ov.laws.pause_max ?? 0.4, pause_keep: ov.laws.pause_keep ?? 0.18 } } : null) : cleanupLevel(o.brief ?? '');
     if (lv) await o.onNote?.(`cleanup: ${lv.level} (pauses over ${lv.laws.pause_max} s cut to ${lv.laws.pause_keep} s)`);
-    const bi: BuildInput = { ...(lv ? { laws: lv.laws } : {}), source, words, pauses: ps, ...(quiet ? { quiet: quiet.pauses } : {}), palette, ...(look.faces.length ? { faces: look.faces } : {}), style: { id: 'base', ...(o.caption ? { caption: o.caption } : {}), ...(ov?.look !== undefined ? { look: ov.look } : {}), ...(output ? { output } : {}) }, ...(ov?.tags ? { tags: ov.tags } : {}), ...(language ? { language } : {}) };
+    const bi: BuildInput = { ...(lv ? { laws: lv.laws } : {}), source, words, pauses: ps, ...(quiet ? { quiet: quiet.pauses } : {}), palette, ...(look.faces.length ? { faces: look.faces } : {}), style: { id: 'base', ...(o.caption ? { caption: o.caption } : {}), ...(ov?.look !== undefined ? { look: ov.look } : {}), ...(output ? { output } : {}) }, ...(ov?.tags ? { tags: ov.tags } : {}), ...(language ? { language } : {}), ...(takes.groups.length ? { retakes: dropSpans(takes) } : {}) };
     const e = isD22(style) ? styledEdl(bi, style, o.handle ? { name: o.handle } : {}) : buildEdl(bi);
     const bad = validateEdl(e).problems.filter(p => !p.startsWith('version'));
     if (bad.length) throw new Error(bad.slice(0, 3).join('; '));
