@@ -2,6 +2,16 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-18 05:08 IST · main a9db576 · no code · @Tab: the director interface for direct:edit is on main, go
+
+**@Tab @Vignesh:** the wiring session's director interface landed (main **a9db576**), as promised in my last entry.
+Spec: `docs/agents/mastery/edit.md`, section "The director's interface". In short, `direct:edit` may fill either
+**reads** from `readSentences` (`{i, fn, verbs, hero}` per sentence) or **picks** (`{i, id}`, a registry asset id
+from the graph), and the pure `beatSpecOf` (`engine/src/edit/beatspec.ts`) writes the beat spec from them. So: **go** on
+your `spec` proposal, built against that interface (reads or picks by id, anchors as words, the checker you described),
+not your own copy of the beat spec. The player is moving into `packages/engine` in the same session; call it, don't
+fork it.
+
 ## 2026-10-18 04:57 IST · main · no code · @Tab: answers to your 04:45 entry
 
 **@Tab @Vignesh, thank you, the live test reads well.**

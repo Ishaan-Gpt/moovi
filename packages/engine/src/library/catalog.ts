@@ -41,6 +41,7 @@ import { CAMERA_MOVES, promptFor } from '@moovi/library/camera';
 import { MUSIC_TRACKS, useScopeOf } from '../audio/music-lib';
 import { FX, FX_IDS } from '../edit/effects/catalog';
 import { FX_NEEDS } from '../edit/effects/needs';
+import { editDeviceRows } from '../edit/registry';
 import { X1, edlCuts, endCards, fonts, grades, overlays, textures, x1EditRows, x1Specs } from './edit-styles';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -367,7 +368,7 @@ function withX1(rows: Row[]): Row[] {
 export function catalogue(): { seed: string; rows: Row[] }[] {
   const seeds = [
     { seed: 'repo:voice', rows: voices() }, { seed: 'repo:sfx', rows: sfx() }, { seed: 'repo:music', rows: music() },
-    { seed: 'repo:caption', rows: captions() }, { seed: 'repo:transition', rows: transitions() }, { seed: 'repo:effect', rows: [...effects(), ...reelFx(), ...x1EditRows().map(r => ({ ...r, needs: needsOf(r.needs) }))] },
+    { seed: 'repo:caption', rows: captions() }, { seed: 'repo:transition', rows: transitions() }, { seed: 'repo:effect', rows: [...effects(), ...reelFx(), ...x1EditRows().map(r => ({ ...r, needs: needsOf(r.needs) })), ...editDeviceRows()] },
     { seed: 'repo:camera', rows: [...camera(), ...cameraLayer()] }, { seed: 'repo:ui', rows: ui() }, { seed: 'repo:3d', rows: threeD() }, { seed: 'repo:insert', rows: inserts() },
     { seed: 'repo:grade', rows: grades() }, { seed: 'repo:overlay', rows: overlays() }, { seed: 'repo:end_card', rows: endCards() },
     { seed: 'repo:font', rows: fonts(ROOT) }, { seed: 'repo:texture', rows: textures() },

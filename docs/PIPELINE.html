@@ -202,23 +202,23 @@ const BANDS = [
 
 // ---------- progress toward mastery (updated by Claude 1 as sessions report) ----------
 // 0 not started in Stage 1 (red) · 1 built (orange) · 2 in mastery with Ishaan (yellow) · 3 mastered, 9.8 (green)
-const PROGRESS_AT = '2026-10-18 00:40 IST';
+const PROGRESS_AT = '2026-10-18 05:10 IST';
 const LV = ['Not started', 'Built', 'In mastery', 'Mastered'];
 const PROGRESS = {
   in: [1, 'router built behind MOOVI_ROUTER=pipeline (3108f8c, 88f311a); wording pending'],
-  qb: [1, 'Vignesh building the Claude Code bridge (packages/mcp: queue, /mcp endpoint, tokens)'],
+  qb: [1, 'bridge live on the 2 GB server: a real Claude Code edit ready in 9.3 s (Tab, 04:31)'],
   q0: [1, 'attachment roles in the router, behind its switch'],
   p1: [1, 'hear, faces, burned text on main'], p1t: [1, 'retakes on main (36cfdb1, f8e1465); scoring pending Ishaan'],
   p2: [1, 'cleanup levels on main; cover rule not built'], p3: [2, 'Edit mastery reworking upscale and grade'],
   p4: [1, 'voice clean-up on main'], p5: [1, 'face crop on main; speaker-aware reframe not built'], p6: [0, ''],
   q1: [1, 'type pick built behind the router switch'], k1: [1, 'type registry and typeKit on main (4fdbca1)'],
-  'ty-edit': [2, 'Edit mastery: board v6 rated better; playable v6 with voice, captions, sfx, music'],
-  'ty-launch': [2, 'Launch mastery: prompt + skill films (resend v4); old looks set aside'],
+  'ty-edit': [2, 'Edit mastery v10 spec; libraries being wired into one film (preview = MP4)'],
+  'ty-launch': [2, 'Launch mastery v12: ref 3 rebuilt shot for shot at 57 fps (31ff813)'],
   'ty-reel': [0, ''], 'ty-brand': [0, ''], 'ty-saas': [0, ''], 'ty-ui': [0, ''], 'ty-kin': [0, ''],
   g0: [0, ''], g1: [0, 'tools exist from before; tree not built'],
   w0: [0, ''], w1: [0, ''], w2: [0, ''], w3: [0, ''], w4: [0, ''], w5: [0, ''],
   s0: [0, ''], s1: [0, ''],
-  d0: [0, ''], d1: [0, ''], d2: [0, ''], d3: [2, 'Launch mastery writing films as code from prompt + skill'],
+  d0: [0, ''], d1: [1, 'director interface on main (a9db576): reads or picks by registry id, beatSpecOf writes the beat spec'], d2: [0, ''], d3: [2, 'Launch mastery writing films as code from prompt + skill'],
   b1: [0, ''], l1: [1, 'one Lens and floor rules on main (42f2e2c)'], l2: [1, 'one-fix interface built'], l2y: [0, ''],
   o1: [1, 'versions with undo and redo on main (d167f1a)'], m1: [0, ''],
   f0: [1, 'floor module on main; numbers pending'], 'fl-cap': [2, 'Caption mastery: presets 1.1 green and 1.2 red waiting for Ishaan'],
@@ -230,8 +230,8 @@ const PROGRESS = {
   m0: [2, 'ishaan-motion 1.11.1: every correction lands with a version bump'],
   'mb-edit': [2, 'Edit corrections landing in the skill'], 'mb-launch': [2, 'Launch corrections landing in the skill'],
   'mb-reel': [0, ''], 'mb-brand': [0, ''], 'mb-saas': [0, ''], 'mb-ui': [0, ''], 'mb-kin': [0, ''],
-  l0: [1, 'FalkorDB required on the product path (decision 13)'], 'lc-cap': [2, 'Caption mastery building the premium set'],
-  'lc-voice': [0, ''], 'lc-sfx': [0, ''], 'lc-fx': [0, ''], 'lc-tr': [0, ''], 'lc-cam': [0, ''], 'lc-comp': [0, ''], 'lc-music': [0, ''],
+  l0: [1, 'FalkorDB required on the product path (decision 13)'], 'lc-cap': [2, 'Captions 1.1, 1.2, 2 and 3 on main (1ab2780 to 6dbd611); Caption 3 still loads models from CDNs'],
+  'lc-voice': [0, ''], 'lc-sfx': [0, ''], 'lc-fx': [1, 'wiring session: one registry for X1 + FX + camera + UI in the graph'], 'lc-tr': [0, ''], 'lc-cam': [1, 'wiring session: camera reach beyond 14 of 64 moves in progress'], 'lc-comp': [1, 'wiring session: the 109 UI rows to be cast'], 'lc-music': [0, ''],
 };
 const lvOf = id => (PROGRESS[id] ? PROGRESS[id][0] : 0);
 
