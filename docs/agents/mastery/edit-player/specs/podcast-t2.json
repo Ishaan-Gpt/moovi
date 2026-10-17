@@ -1,34 +1,42 @@
 {
-  "name": "Podcast take 2 · first 15 s",
+  "name": "Podcast take 2 · first 15 s · v8",
   "clip": "../../edit-t2/take2-15s/base/",
-  "why": "no brand here: the palette is the footage's own (an oxblood room, black denim, a white dress); the caption accent is read from the video",
-  "palette": { "page": "#140A0C", "panel": "#1D1012", "panel-ink": "#E9DCD8", "tag": "rgba(24,10,13,.8)", "card": "rgba(30,13,16,.92)", "card-edge": "rgba(255,255,255,.12)", "card-ink": "#F4EAE6", "card-sub": "#C9A9A3", "accent-soft": "#E6CFC9" },
+  "why": "no brand here: the theme is the footage's own crimson room (ground, one warm bloom, an ember-glass material); the caption accent is read from the video; one text layer per frame",
+  "palette": { "page": "#140A0C", "panel": "#1D1012", "panel-ink": "#E9DCD8", "tag": "rgba(24,10,13,.8)", "accent-soft": "#E6CFC9",
+    "mat": "rgba(60,10,14,.35)", "mat-hi": "rgba(255,180,160,.14)", "mat-edge": "rgba(255,170,150,.22)", "mat-ink": "#FBE9E4", "accent-hi": "#FFB59E", "accent-glow": "rgba(255,90,60,.55)" },
+  "theme": { "ground": [[0, "#4A0E14"], [0.45, "#250709"], [1, "#0C0304"]], "grid": "rgba(255,140,120,.05)", "bloom": [540, 560, 760, "rgba(255,80,55,.22)"], "ring": "rgba(255,170,150,.35)" },
   "caption": { "variant": "1.1", "accent": "video" },
   "music": { "file": "music/bed.mp3", "start": 2, "gain": 0.06 },
   "beats": [
     { "from": { "w": "welcome" }, "layers": [{ "t": "cam", "z": 1.04, "Y": 0.34 }] },
     { "from": { "w": "thank" }, "layers": [
       { "t": "cam", "z": 1.08, "Y": 0.34 },
-      { "t": "tag", "name": "RJ Mavish", "role": "guest", "at": { "w": "thank", "dt": 0.1 }, "y": 1160, "hold": 1.8 }] },
+      { "t": "tag", "name": "RJ Mavish", "role": "guest", "at": { "w": "thank", "dt": 0.1 }, "y": 1160, "hold": 1.6 }] },
     { "from": { "w": "so", "after": 5 }, "layers": [
-      { "t": "cam", "z": 1.04, "Y": 0.34 },
-      { "t": "tag", "name": "Samay", "role": "host", "at": { "w": "so", "after": 5, "dt": 0.05 }, "y": 1160, "hold": 1.1 },
-      { "t": "cascade", "y": 220, "items": [{ "title": "favorite alphabet?", "sub": "the question", "at": { "w": "favorite", "after": 5 } }] }] },
+      { "t": "cam", "form": "card", "z": 1.04 },
+      { "t": "mg", "chars": "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "scroll": 260, "area": [0, 0, 1080, 960], "row": 0.5,
+        "headline": { "html": "<span style=\"font:800 92px Manrope;color:#FBE9E4;letter-spacing:-.03em\">favorite <span style=\"font-family:FrauncesV;font-style:italic;font-weight:400;color:#FFB59E\">alphabet?</span></span>", "at": { "w": "favorite", "after": 5 }, "y": 170 } }] },
     { "from": { "w": "m", "after": 7.5 }, "layers": [
-      { "t": "cam", "z": 1.12, "Y": 0.34 },
-      { "t": "letters", "items": [{ "ch": "M", "at": { "w": "m", "after": 7.5 }, "x": 690, "y": 150, "size": 330, "r": -8 }] }] },
+      { "t": "cam", "form": "corner-br", "z": 1.04 },
+      { "t": "mg", "chars": "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "scroll": 260, "area": [0, 0, 1080, 960], "row": 0.5, "dimOthers": true,
+        "lit": [{ "ch": "M", "at": { "w": "m", "after": 7.5 }, "spot": [455, 760, 2.6] }] }] },
     { "from": { "w": "my", "after": 10 }, "layers": [
-      { "t": "cam", "z": 1.06, "Y": 0.34 },
-      { "t": "letters", "items": [{ "ch": "U", "at": { "w": "u" }, "x": 30, "y": 160, "size": 340, "r": 8 }, { "ch": "Z", "at": { "w": "z" }, "x": 790, "y": 180, "size": 340, "r": -8 }] }] },
+      { "t": "cam", "form": "split", "z": 1.04 },
+      { "t": "mg", "chars": "MUZ", "gap": 250, "area": [0, 0, 1080, 960], "row": 0.52, "dimOthers": true,
+        "lit": [{ "ch": "M", "at": { "w": "my", "after": 10 } }, { "ch": "U", "at": { "w": "u" } }, { "ch": "Z", "at": { "w": "z" } }] }] },
     { "from": { "w": "these" }, "layers": [
       { "t": "cam", "z": 1.06, "Y": 0.36, "punch": { "w": "favorite", "after": 13 }, "by": 1.08 },
-      { "t": "letters", "items": [{ "ch": "M", "at": { "w": "these" }, "x": 140, "y": 90, "size": 260, "r": -6 }, { "ch": "U", "at": { "w": "are", "after": 13 }, "x": 420, "y": 50, "size": 260, "r": 4 }, { "ch": "Z", "at": { "w": "my", "after": 13 }, "x": 690, "y": 90, "size": 260, "r": -4 }] }] }
+      { "t": "burn", "items": [
+        { "kind": "badge", "text": "M", "at": { "w": "these" }, "x": 220, "y": 1420, "r": -8 },
+        { "kind": "badge", "text": "U", "at": { "w": "are", "after": 13 }, "x": 465, "y": 1450, "r": 4 },
+        { "kind": "badge", "text": "Z", "at": { "w": "my", "after": 13 }, "x": 710, "y": 1420, "r": 8 }] }] }
   ],
   "sfx": [
     { "at": { "w": "thank", "dt": 0.1 }, "k": "whoosh", "g": 0.35 },
-    { "at": { "w": "so", "after": 5, "dt": 0.05 }, "k": "whoosh", "g": 0.3 },
+    { "at": { "w": "so", "after": 5 }, "k": "whoosh", "g": 0.4 },
     { "at": { "w": "favorite", "after": 5 }, "k": "pop", "g": 0.4 },
     { "at": { "w": "m", "after": 7.5 }, "k": "hit", "g": 0.55 },
+    { "at": { "w": "my", "after": 10 }, "k": "whoosh", "g": 0.35 },
     { "at": { "w": "u" }, "k": "hit", "g": 0.5 },
     { "at": { "w": "z" }, "k": "hit", "g": 0.5 },
     { "at": { "w": "these" }, "k": "pop", "g": 0.4 },
