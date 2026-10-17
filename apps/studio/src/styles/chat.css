@@ -36,6 +36,17 @@
 .msg--error .msg__text { color: var(--signal); }
 .msg--note { display: block; padding: 0 2px 0 39px; font-size: 13px; color: var(--ink-2); line-height: 1.45; }
 .msg--note b { color: var(--ink); font-weight: 600; }
+.review { margin-top: 6px; }
+.review summary { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; list-style: none; }
+.review summary::-webkit-details-marker { display: none; }
+.review__chip { padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; background: rgb(255 255 255 / .8); box-shadow: 0 0 0 1px var(--line) inset; }
+.review--ok .review__chip { color: var(--pass); box-shadow: 0 0 0 1px var(--pass) inset; }
+.review--warn .review__chip, .review--bad .review__chip { color: var(--signal); background: var(--signal-soft); box-shadow: none; }
+.review__list { margin: 6px 0 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.review__list li { font-size: 12.5px; }
+.review__list li b { font-weight: 600; margin-right: 4px; }
+.review__list li[data-sev="P2"] { color: var(--ink-2); }
+.review__list li[data-sev="P2"] b { color: var(--ink-2); }
 .msg__choices { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
 .msg__choices .btn:disabled { opacity: .45; }
 .msg__choices .btn[aria-pressed="true"] { opacity: 1; color: var(--accent); box-shadow: 0 0 0 1.5px var(--accent) inset; }

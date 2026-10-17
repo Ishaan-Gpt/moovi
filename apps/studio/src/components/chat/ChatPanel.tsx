@@ -104,6 +104,30 @@ function thread(messages: ChatMessage[], activity: Activity[]): Item[] {
   return out;
 }
 
+interface ReviewData { frames: number; seconds: number; blocking: number; issues: { sev: 'P0' | 'P1' | 'P2'; code: string; t: number | null; text: string }[] }
+
+/** Lens's check of the film it just made: a chip (checked / to fix), the findings one tap away. Leads (P2) stay folded. */
+function ReviewNote({ name, text, review }: { name: string; text: string; review: ReviewData }) {
+  const fix = review.issues.filter(i => i.sev !== 'P2'), leads = review.issues.length - fix.length;
+  const state = review.blocking ? 'bad' : fix.length ? 'warn' : 'ok';
+  return (
+    <div className="msg msg--note">
+      <b>{name}</b> {text}
+      <details className={`review review--${state}`}>
+        <summary>
+          <span className="review__chip">{state === 'ok' ? 'Checked' : `${fix.length} to fix`}</span>
+          <span className="muted">{review.frames} frames · {review.seconds.toFixed(1)} s{leads ? ` · ${leads} note${leads > 1 ? 's' : ''}` : ''}</span>
+        </summary>
+        {review.issues.length > 0 && (
+          <ul className="review__list">
+            {review.issues.map((i, k) => <li key={k} data-sev={i.sev}><b>{i.sev === 'P0' ? 'Broken' : i.sev === 'P1' ? 'Fix' : 'Note'}</b> {i.text}</li>)}
+          </ul>
+        )}
+      </details>
+    </div>
+  );
+}
+
 function Avatar({ agent }: { agent?: AgentId }) {
   const id = (agent ?? 'moovi') as CrewId | 'moovi';
   return <span className="msg__avatar" aria-hidden="true"><CrewBlob id={id === 'voice' as never ? 'editor' : id} size={30} /></span>;
@@ -117,6 +141,7 @@ function Message({ m, pid, cid, answered, onAnswer, onOpenVideo }: { m: ChatMess
     </div>
   );
   const name = AGENT_NAMES[(m.agent ?? 'moovi') as AgentId] ?? 'Moovi';
+  if (m.kind === 'note' && m.data?.review) return <ReviewNote name={name} text={m.text} review={m.data.review as ReviewData} />;
   if (m.kind === 'note') return <div className="msg msg--note"><b>{name}</b> {m.text}</div>;
   if (m.kind === 'video') {
     const v = Number(m.data?.version ?? 1);

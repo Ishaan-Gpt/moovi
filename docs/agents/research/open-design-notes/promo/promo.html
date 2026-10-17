@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Moovi Launch Promo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  /* Moovi brand tokens (packages/brand/src/tokens.css) */
+  :root {
+    --ice-white: #F7FAFD; --surface: #FFFFFF; --ice: #CFE6F7; --ice-soft: #E6F2FB;
+    --deep-ice: #2B67C6; --ink: #0E1A2B; --ink-muted: #5B6B80; --hairline: #E3EBF3;
+    --frost-hi: #A9D6F6; --frost-mid: #7DB7EA; --glacier: #5394DA;
+    --mint: #D2F5EC; --lilac: #E3DEFF;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #0b1220; overflow: hidden; font-family: Inter, system-ui, sans-serif; }
+
+  /* player shell (not part of the film) */
+  .shell { position: fixed; inset: 0; display: grid; grid-template-rows: 1fr auto; }
+  .viewport { position: relative; overflow: hidden; display: grid; place-items: center; }
+  .scaler { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; transform-origin: center; }
+  .bar { display: flex; gap: 14px; align-items: center; padding: 12px 18px; background: #0b1220; color: #cfe6f7; font: 500 13px 'JetBrains Mono', monospace; }
+  .bar button { background: #1b2a44; color: #cfe6f7; border: 0; border-radius: 8px; padding: 8px 14px; font: inherit; cursor: pointer; }
+  .bar input[type=range] { flex: 1; accent-color: #7DB7EA; }
+
+  /* ---------- the composition ---------- */
+  [data-composition-id] { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--ice-white); }
+  .clip { position: absolute; inset: 0; }
+  .scene { opacity: 0; }
+
+  /* persistent background layer */
+  .bg-glow { position: absolute; border-radius: 50%; filter: blur(80px); }
+  .g1 { width: 1100px; height: 1100px; left: -260px; top: -320px; background: radial-gradient(circle, var(--ice) 0%, transparent 70%); }
+  .g2 { width: 900px; height: 900px; right: -200px; bottom: -340px; background: radial-gradient(circle, var(--lilac) 0%, transparent 70%); opacity: .8; }
+  .g3 { width: 700px; height: 700px; right: 420px; top: 80px; background: radial-gradient(circle, var(--mint) 0%, transparent 70%); opacity: .55; }
+  .ghost { position: absolute; left: -40px; bottom: -120px; font: 800 420px/1 Inter, sans-serif; letter-spacing: -.06em; color: var(--deep-ice); opacity: .045; white-space: nowrap; }
+  .grid { position: absolute; inset: 0; background-image: linear-gradient(var(--hairline) 1px, transparent 1px), linear-gradient(90deg, var(--hairline) 1px, transparent 1px); background-size: 96px 96px; opacity: .45; mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%); }
+  .timecode { position: absolute; right: 56px; top: 44px; font: 500 18px 'JetBrains Mono', monospace; color: var(--glacier); letter-spacing: .08em; font-variant-numeric: tabular-nums; }
+
+  /* browser chrome */
+  .browser { position: absolute; left: 50%; top: 50%; width: 1360px; height: 850px; margin: -470px 0 0 -680px; border-radius: 22px; background: var(--surface); box-shadow: 0 60px 120px -40px rgba(43,103,198,.35), 0 0 0 1px var(--hairline); overflow: hidden; }
+  .browser .top { height: 50px; display: flex; align-items: center; gap: 9px; padding: 0 20px; border-bottom: 1px solid var(--hairline); background: var(--ice-white); }
+  .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--ice); }
+  .browser .shot { position: absolute; top: 50px; left: 0; right: 0; bottom: 0; overflow: hidden; }
+  .kb { position: absolute; inset: 0; }
+  .kb img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
+  .chip { position: absolute; left: 300px; top: 92px; padding: 10px 18px; border-radius: 999px; background: var(--surface); border: 1px solid var(--hairline); font: 500 18px 'JetBrains Mono', monospace; color: var(--deep-ice); box-shadow: 0 12px 30px -12px rgba(43,103,198,.35); }
+  .chip b { color: var(--ink); font-weight: 500; }
+  .kicker { position: absolute; left: 0; right: 0; bottom: 58px; text-align: center; font: 400 64px/1.05 'Instrument Serif', serif; color: var(--ink); letter-spacing: -.01em; }
+  .kicker em { color: var(--deep-ice); }
+  .caret { display: inline-block; width: 3px; height: .9em; background: var(--deep-ice); vertical-align: -.08em; margin-left: 4px; }
+
+  /* tablet */
+  .stage3d { position: absolute; inset: 0; perspective: 1800px; }
+  .tablet { position: absolute; left: 50%; top: 50%; width: 1060px; height: 800px; margin: -400px 0 0 -880px; border-radius: 44px; background: var(--ink); padding: 18px; box-shadow: 0 80px 140px -50px rgba(14,26,43,.5); transform: rotateY(-8deg); }
+  .tablet .screen { width: 100%; height: 100%; border-radius: 28px; overflow: hidden; position: relative; }
+  .side { position: absolute; right: 90px; top: 300px; width: 520px; }
+  .side h2 { font: 800 76px/1 Inter, sans-serif; letter-spacing: -.035em; color: var(--ink); }
+  .side h2 span { color: var(--deep-ice); }
+  .crew { margin-top: 34px; display: flex; flex-wrap: wrap; gap: 12px; }
+  .crew div { padding: 12px 18px; border-radius: 14px; background: var(--surface); border: 1px solid var(--hairline); font: 500 20px 'JetBrains Mono', monospace; color: var(--ink-muted); }
+  .crew div b { color: var(--deep-ice); font-weight: 500; }
+
+  /* phone */
+  .phone { position: absolute; left: 340px; top: 70px; width: 440px; height: 920px; border-radius: 64px; background: var(--ink); padding: 16px; box-shadow: 0 80px 140px -50px rgba(14,26,43,.55); transform: rotateY(8deg); }
+  .phone .screen { width: 100%; height: 100%; border-radius: 50px; overflow: hidden; position: relative; background: var(--ice-white); }
+  .phone .screen img { width: 100%; display: block; }
+  .notch { position: absolute; top: 14px; left: 50%; width: 120px; height: 34px; margin-left: -60px; border-radius: 20px; background: var(--ink); z-index: 2; }
+  .hand { position: absolute; left: 640px; top: 900px; width: 64px; height: 64px; z-index: 5; }
+  .ripple { position: absolute; left: 532px; top: 718px; width: 40px; height: 40px; margin: -20px 0 0 -20px; border-radius: 50%; border: 3px solid var(--deep-ice); opacity: 0; z-index: 4; }
+
+  /* outro */
+  .outro { position: absolute; right: 150px; top: 270px; width: 760px; }
+  .mark { display: flex; align-items: center; gap: 26px; }
+  .mark svg { width: 120px; height: 120px; }
+  .word { font: 800 168px/1 Inter, sans-serif; letter-spacing: -.055em; }
+  .word span { display: inline-block; background: linear-gradient(172deg, var(--frost-mid) 0%, var(--glacier) 55%, var(--deep-ice) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; padding-bottom: .08em; }
+  .line { margin-top: 26px; font: 400 58px/1.1 'Instrument Serif', serif; color: var(--ink); }
+  .cta { margin-top: 40px; display: inline-flex; align-items: center; gap: 16px; padding: 22px 34px; border-radius: 999px; background: var(--deep-ice); color: var(--ice-white); font: 700 30px Inter, sans-serif; box-shadow: 0 24px 50px -18px rgba(43,103,198,.7); }
+  .url { margin-top: 24px; font: 500 22px 'JetBrains Mono', monospace; color: var(--glacier); }
+
+  /* transitions */
+  .flash { position: absolute; inset: 0; background: var(--surface); opacity: 0; z-index: 20; pointer-events: none; }
+  .split { position: absolute; inset: 0; z-index: 19; pointer-events: none; opacity: 0; }
+  .split i { position: absolute; inset: 0; border-radius: 50%; }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="viewport" id="vp">
+    <div class="scaler" id="scaler">
+
+      <div id="root" data-composition-id="moovi-launch" data-width="1920" data-height="1080" data-fps="30" data-duration="15">
+
+        <!-- background layer (spans the whole film) -->
+        <div class="clip" id="bg" data-start="0" data-duration="15" data-track-index="0">
+          <div class="bg-glow g1"></div><div class="bg-glow g2"></div><div class="bg-glow g3"></div>
+          <div class="grid"></div>
+          <div class="ghost">moovi moovi</div>
+          <div class="timecode" id="tc">00:00:00:00</div>
+        </div>
+
+        <!-- scene 1 · desktop -->
+        <div class="clip scene" id="s1" data-start="0" data-duration="5.3" data-track-index="1">
+          <div class="browser" id="br">
+            <div class="top"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+            <div class="shot"><div class="kb" id="kb1"><img src="assets/site-desktop.png" alt=""></div></div>
+          </div>
+          <div class="chip" id="chip1"><b>moovi</b>-three.vercel.app</div>
+          <div class="kicker" id="k1"><span id="k1t"></span><span class="caret" id="caret1"></span></div>
+        </div>
+
+        <!-- scene 2 · tablet -->
+        <div class="clip scene" id="s2" data-start="5.0" data-duration="5.5" data-track-index="2">
+          <div class="stage3d">
+            <div class="tablet" id="tab"><div class="screen"><div class="kb" id="kb2"><img src="assets/site-desktop-2.png" alt=""></div></div></div>
+          </div>
+          <div class="side">
+            <h2 id="h2">A crew, <span>not a&nbsp;prompt.</span></h2>
+            <div class="crew" id="crew">
+              <div><b>Scribe</b> · script</div><div><b>Cutter</b> · cut</div><div><b>Beat</b> · score</div>
+              <div><b>Lens</b> · review</div><div><b>Keeper</b> · memory</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- scene 3 · mobile + outro -->
+        <div class="clip scene" id="s3" data-start="10.0" data-duration="5.0" data-track-index="3">
+          <div class="stage3d">
+            <div class="phone" id="ph"><div class="screen"><div class="notch"></div><img src="assets/site-mobile.png" alt=""></div></div>
+          </div>
+          <div class="ripple" id="rip"></div>
+          <svg class="hand" id="hand" viewBox="0 0 64 64" aria-hidden="true"><path d="M24 6c3 0 5 2 5 5v17l3-1c3-1 6 1 7 3l1 1c3-1 6 0 7 3 3-1 6 1 7 4v12c0 9-7 14-15 14H30c-5 0-8-3-11-7L8 41c-2-3-1-6 2-7 2-1 5 0 7 2l2 3V11c0-3 2-5 5-5z" fill="#FFFFFF" stroke="#0E1A2B" stroke-width="2.5" stroke-linejoin="round"/></svg>
+          <div class="outro" id="outro">
+            <div class="mark">
+              <svg viewBox="0 0 120 120" id="wheel" aria-hidden="true"><g fill="none" stroke="#7DB7EA" stroke-width="7" stroke-linecap="round"><circle cx="60" cy="60" r="26"/><circle cx="60" cy="60" r="7" fill="#7DB7EA"/><path d="M60 8v26M60 86v26M8 60h26M86 60h26M23 23l18 18M79 79l18 18M97 23L79 41M41 79L23 97"/></g><g fill="#CFE6F7"><circle cx="60" cy="8" r="8"/><circle cx="60" cy="112" r="8"/><circle cx="8" cy="60" r="8"/><circle cx="112" cy="60" r="8"/><circle cx="23" cy="23" r="8"/><circle cx="97" cy="97" r="8"/><circle cx="97" cy="23" r="8"/><circle cx="23" cy="97" r="8"/></g></svg>
+              <div class="word" id="word"><span>m</span><span>o</span><span>o</span><span>v</span><span>i</span></div>
+            </div>
+            <div class="line" id="line">The AI director <em>you hire.</em></div>
+            <div class="cta" id="cta">Hire Moovi &rarr;</div>
+            <div class="url" id="url">moovi-three.vercel.app</div>
+          </div>
+        </div>
+
+        <div class="flash" id="flash"></div>
+        <div class="split" id="split"><i id="sp1"></i><i id="sp2"></i></div>
+      </div>
+
+    </div>
+  </div>
+  <div class="bar">
+    <button id="play">Pause</button>
+    <button id="restart">Restart</button>
+    <input type="range" id="scrub" min="0" max="15" step="0.0333" value="0">
+    <span id="t">0.00 / 15.00 s</span>
+  </div>
+</div>
+
+<script>
+/* One paused master timeline is the only clock (HyperFrames contract). */
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+window.__timelines['moovi-launch'] = tl;
+const DUR = 15;
+
+// background ambience (slow, persistent)
+tl.fromTo('.g1', { x: 0, y: 0, scale: 1 }, { x: 160, y: 80, scale: 1.12, duration: DUR, ease: 'sine.inOut' }, 0)
+  .fromTo('.g2', { x: 0, scale: 1 }, { x: -140, scale: 1.18, duration: DUR, ease: 'sine.inOut' }, 0)
+  .fromTo('.g3', { y: 0 }, { y: 120, duration: DUR, ease: 'sine.inOut' }, 0)
+  .fromTo('.ghost', { x: 0 }, { x: -380, duration: DUR, ease: 'none' }, 0);
+
+// ---- scene 1 · desktop (0 – 5.3)
+tl.set('#s1', { opacity: 1 }, 0)
+  .fromTo('#br', { scale: 1.04, y: 40, opacity: 0 }, { scale: 1, y: 0, opacity: 1, duration: 0.7, ease: 'expo.out' }, 0)
+  .fromTo('#kb1', { scale: 1.0, xPercent: 0, yPercent: 0 }, { scale: 1.18, xPercent: -3, yPercent: 2, duration: 3.6, ease: 'sine.inOut' }, 0.7)
+  .fromTo('#chip1', { y: -16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out' }, 1.0)
+  .fromTo('#br', { yPercent: 0 }, { yPercent: -7, duration: 0.6, ease: 'power2.inOut' }, 3.4)
+  .fromTo('#k1', { opacity: 0 }, { opacity: 1, duration: 0.2 }, 3.5);
+// typed kicker (deterministic: characters driven by the timeline, not a timer)
+const K1 = 'Your next video has a <em>director.</em>';
+const k1plain = 'Your next video has a director.';
+const typer = { n: 0 };
+tl.fromTo(typer, { n: 0 }, { n: k1plain.length, duration: 1.1, ease: 'none', onUpdate: () => {
+  const n = Math.round(typer.n), cut = 'Your next video has a '.length;
+  document.getElementById('k1t').innerHTML = n <= cut ? k1plain.slice(0, n) : k1plain.slice(0, cut) + '<em>' + k1plain.slice(cut, n) + '</em>';
+} }, 3.6);
+tl.fromTo('#caret1', { opacity: 1 }, { opacity: 0, duration: 0.25, repeat: 5, yoyo: true, ease: 'steps(1)' }, 3.6);
+
+// ---- transition · flash-through-white (5.0 – 5.3)
+tl.fromTo('#flash', { opacity: 0 }, { opacity: 1, duration: 0.15, ease: 'power2.in' }, 5.0)
+  .set('#s1', { opacity: 0 }, 5.15)
+  .set('#s2', { opacity: 1 }, 5.15)
+  .to('#flash', { opacity: 0, duration: 0.2, ease: 'power2.out' }, 5.15);
+
+// ---- scene 2 · tablet (5.15 – 10.5)
+tl.fromTo('#tab', { rotateY: -24, x: -120, opacity: 0 }, { rotateY: -8, x: 0, opacity: 1, duration: 0.9, ease: 'expo.out' }, 5.15)
+  .fromTo('#kb2', { scale: 1.06, yPercent: 0 }, { scale: 1.2, yPercent: -4, duration: 4.4, ease: 'sine.inOut' }, 5.6)
+  .fromTo('#h2', { y: 50, opacity: 0, filter: 'blur(8px)' }, { y: 0, opacity: 1, filter: 'blur(0px)', duration: 0.6, ease: 'power3.out' }, 5.7)
+  .fromTo('#crew > div', { x: 60, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: 'power3.out', stagger: 0.14 }, 6.6)
+  .to('#crew > div:nth-child(4)', { backgroundColor: '#E6F2FB', borderColor: '#7DB7EA', duration: 0.3 }, 8.4)
+  .fromTo('#crew > div:nth-child(4)', { scale: 1 }, { scale: 1.08, duration: 0.18, yoyo: true, repeat: 1, ease: 'power2.out' }, 8.4);
+
+// ---- transition · radial split (10.0 – 10.5)
+tl.set('#split', { opacity: 1 }, 10.0)
+  .fromTo('#sp1', { scale: 0, background: 'radial-gradient(circle, rgba(83,148,218,.0) 40%, rgba(169,214,246,.9) 62%, rgba(227,222,255,.9) 70%, rgba(247,250,253,0) 74%)' }, { scale: 3.2, duration: 0.5, ease: 'power2.in' }, 10.0)
+  .fromTo('#sp2', { scale: 0, background: 'radial-gradient(circle, #F7FAFD 55%, rgba(247,250,253,0) 60%)' }, { scale: 3.4, duration: 0.45, ease: 'power3.in' }, 10.05)
+  .set('#s2', { opacity: 0 }, 10.4)
+  .set('#s3', { opacity: 1 }, 10.4)
+  .to('#split', { opacity: 0, duration: 0.25, ease: 'power1.out' }, 10.4);
+
+// ---- scene 3 · mobile + outro (10.4 – 15)
+tl.fromTo('#ph', { rotateY: 30, y: 140, opacity: 0 }, { rotateY: 8, y: 0, opacity: 1, duration: 0.85, ease: 'expo.out' }, 10.4)
+  .fromTo('#hand', { x: 260, y: 120, opacity: 0 }, { x: -86, y: -170, opacity: 1, duration: 0.9, ease: 'power3.out' }, 11.0)
+  .to('#hand', { scale: 0.86, duration: 0.1, ease: 'power2.in' }, 12.0)
+  .to('#hand', { scale: 1, duration: 0.18, ease: 'back.out(3)' }, 12.1)
+  .fromTo('#rip', { scale: 0.4, opacity: 0.9 }, { scale: 3.4, opacity: 0, duration: 0.8, ease: 'power2.out' }, 12.0)
+  .to('#hand', { x: 120, y: 160, opacity: 0, duration: 0.5, ease: 'power2.in' }, 12.6)
+  .fromTo('#wheel', { rotate: -120, scale: 0.4, opacity: 0 }, { rotate: 0, scale: 1, opacity: 1, duration: 0.9, ease: 'back.out(1.6)' }, 12.4)
+  .fromTo('#word span', { y: 120, opacity: 0, scaleY: 1.4 }, { y: 0, opacity: 1, scaleY: 1, duration: 0.55, ease: 'back.out(2.2)', stagger: 0.06 }, 12.55)
+  .fromTo('#line', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, 13.2)
+  .fromTo('#cta', { y: 30, opacity: 0, scale: 0.94 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.8)' }, 13.5)
+  .fromTo('#url', { opacity: 0 }, { opacity: 1, duration: 0.4 }, 13.8)
+  .to('#wheel', { rotate: 30, duration: 1.2, ease: 'sine.inOut' }, 13.8)
+  .to({}, { duration: 0.01 }, DUR - 0.01); // root duration = 15 s
+
+// ---- player (outside the composition): drives the paused timeline in real time
+const scrub = document.getElementById('scrub'), tOut = document.getElementById('t'), tc = document.getElementById('tc');
+let playing = true, last = performance.now(), t = 0;
+function show(time) {
+  tl.seek(time, false);
+  scrub.value = time;
+  tOut.textContent = time.toFixed(2) + ' / 15.00 s';
+  const f = Math.floor(time * 30) % 30, s = Math.floor(time);
+  tc.textContent = '00:00:' + String(s).padStart(2, '0') + ':' + String(f).padStart(2, '0');
+}
+function loop(now) {
+  if (playing) { t += (now - last) / 1000; if (t >= DUR) t = 0; show(t); }
+  last = now; requestAnimationFrame(loop);
+}
+document.getElementById('play').onclick = (e) => { playing = !playing; e.target.textContent = playing ? 'Pause' : 'Play'; };
+document.getElementById('restart').onclick = () => { t = 0; playing = true; document.getElementById('play').textContent = 'Pause'; };
+scrub.oninput = () => { t = +scrub.value; playing = false; document.getElementById('play').textContent = 'Play'; show(t); };
+window.seekTo = (s) => { t = s; playing = false; show(s); };  // for frame checks
+
+function fit() {
+  const vp = document.getElementById('vp'), sc = document.getElementById('scaler');
+  const k = Math.min(vp.clientWidth / 1920, vp.clientHeight / 1080);
+  sc.style.transform = 'translate(-50%, -50%) scale(' + k + ')';
+}
+addEventListener('resize', fit); fit();
+show(0); requestAnimationFrame(loop);
+</script>
+</body>
+</html>
