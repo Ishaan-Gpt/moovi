@@ -1,0 +1,32 @@
+{
+  "name": "Podcast take 2 · 45-60 s · v9 (three picture layers)",
+  "clip": "../../edit-t2/take2-45s/base/",
+  "why": "each layer acts out its line: the crore maths as a full-screen number, 'filter' as a burned-in filter carousel, a card that flips beauty filter on and off, a Bollywood grade compared with raw",
+  "palette": { "page": "#140A0C", "panel": "#1D1012", "panel-ink": "#E9DCD8", "accent-soft": "#E6CFC9", "mat": "rgba(60,10,14,.35)", "mat-hi": "rgba(255,180,160,.14)", "mat-edge": "rgba(255,170,150,.22)", "mat-ink": "#FBE9E4", "accent-hi": "#FFB59E", "accent-glow": "rgba(255,90,60,.55)" },
+  "theme": { "ground": [[0, "#4A0E14"], [0.45, "#250709"], [1, "#0C0304"]], "grid": "rgba(255,140,120,.05)", "bloom": [540, 560, 760, "rgba(255,80,55,.22)"], "ring": "rgba(255,170,150,.35)" },
+  "caption": { "variant": "1.1", "accent": "video" },
+  "music": { "file": "music/bed.mp3", "start": 2, "gain": 0.05 },
+  "beats": [
+    { "from": { "w": "aat" }, "layers": [
+      { "t": "cam", "form": "corner-br", "z": 1.04 },
+      { "t": "stat", "from": "8", "to": "4", "label": "crore", "splitAt": { "w": "half" }, "toAt": { "w": "chaar" }, "y": 400 }] },
+    { "from": { "w": "is", "after": 3 }, "layers": [
+      { "t": "cam", "z": 1.06, "Y": 0.34 },
+      { "t": "filters", "at": { "w": "nahin" }, "y": 1120 }] },
+    { "from": { "w": "is", "after": 7.8 }, "layers": [
+      { "t": "cam", "form": "card", "ground": "room", "z": 1.04,
+        "looks": [{ "at": { "w": "is", "after": 7.8 }, "f": "saturate(1.45) brightness(1.12) contrast(.88) blur(1.2px)" }, { "at": { "w": "kyun" }, "f": "contrast(1.05)" }] }] },
+    { "from": { "w": "i", "after": 10 }, "layers": [
+      { "t": "cam", "z": 1.08, "Y": 0.34, "punch": { "w": "believe" }, "by": 1.08 }] },
+    { "from": { "w": "nahin", "after": 11.4 }, "layers": [
+      { "t": "cam", "form": "split", "z": 1.04 },
+      { "t": "compare", "still": 13, "labels": ["raw", "Bollywood"], "look": "sepia(.35) saturate(1.7) hue-rotate(-12deg) brightness(1.08) contrast(1.1)", "at": { "w": "use" }, "at2": { "w": "bollywood" }, "y": 90 }] }
+  ],
+  "sfx": [
+    { "at": { "w": "half" }, "k": "hit", "g": 0.55 }, { "at": { "w": "chaar" }, "k": "pop", "g": 0.45 },
+    { "at": { "w": "is", "after": 3 }, "k": "whoosh", "g": 0.35 }, { "at": { "w": "nahin" }, "k": "click", "g": 0.6 },
+    { "at": { "w": "is", "after": 7.8 }, "k": "whoosh", "g": 0.35 }, { "at": { "w": "kyun" }, "k": "snap", "g": 0.5 },
+    { "at": { "w": "believe" }, "k": "hit", "g": 0.5 },
+    { "at": { "w": "use" }, "k": "pop", "g": 0.4 }, { "at": { "w": "bollywood" }, "k": "chime", "g": 0.45 }
+  ]
+}

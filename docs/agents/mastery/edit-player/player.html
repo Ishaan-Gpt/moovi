@@ -14,6 +14,10 @@ html,body{margin:0;height:100%;background:var(--page,#111);overflow:hidden;font-
 .tile{position:absolute;width:170px;height:210px;border-radius:30px;display:grid;place-items:center;font:400 120px 'Russo One';color:var(--mat-ink,#fff);background:linear-gradient(160deg,var(--mat-hi,rgba(255,255,255,.12)),var(--mat,rgba(255,255,255,.03)));box-shadow:inset 0 2px 0 rgba(255,255,255,.18),inset 0 0 0 2px var(--mat-edge,rgba(255,255,255,.15)),0 24px 50px rgba(0,0,0,.5);backdrop-filter:blur(10px)}
 .tile.lit{color:#fff;background:linear-gradient(160deg,var(--accent-hi,#fff),var(--accent,#888));box-shadow:inset 0 2px 0 rgba(255,255,255,.5),0 0 60px var(--accent-glow,rgba(255,255,255,.5)),0 24px 50px rgba(0,0,0,.5)}
 .glassw{display:flex;align-items:center;gap:20px;padding:24px 30px;border-radius:28px;color:var(--mat-ink,#fff);font:800 40px Manrope;background:linear-gradient(160deg,var(--mat-hi,rgba(255,255,255,.12)),var(--mat,rgba(255,255,255,.03)));box-shadow:inset 0 2px 0 rgba(255,255,255,.18),inset 0 0 0 2px var(--mat-edge,rgba(255,255,255,.15)),0 24px 50px rgba(0,0,0,.5);backdrop-filter:blur(14px)}
+.sn{position:absolute;left:0;right:0;top:40px;text-align:center;font:400 330px/1 'Russo One';color:var(--mat-ink,#fff);-webkit-text-stroke:14px var(--mat-ink,#fff);filter:drop-shadow(0 0 40px var(--accent-glow,rgba(255,255,255,.4))) drop-shadow(0 24px 40px rgba(0,0,0,.6))}
+.h1{clip-path:inset(0 0 50% 0)}.h2{clip-path:inset(50% 0 0 0)}.nx{color:#fff;background:linear-gradient(180deg,var(--accent-hi,#fff),var(--accent,#888));-webkit-background-clip:text;background-clip:text;-webkit-text-stroke:0}
+.cut{position:absolute;left:120px;right:120px;top:205px;height:8px;border-radius:4px;background:#fff;box-shadow:0 0 30px var(--accent-glow,#fff);transform-origin:left}
+.lbl{position:absolute;left:0;right:0;top:420px;text-align:center;font:600 34px JBMono;letter-spacing:.3em;text-transform:uppercase;color:var(--accent-soft,#ccc)}
 #gate{position:absolute;inset:0;display:grid;place-items:center;z-index:5;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);cursor:pointer;font:700 54px Manrope;color:#fff}
 </style></head>
 <body>
@@ -50,12 +54,12 @@ const faceAt = t => { if (!FACES.length) return { x: .5, y: .42 }; let k = 0; wh
 const P = SPEC.palette || {};
 for (const [k, v] of Object.entries(P)) document.documentElement.style.setProperty('--' + k, v);
 
-function drawVideo(t, r, z = 1, Y = .36, radius = 0, dim = 0, c = ctx, blur = 0) {
+function drawVideo(t, r, z = 1, Y = .36, radius = 0, dim = 0, c = ctx, blur = 0, look = '') {
   if (V.readyState < 2) return; const ctx = c;
   const sa = EDL.source.w / EDL.source.h, f = faceAt(t), H = Math.max(r.h, r.w / sa) * z, W = H * sa;
   let x = r.w / 2 - f.x * W, y = Y * r.h - f.y * H; x = Math.min(0, Math.max(r.w - W, x)); y = Math.min(0, Math.max(r.h - H, y));
   ctx.save(); ctx.beginPath(); if (radius) ctx.roundRect(r.x, r.y, r.w, r.h, radius); else ctx.rect(r.x, r.y, r.w, r.h); ctx.clip();
-  ctx.filter = blur ? `blur(${blur}px) brightness(.7)` : 'contrast(1.05)'; ctx.drawImage(V, r.x + x, r.y + y, W, H); ctx.filter = 'none';
+  ctx.filter = blur ? `blur(${blur}px) brightness(.7)` : (look || 'contrast(1.05)'); ctx.drawImage(V, r.x + x, r.y + y, W, H); ctx.filter = 'none';
   const g = ctx.createRadialGradient(r.x + r.w / 2, r.y + r.h * .38, r.h * .3, r.x + r.w / 2, r.y + r.h * .45, r.h * .75); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.4)');
   ctx.fillStyle = g; ctx.fillRect(r.x, r.y, r.w, r.h);
   if (dim) { ctx.fillStyle = `rgba(6,6,10,${dim})`; ctx.fillRect(r.x, r.y, r.w, r.h); }
@@ -94,13 +98,14 @@ async function grab(times) { for (const s of times) { if (STILLS[s]) continue; V
 const DEVICES = {
   cam: { build: () => ({}), draw: (L, t, b) => { const k = t - b.t0, pz = L.punch ? Math.pow(L.by || 1.08, eo(win(t, at(L.punch) - .02, at(L.punch) + .16))) : 1, land = b.first ? 0 : .035 * (1 - eo(win(k, 0, .18)));
     const to = FORMS[L.form || 'full'], from = FORMS[b.prevForm || 'full'], m = b.prevForm && b.prevForm !== (L.form || 'full') ? eio(win(k, 0, .42)) : 1, r = to.map((v, i) => lerp(from[i], v, m));
-    const full = r[2] >= 1079 && r[3] >= 1919, z = ((L.z || 1.04) + land) * pz + (L.push ?? .01) * k;
+    const full = r[2] >= 1079 && r[3] >= 1919, z = ((L.z || 1.04) + land) * pz + (L.push ?? .01) * k, look = (L.looks || []).filter(x => t >= at(x.at)).map(x => x.f).pop() || '';
     if (full) { drawVideo(t, { x: 0, y: 0, w: 1080, h: 1920 }, z, L.Y ?? .36, 0, (L.dim || 0) * eo(win(k, 0, .3))); return; }
     // behind a shrunk frame: the film's world, or the room itself blurred and dimmed
     if (L.ground === 'room') drawVideo(t, { x: 0, y: 0, w: 1080, h: 1920 }, 1.2, .36, 0, .35, ctx, 24); else ground();
     const ring = TH.ring || 'rgba(255,255,255,.18)';
     ctxT.save(); ctxT.shadowColor = 'rgba(0,0,0,.55)'; ctxT.shadowBlur = 50; ctxT.shadowOffsetY = 18; ctxT.fillStyle = '#000'; ctxT.beginPath(); ctxT.roundRect(r[0], r[1], r[2], r[3], r[4]); ctxT.fill(); ctxT.restore();
-    drawVideo(t, { x: r[0], y: r[1], w: r[2], h: r[3] }, Math.max(1, z * (L.form === 'split' ? 1.15 : 1.05)), L.form === 'split' ? .42 : .4, r[4], 0, ctxT);
+    drawVideo(t, { x: r[0], y: r[1], w: r[2], h: r[3] }, Math.max(1, z * (L.form === 'split' ? 1.15 : 1.05)), L.form === 'split' ? .42 : .4, r[4], 0, ctxT, 0, look);
+    if (L.badge) { const on = (L.looks || []).filter(x => t >= at(x.at)).pop(); if (on && on.label) { ctxT.save(); ctxT.font = "800 34px Manrope"; const w = ctxT.measureText(on.label).width + 48; ctxT.fillStyle = 'rgba(12,6,8,.72)'; ctxT.beginPath(); ctxT.roundRect(r[0] + 24, r[1] + 24, w, 64, 32); ctxT.fill(); ctxT.fillStyle = '#FBE9E4'; ctxT.fillText(on.label, r[0] + 48, r[1] + 68); ctxT.restore(); } }
     if (r[4] > 2) { ctxT.save(); ctxT.strokeStyle = ring; ctxT.lineWidth = 4; ctxT.beginPath(); ctxT.roundRect(r[0], r[1], r[2], r[3], r[4]); ctxT.stroke(); ctxT.restore(); }
     if (L.form === 'split' && m > .99) { const g = ctxT.createLinearGradient(0, 940, 0, 1000); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.45)'); ctxT.fillStyle = g; ctxT.fillRect(0, 960, 1080, 40); } } },
   world: { build: L => ({ imgs: (L.img || []).map(i => el(`<img src="${i.src}" style="width:100%;height:100%;object-fit:contain;${i.mask ? '-webkit-mask-image:' + i.mask : ''}">`, `left:${i.x}px;top:${i.y}px;width:${i.w}px;height:${i.h}px`)), texts: (L.text || []).map(x => el(x.html, `left:0;right:0;top:${x.y}px;text-align:center`, true)) }),
@@ -132,6 +137,24 @@ const DEVICES = {
   /** burned-in premium UI over the picture: glass widgets in the frame's empty space, each on its word */
   burn: { build: L => ({ ds: L.items.map(it => el(it.kind === 'badge' ? `<div class="tile lit" style="position:relative;width:150px;height:180px;font-size:100px">${it.text}</div>` : `<div class="glassw">${it.icon ? `<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">${it.icon}</svg>` : ''}<b>${it.text || ''}</b></div>`, `left:${it.x}px;top:${it.y}px`, !!it.text)) }),
     draw: (L, t, b, S) => L.items.forEach((it, i) => { const p = t - at(it.at), s = spring(p); show(S.ds[i], { opacity: clamp(p * 6), transform: `translateY(${((1 - s) * 60).toFixed(0)}px) scale(${(.8 + .2 * s).toFixed(3)}) rotate(${((1 - s) * (it.r || 6)).toFixed(1)}deg)` }); }) },
+  /** a number on the film's ground that splits in half on a word and rolls to the next value (the sentence's maths, acted out) */
+  stat: { build: L => ({ d: el(`<div style="position:relative;width:1080px;height:520px"><div class="h1 sn">${L.from}</div><div class="h2 sn">${L.from}</div><div class="nx sn">${L.to}</div><div class="cut"></div><div class="lbl">${L.label || ''}</div></div>`, `left:0;top:${L.y ?? 420}px`, true) }),
+    draw: (L, t, b, S) => { const k = t - b.t0, sp = at(L.splitAt), q = t - sp, inn = spring(k), open = q > 0 ? eo(q / .45) : 0, nx = L.toAt ? (t >= at(L.toAt) ? spring(t - at(L.toAt)) : 0) : (q > .35 ? spring(q - .35) : 0);
+      show(S.d, { opacity: clamp(k * 5) }); const [h1, h2, n, c, lb] = S.d.firstElementChild.children;
+      h1.style.transform = `translate(${(-open * 260).toFixed(0)}px,${(-open * 60).toFixed(0)}px) rotate(${(-open * 10).toFixed(1)}deg) scale(${(.7 + .3 * inn).toFixed(3)})`; h1.style.opacity = (1 - open * .85).toFixed(2);
+      h2.style.transform = `translate(${(open * 260).toFixed(0)}px,${(open * 60).toFixed(0)}px) rotate(${(open * 10).toFixed(1)}deg) scale(${(.7 + .3 * inn).toFixed(3)})`; h2.style.opacity = (1 - open * .85).toFixed(2);
+      c.style.transform = `scaleX(${(q > 0 ? Math.min(1, q / .18) : 0).toFixed(3)})`; c.style.opacity = (q > 0 && q < .6 ? 1 : 0).toString();
+      n.style.opacity = nx.toFixed(3); n.style.transform = `translateY(${((1 - nx) * 120).toFixed(0)}px) scale(${(.6 + .4 * nx).toFixed(3)})`;
+      lb.style.opacity = clamp(k * 3 - .5).toFixed(2); } },
+  /** burned-in UI: a camera filter carousel along the bottom that slides and lands on the selected swatch on its word */
+  filters: { build: L => ({ d: el(`<div style="position:relative;width:1080px;height:260px">${[0, 1, 2, 3, 4, 5, 6].map(i => `<div class="sw" style="position:absolute;top:40px;width:150px;height:150px;border-radius:50%;background:${i === 3 ? 'rgba(20,10,12,.6)' : `radial-gradient(circle at 35% 30%,hsl(${8 + i * 9} 80% ${70 - i * 4}%),hsl(${350 + i * 6} 70% ${32 + i * 3}%))`};box-shadow:0 16px 36px rgba(0,0,0,.5),inset 0 0 0 3px rgba(255,255,255,.25);display:grid;place-items:center">${i === 3 ? '<svg width="70" height="70" viewBox="0 0 24 24" fill="none" stroke="#FBE9E4" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M6.5 17.5l11-11"/></svg>' : ''}</div>`).join('')}<div class="ring" style="position:absolute;left:452px;top:22px;width:176px;height:186px;border-radius:50%;box-shadow:0 0 0 6px #fff,0 0 40px var(--accent-glow,rgba(255,255,255,.5))"></div></div>`, `left:0;top:${L.y ?? 1500}px`) }),
+    draw: (L, t, b, S) => { const k = t - b.t0, land = at(L.at), p = t < land ? win(t, b.t0, land) : 1, sel = spring(t - land);
+      show(S.d, { opacity: clamp(k * 5), transform: `translateY(${((1 - spring(k)) * 200).toFixed(0)}px)` });
+      [...S.d.querySelectorAll('.sw')].forEach((d, i) => { const x = 465 + (i - 3) * 190 + (1 - eio(p)) * 900; d.style.left = x.toFixed(0) + 'px'; d.style.transform = `scale(${(i === 3 ? 1 + .12 * sel : .92).toFixed(3)})`; });
+      S.d.querySelector('.ring').style.opacity = (t >= land ? 1 : 0).toString(); } },
+  /** a top panel comparing the speaker's own frame raw and with a named look (the sentence's "filter"), each labelled */
+  compare: { build: L => ({ ds: [0, 1].map(i => el(`<div style="width:470px;height:780px;border-radius:34px;overflow:hidden;position:relative;box-shadow:0 30px 70px rgba(0,0,0,.55),0 0 0 3px ${i ? 'var(--accent,#fff)' : 'rgba(255,255,255,.2)'}"><img style="width:100%;height:100%;object-fit:cover;filter:${i ? L.look : 'none'}"><div style="position:absolute;left:22px;bottom:22px;padding:12px 24px;border-radius:999px;background:rgba(12,6,8,.72);font:800 34px Manrope;color:#FBE9E4">${L.labels[i]}</div></div>`, `left:${i ? 560 : 50}px;top:${L.y ?? 90}px`, true)) }),
+    draw: (L, t, b, S) => S.ds.forEach((d, i) => { const im = d.querySelector('img'); if (!im.src) im.src = STILLS[L.still]; const p = t - at(i ? L.at2 : L.at), s = spring(p); show(d, { opacity: clamp(p * 6), transform: `translateY(${((1 - s) * -160).toFixed(0)}px) rotate(${((1 - s) * (i ? 6 : -6)).toFixed(1)}deg)` }); }) },
   wipe: { build: L => ({ d: el(`<img src="${L.src}" style="width:100%;height:100%">`, 'width:700px;height:700px;top:600px') }),
     draw: (L, t, b, S) => { const a = at(L.at), k = win(t, a - (L.dur || .3), a); if (k > 0 && k < 1) show(S.d, { left: lerp(-700, 1500, eio(k)) + 'px', transform: `rotate(${k * 280}deg)`, filter: `blur(${(Math.sin(k * Math.PI) * 6).toFixed(1)}px)` }); } },
 };
@@ -139,7 +162,7 @@ const DEVICES = {
 // the beats: each runs from its anchor to the next beat's
 const BEATS = SPEC.beats.map(b => ({ ...b, t0: at(b.from) })).sort((a, b) => a.t0 - b.t0);
 BEATS.forEach((b, i) => { b.t1 = i + 1 < BEATS.length ? BEATS[i + 1].t0 : END; b.first = i === 0; b.prevForm = i ? (BEATS[i - 1].layers.find(L => L.t === 'cam') || {}).form || 'full' : null; b.state = b.layers.map(L => DEVICES[L.t].build(L, b)); });
-const need = [...new Set(BEATS.flatMap(b => b.layers.flatMap(L => [...(L.stills || []), ...(L.avatar !== undefined ? [L.avatar] : [])])))];
+const need = [...new Set(BEATS.flatMap(b => b.layers.flatMap(L => [...(L.stills || []), ...(L.avatar !== undefined ? [L.avatar] : []), ...(L.still !== undefined ? [L.still] : [])])))];
 
 // captions: the approved Premium Caption 1, accent from the spec (a brand's own) or from the footage itself
 let accent = SPEC.caption?.accent && SPEC.caption.accent !== 'video' ? SPEC.caption.accent : null;
