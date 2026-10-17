@@ -14,21 +14,18 @@ Read this first if you are picking the work up. Updated by Tab after every item.
   pushing in main as well as in this new branch"; matches Ishaan's CLAUDE.md). Red code goes to the branch only.
 - **Push:** through the GitHub API (git data: blobs, trees, commits, then the ref with `force: false`), never force.
 - **Last sha:** see the newest line in `LOG.md`.
-- **Current state:** Phase 0 done; Phase 1 items 7 and 8 done. See the newest LOG lines for shas.
-  - Contracts: `engine/src/edit/direct.schema.ts` (direct the edit), `engine/src/router/direct-film.schema.ts` (direct
-    the film, Launch first), `engine/src/runtime/budget.ts` (caps, estimator, trimmer, `VideoBudget`).
-  - Lane switch: `engine/src/runtime/lane.ts` (in the engine because `keys.scopeFor` needs it and `packages/mcp`
-    depends on the engine). Brain calls (`direct:edit|film|look`) go to Claude Code online, else key, else server
-    (MOOVI_BYOK=optional), else wait (`BrainWaiting`). Detail calls never reach Claude Code. `keys.registerBrainScope`
-    is asked before the own key; `keys.serverModel()` is the server lane. Engine exports `./runtime` and `./keys`.
-  - `packages/mcp` (new workspace package, `pnpm install` links it): `store.ts` (`memoryStore`, `redisStore`, keys
-    `ce:brain:*`), `queue.ts` (`StepQueue`: push, next(user, session), answer (idempotent, foreign session refused),
-    cancel, recall/remember memo 24 h by `fingerprint`), `bridge.ts` (`bridgeRuntime`: refuses non-brain agents and tool
-    loops, memo first, polls the step, `BrainNotPickedUp` after 120 s, `BrainTimedOut` after 5 min, `accept` hook:
-    only accepted answers are remembered).
+- **Current state:** Phase 0 done; Phase 1 items 7, 8, 9 done. See the newest LOG lines for shas.
+  - Contracts: `engine/src/edit/direct.schema.ts`, `engine/src/router/direct-film.schema.ts`, `engine/src/runtime/budget.ts`.
+  - Lane switch: `engine/src/runtime/lane.ts` (brain calls to Claude Code online, else key, else server under
+    MOOVI_BYOK=optional, else wait; detail calls never reach Claude Code); `keys.registerBrainScope`, `keys.serverModel`.
+  - `packages/mcp`: `store.ts` (memory or FalkorDB Redis side, keys `ce:brain:*`), `queue.ts` (`StepQueue`, memo 24 h,
+    exactly-once pick key), `bridge.ts` (`bridgeRuntime`), `lease.ts` (`Gate`: `mintTicket`, `pull(user, session,
+    ticket)` = moovi_next, `submit(user, session, lease, step, answer)` = moovi_answer; idle texts are the exact words
+    Claude Code will show).
   - Needed later: `chat.ts` line 20 checks `loadModel` under MOOVI_BYOK=required; switch it to `scopeFor(cmd.user)`.
-- **Next item:** 9 (session lease per job: lease on pick, refreshed per call, 2 min lapse, run tickets; plan section 21; `StepQueue.next`
-  takes a `session` already, the lease decides which session may pick a job's steps).
+- **Next item:** 10 (answer checker: strict JSON against the step's schema via `readDirection`/`readFilmDirection`, one re-ask with the
+  exact problems as `history`, then the safe default (the rules) with a "default used" note; wire it as the bridge's
+  `accept` hook so only accepted answers are remembered).
 
 ## How to run things
 
