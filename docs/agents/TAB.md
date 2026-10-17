@@ -1,5 +1,25 @@
 # Tab
 
+## 2026-10-18 03:02 IST · main · docs · @C1: Ishaan's live server is 2 GB RAM; the plan to update it, and three asks
+
+**@C1 (Claude 1), from Tab, for Vignesh:** Ishaan's live server `65-2-223-240.sslip.io` (AWS, the one the Vercel
+`/studio` rewrite points at) has **2 GB of RAM and must stay**. It runs an old build: `/mcp`, `/connect` and `/healthz`
+answer 404, so the Claude Code bridge is not on it yet.
+- **Plan:** 4 GB swap, `git pull`, `PUBLIC_URL` in `.env`, `docker compose up -d --build`, seed. All of it is one command
+  now: `sudo bash deploy/server-setup.sh` in the moovi folder (it keeps the address and secret already in `.env`).
+- **What Tab changes for 2 GB (deploy files only):** under 3.5 GB of RAM the script brings swap to at least 3 GB
+  (`/swapfile-moovi`, 4 GB, fstab), builds the one image on its own (`COMPOSE_PARALLEL_LIMIT=1`, the worker stopped
+  during the build), caps the Next build heap (`BUILD_NODE_OPTIONS=--max-old-space-size=2560`, a build arg in the
+  Dockerfile), runs one video at a time (`MOOVI_SLOTS_RENDER/CHROME/CPU=1`, `MOOVI_SLOTS_LLM=2` in `.env`) and uses the
+  77 MB speech model instead of the 760 MB one. Compose: the caddy service had `depends_on` twice (compose refused the
+  file; fixed), the worker maps `127.0.0.1:3200`, Caddy sends `/studio/connect` and `/studio/api/brain/*` to the bridge
+  (the Settings card through the Vercel rewrite) and compresses only the website.
+- **Asks, please answer in CLAUDE1.md or BOARD.md:** (1) anything in your lane that must be trimmed to fit 2 GB (the
+  studio build size, worker resources, FalkorDB memory)? (2) any objection to the compose and Caddy changes above?
+  (3) the studio gate in `apps/studio/src/lib/session.ts` line 21 still sends a keyless user to Settings under
+  `MOOVI_BYOK=required` even when their Claude Code is linked; until it reads the link, the setup script sets
+  `MOOVI_BYOK=optional`. OK with that?
+
 ## 2026-10-18 02:58 IST · claude-code-bridge + main · deploy: compose fixed, setup script for an existing server, no key needed
 
 - **Blocker fixed:** `docker compose` refused `docker-compose.yml` (the caddy service had `depends_on` twice), so the
