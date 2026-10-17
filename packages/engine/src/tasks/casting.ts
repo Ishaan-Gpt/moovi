@@ -1,4 +1,5 @@
 import { projectGraph, voice as V, write } from '@moovi/graph';
+import { noteDecision, wordsCause } from '../why';
 import type { Features } from '@moovi/skills';
 import { z } from 'zod';
 import { fitRate, rankVoices, rateFor, readWish, reasonFor, type VoiceMemory } from '../audio/cast';
@@ -67,6 +68,14 @@ export async function castFor(ctx: TaskCtx, S: Script, adjust: (c: Cast) => Cast
     voice: x.id, name: x.name, locale: x.locale, lang: x.lang, accent: x.accent, gender: x.gender, age: x.age, energy: x.energy,
     film: ctx.run.id, chat: ctx.chat, video: ctx.run.video, reason: cast.reason, by: cast.by, score: x.id === pick.voice.id ? pick.score : null, shortlist: cast.shortlist, rate: cast.rate, engine: cast.engine, at: Date.now(),
   });
+  // "why this voice?" (decision 13): the brief's words, and a voice turned down before through the rule it taught
+  const turned = memory.filter(v => v.rejected && v.voice !== x.id).slice(0, 6), rule = 'rule:voice:turned-down';
+  await noteDecision(((q: never, p?: Record<string, unknown>) => ctx.q(q, p)) as never, ctx.run.id, { kind: 'voice', agent: 'voice', target: ctx.run.id, choice: x.name, why: cast.reason,
+    causes: [...(asked.trim() ? [wordsCause(`brief:${ctx.run.id}`, asked, 'what the brief asks of the voice')] : []),
+      { label: 'Rule', id: `rule:voice:${cast.by}`, text: cast.by === 'brief' ? 'a voice named in the brief is the one cast' : cast.by === 'model' ? 'the voice director picks from the ranked shortlist' : 'the best-ranked voice for the brief is cast', how: cast.reason },
+      ...(turned.length ? [{ label: 'Rule' as const, id: rule, text: 'a voice the user turned down is never cast again', how: `not ${turned.map(t => t.voice).join(', ')}` },
+        ...turned.map(t => ({ label: 'Feedback' as const, id: `fb:voice-rejected:${t.chat ?? 'x'}:${t.voice}`, text: `turned down ${t.voice}`, direct: false }))] : [])],
+    links: turned.map(t => ({ from: rule, to: `fb:voice-rejected:${t.chat ?? 'x'}:${t.voice}`, rel: 'LEARNED_FROM' as const })) });
   return cast;
 }
 

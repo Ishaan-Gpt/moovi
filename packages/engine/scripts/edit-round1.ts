@@ -48,7 +48,9 @@ const REFERENCE = [
 ] as const;
 
 const clips = () => {
-  const all = [join(REPO, 'docs', 'agents', 'ishaan-test', 'ishaan-test.mp4'), ...readdirSync(RAW).filter(f => /\.(mp4|mov|m4v|webm|mkv)$/i.test(f)).map(f => join(RAW, f))];
+  // synth/: retake clips spliced from Ishaan's own footage (a false start, a line said twice) until his raw takes land
+  const SYNTH = join(OUT, 'synth'), vids = (d: string) => existsSync(d) ? readdirSync(d).filter(f => /\.(mp4|mov|m4v|webm|mkv)$/i.test(f)).map(f => join(d, f)) : [];
+  const all = [join(REPO, 'docs', 'agents', 'ishaan-test', 'ishaan-test.mp4'), ...vids(SYNTH), ...readdirSync(RAW).filter(f => /\.(mp4|mov|m4v|webm|mkv)$/i.test(f)).map(f => join(RAW, f))];
   const only = flag('--clips')?.split(',');
   return all.map(p => ({ path: p, id: basename(p, extname(p)).replace(/[^a-z0-9]+/gi, '-').toLowerCase().slice(0, 40) })).filter(c => !only || only.includes(c.id));
 };
@@ -148,7 +150,9 @@ interface Run { clip: string; look: string; name: string; dir: string; duration:
 interface Miss { t: string; what: string; points: string }
 interface Output { clip: string; look: string; letter: string; scores: Record<string, number>; mean: number; misses: Miss[]; ref: string; port?: number }
 interface Proposal { id: string; miss: string; field: string; where: string; current: string; options: string[] }
-interface Findings { commit: string; date: string; graph: string; judge: { rubric: string[]; note: string }; outputs: Output[]; refs: { id: string; letter: string; mean: number; scores: Record<string, number> }[]; proposals: Proposal[]; notes: string[] }
+interface Findings { commit: string; date: string; graph: string; judge: { rubric: string[]; note: string }; outputs: Output[]; refs: { id: string; letter: string; mean: number; scores: Record<string, number> }[]; proposals: Proposal[]; notes: string[]; takes?: TakesFinding; strings?: { where: string; text: string }[] }
+/** The retakes check (edit/takes.ts): which take was kept per repeated line, and whether the blind take judge agrees. */
+interface TakesFinding { clip: string; made: string; found: string; confidence: string; rows: { line: string; takes: string; kept: string; judge: string; with_fix: string; cause: string }[] }
 
 function esc(s: unknown): string { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!)); }
 function renderPage(F: Findings, runs: Run[], o: { sheet: (r: Run) => string; refSheet: (id: string) => string | null; artifact: boolean }): string {
@@ -182,12 +186,17 @@ main{max-width:1180px;margin:0 auto;padding:32px 16px 80px}h1{font-size:30px;mar
 .sheet{display:block;width:100%;height:auto;border-radius:8px;margin:10px 0;background:var(--line)}
 .miss{padding-left:20px}.miss li{margin:6px 0}.t{font-variant-numeric:tabular-nums;font-weight:600;background:var(--ice);border-radius:6px;padding:0 6px;margin-right:4px}.pt{color:var(--mute);font-size:13px}
 .ref{border-top:1px dashed var(--line);margin-top:10px;padding-top:6px;font-size:13.5px}a{color:inherit}code{font-size:12.5px;background:var(--ice);padding:1px 5px;border-radius:5px;word-break:break-word}
-.props>li{margin:14px 0}.notes li{color:var(--mute)}
+.props>li{margin:14px 0}.scroll{overflow-x:auto}.takes td{vertical-align:top;font-size:13.5px;min-width:140px}.strings li{margin:6px 0}
+.notes li{color:var(--mute)}
 </style></head><body><main>
 <h1>Edit my video, round 1</h1>
 <p class="lede">Your own footage, edited with each of the Edit type's five looks and the auto-pick, exactly as the studio runs it (planEdit at main ${esc(F.commit)}, ${esc(F.date)}). A blind judge scored every output and the reference edits in one round without knowing which is which (${esc(F.judge.rubric.join(', '))}, 1–10). Nothing here changes a look yet: the proposals at the end are yours to pick.</p>
 <h2>Scores</h2>${table}
 <p class="lede">${esc(F.judge.note)}</p>
+${F.takes ? `<h2>Retakes</h2><p class="lede">${esc(F.takes.made)}</p><p class="lede"><b>${esc(F.takes.found)}</b></p>
+<div class="scroll"><table class="takes"><thead><tr><th>Line</th><th>Takes</th><th>Kept</th><th>Blind take judge</th><th>Kept once the bug is fixed</th><th>Why</th></tr></thead><tbody>${F.takes.rows.map(r => `<tr><td>${esc(r.line)}</td><td>${esc(r.takes)}</td><td>${esc(r.kept)}</td><td>${esc(r.judge)}</td><td>${esc(r.with_fix)}</td><td>${esc(r.cause)}</td></tr>`).join('')}</tbody></table></div>
+<p class="lede">${esc(F.takes.confidence)}</p>` : ''}
+${F.strings?.length ? `<h2>New wording for your yes</h2><p class="lede">What Moovi says about takes (it is shown in chat as is; nothing changes until you say so).</p><ul class="strings">${F.strings.map(s => `<li><q>${esc(s.text)}</q> <span class="pt">${esc(s.where)}</span></li>`).join('')}</ul>` : ''}
 <h2>Each output</h2>${F.outputs.slice().sort((a, b) => b.mean - a.mean).map(card).join('\n')}
 <h2>Proposed changes (not applied)</h2><ol class="props">${props}</ol>
 <h2>Notes</h2><ul class="notes">${F.notes.map(n => `<li>${esc(n)}</li>`).join('')}<li>Graph: ${esc(F.graph)}</li>${o.artifact ? '<li>Reference frames are not on this page (reference media stays local); open the Instagram links, or the committed page from your checkout, which shows them from data/edit-round1/refs/.</li>' : '<li>Reference frames load from data/edit-round1/refs/ in your checkout (git-ignored); live previews need <code>edit-round1.ts serve</code> running.</li>'}</ul>

@@ -117,6 +117,58 @@ its docs; adjust syntax then.)
 - Show run 1 vs run 2: after the creator gives feedback once ("no timeline bar"), run 2 follows it with no prompt
   change, and "why" shows the path to that feedback.
 
+### 7a. As built in Moovi (decision 13, 2026-10-17)
+
+The product path needs FalkorDB. Every local stand-in for the graph in `packages/engine/src` (the catalogue, map.json,
+"no kit", swallowed graph errors) runs only with `MOOVI_GRAPH_OPTIONAL=1`, which the engine tests and local dev set and
+the server never does. Without it, an outage stops the job with **"Moovi's memory is offline"**, and the studio shows
+that in the chat (one gate: `requireGraph` / `graphOr` / `needGraph` in `packages/graph/src/client.ts`).
+
+"Why this edit?" is real too. The live edit (style, caption look, cuts, library cast, effects), Auto's kit, voice casting
+and edit-by-words write `(:Decision)-[:BECAUSE]->(:Feedback|:Rule|:Reference|:Asset)`, plus `(:Rule)-[:LEARNED_FROM]->(:Feedback)`
+and `(:Asset)-[:FROM]->(:Reference)`. Ask Moovi "why this caption?" or "why this voice?" in the chat and it answers from
+`whyThis`: a `shortestPath` from the newest decision of that kind back to each cause, the user's own words first
+(`packages/graph/src/queries/why.ts`, `packages/engine/src/why.ts`).
+
+**The demo** (needs Docker and the local FalkorDB from `pnpm falkordb`, library seeded with `pnpm --filter @moovi/engine library`):
+
+```
+pnpm --filter @moovi/engine demo:graph-stop --docker moovi-falkordb
+```
+
+Run 1 has FalkorDB up: the graph half of a live edit, in product order, through the product's own functions (style
+memory, type kit, library cast, sound cast, Auto's kit match, the decision written with its causes), then "why this
+caption?". The script then runs `docker stop`, and run 2 refuses at its first graph read. Then `docker start`, and run 3
+works again. Without `--docker` it asks the presenter to stop and start FalkorDB and waits for it.
+
+The output, cut down, from one run:
+
+```
+── 1. FalkorDB up ──            → done in 0.23 s
+  Moovi: I chose karaoke captions because of the rule "karaoke captions on every video", learned from your words
+  "always use karaoke captions on my videos". Also: the library asset "Karaoke captions", from the reference reel "R8".
+    path (2 hops): (:Decision) -[:BECAUSE]-> (:Rule) -[:LEARNED_FROM]-> (:Feedback)
+    path (2 hops): (:Decision) -[:BECAUSE]-> (:Asset) -[:FROM]-> (:Reference)
+── 2. FalkorDB stopped ──       → STOPPED after 0.00 s: Moovi's memory is offline: FalkorDB is unreachable (ECONNREFUSED)
+── 3. FalkorDB up again ──      → done in 0.17 s
+PASS
+```
+
+Measured on Ishaan's PC (Windows, Docker Desktop, FalkorDB 6.0.2), 4 runs on 2026-10-17:
+
+| Step | Time |
+|---|---|
+| Run 1, FalkorDB up (all graph steps + the "why" answer) | 0.23 to 0.56 s (the first, cold run is slowest) |
+| `whyThis` (the shortest-path query) | 4 to 18 ms |
+| `docker stop moovi-falkordb` | 0.9 to 2.2 s |
+| Run 2, FalkorDB stopped, until the refusal | under 0.01 s (the connection is refused at once) |
+| `docker start`, then FalkorDB answering again | 0.8 to 1.4 s, plus 0.6 to 0.8 s |
+| Run 3, FalkorDB up again | 0.17 to 0.42 s |
+
+The same refusal is covered by `packages/engine/test/graph-required.test.ts`: with the flag unset and FalkorDB down,
+the sound cast, kit match, library, effects, inserts, type kit, a style job and a clip-moment job all stop with that
+message.
+
 ## 8. Track choice
 
 - Recommend Track 1 "Agents That Act on Connected Data" (the iPhone 18 Pro): the agent acts (edits a video) by

@@ -30,6 +30,7 @@ The ones the product stands on:
 | A look as one re-skinnable unit | `seedKit`, `kitParts`, `kitsServing` | `(:Kit {palette, type, motion})-[:HAS]->(:Asset)`, `(:Reference)-[:TAUGHT]->(:Kit)` |
 | A reference becomes parts | `addReference`, `addReferenceParts`, `referenceParts` | `(:Reference)-[:HAS_PART {role, at}]->(:Asset)` |
 | A film's type, its looks and its library slice in one read | `typesAll`, `typeKit` | `(:Type)-[:LOOK]->(:Style or :EditStyle)`, `(:Type)-[:REFERENCE]->(:Reference)`, `(:Asset)-[:IN_TYPE {w, when}]->(:Type)` |
+| Why this edit? (decision 13) | `recordDecision`, `whyThis`, `assetOrigins` | `(:Decision)-[:BECAUSE]->(:Feedback or :Rule or :Reference or :Asset)`, `(:Rule)-[:LEARNED_FROM]->(:Feedback)`, `(:Asset)-[:FROM]->(:Reference)`, `shortestPath` back to the cause |
 | The Launch library, traceable to its films | `launchParts`, `launchPartStory`, `launchReferences`, `launchFilmParts` | `(:Reference {id: 'ref:lNN'})-[:HAS_PART]->(:Asset)` with runtime launch, `(:Film)-[:USED {role, i}]->(:Asset)` |
 
 ## craft (style knowledge, shared)
@@ -2758,6 +2759,90 @@ WHERE NOT coalesce(a.retired, false)
 WITH t, looks, refs, a, e ORDER BY e.w DESC, a.id
 RETURN t.id AS id, t.name AS name, t.status AS status, t.spec AS spec, looks, refs,
        collect(CASE WHEN a IS NULL THEN null ELSE {id: a.id, category: a.category, w: e.w, `when`: e.`when`, ship: a.ship} END) AS assets
+```
+
+## proj_<pid>: why this edit? (each film decision and the shortest path back to its cause)
+
+### `recordDecision` (write)
+
+A film decision and the BECAUSE edges to what caused it (feedback, a rule, a reference, an asset), plus their own links back (LEARNED_FROM, FROM).
+
+```cypher
+MERGE (d:Decision {id: $id})
+SET d.kind = $kind, d.choice = $choice, d.why = $why, d.at = $at, d.run = $run, d.target = $target, d.agent = $agent
+WITH d
+OPTIONAL MATCH (r:Run {id: $run})
+FOREACH (_ IN CASE WHEN r IS NULL THEN [] ELSE [1] END | MERGE (d)-[:FOR]->(r))
+WITH DISTINCT d
+UNWIND $causes AS c
+FOREACH (_ IN CASE WHEN c.label = 'Feedback' THEN [1] ELSE [] END | MERGE (n:Feedback {id: c.id}) ON CREATE SET n.why = c.text, n.at = $at, n.source = 'words')
+FOREACH (_ IN CASE WHEN c.label = 'Rule' THEN [1] ELSE [] END | MERGE (n:Rule {id: c.id}) SET n.text = c.text)
+FOREACH (_ IN CASE WHEN c.label = 'Reference' THEN [1] ELSE [] END | MERGE (n:Reference {id: c.id}) SET n.name = c.text)
+FOREACH (_ IN CASE WHEN c.label = 'Asset' THEN [1] ELSE [] END | MERGE (n:Asset {id: c.id}) ON CREATE SET n.name = c.text, n.library = true)
+WITH d, c WHERE c.direct
+MATCH (n {id: c.id}) WHERE n:Feedback OR n:Rule OR n:Reference OR n:Asset
+MERGE (d)-[b:BECAUSE]->(n)
+SET b.how = c.how
+WITH DISTINCT d
+UNWIND $links AS l
+MATCH (a {id: l.from}), (b {id: l.to})
+WHERE (a:Rule OR a:Asset OR a:Decision) AND (b:Feedback OR b:Reference OR b:Rule)
+FOREACH (_ IN CASE WHEN l.rel = 'LEARNED_FROM' THEN [1] ELSE [] END | MERGE (a)-[:LEARNED_FROM]->(b))
+FOREACH (_ IN CASE WHEN l.rel = 'FROM' THEN [1] ELSE [] END | MERGE (a)-[:FROM]->(b))
+RETURN DISTINCT d.id AS id
+```
+
+### `whyThis` (read-only)
+
+"Why this caption / voice / cut?": the newest decision of that kind, and the shortest path from it back to each cause, the user's words first.
+
+```cypher
+MATCH (d:Decision)
+WHERE d.kind IN $kinds AND ($run IS NULL OR d.run = $run)
+WITH d ORDER BY d.at DESC LIMIT 1
+MATCH (d)-[:BECAUSE]->(x)-[:LEARNED_FROM|FROM*0..3]->(c)
+WHERE c:Feedback OR c:Rule OR c:Reference OR c:Asset
+WITH DISTINCT d, c
+WITH d, c, shortestPath((d)-[:BECAUSE|LEARNED_FROM|FROM*]->(c)) AS p
+WITH d, c, p, CASE WHEN c:Feedback THEN 0 WHEN c:Reference THEN 1 WHEN c:Rule THEN 2 ELSE 3 END AS rank
+RETURN d.id AS decision, d.kind AS kind, d.choice AS choice, d.why AS why, d.at AS at, length(p) AS hops,
+       [m IN nodes(p) | {id: m.id, label: labels(m)[0], text: CASE WHEN m:Decision THEN m.choice ELSE coalesce(m.why, m.text, m.name, m.id) END}] AS path,
+       [r IN relationships(p) | type(r)] AS rels
+ORDER BY rank, hops DESC
+LIMIT 6
+```
+
+### `decisionsOfRun` (read-only)
+
+Every recorded film decision of a run with its direct causes (the demo and the studio's "why" list).
+
+```cypher
+MATCH (d:Decision {run: $run})
+OPTIONAL MATCH (d)-[b:BECAUSE]->(c)
+RETURN d.id AS id, d.kind AS kind, d.choice AS choice, d.why AS why, d.at AS at,
+       collect({label: labels(c)[0], id: c.id, how: b.how}) AS causes
+ORDER BY at
+```
+
+## craft: where a library asset came from (for the why path)
+
+### `assetOrigins` (read-only)
+
+The reference reel each library asset was broken out of (Reference HAS_PART Asset), for the "why" path.
+
+```cypher
+MATCH (r:Reference)-[:HAS_PART]->(a:Asset)
+WHERE a.id IN $ids
+RETURN a.id AS asset, a.name AS name, r.id AS ref, coalesce(r.title, r.id) AS title
+```
+
+### `kitOrigins` (read-only)
+
+The reference reel that taught a kit (Reference TAUGHT Kit), for the "why" path of a kit pick.
+
+```cypher
+MATCH (r:Reference)-[:TAUGHT]->(k:Kit {id: $kit})
+RETURN r.id AS ref, coalesce(r.title, r.id) AS title
 ```
 
 

@@ -16,6 +16,7 @@ import { fxMusic } from '../edit/effects/music';
 import { activity, stageLines } from '../live';
 import { startRun } from '../runs';
 import { liveRefFile, type LiveRef } from '../styles/serve';
+import { assetCauses, noteDecision, wordsCause, type Cause } from '../why';
 
 /**
  * Your own clip in, an edit playing live out: an upload with no style picked is EDITED (not sent to the crew, which
@@ -66,6 +67,40 @@ export async function routeEdit(cmd: Brief, uploads: Upload[]): Promise<boolean>
   return true;
 }
 
+/**
+ * "Why this edit?" (decision 13): the live edit's decisions with their causes in the project graph (why.ts): the
+ * style, the caption look, the cuts, the library cast and the effects, each back to the brief's words, the rule that
+ * chose it or the library assets (and the reference reels those came from).
+ */
+async function recordEditWhy(ctx: Parameters<Handler>[0], plan: Awaited<ReturnType<typeof planEdit>>, inp: { caption?: string; brief?: string }) {
+  const rows = ((q: never, p?: Record<string, unknown>) => ctx.q(q, p)) as never, run = ctx.run.id;
+  const brief = (inp.brief ?? '').trim(), words = brief ? [wordsCause(`brief:${run}`, brief, 'your brief')] : [];
+  const style = plan.style.id ?? 'base';
+  await noteDecision(rows, run, { kind: 'style', agent: 'editor', choice: `the ${style} edit`, why: plan.style.why,
+    causes: [...words, { label: 'Rule', id: `rule:edit-style:${style}`, text: plan.style.why, how: 'picked the style' }] });
+  const cap = String(plan.edl.caption_style_id ?? '').replace(/^caption:/, ''), look = (plan.edl as { caption_look?: { id?: string; number?: number } }).caption_look;
+  const capId = look?.id ? `caption:${look.id}` : `caption:${cap}`;
+  const capRule: Cause = inp.caption ? { label: 'Rule', id: 'rule:caption:named', text: 'a caption style named in the brief is the one used', how: 'you named it' }
+    : look?.id ? { label: 'Rule', id: 'rule:caption:directed', text: 'the director picks a caption look for the clip', how: 'directed' }
+    : { label: 'Rule', id: `rule:caption:${style}`, text: `the ${style} edit's own caption look`, how: 'the style default' };
+  const capAssets = await assetCauses([capId], () => 'the caption look');
+  await noteDecision(rows, run, { kind: 'caption', agent: 'editor', choice: look?.number ? `caption look ${look.number}` : `${cap} captions`, why: capRule.text,
+    causes: [...(inp.caption ? words : []), capRule, ...capAssets.causes], links: [...capAssets.links, ...(inp.caption && words[0] ? [{ from: capRule.id, to: words[0].id, rel: 'LEARNED_FROM' as const }] : [])] });
+  const cut = plan.source.duration - plan.duration;
+  await noteDecision(rows, run, { kind: 'cut', agent: 'editor', choice: `${cut.toFixed(1)} s of pauses cut, ${plan.edl.shots.length} shots`, why: 'pauses and fillers cut on word edges',
+    causes: [...words.map(w => ({ ...w, how: 'read for how tight to cut' })), { label: 'Rule', id: 'rule:cut:pauses', text: 'cut pauses and fillers, snapped to the words', how: 'the cut rule' }] });
+  if (plan.cast?.beats.length) {
+    const ids = plan.cast.beats.flatMap(b => [...b.sfx, ...b.camera, ...(b.transition ? [b.transition] : [])]);
+    const need = new Map(plan.cast.beats.flatMap(b => [...b.sfx, ...b.camera, ...(b.transition ? [b.transition] : [])].map(id => [id, `serves ${b.tag}: ${b.needs.join(', ')}`] as const)));
+    const a = await assetCauses(ids, id => need.get(id) ?? 'cast');
+    await noteDecision(rows, run, { kind: 'cast', agent: 'editor', choice: `${new Set(ids).size} library pieces (sound, camera, transitions)`, why: `cast by need from the library graph (${plan.cast.source})`, causes: a.causes, links: a.links });
+  }
+  if (plan.effects?.picks.length) {
+    const a = await assetCauses(plan.effects.picks.map(p => `effect:reel-${p.fx}`), id => { const p = plan.effects!.picks.find(x => `effect:reel-${x.fx}` === id); return p ? `“${p.line.slice(0, 60)}” needs ${p.needs.join(', ')}` : 'effect'; });
+    await noteDecision(rows, run, { kind: 'effects', agent: 'editor', choice: plan.effects.picks.map(p => p.fx).join(', '), why: `effects that serve what the clip says (${plan.effects.source})`, causes: a.causes, links: a.links });
+  }
+}
+
 export const editReel: Handler = async ctx => {
   const inp = ctx.input<{ upload: string; caption?: string; names?: string[]; brief?: string }>();
   const [u] = (await ctx.q<Upload>(P.uploads, { chat: ctx.chat })).filter(x => x.id === inp.upload);
@@ -84,6 +119,7 @@ export const editReel: Handler = async ctx => {
     ? `cleaned and upscaled your clip from ${r.from.w}x${r.from.h} to ${r.to.w}x${r.to.h}${r.graded ? ', graded' : ''} (${r.seconds} s)`
     : `graded your clip (${r.seconds} s)`));
   const { edl, words, lap } = plan, pr ={ duration: plan.source.duration, width: plan.source.w, height: plan.source.h };
+  await recordEditWhy(ctx, plan, inp);
   const t = { duration: plan.duration };
 
   // it plays now: the edit preview player through the studio's preview route, like the live styles

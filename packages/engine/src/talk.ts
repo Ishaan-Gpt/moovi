@@ -12,6 +12,7 @@ import { changeEdit } from './change/versions';
 import { X1_MOVES } from './edit/moves';
 import { liveRefFile, type LiveRef } from './styles/serve';
 import { pq, say, status } from './live';
+import { askWhy, noteDecision, whyQuestion, wordsCause } from './why';
 import { ask, tool, type Tool } from './runtime';
 import { startRun } from './runs';
 import { keyOf, type TaskSpec } from './scheduler';
@@ -51,6 +52,7 @@ export async function talk(cmd: Msg) {
   await status(chat, target, `talk:${cmd.message}`, 'working', 'reading your message');
   try {
     if (target !== 'moovi') await consult(pid, chat, target, cmd.text, ctx);
+    else if (await answerWhy(pid, chat, cmd.text)) return;
     else if (await editByWords(pid, chat, user, cmd.text, ctx)) return;
     else await moovi(pid, chat, cmd, ctx);
   } finally {
@@ -87,7 +89,17 @@ async function editByWords(pid: string, chat: string, user: string, text: string
   await pq(pid, P.setVideo, { id: c.video, status: 'ready', path: r.ref.dir, poster, duration: r.duration.after, version: v, style: 'live:edit', format: 'vertical', at: Date.now() });
   await publish(chat, { type: 'video', video: { id: c.video, status: 'ready', version: v, duration: r.duration.after, format: 'vertical', live: true } });
   const check = r.review ? ` Checked: ${r.review.after ?? r.review.before}/100${r.review.repaired ? `, and I ${r.review.repaired}` : ''}.` : '';
+  await noteDecision((q, p) => pq(pid, q, p), ctx.run?.id ?? null, { kind: 'edit', agent: 'editor', choice: r.steps.map(s => s.did).join('; ') || 'a change', why: 'changed by your words',
+    causes: [wordsCause(`edit:${chat}:v${v}`, text, 'what you asked for')] });
   await say(pid, chat, 'editor', `Done in ${r.ms} ms, nothing re-made: ${r.steps.map(s => s.did).join('; ')}. Say “undo” to go back.${check}${left}`, 'video', { video: c.video, version: v, duration: r.duration.after, format: 'vertical', live: true, style: 'edit' });
+  return true;
+}
+
+/** "Why this caption?", "why this voice?": Moovi answers from the graph (why.ts whyThis, a shortest path back to the cause). */
+async function answerWhy(pid: string, chat: string, text: string): Promise<boolean> {
+  const kinds = whyQuestion(text); if (!kinds) return false;
+  const r = await askWhy((q, p) => pq(pid, q, p), kinds);
+  await say(pid, chat, 'moovi', r.text, 'text', { why: { kinds, path: r.rows[0]?.path ?? [], rels: r.rows[0]?.rels ?? [], ms: r.ms } });
   return true;
 }
 
