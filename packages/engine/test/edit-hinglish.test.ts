@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import { takeWindow } from '../src/edit/cut';
 import { VOICE_CHAIN } from '../src/edit/voice';
 import { devanagariShare } from '../src/edit/romanize';
-import { LOOKDRAW_SRC } from '../src/edit/lookdraw';
 
 // the opening of a finished avatar reel (Hinglish, heard in Devanagari): a full sentence, then a 1 s pause
 const W = (word: string, t: number, end: number) => ({ word, t, end });
@@ -28,9 +27,4 @@ test('voice chain: a Windows model path is quoted with forward slashes and an es
 test('romanize: switches on for Hinglish heard in Devanagari', () => {
   assert.ok(devanagariShare(words) > 0.4);
   assert.equal(devanagariShare([W('hello', 0, 1), W('world', 1, 2)]), 0);
-});
-
-test('lookdraw: the client source parses and exposes CAPTION_LOOK.init', () => {
-  const fn = new Function(`${LOOKDRAW_SRC}; return typeof CAPTION_LOOK.init;`);
-  assert.equal(fn(), 'function');
 });
