@@ -1,4 +1,5 @@
 # Changelog
+- 1.11.1 (2026-10-18): Launch branch references/launch.md (Ishaan's verdicts f1-f5: product UI as the film, chaos to order, bridge element, product-only beat, brand look from the live site).
 
 ## 1.0.0 (2026-10-07)
 - First version, distilled from the CaptionsEasy launch film (Remotion, 40 s), the MotionEasy canvas engine
@@ -65,3 +66,9 @@
 
 ## 1.10.1 (2026-10-18)
 - Lessons: a moving piece is shown as a playable preview (range-capable server); every owner correction lands in the skills unasked.
+
+## 1.11.0 (2026-10-18)
+- New references/edit-fundamentals.md: editing a talking head from first principles (brand world, two worlds, devices by sentence function and verb, one caption system with backdrop-aware contrast, layout rhythm, build as a beat spec).
+
+## 1.11.1 (2026-10-18)
+- Captions: never punctuation; the premium two-tier glow caption (Moovi 1.1 green / 1.2 red) spec in talking-head.md; lessons on bloom vs stacked shadows, decoding a font from a zoomed reference, one-cut fonts thickened by stroke, reading motion from a reel at 30 fps.

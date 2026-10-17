@@ -46,6 +46,17 @@ Grade footage that sits under white words (about brightness 0.6). Drawn stand-in
   centred line re-flows as each word grows in. White heavy sans (Inter Tight 800, ~66 px), soft dark shadow (blur ~26, 70%).
 - A named term (product, technique) switches that chunk to the condensed face in caps.
 - **Hide captions while a big-word moment is on screen.** Two text layers fight.
+- **Captions never show punctuation** (owner rule, 2026-10-18): only letters, digits and % $ # & + reach the screen;
+  the words keep it for timing and key-word choice.
+- **The premium two-tier glow caption** (Moovi preset 1.1 green / 1.2 red, `packages/library/src/captions/premium`):
+  white lead tier, the spoken key word underneath larger in a lit colour. Russo One at 600 (one 400 cut: thicken with a
+  ~4.5 % same-colour round stroke, never the browser's synthetic bold, which skips offscreen layers and ghosts the glow);
+  the tiers sit tight (gap ≈ 0.016 of the short edge, no extra leading); a dark shadow bed under the key word and a
+  restrained 4-layer bloom on top (wide hue halo → tight near-white core) so the word reads *highlighted*, not just
+  glowy. Entry per word, decoded from the reference reel at 30 fps: pop in at 1.22x and blurred, snap to size on
+  1 - exp(-11 s) cos(15 s) (a small undershoot bounce), glow flashes to 1.8x and eases over 0.3 s, the card drifts
+  2.5 %/s smaller while it holds. Style 1's typing tick on every word. The red copy: sentence-case white lead
+  (Poppins 800) over a slanted (shear 0.2) red key line.
 
 ## Big words (the punctuation of the edit)
 Variants seen and rebuilt; each lands in log space (1.4–1.5× → 1) with a scale smear and a hit SFX:

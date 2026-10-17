@@ -153,7 +153,7 @@ The music carries the piece (on a talking head, the voice does: SFX quieter stil
 
 ## Keep improving this skill
 
-**Use this skill on every video job (generate, edit, clone, review); it is meant to grow.** After every reference or review: log what the owner preferred in `references/lessons.md`, fold new grammar into the right reference file (talking heads: `references/talking-head.md`), bump `VERSION` and add a `CHANGELOG.md` line. Never let a session end with a lesson only in its own notes.
+**Use this skill on every video job (generate, edit, clone, review); it is meant to grow.** After every reference or review: log what the owner preferred in `references/lessons.md`, fold new grammar into the right reference file (talking heads: `references/talking-head.md`; product launch films: `references/launch.md`), bump `VERSION` and add a `CHANGELOG.md` line. Never let a session end with a lesson only in its own notes.
 
 When a review note teaches something new (for example "UI comes in too fast"), add it to `references/lessons.md` with the date, the symptom, the cause, the fix and a measured number if there is one. Bump `VERSION` and add a line to `CHANGELOG.md`.
 
@@ -167,7 +167,7 @@ When a review note teaches something new (for example "UI comes in too fast"), a
   the cinematic push goes into each insert (§12), not into replacing the speaker with a one-take.
 
 ## 12. Talking-head and voice-led edits (learned 2026-10-16)
-The full playbook is `references/talking-head.md`. The short version:
+The full playbook is `references/talking-head.md`; **the method that decides what goes in each frame is `references/edit-fundamentals.md` (read it first: brand world from the brand, two worlds, devices chosen by sentence meaning, one caption system, build as a spec, never a one-off).** The short version:
 - **The voice is the grid.** Clean the Whisper stamps (monotonic starts, real ends), look words up by normalised text
   and an `after` time, cut slightly before a word, slam exactly on it.
 - **Layouts as data:** `full` / `split` (graphic panel top half, captions on the seam) / `poster` / `card`.
