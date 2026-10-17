@@ -6,7 +6,7 @@ import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/
 import { buildEdl, directEdit, EXAMPLE_DIRECTION, overridesOf } from '@moovi/engine/brain';
 import { withModel } from '@moovi/engine/runtime';
 import { brainRun, scopeFor } from '@moovi/engine/keys';
-import { BrainHub, bridgeHttp, brainScope, buildMcp, Gate, IDLE_OTHER_WINDOW, KEY, mcpHandler, memoryStore, Presence, StepQueue, stepView } from '../src/index';
+import { BrainHub, bridgeHttp, brainScope, buildMcp, Gate, IDLE_OTHER_WINDOW, KEY, mcpHandler, memoryStore, Presence, StepQueue, stepView, WAITING_OTHER_WINDOW } from '../src/index';
 
 /**
  * Bridge item 21: two windows, two folders. Two windows on two videos never cross; a second window on the same
@@ -79,7 +79,7 @@ test('bridge 21: the same video from two folders: the same step, the same answer
   assert.equal(edl2, edl1); assert.equal(edl3, edl1, 'byte-identical EDL');
 });
 
-test('bridge 21: over HTTP, a second window on the same video is told another window has it, between steps too', async () => {
+test('bridge 21: over HTTP, a second window on the same video is told another window has it and waits, between steps too', async () => {
   const hub = new BrainHub();
   const unregister = hub.register({ server: null, bridge: { pollMs: 5 } });
   const mcp = mcpHandler({ verify: t => hub.tokens.verify(t), build: ctx => buildMcp(hub, ctx) });
@@ -111,7 +111,7 @@ test('bridge 21: over HTTP, a second window on the same video is told another wi
 
   const B = await open();
   const turnedAway = await B.call('moovi_next', { wait_s: 0.5 });
-  assert.equal(turnedAway.status, 'idle'); assert.equal(turnedAway.message, IDLE_OTHER_WINDOW, 'between steps, B is told at once');
+  assert.equal(turnedAway.status, 'waiting'); assert.equal(turnedAway.message, WAITING_OTHER_WINDOW, 'between steps, B is told at once, and waits');
   await A.transport.terminateSession(); await A.client.close();
   for (let i = 0; i < 100 && await hub.gate.heldElsewhere('job-u7', 'x'); i++) await tick(10);
   const free = await B.call('moovi_next', { wait_s: 0.3 });

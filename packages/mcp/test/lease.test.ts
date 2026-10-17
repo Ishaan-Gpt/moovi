@@ -75,6 +75,17 @@ test('lease 9: a lapsed lease lets a new session (another folder or laptop) take
   const b = await g.pull('u1', 'B', tb); assert.ok('step' in b, 'B continues after A lapsed');
 });
 
+test('lease 9: after an answer the lease is back to 2 min from the last call', async () => {
+  const { g, step, tick } = setup();
+  await step('job1'); await step('job1');
+  const ta = await g.mintTicket('u1'), tb = await g.mintTicket('u1');
+  const a = await g.pull('u1', 'A', ta); assert.ok('step' in a);
+  tick(10_000);
+  assert.deepEqual(await g.submit('u1', 'A', a.lease, a.step.id, '{}'), { ok: true });
+  tick(LEASE_MS + 1);
+  const b = await g.pull('u1', 'B', tb); assert.ok('step' in b, 'A dropped right after answering: B goes on 2 min later, not 5');
+});
+
 test('lease 9: a step is handed out exactly once when two pulls race', async () => {
   const { q, step } = setup();
   await step('job1');

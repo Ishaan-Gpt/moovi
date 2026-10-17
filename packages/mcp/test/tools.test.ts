@@ -6,7 +6,7 @@ import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/
 import { directEdit, EXAMPLE_DIRECTION } from '@moovi/engine/brain';
 import { withModel } from '@moovi/engine/runtime';
 import { brainRun, scopeFor } from '@moovi/engine/keys';
-import { BrainHub, bridgeHttp, buildMcp, IDLE_NO_TICKET, IDLE_OTHER_WINDOW, mcpHandler, NOTHING_RUNNING, precheck, STEP_RULE } from '../src/index';
+import { BrainHub, bridgeHttp, buildMcp, IDLE_NO_TICKET, IDLE_OTHER_WINDOW, mcpHandler, WAITING_OTHER_WINDOW, NOTHING_RUNNING, precheck, STEP_RULE } from '../src/index';
 
 const W = (word: string, t: number, end: number) => ({ word, t, end });
 const words = [W('This', 0.2, 0.4), W('chip', 0.45, 0.8), W('is', 0.85, 0.95), W('tiny.', 1.0, 1.4), W('It', 2.0, 2.1), W('has', 2.15, 2.3), W('19', 2.35, 2.6), W('billion', 2.65, 3.0), W('transistors.', 3.05, 3.8),
@@ -76,7 +76,7 @@ test('bridge 16: from /mcp__moovi__run to the brain answer to done, through moov
   await w.client.close();
 });
 
-test('bridge 16: a second window is turned away while the first holds the video; other users never see it', async () => {
+test('bridge 16: a second window waits (and gets nothing) while the first holds the video; other users never see it', async () => {
   const { token } = await hub.tokens.mint('u2');
   const a = await window(token), b = await window(token);
   await a.call('moovi_next', { ticket: await hub.gate.mintTicket('u2'), wait_s: 0 });
@@ -88,7 +88,8 @@ test('bridge 16: a second window is turned away while the first holds the video;
   assert.equal((await u3.call('moovi_next', { ticket: await hub.gate.mintTicket('u3'), wait_s: 0.2 })).body.message, NOTHING_RUNNING, 'another user sees nothing of it');
   assert.equal((await u3.call('moovi_answer', { step: step.step, answer: EXAMPLE_DIRECTION })).body.ok, false, 'and cannot answer it');
   const edit2 = withModel(scopeFor('u2')!, () => directEdit({ words: words.map(x => ({ ...x, word: x.word.toUpperCase() })) }));
-  assert.equal((await b.call('moovi_next', { ticket: await hub.gate.mintTicket('u2'), wait_s: 2 })).body.message, IDLE_OTHER_WINDOW);
+  const wait = (await b.call('moovi_next', { ticket: await hub.gate.mintTicket('u2'), wait_s: 2 })).body;
+  assert.equal(wait.status, 'waiting', 'a second window waits for the video instead of stopping (bridge 21)'); assert.equal(wait.message, WAITING_OTHER_WINDOW);
   assert.equal((await b.call('moovi_answer', { step: step.step, answer: EXAMPLE_DIRECTION, lease: step.lease })).body.ok, false, 'the lease is per window');
   const r = await a.call('moovi_answer', { step: step.step, answer: EXAMPLE_DIRECTION });
   assert.equal(r.body.next.status, 'think', 'the holder gets the video\'s next step in the same call');
