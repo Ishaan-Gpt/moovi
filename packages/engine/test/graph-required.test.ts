@@ -20,6 +20,7 @@ const { openInserts } = await import('../src/edit/inserts');
 const { borrow } = await import('../src/styles/kit/borrow');
 const { runStyle } = await import('../src/styles/run');
 const { makeClipMoment } = await import('../src/edit/templates/clip-moment-run');
+const { typeKit } = await import('../src/library/types');
 
 const offline = new RegExp(MEMORY_OFFLINE);
 const required = async (f: () => Promise<void>) => {
@@ -39,6 +40,7 @@ test('graph required: every library read stops with "Moovi\'s memory is offline"
   await assert.rejects(openLibrary(), offline, 'edit cast (the catalogue)');
   await assert.rejects(openFx(), offline, 'effects (the catalogue)');
   await assert.rejects(openInserts(), offline, 'inserts (the catalogue)');
+  await assert.rejects(typeKit('edit'), offline, 'type kit (the catalogue)');
   await assert.rejects(borrow([beat(0, 'Hi.', ['hook']), beat(1, 'Specs, tickets, roadmaps and chat threads never agree.', ['list'])] as never, { seed: 'x', timeoutMs: 1500 }), offline, 'library inserts (borrow nothing)');
 }));
 
@@ -58,5 +60,6 @@ test('graph optional (MOOVI_GRAPH_OPTIONAL=1, tests and local dev): the catalogu
   assert.equal((await openLibrary()).source, 'catalogue');
   assert.equal((await openFx()).source, 'catalogue');
   assert.equal((await openInserts()).source, 'catalogue');
+  assert.equal((await typeKit('edit')).source, 'catalogue');
   await closeMemory().catch(() => {});
 });

@@ -11,7 +11,7 @@
  * Nothing reads `typeKit` yet except the tests; the router reads it later (W1).
  */
 import { readFileSync } from 'node:fs';
-import { CRAFT, health, licenceTerms, run, types as T, type AssetRow } from '@moovi/graph';
+import { CRAFT, graphOptional, graphOr, licenceTerms, needGraph, run, types as T, type AssetRow } from '@moovi/graph';
 import { TYPES, typeOf, type SliceRule, type TypeId, type TypeSpec } from '@moovi/library/types';
 import { catalogue } from './catalog';
 import { styleCast } from './edit-styles';
@@ -124,11 +124,11 @@ export async function graphKit(id: TypeId): Promise<TypeKit | null> {
 }
 
 /**
- * Everything a film of this type needs: FalkorDB when it answers (one health read, then one query), else the
- * catalogue, so a film never waits on the graph (like edit/cast.ts openLibrary).
+ * Everything a film of this type needs: FalkorDB (one health read, then one query); an unseeded graph gets the
+ * catalogue. FalkorDB down: the job stops (decision 13); the catalogue only with MOOVI_GRAPH_OPTIONAL=1.
  */
 export async function typeKit(id: TypeId, o: { graph?: boolean } = {}): Promise<TypeKit> {
-  if (o.graph === false || process.env.MOOVI_LIBRARY === 'catalogue') return catalogueKit(id);
-  try { if ((await health()).ok) { const k = await graphKit(id); if (k) return k; } } catch { /* down */ }
+  if (o.graph === false || (graphOptional() && process.env.MOOVI_LIBRARY === 'catalogue')) return catalogueKit(id);
+  if (await needGraph('type kit')) { const k = await graphKit(id).catch(graphOr(null, 'type kit')); if (k) return k; }
   return catalogueKit(id);
 }
