@@ -89,7 +89,16 @@ function drawCaptions(t) {
     if (ST.entry === 'typewriter') { const full = EDIT.caseOf(w.text, ST.font.case); el.textContent = w.on ? full.slice(0, Math.ceil(full.length * w.p)) : ''; }
   });
   // kept off the face (lib capYAt): the style's place when it clears the face in this shot, else just below or above it
-  cap.style.top = (EDIT.capYAt(E, t, CAP_BASE, Math.max(0.03, cap.offsetHeight / H / 2)) * H).toFixed(1) + 'px';
+  const half = Math.max(0.03, cap.offsetHeight / H / 2);
+  let cy = EDIT.capYAt(E, t, CAP_BASE, half);
+  // and off the template's cards: a template that knows where its cards sit (capAvoid) gets the caption just below the
+  // band, else just above it, inside the platform zones (top 8%, bottom 15%)
+  const ko = TPL && TPL.capAvoid ? TPL.capAvoid(t) : null;
+  if (ko && cy + half > ko.y0 && cy - half < ko.y1) {
+    const pad = 0.015, lo = 0.08 + half, hi = 0.85 - half, below = ko.y1 + half + pad, above = ko.y0 - half - pad;
+    cy = below <= hi ? below : above >= lo ? above : Math.min(hi, below);
+  }
+  cap.style.top = (cy * H).toFixed(1) + 'px';
 }
 const CAP_BASE = LK && LK.y !== null ? LK.y : EDIT.posY(ST.position);
 cap.style.top = (CAP_BASE * H) + 'px';

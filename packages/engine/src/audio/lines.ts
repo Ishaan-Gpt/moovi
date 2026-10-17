@@ -11,14 +11,23 @@ import { dirname, join } from 'node:path';
 import { config } from '../config';
 import { elevenSynthesize, elevenVoiceFor, type Timed } from './eleven';
 import { synthesize as edgeSynthesize } from './tts';
+import { openaiSynthesize } from './openai-tts';
 import { voiceById } from './voices';
 import { writeWav } from './wav';
 
-export type Engine = 'edge' | 'elevenlabs';
+export type Engine = 'edge' | 'elevenlabs' | 'openai';
 export interface LineOpts {
   voice: string; rate?: string; pitch?: string;
   /** the engine asked for; ElevenLabs only runs with its key, else Edge speaks (and the stats say so) */
   engine?: Engine;
+  /**
+   * phrases on the music's grid: every line after the first starts its first word on the next grid point (offset +
+   * k * period seconds, the offset being the time of word `anchor` of the first line, i.e. the hook word on the drop),
+   * at least `gap` after the line before. Without it the lines are `gap` apart.
+   */
+  grid?: { period: number; anchor?: number };
+  /** openai only: the delivery brief ("intense gym coach, building energy"); part of the line's cache key */
+  instructions?: string;
   signal?: AbortSignal;
   /** the breath between beats, after each line is trimmed to its speech (seconds; default 0.4) */
   gap?: number;
@@ -71,16 +80,22 @@ export async function speakLines(dir: string, lines: string[], o: LineOpts) {
   if (!text.length) throw new Error('nothing to speak');
   writeFileSync(join(dir, 'script.txt'), text.join('\n\n'), 'utf8');
   const rate = o.rate ?? '+0%', pitch = o.pitch ?? '+0Hz', cache = o.cacheDir ?? cacheDirDefault();
+  const wantOpenai = (o.engine ?? config.voice.engine) === 'openai';
+  if (wantOpenai && !config.voice.openaiKey && !o.synth) throw new Error('the openai voice needs OPENAI_API_KEY');
   const wantEleven = (o.engine ?? config.voice.engine) === 'elevenlabs';
   const key = config.voice.elevenKey;
   let fallback: string | undefined = wantEleven && !key ? 'ELEVENLABS_API_KEY is not set' : undefined;
   let eleven = wantEleven && !!key;
   const info = voiceById(o.voice);
   // the voice each engine really uses: ElevenLabs speaks with its own voice id, so its lines are cached under that id
-  const voiceFor = (engine: Engine) => engine === 'elevenlabs' ? elevenVoiceFor(info?.gender ?? 'male', config.voice.elevenVoice) : o.voice;
+  // the openai voice is cached under its voice and its delivery brief (the brief changes the sound)
+  const brief = o.instructions?.trim() ? createHash('sha256').update(o.instructions.trim()).digest('hex').slice(0, 12) : '';
+  const voiceFor = (engine: Engine) => engine === 'elevenlabs' ? elevenVoiceFor(info?.gender ?? 'male', config.voice.elevenVoice) : engine === 'openai' ? (brief ? `${o.voice}#${brief}` : o.voice) : o.voice;
   const synth = o.synth ?? (async (t, s) => s.engine === 'elevenlabs'
     ? elevenSynthesize(t, { key: key!, voiceId: s.voice, signal: s.signal })
-    : edgeSynthesize(t, { voice: s.voice, rate: s.rate, pitch: s.pitch, signal: s.signal }));
+    : s.engine === 'openai'
+      ? openaiSynthesize(t, { key: config.voice.openaiKey!, ...(config.voice.openaiBase ? { base: config.voice.openaiBase } : {}), voice: s.voice.split('#')[0]!, ...(o.instructions ? { instructions: o.instructions } : {}), signal: s.signal })
+      : edgeSynthesize(t, { voice: s.voice, rate: s.rate, pitch: s.pitch, signal: s.signal }));
 
   const files: { mp3: string; words: Timed[]; by: Engine }[] = new Array(text.length);
   let cached = 0, spoken = 0;
@@ -103,6 +118,8 @@ export async function speakLines(dir: string, lines: string[], o: LineOpts) {
       }
       throw last instanceof Error ? last : new Error(String(last));
     };
+    // one film, one voice: the openai voice has no stand-in (an Edge line in the middle would be a different person)
+    if (wantOpenai) { await tryEngine('openai'); return; }
     if (eleven) {
       try { await tryEngine('elevenlabs'); }
       catch (e) { eleven = false; fallback = `ElevenLabs failed (${String(e instanceof Error ? e.message : e).slice(0, 160)}); Edge spoke instead`; await tryEngine('edge'); }
@@ -133,11 +150,14 @@ export async function speakLines(dir: string, lines: string[], o: LineOpts) {
     return b > a ? p.subarray(a, b) : p;
   });
   const gap = Math.round((o.gap ?? 0.4) * SR);
-  const total = pcm.reduce((a, p) => a + p.length, 0) + gap * (pcm.length - 1);
+  // where each line starts in the joined track (samples): back to back with `gap`, or snapped to the music's grid
+  const starts = lineStarts(pcm.map(p => p.length), files.map(f => f.words[0]?.t ?? 0), gap / SR, o.grid ? { ...o.grid, anchorT: files[0]!.words[Math.min(o.grid.anchor ?? 0, files[0]!.words.length - 1)]!.t } : undefined).map(x => Math.round(x * SR));
+  const total = starts.at(-1)! + pcm.at(-1)!.length;
   const y = new Float32Array(total);
-  const words: Timed[] = [];
+  const words: (Timed & { line: number })[] = [];
   let at = 0;
   pcm.forEach((p, i) => {
+    at = starts[i]!;
     y.set(p, at);
     const off = at / SR;
     // the service reports words without punctuation: give it back from the line so on-screen words match the script
@@ -146,9 +166,9 @@ export async function speakLines(dir: string, lines: string[], o: LineOpts) {
     for (const w of files[i]!.words) {
       let word = w.word;
       for (let k = j; k < Math.min(j + 4, toks.length); k++) if (norm(toks[k]!) === norm(w.word)) { word = toks[k]!; j = k + 1; break; }
-      words.push({ word, t: +(w.t + off).toFixed(3), end: +(w.end + off).toFixed(3) });
+      // each word keeps the line it was spoken in, so a style splits beats by the voice's own lines, not by guessing from pauses
+      words.push({ word, t: +(w.t + off).toFixed(3), end: +(w.end + off).toFixed(3), line: i });
     }
-    at += p.length + gap;
   });
   writeWav(join(dir, 'vo.wav'), { sr: SR, ch: [y] });
   writeFileSync(join(dir, 'words.json'), JSON.stringify(words, null, 1));
@@ -156,4 +176,23 @@ export async function speakLines(dir: string, lines: string[], o: LineOpts) {
   const stats: LineStats = { lines: text.length, cached, spoken, spokenBy, msPerLine: spoken ? Math.round(synthMs / spoken) : 0, synthMs, joinMs, wallMs: Date.now() - t0, ...(fallback ? { fallback } : {}) };
   writeFileSync(join(dir, 'voice-stats.json'), JSON.stringify({ voice: o.voice, rate, pitch, ...stats }, null, 1));
   return { words, seconds: total / SR, wav: join(dir, 'vo.wav'), stats };
+}
+
+/**
+ * Line start times (seconds) in the joined track: line 0 at 0, each next one `gap` after the one before ends, and with
+ * a grid, pushed on to the next grid point for its first word (lead = the time from the line's start to its first
+ * word). Pure (tested).
+ */
+export function lineStarts(lens: number[], leads: number[], gap: number, grid?: { period: number; anchorT: number }, sr = SR): number[] {
+  const out: number[] = [];
+  let end = 0;
+  lens.forEach((n, i) => {
+    let t = i === 0 ? 0 : end + gap;
+    if (grid && i > 0 && grid.period > 0) {
+      const first = t + (leads[i] ?? 0), k = Math.ceil((first - grid.anchorT) / grid.period - 1e-6);
+      t = grid.anchorT + k * grid.period - (leads[i] ?? 0);
+    }
+    out.push(t); end = t + n / sr;
+  });
+  return out;
 }

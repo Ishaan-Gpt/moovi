@@ -4,13 +4,13 @@ import { sh } from '../../bench';
 import { config } from '../../config';
 import { speakLines } from '../../audio/lines';
 import { bedStem, castStem, sfxStem, type Ev } from '../../audio/mix';
-import { fetchMusic, lufsOf, musicFilter, musicMixPlan, musicWant, pickMusic, MUSIC_MIX, type MusicMixPlan, type MusicPick } from '../../audio/music-lib';
+import { fetchMusic, lufsOf, musicFilter, musicMixPlan, musicWant, pickMusic, MUSIC_MIX, MUSIC_TRACKS, type MusicMixPlan, type MusicPick } from '../../audio/music-lib';
 import { checkClip, clipId, fetchClip, rank, type Clip, type ClipCandidate } from '../../footage';
 import { clipAssetId } from '../../footage/graph';
 import type { MusicScope } from '../../audio/music-lib';
 import { mixkit } from '../../footage/sources';
 import { validateEdl } from '../edl';
-import { clipMomentEdl, cmLines, plateSpans, spoken, CM_END_MAX, CM_PALETTE, CM_TAIL, CM_TRANSITIONS, type CmEdl, type CmScript, type CmTheme, type TimedWord } from './clip-moment';
+import { clipMomentEdl, cmLines, markedWords, plateSpans, spoken, CM_END_MAX, CM_PALETTE, CM_TAIL, CM_TRANSITIONS, type CmEdl, type CmScript, type CmTheme, type TimedWord } from './clip-moment';
 import { cmClipFits, cmPlan, cmTopic, mixkitLicence, CM_CAMERAS } from './clip-moment-plan';
 import { gradeClips, spreadOf, CM_FINISH_CHAIN, CM_GRADE, CM_GRADE_IDS, CM_LOOK_CHAIN, type ClipGrade } from './clip-moment-grade';
 
@@ -38,6 +38,13 @@ export interface CmRunInput {
   log?: (s: string) => void;
   /** tests and benches: no graph reads or writes */
   noGraph?: boolean;
+  /** the voice engine (edge, elevenlabs, openai) and, for openai, its delivery brief */
+  voiceEngine?: 'edge' | 'elevenlabs' | 'openai';
+  voiceInstructions?: string;
+  /** the breath between beats, seconds (default 0.4) */
+  gap?: number;
+  /** music: a library track by id (still licence-gated), the drop's time in the video, how far under the voice (LU) */
+  music?: { id?: string; dropAt?: number; underVoiceLu?: number };
   signal?: AbortSignal;
   /**
    * Whose video this is, for the music licence: 'product' (default; every studio, worker and Auto run) takes
@@ -337,7 +344,16 @@ export async function makeClipMoment(i: CmRunInput): Promise<CmRunResult> {
     const ladder = [...new Set([...(Array.isArray(b.broll) ? b.broll : b.broll ? [b.broll] : [])])], want = Math.max(1, b.clips ?? 1), tr = trace[bi]!;
     const out: (Clip & { query: string; score: number })[] = [];
     const known = g ? await g.serving(footageNeeds(b.say, ladder)).catch(() => [] as ClipCandidate[]) : [];
-    for (let r = 0; r < ladder.length && out.length < want && (r === 0 || !overBudget()); r += CM_RUNG) {
+    // clips the script names (a Mixkit id and its title) go first: no search, the same licence gate, the same checks
+    const pins = (b.pin ?? []).filter(p => !used.has(p.ref));
+    if (pins.length) {
+      const ranked = pins.map(p => ({ c: { provider: 'mixkit', ref: p.ref, title: p.title, tags: [], page: `https://mixkit.co/free-stock-video/${p.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}-${p.ref}/`, url: `https://assets.mixkit.co/videos/${p.ref}/${p.ref}-720.mp4`, licence: 'Mixkit Stock Video Free License', licenceUrl: 'https://mixkit.co/license/#videoFree' } as ClipCandidate, q: 'pinned', score: 10 }));
+      const lic = await Promise.all(ranked.map(x => gate(() => licenceOf(x.c, g ?? undefined))));
+      ranked.forEach((x, k) => { tr.checked.push({ ref: x.c.ref, title: x.c.title, score: x.score, verdict: lic[k]! }); if (lic[k] !== 'free') rejected.push({ ref: x.c.ref, why: `licence ${lic[k]}`, beat: bi + 1 }); });
+      tr.queries.push(...pins.map(p => `pin:${p.ref}`));
+      await take(ranked, lic, 0, ranked.length);
+    }
+    for (let r = 0; out.length < want && r < ladder.length && out.length < want && (r === 0 || !overBudget()); r += CM_RUNG) {
       const rung = ladder.slice(r, r + CM_RUNG);
       tr.queries.push(...rung);
       const found = await Promise.all(rung.map(async q => (await search(q)).map(c => ({ c, q }))));
@@ -384,13 +400,18 @@ export async function makeClipMoment(i: CmRunInput): Promise<CmRunResult> {
   const tv = Date.now();
   fetchStart = tv;
   mkdirSync(cache, { recursive: true });
+  // a named track with a tempo: each line's first word lands on a beat of it, counted from the hook word (the first
+  // accented word of the first beat), which is where the drop goes
+  const namedTrack = i.music?.id ? MUSIC_TRACKS.find(t => t.id === i.music!.id) : undefined;
+  const hookWord = Math.max(0, markedWords(script.beats[0]?.say ?? '').findIndex(w => w.accent));
+  const grid = namedTrack?.bpm ? { period: 60 / namedTrack.bpm, anchor: hookWord } : undefined;
   const [spoken2, clips] = await Promise.all([
-    speakLines(join(dir, 'voice'), lines, { voice, rate: i.rate ?? '+12%', ...(i.signal ? { signal: i.signal } : {}) }).then(v => { T.voice = r3((Date.now() - tv) / 1000); return v; }),
+    speakLines(join(dir, 'voice'), lines, { voice, rate: i.rate ?? '+12%', ...(i.voiceEngine ? { engine: i.voiceEngine } : {}), ...(i.voiceInstructions ? { instructions: i.voiceInstructions } : {}), ...(i.gap !== undefined ? { gap: i.gap } : {}), ...(grid ? { grid } : {}), ...(i.signal ? { signal: i.signal } : {}) }).then(v => { T.voice = r3((Date.now() - tv) / 1000); return v; }),
     pool(script.beats, 6, (b, k) => fetchBeat(b, k)).then(v => { T.clips = r3((Date.now() - tv) / 1000); writeFileSync(searchCache, JSON.stringify(searches)); return v; }),
   ]);
   t = Date.now();
   copyFileSync(spoken2.wav, join(dir, 'vo.wav'));
-  const words: TimedWord[] = spoken2.words.map((w: { word?: string; text?: string; t?: number; start?: number; end: number }) => ({ word: String(w.word ?? w.text ?? ''), t: Number(w.t ?? w.start ?? 0), end: Number(w.end) }));
+  const words: TimedWord[] = spoken2.words.map((w: { word?: string; text?: string; t?: number; start?: number; end: number; line?: number }) => ({ word: String(w.word ?? w.text ?? ''), t: Number(w.t ?? w.start ?? 0), end: Number(w.end), ...(typeof w.line === 'number' ? { line: w.line } : {}) }));
   if (!clips.some(c => c.length)) throw new Error('clip-moment: no Mixkit clip passed the licence gate');
   // a beat cuts between as many clips as it got (never the same clip twice)
   script = { ...script, beats: script.beats.map((b, k) => ({ ...b, clips: Math.max(1, clips[k]!.length) })) };
@@ -450,28 +471,33 @@ export async function makeClipMoment(i: CmRunInput): Promise<CmRunResult> {
   // assetsServing, catalogue if the graph is down), its drop on the first 3D moment (else the first cut), ducked about
   // MUSIC_MIX.underVoiceLu under the voice, faded out over the end card; no pick = the vendored bed, said in the trace
   const firstThud = evs.filter(e => e.event === 'thud' && e.t >= 1.5 && e.t <= 12).map(e => e.t).sort((a, b) => a - b)[0];
-  const dropTarget = r3(firstThud ?? (pre.cuts ?? [])[0]?.t ?? 3);
+  // the hook on the drop: on the tempo grid the drop lands on the hook word (the grid's own anchor)
+  const dropTarget = r3(i.music?.dropAt ?? (grid ? words[hookWord]?.t : undefined) ?? firstThud ?? (pre.cuts ?? [])[0]?.t ?? 3);
   let musicPick: MusicPick | null = null, musicPlan: MusicMixPlan | null = null, musicFile = '', musicNote = '', voiceLufs: number | null = null, musicLufs: number | null = null;
   try {
     const want = cmMusicWant(i, { lines, seconds: D0, dropTarget, seed: topic ?? lines[0] ?? 'clip-moment' });
     const hits = g ? await g.music(want.needs).catch(() => null) : null;
-    musicPick = pickMusic(want, hits && hits.size ? hits : null);
+    // a track named by the caller (the library id) is still licence-gated; else the graph's pick
+    const named = i.music?.id ? MUSIC_TRACKS.filter(t => t.id === i.music!.id) : null;
+    if (named && !named.length) throw new Error(`music ${i.music!.id}: not in the library`);
+    musicPick = named ? pickMusic({ ...want, needs: [...new Set([...want.needs, ...named[0]!.needs])] }, null, named) : pickMusic(want, hits && hits.size ? hits : null);
     if (musicPick) {
       musicFile = await fetchMusic(musicPick.track, i.signal ? { signal: i.signal } : {});
       const base = { track: musicPick.track, dropTarget, seconds: D0, endCardAt: r3(D0 - CM_END_MAX) };
       const seek = musicMixPlan({ ...base, voiceLufs: 0, musicLufs: 0 }).seek;
       [voiceLufs, musicLufs] = await Promise.all([lufsOf(join(dir, 'vo.wav')), lufsOf(musicFile, { start: seek, dur: D0 })]);
-      musicPlan = musicMixPlan({ ...base, voiceLufs: voiceLufs ?? -18, musicLufs: musicLufs ?? -14 });
+      musicPlan = musicMixPlan({ ...base, voiceLufs: voiceLufs ?? -18, musicLufs: musicLufs ?? -14, ...(i.music?.underVoiceLu !== undefined ? { underVoiceLu: i.music.underVoiceLu } : {}) });
       log(`music: ${musicPick.track.id} (${musicPick.source}) ${musicPick.why}; drop at ${musicPlan.dropAt ?? 'none'} s, ${musicPlan.gainDb} dB`);
     } else musicNote = 'music: no library track passed the gate and served the needs; vendored bed';
   } catch (e) { musicNote = `music: ${(e as Error).message.slice(0, 160)}; vendored bed`; musicPick = null; musicPlan = null; }
   if (musicNote) log(musicNote);
-  const vo0 = '[0:a]aresample=48000,asplit=2[vo][key];';
-  const tailMix = `[bed][key]sidechaincompress=${musicPlan ? MUSIC_MIX.sidechain : 'threshold=0.03:ratio=8:attack=20:release=300'}[ducked];[2:a]aresample=48000,volume=0.55[fx];[vo][ducked][fx]amix=inputs=3:normalize=0:duration=longest,acompressor=threshold=-20dB:ratio=3:attack=5:release=80,loudnorm=I=-14:TP=-1.5:LRA=7[a]`;
+  // stereo end to end: a mono voice in amix would fold the bed to mono (the 2026-10-16 Gym Easy cut came out mono)
+  const vo0 = '[0:a]aresample=48000,aformat=channel_layouts=stereo,asplit=2[vo][key];';
+  const tailMix = `[bed][key]sidechaincompress=${musicPlan ? MUSIC_MIX.sidechain : 'threshold=0.03:ratio=8:attack=20:release=300'},aformat=channel_layouts=stereo[ducked];[2:a]aresample=48000,aformat=channel_layouts=stereo,volume=0.275[fx];[vo][ducked][fx]amix=inputs=3:normalize=0:duration=longest,acompressor=threshold=-14dB:ratio=2:attack=10:release=120,loudnorm=I=-14:TP=-1.5:LRA=9[a]`;
   if (!musicPlan) bedStem(D0 + 0.5, join(dir, 'music.wav'));
   await sh(config.ffmpeg, ['-v', 'error', '-y', '-i', join(dir, 'vo.wav'), '-i', musicPlan ? musicFile : join(dir, 'music.wav'), '-i', join(dir, 'sfx.wav'), '-filter_complex',
     vo0 + (musicPlan ? `${musicFilter(musicPlan, '1:a', 'bed')};` : '[1:a]aresample=48000,volume=0.32[bed];') + tailMix,
-    '-map', '[a]', '-t', D0.toFixed(3), '-ar', '48000', '-c:a', 'aac', '-b:a', '160k', join(dir, 'master.m4a')], { timeout: 120_000 });
+    '-map', '[a]', '-t', D0.toFixed(3), '-ar', '48000', '-ac', '2', '-c:a', 'aac', '-b:a', '160k', join(dir, 'master.m4a')], { timeout: 120_000 });
   lap('audio');
 
   // 5. the plate: every beat's clip, full bleed 9:16, denavied, with the mix on it (the live player plays its sound)

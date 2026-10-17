@@ -79,7 +79,7 @@ export function musicLicenceOk(t: Pick<MusicTrack, 'licence' | 'use' | 'credit' 
 }
 
 /** The mix: the bed sits this many LU under the voice (integrated), and the sidechain takes a few dB more while words play */
-export const MUSIC_MIX = { underVoiceLu: 20, sidechain: 'threshold=0.05:ratio=4:attack=15:release=350', fadeIn: 0.15, endFadeMin: 0.8 };
+export const MUSIC_MIX = { underVoiceLu: 20, sidechain: 'threshold=0.1:ratio=2:attack=20:release=250:knee=4', fadeIn: 0.15, endFadeMin: 0.8 };
 
 /** What a video wants from its bed. */
 export interface MusicWant { needs: string[]; energy: number; dropTarget: number; seconds: number; seed: string; scope?: MusicScope }
@@ -190,14 +190,15 @@ export interface MusicMixPlan {
  * Where the track starts and how loud it sits: the drop lands on `dropTarget` (the first 3D moment or the hook), the
  * bed sits MUSIC_MIX.underVoiceLu under the voice, and it fades out over the end card.
  */
-export function musicMixPlan(o: { track: MusicTrack; voiceLufs: number; musicLufs: number; dropTarget: number; seconds: number; endCardAt: number }): MusicMixPlan {
+export function musicMixPlan(o: { track: MusicTrack; voiceLufs: number; musicLufs: number; dropTarget: number; seconds: number; endCardAt: number; underVoiceLu?: number }): MusicMixPlan {
+  const under = o.underVoiceLu ?? MUSIC_MIX.underVoiceLu;
   const t = o.track, r3 = (x: number) => Math.round(x * 1000) / 1000;
   const anchor = t.hasDrop && t.dropAt !== null ? t.dropAt : null;
   const seek = anchor === null ? 0 : Math.max(0, anchor - o.dropTarget);
   const delay = anchor === null ? 0 : Math.max(0, o.dropTarget - anchor);
-  const gainDb = r3(o.voiceLufs - MUSIC_MIX.underVoiceLu - o.musicLufs);
+  const gainDb = r3(o.voiceLufs - under - o.musicLufs);
   const fadeOutAt = r3(Math.max(0, Math.min(o.endCardAt, o.seconds - MUSIC_MIX.endFadeMin)));
-  return { id: t.id, seek: r3(seek), delay: r3(delay), gainDb, underVoiceLu: MUSIC_MIX.underVoiceLu, dropAt: anchor === null ? null : r3(delay + anchor - seek), fadeOutAt, fadeOutDur: r3(o.seconds - fadeOutAt), seconds: o.seconds };
+  return { id: t.id, seek: r3(seek), delay: r3(delay), gainDb, underVoiceLu: under, dropAt: anchor === null ? null : r3(delay + anchor - seek), fadeOutAt, fadeOutDur: r3(o.seconds - fadeOutAt), seconds: o.seconds };
 }
 
 /** The ffmpeg filter for the bed from input `inp` to label `[out]` (seek, gain, fades, delay to the drop). */
