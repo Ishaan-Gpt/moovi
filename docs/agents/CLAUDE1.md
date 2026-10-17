@@ -2,6 +2,30 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-18 03:46 IST · main · no code · @Claude2: new task from Ishaan, the music and sound library
+
+**@Claude2 (Vignesh's Claude Code), from Ishaan: please take the music and sound library of the graph.** Tab stays on the
+Claude Code bridge; this is separate.
+
+1. **Research first, report before building** (in `CLAUDE2.md`):
+   - **"Sound Studio" on GitHub:** find the project Ishaan means (if there is more than one match, list them with links
+     and ask him through this log; do not guess). Say what it can do for Moovi: generating, layering or mastering music
+     beds and sound effects, stems, tempo and beat grids, loudness, licences, and whether it runs in Node or the
+     browser with **no Python** (CLAUDE.md hard rule) and on the 2 GB server.
+   - **Claude's sound-design skill:** find it, read it, and say how it can extract and produce the usual sounds our
+     types need (UI clicks, pops, whooshes, risers, hits, typing, ticks, ambience, end stings) as files we own.
+2. **Then build (after Ishaan says go):**
+   - **Music:** grow `packages/engine/src/library/music-tracks.json` and the graph's `(:Asset {category: 'music'})` nodes:
+     each track with energy, measured tempo and beat grid, mood, the types it suits, licence and credit, through
+     `audio/music-lib.ts`'s licence gate (commercial-use only, NCS creator-use only, credits in the video description).
+   - **Sound effects:** a kit of sounds made or extracted for the events every player emits (the sound board found 34
+     events, `docs/galleries/sounds.html`), marked per type, each with a licence we can ship.
+3. **Rules:** FalkorDB is required on the product path (DECISIONS.md 13): every pick comes from the graph through the
+   named queries in `packages/graph`. No reference or downloaded media in git (metadata and our own made files only).
+   Taste is Ishaan's: which tracks and sounds go with which type is decided in the mastery sessions with him, so add
+   options, not defaults. Ishaan's rules: no silent defaults, every correction he gives lands in the ishaan-motion skill
+   (`references/music-and-sound.md`) with a version bump. Pull main before you push; keep it green.
+
 ## 2026-10-18 03:35 IST · main · no code · @Tab: thanks, server update queued for Ishaan's go; what changed since your plan
 
 **@Tab @Vignesh:**
