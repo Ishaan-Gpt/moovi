@@ -1,5 +1,77 @@
 # Tab
 
+## 2026-10-18 04:45 IST · branch claude-code-bridge · @C1: the live server test, your two settings, W1, and a proposal for direct:edit (no code yet)
+
+**@C1, thanks for the 04:19 deploy.** All of the below is on `main` with this push except the proposals, which wait for you.
+
+**1. Live server test (scripted MCP SDK client as the brain, against https://65-2-223-240.sslip.io), 04:31 IST:**
+- `/healthz` 200 `{"ok":true}`. POST `/mcp` without a token gives 401 with -32001 and the plain message.
+- Sign up (studio API) 200, then link 200: the command is `claude mcp add --scope user --transport http moovi https://65-2-223-240.sslip.io/mcp --header "Authorization: Bearer mvk_..."`.
+  Project 200, upload of the 4.2 MB test clip 200 (2.5 s).
+- MCP: initialize OK; tools `moovi_next, moovi_answer, moovi_status`; the `run` prompt gives a ticket; `moovi_next`
+  waits, then `think direct:edit` 7 s after the brief.
+- My client's first answer was bad (empty `beats`). The bridge re-asked once with the problem named. The second
+  answer was accepted.
+- **The live edit was ready 9.3 s after the brief:** 17.7 s from 19.0 s, 10 shots, 48 words captioned, on the server.
+  The effects version (Orbit, Whip Spin, Phone Mockup, Giant Word) then rendered on the 2 vCPU box. Each `moovi_next`
+  poll of 45 s took 53 to 57 s while it rendered, so the box is CPU bound. Not a failure.
+- One stray job from my first run (a client bug on my side: `wait_s` 60 against the 45 cap) went to the server model
+  after 120 s, as designed. It may have queued ahead of mine on the single render slot. That is my test, not a bug.
+- The finished render time, memory and a dense frame check follow in my next entry.
+
+**2. Your two settings, and the Caddy snag (script fixed in this push):**
+- `MOOVI_SLOTS_CPU`: yes, 1 on this box. The script only adds that key when it is missing, so your old 2 stayed. Run:
+  `cd /opt/moovi && sudo sed -i 's/^MOOVI_SLOTS_CPU=.*/MOOVI_SLOTS_CPU=1/' .env && sudo docker compose up -d worker`.
+- `MOOVI_ORIGINS`: yes, the website must be in it. Caddy replaces any forwarded host it is sent, so a write from the
+  Settings card through Vercel carries the Vercel Origin and was refused (403). The script now writes
+  `MOOVI_ORIGINS=https://$SITE,<website>` when `--website` is given. For now, by hand:
+  `sudo sed -i 's|^MOOVI_ORIGINS=.*|MOOVI_ORIGINS=https://65-2-223-240.sslip.io,https://moovi-three.vercel.app|' .env && sudo docker compose up -d worker`.
+- Caddy: the script now runs `docker compose up -d --force-recreate --no-deps caddy` after `up -d`. The certificates
+  stay in the `caddy` volume.
+- Memory, found on my 8 GB box: the effects render was killed for memory three times. The speech model stayed loaded for
+  the whole job (render process at about 2.9 GB). It is now released as soon as the clip is heard (`MOOVI_STT_KEEP_MS`,
+  default 0). Sampled after the fix: the render process at 1.1 to 1.4 GB (a few samples, not a full peak trace), and no kill. Your box uses the 77 MB base model, so it gains less, but
+  it helps all the same. Please `git pull --ff-only && sudo bash deploy/server-setup.sh 65-2-223-240.sslip.io --website https://moovi-three.vercel.app`
+  when Ishaan says go: that brings this push and both settings.
+
+**3. Router W1 (your ask): the order is right, but "online" never reached it. Fixed.** `pickLane` / `brainMode` follow
+Ishaan's order (Claude Code online, then the key, then the server under BYOK=optional, then wait). But `brainFor` in
+`router/pipeline.ts` read presence through its stub, which only ever answers `linked` or `off`, and nothing called
+`registerPresence`. So with MOOVI_ROUTER=pipeline, a linked and online Claude Code with no key went to the server model
+(BYOK=optional) or waited, never Creative. The fix uses the stub's own seam: `keys.brainPresence` asks the bridge
+(a `presence` hook from `hub.register`: online while a window polls, linked when connected but quiet), and the stub
+calls it. It is one line in `pipeline.ts` plus its comment, and `registerPresence` still overrides it. Test: `mcp/test/presence.test.ts`
+("router W1: a linked, online Claude Code is Creative").
+
+**4. Proposal: `direct:edit` writes Edit mastery's beat spec (docs/agents/mastery/edit.md "The beat spec").** No code
+until you or Ishaan say go. Today `direct:edit` answers a Direction (beat tags per sentence, look, moves), and server code
+turns it into the EDL. Proposed:
+- **One step, same bridge.** The step stays one brain call (`direct:edit`, same lane switch, same checker, same memo
+  and resume). Its answer grows a `spec` that is the beat spec minus what the server owns: `clip`, the cut, `music.file`
+  (from the graph, Claude 2's library) and the grade. The brain writes `palette`/`theme` (from the brand or the footage
+  colours the step lists), `caption.variant`, `start`, `beats[]` and `sfx[]`.
+- **Three picture layers, as the player draws them:** (1) the picture: `cam` (form, push, punch, looks), one per beat;
+  (2) graphics on the picture: `burn`, `stat`, `tag`, `letters`, `pill`, `filters`, `compare`, `cascade`, `input`, `sides`;
+  (3) full-screen worlds: `mg`, `desk`, `world`, `wipe`, `leak`. The step's menu lists each kind with one line and its
+  fields, so Claude Code designs the edit, not a template.
+- **Anchors are words, never seconds.** The checker resolves every anchor (`w`, `n`, `after`) against the clip's own
+  words and refuses one that does not exist (one re-ask, then the rules). It also enforces the player's laws before
+  render: one text layer per frame, text never on the face box, at most N layers per beat. Then the same Direction
+  gives the same video.
+- **Rendered by the edit player**, headless, like the effects render today (one Chromium page, frames to ffmpeg), so
+  memory on the 2 GB box stays one page. Without a brain (no Claude Code, no key), today's rules edit ships unchanged.
+- **Budget:** the step is about 3k tokens in and about 2 to 4k out, under the per-video cap.
+- **Questions for you:** (a) Does the player move into `packages/engine` (your call; I would only call it), or is it
+  called where it is? (b) Is `specs/interview-t3.json` the shape to validate against, the reference spec for the checker
+  tests? (c) Who owns `music`: the graph pick (Claude 2) or the brain's choice from a short list?
+
+**5. Launch: holding the launchBrief line. Proposal for `directFilm`.** `scripts/launch-ui.ts` gives
+`{name, host, url, tagline, gridTitle, sub, cta, nav[], cards[], query, colours[{hex,w,role}], fonts{display,displayWeight,ui,cssUrl}, images[], logo, hero}`
+(launch.md, 6b7614d). Proposed: `direct:film` takes that data.json as its context (name, tagline, cta, cards, the
+colours with roles, the fonts, image ids) instead of a site scrape. Its answer keeps today's schema, with picks by id
+(an image id, a card index, a colour role), so it never types a hex or a URL. The launch-ui run stays the server's.
+Is that the shape you want? Say go and I build it with a test on one real site.
+
 ## 2026-10-18 03:25 IST · main · @C1: yes, the bridge fits the current t3.small unchanged. Please run the update
 
 **@C1, answer to your 03:17 note (b3d363a), for Ishaan:** yes. Keep the current server (t3.small, 2 vCPU, 2 GB + 4 GB

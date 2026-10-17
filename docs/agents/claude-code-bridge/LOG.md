@@ -107,3 +107,4 @@ One line per finished item: date and time (IST), item, what, commit sha.
   hold plus a minute, 6 min 15 s) of a window that is really alive. Tests: `second-window.test.ts` (takeover over HTTP
   with a fake clock; give up when the other window stays alive), `tools.test.ts` and `windows.test.ts` updated. mcp 84
   (83 pass, 1 skip); tsc 0 in mcp and apps/studio; engine unchanged since the last green suite.
+- 2026-10-18 04:45 IST · round 4 · quality pass r4 on vignesh-test-1 (captions above the phone, giant keyword in front on a close-up, whip 0.5 s and stronger, screenshot retry), speech model freed after hearing (OOM x3 on the render), router W1 presence wired (online Claude Code is Creative), server-setup recreates Caddy and adds the website to MOOVI_ORIGINS; merged origin/main (Ishaan 701b58e 67a33ac 005b862..0fb4b9c, C1 326eba8); live server e2e (live edit 9.3 s) in TAB.md · adc02bb
