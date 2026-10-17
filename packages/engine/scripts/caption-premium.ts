@@ -56,12 +56,16 @@ ${js('presets.ts')}
 ${js('draw.ts')}
 const WORDS = ${JSON.stringify(words)};
 const v = document.getElementById('v'), c = document.getElementById('c'), ctx = c.getContext('2d');
-let variant = '1.1', accent = REF_ACCENTS['1.1'], preset = premiumCaption1(variant, accent), list = cards(WORDS, preset.maxWords);
+// ?clip=<url>: the same captions over another clip (a reference, to compare like for like)
+const clipQ = new URLSearchParams(location.search).get('clip'); if (clipQ) v.src = clipQ;
+const make = (vr, a) => vr === '3' ? premiumCaption3() : vr === '2' ? premiumCaption2(a) : premiumCaption1(vr, a);
+const refAccent = vr => vr === '3' ? REF_ACCENT_3 : vr === '2' ? REF_ACCENT_2 : REF_ACCENTS[vr];
+let variant = '1.1', accent = REF_ACCENTS['1.1'], preset = make(variant, accent), list = cards(WORDS, preset.maxWords, preset.tailMax);
 const nav = document.getElementById('nav'), pick = document.getElementById('pick');
-const set = () => { preset = premiumCaption1(variant, accent); list = cards(WORDS, preset.maxWords); pick.value = accent.toLowerCase(); };
-for (const vr of ['1.1', '1.2']) {
+const set = () => { preset = make(variant, accent); list = cards(WORDS, preset.maxWords, preset.tailMax); pick.value = accent.toLowerCase(); };
+for (const vr of ['1.1', '1.2', '2', '3']) {
   const b = document.createElement('button'); b.textContent = 'Premium Caption ' + vr; b.setAttribute('aria-pressed', String(vr === variant));
-  b.onclick = () => { variant = vr; set(); [...nav.querySelectorAll('.vr')].forEach(x => x.setAttribute('aria-pressed', String(x === b))); };
+  b.onclick = () => { if ([REF_ACCENTS['1.1'], REF_ACCENTS['1.2'], REF_ACCENT_2, REF_ACCENT_3].includes(accent)) accent = refAccent(vr); variant = vr; set(); [...nav.querySelectorAll('.vr')].forEach(x => x.setAttribute('aria-pressed', String(x === b))); };
   b.className = 'vr'; nav.append(b);
 }
 // the video's own accent: the strongest saturated hue across a few frames
@@ -75,7 +79,7 @@ async function videoAccent(at = [2, 6, 10, 14]) {
 document.getElementById('fromVideo').onclick = async () => { accent = (await videoAccent()) || accent; set(); };
 pick.oninput = () => { accent = pick.value.toUpperCase(); set(); };
 const acc = document.getElementById('acc');
-for (const [label, a] of [['Ref green', REF_ACCENTS['1.1']], ['Ref red', REF_ACCENTS['1.2']]]) {
+for (const [label, a] of [['Ref green', REF_ACCENTS['1.1']], ['Ref red', REF_ACCENTS['1.2']], ['Ref gold', REF_ACCENT_2], ['Ref ice', REF_ACCENT_3]]) {
   const b = document.createElement('button'); b.textContent = label; b.onclick = () => { accent = a; set(); }; acc.append(b);
 }
 set();
@@ -101,22 +105,71 @@ function sfx() {
   lastT = now;
 }
 setInterval(sfx, 15);
+// the person matte (MediaPipe selfie segmenter, in the browser): the speaker cut out of each frame, so words of a
+// a behind tier sit in depth behind them
+let seg = null, faceDet = null;
+const segReady = (async () => {
+  try {
+    const m = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs');
+    const fs = await m.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm');
+    seg = await m.ImageSegmenter.createFromOptions(fs, { baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite', delegate: 'GPU' }, runningMode: 'VIDEO', outputConfidenceMasks: true, outputCategoryMask: false });
+    const faceOpts = delegate => ({ baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite', delegate }, runningMode: 'VIDEO' });
+    faceDet = await m.FaceDetector.createFromOptions(fs, faceOpts('GPU')).catch(() => m.FaceDetector.createFromOptions(fs, faceOpts('CPU')));
+    window.faceState = () => ({ ready: !!faceDet, box: faceBox });
+  } catch (e) { console.warn('person matte unavailable', e); }
+})();
+const maskC = document.createElement('canvas'), personC = document.createElement('canvas');
+let lastSegT = -1, segClock = 0;
+function personAt(W, H) {
+  if (!seg || v.readyState < 2) return null;
+  if (v.currentTime !== lastSegT) {
+    lastSegT = v.currentTime;
+    const r = seg.segmentForVideo(v, segClock = Math.max(segClock + 1, performance.now()));
+    const mk = r.confidenceMasks[0], a = mk.getAsFloat32Array();
+    maskC.width = mk.width; maskC.height = mk.height;
+    const mc = maskC.getContext('2d'), id = mc.createImageData(mk.width, mk.height);
+    for (let i = 0; i < a.length; i++) id.data[i * 4 + 3] = Math.max(0, Math.min(255, (a[i] - 0.35) * 3.3 * 255));
+    mc.putImageData(id, 0, 0); r.close?.();
+  }
+  personC.width = W; personC.height = H;
+  const pc = personC.getContext('2d');
+  pc.drawImage(v, 0, 0, W, H);
+  pc.globalCompositeOperation = 'destination-in'; pc.filter = 'blur(1px)';
+  pc.drawImage(maskC, 0, 0, W, H);
+  pc.filter = 'none'; pc.globalCompositeOperation = 'source-over';
+  return personC;
+}
+const needsPerson = p => p.tiers.some(t => t && t.behind);
+// the face box (MediaPipe face detector), grown to take in hair and chin: a stack card never covers it
+let lastFaceT = -1, faceClock = 0, faceBox = null;
+function faceAt() {
+  if (!faceDet || v.readyState < 2) return faceBox;
+  if (v.currentTime !== lastFaceT) {
+    lastFaceT = v.currentTime;
+    const d = faceDet.detectForVideo(v, faceClock = Math.max(faceClock + 1, performance.now())).detections[0];
+    if (d) { const b = d.boundingBox, vw = v.videoWidth, vh = v.videoHeight; faceBox = { x: (b.originX - b.width * 0.15) / vw, y: (b.originY - b.height * 0.35) / vh, w: b.width * 1.3 / vw, h: b.height * 1.6 / vh }; }
+  }
+  return faceBox;
+}
+const sceneAt = (p, W, H) => ({ face: p.layout === 'stack' ? faceAt() : null, person: needsPerson(p) ? personAt(W, H) : null });
 function frame() {
   const r = c.getBoundingClientRect(), d = devicePixelRatio || 1;
   if (c.width !== Math.round(r.width * d)) { c.width = Math.round(r.width * d); c.height = Math.round(r.height * d); }
-  ctx.clearRect(0, 0, c.width, c.height);
-  drawCaption(ctx, preset, list, v.currentTime, c.width, c.height);
+  // the video is painted into the caption canvas, so blend modes (the difference face) see its pixels
+  if (v.readyState >= 2) ctx.drawImage(v, 0, 0, c.width, c.height); else ctx.clearRect(0, 0, c.width, c.height);
+  drawCaption(ctx, preset, list, v.currentTime, c.width, c.height, sceneAt(preset, c.width, c.height));
   requestAnimationFrame(frame);
 }
-Promise.all(PREMIUM_PRESETS.flatMap(p => p.tiers.map(t => document.fonts.load(t.weight + ' ' + (t.stretch || 'normal') + ' 40px "' + t.font + '"')))).finally(() => requestAnimationFrame(frame));
+Promise.all(PREMIUM_PRESETS.flatMap(p => p.tiers.filter(Boolean).map(t => document.fonts.load((t.italic ? 'italic ' : '') + t.weight + ' ' + (t.stretch || 'normal') + ' 40px "' + t.font + '"')))).finally(() => requestAnimationFrame(frame));
 // still: the frame at t (video + caption) at 2x, beside the reference when one is given
 window.still = async (vr, t, refUrl, acc) => {
-  const a = acc === 'video' ? (await videoAccent()) || REF_ACCENTS[vr] : acc || REF_ACCENTS[vr];
-  const p = premiumCaption1(vr, a); const l = cards(WORDS, p.maxWords);
-  await Promise.all(p.tiers.map(t => document.fonts.load(t.weight + ' ' + (t.stretch || 'normal') + ' 40px "' + t.font + '"')));
+  const a = acc === 'video' ? (await videoAccent()) || refAccent(vr) : acc || refAccent(vr);
+  const p = make(vr, a); const l = cards(WORDS, p.maxWords, p.tailMax);
+  await Promise.all(p.tiers.filter(Boolean).map(t => document.fonts.load((t.italic ? 'italic ' : '') + t.weight + ' ' + (t.stretch || 'normal') + ' 40px "' + t.font + '"')));
   v.currentTime = t; await new Promise(r => v.addEventListener('seeked', r, { once: true }));
   const W = 1696, H = 956, f = document.createElement('canvas'); f.width = W; f.height = H;
-  const g = f.getContext('2d'); g.drawImage(v, 0, 0, W, H); drawCaption(g, p, l, t, W, H);
+  await segReady;
+  const g = f.getContext('2d'); g.drawImage(v, 0, 0, W, H); drawCaption(g, p, l, t, W, H, sceneAt(p, W, H));
   const s = document.getElementById('still'); s.style.display = 'block';
   if (!refUrl) { s.width = W; s.height = H; s.getContext('2d').drawImage(f, 0, 0); return; }
   const ref = new Image(); ref.src = refUrl; await ref.decode();
@@ -135,7 +188,7 @@ console.log('gallery', out);
 if (cmd === 'still') {
   const b = await chromium.launch({ headless: true, args: ['--allow-file-access-from-files'], ...(config.chrome.path ? { executablePath: config.chrome.path } : { channel: config.chrome.channel }) });
   const page = await b.newPage({ viewport: { width: 1400, height: 900 } });
-  await page.goto(pathToFileURL(out).href);
+  await page.goto(pathToFileURL(out).href + (process.env.CLIP ? '?clip=' + encodeURIComponent(pathToFileURL(resolve(process.env.CLIP)).href) : ''));
   await page.evaluate(([i, tt, r, a]) => (window as unknown as { still: (a: string, b: number, c?: string, d?: string) => Promise<void> }).still(i!, Number(tt), r || undefined, a || undefined),
     [id, t, ref && existsSync(ref) ? pathToFileURL(resolve(ref)).href : '', accent ?? ''] as const);
   await page.locator('#still').screenshot({ path: resolve(png!) });

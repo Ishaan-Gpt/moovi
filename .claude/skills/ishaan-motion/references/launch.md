@@ -100,3 +100,7 @@ events and the chores come from the site; the sentence comes from the Director.
   using it.
 - "Camera looks off; I meant easing; smooth as butter" (f9): speed curves without corners, start and end at rest,
   continuous blur, soft in-out on travel and cursor paths. `references/camera.md` holds the recommendations by moment.
+- **Faces on plates** (owner rule, 2026-10-18): when a real photo or clip behind the UI shows a person (the hiker
+  plate, the dinner plates), no word, giant verb or card sits on the face. Place it beside or below the face with a
+  margin, using the face detector the edit lane uses. A difference or negative highlight takes its colour from the
+  plate behind it, pushed bright, never a fixed hue.

@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8"><title>Premium captions</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Russo+One&family=Poppins:wght@800&display=block">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Russo+One&family=Poppins:wght@800&family=Plus+Jakarta+Sans:ital,wght@1,500;1,600&family=Antonio:wght@500&family=Montserrat:wght@400;500;700&display=block">
 <style>
 :root{--bg:#0B0D10;--ink:#F7FAFD;--dim:#8A96A3;--line:#1F2630;--ice:#CFE6F7}
 body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,sans-serif}
@@ -55,10 +55,10 @@ function litKey(accent) {
         glow: {
             color: hex(mid),
             layers: [
-                { r: 0.06, a: 0.4, c: hex(halo) },
-                { r: 0.024, a: 0.6, c: hex(mid) },
-                { r: 0.008, a: 0.65, c: hex(mix(mid, WHITE, 0.2)) },
-                { r: 0.003, a: 0.5, c: hex(mix(mid, WHITE, 0.7)) },
+                { r: 0.06, a: 0.3, c: hex(halo) },
+                { r: 0.024, a: 0.45, c: hex(mid) },
+                { r: 0.008, a: 0.5, c: hex(mix(mid, WHITE, 0.2)) },
+                { r: 0.003, a: 0.4, c: hex(mix(mid, WHITE, 0.7)) },
             ],
         },
     };
@@ -84,6 +84,14 @@ function accentFromPixels(px) {
         return null;
     return hex(fromHsl([sums[best] / bins[best], 0.9, 0.56]));
 }
+/** The key line as metal (Premium Caption 2's gold): a bright top light falling to the accent and a deeper base, no bloom. */
+function metalKey(accent) {
+    const [h, s] = toHsl(rgb(accent));
+    const mid = fromHsl([h, Math.max(s, 0.7), 0.62]);
+    const deep = fromHsl([(h + 352) % 360, Math.max(s, 0.75), 0.46]);
+    // subtle: the top light only lifts the accent a little (the ref reads as gold, not as white fading to gold)
+    return [hex(mix(mid, WHITE, 0.38)), hex(mix(mid, WHITE, 0.14)), hex(mid), hex(deep)];
+}
 
 /**
  * Premium caption presets (caption mastery, 2026-10-18): one preset per reference Ishaan sends, approved by him.
@@ -100,7 +108,7 @@ const REF_ACCENTS = { '1.1': '#52F42E', '1.2': '#FF3434' };
 /**
  * Premium Caption 1 (refs c01 and the reel DbS2vcfyQxx, approved by Ishaan 2026-10-18): a white lead tier and the
  * spoken key word lit underneath, in any accent (the video's own, from `accentFromPixels`).
- *   1.1  both tiers caps, Russo One 600, a little extra word space
+ *   1.1  both tiers caps, Russo One 600, letters set a little open (tracking +0.02 em)
  *   1.2  sentence-case white lead (Poppins 800) over a slanted key line
  * Ishaan's pick: Russo One at 600. It has one cut (400); a 4.5 % same-colour stroke thickens it to 600 identically on
  * every layer (the browser's synthetic bold skips offscreen layers, which ghosted the glow).
@@ -108,21 +116,21 @@ const REF_ACCENTS = { '1.1': '#52F42E', '1.2': '#FF3434' };
 function premiumCaption1(variant, accent = REF_ACCENTS[variant]) {
     const lit = litKey(accent);
     const key = {
-        font: 'Russo One', weight: 400, round: 0.045, size: 0.1, tracking: -0.005, fill: lit.fill,
+        font: 'Russo One', weight: 400, round: 0.045, size: 0.1, tracking: 0.02, fill: lit.fill,
         // a dark bed under the word, then the bloom: the word reads highlighted, not just glowing
         shadow: { color: 'rgba(0,0,0,0.75)', blur: 0.04, dy: 0.01 },
         glow: lit.glow,
         sheen: 0.25,
     };
     const lead = variant === '1.1'
-        ? { font: 'Russo One', weight: 400, round: 0.045, size: 0.07, tracking: -0.01, wordGap: 0.08, fill: ['#FFFFFF', '#FFFFFF', '#D9DDE3'], shadow: { color: 'rgba(0,0,0,0.7)', blur: 0.03, dy: 0.008 } }
+        ? { font: 'Russo One', weight: 400, round: 0.045, size: 0.07, tracking: 0.02, wordGap: 0.04, fill: ['#FFFFFF', '#FFFFFF', '#D9DDE3'], shadow: { color: 'rgba(0,0,0,0.7)', blur: 0.03, dy: 0.008 } }
         : { font: 'Poppins', weight: 800, casing: 'none', size: 0.068, tracking: -0.01, fill: ['#FFFFFF', '#FFFFFF', '#E2E2E6'], shadow: { color: 'rgba(0,0,0,0.7)', blur: 0.03, dy: 0.008 } };
     return {
         id: `premium-1-${variant.replace('.', '-')}`,
         name: `Premium Caption ${variant}`,
         ref: 'c01.png; reel DbS2vcfyQxx (0 s green, 4.9 s red)',
         fonts: variant === '1.1' ? ['Russo+One'] : ['Russo+One', 'Poppins:wght@800'],
-        tiers: [lead, variant === '1.1' ? { ...key, wordGap: 0.08 } : { ...key, skew: 0.2 }],
+        tiers: [lead, variant === '1.1' ? { ...key, wordGap: 0.04 } : { ...key, skew: 0.2 }],
         y: 0.8,
         gap: 0.016,
         maxWords: 4,
@@ -139,10 +147,103 @@ function premiumCaption1(variant, accent = REF_ACCENTS[variant]) {
         },
     };
 }
-const PREMIUM_PRESETS = [premiumCaption1('1.1'), premiumCaption1('1.2')];
+/** The swatch of reference 2 (gold), for previews; the product takes the accent from the video like Caption 1. */
+const REF_ACCENT_2 = '#F2C94C';
+/**
+ * Premium Caption 2 (ref c03, reel DZsBWoCz04j): three tiers around the key words, hybrid type. A white lead in
+ * Plus Jakarta Sans SemiBold Italic, the key words big in tall condensed caps (Antonio 500, slanted to match) with a
+ * soft metallic gradient, and the words after them as a lighter tail (Medium Italic). Every tier sits in an After
+ * Effects-style glow (its own light blurred wide and tight, screened back). Each word
+ * fades in out of a heavy blur over ~7 frames, no bounce (read from the reel at 30 fps).
+ */
+function premiumCaption2(accent = REF_ACCENT_2) {
+    // the After Effects glow: the letters' own light blurred wide and tight and added back, so every word sits in a haze
+    const white = (size, weight) => ({
+        font: 'Plus Jakarta Sans', weight, italic: true, casing: 'none', size, tracking: -0.02, fill: ['#FFFFFF', '#FFFFFF', '#F1F0EC'],
+        shadow: { color: 'rgba(0,0,0,0.35)', blur: 0.025, dy: 0.006 },
+        glow: { color: '#FFFFFF', layers: [{ r: 0.045, a: 0.28, c: '#FFF4E0' }, { r: 0.015, a: 0.42 }, { r: 0.004, a: 0.35 }] },
+    });
+    const metal = metalKey(accent);
+    return {
+        id: 'premium-2',
+        name: 'Premium Caption 2',
+        ref: 'c03 still; reel DZsBWoCz04j (0 to 8 s)',
+        fonts: ['Plus+Jakarta+Sans:ital,wght@1,500;1,600', 'Antonio:wght@500'],
+        tiers: [
+            white(0.05, 600),
+            {
+                font: 'Antonio', weight: 500, skew: 0.12, size: 0.17, tracking: 0, fill: metal,
+                shadow: { color: 'rgba(0,0,0,0.35)', blur: 0.02, dy: 0.006 },
+                glow: { color: metal[2], layers: [{ r: 0.07, a: 0.32, c: metal[3] }, { r: 0.024, a: 0.45 }, { r: 0.006, a: 0.4, c: metal[0] }] },
+            },
+            white(0.046, 500),
+        ],
+        y: 0.78,
+        gap: 0.03,
+        maxWords: 6,
+        tailMax: 2,
+        enter: { scaleFrom: 1.04, decay: 14, freq: 0, blur: 0.022, blurS: 0.24, fadeS: 0.2, flash: 0, flashS: 0.3, drift: -0.01 },
+        captionseasy: {
+            look: 34,
+            set: {
+                fontId: 'Plus Jakarta Sans', fontWeight: 600, casing: 'none', letterSpacing: -1, lineHeight: 1,
+                'fill.color': '#FFFFFF', 'active.color': accent, 'hero.scale': 2.6, 'hero.fontId': 'Antonio',
+                'shadow.enabled': true, 'shadow.color': 'rgba(0,0,0,0.45)', 'glow.enabled': false,
+                'position.y': 0.78, maxWordsPerCard: 6, 'entrance.type': 'blur-in',
+            },
+        },
+    };
+}
+/** The swatch of reference 3 (ice blue), for previews; the product takes the accent from the video. */
+const REF_ACCENT_3 = '#6EC6F5';
+/**
+ * Premium Caption 3 (ref c04, reel Dd76h-2RpSv): stacked cards composed like the reel's. Connector words small and
+ * above-left, the highlighted word(s) big, the words after them right-aligned under the highlight. Plain words in clean
+ * white Montserrat (content words Medium, connectors Regular and smaller). The highlight is Montserrat Bold behind the
+ * speaker as a shiny negative of the frame: the background decides its colour (light blue over warm, orange over cool,
+ * green over magenta...), pushed bright and saturated. The card never covers the face. Words slide up out of a blur.
+ * No accent: the colour comes from the video itself.
+ */
+function premiumCaption3() {
+    const white = (weight, size) => ({
+        font: 'Montserrat', weight, casing: 'lower', size, tracking: -0.02, fill: '#FFFFFF',
+        shadow: { color: 'rgba(0,0,0,0.35)', blur: 0.02, dy: 0.004 },
+    });
+    return {
+        id: 'premium-3',
+        name: 'Premium Caption 3',
+        ref: 'reel Dd76h-2RpSv',
+        fonts: ['Montserrat:wght@400;500;700'],
+        layout: 'stack',
+        tiers: [
+            white(500, 0.075),
+            {
+                font: 'Montserrat', weight: 700, casing: 'lower', size: 0.16, tracking: -0.03, fill: '#FFFFFF', behind: true,
+                shiny: { saturate: 2.4, lift: 1.3, contrast: 1.15, sheen: 0.45, opacity: 0.95 },
+                shadow: { color: 'rgba(0,0,0,0.2)', blur: 0.02, dy: 0 },
+            },
+            white(400, 0.05),
+        ],
+        y: 0.6,
+        gap: 0.012,
+        maxWords: 4,
+        tailMax: 2,
+        enter: { scaleFrom: 1, decay: 0, freq: 0, blur: 0.02, blurS: 0.28, fadeS: 0.1, flash: 0, flashS: 0.3, drift: -0.012, rise: 0.05 },
+        captionseasy: {
+            look: 34,
+            set: {
+                fontId: 'Montserrat', fontWeight: 600, casing: 'lower', letterSpacing: -1, lineHeight: 1,
+                'fill.color': '#FFFFFF', 'active.color': '#FFFFFF', 'hero.scale': 2, 'hero.fontId': 'Montserrat',
+                'shadow.enabled': true, 'shadow.color': 'rgba(0,0,0,0.4)', 'glow.enabled': false,
+                'position.y': 0.74, maxWordsPerCard: 4, 'entrance.type': 'rise',
+            },
+        },
+    };
+}
+const PREMIUM_PRESETS = [premiumCaption1('1.1'), premiumCaption1('1.2'), premiumCaption2(), premiumCaption3()];
 
 const STOP = new Set(('a an the and or but so to of in on at for is are am was be it i we you he she they my your our ' +
-    'this that with as by from now just then very really can will do does basically which').split(' '));
+    'this that with as by from now just then very really can will do does basically which after before into them get also').split(' '));
 /** how strongly a word carries the line: the one the voice hits goes to the key tier */
 function weight(w, i) {
     const bare = w.text.replace(/[^\p{L}\p{N}]/gu, '');
@@ -160,8 +261,12 @@ function weight(w, i) {
         s += 1.5;
     return s;
 }
-/** Cards: phrases split at punctuation and pauses; each card ends on its key word, the strongest within `maxWords`. */
-function cards(words, maxWords) {
+/**
+ * Cards: phrases split at punctuation and pauses; the key word is the strongest within `maxWords`. Two tiers
+ * (`tailMax` 0): each card ends on its key. Three tiers: the key takes a second strong word ("SOCIAL MEDIA") and up to
+ * `tailMax` words after it stay on the card as its tail ("grow karna").
+ */
+function cards(words, maxWords, tailMax = 0) {
     const phrases = [];
     let cur = [];
     words.forEach((w, i) => {
@@ -181,10 +286,18 @@ function cards(words, maxWords) {
             let k = 0;
             win.forEach((_, i) => { if (score(i) >= score(k))
                 k = i; });
+            if (tailMax > 0) {
+                const kEnd = k + 1 < win.length && weight(win[k + 1], k + 1) >= 1.5 ? k + 2 : k + 1;
+                const end = Math.min(p.length, kEnd + tailMax);
+                const seg = p.slice(0, end);
+                out.push({ lead: seg.slice(0, k), key: seg.slice(k, kEnd), tail: seg.slice(kEnd), t0: seg[0].t, t1: seg[seg.length - 1].end });
+                p = p.slice(end);
+                continue;
+            }
             // one short word that closes the phrase rides with the key ("DID IT!")
             const cut = p.length - k - 1 === 1 && p[k + 1].text.replace(/\W/g, '').length <= 3 && /[.!?]$/.test(p[k + 1].text) ? k + 2 : k + 1;
             const seg = p.slice(0, cut);
-            out.push({ lead: seg.slice(0, k), key: seg.slice(k), t0: seg[0].t, t1: seg[seg.length - 1].end });
+            out.push({ lead: seg.slice(0, k), key: seg.slice(k), tail: [], t0: seg[0].t, t1: seg[seg.length - 1].end });
             p = p.slice(cut);
         }
     }
@@ -197,8 +310,10 @@ function cards(words, maxWords) {
  * (% $ # & +) reach the screen. The words keep it for timing and key-word choice.
  */
 const bare = (s) => s.replace(/[^\p{L}\p{N}%$#&+ ]/gu, '');
-const cased = (tier, s) => (tier.casing === 'none' ? bare(s) : bare(s).toUpperCase());
+const cased = (tier, s) => (tier.casing === 'none' ? bare(s) : tier.casing === 'lower' ? bare(s).toLowerCase() : bare(s).toUpperCase());
 const clamp = (x) => Math.min(Math.max(x, 0), 1);
+/** An entry curve that starts and ends at rest, weighted to the start: 1 - (1 - x^1.3)^3 (zero speed at 0 and at 1). */
+const fromRest = (x) => 1 - Math.pow(1 - Math.pow(clamp(x), 1.3), 3);
 /** the font of the last `font()` call, applied as-is to offscreen layers (`ctx.font` reads back without the stretch) */
 let face = { font: '', stretch: 'normal', spacing: '0px' };
 function setFace(c) {
@@ -206,9 +321,22 @@ function setFace(c) {
     c.fontStretch = face.stretch;
     c.letterSpacing = face.spacing;
 }
+/** cap height as a share of the em, per face; the cap of the last font() call */
+const CAPS = new Map();
+let cap = 0.72;
 function font(ctx, tier, S, k = 1) {
-    const px = (tier.size * S / 0.72) * k; // cap height ≈ 0.72 em in a heavy grotesk
-    face = { font: `${tier.weight} ${px}px "${tier.font}"`, stretch: tier.stretch ?? 'normal', spacing: `${tier.tracking * px}px` };
+    // the face's own cap height (measured once per face): sizes are cap heights, so any font lands at the same size
+    const id = `${tier.italic ? "italic " : ""}${tier.weight} "${tier.font}"`;
+    if (!CAPS.has(id)) {
+        face = { font: `${tier.italic ? "italic " : ""}${tier.weight} 100px "${tier.font}"`, stretch: tier.stretch ?? "normal", spacing: "0px" };
+        setFace(ctx);
+        const a = ctx.measureText("H").actualBoundingBoxAscent;
+        if (a > 0)
+            CAPS.set(id, a / 100);
+    }
+    cap = CAPS.get(id) ?? 0.72;
+    const px = (tier.size * S / cap) * k;
+    face = { font: `${tier.italic ? "italic " : ""}${tier.weight} ${px}px "${tier.font}"`, stretch: tier.stretch ?? 'normal', spacing: `${tier.tracking * px}px` };
     setFace(ctx);
     return px;
 }
@@ -259,23 +387,73 @@ function round(c, tier, text, x, y, px) {
     c.strokeText(text, x, y);
     c.restore();
 }
+const SPRITES = new Map();
+const TIER_KEYS = new WeakMap();
+function sprite(tier, text, px, S) {
+    let tk = TIER_KEYS.get(tier);
+    if (!tk) {
+        tk = JSON.stringify(tier);
+        TIER_KEYS.set(tier, tk);
+    }
+    const key = `${face.font}|${face.stretch}|${face.spacing}|${text}|${Math.round(S)}|${tk}`;
+    const hit = SPRITES.get(key);
+    if (hit)
+        return hit;
+    const glowR = tier.glow ? Math.max(...tier.glow.layers.map(l => l.r)) * S * 2.5 : 0;
+    const shadowR = tier.shadow ? (tier.shadow.blur * 2 + Math.abs(tier.shadow.dy)) * S : 0;
+    const pad = Math.ceil(Math.max(px * 0.3, glowR, shadowR));
+    const probe = new OffscreenCanvas(1, 1).getContext('2d');
+    setFace(probe);
+    const w = Math.ceil(probe.measureText(text).width * (1 + (tier.skew ?? 0)) + px * 0.2) + pad * 2, h = Math.ceil(px * 1.4) + pad * 2;
+    const layer = (draw) => {
+        const c = new OffscreenCanvas(w, h), o = c.getContext('2d');
+        setFace(o);
+        draw(o);
+        return c;
+    };
+    const out = {
+        pad, px,
+        shadow: tier.shadow ? layer(o => {
+            o.shadowColor = tier.shadow.color;
+            o.shadowBlur = tier.shadow.blur * S;
+            o.shadowOffsetY = tier.shadow.dy * S;
+            // the letters themselves are pushed out of the layer, only their shadow stays
+            o.shadowOffsetX = w * 2;
+            o.fillStyle = '#000';
+            o.fillText(text, pad - w * 2, pad + px);
+        }) : null,
+        glow: tier.glow ? layer(o => bloom(o, tier, text, pad, pad + px, px, S, 1)) : null,
+        face: layer(o => paintFace(o, tier, text, pad, pad + px, px, S)),
+    };
+    if (SPRITES.size > 400)
+        SPRITES.clear();
+    SPRITES.set(key, out);
+    return out;
+}
 function paintWord(ctx, tier, text, x, y, px, S, alpha, glowGain = 1) {
+    const sp = sprite(tier, text, px, S);
+    const ox = x - sp.pad, oy = y - sp.pad - px;
+    ctx.save();
+    if (sp.shadow) {
+        ctx.globalAlpha = alpha;
+        ctx.drawImage(sp.shadow, ox, oy);
+    }
+    if (sp.glow) {
+        ctx.globalCompositeOperation = 'screen';
+        ctx.globalAlpha = Math.min(1, alpha * glowGain);
+        ctx.drawImage(sp.glow, ox, oy);
+        ctx.globalCompositeOperation = 'source-over';
+    }
+    ctx.globalAlpha = alpha;
+    ctx.drawImage(sp.face, ox, oy);
+    ctx.restore();
+}
+/** The word's face (edge, fill, inner sheen) at full opacity, drawn once into its sprite. */
+function paintFace(ctx, tier, text, x, y, px, S) {
+    const alpha = 1;
     ctx.save();
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
-    if (tier.shadow) {
-        ctx.globalAlpha = alpha;
-        ctx.shadowColor = tier.shadow.color;
-        ctx.shadowBlur = tier.shadow.blur * S;
-        ctx.shadowOffsetY = tier.shadow.dy * S;
-        ctx.fillStyle = '#000';
-        ctx.fillText(text, x, y);
-        ctx.shadowColor = 'transparent';
-        ctx.shadowBlur = 0;
-        ctx.shadowOffsetY = 0;
-    }
-    if (tier.glow)
-        bloom(ctx, tier, text, x, y, px, S, alpha * glowGain);
     ctx.globalAlpha = alpha;
     if (tier.edge) {
         ctx.lineJoin = 'round';
@@ -323,7 +501,7 @@ function tierLine(ctx, p, tier, ws, t, W, cy, S) {
     if (fit < 1)
         px = font(ctx, tier, S, fit);
     const full = ctx.measureText(text).width * k;
-    const base = cy + px * 0.36;
+    const base = cy + px * cap / 2;
     const space = ctx.measureText(' ').width * k + (tier.wordGap ?? 0) * px * k;
     let x = W / 2 - full / 2;
     for (const w of ws) {
@@ -333,14 +511,16 @@ function tierLine(ctx, p, tier, ws, t, W, cy, S) {
         if (e >= 0) {
             const r = p.enter;
             // damped spring 1 - exp(-decay e) cos(freq e): from scaleFrom down through 1, a little under, back to 1
-            const spring = 1 - Math.exp(-r.decay * e) * Math.cos(r.freq * e);
+            // a damped spring when it bounces (Caption 1, the reel's measured motion); otherwise one curve that leaves rest
+            // and lands at rest (owner rule: speed is a curve, never a step)
+            const spring = r.freq > 0 ? 1 - Math.exp(-r.decay * e) * Math.cos(r.freq * e) : fromRest(e * r.decay / 4.6);
             const sc = r.scaleFrom + (1 - r.scaleFrom) * spring;
             const pull = clamp(1 - e / r.blurS);
             const flash = 1 + r.flash * Math.exp(-e / r.flashS);
             ctx.save();
             ctx.translate(x, 0);
             ctx.scale(k, 1);
-            const cx = wd / k / 2, cyw = base - px * 0.36;
+            const cx = wd / k / 2, cyw = base - px * cap / 2;
             ctx.translate(cx, cyw);
             ctx.scale(sc, sc);
             if (tier.skew)
@@ -356,16 +536,26 @@ function tierLine(ctx, p, tier, ws, t, W, cy, S) {
     }
 }
 /** Paint the caption for time `t` (s) on a W x H canvas. */
-function drawCaption(ctx, p, list, t, W, H) {
+/**
+ * Paint the caption for time `t` (s) on a W x H canvas that already holds the video frame. `scene.person`: the speaker
+ * cut out of the same frame (video masked by a person matte); words of a tier marked `behind` are painted under it.
+ * `scene.face`: the face box, which a stack card never covers.
+ */
+function drawCaption(ctx, p, list, t, W, H, scene = {}) {
     const c = list.find(c => t >= c.t0 && t < c.t1);
     if (!c)
         return;
+    if (p.layout === 'stack')
+        return drawStack(ctx, p, c, t, W, H, scene);
     const S = Math.min(W, H);
     const [t1, t2] = p.tiers;
     const h1 = c.lead.length ? t1.size * S : 0;
     const h2 = t2.size * S;
+    const t3 = p.tiers[2] ?? t1;
+    const h3 = c.tail.length ? t3.size * S : 0;
     const gap = c.lead.length ? p.gap * S : 0;
-    const top = p.y * H - (h1 + gap + h2) / 2;
+    const gap3 = c.tail.length ? p.gap * S : 0;
+    const top = p.y * H - (h1 + gap + h2 + gap3 + h3) / 2;
     // the hold: the whole card settles slowly smaller while it is up (the reference's drift)
     const d = 1 + p.enter.drift * (t - c.t0);
     ctx.save();
@@ -374,21 +564,189 @@ function drawCaption(ctx, p, list, t, W, H) {
     ctx.translate(-W / 2, -p.y * H);
     tierLine(ctx, p, t1, c.lead, t, W, top + h1 / 2, S);
     tierLine(ctx, p, t2, c.key, t, W, top + h1 + gap + h2 / 2, S);
+    tierLine(ctx, p, t3, c.tail, t, W, top + h1 + gap + h2 + gap3 + h3 / 2, S);
     ctx.restore();
 }
 /** The word onsets that get a Style 1 typing tick (one per word, the owner's rule in sfx-style1/map.json "word"). */
 function ticks(list) {
-    return list.flatMap(c => [...c.lead, ...c.key].map(w => w.t));
+    return list.flatMap(c => [...c.lead, ...c.key, ...c.tail].map(w => w.t));
+}
+const ANCHORS = new Map();
+/**
+ * The stack (Premium Caption 3, ref c04): the highlighted word is the card. It is scaled to span the speaker's
+ * shoulders and centred on the body at shoulder height, behind the speaker (a shiny negative of the frame), the way the
+ * reel's "second" crosses behind the neck. Everything else is arranged around it: the words before it above, starting
+ * at its left edge (pushed left if they would reach the face), the words after it below, right-aligned to its right
+ * edge. Connectors are small, content words a middle size, in clean white Montserrat. Text never covers the face.
+ * Each word slides up out of a blur as it is said; the card drifts slowly while it holds.
+ */
+function drawStack(ctx, p, c, t, W, H, scene) {
+    const S = Math.min(W, H);
+    const m = 0.04 * S;
+    const [content, key] = p.tiers;
+    const connector = p.tiers[2] ?? content;
+    const hl = new Set(c.key);
+    const isConnector = (w) => { const b = bare(w.text).toLowerCase(); return b.length <= 3 || STOP.has(b); };
+    // the anchor: the neck line, from the face box; the highlight spans about 3.2 face boxes, past the shoulders, so the
+    // neck and shoulders cut into it but most of the word shows (as the reel's "second" behind the neck)
+    const id = `${c.t0}|${W}x${H}`;
+    let an = ANCHORS.get(id);
+    if (!an) {
+        const f = scene.face ?? null;
+        an = f
+            ? { cx: (f.x + f.w / 2) * W, cy: (f.y + f.h) * H - 0.08 * f.h * H, span: Math.min(W - 2 * m, f.w * W * 3.2), face: f }
+            : { cx: W / 2, cy: p.y * H, span: W * 0.62, face: null };
+        if (ANCHORS.size > 500)
+            ANCHORS.clear();
+        ANCHORS.set(id, an);
+    }
+    const item = (w, k = 1) => {
+        const tier = hl.has(w) ? key : isConnector(w) ? connector : content;
+        const px = font(ctx, tier, S, k);
+        const text = cased(tier, w.text);
+        return { w, tier, text, px, cap, width: ctx.measureText(text).width, k };
+    };
+    const gapX = (l) => l.px * 0.24;
+    const widthOf = (line) => line.reduce((a, l, i) => a + l.width + (i ? gapX(l) : 0), 0);
+    const capOf = (line) => Math.max(0, ...line.map(l => l.px * l.cap));
+    // the highlight line, scaled so it spans the shoulders (never past the frame)
+    const base = c.key.map(w => item(w));
+    const kScale = c.key.length ? Math.max(0.6, Math.min(3, an.span / Math.max(1, widthOf(base)))) : 1;
+    const keyLine = c.key.map(w => item(w, kScale));
+    const pairs = (ws) => { const out = []; for (let i = 0; i < ws.length; i += 2)
+        out.push(ws.slice(i, i + 2).map(w => item(w))); return out; };
+    const above = pairs(c.lead), below = pairs(c.tail);
+    const lead = p.gap * S;
+    const keyW = widthOf(keyLine), keyCap = capOf(keyLine);
+    // vertical: the highlight's cap centred on the shoulder line, the rest stacked above and below, all kept in frame
+    const aboveH = above.reduce((a, l) => a + capOf(l) + lead, 0), belowH = below.reduce((a, l) => a + lead + capOf(l), 0);
+    let keyTop = an.cy - keyCap / 2;
+    keyTop = Math.min(keyTop, H - m - belowH - keyCap);
+    keyTop = Math.max(keyTop, m + aboveH);
+    const keyLeft = Math.min(Math.max(an.cx - keyW / 2, m), W - m - keyW);
+    const placed = [];
+    let y = keyTop - lead;
+    for (let i = above.length - 1; i >= 0; i--) {
+        const line = above[i], w = widthOf(line);
+        let x = keyLeft;
+        // never into the face: a line that would reach it moves left of it
+        const f = an.face;
+        if (f && x + w > f.x * W - m && y - capOf(line) < (f.y + f.h) * H + m && y > f.y * H - m)
+            x = Math.max(m, f.x * W - m - w);
+        placed.unshift({ items: line, x, base: y });
+        y -= capOf(line) + lead;
+    }
+    if (keyLine.length)
+        placed.push({ items: keyLine, x: keyLeft, base: keyTop + keyCap });
+    y = keyTop + keyCap;
+    for (const line of below) {
+        y += lead + capOf(line);
+        placed.push({ items: line, x: Math.max(m, keyLeft + keyW - widthOf(line)), base: y });
+    }
+    const r = p.enter;
+    const drift = 1 + r.drift * (t - c.t0);
+    ctx.save();
+    ctx.translate(an.cx, an.cy);
+    ctx.scale(drift, drift);
+    ctx.translate(-an.cx, -an.cy);
+    const draw = (behind) => placed.forEach(line => {
+        let x = line.x;
+        line.items.forEach((l, i) => {
+            if (i)
+                x += gapX(l);
+            const e = t - l.w.t;
+            if (e >= 0 && !!l.tier.behind === behind) {
+                const k = fromRest(e / r.blurS);
+                const dy = (1 - k) * (r.rise ?? 0.04) * S;
+                ctx.save();
+                if (k < 1)
+                    ctx.filter = `blur(${(1 - k) * r.blur * S}px)`;
+                font(ctx, l.tier, S, l.k); // each word in its own face and size (the layout pass left the last one set)
+                if (l.tier.shiny)
+                    paintShiny(ctx, l.tier, l.text, x, line.base + dy, l.px, S, clamp(e / r.fadeS));
+                else
+                    paintWord(ctx, l.tier, l.text, x, line.base + dy, l.px, S, clamp(e / r.fadeS));
+                ctx.restore();
+            }
+            x += l.width;
+        });
+    });
+    // the highlight behind the speaker, the speaker over it, the plain words in front
+    draw(true);
+    if (scene.person && placed.some(l => l.items.some(i => i.tier.behind && t >= i.w.t))) {
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.drawImage(scene.person, 0, 0, W, H);
+        ctx.restore();
+    }
+    draw(false);
+    ctx.restore();
+}
+/**
+ * The shiny negative (Premium Caption 3's highlight): inside the letters the frame is inverted (difference with
+ * white), so the background decides the colour, then saturation and brightness are pushed to the bright side, so the
+ * word reads as a shiny, transparent light blue, orange or green depending on what is behind it, with the video's
+ * texture still moving inside. A light sheen runs over the top. Flat: no 3D, no perspective.
+ */
+function paintShiny(ctx, tier, text, x, y, px, S, alpha) {
+    const sh = tier.shiny;
+    const m = ctx.getTransform();
+    const pad = Math.ceil(px * 0.2);
+    const tw = ctx.measureText(text).width;
+    // the word's box in canvas pixels (the stack only scales and translates)
+    const bx = Math.floor(m.a * (x - pad) + m.e), by = Math.floor(m.d * (y - px - pad) + m.f);
+    const bw = Math.ceil(m.a * (tw + pad * 2)), bh = Math.ceil(m.d * (px * 1.35 + pad * 2));
+    if (bw < 2 || bh < 2)
+        return;
+    const o = new OffscreenCanvas(bw, bh), g = o.getContext('2d');
+    // 1. the frame under the word, inverted: the background decides the colour
+    g.drawImage(ctx.canvas, bx, by, bw, bh, 0, 0, bw, bh);
+    g.globalCompositeOperation = 'difference';
+    g.fillStyle = '#FFFFFF';
+    g.fillRect(0, 0, bw, bh);
+    // 2. hue/saturation and brightness on the bright side: shiny, not muddy
+    g.globalCompositeOperation = 'copy';
+    g.filter = `saturate(${sh.saturate}) brightness(${sh.lift}) contrast(${sh.contrast})`;
+    g.drawImage(o, 0, 0);
+    g.filter = 'none';
+    // 3. the sheen: a light band over the top of the letters
+    const sg = g.createLinearGradient(0, pad * m.d, 0, (pad + px) * m.d);
+    sg.addColorStop(0, `rgba(255,255,255,${sh.sheen})`);
+    sg.addColorStop(0.5, 'rgba(255,255,255,0.05)');
+    sg.addColorStop(1, 'rgba(255,255,255,0)');
+    g.globalCompositeOperation = 'screen';
+    g.fillStyle = sg;
+    g.fillRect(0, 0, bw, bh);
+    // 4. kept only inside the letters
+    g.globalCompositeOperation = 'destination-in';
+    g.setTransform(m.a, 0, 0, m.d, 0, 0);
+    setFace(g);
+    g.fillStyle = '#FFFFFF';
+    g.fillText(text, pad, pad + px);
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = alpha * sh.opacity;
+    if (tier.shadow) {
+        ctx.shadowColor = tier.shadow.color;
+        ctx.shadowBlur = tier.shadow.blur * S * m.a;
+    }
+    ctx.drawImage(o, bx, by);
+    ctx.restore();
 }
 
 const WORDS = [{"text":"Hello","t":0.94,"end":1.12},{"text":"guys,","t":1.12,"end":1.76},{"text":"I","t":1.76,"end":1.78},{"text":"am","t":1.78,"end":1.88},{"text":"Ishaan","t":1.88,"end":2.28},{"text":"and","t":2.28,"end":2.76},{"text":"we","t":2.76,"end":3},{"text":"are","t":3,"end":3.14},{"text":"introducing","t":3.14,"end":3.7},{"text":"Moovi.","t":3.7,"end":4.58},{"text":"Now,","t":4.95,"end":5.19},{"text":"Moovi","t":5.19,"end":5.43},{"text":"is","t":5.43,"end":5.55},{"text":"an","t":5.55,"end":5.67},{"text":"agentic","t":5.67,"end":6.13},{"text":"video","t":6.13,"end":6.91},{"text":"editor","t":6.91,"end":7.31},{"text":"which","t":7.31,"end":7.87},{"text":"basically","t":7.87,"end":8.23},{"text":"converts","t":8.23,"end":8.75},{"text":"your","t":8.75,"end":8.95},{"text":"raw","t":8.95,"end":9.15},{"text":"clips","t":9.15,"end":9.43},{"text":"into","t":9.43,"end":9.65},{"text":"finished","t":9.65,"end":10.05},{"text":"after","t":10.05,"end":10.31},{"text":"effects","t":10.31,"end":10.65},{"text":"style","t":10.65,"end":10.93},{"text":"animations","t":10.93,"end":11.37},{"text":"and","t":11.37,"end":11.89},{"text":"you","t":11.89,"end":11.97},{"text":"can","t":11.97,"end":12.09},{"text":"upload","t":12.09,"end":12.35},{"text":"them","t":12.35,"end":12.55},{"text":"to","t":12.55,"end":12.73},{"text":"Instagram","t":12.73,"end":13.09},{"text":"to","t":13.09,"end":13.49},{"text":"get","t":13.49,"end":13.69},{"text":"really","t":13.69,"end":14.19},{"text":"good","t":14.19,"end":14.43},{"text":"results.","t":14.43,"end":15.13},{"text":"So","t":15.36,"end":15.56},{"text":"lock","t":15.56,"end":15.94},{"text":"in","t":15.94,"end":16.1},{"text":"and","t":16.1,"end":16.86},{"text":"watch","t":16.86,"end":17.38},{"text":"Moovi","t":17.38,"end":17.68},{"text":"rock.","t":17.68,"end":18.4}];
 const v = document.getElementById('v'), c = document.getElementById('c'), ctx = c.getContext('2d');
-let variant = '1.1', accent = REF_ACCENTS['1.1'], preset = premiumCaption1(variant, accent), list = cards(WORDS, preset.maxWords);
+// ?clip=<url>: the same captions over another clip (a reference, to compare like for like)
+const clipQ = new URLSearchParams(location.search).get('clip'); if (clipQ) v.src = clipQ;
+const make = (vr, a) => vr === '3' ? premiumCaption3() : vr === '2' ? premiumCaption2(a) : premiumCaption1(vr, a);
+const refAccent = vr => vr === '3' ? REF_ACCENT_3 : vr === '2' ? REF_ACCENT_2 : REF_ACCENTS[vr];
+let variant = '1.1', accent = REF_ACCENTS['1.1'], preset = make(variant, accent), list = cards(WORDS, preset.maxWords, preset.tailMax);
 const nav = document.getElementById('nav'), pick = document.getElementById('pick');
-const set = () => { preset = premiumCaption1(variant, accent); list = cards(WORDS, preset.maxWords); pick.value = accent.toLowerCase(); };
-for (const vr of ['1.1', '1.2']) {
+const set = () => { preset = make(variant, accent); list = cards(WORDS, preset.maxWords, preset.tailMax); pick.value = accent.toLowerCase(); };
+for (const vr of ['1.1', '1.2', '2', '3']) {
   const b = document.createElement('button'); b.textContent = 'Premium Caption ' + vr; b.setAttribute('aria-pressed', String(vr === variant));
-  b.onclick = () => { variant = vr; set(); [...nav.querySelectorAll('.vr')].forEach(x => x.setAttribute('aria-pressed', String(x === b))); };
+  b.onclick = () => { if ([REF_ACCENTS['1.1'], REF_ACCENTS['1.2'], REF_ACCENT_2, REF_ACCENT_3].includes(accent)) accent = refAccent(vr); variant = vr; set(); [...nav.querySelectorAll('.vr')].forEach(x => x.setAttribute('aria-pressed', String(x === b))); };
   b.className = 'vr'; nav.append(b);
 }
 // the video's own accent: the strongest saturated hue across a few frames
@@ -402,7 +760,7 @@ async function videoAccent(at = [2, 6, 10, 14]) {
 document.getElementById('fromVideo').onclick = async () => { accent = (await videoAccent()) || accent; set(); };
 pick.oninput = () => { accent = pick.value.toUpperCase(); set(); };
 const acc = document.getElementById('acc');
-for (const [label, a] of [['Ref green', REF_ACCENTS['1.1']], ['Ref red', REF_ACCENTS['1.2']]]) {
+for (const [label, a] of [['Ref green', REF_ACCENTS['1.1']], ['Ref red', REF_ACCENTS['1.2']], ['Ref gold', REF_ACCENT_2], ['Ref ice', REF_ACCENT_3]]) {
   const b = document.createElement('button'); b.textContent = label; b.onclick = () => { accent = a; set(); }; acc.append(b);
 }
 set();
@@ -428,22 +786,71 @@ function sfx() {
   lastT = now;
 }
 setInterval(sfx, 15);
+// the person matte (MediaPipe selfie segmenter, in the browser): the speaker cut out of each frame, so words of a
+// a behind tier sit in depth behind them
+let seg = null, faceDet = null;
+const segReady = (async () => {
+  try {
+    const m = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs');
+    const fs = await m.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm');
+    seg = await m.ImageSegmenter.createFromOptions(fs, { baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite', delegate: 'GPU' }, runningMode: 'VIDEO', outputConfidenceMasks: true, outputCategoryMask: false });
+    const faceOpts = delegate => ({ baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite', delegate }, runningMode: 'VIDEO' });
+    faceDet = await m.FaceDetector.createFromOptions(fs, faceOpts('GPU')).catch(() => m.FaceDetector.createFromOptions(fs, faceOpts('CPU')));
+    window.faceState = () => ({ ready: !!faceDet, box: faceBox });
+  } catch (e) { console.warn('person matte unavailable', e); }
+})();
+const maskC = document.createElement('canvas'), personC = document.createElement('canvas');
+let lastSegT = -1, segClock = 0;
+function personAt(W, H) {
+  if (!seg || v.readyState < 2) return null;
+  if (v.currentTime !== lastSegT) {
+    lastSegT = v.currentTime;
+    const r = seg.segmentForVideo(v, segClock = Math.max(segClock + 1, performance.now()));
+    const mk = r.confidenceMasks[0], a = mk.getAsFloat32Array();
+    maskC.width = mk.width; maskC.height = mk.height;
+    const mc = maskC.getContext('2d'), id = mc.createImageData(mk.width, mk.height);
+    for (let i = 0; i < a.length; i++) id.data[i * 4 + 3] = Math.max(0, Math.min(255, (a[i] - 0.35) * 3.3 * 255));
+    mc.putImageData(id, 0, 0); r.close?.();
+  }
+  personC.width = W; personC.height = H;
+  const pc = personC.getContext('2d');
+  pc.drawImage(v, 0, 0, W, H);
+  pc.globalCompositeOperation = 'destination-in'; pc.filter = 'blur(1px)';
+  pc.drawImage(maskC, 0, 0, W, H);
+  pc.filter = 'none'; pc.globalCompositeOperation = 'source-over';
+  return personC;
+}
+const needsPerson = p => p.tiers.some(t => t && t.behind);
+// the face box (MediaPipe face detector), grown to take in hair and chin: a stack card never covers it
+let lastFaceT = -1, faceClock = 0, faceBox = null;
+function faceAt() {
+  if (!faceDet || v.readyState < 2) return faceBox;
+  if (v.currentTime !== lastFaceT) {
+    lastFaceT = v.currentTime;
+    const d = faceDet.detectForVideo(v, faceClock = Math.max(faceClock + 1, performance.now())).detections[0];
+    if (d) { const b = d.boundingBox, vw = v.videoWidth, vh = v.videoHeight; faceBox = { x: (b.originX - b.width * 0.15) / vw, y: (b.originY - b.height * 0.35) / vh, w: b.width * 1.3 / vw, h: b.height * 1.6 / vh }; }
+  }
+  return faceBox;
+}
+const sceneAt = (p, W, H) => ({ face: p.layout === 'stack' ? faceAt() : null, person: needsPerson(p) ? personAt(W, H) : null });
 function frame() {
   const r = c.getBoundingClientRect(), d = devicePixelRatio || 1;
   if (c.width !== Math.round(r.width * d)) { c.width = Math.round(r.width * d); c.height = Math.round(r.height * d); }
-  ctx.clearRect(0, 0, c.width, c.height);
-  drawCaption(ctx, preset, list, v.currentTime, c.width, c.height);
+  // the video is painted into the caption canvas, so blend modes (the difference face) see its pixels
+  if (v.readyState >= 2) ctx.drawImage(v, 0, 0, c.width, c.height); else ctx.clearRect(0, 0, c.width, c.height);
+  drawCaption(ctx, preset, list, v.currentTime, c.width, c.height, sceneAt(preset, c.width, c.height));
   requestAnimationFrame(frame);
 }
-Promise.all(PREMIUM_PRESETS.flatMap(p => p.tiers.map(t => document.fonts.load(t.weight + ' ' + (t.stretch || 'normal') + ' 40px "' + t.font + '"')))).finally(() => requestAnimationFrame(frame));
+Promise.all(PREMIUM_PRESETS.flatMap(p => p.tiers.filter(Boolean).map(t => document.fonts.load((t.italic ? 'italic ' : '') + t.weight + ' ' + (t.stretch || 'normal') + ' 40px "' + t.font + '"')))).finally(() => requestAnimationFrame(frame));
 // still: the frame at t (video + caption) at 2x, beside the reference when one is given
 window.still = async (vr, t, refUrl, acc) => {
-  const a = acc === 'video' ? (await videoAccent()) || REF_ACCENTS[vr] : acc || REF_ACCENTS[vr];
-  const p = premiumCaption1(vr, a); const l = cards(WORDS, p.maxWords);
-  await Promise.all(p.tiers.map(t => document.fonts.load(t.weight + ' ' + (t.stretch || 'normal') + ' 40px "' + t.font + '"')));
+  const a = acc === 'video' ? (await videoAccent()) || refAccent(vr) : acc || refAccent(vr);
+  const p = make(vr, a); const l = cards(WORDS, p.maxWords, p.tailMax);
+  await Promise.all(p.tiers.filter(Boolean).map(t => document.fonts.load((t.italic ? 'italic ' : '') + t.weight + ' ' + (t.stretch || 'normal') + ' 40px "' + t.font + '"')));
   v.currentTime = t; await new Promise(r => v.addEventListener('seeked', r, { once: true }));
   const W = 1696, H = 956, f = document.createElement('canvas'); f.width = W; f.height = H;
-  const g = f.getContext('2d'); g.drawImage(v, 0, 0, W, H); drawCaption(g, p, l, t, W, H);
+  await segReady;
+  const g = f.getContext('2d'); g.drawImage(v, 0, 0, W, H); drawCaption(g, p, l, t, W, H, sceneAt(p, W, H));
   const s = document.getElementById('still'); s.style.display = 'block';
   if (!refUrl) { s.width = W; s.height = H; s.getContext('2d').drawImage(f, 0, 0); return; }
   const ref = new Image(); ref.src = refUrl; await ref.decode();

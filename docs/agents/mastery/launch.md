@@ -63,3 +63,21 @@ isn't used for taste.
   glass over real photos (the search prompt over a city, signal cards over fog).
 - **End:** the logo with a rule and the line "Nothing changes except everything."
 - launch-ui.ts input (for Tab's directFilm): one site URL in, data.json out {name, host, url, tagline, gridTitle, sub, cta, nav[], cards[], query, colours[{hex,w,role}], fonts{display,displayWeight,ui,cssUrl}, images[], logo, hero}; unchanged since L-UI-1.
+
+## Ref 3: Commas Studios (instagram.com/p/Dd_YP9Wo8c-, 35 s): what it teaches
+- **Type out of stipple:** "Introducing" resolves inside sweeping ribbons of stippled dots (a dither smear) that
+  condense around the word, then clear.
+- **The black was a screen (pull-out reveal):** the mark drops on black and the wordmark slides out of it; the camera
+  then pulls back in log space, and the black turns out to be a phone's screen, floating over a real mountain
+  landscape, with the product's feed on it.
+- **One giant verb per beat, blurred behind floating UI** (Post, Engage, Grow): the word is huge and soft, the UI card
+  sharp in front, a real photo plate behind both.
+- **UI over real environment plates:** the product's windows float over mountains, a famous painting, clouds and a
+  wheat field. The plate gives the colour, and the UI stays the brand's.
+- **Two worlds:** the dark brand world (logo beats), and a light product world with a soft glow of the brand colour
+  rising from the bottom (product demo: sidebar click → course grid → zoom → "Gate your best content." → "Host" →
+  "Sell inside your community.").
+- **End:** a big glass rendering of the mark between the two halves of the name, then the lockup on black.
+
+| f10 | `data/freeform/resend-v10` | f9 smooth as butter: the speed ramp as an easing (rest → ≈2× → ≈0.5× → ≈2× → rest), 1 px blur levels, a continuous layer blur, soft in-out on travel, sprites as bitmaps; rAF playback 138 fps (v8: 11) | absorbed as L-UI-2 "One material" with the skill updates |
+| f11 | `data/freeform/resend-v11` | ref 3 grammar: stipple ribbons → "Introducing"; the R drops on black, the name slides out; a speed-ramped pull-back shows the black was the phone's screen over a real mountain; Send / Track / Reach as giant soft verbs behind sharp UI on real plates; the dashboard (click Emails, one opens, Delivered); one API call; the mark and lockup on black. rAF playback: 60 fps for most of it (median 16.7 ms), 17 of 1023 frames over 33 ms | waiting |

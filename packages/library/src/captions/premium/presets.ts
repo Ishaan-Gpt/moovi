@@ -5,14 +5,16 @@
  * preview and in the MP4 path (Chromium). None of these is a product default; wiring them into types comes later.
  */
 
-import { litKey } from './theme';
+import { litKey, metalKey } from './theme';
 
 export interface TierSpec {
   /** CSS font family, loaded from Google Fonts (`fonts` below) */
   font: string;
   weight: number;
+  /** the face's own italic cut (a real italic, not a shear) */
+  italic?: boolean;
   /** 'upper' (default) or 'none': the words as spoken (sentence case), punctuation still stripped */
-  casing?: 'upper' | 'none';
+  casing?: 'upper' | 'none' | 'lower';
   /** slant: horizontal shear (0.2 ≈ 11°), the italic of the red key line */
   skew?: number;
   /** corner softening: a round-joined stroke in the fill colour, as a share of the font size */
@@ -35,6 +37,13 @@ export interface TierSpec {
   shadow?: { color: string; blur: number; dy: number };
   /** bloom: the word blurred at each radius (share of short edge) and screened on, wide+faint to tight+hot */
   glow?: { color: string; layers: { r: number; a: number; c?: string }[] };
+  /** depth: this tier is painted behind the speaker (needs the person cut-out passed to drawCaption) */
+  behind?: boolean;
+  /**
+   * the shiny negative (Premium Caption 3's highlight): the frame under the letters inverted, so the background decides
+   * the colour, then pushed bright with `saturate`, `lift` and `contrast`, a `sheen` on top, shown at `opacity`
+   */
+  shiny?: { saturate: number; lift: number; contrast: number; sheen: number; opacity: number };
   /** inner light: the letters' own shape blurred white over the fill, 0..1 */
   sheen?: number;
 }
@@ -47,19 +56,23 @@ export interface PremiumPreset {
   /** Google Fonts css2 families to load */
   fonts: string[];
   /** tier 1: the lead words; tier 2: the key word(s), the one the voice hits */
-  tiers: [TierSpec, TierSpec];
+  tiers: [TierSpec, TierSpec, TierSpec?];
   /** centre of the two-line block as a share of frame height (over the chest, off the face) */
   y: number;
   /** gap between the tiers as a share of short edge */
   gap: number;
   /** max words on a card, key word(s) included */
   maxWords: number;
+  /** three tiers: up to this many words after the key stay on the card as a tail line (0 or absent: two tiers) */
+  tailMax?: number;
   /**
    * The entry, decoded from the reference reel (30 fps): each word pops in at `scaleFrom`, soft (`blur`, share of the
    * short edge, sharp after `blurS` s), fading in over `fadeS`, and snaps to size on 1 - exp(-decay s) cos(freq s);
    * its glow flashes to 1 + `flash` and eases over `flashS`; the card then drifts smaller by `drift` per second.
    */
-  enter: { scaleFrom: number; decay: number; freq: number; blur: number; blurS: number; fadeS: number; flash: number; flashS: number; drift: number };
+  enter: { scaleFrom: number; decay: number; freq: number; blur: number; blurS: number; fadeS: number; flash: number; flashS: number; drift: number; rise?: number };
+  /** how the card is laid out: stacked centred tiers (default) or the kinetic mixed-size stack */
+  layout?: 'tiers' | 'stack';
   /** captionseasy equivalent: `captionseasy build --look <base> --set k=v …` */
   captionseasy: { look: number; set: Record<string, string | number | boolean> };
 }
@@ -76,7 +89,7 @@ export const REF_ACCENTS: Record<Caption1Variant, string> = { '1.1': '#52F42E', 
 /**
  * Premium Caption 1 (refs c01 and the reel DbS2vcfyQxx, approved by Ishaan 2026-10-18): a white lead tier and the
  * spoken key word lit underneath, in any accent (the video's own, from `accentFromPixels`).
- *   1.1  both tiers caps, Russo One 600, a little extra word space
+ *   1.1  both tiers caps, Russo One 600, letters set a little open (tracking +0.02 em)
  *   1.2  sentence-case white lead (Poppins 800) over a slanted key line
  * Ishaan's pick: Russo One at 600. It has one cut (400); a 4.5 % same-colour stroke thickens it to 600 identically on
  * every layer (the browser's synthetic bold skips offscreen layers, which ghosted the glow).
@@ -84,21 +97,21 @@ export const REF_ACCENTS: Record<Caption1Variant, string> = { '1.1': '#52F42E', 
 export function premiumCaption1(variant: Caption1Variant, accent = REF_ACCENTS[variant]): PremiumPreset {
   const lit = litKey(accent);
   const key: TierSpec = {
-    font: 'Russo One', weight: 400, round: 0.045, size: 0.1, tracking: -0.005, fill: lit.fill,
+    font: 'Russo One', weight: 400, round: 0.045, size: 0.1, tracking: 0.02, fill: lit.fill,
     // a dark bed under the word, then the bloom: the word reads highlighted, not just glowing
     shadow: { color: 'rgba(0,0,0,0.75)', blur: 0.04, dy: 0.01 },
     glow: lit.glow,
     sheen: 0.25,
   };
   const lead: TierSpec = variant === '1.1'
-    ? { font: 'Russo One', weight: 400, round: 0.045, size: 0.07, tracking: -0.01, wordGap: 0.08, fill: ['#FFFFFF', '#FFFFFF', '#D9DDE3'], shadow: { color: 'rgba(0,0,0,0.7)', blur: 0.03, dy: 0.008 } }
+    ? { font: 'Russo One', weight: 400, round: 0.045, size: 0.07, tracking: 0.02, wordGap: 0.04, fill: ['#FFFFFF', '#FFFFFF', '#D9DDE3'], shadow: { color: 'rgba(0,0,0,0.7)', blur: 0.03, dy: 0.008 } }
     : { font: 'Poppins', weight: 800, casing: 'none', size: 0.068, tracking: -0.01, fill: ['#FFFFFF', '#FFFFFF', '#E2E2E6'], shadow: { color: 'rgba(0,0,0,0.7)', blur: 0.03, dy: 0.008 } };
   return {
     id: `premium-1-${variant.replace('.', '-')}`,
     name: `Premium Caption ${variant}`,
     ref: 'c01.png; reel DbS2vcfyQxx (0 s green, 4.9 s red)',
     fonts: variant === '1.1' ? ['Russo+One'] : ['Russo+One', 'Poppins:wght@800'],
-    tiers: [lead, variant === '1.1' ? { ...key, wordGap: 0.08 } : { ...key, skew: 0.2 }],
+    tiers: [lead, variant === '1.1' ? { ...key, wordGap: 0.04 } : { ...key, skew: 0.2 }],
     y: 0.8,
     gap: 0.016,
     maxWords: 4,
@@ -116,4 +129,104 @@ export function premiumCaption1(variant: Caption1Variant, accent = REF_ACCENTS[v
   };
 }
 
-export const PREMIUM_PRESETS: PremiumPreset[] = [premiumCaption1('1.1'), premiumCaption1('1.2')];
+
+/** The swatch of reference 2 (gold), for previews; the product takes the accent from the video like Caption 1. */
+export const REF_ACCENT_2 = '#F2C94C';
+
+/**
+ * Premium Caption 2 (ref c03, reel DZsBWoCz04j): three tiers around the key words, hybrid type. A white lead in
+ * Plus Jakarta Sans SemiBold Italic, the key words big in tall condensed caps (Antonio 500, slanted to match) with a
+ * soft metallic gradient, and the words after them as a lighter tail (Medium Italic). Every tier sits in an After
+ * Effects-style glow (its own light blurred wide and tight, screened back). Each word
+ * fades in out of a heavy blur over ~7 frames, no bounce (read from the reel at 30 fps).
+ */
+export function premiumCaption2(accent = REF_ACCENT_2): PremiumPreset {
+  // the After Effects glow: the letters' own light blurred wide and tight and added back, so every word sits in a haze
+  const white = (size: number, weight: number): TierSpec => ({
+    font: 'Plus Jakarta Sans', weight, italic: true, casing: 'none', size, tracking: -0.02, fill: ['#FFFFFF', '#FFFFFF', '#F1F0EC'],
+    shadow: { color: 'rgba(0,0,0,0.35)', blur: 0.025, dy: 0.006 },
+    glow: { color: '#FFFFFF', layers: [{ r: 0.045, a: 0.28, c: '#FFF4E0' }, { r: 0.015, a: 0.42 }, { r: 0.004, a: 0.35 }] },
+  });
+  const metal = metalKey(accent);
+  return {
+    id: 'premium-2',
+    name: 'Premium Caption 2',
+    ref: 'c03 still; reel DZsBWoCz04j (0 to 8 s)',
+    fonts: ['Plus+Jakarta+Sans:ital,wght@1,500;1,600', 'Antonio:wght@500'],
+    tiers: [
+      white(0.05, 600),
+      {
+        font: 'Antonio', weight: 500, skew: 0.12, size: 0.17, tracking: 0, fill: metal,
+        shadow: { color: 'rgba(0,0,0,0.35)', blur: 0.02, dy: 0.006 },
+        glow: { color: metal[2]!, layers: [{ r: 0.07, a: 0.32, c: metal[3]! }, { r: 0.024, a: 0.45 }, { r: 0.006, a: 0.4, c: metal[0]! }] },
+      },
+      white(0.046, 500),
+    ],
+    y: 0.78,
+    gap: 0.03,
+    maxWords: 6,
+    tailMax: 2,
+    enter: { scaleFrom: 1.04, decay: 14, freq: 0, blur: 0.022, blurS: 0.24, fadeS: 0.2, flash: 0, flashS: 0.3, drift: -0.01 },
+    captionseasy: {
+      look: 34,
+      set: {
+        fontId: 'Plus Jakarta Sans', fontWeight: 600, casing: 'none', letterSpacing: -1, lineHeight: 1,
+        'fill.color': '#FFFFFF', 'active.color': accent, 'hero.scale': 2.6, 'hero.fontId': 'Antonio',
+        'shadow.enabled': true, 'shadow.color': 'rgba(0,0,0,0.45)', 'glow.enabled': false,
+        'position.y': 0.78, maxWordsPerCard: 6, 'entrance.type': 'blur-in',
+      },
+    },
+  };
+}
+
+
+
+/** The swatch of reference 3 (ice blue), for previews; the product takes the accent from the video. */
+export const REF_ACCENT_3 = '#6EC6F5';
+
+/**
+ * Premium Caption 3 (ref c04, reel Dd76h-2RpSv): stacked cards composed like the reel's. Connector words small and
+ * above-left, the highlighted word(s) big, the words after them right-aligned under the highlight. Plain words in clean
+ * white Montserrat (content words Medium, connectors Regular and smaller). The highlight is Montserrat Bold behind the
+ * speaker as a shiny negative of the frame: the background decides its colour (light blue over warm, orange over cool,
+ * green over magenta...), pushed bright and saturated. The card never covers the face. Words slide up out of a blur.
+ * No accent: the colour comes from the video itself.
+ */
+export function premiumCaption3(): PremiumPreset {
+  const white = (weight: number, size: number): TierSpec => ({
+    font: 'Montserrat', weight, casing: 'lower', size, tracking: -0.02, fill: '#FFFFFF',
+    shadow: { color: 'rgba(0,0,0,0.35)', blur: 0.02, dy: 0.004 },
+  });
+  return {
+    id: 'premium-3',
+    name: 'Premium Caption 3',
+    ref: 'reel Dd76h-2RpSv',
+    fonts: ['Montserrat:wght@400;500;700'],
+    layout: 'stack',
+    tiers: [
+      white(500, 0.075),
+      {
+        font: 'Montserrat', weight: 700, casing: 'lower', size: 0.16, tracking: -0.03, fill: '#FFFFFF', behind: true,
+        shiny: { saturate: 2.4, lift: 1.3, contrast: 1.15, sheen: 0.45, opacity: 0.95 },
+        shadow: { color: 'rgba(0,0,0,0.2)', blur: 0.02, dy: 0 },
+      },
+      white(400, 0.05),
+    ],
+    y: 0.6,
+    gap: 0.012,
+    maxWords: 4,
+    tailMax: 2,
+    enter: { scaleFrom: 1, decay: 0, freq: 0, blur: 0.02, blurS: 0.28, fadeS: 0.1, flash: 0, flashS: 0.3, drift: -0.012, rise: 0.05 },
+    captionseasy: {
+      look: 34,
+      set: {
+        fontId: 'Montserrat', fontWeight: 600, casing: 'lower', letterSpacing: -1, lineHeight: 1,
+        'fill.color': '#FFFFFF', 'active.color': '#FFFFFF', 'hero.scale': 2, 'hero.fontId': 'Montserrat',
+        'shadow.enabled': true, 'shadow.color': 'rgba(0,0,0,0.4)', 'glow.enabled': false,
+        'position.y': 0.74, maxWordsPerCard: 4, 'entrance.type': 'rise',
+      },
+    },
+  };
+}
+
+export const PREMIUM_PRESETS: PremiumPreset[] = [premiumCaption1('1.1'), premiumCaption1('1.2'), premiumCaption2(), premiumCaption3()];
