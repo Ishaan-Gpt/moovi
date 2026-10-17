@@ -27,6 +27,8 @@ import { assetCauses, noteDecision, wordsCause, type Cause } from '../why';
  */
 export const EDIT_KIND = 'edit-reel';
 const editIsOn = () => (process.env.MOOVI_EDIT ?? 'live').trim().toLowerCase() !== 'crew';
+/** A brief that says the clip has no words to caption (music, b-roll): the edit may go ahead without hearing any. */
+export const NO_WORDS = /\b(no (captions?|subtitles?|subs|words|talking|speech)|without (captions?|subtitles?|words)|music[- ]only|only music|instrumental|b-?roll|no one (talks|speaks))\b/i;
 const WANTS_REFERENCE = /\b(style of|in the style|like this (one|video|reel)|copy (its|the|this) (style|look|vibe)|make (one|something) like)\b/i;
 
 type Brief = Extract<Command, { type: 'brief' }>;
@@ -114,7 +116,7 @@ export const editReel: Handler = async ctx => {
   const dir = join(ctx.dir, 'edit');
   // probe, look, hear, plan, and the voice clean-up started beside the preview: one function, the bench runs it too
   const plan = await planEdit({ path: u.path, dir, name: u.name, signal: ctx.signal, onStage: step, onDone: done, onNote: text => ctx.activity('note', text),
-    style: 'auto', brief: inp.brief ?? '', ...(inp.caption ? { caption: inp.caption } : {}), ...(inp.names?.length ? { names: inp.names } : {}) }).finally(() => lines.end());
+    style: 'auto', brief: inp.brief ?? '', requireWords: !NO_WORDS.test(inp.brief ?? ''), ...(inp.caption ? { caption: inp.caption } : {}), ...(inp.names?.length ? { names: inp.names } : {}) }).finally(() => lines.end());
   void plan.restore.then(r => r && ctx.activity('note', r.restored
     ? `cleaned and upscaled your clip from ${r.from.w}x${r.from.h} to ${r.to.w}x${r.to.h}${r.graded ? ', graded' : ''} (${r.seconds} s)`
     : `graded your clip (${r.seconds} s)`));

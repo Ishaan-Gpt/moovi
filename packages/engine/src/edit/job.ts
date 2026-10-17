@@ -2,7 +2,7 @@ import { stopIfDown } from '@moovi/graph';
 import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
 import { color } from '@moovi/brand';
-import { sttAvailable } from '../audio/stt';
+import { NEEDS_SPEECH_KEY, plainSpeechError, speechAvailable } from '../audio/stt';
 import { mixStyle1, sfxStem } from '../audio/style1';
 import { probe } from '../bench';
 import { buildEdl, type BuildInput, type Face } from './build';
@@ -46,6 +46,8 @@ export interface PlanInput {
   name?: string;
   caption?: string;
   names?: string[];
+  /** the clip's words are the point (an edit of a talking clip): stop with a plain reason rather than plan a no-words edit when nothing can hear them */
+  requireWords?: boolean;
   signal?: AbortSignal;
   /** a stage starts (probe, hear, plan) */
   onStage?: (stage: string, text: string) => unknown;
@@ -167,6 +169,8 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
   copyFileSync(o.path, join(dir, file));
   const pr = await probe(o.path);
   if (!pr.hasVideo) throw new Error(`${o.name ?? 'the clip'} has no video stream`);
+  // nothing can hear the words (no key and MOOVI_STT=off): say so now, before a pause-cuts-only edit is passed off as one
+  if (pr.hasAudio && o.requireWords && !speechAvailable()) throw new Error(NEEDS_SPEECH_KEY);
   await done('probe');
 
   // D1.3 look: the speaker's face, beside the hearing (edit/look.ts; [] without a face detector), for crop and punch-ins
@@ -178,13 +182,15 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
   await o.onStage?.('hear', 'timing every word');
   // D1.2: language-locked, in pieces, the accurate text laid on, and a confidence gate (edit/hear.ts)
   let words: Word[] = [], language: string | undefined, heard: Heard | null = null;
-  if (pr.hasAudio && sttAvailable()) {
-    // the vocabulary prompt: Moovi, Ishaan, MOOVI_VOCAB and the project's own names
-    heard = await hear(o.path, dir, { ...(o.signal ? { signal: o.signal } : {}), ...(o.names?.length ? { names: o.names } : {}) });
+  if (pr.hasAudio && speechAvailable()) {
+    // the vocabulary prompt: Moovi, Ishaan, MOOVI_VOCAB and the project's own names. A key, else the local model; a
+    // hearing that fails stops the job with one plain sentence (the studio chat and Claude Code both show it)
+    heard = await hear(o.path, dir, { ...(o.signal ? { signal: o.signal } : {}), ...(o.names?.length ? { names: o.names } : {}) })
+      .catch(e => { if (o.signal?.aborted) throw e; throw new Error(plainSpeechError(e)); });
     words = heard.words; language = heard.language;
     writeFileSync(join(dir, 'hear.json'), JSON.stringify({ language: heard.language, lang: heard.lang, detected: heard.detected, by: heard.by, prompt: heard.prompt, gate: heard.gate, pieces: heard.pieces, timings: heard.timings }, null, 1));
     if (!heard.gate.ok) await o.onNote?.(`the transcript may be off (${heard.gate.reasons.join('; ')}), so check the captions`);
-  } else if (pr.hasAudio) await o.onNote?.('no speech-to-text key, so no cuts or captions from words this time');
+  } else if (pr.hasAudio) await o.onNote?.('speech-to-text is off (MOOVI_STT=off) and there is no key, so no cuts or captions from words this time');
   // Hinglish heard in Devanagari is captioned in Latin letters, as Indian reels are (edit/romanize.ts); times unchanged
   if (o.romanize !== false && words.length) {
     const r = await romanizeWords(words, o.signal ? { signal: o.signal } : {});

@@ -116,6 +116,9 @@ Read this first if you are picking the work up. Updated by Tab after every item.
 
 ## Gotchas
 
+- Speech needs no key since Oct 18: with no Groq/OpenAI key (or when the provider refuses) `hear()` runs Whisper locally
+  (`audio/local-stt.ts`, transformers.js, 77 MB model downloaded once to `data/models`). `MOOVI_STT=off` turns it off;
+  then an edit of a talking clip stops with "Moovi needs a speech key to hear your clip" (no more silent 0-word edits).
 - A fresh FalkorDB has no `craft` graph until `pnpm graph:reset`; reads on it are empty (no error since Oct 17), so the
   edit runs plainer (no library sounds, camera moves, why links). Seed it.
 - Claude Code HTTP tool calls: first byte within 60 s, abort after 5 min idle without progress. Long poll 45 s max.

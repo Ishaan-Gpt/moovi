@@ -2,6 +2,8 @@ import { execFile } from 'node:child_process';
 import { readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { config } from '../config';
+import { isProviderRefusal, NEEDS_SPEECH_KEY } from '../audio/stt';
+import { localAllowed, localModel, localWords, sttMode } from '../audio/local-stt';
 import { modelScope } from '../runtime';
 import { bare, envelope, pauses, splitAt, type Word } from './cut';
 
@@ -259,11 +261,46 @@ export function relock(reported: string, heard: Word[], english: Word[]): string
 }
 
 let pieceRun = 0;
+/**
+ * The keyed hearing below, or, with no key (or MOOVI_STT=local), Whisper on this machine (audio/local-stt.ts); the
+ * local model also takes over when the keyed provider refuses (billing, a bad key, an outage). With MOOVI_STT=off and
+ * no key it throws NEEDS_SPEECH_KEY, and a refusal throws as it always did.
+ */
 export async function hear(audio: string, dir: string, o: HearOpts = {}): Promise<Heard> {
+  const tk = sttMode() === 'local' ? null : timedKey();
+  if (!tk) { if (!localAllowed()) throw new Error(NEEDS_SPEECH_KEY); return hearLocal(audio, o); }
+  try { return await hearKeyed(audio, dir, o, tk); } catch (e) {
+    if (!isProviderRefusal(e) || !localAllowed()) throw e;
+    const why = String((e as Error).message ?? e).replace(/\s+/g, ' ').slice(0, 120);
+    console.warn(`[hear] ${why}; hearing it with the local model instead`);
+    const h = await hearLocal(audio, o);
+    return { ...h, by: `${h.by} (${tk.provider} refused: ${why})` };
+  }
+}
+
+/**
+ * The no-key hearing: one local Whisper pass over the whole clip (its own 30 s windows), locked to the brief's
+ * language, the vocabulary laid on by nameFix (Whisper's prompt is not used here), and the same gate. No relock and no
+ * accurate-text model: those need a key.
+ */
+async function hearLocal(audio: string, o: HearOpts): Promise<Heard> {
   const timings: Record<string, number> = {}; let tl = Date.now();
   const lap = (k: string) => { timings[k] = +((Date.now() - tl) / 1000).toFixed(3); tl = Date.now(); };
-  const tk = timedKey();
-  if (!tk) throw new Error('Transcribing speech needs a Groq or OpenAI key (Settings, Your model, or GROQ_API_KEY / OPENAI_API_KEY on the server).');
+  const names = vocabulary(o.names), lang = o.lang ?? lockLanguage(o.brief);
+  const env = await envelope(audio), ps = pauses(env), duration = env.db.length * env.hop;
+  const voiced = Math.max(0, duration - ps.reduce((a, [x, y]) => a + (y - x), 0));
+  lap('prepare');
+  const r = await localWords(audio, { lang, ...(o.signal ? { signal: o.signal } : {}) });
+  lap('timed+text');
+  let words = r.words;
+  if (o.fixes) words = fixWords(words, o.fixes);
+  if (names.length) words = nameFix(words, names);
+  return { words, lang, language: lang, detected: r.language || lang, by: `local ${localModel()}, locked to ${lang}`, text: r.text || null, gate: gate(words, voiced, lang, null), pieces: 1, prompt: '', timings };
+}
+
+async function hearKeyed(audio: string, dir: string, o: HearOpts, tk: Key): Promise<Heard> {
+  const timings: Record<string, number> = {}; let tl = Date.now();
+  const lap = (k: string) => { timings[k] = +((Date.now() - tl) / 1000).toFixed(3); tl = Date.now(); };
   const names = vocabulary(o.names), lang = o.lang ?? lockLanguage(o.brief), prompt = o.prompt ?? vocabPrompt(names);
   const mp3 = join(dir, `hear-${process.pid}-${Date.now()}.mp3`);
   await ff(['-i', audio, '-vn', '-ac', '1', '-ar', '16000', '-b:a', '64k', mp3]);
