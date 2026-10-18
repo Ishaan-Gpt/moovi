@@ -1,0 +1,524 @@
+{
+ "name": "Moovi pitch, full tier (graphics invented for what he says)",
+ "caption": {
+  "variant": "1.1",
+  "preset": "1.1",
+  "accent": "video"
+ },
+ "start": {
+  "w": "and",
+  "after": 0
+ },
+ "music": {
+  "file": "../../../v/bed.m4a",
+  "start": 2,
+  "gain": 0.07
+ },
+ "sounds": {
+  "whoosh": "sfx/fs-147285.wav",
+  "pop": "sfx/fs.ui.pop-9.wav"
+ },
+ "palette": {
+  "page": "#120F09",
+  "panel": "#1C1811",
+  "panel-ink": "#ECE7DF",
+  "tag": "rgba(16,13,8,0.74)",
+  "accent-soft": "#F0CFC5",
+  "card": "#F5F1EA",
+  "card-ink": "#1B150B",
+  "mat": "rgba(255,255,255,.06)",
+  "mat-hi": "rgba(255,255,255,.18)",
+  "mat-edge": "rgba(255,255,255,.28)",
+  "mat-ink": "#FBF8F4",
+  "paper": "#E9E0D1",
+  "paper-hi": "#F4EEE3",
+  "paper-lo": "#D5C9B5",
+  "ink": "#4A2014",
+  "accent": "#E18B71"
+ },
+ "theme": {
+  "fall": "rgba(7,5,3,0.42)",
+  "ring": "rgba(255,255,255,.75)",
+  "ground": [
+   [
+    0,
+    "#3B3121"
+   ],
+   [
+    0.5,
+    "#1B150B"
+   ],
+   [
+    1,
+    "#080502"
+   ]
+  ],
+  "grid": "rgba(229,221,208,0.04)",
+  "bloom": [
+   540,
+   820,
+   820,
+   "rgba(224,154,133,0.16)"
+  ]
+ },
+ "desk": {
+  "w": 1800,
+  "h": 3400,
+  "items": [
+   {
+    "src": "../../../v/footage/edit.mp4",
+    "at": {
+     "w": "because",
+     "after": 9.6,
+     "dt": 0.1
+    },
+    "x": 180,
+    "y": 300,
+    "w": 660,
+    "h": 440,
+    "r": -4,
+    "doodle": [
+     "M40 130 l 70 80 l 150 -180"
+    ],
+    "label": "5 minutes",
+    "lx": 140,
+    "ly": 790,
+    "lr": -4,
+    "dx": 140,
+    "dy": 900,
+    "dw": 300,
+    "dh": 240
+   }
+  ]
+ },
+ "beats": [
+  {
+   "from": {
+    "w": "and",
+    "after": 0
+   },
+   "layers": [
+    {
+     "t": "cam",
+     "z": 1,
+     "Y": 0.36,
+     "push": 0.02
+    },
+    {
+     "t": "burn",
+     "items": [
+      {
+       "kind": "glass",
+       "text": "world's first",
+       "icon": "M12 3l2.6 5.6 6 .6-4.5 4 1.3 6-5.4-3.1-5.4 3.1 1.3-6-4.5-4 6-.6z",
+       "at": {
+        "w": "first"
+       },
+       "x": 80,
+       "y": 150,
+       "r": -4
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "from": {
+    "w": "video",
+    "after": 3
+   },
+   "layers": [
+    {
+     "t": "cam",
+     "z": 1,
+     "Y": 0.36,
+     "form": "split"
+    },
+    {
+     "t": "input",
+     "typed": "video editor",
+     "from": {
+      "w": "video",
+      "after": 3
+     },
+     "to": {
+      "w": "editor",
+      "after": 3.5
+     },
+     "y": 380
+    }
+   ]
+  },
+  {
+   "from": {
+    "w": "which",
+    "after": 4
+   },
+   "layers": [
+    {
+     "t": "cam",
+     "z": 1.04,
+     "Y": 0.36,
+     "punch": {
+      "w": "moovi"
+     },
+     "by": 1.07
+    },
+    {
+     "t": "leak",
+     "at": {
+      "w": "which",
+      "after": 4
+     }
+    },
+    {
+     "t": "letters",
+     "items": [
+      {
+       "ch": "M",
+       "at": {
+        "w": "moovi",
+        "dt": 0
+       },
+       "x": 80,
+       "y": 110,
+       "size": 220,
+       "r": 8
+      },
+      {
+       "ch": "O",
+       "at": {
+        "w": "moovi",
+        "dt": 0.07
+       },
+       "x": 270,
+       "y": 110,
+       "size": 220,
+       "r": -8
+      },
+      {
+       "ch": "O",
+       "at": {
+        "w": "moovi",
+        "dt": 0.14
+       },
+       "x": 460,
+       "y": 110,
+       "size": 220,
+       "r": 8
+      },
+      {
+       "ch": "V",
+       "at": {
+        "w": "moovi",
+        "dt": 0.21000000000000002
+       },
+       "x": 650,
+       "y": 110,
+       "size": 220,
+       "r": -8
+      },
+      {
+       "ch": "I",
+       "at": {
+        "w": "moovi",
+        "dt": 0.28
+       },
+       "x": 840,
+       "y": 110,
+       "size": 220,
+       "r": 8
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "from": {
+    "w": "this",
+    "after": 5.5
+   },
+   "layers": [
+    {
+     "t": "cam",
+     "z": 1,
+     "Y": 0.36,
+     "form": "card",
+     "ground": "room",
+     "punch": {
+      "w": "flabbergasting"
+     },
+     "by": 1.06,
+     "looks": [
+      {
+       "at": {
+        "w": "flabbergasting"
+       },
+       "f": "saturate(1.45) brightness(1.12) contrast(.88) blur(1.2px)"
+      },
+      {
+       "at": {
+        "w": "and",
+        "after": 8.5
+       },
+       "f": "contrast(1.05)"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "from": {
+    "w": "and",
+    "after": 8.5
+   },
+   "layers": [
+    {
+     "t": "cam",
+     "z": 1,
+     "Y": 0.36
+    },
+    {
+     "t": "leak",
+     "at": {
+      "w": "and",
+      "after": 8.5
+     }
+    },
+    {
+     "t": "burn",
+     "items": [
+      {
+       "kind": "glass",
+       "text": "love it",
+       "icon": "M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z",
+       "at": {
+        "w": "love"
+       },
+       "x": 560,
+       "y": 160,
+       "r": 5
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "from": {
+    "w": "because",
+    "after": 9.6
+   },
+   "layers": [
+    {
+     "t": "desk",
+     "focus": [
+      510,
+      730,
+      1.3
+     ],
+     "pip": "print"
+    }
+   ]
+  },
+  {
+   "from": {
+    "w": "completely",
+    "after": 11.5
+   },
+   "layers": [
+    {
+     "t": "cam",
+     "z": 1,
+     "Y": 0.36,
+     "form": "split"
+    },
+    {
+     "t": "leak",
+     "at": {
+      "w": "completely",
+      "after": 11.5
+     }
+    },
+    {
+     "t": "compare",
+     "still": 12.2,
+     "labels": [
+      "your videos",
+      "after effects"
+     ],
+     "look": "sepia(.2) saturate(1.5) contrast(1.15) brightness(1.04)",
+     "at": {
+      "w": "completely",
+      "after": 11.5
+     },
+     "at2": {
+      "w": "effects"
+     },
+     "y": 90
+    }
+   ]
+  },
+  {
+   "from": {
+    "w": "and",
+    "after": 13.8
+   },
+   "layers": [
+    {
+     "t": "cam",
+     "z": 1.04,
+     "Y": 0.36,
+     "push": 0.02
+    },
+    {
+     "t": "leak",
+     "at": {
+      "w": "and",
+      "after": 13.8
+     }
+    },
+    {
+     "t": "sides",
+     "stills": [
+      3.2,
+      8.8
+     ],
+     "at": {
+      "w": "social"
+     },
+     "y": 620
+    }
+   ]
+  },
+  {
+   "from": {
+    "w": "thank"
+   },
+   "layers": [
+    {
+     "t": "cam",
+     "z": 1.06,
+     "Y": 0.36
+    },
+    {
+     "t": "pill",
+     "keyword": "moovi",
+     "at": {
+      "w": "thank"
+     },
+     "avatar": 6.5,
+     "y": 1260
+    }
+   ]
+  }
+ ],
+ "sfx": [
+  {
+   "at": {
+    "w": "first"
+   },
+   "k": "pop",
+   "g": 0.45
+  },
+  {
+   "at": {
+    "w": "video",
+    "after": 3
+   },
+   "k": "whoosh",
+   "g": 0.4
+  },
+  {
+   "at": {
+    "w": "editor",
+    "after": 3.5
+   },
+   "k": "click",
+   "g": 0.4
+  },
+  {
+   "at": {
+    "w": "moovi"
+   },
+   "k": "hit",
+   "g": 0.5
+  },
+  {
+   "at": {
+    "w": "moovi",
+    "dt": 0.14
+   },
+   "k": "pop",
+   "g": 0.3
+  },
+  {
+   "at": {
+    "w": "flabbergasting"
+   },
+   "k": "riser",
+   "g": 0.35
+  },
+  {
+   "at": {
+    "w": "love"
+   },
+   "k": "pop",
+   "g": 0.45
+  },
+  {
+   "at": {
+    "w": "because",
+    "after": 9.6
+   },
+   "k": "whoosh",
+   "g": 0.4
+  },
+  {
+   "at": {
+    "w": "because",
+    "after": 9.6,
+    "dt": 0.45
+   },
+   "k": "drop",
+   "g": 0.5
+  },
+  {
+   "at": {
+    "w": "completely",
+    "after": 11.5
+   },
+   "k": "whoosh",
+   "g": 0.4
+  },
+  {
+   "at": {
+    "w": "effects"
+   },
+   "k": "snap",
+   "g": 0.4
+  },
+  {
+   "at": {
+    "w": "social"
+   },
+   "k": "whoosh",
+   "g": 0.35
+  },
+  {
+   "at": {
+    "w": "thank"
+   },
+   "k": "notify",
+   "g": 0.4
+  },
+  {
+   "at": {
+    "w": "you",
+    "after": 17.5
+   },
+   "k": "chime",
+   "g": 0.45
+  }
+ ],
+ "clip": "../../../v/"
+}

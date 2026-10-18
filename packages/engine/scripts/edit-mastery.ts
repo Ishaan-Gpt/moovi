@@ -5,7 +5,7 @@
  * the old edit-round1.ts runs the retired page's casting and must not be used for the Edit type.
  *
  *   pnpm --filter @moovi/engine exec tsx --env-file-if-exists=../../.env.local scripts/edit-mastery.ts <clip.mp4>
- *     [--out edit-x] [--from 9] [--spec skeleton|menu] [--port 4610] [--mp4]
+ *     [--out edit-x] [--from 9] [--spec skeleton|menu|keep] [--port 4610] [--mp4]
  */
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -16,7 +16,7 @@ import { lookFromFootage, prepareClip, renderMasteryFilm, serveMastery, skeleton
 import { completeCoverage, directFromMenu, loadMenu, resolveFootage, resolveMusic, resolveSounds, sentencesOfWords, specFromPicks } from '../src/edit/mastery-menu';
 
 const args = process.argv.slice(2), flag = (k: string) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : undefined; };
-const clip = resolve(args[0] ?? ''); if (!existsSync(clip)) { console.error('usage: edit-mastery.ts <clip.mp4> [--out edit-x] [--from s] [--spec skeleton|menu] [--port n] [--mp4]'); process.exit(1); }
+const clip = resolve(args[0] ?? ''); if (!existsSync(clip)) { console.error('usage: edit-mastery.ts <clip.mp4> [--out edit-x] [--from s] [--spec skeleton|menu|keep] [--port n] [--mp4]'); process.exit(1); }
 const out = join(config.data, flag('--out') ?? `edit-${basename(clip).replace(/\W+/g, '-').slice(0, 24)}`), dir = join(out, 'edit');
 mkdirSync(dir, { recursive: true });
 const from = Number(flag('--from') ?? 0);
@@ -34,7 +34,8 @@ if (!reuse) {
   const r = await plan.restore.catch(() => null);
   await prepareClip(dir); lap(`graded cut ${r ? '(restored)' : ''}`);
 }
-writeSpec(dir, skeletonSpec(dir));
+// --spec keep: serve the spec already in the folder (one written by hand, the full tier)
+if (flag('--spec') !== 'keep') writeSpec(dir, skeletonSpec(dir));
 
 if ((flag('--spec') ?? 'menu') === 'menu') {
   const words = plan.words, edl = plan.edl as { removed?: { src_in: number; src_out: number }[] };

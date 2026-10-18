@@ -46,7 +46,8 @@ export function masteryFile(dir: string, path: string): Served {
   if (u === 'a/b/c/player.html') return { status: 200, type: MIME['.html']!, body: readFileSync(join(PLAYER_DIR, 'player.html'), 'utf8') };
   if (u === 'a/b/c/premium.js') return { status: 200, type: MIME['.js']!, body: premiumModule() };
   if (u === 'a/b/c/spec.json') { const f = join(dir, 'spec.json'); return existsSync(f) ? { status: 200, type: MIME['.json']!, body: readFileSync(f, 'utf8') } : { status: 404 }; }
-  const roots: [string, string][] = [['v/', resolve(dir)], ['a/world/', join(config.assets, 'world')], ['packages/engine/assets/', config.assets]];
+  // the desk world's motion curves (`E`) come from the kit the player loads by a relative path
+  const roots: [string, string][] = [['v/', resolve(dir)], ['a/world/', join(config.assets, 'world')], ['packages/engine/assets/', config.assets], ['packages/library/src/kits/motion/', join(REPO, 'packages', 'library', 'src', 'kits', 'motion')]];
   for (const [pre, root] of roots) if (u.startsWith(pre)) {
     const f = normalize(join(root, u.slice(pre.length)));
     if (!f.startsWith(normalize(root) + sep) || !existsSync(f) || !statSync(f).isFile()) return { status: 404 };
