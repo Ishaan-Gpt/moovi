@@ -79,3 +79,10 @@ Small, wide-tracked caps in the corners can carry *true* information that deepen
 ## Words on a live set (Ishaan, Moovi office, 2026-10-18)
 - A scene that shows work (agents, desks, a graph) carries almost no text: names at rest, one short line only while something is happening, the one product label that matters (e.g. FalkorDB) and nothing under it.
 - Never label a stand-in as a stand-in on screen (no "simulated", "sample run", "demo", fps or debug chips in the product UI); keep those in code comments and dev tools only.
+
+## Waits, hand-offs and results (Ishaan, Moovi, 2026-10-18)
+- **Never ask twice.** What the visitor already gave (a choice, words, a file) carries through every hand-off; if it is enough to start, the next screen starts it instead of showing the form again.
+- **Every wait is the brand mark** (a route change, a hand-off, a busy button): the mark alone on the page colour, no words, no generic ring spinner. A mark that loops moves in steps with a rest between (a tick a second, landing with a little overshoot), never a constant spin.
+- **Logo and favicon are one mark**: the same artwork, transparent, at every size; the wordmark carries it (e.g. as the dot on an i).
+- **Over the hero the header has no plates**: the nav and logo float on the hero; the one solid piece is the primary action (sign in), made of the site's material.
+- **A finished result is shown alone**: the media in a clear glass frame over the blurred scene, one floating glass bar of icons under it (versions, download, change, minimise, close), no titles, meta or stats on screen.

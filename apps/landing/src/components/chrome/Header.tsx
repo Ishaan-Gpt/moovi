@@ -3,14 +3,15 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { nav, hero } from '@/lib/content';
-import { Logo } from '@/components/brand/Logo';
+import { HaloMark, Logo } from '@/components/brand/Logo';
 import { RollText } from '@/components/motion/RollText';
 import { scrollToId } from '@/components/motion/SmoothScroll';
 import { lockScroll, unlockScroll } from '@/lib/scrollLock';
 
 /**
- * Fixed header: the logo (appears once the hero wordmark has gone) and the nav, each on a pill of frosted jelly, with
- * a jelly blob behind the active section that squishes as it slides.
+ * Fixed header: the logo (appears once the hero wordmark has gone), the nav and sign in. Over the hero there is no
+ * pill behind the logo or the nav, only the jelly blob behind the active section; past it they sit on frosted jelly.
+ * Sign in is the one solid jelly button, its halo stepping on hover.
  */
 export function Header() {
   const pathname = usePathname();
@@ -84,7 +85,7 @@ export function Header() {
           ))}
         </ul>
       </nav>
-      <a href="/studio/auth?mode=signin" className="header__signin goo-glass t-sub2">Sign in</a>
+      <a href="/studio/auth?mode=signin" className="header__signin t-sub2"><HaloMark size={22} className="header__signin-halo" /><span>Sign in</span></a>
       <button className="header__menu goo-glass t-sub2" onClick={() => setMenu(m => !m)} aria-expanded={menu} aria-controls="mobile-menu">
         <span>{menu ? 'Close' : 'Menu'}</span>
       </button>

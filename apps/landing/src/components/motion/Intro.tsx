@@ -53,8 +53,9 @@ export function Intro() {
         unlockScroll('intro');
         setGone(true);
       });
-    // the halo's own life, as on his head: a slow turn and a gentle bob
-    const turn = gsap.to(q('.intro__spin'), { rotate: 360, duration: 14, repeat: -1, ease: 'none' });
+    // the halo's own life, as on his head: a stepped turn and a gentle bob
+    // it turns in steps, one spoke (1/8 turn) a second, each landing with a little jelly overshoot
+    const turn = gsap.to(q('.intro__spin'), { rotate: '+=45', duration: .42, ease: 'back.out(2.2)', repeat: -1, repeatDelay: .58, repeatRefresh: true });
     const bob = gsap.to(q('.intro__spin'), { y: -10, duration: 1.6, repeat: -1, yoyo: true, ease: 'sine.inOut' });
     let holdFrom = 0;   // wall-clock, so a stalling device still opens on time
     const tick = (_time: number, dt: number) => {

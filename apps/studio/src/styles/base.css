@@ -76,7 +76,8 @@ svg, img, video, canvas { display: block; max-width: 100%; }
 .btn--ghost:hover { color: var(--ink); background: rgb(255 255 255 / .6); }
 .btn--icon { width: 36px; height: 36px; padding: 0; border-radius: 10px; color: var(--ink-2); }
 .btn--icon:hover { background: rgb(255 255 255 / .75); color: var(--ink); }
-.btn .spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: spin .8s linear infinite; }
+/* busy: the halo, stepping one spoke a second (never a spinning ring) */
+.spin { display: inline-block; flex: none; width: 18px; height: 18px; background: url('/studio/brand/halo-128.webp') center / contain no-repeat; animation: halo-tick 8s infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .field { display: grid; gap: 6px; }
@@ -98,3 +99,6 @@ svg, img, video, canvas { display: block; max-width: 100%; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+/* a route on its way: the halo alone, centred on the page colour */
+.route-wait { position: fixed; inset: 0; display: grid; place-items: center; background: var(--bg); }

@@ -30,3 +30,18 @@
   --ce-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ce-ease-jelly: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
+
+/* The halo turns in steps, never a constant spin: one spoke (1/8 turn) a second, landing with a little jelly
+   overshoot. Eight steps make one turn, so the loop has no seam. Used by every halo mark, loader and busy state. */
+@keyframes halo-tick {
+  0% { transform: rotate(0deg); animation-timing-function: cubic-bezier(.34, 1.56, .64, 1); }
+  5% { transform: rotate(45deg); } 12.5% { transform: rotate(45deg); animation-timing-function: cubic-bezier(.34, 1.56, .64, 1); }
+  17.5% { transform: rotate(90deg); } 25% { transform: rotate(90deg); animation-timing-function: cubic-bezier(.34, 1.56, .64, 1); }
+  30% { transform: rotate(135deg); } 37.5% { transform: rotate(135deg); animation-timing-function: cubic-bezier(.34, 1.56, .64, 1); }
+  42.5% { transform: rotate(180deg); } 50% { transform: rotate(180deg); animation-timing-function: cubic-bezier(.34, 1.56, .64, 1); }
+  55% { transform: rotate(225deg); } 62.5% { transform: rotate(225deg); animation-timing-function: cubic-bezier(.34, 1.56, .64, 1); }
+  67.5% { transform: rotate(270deg); } 75% { transform: rotate(270deg); animation-timing-function: cubic-bezier(.34, 1.56, .64, 1); }
+  80% { transform: rotate(315deg); } 87.5% { transform: rotate(315deg); animation-timing-function: cubic-bezier(.34, 1.56, .64, 1); }
+  92.5% { transform: rotate(360deg); } 100% { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) { .halo-tick { animation: none !important; } }

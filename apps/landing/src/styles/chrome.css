@@ -31,10 +31,16 @@ html[data-intro="done"] .intro { display: none; }
 .header > * { position: relative; pointer-events: auto; }
 .header__logo { opacity: 0; transform: translateY(-6px); transition: opacity .6s var(--ease), transform .6s var(--ease); }
 .header.is-scrolled .header__logo, .header.is-menu .header__logo { opacity: 1; transform: none; }
-.logo { display: inline-flex; align-items: center; gap: 6px; }
-@keyframes halo-turn { to { transform: rotate(360deg); } }
-.logo__word { font-weight: 700; font-size: 23px; letter-spacing: -.04em; line-height: 1; }
-.header__logo { padding: 4px 16px 4px 6px; }
+/* the logo: "moovı", the halo as the dot on the i */
+.logo { display: inline-flex; align-items: center; }
+.logo__word { display: inline-flex; align-items: flex-end; font-weight: 700; font-size: 27px; letter-spacing: -.05em; line-height: .9; padding-top: .62em; }
+.logo__i { position: relative; display: inline-block; }
+.logo__halo { position: absolute; left: 50%; bottom: .56em; width: .92em; height: .92em; max-width: none; translate: -50% 0; filter: saturate(1.7) brightness(.9) drop-shadow(0 1px 1.5px rgb(43 103 198 / .55)); }
+.header__logo:hover .logo__halo { animation: halo-tick 8s infinite; }
+.header__logo { padding: 2px 22px 6px 14px; }
+/* over the hero: no pill behind the logo or the nav (the active blob is the only shape) */
+.header:not(.is-scrolled) :is(.header__logo, .header__nav).goo-glass { background: none; border-color: transparent; box-shadow: none; }
+.header :is(.header__logo, .header__nav).goo-glass { transition: transform .5s var(--ease-jelly), box-shadow .5s var(--ease), border-color .5s var(--ease); }
 .header__nav { padding: 4px; }
 .header__nav ul { position: relative; display: flex; gap: 2px; list-style: none; margin: 0; padding: 0; }
 .header__nav a { position: relative; display: inline-block; padding: 9px 16px; color: var(--ink-2); font-weight: 700; transition: color .4s var(--ease); }
@@ -49,8 +55,15 @@ html[data-intro="done"] .intro { display: none; }
 @keyframes blob-squish { 0% { scale: 1 1; } 35% { scale: 1.12 .8; } 70% { scale: .97 1.05; } 100% { scale: 1 1; } }
 /* sign in sits beside the nav (its own pill: it leaves the page for the studio) */
 .header__nav { margin-left: auto; }
-.header__signin { margin-left: 8px; padding: 13px 20px; color: var(--ink); font-weight: 700; transition: transform .3s var(--ease-jelly); }
-.header__signin:hover { transform: translateY(-1px); }
+/* sign in: the one solid piece of jelly up here (it leaves the page for the studio); its halo steps on hover */
+.header__signin { margin-left: 10px; display: inline-flex; align-items: center; gap: 8px; padding: 9px 20px 9px 10px; border-radius: 999px; color: #F7FAFD; font-weight: 700;
+  background: radial-gradient(120% 140% at 30% 0%, color-mix(in oklab, var(--ce-frost-mid) 55%, var(--ce-surface)) 0%, var(--ce-glacier) 70%);
+  box-shadow: inset 0 1px 1px color-mix(in oklab, var(--ce-surface) 70%, transparent), inset 0 -3px 6px -3px var(--ce-deep-ice), 0 12px 24px -12px color-mix(in oklab, var(--ce-deep-ice) 75%, transparent);
+  transition: transform .45s var(--ease-jelly), box-shadow .3s var(--ease); }
+.header__signin:hover { transform: scale(1.04, .96); }
+.header__signin:active { transform: scale(.97); }
+.header__signin-halo { width: 26px !important; height: 26px !important; margin: -2px 0; filter: drop-shadow(0 2px 3px rgb(14 26 43 / .25)); }
+.header__signin:hover .header__signin-halo { animation: halo-tick 8s infinite; }
 .mmenu__signin { display: inline-block; margin-top: 18px; padding: 12px 20px; border-radius: 999px; background: var(--ce-ice-soft); color: var(--ink); font-weight: 700; }
 .header__menu { display: none; padding: 9px 18px; color: var(--ink); font-weight: 700; }
 

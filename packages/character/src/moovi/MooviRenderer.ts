@@ -1,4 +1,4 @@
-import { HALO_TILT, HALO_Y } from '../halo';
+import { HALO_TILT, HALO_Y, HaloTick } from '../halo';
 import { fragmentShader, vertexShader } from './shaders';
 import { QUALITY, initialTier, lowerTier, type QualityName } from './quality';
 import { STATE_BLEND, ZERO, type Blend, type MooviState } from './states';
@@ -62,6 +62,7 @@ export class MooviRenderer {
   private lastFrame = 0;
   private lastRender = 0;
   private spin = 0;
+  private tick = new HaloTick();
   private nextBlink = 2;
   private blinkStart = -1;
   private avgDt = 16;
@@ -281,7 +282,8 @@ export class MooviRenderer {
     hL = lerp3(hL, [-1.0, 0.86 + 0.08 * S(t * 8), 0.2], b.celebrate);
     hR = lerp3(hR, [1.0, 0.86 + 0.08 * S(t * 8 + 1), 0.2], b.celebrate);
 
-    this.spin += dt * (0.5 + 2.6 * b.think + 1.5 * b.celebrate) * (this.reducedMotion ? 0 : 1);
+    // the halo turns in steps (one spoke a second at rest), not a constant spin
+    this.spin = this.tick.update(dt, (0.5 + 2.6 * b.think + 1.5 * b.celebrate) * (this.reducedMotion ? 0 : 1));
 
     // blink: a 150 ms close/open on a random 2.5–5.5 s rhythm, time-based so it is fps-independent
     if (!this.reducedMotion && t > this.nextBlink) { this.blinkStart = t; this.nextBlink = t + 2.5 + Math.random() * 3; }

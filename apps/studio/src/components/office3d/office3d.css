@@ -1,5 +1,5 @@
 /* The 3D office: an icy room behind the jelly canvas, name tags and the sphere's label riding on top. */
-.o3 { position: absolute; inset: 0; overflow: hidden; }
+.o3 { position: absolute; inset: 0; overflow: hidden; isolation: isolate; }   /* its tags stack inside it, under any popup */
 .o3__room { position: absolute; inset: 0;
   background:
     radial-gradient(55% 45% at 50% 58%, rgb(207 230 247 / .55) 0%, rgb(207 230 247 / 0) 70%),

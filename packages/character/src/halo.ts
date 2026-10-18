@@ -35,3 +35,27 @@ float haloWheel(vec3 hp, float R, float T, float a, float spokes){
   return smin(d, hub, .12*R);
 }
 `;
+
+/**
+ * How the halo turns, everywhere (Ishaan, 2026-10-18): in steps, not a constant spin. Each step moves it one spoke
+ * (1/8 turn) with a small jelly overshoot, then it rests until the next one. `speed` is the old continuous rate in
+ * rad/s: .5 (at rest) is one step a second; thinking or cheering makes the steps come faster; 0 stops it.
+ */
+export const HALO_STEP = Math.PI / 4;
+export class HaloTick {
+  private base = 0;
+  private phase = 0;
+  angle = 0;
+  update(dt: number, speed: number) {
+    const rate = Math.max(0, speed) / .5;   // steps per second
+    if (rate <= 0) return this.angle;
+    this.phase += dt * rate;
+    while (this.phase >= 1) { this.phase -= 1; this.base += HALO_STEP; }
+    const into = this.phase / rate, move = Math.min(.42, .8 / rate);
+    const k = Math.min(1, into / move);
+    // ease out with a little overshoot (back), so each step lands like jelly
+    const c = 1.9, e = 1 + (c + 1) * Math.pow(k - 1, 3) + c * Math.pow(k - 1, 2);
+    this.angle = this.base + HALO_STEP * e;
+    return this.angle;
+  }
+}

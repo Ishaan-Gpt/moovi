@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { HaloLoader } from '@moovi/ui';
 import { post, readHandoff } from '@/lib/client';
 
 const Moovi = dynamic(() => import('@moovi/character/react').then(m => m.Moovi), { ssr: false });
@@ -12,7 +13,6 @@ const TARGET = 'moovi:brief:target';
  * A reload halfway resumes into the same chat instead of making a second project.
  */
 export function Starter() {
-  const [line, setLine] = useState('Setting up your set');
   const [err, setErr] = useState('');
   const [attempt, setAttempt] = useState(0);
   const ran = useRef(-1);
@@ -42,8 +42,11 @@ export function Starter() {
   return (
     <main className="start">
       <div className="start__light" aria-hidden="true" />
-      <div className="start__moovi" aria-hidden="true"><Moovi state={err ? 'review' : 'think'} className="start__canvas" interactive={false} /></div>
-      <p className="start__line" role="status">{err ? 'That didn’t go through.' : <>{line}<span className="start__dots" aria-hidden="true"><i /><i /><i /></span></>}</p>
+      {/* waiting is the halo and nothing else; only a failure gets words */}
+      {err ? <>
+        <div className="start__moovi" aria-hidden="true"><Moovi state="review" className="start__canvas" interactive={false} /></div>
+        <p className="start__line" role="status">That didn’t go through.</p>
+      </> : <HaloLoader size={84} base="/studio" className="start__halo" />}
       {err && (
         <div className="start__err">
           <p className="err">{err}</p>

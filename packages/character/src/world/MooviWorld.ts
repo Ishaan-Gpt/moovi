@@ -3,7 +3,7 @@ import { QUALITY, initialTier, lowerTier, type QualityName } from '../moovi/qual
 import { lerp3, mul, rotX, rotY, rotZ, type Vec3 } from '../moovi/math';
 import { CREW_N, worldFragment, type WorldVariant } from './worldShader';
 import { DESK_N, HOT_N } from './officeGraph';
-import { HALO_R, HALO_T, HALO_TILT, HALO_Y } from '../halo';
+import { HALO_R, HALO_T, HALO_TILT, HALO_Y, HaloTick } from '../halo';
 
 /**
  * Everything the world shows, as plain numbers, so a scroll timeline (GSAP) can tween any of it.
@@ -161,6 +161,7 @@ export class MooviWorld {
   private gspin = 0;
   private frames = 0;
   private spin = 0;
+  private tick = new HaloTick();
   private nextBlink = 2;
   private blinkAt = -1;
   private pointer: [number, number] = [0, 0];
@@ -466,7 +467,8 @@ export class MooviWorld {
     hL = lerp3(hL, [-1.0, .86 + .08 * S(t * 8), .2], cele);
     hR = lerp3(hR, [1.0, .86 + .08 * S(t * 8 + 1), .2], cele);
 
-    this.spin += dt * (sc.halo.spin + 2.6 * think + 1.5 * cele) * (this.reduce ? 0 : 1);
+    // the halo turns in steps (one spoke a second at rest), not a constant spin
+    this.spin = this.tick.update(dt, (sc.halo.spin + 2.6 * think + 1.5 * cele) * (this.reduce ? 0 : 1));
     if (!this.reduce && t > this.nextBlink) { this.blinkAt = t; this.nextBlink = t + 2.5 + Math.random() * 3; }
     const bp = this.blinkAt < 0 ? 1 : (t - this.blinkAt) / .15;
     const blink = bp < 1 ? Math.sin(bp * Math.PI) : 0;

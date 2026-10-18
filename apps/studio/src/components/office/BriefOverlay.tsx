@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useId, useRef, useState, type DragEvent, type FormEvent, type KeyboardEvent } from 'react';
 import type { Preset } from '@moovi/engine';
+import { HaloLoader } from '@moovi/ui';
 import { clearHandoff, readHandoff } from '@/lib/client';
 import { ClipRange } from './ClipRange';
 import { PRESET_CARDS, PRESET_HINTS } from './type-words';
@@ -41,6 +42,8 @@ export function BriefOverlay({ open, canClose, previous, onClose, onSubmit }: {
   const [err, setErr] = useState('');
   const [nudge, setNudge] = useState(0);
   const [handed, setHanded] = useState(false);
+  // a brief that arrives whole from the landing page (preset and what it needs) is sent at once: never asked twice
+  const auto = useRef(false);
   const area = useRef<HTMLTextAreaElement>(null);
   const file = useRef<HTMLInputElement>(null);
   const pick = useRef<HTMLDivElement>(null);
@@ -50,7 +53,7 @@ export function BriefOverlay({ open, canClose, previous, onClose, onSubmit }: {
   // the landing page's brief (if any) waits here until a preset is picked
   useEffect(() => {
     if (!open) return;
-    void readHandoff().then(h => { if (!h) return; setText(t => t || h.prompt); setFiles(f => (f.length ? f : h.files)); setRatio(h.ratio); if (h.preset) setPreset(p => p ?? h.preset!); setHanded(true); });
+    void readHandoff().then(h => { if (!h) return; setText(t => t || h.prompt); setFiles(f => (f.length ? f : h.files)); setRatio(h.ratio); if (h.preset) { setPreset(p => p ?? h.preset!); auto.current = true; } setHanded(true); });
   }, [open]);
   useEffect(() => { if (open && preset) requestAnimationFrame(() => area.current?.focus()); }, [open, preset]);
   useEffect(() => { const el = area.current; if (!el) return; el.style.height = 'auto'; el.style.height = `${Math.min(el.scrollHeight, 200)}px`; }, [text]);
@@ -92,6 +95,12 @@ export function BriefOverlay({ open, canClose, previous, onClose, onSubmit }: {
     catch (x) { setErr((x as Error).message); }
     finally { setBusy(false); }
   };
+  useEffect(() => {
+    if (!auto.current || !open || busy || !preset) return;
+    auto.current = false;
+    if (ready) void submit();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once, when the handed-over brief has filled the box
+  }, [open, preset, ready, busy]);
   const onKey = (e: KeyboardEvent<HTMLTextAreaElement>) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); void submit(); } };
   const onDrag = (e: DragEvent, over: boolean) => { if (!preset || !Array.from(e.dataTransfer.types).includes('Files')) return; e.preventDefault(); setDrag(over); };
   const like = () => {
@@ -101,6 +110,8 @@ export function BriefOverlay({ open, canClose, previous, onClose, onSubmit }: {
   };
 
   if (!open) return null;
+  // sending a handed-over brief: only the halo, no box
+  if (busy && handed) return <div className="nb nb--wait" role="status" aria-label="Starting your video"><HaloLoader size={84} base="/studio" /></div>;
   const current = RATIOS.find(r => r.id === ratio)!;
   const card = PRESET_CARDS.find(c => c.id === preset);
   const hint = preset ? PRESET_HINTS[preset] : null;
