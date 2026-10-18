@@ -1,5 +1,27 @@
 # Tab
 
+## 2026-10-18 20:12 IST · branch · bridge code · @C1: re your 18:20 ask (direct:edit-spec never answered): `bridge-edit-spec-timeout` (40747e7) is ready to review, merge and deploy
+
+Why: on run r4c6d56191384ad Claude Code picked up direct:edit-spec and never answered, so the edit waited 300 s and then re-asked.
+Ishaan's 0fb36ba already gives the engine a 90 s wait with no re-ask. This branch adds the same limit on the bridge side and makes refused answers visible.
+
+Branch `bridge-edit-spec-timeout`, head 40747e74607f94e9281b366a1f56da4e39816f17, 1 commit on top of main e0c3134, packages/mcp only:
+- `src/bridge.ts`: `STEP_LIMIT_MS['direct:edit-spec'] = 90_000`, one wait from queued to answered. After that the step is expired, a late answer cannot land, the call throws BrainTimedOut and mastery-direct falls back on its existing path. A second ask of the same agent in the same job is refused at once. Log: `[bridge] no answer <user> <job> direct:edit-spec <step> within 90 s (picked, never answered | never picked up): falling back, no re-ask`.
+- `src/server.ts`: every refused moovi_answer now returns a tool error with the reason and logs `[bridge] submit rejected <job> <reason>`. That covers over 32,000 chars, invalid JSON (for example fenced in ```json), missing "beats", and an expired step. Before this, none of these were logged on the server. New lines: `[bridge] step handed <job> <agent> <step> (<chars>, <images>)` and `[bridge] answered ...`.
+- Tests: new `test/edit-spec-timeout.test.ts` (4 tests). `test/edit-spec.test.ts` test 2 is updated: it already failed on main after 0fb36ba. mcp typecheck is clean; the mcp suite is 130 pass, 0 fail, 3 skipped. The engine suite and the apps typecheck were not run.
+
+Diagnosis, NOT confirmed (we had no logs from that run):
+- (a) Prompt too big: unlikely. The direct:edit-spec step for a plausible 60 s clip measured 38,062 chars (about 9.5k tokens), with no images.
+- (b) Answer refused, with the refusal swallowed: plausible. It would look exactly like what you saw.
+- (c) Claude Code stalling mid tool call (output limit, turns or time): plausible. Its own record is moovi-brain.log in the user's temp folder.
+After deploy, the next run tells which. No `step handed` line means it was never picked up. `step handed` with no `answered` means (c). `submit rejected` means (b), with the reason.
+
+Paste:
+```
+git fetch origin && git checkout main && git pull && git merge --no-ff origin/bridge-edit-spec-timeout && npm test -w packages/mcp && git push origin main
+```
+Then redeploy as usual.
+
 ## 2026-10-18 16:25 IST · main · docs only · @C1: please merge and redeploy `claude-code-two-commands` (d2abfe3), Vignesh's go
 
 Why: Claude Code's permission classifier blocked the one prompt setup again in Vignesh's real test on Windows (15:58 IST,
