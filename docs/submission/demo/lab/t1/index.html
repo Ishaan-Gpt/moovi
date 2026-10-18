@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>T1 Engineer Edit</title>
+<style>
+  @font-face { font-family: Anton; src: url(/data/refs/r1/clone-motion/fonts/anton-latin-400-normal.woff2) format('woff2'); }
+  @font-face { font-family: InterTight; src: url(/data/refs/r1/clone-motion/fonts/inter-tight-latin-wght-normal.woff2) format('woff2'); font-weight: 100 900; }
+  @font-face { font-family: Serif; src: url(/data/refs/r1/clone-motion/fonts/instrument-serif-latin-400-italic.woff2) format('woff2'); font-style: italic; }
+  :root { --bg: #0b0b0d; --ink: #f2f2f2; --dim: #8a8a90; --line: #26262b; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font: 14px/1.4 InterTight, system-ui, sans-serif; }
+  .wrap { display: flex; justify-content: center; padding: 12px 16px; height: calc(100% - 56px); }
+  canvas { height: 100%; aspect-ratio: 9 / 16; display: block; border-radius: 10px; background: #000; }
+  #v { display: none; }
+  .bar { height: 52px; display: flex; gap: 12px; align-items: center; padding: 0 16px; border-top: 1px solid var(--line); }
+  button { background: var(--ink); color: var(--bg); border: 0; border-radius: 999px; padding: 8px 16px; font: 600 13px InterTight, sans-serif; cursor: pointer; }
+  input[type=range] { flex: 1; } #t { font-variant-numeric: tabular-nums; color: var(--dim); min-width: 100px; }
+</style>
+</head>
+<body>
+<div class="wrap"><canvas id="c" width="1080" height="1920"></canvas></div>
+<video id="v" src="/data/demo/edit/t1/cut.mp4" playsinline preload="auto"></video>
+<div class="bar"><button id="play">Play</button><input id="seek" type="range" min="0" max="44" step="0.01" value="0"><span id="t">0.00</span></div>
+<script src="/data/refs/r1/clone-motion/core.js"></script>
+<script src="/data/refs/r1/clone-motion/type.js"></script>
+<script src="/data/refs/r1/clone-motion/world.js"></script>
+<script src="/data/refs/r1/clone-motion/posters.js"></script>
+<script src="t1.js"></script>
+</body>
+</html>
