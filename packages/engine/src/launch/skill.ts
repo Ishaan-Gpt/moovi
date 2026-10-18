@@ -13,7 +13,8 @@ import { join } from 'node:path';
 import { z } from 'zod';
 import { config, REPO } from '../config';
 import { fetchMusic, MUSIC_TRACKS, useScopeOf, type MusicTrack } from '../audio/music-lib';
-import { ask } from '../runtime';
+import { ask, modelScope } from '../runtime';
+import { skillPrompt, tierFor, type SkillTier } from '../skill-prompt';
 import { servePlayer } from '../s4/player';
 import { recentSetups, remember } from '../styles/kit';
 import { castCamera, castLookSounds, castMenu, LOOK_PARTS, recordParts } from './skill-cast';
@@ -116,9 +117,12 @@ export function skillSection(heading = '## Look L-REF-4'): string {
   if (i < 0) throw new Error(`the skill's Launch branch has no "${heading}" section`);
   const j = md.indexOf('\n## ', i + heading.length); return md.slice(i, j < 0 ? undefined : j).trim().slice(0, 2400);
 }
-export function writerStep(site: SiteRead, beds: MusicTrack[]): { system: string; prompt: string } {
+/** decision 20: a linked Claude Code reads the whole Launch branch ('full'); the server model and API keys a compact
+ * core plus this look's own section (the look is what the words are written for) */
+export function writerStep(site: SiteRead, beds: MusicTrack[], tier: SkillTier = 'compact'): { system: string; prompt: string } {
+  const skill = skillPrompt('launch', tier).text;
   const system = [
-    `THE LOOK, from the ishaan-motion skill:\n${skillSection()}`,
+    `THE ISHAAN-MOTION SKILL (${tier}):\n${skill}`, ...(tier === 'compact' ? [`THE LOOK:\n${skillSection()}`] : []),
     'You write the words of a 21-second premium product-launch film, the "Calm one-hue" look (after a Notely launch film): slow, quiet, tiny type that drifts in word by word, one material in the brand\'s own tints.',
     'The film: a stack of the product\'s own pages lands ("Too many …. / Too many …."); a laptop asks the question; "<c1> <c2>" on a soft field; "meet" / the name; the real product in glass; "<prefix> <cycle word>" three times; "<tracked>"; "All with"; the name.',
     'Rules (Ishaan\'s, the ishaan-motion skill): plain, specific, the site\'s own nouns; no hype words (revolutionary, seamless, unleash, supercharge, next-gen), no exclamation marks, no emoji; sentence case; never invent a number or a claim the site does not make.',
@@ -153,7 +157,8 @@ export async function run(o: RunInput, h: Hooks = {}): Promise<RunResult> {
   lap('site', s); h.progress?.(`read ${site.name}: ${site.cards.length} headings, ${site.images.length} pictures, ${site.colours.length} colours`);
 
   s = Date.now(); C.begin('write');
-  const beds = await castMenu(BEDS()), ids = beds.map(t => t.id), step = writerStep(site, beds), quotes = skillQuotes();
+  const tier = tierFor(modelScope()?.provider), beds = await castMenu(BEDS()), ids = beds.map(t => t.id), step = writerStep(site, beds, tier), quotes = skillQuotes();
+  log(`writer: the skill's ${tier} prompt (decision 20)`);
   const words = await ask({ agent: 'launch:film', tier: 'crew', deadlineMs: 60_000, signal: o.signal, system: step.system, prompt: step.prompt, schema: FILM_WORDS,
     validate: a => checkWords(a as FilmWords, ids, host === 'resend.com' ? [] : quotes) }) as FilmWords;
   const track = beds.find(t => t.id === words.music)!;

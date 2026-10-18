@@ -30,7 +30,7 @@ test('the bed menu is product-safe and calm; the step stays small for an 8k-TPM 
   const beds = BEDS(); assert.ok(beds.length >= 3); assert.ok(beds.every(b => b.energy <= 4));
   const site: SiteRead = { name: 'Acme', host: 'acme.dev', url: 'https://acme.dev', tagline: 'Ship faster', sub: 'The platform for teams.', cards: Array.from({ length: 12 }, (_, i) => `Heading number ${i}`), nav: ['Docs', 'Pricing'], cta: 'Start', colours: [], fonts: { ui: 'Inter', cssUrl: '' }, images: [], logo: null, hero: 'img/hero.jpg' };
   const st = writerStep(site, beds), chars = st.system.length + st.prompt.length;
-  assert.ok(chars / 3 < 2000, `about ${Math.round(chars / 3)} tokens`);
+  assert.ok(chars / 3 < 4000, `about ${Math.round(chars / 3)} tokens (Groq 8k TPM)`);
 });
 
 test('the look page inlines the film and moves its assets under /v/', () => {
