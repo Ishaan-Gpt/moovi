@@ -8,9 +8,10 @@ import { PLAYER_DIR } from './mastery';
 /**
  * The spec for Edit mastery's player written by a model (Edit mastery, 2026-10-18: "with a model, the brain writes the
  * spec from §12; every device, clip and UI piece tailored to that video's own sentences, names and footage; never a fixed
- * set, never one form for the whole film; never the window form"). No rule of ours goes in: the step is Edit mastery's
- * own text, read from the repo at call time (ishaan-motion edit-fundamentals §3 and §12, and the beat spec format in
- * docs/agents/mastery/edit.md), plus this clip's words and faces. The answer is checked against the player itself (the
+ * set, never one form for the whole film; never the window form"; Ishaan: the updated ishaan-motion skill runs it). No
+ * rule of ours goes in: the step is the repo's ishaan-motion skill, its whole edit reference read at call time
+ * (.claude/skills/ishaan-motion/references/edit-fundamentals.md), the spec's grammar from Edit mastery's format
+ * (docs/agents/mastery/edit.md) and the player's own device list, plus this clip's words and faces. The answer is checked against the player itself (the
  * devices its code defines, never the window or auto form, anchors only on words that were said); a failed check falls
  * back to the skeleton, never to a device set of ours.
  */
@@ -24,7 +25,8 @@ export function masteryText(): { recipe: string; format: string; devices: string
   const log = readFileSync(join(REPO, 'docs', 'agents', 'mastery', 'edit.md'), 'utf8');
   const player = readFileSync(join(PLAYER_DIR, 'player.html'), 'utf8');
   const devices = [...player.matchAll(/^ {2}(\w+): \{ (?:picture: true, )?build/gm)].map(m => m[1]!);
-  return { recipe: [section(fund, /^## 3\. /m, /^## 4\. /m), section(fund, /^## 12\. /m, /^## 13\. /m)].join('\n\n'), format: section(log, /^## The beat spec/m, /^## /m), devices };
+  // the skill's whole edit reference (the repo copy, so a skill push is the next deploy's), and the spec's grammar
+  return { recipe: fund.trim(), format: section(log, /^## The beat spec/m, /^## /m), devices };
 }
 
 export interface SpecInput { /** the names a src may use (the world's cut-outs, files in the edit folder) */ files?: Set<string>; words: { word: string; t: number; end: number }[]; faces?: { src_t: number; x: number; y: number; w: number; h: number }[]; duration: number; brief?: string }
