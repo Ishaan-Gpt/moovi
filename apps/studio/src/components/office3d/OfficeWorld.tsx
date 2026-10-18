@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { MooviWorld, type MooviState, type OfficeScene } from '@moovi/character';
 import { AGENT_NAMES, type AgentId } from '@moovi/engine/events';
 import type { Flight, Status } from '../office/useChat';
@@ -14,6 +14,8 @@ interface Props {
   mooviState: MooviState; visit?: AgentId | null;
   /** frame-rate readout, for measuring (the lab page) */
   onStats?: (s: { fps: number; quality: string; scale: number }) => void;
+  /** drawn instead where the browser has no WebGL2 (the 2D set) */
+  fallback?: ReactNode;
 }
 
 const FLY_MS = 1700;
@@ -36,12 +38,11 @@ const look = (st: Status | undefined, now: number) => {
  * agent works; work handed on travels as a bead from one desk into the graph (a node flares where it lands) and out
  * to the next desk. Above each head only a name and one short line, as on the 2D set. Same props as the 2D Stage.
  */
-export function OfficeWorld({ status, flights, onLanded, inset = 0, above = 0, below = 0, mooviState, visit = null, onStats }: Props) {
+export function OfficeWorld({ status, flights, onLanded, inset = 0, above = 0, below = 0, mooviState, visit = null, onStats, fallback = null }: Props) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const tags = useRef<Partial<Record<AgentId, HTMLDivElement | null>>>({});
   const gtag = useRef<HTMLDivElement>(null);
   const [ok, setOk] = useState(true);
-  const [writes, setWrites] = useState(0);
   const live = useRef({ status, flights, onLanded, inset, above, below, mooviState, visit, onStats });
   live.current = { status, flights, onLanded, inset, above, below, mooviState, visit, onStats };
 
@@ -120,7 +121,7 @@ export function OfficeWorld({ status, flights, onLanded, inset = 0, above = 0, b
           const [p0, p1] = into ? [a, g] : [g, b];
           const lift = .9 * Math.sin(Math.PI * u);
           const p: Vec3 = [p0[0] + (p1[0] - p0[0]) * u, p0[1] + (p1[1] - p0[1]) * u + lift, p0[2] + (p1[2] - p0[2]) * u];
-          if (!into && !landed.has(`${f.id}:hot`)) { landed.add(`${f.id}:hot`); hot.unshift({ node: NODE_OF[f.from], born: now }); setWrites(n => n + 1); }
+          if (!into && !landed.has(`${f.id}:hot`)) { landed.add(`${f.id}:hot`); hot.unshift({ node: NODE_OF[f.from], born: now }); }
           bead = { p, r: .1 * Math.min(1, Math.sin(Math.PI * Math.min(1, k * 1.15)) * 2.2) };
         }
         if (bead) Object.assign(sc.orb, { x: bead.p[0], y: bead.p[1], z: bead.p[2], r: Math.max(0, bead.r), glow: 1 });
@@ -190,19 +191,20 @@ export function OfficeWorld({ status, flights, onLanded, inset = 0, above = 0, b
           const st = status[id];
           const state = st?.state ?? 'idle';
           const fresh = st && state === 'done' && Date.now() - st.at < 4000;
-          const text = !st || (state === 'done' && !fresh) ? 'idle' : st.text;
+          // a line only while there is something to say; at rest, just the name
+          const text = !st || state === 'idle' || (state === 'done' && !fresh) ? '' : st.text;
           return (
             <div key={id} ref={el => { tags.current[id] = el; }} className={`o3-tag o3-tag--${fresh ? 'done' : state === 'done' ? 'idle' : state} ${id === 'moovi' ? 'o3-tag--moovi' : ''}`}>
               <b className="o3-tag__name">{AGENT_NAMES[id]}</b>
-              <span className="o3-tag__line"><i aria-hidden="true" /><span>{text}</span>{st?.count && st.count > 1 ? <em>×{st.count}</em> : null}</span>
+              {text && <span className="o3-tag__line"><i aria-hidden="true" /><span>{text}</span>{st?.count && st.count > 1 ? <em>×{st.count}</em> : null}</span>}
             </div>
           );
         })}
         <div ref={gtag} className="o3-graph">
-          <b>FalkorDB</b><span>{writes ? `${writes} writes this run` : 'the crew’s shared memory'}</span>
+          <b>FalkorDB</b>
         </div>
       </div>
-      {!ok && <p className="o3__fallback">This browser can’t draw the 3D office.</p>}
+      {!ok && fallback}
     </div>
   );
 }

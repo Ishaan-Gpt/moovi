@@ -9,6 +9,8 @@ import type { ComposerHandle } from '../chat/Composer';
 import { VideoPopup } from '../video/VideoPopup';
 import { BriefOverlay, type BriefExtra, type Ratio } from './BriefOverlay';
 import { Stage } from './Stage';
+import { OfficeWorld } from '../office3d/OfficeWorld';
+import { useSimulatedCrew } from '../office3d/simulate';
 import { useChat, type Video } from './useChat';
 
 export interface OfficeChat { id: string; title: string; status: string; videoStatus: string; version: number; duration: number | null; format: string | null; live: number[] }
@@ -30,6 +32,7 @@ export function Office({ pid, project, chat, messages, chats, startNew }: {
     ? { id: '', status: chat.videoStatus === 'ready' ? 'ready' : 'making', version: chat.version, duration: chat.duration ?? undefined, format: chat.format ?? undefined }
     : null), [chat]);
   const { state, dispatch } = useChat(pid, cid, { messages, title: chat.title, video: init, live: chat.live });
+  const crew = useSimulatedCrew();
 
   const composer = useRef<ComposerHandle>(null);
   const [chatOpen, setChatOpen] = useState(true);
@@ -128,9 +131,11 @@ export function Office({ pid, project, chat, messages, chats, startNew }: {
   return (
     <div className={`office ${brief ? 'is-briefing' : ''}`}>
       <div className="office__world" aria-hidden={brief || undefined}>
-        <Stage status={state.status} flights={state.flights} onLanded={onLanded} inset={inset} above={wide ? 0 : 56}
-          below={wide ? 0 : (chatOpen && !brief ? sheet : 72) + (dockOn ? 78 : 0)}
-          mooviState={mooviState} visit={visit} compact={!wide} />
+        {/* the 3D office plays its own run until it is wired to the crew's events; the 2D set draws where WebGL2 can't */}
+        <OfficeWorld {...crew} inset={inset} above={wide ? 0 : 56} below={wide ? 0 : (chatOpen && !brief ? sheet : 72) + (dockOn ? 78 : 0)} visit={visit}
+          fallback={<Stage status={state.status} flights={state.flights} onLanded={onLanded} inset={inset} above={wide ? 0 : 56}
+            below={wide ? 0 : (chatOpen && !brief ? sheet : 72) + (dockOn ? 78 : 0)}
+            mooviState={mooviState} visit={visit} compact={!wide} />} />
       </div>
 
       {!brief && (
