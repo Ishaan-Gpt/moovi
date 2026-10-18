@@ -18,11 +18,14 @@ import { estimateTokens } from '@moovi/engine/runtime';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import type { BrainHub } from './hub';
-import type { SessionCtx } from './http';
+import { TOKEN_REMOVED, type SessionCtx } from './http';
 import { ANSWER_HOLD_MS, IDLE_NO_TICKET, IDLE_OTHER_WINDOW, WAITING_OTHER_WINDOW } from './lease';
 
 /** how long a second window waits for the video before it stops: the longest a dropped window's lease can hold, plus a minute */
 export const OTHER_WINDOW_WAIT_MS = ANSWER_HOLD_MS + 60_000;
+/** an open wait re-reads whether its token is still the user's current one at every look (one store read, beside the
+ *  pull's own), so a removed token never gets a step; the first look skips it (the request was just verified) */
+export const TOKEN_CHECK_MS = 400;
 import { longPoll, WAIT_MAX_MS } from './poll';
 import type { ThinkStep } from './queue';
 
@@ -104,15 +107,26 @@ export function buildMcp(hub: BrainHub, ctx: SessionCtx): McpServer {
     await extra.sendNotification({ method: 'notifications/progress', params: { progressToken: token, progress: waitedS, message: `Moovi is working (${Math.round(waitedS)} s)` } });
   };
 
+  /** a token removed or replaced on the website ends an open wait at its next look, before any step is handed out
+   *  (live test 2026-10-18: a 20 s wait opened before Disconnect ran to its end on the old token) */
+  let tokenCheckedAt = -Infinity;
+  const tokenGone = async () => {
+    if (!ctx.tokenId || hub.now() - tokenCheckedAt < TOKEN_CHECK_MS) return false;
+    tokenCheckedAt = hub.now();
+    return !(await hub.tokens.isCurrent(user, ctx.tokenId).catch(() => true));
+  };
+
   /** the long poll both tools end with */
   async function next(waitS: number, extra: Extra): Promise<CallToolResult> {
     if (!(await hub.gate.useTicket(user, session, ticket))) return text({ status: 'idle', message: IDLE_NO_TICKET });
     let blocked = false;
     const started = hub.now();
+    tokenCheckedAt = started; // the request itself was just verified
     const got = await longPoll<CallToolResult>({
       waitMs: Math.min(waitS * 1000, WAIT_MAX_MS), signal: extra.signal, onProgress: progress(extra),
       attempt: async () => {
         blocked = false;
+        if (await tokenGone()) return text({ status: 'idle', message: TOKEN_REMOVED });
         await hub.gate.keepAlive(session, leases);
         const p = await hub.gate.pull(user, session, ticket);
         if ('step' in p) { otherSince = undefined; leases.set(p.step.job, p.lease); watched.add(p.step.job); return stepView(p.step, p.lease); }
