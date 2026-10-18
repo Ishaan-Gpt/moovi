@@ -74,6 +74,15 @@ test('edit builder: a hole never starts or ends inside a kept word', () => {
   assert.equal(h.length, 1); assert.ok(Math.abs(h[0]!.a - 0.59) < 1e-9 && Math.abs(h[0]!.b - 1.11) < 1e-9);
 });
 
+test('edit builder: a clip with no words keeps its quiet: heard pauses and quiet spans cut nothing', () => {
+  // a real 8 s clip (picture + a tone, no speech): the voice pass read 3.8 to 8 s as quiet and the edit came out 3.89 s
+  const e = buildEdl({ source: { ...source, duration: 8 }, words: [], palette, pauses: [[3.8, 8.02]], quiet: [[3.8, 8.02]] });
+  assert.equal(e.shots.at(-1)!.t_out, 8);
+  assert.equal(e.shots[0]!.src_in, 0);
+  assert.deepEqual(e.removed, []);
+  assert.deepEqual(validateEdl(e).problems, []);
+});
+
 test('edit builder: a silent clip is kept whole, in framings no longer than hold_max', () => {
   const e = buildEdl({ source: { ...source, duration: 5 }, words: [], palette });
   assert.equal(e.shots.length, 2); assert.equal(e.shots.at(-1)!.t_out, 5);

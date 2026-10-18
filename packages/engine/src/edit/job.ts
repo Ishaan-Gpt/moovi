@@ -191,7 +191,9 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
       .catch(e => { if (o.signal?.aborted) throw e; throw new Error(plainSpeechError(e)); });
     words = heard.words; language = heard.language;
     writeFileSync(join(dir, 'hear.json'), JSON.stringify({ language: heard.language, lang: heard.lang, detected: heard.detected, by: heard.by, prompt: heard.prompt, gate: heard.gate, pieces: heard.pieces, timings: heard.timings }, null, 1));
-    if (!heard.gate.ok) await o.onNote?.(`the transcript may be off (${heard.gate.reasons.join('; ')}), so check the captions`);
+    // no words at all is not a weak transcript: say what the person gets (the clip as it is, no captions)
+    if (!heard.words.length) await o.onNote?.('no speech heard in this clip, so it has no captions; the whole clip is kept');
+    else if (!heard.gate.ok) await o.onNote?.(`the transcript may be off (${heard.gate.reasons.join('; ')}), so check the captions`);
   } else if (pr.hasAudio) await o.onNote?.('speech-to-text is off (MOOVI_STT=off) and there is no key, so no cuts or captions from words this time');
   // Hinglish heard in Devanagari is captioned in Latin letters, as Indian reels are (edit/romanize.ts); times unchanged
   if (o.romanize !== false && words.length) {

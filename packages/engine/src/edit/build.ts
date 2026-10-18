@@ -265,7 +265,9 @@ export function buildEdl(i: BuildInput): Edl {
   // 2 + 3. holes, snapped out of words
   const retakes = (i.retakes ?? []).filter(r => r.b > r.a);
   const keptWords = ws.filter(w => w.t >= take.a - 0.01 && w.end <= take.b + 0.01 && !FILLERS.has(bare(w.word)) && !retakes.some(r => w.t >= r.a - 0.01 && w.end <= r.b + 0.01));
-  const holes = holesOf(ws, ps, take, L, qs, retakes);
+  // no words heard (b-roll, music, ambience, a sign-language clip): there is no talk to tighten, so its quiet is not a
+  // pause to cut. A real 8 s clip with a tone that the clean-up voice pass read as quiet after 3.8 s came out 3.89 s.
+  const holes = ws.length ? holesOf(ws, ps, take, L, qs, retakes) : [];
   snapHoles(holes, keptWords);
   padHoles(holes, keptWords.map(w => guardOf.get(w) ?? w), L.pad_in, L.pad_out);
   const segs: { a: number; b: number }[] = []; let cur = take.a;
