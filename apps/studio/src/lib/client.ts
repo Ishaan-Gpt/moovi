@@ -34,13 +34,13 @@ export function ago(at: number, now = Date.now()) {
 }
 
 /* ── the brief handed over from the landing page (same origin): text in sessionStorage, files in IndexedDB ── */
-export interface Handoff { prompt: string; ratio: 'auto' | '9:16' | '16:9' | '1:1' | '4:5'; files: File[] }
+export interface Handoff { prompt: string; ratio: 'auto' | '9:16' | '16:9' | '1:1' | '4:5'; files: File[]; /** the preset picked on the landing page (decision 19), when it is one of the three */ preset?: 'edit' | 'launch' | 'showreel' }
 const DB = 'ce-brief', STORE = 'files';
 function idb(): Promise<IDBDatabase> {
   return new Promise((res, rej) => { const r = indexedDB.open(DB, 1); r.onupgradeneeded = () => r.result.createObjectStore(STORE); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
 }
 export async function readHandoff(): Promise<Handoff | null> {
-  let meta: { prompt?: string; ratio?: Handoff['ratio'] } | null = null;
+  let meta: { prompt?: string; ratio?: Handoff['ratio']; preset?: unknown } | null = null;
   try { meta = JSON.parse(sessionStorage.getItem('moovi:brief') ?? 'null'); } catch { meta = null; }
   let files: File[] = [];
   try {
@@ -48,8 +48,9 @@ export async function readHandoff(): Promise<Handoff | null> {
     files = await new Promise<File[]>((res) => { const t = db.transaction(STORE, 'readonly').objectStore(STORE).get('files'); t.onsuccess = () => res((t.result as File[] | undefined) ?? []); t.onerror = () => res([]); });
     db.close();
   } catch { files = []; }
-  if (!meta?.prompt && !files.length) return null;
-  return { prompt: meta?.prompt ?? '', ratio: meta?.ratio ?? 'auto', files };
+  const preset = meta?.preset === 'edit' || meta?.preset === 'launch' || meta?.preset === 'showreel' ? meta.preset : undefined;
+  if (!meta?.prompt && !files.length && !preset) return null;
+  return { prompt: meta?.prompt ?? '', ratio: meta?.ratio ?? 'auto', files, ...(preset ? { preset } : {}) };
 }
 export async function clearHandoff() {
   try { sessionStorage.removeItem('moovi:brief'); } catch { /* private mode */ }

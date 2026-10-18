@@ -50,7 +50,7 @@ export function BriefOverlay({ open, canClose, previous, onClose, onSubmit }: {
   // the landing page's brief (if any) waits here until a preset is picked
   useEffect(() => {
     if (!open) return;
-    void readHandoff().then(h => { if (!h) return; setText(t => t || h.prompt); setFiles(f => (f.length ? f : h.files)); setRatio(h.ratio); setHanded(true); });
+    void readHandoff().then(h => { if (!h) return; setText(t => t || h.prompt); setFiles(f => (f.length ? f : h.files)); setRatio(h.ratio); if (h.preset) setPreset(p => p ?? h.preset!); setHanded(true); });
   }, [open]);
   useEffect(() => { if (open && preset) requestAnimationFrame(() => area.current?.focus()); }, [open, preset]);
   useEffect(() => { const el = area.current; if (!el) return; el.style.height = 'auto'; el.style.height = `${Math.min(el.scrollHeight, 200)}px`; }, [text]);
