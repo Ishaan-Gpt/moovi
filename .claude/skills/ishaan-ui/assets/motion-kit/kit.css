@@ -1,0 +1,78 @@
+/* Ishaan UI motion kit · the CSS the kit's components expect. Rename tokens to the brand; keep the structure.
+   Expected tokens: --page (canvas), --ink, --ink-3 (unfilled text), --accent, --ease, --ease-sheet, --ease-jelly. */
+
+:root {
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --ease-sheet: cubic-bezier(.76, 0, .24, 1);
+  --ease-jelly: cubic-bezier(.34, 1.56, .64, 1);
+  /* screen unit for story sites: the smaller of width-fit and height-fit (references/taste.md) */
+  --pad: max(16px, 3.125vw);
+  --inner: calc(100vw - var(--pad) * 2);
+  --u: min(calc(var(--inner) / 1800), calc(100svh / 1024 * 1.25));
+}
+@media (max-width: 760px) { :root { --u: calc(var(--inner) / 760); } }
+
+html, body { background: var(--page); }
+body { overflow-x: clip; }                       /* clip, not hidden: hidden breaks position:sticky */
+
+/* ── smooth scroll (Lenis) and locks ── */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: clip; }
+html.is-locked, html.is-locked body { overflow: hidden; }
+
+/* ── intro gate ── */
+html[data-intro="none"] .intro, html[data-intro="done"] .intro { display: none; }
+html:not([data-intro="done"]):not([data-intro="none"]) .scroll-cue { opacity: 0; }
+.intro { position: fixed; inset: 0; z-index: 200; background: var(--page);
+  --hole: 0vmax; mask-image: radial-gradient(circle at 50% 46%, transparent var(--hole), #000 calc(var(--hole) + 1px)); }
+
+/* ── reveals (CSS variant) ── */
+[data-reveal] { opacity: 0; transform: translateY(18px); filter: blur(6px);
+  transition: opacity .9s var(--ease), transform .9s var(--ease), filter .9s var(--ease); transition-delay: var(--d, 0ms); }
+[data-reveal].is-in { opacity: 1; transform: none; filter: none; }
+/* GSAP kind reveals start hidden only when JS runs, and unhide if motion never boots */
+html.js [data-reveal-kind] { visibility: hidden; }
+html.motion-fallback [data-reveal-kind], html.motion-fallback [data-reveal] { visibility: visible !important; opacity: 1 !important; transform: none !important; filter: none !important; }
+.split-line { padding-bottom: .06em; margin-bottom: -.06em; }
+
+/* ── pinned chapters ── */
+.ch { position: relative; }
+.ch__back, .ch__front { position: sticky; top: 0; height: 100svh; overflow: clip; }
+.ch__back { z-index: 1; }
+.ch__front { z-index: 3; margin-top: -100svh; pointer-events: none; }
+.ch__front :is(a, button, input, textarea, select, label, form) { pointer-events: auto; }
+.ch--flow { position: relative; z-index: 3; }
+.world { position: fixed; inset: 0; width: 100vw; height: 100svh; z-index: 2; pointer-events: none; }   /* optional persistent canvas */
+
+/* ── roll text ── */
+.roll { display: inline-flex; white-space: pre; }
+.roll__cell { display: inline-block; overflow: clip; vertical-align: top; line-height: 1.15; }
+.roll__char { position: relative; display: inline-block; transition: transform .55s var(--ease); transition-delay: calc(var(--i) * 16ms); }
+.roll__copy { position: absolute; left: 0; top: 100%; }
+.roll-host:hover .roll__char, .roll-host:focus-visible .roll__char { transform: translateY(-100%); }
+
+/* ── ink fill ── */
+.fill-word { color: var(--ink-3); }
+
+/* ── page transition sheet ── */
+.sheet { position: fixed; inset: 0; z-index: 150; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 28px;
+  background: var(--page); color: var(--ink); will-change: transform; }
+.sheet__label { font-family: var(--font-serif, serif); font-style: italic; font-size: clamp(32px, 6vw, 88px); }
+.sheet__track { position: relative; width: min(320px, 60vw); height: 0; border-top: 1.5px dotted currentColor; opacity: .5; }
+.sheet__bead { position: absolute; top: -4px; left: 0; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: sheet-run .9s var(--ease-sheet) both; }
+.sheet.is-waiting .sheet__bead { animation: sheet-loop 1.6s var(--ease-sheet) infinite alternate; }
+@keyframes sheet-run { from { left: 0; } to { left: calc(100% - 7px); } }
+@keyframes sheet-loop { from { left: 0; } to { left: calc(100% - 7px); } }
+
+/* ── reduced motion, print ── */
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] { opacity: 1; transform: none; filter: none; transition: none; }
+  .fill-word { color: inherit; }
+  .roll__char { transition: none; }
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+}
+@media print {
+  .intro, .sheet, .world, .scroll-cue { display: none !important; }   /* list your real overlay class names */
+  [data-reveal], html.js [data-reveal-kind] { opacity: 1 !important; transform: none !important; filter: none !important; visibility: visible !important; }
+}

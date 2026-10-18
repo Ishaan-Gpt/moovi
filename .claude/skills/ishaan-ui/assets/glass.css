@@ -1,0 +1,90 @@
+/* Ishaan UI — surface + motion utilities. Rename tokens to the brand; keep the structure.
+   Tokens expected: --canvas, --surface, --ink, --ink-2, --accent, --accent-soft, --ease. */
+
+:root {
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Frosted pane. Only over an environment (art or blurred sky), never over flat colour. */
+.glass {
+  background: linear-gradient(160deg, rgba(250, 248, 242, 0.72), rgba(250, 248, 242, 0.48));
+  -webkit-backdrop-filter: blur(28px) saturate(1.4);
+  backdrop-filter: blur(28px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -1px 0 rgba(43, 41, 39, 0.04),
+    0 24px 60px -36px rgba(43, 41, 39, 0.35);
+}
+/* Denser pane for heavy content and popovers. */
+.glass-strong {
+  background: linear-gradient(160deg, rgba(250, 248, 242, 0.88), rgba(250, 248, 242, 0.7));
+  -webkit-backdrop-filter: blur(32px) saturate(1.4);
+  backdrop-filter: blur(32px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 30px 70px -40px rgba(43, 41, 39, 0.45);
+}
+/* Wells, inputs, chips. */
+.glass-inset {
+  background: rgba(255, 255, 255, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: inset 0 1px 2px rgba(43, 41, 39, 0.05);
+}
+@media (prefers-reduced-transparency: reduce) {
+  .glass,
+  .glass-strong {
+    background: var(--surface, #faf8f2);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* Skeleton shimmer for route loaders. */
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, rgba(43, 41, 39, 0.05) 25%, rgba(43, 41, 39, 0.09) 50%, rgba(43, 41, 39, 0.05) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+/* Brand-object loader travelling a hairline. */
+@keyframes scan {
+  0%, 100% { left: 0%; transform: translateX(-50%); }
+  50% { left: 100%; transform: translateX(-50%); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-6px) rotate(-1.5deg); }
+}
+@keyframes wave {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* Paper grain overlay for art panels. */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.08;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* Intro is hidden before first paint once played (an inline script sets the attribute). */
+html[data-intro="done"] .intro-overlay, html[data-intro="none"] .intro-overlay { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+@media print {
+  .glass, .glass-strong { background: #fff !important; backdrop-filter: none !important; box-shadow: none !important; }
+}
