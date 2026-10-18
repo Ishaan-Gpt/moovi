@@ -83,6 +83,6 @@ Small, wide-tracked caps in the corners can carry *true* information that deepen
 ## Waits, hand-offs and results (Ishaan, Moovi, 2026-10-18)
 - **Never ask twice.** What the visitor already gave (a choice, words, a file) carries through every hand-off; if it is enough to start, the next screen starts it instead of showing the form again.
 - **Every wait is the brand mark** (a route change, a hand-off, a busy button): the mark alone on the page colour, no words, no generic ring spinner. A mark that loops moves in steps with a rest between (a tick a second, landing with a little overshoot), never a constant spin.
-- **Logo and favicon are one mark**: the same artwork, transparent, at every size; the wordmark carries it (e.g. as the dot on an i).
+- **Logo and favicon are one mark**: the same artwork, transparent, at every size. Keep the lockup simple: the word in a face that matches the mark's feel (Moovi: a heavy rounded face for a jelly mark), the mark beside it, no plate behind either; don't force the mark into a letter (Ishaan rejected the halo as the dot on the i).
 - **Over the hero the header has no plates**: the nav and logo float on the hero; the one solid piece is the primary action (sign in), made of the site's material.
 - **A finished result is shown alone**: the media in a clear glass frame over the blurred scene, one floating glass bar of icons under it (versions, download, change, minimise, close), no titles, meta or stats on screen.
