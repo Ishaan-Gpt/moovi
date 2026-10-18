@@ -246,7 +246,9 @@ function loop() { const t = vid.currentTime; frame(t); seek.value = t; tEl.textC
   await new Promise(r => { if (vid.readyState >= 1) r(); else vid.onloadedmetadata = r; });
   DUR = vid.duration; seek.max = DUR;
   buildTextures(); buildEdit(); cachePoster3();
-  const CUES = EV.map(([a, f, g]) => [a, f, g]);
-  window.T1 = { frame: async t => { await seekTo(t); frame(t); }, CUES, END: DUR, AUDIO: CLIP + 'cut.mp4' };
+  const extra = typeof goatReady === 'function' ? await goatReady() : [];
+  const CUES = [...EV, ...extra].map(([a, f, g]) => [a, f, g]).sort((a, b) => a[0] - b[0]);
+  const seekIns = t => typeof GOAT === 'undefined' ? [] : GOAT.inserts.filter(i => t >= i.t0 - 0.05 && t < i.t1).map(i => seekVid(i.v, (t - i.t0) + 0.3));
+  window.T1 = { frame: async t => { await Promise.all([seekTo(t), ...seekIns(t)]); frame(t); }, CUES, END: DUR, AUDIO: CLIP + 'cut.mp4', MUSIC: { file: '/data/demo/music/mixkit-motivating-mornings.m4a', gain: 0.12, start: 0 } };
   loop();
 })();
