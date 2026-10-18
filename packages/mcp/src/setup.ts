@@ -76,7 +76,7 @@ U="$S/api/brain/setup/$C"
 case "$(uname -s 2>/dev/null)" in
   MINGW*|MSYS*|CYGWIN*)
     # Windows (Git Bash): the PowerShell script starts the background Claude Code the Windows way
-    if command -v powershell.exe >/dev/null 2>&1; then exec powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "irm '$U.ps1' | iex"; fi;;
+    if command -v powershell.exe >/dev/null 2>&1; then exec powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor 3072; irm '$U.ps1' | iex"; fi;;
 esac
 if command -v curl >/dev/null 2>&1; then
   post() { curl -sS -X POST -w '\\n%{http_code}' "$1" 2>/dev/null; }
@@ -110,7 +110,8 @@ unset CLAUDECODE CLAUDE_CODE_ENTRYPOINT
 D="\${TMPDIR:-/tmp}"; D="\${D%/}/moovi"; mkdir -p "$D" || exit 1
 LOG="$D/brain-$(date +%s).log"
 export MOOVI_CL="$CL" MOOVI_P="$PROMPT" MOOVI_LOG="$LOG" MOOVI_X="$U/exit"
-command -v setsid >/dev/null 2>&1 && SID=setsid || SID=
+# a new session, so the background run outlives this shell's process group (setsid on Linux, perl on macOS)
+if command -v setsid >/dev/null 2>&1; then SID=setsid; elif command -v perl >/dev/null 2>&1; then SID="perl -MPOSIX -e POSIX::setsid();exec(@ARGV)"; else SID=; fi
 # the wrapper: the background Claude Code, then one call that says it stopped and how
 cd "$D" && nohup $SID sh -c '"$MOOVI_CL" -p "$MOOVI_P" --allowedTools mcp__moovi >"$MOOVI_LOG" 2>&1 </dev/null; rc=$?; if command -v curl >/dev/null 2>&1; then curl -fsS -X POST "$MOOVI_X?code=$rc" >/dev/null 2>&1; else wget -q -O /dev/null --post-data= "$MOOVI_X?code=$rc" >/dev/null 2>&1; fi' >/dev/null 2>&1 </dev/null &
 echo "MOOVI: connected (run $TICKET). Moovi now runs in the background. Log: $LOG"
@@ -129,7 +130,8 @@ export function setupPs1(origin: string, code: string, mcpUrl = `${origin}/mcp`)
 $S = ${psQuote(origin)}; $C = ${psQuote(code)}; $M = ${psQuote(mcpUrl)}
 $U = "$S/api/brain/setup/$C"
 $win = ($PSVersionTable.PSEdition -eq 'Desktop') -or $IsWindows
-$cl = Get-Command claude -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty Source
+try { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor 3072 } catch {}
+$cl = Get-Command claude -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty Path
 if (-not $cl) {
   $try = @((Join-Path $HOME '.local/bin/claude.exe'), (Join-Path $HOME '.local/bin/claude'), (Join-Path $HOME '.claude/local/claude'))
   if ($env:APPDATA) { $try += (Join-Path $env:APPDATA 'npm/claude.cmd') }
