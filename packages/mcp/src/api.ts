@@ -86,8 +86,9 @@ export function brainApi(o: BrainApiOptions) {
     const online = s.linked && cc === 'online';
     const lane = online ? 'bridge' : key ? 'key' : s.linked ? 'waiting' : 'none';
     const jobs = await jobNotices(o.hub, user, s.linked, s.linked ? cc : 'off', key);
-    // the studio's small pill (Vignesh, Oct 18): shown only to a user who picked Claude Code (linked, no key of their own)
-    const pill = !s.linked || key ? null : online ? 'connected' : jobs.length ? 'waiting' : 'not_connected';
+    // the studio's small pill (Vignesh, Oct 18): shown to a user without a key of their own. Linked but not polling now
+    // reads "linked" (command 1 done, command 2 not running), not "not connected": a linked user passes the key gate
+    const pill = key ? null : !s.linked ? 'not_connected' : online ? 'connected' : jobs.length ? 'waiting' : 'linked';
     return json({ ...s, online, claude_code: s.linked ? cc : 'off', lane, has_key: key, pill, notice: s.linked ? null : NOTICE.notConnected, jobs });
   }
 

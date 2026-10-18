@@ -64,7 +64,7 @@ test('setup: sign in first; the prompt is plain commands only (no piped remote s
   assert.ok(!written.some(v => v.includes(code)), 'the code itself never reaches the store');
   const pre = await fetch(`${base}/api/brain/setup`, { method: 'OPTIONS', headers: { origin: 'http://site.test' } });
   assert.equal(pre.status, 204, 'the Settings card on another port may ask');
-  assert.equal(await line(code), 'MOOVI: not set up yet: run the command from the prompt first.');
+  assert.equal(await line(code), 'MOOVI: not set up yet: run command 1 from Moovi Settings first.');
 });
 
 test('claim.json: works once, answers the fields the prompt names, and a used code answers ok false with a reason', async () => {
@@ -227,6 +227,51 @@ test('status: every state, from the wrapper report and from silence (FAILED, not
   const { code: fresh } = await makePrompt('s8');
   assert.equal((await exit(fresh, 1)).status, 404);
   assert.equal((await fetch(`${base}/api/brain/setup/${c}/exit`)).status, 405);
+});
+
+test('two commands (Vignesh Oct 18 16:03 IST): Settings gets "!" commands; 1 connects and starts nothing, 2 starts Moovi, and 2 runs again', async () => {
+  const w = join(dir, 'two'); mkdirSync(w, { recursive: true });
+  const f = fakeClaude(w);
+  const env = { ...process.env, HOME: w, TMPDIR: w, PATH: `${f.bin}:${process.env.PATH}` };
+  const r = await fetch(`${base}/api/brain/setup`, { method: 'POST', headers: { 'x-test-user': 'tc' } });
+  const j = await r.json() as { prompt: string; commands: { unix: [string, string]; windows: [string, string] } };
+  const code = /(mvs_[0-9a-f]{32})/.exec(j.prompt)![1]!;
+  const u = `${base}/api/brain/setup/${code}`;
+  assert.deepEqual(j.commands.unix, [`! curl -fsSL ${u}/connect.sh | sh`, `! curl -fsSL ${u}/start.sh | sh`]);
+  assert.deepEqual(j.commands.windows, [`! powershell -NoProfile -ExecutionPolicy Bypass -Command "irm ${u}/connect.ps1 | iex"`, `! powershell -NoProfile -ExecutionPolicy Bypass -Command "irm ${u}/start.ps1 | iex"`]);
+  for (const c of [...j.commands.unix, ...j.commands.windows]) assert.ok(c.startsWith('! ') && !/[\u2013\u2014]/.test(c), 'each one is the user\'s own command (!), no dashes');
+  // 2 before 1: refused with a reason, nothing started
+  let x = await runSh(j.commands.unix[1].slice(2), env);
+  assert.equal(x.status, 1); assert.match(x.stdout, /^MOOVI: FAILED: Moovi is not connected with this code yet/);
+  // 1: connected, claude mcp has Moovi, no claude -p
+  x = await runSh(j.commands.unix[0].slice(2), env);
+  assert.equal(x.status, 0, x.stdout + x.stderr);
+  assert.match(x.stdout, /^MOOVI: connected\. Claude Code now has Moovi\. Next: run command 2/);
+  assert.equal((await hub.tokens.status('tc')).linked, true, 'linked after command 1: the key gate lets this user through');
+  assert.match(readFileSync(f.state, 'utf8'), /Bearer mvk_/);
+  assert.ok(!readFileSync(f.calls, 'utf8').split('\n').some(l => l.startsWith('P|')), 'command 1 starts nothing');
+  t += SETUP_CONNECT_MS + 1;
+  assert.match(await line(code), /^MOOVI: connected; Moovi is not started yet: run command 2/, 'no FAILED while command 2 has not run');
+  // 2: starts the background Claude Code with a fresh ticket; again for the next video, another ticket
+  for (const n of [1, 2]) {
+    x = await runSh(j.commands.unix[1].slice(2), env);
+    assert.equal(x.status, 0, x.stdout + x.stderr);
+    assert.match(x.stdout, /MOOVI: connected \(run rt_/);
+    assert.ok(await until(() => readFileSync(f.calls, 'utf8').split('\n').filter(l => l.startsWith('P|')).length === n), `command 2 run ${n} started claude -p`);
+  }
+  assert.equal(readFileSync(f.state, 'utf8').trim().split('\n').length, 1, 'command 2 does not touch claude mcp');
+  assert.doesNotMatch(await line(code), /not started yet|never connected/, 'after command 2 the status follows the run (the fake claude exits at once: IDLE)');
+  // 1 is one use; the scripts parse as sh, and the ps1 for each part is served
+  x = await runSh(j.commands.unix[0].slice(2), env);
+  assert.equal(x.status, 1); assert.match(x.stdout, /already used or has expired/);
+  for (const p of ['connect', 'start']) {
+    const sh = await (await fetch(`${u}/${p}.sh`)).text();
+    writeFileSync(join(w, `${p}.sh`), sh);
+    assert.equal(spawnSync('sh', ['-n', join(w, `${p}.sh`)]).status, 0, `${p}.sh is valid POSIX sh`);
+    const ps = await (await fetch(`${u}/${p}.ps1`)).text();
+    assert.match(ps, p === 'connect' ? /claim\?part=connect/ : /\/ticket"/);
+    assert.ok(p === 'connect' ? !ps.includes('Start-Process') : !ps.includes('mcp add'), `${p}.ps1 does only its part`);
+  }
 });
 
 test('claim: two scripts racing on one code, exactly one wins', async () => {
@@ -411,4 +456,20 @@ test('prompt: its POSIX commands, run as written in sh, connect Moovi and start 
     const status = await run(cmds[5]!);
     assert.match(status.stdout, /^MOOVI: /);
   }
+});
+
+test('two commands on Windows: the exact command text, with powershell (pwsh here) behind it, from sh as Git Bash runs it', { skip: !PWSH && 'no pwsh on this machine (set MOOVI_PWSH)' }, async () => {
+  const w = join(dir, 'two ps'); mkdirSync(w, { recursive: true });
+  const f = fakeClaude(w);
+  const pb = join(w, 'ps bin'); mkdirSync(pb, { recursive: true }); symlinkSync(PWSH, join(pb, 'powershell'));
+  const env = { ...process.env, HOME: w, TMPDIR: w, PATH: `${pb}:${f.bin}:${process.env.PATH}`, POWERSHELL_TELEMETRY_OPTOUT: '1', POWERSHELL_UPDATECHECK: 'Off' };
+  const r = await fetch(`${base}/api/brain/setup`, { method: 'POST', headers: { 'x-test-user': 'tw' } });
+  const [one, two] = ((await r.json()) as { commands: { windows: [string, string] } }).commands.windows;
+  let x = await runSh(one.slice(2), env);
+  assert.match(x.stdout, /MOOVI: connected\. Claude Code now has Moovi\. Next: run command 2/, x.stdout + x.stderr);
+  assert.equal((await hub.tokens.status('tw')).linked, true);
+  assert.ok(!existsSync(f.calls) || !readFileSync(f.calls, 'utf8').split('\n').some(l => l.startsWith('P|')), 'command 1 starts nothing');
+  x = await runSh(two.slice(2), env);
+  assert.match(x.stdout, /MOOVI: connected \(run rt_/, x.stdout + x.stderr);
+  assert.ok(await until(() => existsSync(f.calls) && readFileSync(f.calls, 'utf8').split('\n').some(l => l.startsWith('P|')), 15_000), 'command 2 started the background claude -p');
 });
