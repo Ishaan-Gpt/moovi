@@ -5,7 +5,7 @@
 import type { AgentId } from '../events';
 export type StyleId = 's1' | 's4' | 's5' | 'darkvox' | 'anatomy' | 'launch' | 'combined' | 'clip-moment';
 /** which live player plays the result (none of them encodes an MP4) */
-export type PlayerKind = 's1-engine' | 's4-player' | 's5-player' | 'darkvox-player' | 'anatomy-player' | 'launch-player' | 'edit-player' | 'edit-mastery' | 'mp4';
+export type PlayerKind = 's1-engine' | 's4-player' | 's5-player' | 'darkvox-player' | 'anatomy-player' | 'launch-player' | 'launch-look' | 'edit-player' | 'edit-mastery' | 'mp4';
 export type StyleInput = 'url' | 'script';
 
 export interface StyleInfo {

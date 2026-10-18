@@ -53,6 +53,7 @@ function page(ref: PreviewRef): string {
     case 'darkvox-player': return DV_PAGE;
     case 'anatomy-player': return AN_PAGE;
     case 'launch-player': return LAUNCH_PAGE();
+    case 'launch-look': return readFileSync(join(ref.dir, 'index.html'), 'utf8'); // a look page with its film inlined (src/launch/skill.ts)
     case 'edit-player': return EDIT_PAGE;
     case 'edit-mastery': return '';
     case 'mp4': return '<!doctype html><p>This version is a finished MP4.</p>';
