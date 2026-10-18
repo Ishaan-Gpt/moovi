@@ -55,6 +55,9 @@ export function masteryFile(dir: string, path: string): Served {
   return { status: 404 };
 }
 
+/** The desk world's cut-out names (what a spec's src may name besides the edit's own files). */
+export const worldCutouts = () => new Set(Object.keys(JSON.parse(readFileSync(join(config.assets, 'world', 'cut', 'cut.json'), 'utf8')) as Record<string, unknown>));
+
 /** The spec as the player reads it, beside the edit: its clip relative to the player (a/b/c/ -> v/). */
 export function writeSpec(dir: string, spec: Record<string, unknown>): void {
   writeFileSync(join(dir, 'spec.json'), JSON.stringify({ ...spec, clip: '../../../v/' }, null, 1));

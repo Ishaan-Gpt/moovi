@@ -14,7 +14,8 @@ import type { FxEvent } from '../edit/effects/plan';
 import { fxLines } from '../edit/effects/auto';
 import { fxMusic } from '../edit/effects/music';
 import { filmMix, renderFilm, useMix } from '../edit/film';
-import { prepareClip, renderMasteryFilm, skeletonSpec, writeSpec } from '../edit/mastery';
+import { prepareClip, renderMasteryFilm, skeletonSpec, worldCutouts, writeSpec } from '../edit/mastery';
+import { directMasterySpec } from '../edit/mastery-direct';
 
 import { activity, stageLines } from '../live';
 import { startRun } from '../runs';
@@ -132,7 +133,7 @@ export const editReel: Handler = async ctx => {
   const dir = join(ctx.dir, 'edit');
   // probe, look, hear, plan, and the voice clean-up started beside the preview: one function, the bench runs it too
   const M = mastery();
-  let graded: Promise<void> = Promise.resolve();
+  let graded: Promise<void> = Promise.resolve(), directed: Promise<void> = Promise.resolve();
   // the player path needs the hearing, the cuts, the faces and the graded picture; the old page's casting steps stay off
   const plan = await planEdit({ path: u.path, dir, name: u.name, signal: ctx.signal, onStage: step, onDone: done, onNote: text => ctx.activity('note', text),
     ...(M ? { library: false, inserts: false, effects: false, beats: false, moves: [], check: false } : { style: 'auto' }), brief: inp.brief ?? '', requireWords: !NO_WORDS.test(inp.brief ?? ''), ...(inp.caption ? { caption: inp.caption } : {}), ...(inp.names?.length ? { names: inp.names } : {}), asks: inp.brief ?? '', footage: process.env.MOOVI_EDIT_FOOTAGE === 'on' }).finally(() => lines.end());
@@ -150,6 +151,12 @@ export const editReel: Handler = async ctx => {
     // the preview plays now from the upload's own picture; the graded cut swaps in when the restore ends (the MP4 waits for it)
     await prepareClip(dir, join(dir, plan.source.file));
     writeSpec(dir, skeletonSpec(dir));
+    // the model writes the spec from Edit mastery's recipe, beside the preview; it replaces the skeleton only when the
+    // player can draw it as written (edit/mastery-direct.ts); the MP4 waits for the answer
+    const kept = words.filter(w => !((edl as { removed?: { src_in: number; src_out: number }[] }).removed ?? []).some(r => w.t >= r.src_in - 1e-3 && w.t < r.src_out - 1e-3));
+    directed = directMasterySpec({ words: kept.map(w => ({ word: w.word, t: w.t, end: w.end })), faces: edl.faces ?? [], duration: plan.source.duration, brief: inp.brief ?? '', files: worldCutouts(), ...(ctx.signal ? { signal: ctx.signal } : {}), log: s => console.log(`[edit] ${s}`) })
+      .then(async r => { if (r.value) { writeSpec(dir, r.value); await ctx.activity('note', 'the edit is directed: devices on its sentences'); } else console.log(`[edit] spec: the skeleton (${r.problems.flat().slice(0, 2).join('; ')})`); })
+      .catch(e => console.warn(`[edit] spec: ${String((e as Error).message ?? e).slice(0, 160)}`));
     graded = plan.restore.catch(() => null).then(r => r ? prepareClip(dir).then(() => undefined) : undefined).catch(e => console.warn(`[edit] graded cut: ${String((e as Error).message ?? e).slice(0, 160)}`));
     done('player', (Date.now() - p0) / 1000);
   }
@@ -177,7 +184,7 @@ export const editReel: Handler = async ctx => {
   // the delivered MP4 is recorded from that same player (its own sounds), one film at a time
   if (M) {
     const v2 = version + 1, file = join(vdir, `v${v2}.mp4`);
-    const job = graded.then(() => filmQueue).then(() => renderMasteryFilm(dir, file));
+    const job = Promise.all([graded, directed]).then(() => filmQueue).then(() => renderMasteryFilm(dir, file));
     filmQueue = job.catch(() => undefined);
     try {
       const r = await job;

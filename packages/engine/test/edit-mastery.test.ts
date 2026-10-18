@@ -42,3 +42,16 @@ test('no model: the skeleton spec only (Premium Caption 1, start on the first ke
     assert.equal(JSON.parse(readFileSync(join(dir, 'spec.json'), 'utf8')).clip, '../../../v/');
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
+
+test('a model-written spec plays only when the player can draw it as written (else the skeleton)', async () => {
+  const { checkMasterySpec, masteryText } = await import('../src/edit/mastery-direct');
+  const { devices, recipe, format } = masteryText();
+  assert.ok(devices.includes('cam') && devices.includes('desk'), 'the devices come from the player itself');
+  assert.match(recipe, /## 12\./); assert.match(format, /beat spec/i);
+  const words = [{ word: 'Hello' }, { word: 'guys,' }, { word: 'Moovi' }, { word: 'edits.' }], files = new Set(['laptop']);
+  const good = { beats: [{ from: { w: 'hello', after: 0 }, layers: [{ t: 'cam', z: 1.04 }] }, { from: { w: 'moovi', after: 1 }, layers: [{ t: 'cam', form: 'split' }, { t: 'tag', name: 'Moovi', at: { w: 'moovi' }, x: 60, y: 1180 }] }] };
+  assert.deepEqual(checkMasterySpec(good, { words, devices, files }), []);
+  const bad = { beats: [{ from: { w: 'welcome' }, layers: [{ t: 'cam', form: 'window', z: 0 }, { t: 'sparkles' }, { t: 'pill', avatar: 'me.png', y: 0.8 }] }] };
+  const p = checkMasterySpec(bad, { words, devices, files }).join(' | ');
+  for (const why of ['not said', 'not a device', 'window form', 'cam z 0', 'design px', 'not a file']) assert.ok(p.includes(why), `${why}: ${p}`);
+});
