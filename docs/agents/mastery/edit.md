@@ -175,3 +175,15 @@ parseAsks("add a crash zoom on 'crore'. orbit on the hook"): Ask[]   // a chat k
   pan from the laptop to the megaphone (`kind: "ink"`, dashed lines now draw on through a mask).
 - Corner leaves are sharp, the nearest pencils most blurred (per-prop `blur`), as in em5.
 - Perf this round is not trustworthy: the PC was at 100% CPU from other sessions (v10 itself failed to load in time).
+- Ishaan on v12: "better" (2026-10-18).
+
+## 2026-10-18: v13 (the speaker inside the world; the world sounds itself)
+- `pip: "print"`: during desk beats the speaker plays inside a taped photo print on the desk (drops in on the first
+  visit with the same physics and shadow), instead of a ringed UI window; em5's world has no UI box. The face box is
+  still projected, so text keeps clear of it.
+- The desk generates its own foley from the kit (rule 0.3, a sound on every arrival): card-shuffle paper on each print
+  landing, a soft hit on each cut-out landing, marker scratch under every ink stroke, a paper swipe for each corner prop,
+  a click when the bulb switches on. `desk.sound: false` turns it off; the spec keeps only whooshes, the punch hit and
+  the chime.
+- Perf (same round, PC at 100% CPU from other sessions): v12 26 fps, v13 40–49 fps; video stalls appear before the
+  world in every version this round, so they are load, not the desk.

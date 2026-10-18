@@ -1,0 +1,530 @@
+{
+ "name": "Interview take 3 · v13 (the speaker printed on the desk; the desk's own foley)",
+ "clip": "../../edit-t3/take3/base/",
+ "why": "v10's desk, rebuilt with real material: photo cut-outs of CC0 scans (laptop playing the lecture, megaphone, bulb that switches on, cup, teapot, leaves, pencils), drops with gravity and two bounces, alpha-shaped contact shadows, a window gobo with real leaf shadows that sweeps in, framing props nearer the lens (parallax, depth blur), ink that draws on its words.",
+ "start": {
+  "w": "so"
+ },
+ "palette": {
+  "page": "#1b1714",
+  "panel": "#221d19",
+  "panel-ink": "#EDE3D6",
+  "paper": "#EEE4D3",
+  "paper-hi": "#F7F0E3",
+  "paper-lo": "#D9CBB4",
+  "ink": "#33271F"
+ },
+ "theme": {
+  "fall": "rgba(10,8,6,.42)",
+  "ring": "rgba(255,255,255,.75)"
+ },
+ "caption": {
+  "variant": "1.1",
+  "accent": "video"
+ },
+ "music": {
+  "file": "music/bed.mp3",
+  "start": 2,
+  "gain": 0.06
+ },
+ "desk": {
+  "w": 1800,
+  "h": 3400,
+  "items": [
+   {
+    "kind": "cut",
+    "src": "laptop",
+    "screen": "../../refs/t3/footage/lecture.mp4",
+    "at": {
+     "w": "two",
+     "dt": 0.02
+    },
+    "drop": 0.8,
+    "x": 280,
+    "y": 250,
+    "w": 560,
+    "r": -2,
+    "spin": 5,
+    "dx": 240,
+    "dy": 840,
+    "dw": 500,
+    "dh": 440,
+    "doodle": [
+     {
+      "d": "M120 20 C 60 120, 70 220, 150 300 M150 300 l -42 -10 M150 300 l 2 -42",
+      "at": {
+       "w": "two",
+       "dt": 0.5
+      }
+     },
+     {
+      "d": "M250 300 a 34 34 0 1 0 0.1 0 M190 410 C 200 362, 300 362, 310 410",
+      "at": {
+       "w": "way"
+      }
+     },
+     {
+      "d": "M350 300 C 430 220, 440 120, 380 20 M380 20 l -4 42 M380 20 l 38 20",
+      "dash": "16 20",
+      "at": {
+       "w": "interaction"
+      }
+     },
+     {
+      "d": "M352 112 l 74 74 M426 112 l -74 74",
+      "at": {
+       "w": "videos",
+       "dt": -0.1
+      }
+     }
+    ],
+    "label": "two-way?",
+    "lx": 175,
+    "ly": 1300,
+    "lr": -6,
+    "ls": 76,
+    "labelAt": {
+     "w": "interaction",
+     "dt": 0.25
+    }
+   },
+   {
+    "kind": "ink",
+    "at": {
+     "w": "i",
+     "after": 14,
+     "dt": -0.1
+    },
+    "dx": 640,
+    "dy": 1080,
+    "dw": 520,
+    "dh": 300,
+    "sw": 7,
+    "doodle": [
+     {
+      "d": "M30 30 C 220 -10, 420 90, 470 250 M470 250 l -34 -24 M470 250 l 8 -40",
+      "dash": "18 20",
+      "at": {
+       "w": "i",
+       "after": 14,
+       "dt": -0.1
+      },
+      "dur": 0.75
+     }
+    ]
+   },
+   {
+    "kind": "cut",
+    "src": "megaphone",
+    "flip": true,
+    "at": {
+     "w": "i",
+     "after": 14,
+     "dt": 0.02
+    },
+    "drop": 0.9,
+    "x": 880,
+    "y": 1300,
+    "w": 470,
+    "r": 6,
+    "dx": 1170,
+    "dy": 1500,
+    "dw": 460,
+    "dh": 380,
+    "doodle": [
+     {
+      "d": "M60 200 C 40 80, 200 30, 300 60 C 420 90, 430 230, 320 270 C 260 290, 180 290, 130 270 L 70 330 L 95 255 C 70 240, 62 222, 60 200",
+      "at": {
+       "w": "ask",
+       "after": 14.5
+      }
+     },
+     {
+      "d": "M195 125 C 195 85, 262 85, 262 128 C 262 162, 228 162, 228 196 M228 236 l 0 3",
+      "at": {
+       "w": "questions"
+      }
+     },
+     {
+      "d": "M30 330 C 150 260, 300 140, 445 30",
+      "at": {
+       "w": "somewhere"
+      }
+     }
+    ]
+   },
+   {
+    "src": "../../refs/t3/footage/hand.mp4",
+    "at": {
+     "w": "class"
+    },
+    "x": 850,
+    "y": 1960,
+    "w": 540,
+    "h": 360,
+    "r": -4,
+    "drop": 0.7,
+    "stack": 2
+   },
+   {
+    "src": "../../refs/t3/footage/vr.mp4",
+    "at": {
+     "w": "don't",
+     "after": 19
+    },
+    "x": 230,
+    "y": 2060,
+    "w": 600,
+    "h": 400,
+    "r": -3,
+    "drop": 0.8,
+    "stack": 2
+   },
+   {
+    "kind": "cut",
+    "src": "bulb-off",
+    "srcOn": "bulb-on",
+    "on": {
+     "w": "3d"
+    },
+    "at": {
+     "w": "learning",
+     "dt": -0.08
+    },
+    "drop": 0.7,
+    "x": 430,
+    "y": 2560,
+    "w": 250,
+    "r": -8,
+    "dx": 335,
+    "dy": 2420,
+    "dw": 440,
+    "dh": 300,
+    "sw": 9,
+    "doodle": [
+     {
+      "d": "M70 190 L 18 200 M88 100 L 46 64 M220 44 L 220 0 M352 100 L 394 64 M370 190 L 422 200",
+      "at": {
+       "w": "3d",
+       "dt": 0.12
+      }
+     }
+    ],
+    "label": "3D",
+    "lx": 200,
+    "ly": 2700,
+    "lr": -8,
+    "ls": 150,
+    "labelAt": {
+     "w": "3d",
+     "dt": 0.05
+    },
+    "rise": {
+     "at": {
+      "w": "3d",
+      "dt": 0.02
+     },
+     "by": 1.4,
+     "y": 110,
+     "blur": 10
+    }
+   }
+  ],
+  "props": [
+   {
+    "src": "leaf-a",
+    "x": 20,
+    "y": -80,
+    "w": 440,
+    "r": 25,
+    "z": 0.35,
+    "from": "tl",
+    "at": {
+     "w": "two"
+    },
+    "blur": 1.4
+   },
+   {
+    "src": "cup",
+    "x": 840,
+    "y": 30,
+    "w": 300,
+    "z": 0.18,
+    "from": "tr",
+    "at": {
+     "w": "two",
+     "dt": 0.12
+    },
+    "blur": 3
+   },
+   {
+    "src": "pencils",
+    "x": -170,
+    "y": 980,
+    "w": 560,
+    "r": 62,
+    "z": 0.3,
+    "from": "bl",
+    "at": {
+     "w": "two",
+     "dt": 0.2
+    },
+    "blur": 7
+   },
+   {
+    "src": "fern",
+    "x": 1450,
+    "y": 1080,
+    "w": 460,
+    "r": 160,
+    "z": 0.4,
+    "from": "tr",
+    "at": {
+     "w": "i",
+     "after": 14
+    },
+    "blur": 2.2
+   },
+   {
+    "src": "leaf-b",
+    "x": 700,
+    "y": 2240,
+    "w": 420,
+    "r": -30,
+    "z": 0.32,
+    "from": "bl",
+    "at": {
+     "w": "i",
+     "after": 14,
+     "dt": 0.1
+    },
+    "blur": 1.4
+   },
+   {
+    "src": "leaf-a",
+    "x": 880,
+    "y": 2200,
+    "w": 440,
+    "r": -150,
+    "z": 0.4,
+    "from": "tr",
+    "at": {
+     "w": "and",
+     "after": 18
+    },
+    "blur": 1.4
+   },
+   {
+    "src": "teapot",
+    "x": 90,
+    "y": 3020,
+    "w": 360,
+    "r": -20,
+    "z": 0.22,
+    "from": "bl",
+    "at": {
+     "w": "and",
+     "after": 18,
+     "dt": 0.12
+    },
+    "blur": 3
+   }
+  ]
+ },
+ "beats": [
+  {
+   "from": {
+    "w": "so"
+   },
+   "layers": [
+    {
+     "t": "cam",
+     "z": 1.1,
+     "Y": 0.34,
+     "punch": {
+      "w": "unable"
+     },
+     "by": 1.06
+    }
+   ]
+  },
+  {
+   "from": {
+    "w": "two"
+   },
+   "layers": [
+    {
+     "t": "desk",
+     "focus": [
+      560,
+      760,
+      1.3
+     ],
+     "pip": "print"
+    }
+   ]
+  },
+  {
+   "from": {
+    "w": "that",
+    "after": 9.9
+   },
+   "layers": [
+    {
+     "t": "cam",
+     "z": 1.06,
+     "Y": 0.34
+    },
+    {
+     "t": "leak",
+     "at": {
+      "w": "that",
+      "after": 9.9
+     }
+    }
+   ]
+  },
+  {
+   "from": {
+    "w": "i",
+    "after": 14
+   },
+   "layers": [
+    {
+     "t": "desk",
+     "focus": [
+      1250,
+      1850,
+      1.3
+     ],
+     "pip": "print"
+    }
+   ]
+  },
+  {
+   "from": {
+    "w": "as",
+    "after": 17
+   },
+   "layers": [
+    {
+     "t": "cam",
+     "z": 1.12,
+     "Y": 0.34,
+     "punch": {
+      "w": "introvert"
+     },
+     "by": 1.08
+    },
+    {
+     "t": "leak",
+     "at": {
+      "w": "as",
+      "after": 17
+     }
+    }
+   ]
+  },
+  {
+   "from": {
+    "w": "and",
+    "after": 18
+   },
+   "layers": [
+    {
+     "t": "desk",
+     "focus": [
+      600,
+      2620,
+      1.3
+     ],
+     "pip": "print"
+    }
+   ]
+  },
+  {
+   "from": {
+    "w": "you",
+    "after": 21
+   },
+   "layers": [
+    {
+     "t": "cam",
+     "z": 1.08,
+     "Y": 0.34
+    },
+    {
+     "t": "leak",
+     "at": {
+      "w": "you",
+      "after": 21
+     }
+    }
+   ]
+  }
+ ],
+ "sfx": [
+  {
+   "at": {
+    "w": "two"
+   },
+   "k": "whoosh",
+   "g": 0.4
+  },
+  {
+   "at": {
+    "w": "that",
+    "after": 9.9
+   },
+   "k": "whoosh",
+   "g": 0.35
+  },
+  {
+   "at": {
+    "w": "i",
+    "after": 14
+   },
+   "k": "whoosh",
+   "g": 0.4
+  },
+  {
+   "at": {
+    "w": "as",
+    "after": 17
+   },
+   "k": "whoosh",
+   "g": 0.35
+  },
+  {
+   "at": {
+    "w": "introvert"
+   },
+   "k": "hit",
+   "g": 0.5
+  },
+  {
+   "at": {
+    "w": "and",
+    "after": 18
+   },
+   "k": "whoosh",
+   "g": 0.4
+  },
+  {
+   "at": {
+    "w": "3d",
+    "dt": 0.1
+   },
+   "k": "chime",
+   "g": 0.45
+  },
+  {
+   "at": {
+    "w": "you",
+    "after": 21
+   },
+   "k": "whoosh",
+   "g": 0.35
+  }
+ ]
+}
