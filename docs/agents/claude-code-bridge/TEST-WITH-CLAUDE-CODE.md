@@ -29,15 +29,31 @@ machine (about 5 s for a 20 s clip). A Groq or OpenAI key is optional: faster on
 ## 0a. One prompt setup (on main since Oct 18; fixes on branch claude-code-bridge-fixes)
 
 Instead of the command plus `/mcp__moovi__run`: in Moovi Settings press "Copy my setup prompt" (or `/connect`, "Make my
-setup prompt") and paste it into Claude Code. Claude Code runs one line (`curl -fsSL .../<code>.sh | sh` everywhere;
-on Windows Git Bash the script hands over to PowerShell itself; a shell with no sh uses the PowerShell line). The script
-(`packages/mcp/src/setup.ts`) adds the Moovi server for later sessions without printing the token, then starts a
-background `claude -p` under a small wrapper that tells the server when it stops. The pasted window runs the progress
-command the script prints until DONE, FAILED or IDLE. FAILED also covers a background Claude Code that dies, never
-connects (3 min) or goes quiet mid video (4.5 min). The code works once, for 30 minutes. Keep the Claude Code window
-open until DONE (on Windows the background run may end with it). Tests: `packages/mcp/test/setup.test.ts` (the real sh
-script against a local bridge with a stand in `claude`: twice in a row, spaces in paths, no curl, wget only, no claude,
-expired code, a dying background run, no token in output or logs). Design and risks: docs/agents/TAB.md, 2026-10-18 10:05 IST.
+setup prompt") and paste it into Claude Code. Since branch `claude-code-setup-no-pipe` the prompt holds plain commands
+only, each written out in full, because Claude Code's permission classifier blocks `curl ... | sh` and `irm ... | iex`
+("it runs code fetched from outside the session", seen by Vignesh on Windows, Oct 18 15:25 IST):
+
+1. `curl -sS -X POST <site>/api/brain/setup/<code>/claim.json` (PowerShell: `Invoke-RestMethod -Method Post -Uri ...`):
+   first use only; answers JSON `{ ok, token, ticket, mcp_url, header, prompt, status_url, exit_url }`, or
+   `{ ok: false, error }` with 410 once used or older than 30 minutes.
+2. `claude mcp remove moovi -s local`, `claude mcp remove moovi -s user`, then
+   `claude mcp add --scope user --transport http moovi <site>/mcp --header "Authorization: Bearer TOKEN"` (Claude Code
+   fills TOKEN from step 1).
+3. In the background: `cd "${TMPDIR:-/tmp}" && env -u CLAUDECODE -u CLAUDE_CODE_ENTRYPOINT claude -p "<the run prompt
+   with TICKET>" --allowedTools mcp__moovi > moovi-brain.log 2>&1 < /dev/null; curl -sS -X POST "<site>/api/brain/setup/<code>/exit?code=$?"`
+   (PowerShell: `Start-Process -WindowStyle Hidden` of claude with the same arguments; no exit report there, so a dead run
+   reads FAILED from silence).
+4. `curl -sS <site>/api/brain/setup/<code>/status` about once a minute until DONE, FAILED or IDLE.
+
+The POSIX lines run in sh, bash and zsh, so they cover macOS, Linux and Windows (Claude Code's shell there is Git Bash).
+The token now shows in Claude Code's own tool output for step 1 (the prompt asks it not to repeat it); it never reaches
+the website or a log. The background run lives in the pasting Claude Code's background command, so keep that window
+open until DONE. The `.sh` and `.ps1` scripts (`packages/mcp/src/setup.ts`) still work as a manual fallback: they add
+the server without printing the token and start the background run detached. FAILED also covers a background Claude
+Code that dies, never connects (3 min) or goes quiet mid video (4.5 min). Tests: `packages/mcp/test/setup.test.ts`
+(the prompt's own POSIX commands run as written under sh and bash against a local bridge with a stand in `claude`; the
+scripts: twice in a row, spaces in paths, no curl, wget only, no claude, expired code, a dying background run, no token
+in output or logs). Design and risks: docs/agents/TAB.md, 2026-10-18 10:05 IST.
 
 Since decision 19 (three presets) the video itself is started on the website: pick **Edit**, **Launch video** or
 **Showreel** on the first screen, then give it the clip, link or text it asks for. The bridge never starts a run and
@@ -59,17 +75,17 @@ can open Launch and Showreel references from its resource picker. Tests: `packag
    The bridge now also listens on `[::1]:3200`, because Windows tries `::1` first for `localhost`; its terminal says
    `also listening on [::1]:3200`.
 3. Sign in at `http://localhost:3000/studio` (an account with no model key), open Settings, press
-   **Copy my setup prompt**, paste it into Claude Code. Claude Code runs the `curl ... | sh` line in Git Bash; the script
-   sees Windows and hands over to PowerShell (`powershell.exe`), which adds Moovi to Claude Code and starts the background
-   Claude Code in a hidden window. Expect `MOOVI: connected (run rt_...)` and a progress command (`curl.exe -fsS .../status`).
+   **Copy my setup prompt**, paste it into Claude Code. Claude Code runs the plain commands one by one in Git Bash (claim,
+   `claude mcp add`, the background `claude -p`, then the status line). Expect the claim JSON with `"ok": true` and then
+   `MOOVI: connecting` or `connected` from the status line.
 4. Start a video on the website. Edit on current main: the film step after the live preview waits on itself
    (router/edit.ts, in TAB.md for C1), so the run stays at working and Claude Code never hears DONE. Until that line is
    fixed, test Launch video or Showreel, or put `MOOVI_EDIT_PLAYER=old` in `.env.local` for the Edit test.
 5. Watch for: a FAILED line that names the cause (no claude in that shell, code used or older than 30 min, claude mcp add
    failed), and that the progress command moves from working to DONE with the studio link. A video that fails at once
    now reaches Claude Code as FAILED with its reason (before, it read "nothing running" until it gave up). Keep the
-   pasted Claude Code window open until DONE. If something breaks, send section 8's items plus the MOOVI lines and the
-   log path the script printed (in `%TEMP%\moovi`).
+   pasted Claude Code window open until DONE. If something breaks, send section 8's items plus the MOOVI lines and
+   `moovi-brain.log` from the temp folder (or, for the manual script, the log path it printed in `%TEMP%\moovi`).
 
 ## 1. One time setup
 

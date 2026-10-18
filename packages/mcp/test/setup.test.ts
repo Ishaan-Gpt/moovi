@@ -2,6 +2,7 @@ import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync, spawn, spawnSync } from 'node:child_process';
 import { chmodSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { AddressInfo } from 'node:net';
@@ -26,7 +27,7 @@ async function makePrompt(user = 'u1') {
   const r = await fetch(`${base}/api/brain/setup`, { method: 'POST', headers: { 'x-test-user': user } });
   assert.equal(r.status, 200);
   const j = await r.json() as { prompt: string; expires_at: number };
-  const code = /\/api\/brain\/setup\/(mvs_[0-9a-f]{32})\.sh/.exec(j.prompt)![1]!;
+  const code = /\/api\/brain\/setup\/(mvs_[0-9a-f]{32})\//.exec(j.prompt)![1]!;
   return { ...j, code };
 }
 /** run a shell script without blocking this process (the server under test lives in it) */
@@ -41,21 +42,51 @@ function runSh(script: string, env: NodeJS.ProcessEnv): Promise<{ status: number
 }
 const line = async (code: string) => (await fetch(`${base}/api/brain/setup/${code}/status`)).text();
 
-test('setup: sign in first; the prompt is five short lines, one command for every shell and a PowerShell fallback; the code is stored only as a hash', async () => {
+test('setup: sign in first; the prompt is plain commands only (no piped remote script); the code is stored only as a hash', async () => {
   assert.equal((await fetch(`${base}/api/brain/setup`, { method: 'POST' })).status, 401);
   const { prompt, code, expires_at } = await makePrompt();
   assert.equal(expires_at, t + SETUP_MS);
-  assert.ok(prompt.includes(`curl -fsSL ${base}/api/brain/setup/${code}.sh | sh`));
-  assert.ok(prompt.includes(`powershell -NoProfile -Command "irm ${base}/api/brain/setup/${code}.ps1 | iex"`), 'one Windows line that works from Git Bash, cmd and PowerShell');
-  assert.match(prompt, /progress command it prints/);
+  const u = `${base}/api/brain/setup/${code}`;
+  // Claude Code's permission classifier blocks `curl ... | sh` and `irm ... | iex` (Vignesh on Windows, 2026-10-18 15:25 IST)
+  assert.doesNotMatch(prompt, /\|\s*(sh|bash|iex)\b/, 'nothing fetched is piped into a shell');
+  assert.doesNotMatch(prompt, /\.sh\b|\.ps1\b|Invoke-Expression/, 'the scripts are a manual fallback, not in the prompt');
+  assert.ok(prompt.includes(`curl -sS -X POST ${u}/claim.json`), 'step 1: a plain claim call');
+  assert.ok(prompt.includes(`Invoke-RestMethod -Method Post -Uri ${u}/claim.json`));
+  assert.ok(prompt.includes(`claude mcp add --scope user --transport http moovi ${base}/mcp --header "Authorization: Bearer TOKEN"`), 'step 2: literal URL and header');
+  assert.ok(prompt.includes(`claude -p "${childPrompt('TICKET')}" --allowedTools mcp__moovi`), 'step 3: the same background run the scripts start');
+  assert.ok(prompt.includes(`curl -sS -X POST "${u}/exit?code=$?"`), 'the exit is reported, so a crash reads FAILED');
+  assert.ok(prompt.includes(`curl -sS ${u}/status`));
   assert.match(prompt, /ask me nothing/);
-  assert.ok(prompt.split('\n').length <= 5 && prompt.length < 600, 'short enough to read before pasting');
-  assert.doesNotMatch(prompt, /mvk_/, 'no token in the pasted text');
+  assert.match(prompt, /Do not show me the token/);
+  assert.match(prompt, /DONE \(give me the link\), FAILED or IDLE/);
+  assert.doesNotMatch(prompt, /mvk_|rt_[0-9a-f]/, 'no token or ticket in the pasted text');
   assert.doesNotMatch(prompt, /[\u2013\u2014]/, 'no dashes');
   assert.ok(!written.some(v => v.includes(code)), 'the code itself never reaches the store');
   const pre = await fetch(`${base}/api/brain/setup`, { method: 'OPTIONS', headers: { origin: 'http://site.test' } });
   assert.equal(pre.status, 204, 'the Settings card on another port may ask');
   assert.equal(await line(code), 'MOOVI: not set up yet: run the command from the prompt first.');
+});
+
+test('claim.json: works once, answers the fields the prompt names, and a used code answers ok false with a reason', async () => {
+  const { code } = await makePrompt('j1');
+  const u = `${base}/api/brain/setup/${code}`;
+  assert.equal((await fetch(`${u}/claim.json`)).status, 405, 'POST only');
+  const r = await fetch(`${u}/claim.json`, { method: 'POST' });
+  assert.equal(r.status, 200); assert.match(r.headers.get('content-type') ?? '', /application\/json/);
+  const j = await r.json() as Record<string, unknown>;
+  assert.equal(j.ok, true);
+  assert.equal((await hub.tokens.verify(String(j.token)))?.user, 'j1');
+  assert.match(String(j.ticket), /^rt_[0-9a-f]+$/);
+  assert.equal(j.header, `Authorization: Bearer ${j.token}`);
+  assert.equal(j.mcp_url, `${base}/mcp`);
+  assert.equal(j.prompt, childPrompt(String(j.ticket)));
+  assert.equal(j.status_url, `${u}/status`);
+  assert.equal(j.exit_url, `${u}/exit`);
+  const again = await fetch(`${u}/claim.json`, { method: 'POST' });
+  assert.equal(again.status, 410);
+  assert.deepEqual(await again.json(), { ok: false, error: 'MOOVI: this setup code was already used or has expired. Copy a fresh prompt from Moovi Settings.' });
+  assert.equal((await fetch(`${u}/claim`, { method: 'POST' })).status, 410, 'one code, one claim, whichever door');
+  assert.equal((await fetch(`${base}/api/brain/setup/mvs_${'0'.repeat(32)}/claim.json`, { method: 'POST' })).status, 410);
 });
 
 test('setup: the scripts hold no secret, parse as sh, and an expired or unknown link says so', async () => {
@@ -152,7 +183,7 @@ function fakeClaude(where: string): { bin: string; state: string; calls: string 
   const state = join(where, 'state'), calls = join(where, 'calls.txt');
   writeFileSync(join(bin, 'claude'), `#!/bin/sh
 ST='${state}'; touch "$ST"
-if [ "$1" = "-p" ]; then echo "P|$2|$3|$4|PWD=$(pwd)" >> '${calls}'; sleep \${FAKE_SLEEP:-0}; exit \${FAKE_EXIT:-0}; fi
+if [ "$1" = "-p" ]; then echo "P|$2|$3|$4|CC=\${CLAUDECODE:-none}|PWD=$(pwd)" >> '${calls}'; sleep \${FAKE_SLEEP:-0}; exit \${FAKE_EXIT:-0}; fi
 echo "C|$*" >> '${calls}'
 if [ "$1 $2" = "mcp add" ]; then grep -q "^user moovi " "$ST" && { echo "MCP server moovi already exists in user config" >&2; exit 1; }; echo "user moovi $*" >> "$ST"; exit 0; fi
 if [ "$1 $2 $3" = "mcp remove moovi" ]; then grep -v "^$5 moovi " "$ST" > "$ST.n"; mv "$ST.n" "$ST"; exit 0; fi
@@ -317,7 +348,7 @@ test('ps1: the real PowerShell script under pwsh, exactly as the prompt runs it 
   const p = calls.find(l => l.startsWith('P|'))!.split('|');
   assert.match(p[1]!, /^You are the Moovi brain for one video\. Call the moovi_next tool with ticket set to rt_/, 'the prompt arrives as one argument through -EncodedCommand');
   assert.deepEqual([p[2], p[3]], ['--allowedTools', 'mcp__moovi']);
-  assert.match(p[4]!, /PWD=.*Jane Doe ps\/Temp Files\/moovi$/);
+  assert.match(p.at(-1)!, /PWD=.*Jane Doe ps\/Temp Files\/moovi$/);
   const logs2 = readdirSync(join(tmp, 'moovi')).map(n => readFileSync(join(tmp, 'moovi', n), 'utf8')).join('\n');
   for (const tk of tokens) assert.ok(!logs2.includes(tk.slice(4)), 'no token in the log files');
   // the background run dies at once: the wrapper's exit report turns the status FAILED
@@ -338,4 +369,46 @@ test('ps1: the real PowerShell script under pwsh, exactly as the prompt runs it 
   const none = await runPs(`irm ${base}/api/brain/setup/${nc}.ps1 | iex`, { ...env, PATH: process.env.PATH!.split(':').filter(d => !existsSync(join(d, 'claude'))).join(':'), HOME: join(dir, 'nobody') });
   assert.match(none.stdout, /^MOOVI: FAILED: the claude command was not found in this shell/);
   assert.match(await line(nc), /^MOOVI: not set up yet/);
+});
+
+/** what Claude Code does with the pasted prompt, done literally: run each POSIX command as written, with TOKEN and
+ *  TICKET filled in from the claim's JSON (the only blanks). Run through bash and zsh when they are installed. */
+test('prompt: its POSIX commands, run as written in sh, connect Moovi and start the background run; the exit is reported', async () => {
+  const shells = ['/bin/sh', ...['bash', 'zsh'].filter(s => spawnSync('sh', ['-c', `command -v ${s}`]).stdout.length)];
+  for (const shell of shells) {
+    const w = join(dir, `prompt ${shell.replace(/\W/g, '')}`); mkdirSync(w, { recursive: true });
+    const tmp = join(w, 'Temp Files'); mkdirSync(tmp, { recursive: true });
+    const f = fakeClaude(w);
+    const env = { ...process.env, HOME: w, TMPDIR: tmp, PATH: `${f.bin}:${process.env.PATH}`, CLAUDECODE: '1', CLAUDE_CODE_ENTRYPOINT: 'cli', FAKE_EXIT: '0' };
+    const { prompt, code } = await makePrompt(`pr-${shell}`);
+    const cmds = prompt.split('\n').map(l => l.trim()).filter(l => /^(curl |claude |cd )/.test(l));
+    cmds.push(/run: (curl -sS \S+\/status)/.exec(prompt)![1]!);
+    assert.equal(cmds.length, 6, `claim, two removes, add, start, status:\n${cmds.join('\n')}`);
+    const run = (c: string) => new Promise<{ status: number | null; stdout: string }>(res => {
+      const p = spawn(shell, ['-c', c], { env, stdio: ['ignore', 'pipe', 'pipe'] });
+      let stdout = ''; p.stdout.on('data', d => { stdout += d; });
+      const k = setTimeout(() => p.kill('SIGKILL'), 20_000);
+      p.on('close', status => { clearTimeout(k); res({ status, stdout }); });
+    });
+    const claimed = await run(cmds[0]!);
+    assert.equal(claimed.status, 0);
+    const j = JSON.parse(claimed.stdout) as { ok: boolean; token: string; ticket: string };
+    assert.equal(j.ok, true);
+    for (const c of cmds.slice(1, 4)) await run(c.replace('TOKEN', j.token));
+    const st = readFileSync(f.state, 'utf8').trim().split('\n');
+    assert.equal(st.length, 1); assert.ok(st[0]!.includes(`moovi ${base}/mcp --header Authorization: Bearer ${j.token}`), st[0]);
+    const started = await run(cmds[4]!.replace('TICKET', j.ticket));
+    assert.equal(started.status, 0, 'the start line exits cleanly after the background run ends');
+    const p = readFileSync(f.calls, 'utf8').split('\n').find(l => l.startsWith('P|'))!;
+    assert.equal(p.split('|')[1], childPrompt(j.ticket), 'the background run got the ticket, as one argument');
+    assert.equal(p.split('|')[2], '--allowedTools'); assert.equal(p.split('|')[3], 'mcp__moovi');
+    assert.match(p, /PWD=.*Temp Files$/, 'it ran in the temp folder, spaces and all');
+    assert.ok(existsSync(join(tmp, 'moovi-brain.log')));
+    assert.match(p, /\|CC=none\|/, 'started outside the pasting Claude Code session (CLAUDECODE unset)');
+    assert.match(await line(code), /^MOOVI: IDLE: the background Claude Code stopped before a video started/, 'the exit report reached the server');
+    const rec = JSON.parse((await store.get(`ce:brain:setup:${createHash('sha256').update(code, 'utf8').digest('hex')}`))!) as { exit?: { code: number } };
+    assert.equal(rec.exit?.code, 0, 'the exit report reached the server with the real exit code');
+    const status = await run(cmds[5]!);
+    assert.match(status.stdout, /^MOOVI: /);
+  }
 });
