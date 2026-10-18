@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { label, memKind, qName, shapeEvents, shapeSnapshot } from '../src/synapse-shape';
+import { creditOf } from '../src/synapse';
 
 /** Field names that must never reach the browser, at any depth. */
 const BAD_KEYS = /^(cypher|params?|query_?text|graph(name)?|path|file|url|email|token|key|apikey|secret|password|prompt|answer|error|note|request|brief|owner|user|sha|request|text)$/i;
@@ -74,4 +75,16 @@ test('synapse sanitizers', () => {
   assert.equal(label('mail me a@b.co'), null);
   assert.equal(label('token abcdefghijklmnopqrstuvwxyz0123'), null);
   assert.equal(shapeEvents('nope').length, 0);
+});
+
+test('synapse credit: a call goes to the agent whose role the query serves, else the stage, else the task', () => {
+  const editTask = { agent: 'editor' as const };
+  assert.equal(creditOf('assetsForEvent', editTask), 'sound');
+  assert.equal(creditOf('editCast', editTask), 'designer');
+  assert.equal(creditOf('lawsAndChecks', editTask), 'lens');
+  assert.equal(creditOf('recordDecision', editTask), 'keeper');
+  assert.equal(creditOf('truthGuard', editTask), 'writer');
+  assert.equal(creditOf('writeClips', editTask), 'researcher');
+  assert.equal(creditOf('setVideo', editTask), 'editor');
+  assert.equal(creditOf('setVideo', { agent: 'moovi', stage: 'lens' }), 'lens');
 });

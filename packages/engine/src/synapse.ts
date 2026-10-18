@@ -17,6 +17,29 @@ const KEEP_EVENTS = 5000;
 /** the feed's own queries are not part of the synapse */
 const SELF = new Set(Object.keys(SY));
 
+/**
+ * Whose job each named query is (the PIPELINE.html roles). A one-task preset (Edit, Launch, Showreel) runs every step
+ * under one agent's task, so a call is credited to the agent whose role that query serves; a query not named here stays
+ * with the agent whose stage or task ran it.
+ */
+const ROLES: Partial<Record<AgentId, string[]>> = {
+  sound: ['assetsForEvent', 'tracksByMood', 'tracks', 'downbeats', 'recentBeds', 'castVoice', 'voiceSpoken', 'voiceHistory', 'rejectVoice', 'whyVoice', 'voiceMix', 'preferredVoice', 'rejectedVoices'],
+  designer: ['editCast', 'assetsForStyle', 'assetsByCategory', 'assetsServing', 'assetsByX1', 'styleCast', 'assetById', 'transitionForCut', 'transitionFamily', 'resolveAsset',
+    'kits', 'kitParts', 'kitsServing', 'assetKits', 'referenceParts', 'references', 'assetOrigins', 'kitOrigins', 'typesAll', 'typeKit',
+    'artifactsServing', 'artifactRatings', 'layoutRatings', 'artifactNeeds', 'artifactUsage', 'artifactsInRun', 'useArtifact', 'clearArtifacts', 'useLook3d', 'looksInRun', 'look3dUsage',
+    'saveScene', 'scenes', 'recipes', 'signatures', 'styles', 'stylePresets', 'presetFlows', 'defaultStage', 'styleDecks', 'allProps', 'candidates',
+    'launchParts', 'launchPartStory', 'launchReferences', 'launchServing', 'launchRecentLooks', 'launchPartUse', 'boardPaths', 'latticeNodes', 'latticeEdges', 'clearLattice', 'coCast', 'grownSetups', 'growSetup'],
+  lens: ['lawsAndChecks', 'openIssues', 'raiseIssue', 'resolveIssue', 'scoreScene', 'weakScenes', 'overUsed', 'recentFilms', 'styleStats', 'unshippable', 'assetCredits', 'licenceMix'],
+  keeper: ['recordDecision', 'decide', 'recordVideo', 'recordAssets', 'recordSequence', 'rememberFilm', 'launchFilmParts', 'writeLesson', 'supersedeLesson', 'lessonsFor', 'lessonsOnTopic',
+    'lessonTimeline', 'setPreference', 'preferences', 'recordFeedback', 'linkFeedbackScene', 'noteFeedback', 'noteFeedbackScene', 'feedbackOnRun', 'rejectedStyles', 'rejectedShots',
+    'rewrittenLines', 'captionNotes', 'styleTaste', 'feedbackTrail', 'overUse', 'anglesUsed', 'assetUsed', 'whyThis', 'decisionsOfRun', 'filmArc', 'filmSite', 'filmStory'],
+  writer: ['writeClaim', 'truthGuard', 'judgeClaim', 'supersedeClaims', 'claims', 'factSearch', 'facts', 'skillFor'],
+  researcher: ['writeSources', 'writeFacts', 'writePage', 'writeShots', 'factOnPage', 'runShots', 'factProof', 'claimEvidence', 'writeClips', 'useClip', 'clipSeen', 'clipCredits', 'clipRejects', 'writeAsset', 'showPlace', 'placesInRun', 'placeUsage'],
+};
+const ROLE_OF = new Map(Object.entries(ROLES).flatMap(([a, qs]) => qs!.map(q => [q, a as AgentId] as const)));
+/** who made a call: the query's role, else the agent whose stage is on, else the task's agent */
+export const creditOf = (name: string, where: { agent: AgentId; stage?: AgentId }): AgentId => ROLE_OF.get(name) ?? where.stage ?? where.agent;
+
 interface Where { project: string; chat: string; agent: AgentId; stage?: AgentId; task: string }
 const pending = new Map<string, SynEvent[]>();
 let timer: ReturnType<typeof setTimeout> | null = null;
@@ -51,7 +74,7 @@ export function recordSynapse(where: () => Where | undefined) {
     if (SELF.has(e.name)) return;
     const s = where();
     if (!s) return;
-    push(s.chat, { t: e.at, r: runOf(s.task), a: s.stage ?? s.agent, k: 'q', q: qName(e.name), g: memKind(e.graph), n: e.rows, ms: e.ms, ...(e.ro ? {} : { w: 1 as const }), ...(e.error ? { e: 1 as const } : {}) });
+    push(s.chat, { t: e.at, r: runOf(s.task), a: creditOf(e.name, s), k: 'q', q: qName(e.name), g: memKind(e.graph), n: e.rows, ms: e.ms, ...(e.ro ? {} : { w: 1 as const }), ...(e.error ? { e: 1 as const } : {}) });
   });
 }
 
@@ -121,6 +144,8 @@ export async function synapseSnapshot(pid: string, chat: string, runPick?: strin
     if (s?.events) { try { events = shapeEvents(JSON.parse(s.events)); kept = true; } catch { /* the stream's copy stands */ } }
   }
   const [tasks, decisions] = await Promise.all([run<Record<string, unknown>>(g, P.board, { run: rid }), run<Record<string, unknown>>(g, W.decisionsOfRun, { run: rid })]);
+  // runs kept before the roles were credited read with them too
+  events = events.map(e => (e.k === 'q' && e.q && ROLE_OF.has(e.q) ? { ...e, a: ROLE_OF.get(e.q)! } : e));
   const names = [...new Set(events.filter(e => e.k === 'q').map(e => e.q!))];
   const queries = names.map(name => { const a = ABOUT.get(name); return { name, g: a?.g ?? 'other', about: a?.about ?? '', write: a?.write ?? false }; });
   return shapeSnapshot({ project: pid, runs, run: pick, seq: live.seq, kept, events, tasks, decisions, queries });
