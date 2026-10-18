@@ -1,32 +1,22 @@
 /**
- * The type cards and role chips' words (Stage 1 W1, behind MOOVI_ROUTER=pipeline). ALL PENDING ISHAAN (decisions 2
- * and 12): these are placeholders from the type names in docs/PIPELINE.html so the switch can be tried; his options are
- * in the W1 hand-over. Nothing here is a default.
+ * The brief box's words. The three preset names are Ishaan's (decision 19: Edit, Launch video, Showreel); every line
+ * marked PENDING is a placeholder waiting for his wording (decision 12). Nothing here is a default.
  */
-import type { AttachmentRole } from '@moovi/engine';
+import type { Preset } from '@moovi/engine';
 
 export const WORDS_PENDING = 'ishaan' as const;
 
-export type FilmType = 'edit' | 'launch' | 'showreel' | 'brand-post' | 'saas-explainer' | 'ui-morph' | 'kinetic';
-
-/** The seven type cards, in the registry's order (packages/library/src/types/index.ts TYPES). `soon`: not built yet. */
-export const TYPE_CARDS: { id: FilmType; title: string; line: string; soon?: boolean }[] = [
-  { id: 'edit', title: 'Edit my video', line: 'PENDING · your clip, edited' },
-  { id: 'launch', title: 'Launch', line: 'PENDING · a product launch' },
-  { id: 'showreel', title: 'Showreel', line: 'PENDING · a montage' },
-  { id: 'brand-post', title: 'Brand post', line: 'PENDING · an idea or a story' },
-  { id: 'saas-explainer', title: 'SaaS explainer', line: 'PENDING · how it works' },
-  { id: 'ui-morph', title: 'UI morph', line: 'PENDING · soon', soon: true },
-  { id: 'kinetic', title: 'Kinetic type', line: 'PENDING · soon', soon: true },
+/** The first screen: one of three presets, picked before anything else (decision 19). */
+export const PRESET_CARDS: { id: Preset; title: string; line: string }[] = [
+  { id: 'edit', title: 'Edit', line: 'PENDING · upload your video' },
+  { id: 'launch', title: 'Launch video', line: 'PENDING · your site link or a brief' },
+  { id: 'showreel', title: 'Showreel', line: 'PENDING · a topic, a link or a brief' },
 ];
-export const FILM_TYPES = TYPE_CARDS.map(c => c.id);
-/** The first card: no type picked, Moovi decides (placeholder). */
-export const AUTO_CARD = { title: 'Moovi picks', line: 'PENDING · any brief' };
+export const PRESET_IDS = PRESET_CARDS.map(c => c.id);
 
-/** Role chips on each attachment; null = Moovi decides (placeholders). */
-export const ROLE_CHIPS: { id: AttachmentRole | null; label: string }[] = [
-  { id: null, label: 'Moovi decides' },
-  { id: 'footage', label: 'Footage' },
-  { id: 'reference', label: 'Reference' },
-  { id: 'asset', label: 'Asset' },
-];
+/** Placeholders inside each preset (PENDING). */
+export const PRESET_HINTS: Record<Preset, { text: string; url?: string; drop?: string }> = {
+  edit: { text: 'Anything Moovi should know (optional)', drop: 'Choose the video to edit' },
+  launch: { text: 'What to say about it (optional)', url: 'Your site, e.g. https://acme.com' },
+  showreel: { text: 'A topic, a link or a brief' },
+};

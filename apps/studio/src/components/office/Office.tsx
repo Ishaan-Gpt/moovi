@@ -7,7 +7,7 @@ import { post, upload } from '@/lib/client';
 import { ChatPanel, type ChatSummary } from '../chat/ChatPanel';
 import type { ComposerHandle } from '../chat/Composer';
 import { VideoPopup } from '../video/VideoPopup';
-import { BriefOverlay, type BriefExtra, type Ratio, type StylePick } from './BriefOverlay';
+import { BriefOverlay, type BriefExtra, type Ratio } from './BriefOverlay';
 import { Stage } from './Stage';
 import { useChat, type Video } from './useChat';
 
@@ -21,10 +21,8 @@ const RUNNING = new Set(['planned', 'running']);
  * chat sits on the left in glass; the finished video pops up over everything; a new chat blurs the set behind the
  * brief box. Nothing here is acted out: every status, handoff and message is something the crew actually did.
  */
-export function Office({ pid, project, chat, messages, chats, startNew, pipeline = false }: {
+export function Office({ pid, project, chat, messages, chats, startNew }: {
   pid: string; project: string; chat: OfficeChat; messages: ChatMessage[]; chats: ChatSummary[]; startNew: boolean;
-  /** MOOVI_ROUTER=pipeline: the brief box shows type cards and role chips */
-  pipeline?: boolean;
 }) {
   const cid = chat.id;
   const router = useRouter();
@@ -100,13 +98,14 @@ export function Office({ pid, project, chat, messages, chats, startNew, pipeline
   const stop = useCallback(() => { void post(`/projects/${pid}/chats/${cid}/messages`, { kind: 'stop' }).catch(() => undefined); }, [pid, cid]);
 
   /** The brief box: in an empty chat it starts this chat; otherwise it opens a new chat (one chat, one video). */
-  const startBrief = useCallback(async (text: string, files: File[], ratio: Ratio, style?: StylePick, extra?: BriefExtra) => {
+  const startBrief = useCallback(async (text: string, files: File[], ratio: Ratio, extra: BriefExtra) => {
     const fresh = !state.messages.length && !state.run;
     const target = fresh ? cid : (await post<{ chat: { id: string } }>(`/projects/${pid}/chats`, {})).chat.id;
     const uploads: string[] = [];
     for (const f of files) uploads.push((await upload(pid, target, f)).id);
-    const r = await post<{ message: ChatMessage }>(`/projects/${pid}/chats/${target}/messages`, { kind: 'brief', text, uploads, ratio, ...(style ? { style } : {}),
-      ...(extra?.filmType ? { filmType: extra.filmType } : {}), ...(extra?.roles?.some(Boolean) ? { attachments: uploads.flatMap((u, i) => (extra.roles?.[i] ? [{ upload: u, role: extra.roles[i] }] : [])) } : {}) });
+    // decision 19: every brief names its preset; Edit's trim belongs to the clip, which the brief box sends first
+    const trim = extra.trim && uploads[0] ? { upload: uploads[0], in: extra.trim.in, out: extra.trim.out } : undefined;
+    const r = await post<{ message: ChatMessage }>(`/projects/${pid}/chats/${target}/messages`, { kind: 'brief', text, uploads, ratio, preset: extra.preset, ...(trim ? { trim } : {}) });
     if (target === cid) { dispatch({ type: 'local', message: r.message }); setBrief(false); setChatOpen(true); }
     else router.push(`/p/${pid}/c/${target}`);
   }, [pid, cid, state.messages.length, state.run, dispatch, router]);
@@ -156,7 +155,7 @@ export function Office({ pid, project, chat, messages, chats, startNew, pipeline
           onVersion={setShown} onClose={() => setShown(null)} onMinimise={() => setDocked(d => !d)} onTweak={tweak} />
       )}
 
-      <BriefOverlay open={brief} canClose={state.messages.length > 0 || !!state.run} previous={previous} pipeline={pipeline} onClose={() => setBrief(false)} onSubmit={startBrief} />
+      <BriefOverlay open={brief} canClose={state.messages.length > 0 || !!state.run} previous={previous} onClose={() => setBrief(false)} onSubmit={startBrief} />
     </div>
   );
 }

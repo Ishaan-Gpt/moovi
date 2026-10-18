@@ -1,5 +1,97 @@
 # Tab
 
+## 2026-10-18 11:10 IST · main · docs only · @C1 @Ishaan: bridge round 2: the one prompt setup hardened, more live MCP edges, the Claude Code pill (Vignesh's ask)
+
+Everything below is on branch `claude-code-bridge` (head e33ca6f). Nothing on main changed apart from this note. Nothing was
+deployed. Product code touched: only `packages/mcp` and, for Vignesh's pill, the rail in `apps/studio` (files named below).
+No edit, taste or pipeline code was touched, and no edit look was rendered.
+
+**1. One prompt setup, hardened (a3427b1, eb5a063, e33ca6f).** Each item has a test in `packages/mcp/test/setup.test.ts`
+(13 tests; the sh script and the PowerShell script both run for real against a local bridge with a stand in `claude`).
+- PowerShell: the `.ps1` now RUNS under real pwsh 7.4.6 in the tests (irm | iex, exactly as the prompt does). That run found
+  a real bug: an expired `.ps1` link printed a PowerShell error instead of "this link has expired" (irm read the bare quoted
+  line as JSON). Fixed in e33ca6f. Honest limit: pwsh on Linux takes the non Windows branch. The Windows branch (Start-Process
+  with a hidden window) and Windows PowerShell 5.1 have not run on a real Windows machine yet; the code was checked by reading.
+- Windows start: the background Claude Code now runs under a small wrapper passed with `-EncodedCommand` (no quoting, so
+  spaces in user names and paths are fine) and is started with Start-Process, hidden, without redirects. The old version
+  redirected output, which makes Windows hand this console's handles to the child, so the pasted Claude Code could wait
+  on the background run for the whole video. On Git Bash (Claude Code's shell on Windows) the sh script hands over to
+  PowerShell by itself, so Windows users need the same one line as everyone else.
+- Running it twice: a used code says so in one line; a moovi entry already in `claude mcp` is removed first (user scope and
+  this folder's local scope, which would otherwise shadow the new one). Two scripts racing on one code: exactly one wins.
+- Expired code, no curl (wget is used instead), neither curl nor wget, no `claude` (PATH plus the usual install folders):
+  one clear `MOOVI: FAILED:` line each, and the code is not used up, so the same prompt works once fixed.
+- Paths and user names with spaces: tested on both scripts.
+- The token never appears in the output, the log files or the bridge logs (tested). It does pass through `claude mcp add`'s
+  arguments for a moment, as the old two step command did.
+- Status states: DONE, FAILED (the video failed; the background Claude Code exited with an error; it never connected within
+  3 min; it went quiet for 4.5 min while a video runs; it exited cleanly but the video did not finish within 2 min) and
+  IDLE (connected but no video in 20 min, or it stopped before any video). A background Claude Code that dies now reads
+  FAILED within seconds (the wrapper reports its exit code to `POST /api/brain/setup/<code>/exit`) instead of hanging.
+- macOS: the background run gets its own session (perl setsid, as setsid is Linux only).
+
+**2. The prompt, before and after.** Before (115 words):
+```
+Set up Moovi in this Claude Code and be the brain for my video. Do every step yourself and do not ask me anything.
+1. Run this one command. On Windows use the PowerShell line; anywhere else use the curl line. It adds the Moovi MCP server for later sessions and starts Moovi in the background. It prints no secret.
+   curl -fsSL <site>/api/brain/setup/<code>.sh | sh
+   irm <site>/api/brain/setup/<code>.ps1 | iex
+2. About once a minute check progress with: curl -fsS <site>/api/brain/setup/<code>/status   (PowerShell: irm <site>/api/brain/setup/<code>/status). Tell me one short line only when it changes.
+3. Stop when it says DONE (give me the link), FAILED or IDLE.
+The code in these links works once, for 30 minutes.
+```
+After (67 words; the "once, 30 minutes" note stays on the card):
+```
+Connect Moovi and edit my video. Do every step yourself and ask me nothing.
+1. Run: curl -fsSL <site>/api/brain/setup/<code>.sh | sh
+   If your shell has no sh, run instead: powershell -NoProfile -Command "irm <site>/api/brain/setup/<code>.ps1 | iex"
+2. Run the progress command it prints about once a minute. Tell me in one short line when it changes.
+3. Stop at DONE (give me the link), FAILED or IDLE.
+```
+Not yet tried with a real Claude Code: whether it runs `curl | sh` without first asking the user to approve the command
+(it will show its normal permission prompt; that is one click, not a question).
+
+**3. Live MCP edges on https://65-2-223-240.sslip.io (a505ade era code, short calls, one at a time).**
+- Malformed JSON: 400 "body is not JSON". JSON that is not JSON-RPC, or a call before initialize: 400 "Start with an
+  initialize request". A made up session id: 404 "Session not found: reconnect". Unknown method in a session: -32601.
+  tools/call with no name: a clear validation error. All pass.
+- Wrong protocolVersion (1999-01-01): the server answers with its own 2025-11-25, as the MCP spec says. A bad
+  mcp-protocol-version header: 400 naming the supported versions. Pass. Small item: protocolVersion sent as a number gets
+  the "Start with an initialize request" message, which is misleading but harmless.
+- tools/list: moovi_next (ticket, wait_s), moovi_answer (step and answer required; lease, wait_s), moovi_status (no args).
+  prompts/list: run (no args). Server moovi 0.2.0, tools and prompts listChanged. Pass.
+- Polling rate: 20 back to back moovi_next calls with wait_s 0: about 225 ms each, no errors, no limit. wait_s above 45 is
+  refused with a clear validation error; wait_s 45 returns "waiting" after 45.2 s. A client that gives up mid wait (4 s)
+  and calls again on the same session works at once. Pass. There is no server side rate limit; a client looping wait_s 0
+  gets about 4 answers a second. Fine for now.
+- Two windows on one token at once: with one ticket, one window waits and the other is told idle (one ticket, one window);
+  with their own tickets both wait. Pass.
+- Token removed mid run: the next call is refused (401) and a new token connects. But a moovi_next wait that was already
+  open ran on to its end (20 s) on the removed token, so a step could still have reached it. Fixed on the branch (357d9e5):
+  an open wait re-checks its token at every look and ends with the "connection was removed" notice; a removed or replaced
+  token is never handed a step (test/revoke.test.ts).
+- Orphaned run (Claude Code online at the start, then nobody answers; 2.6 s clip): Claude Code showed linked after about
+  100 s, the step moved off Claude Code when the 120 s pickup window ran out, and the video finished as done at 131 s
+  without Claude Code. So the fallback kicks in after about 2 min, not a hang.
+
+**4. Vignesh's ask (WhatsApp 10:49 IST): a small "Claude Code connected" pill in the studio (0287ee0).** His direct ask,
+built on the branch only, for Ishaan and C1 to see:
+- `packages/mcp/src/api.ts`: `GET /api/brain/status` also answers `pill` (connected, waiting, not_connected, or null) and
+  `has_key`. Connected means Claude Code called Moovi in the last 90 s; waiting means a video is running and Claude Code
+  is not. Null (no pill) for a user on their own key or never linked. The token never goes to the browser (tested).
+- `apps/studio/src/components/dash/ClaudeCodePill.tsx` (new, about 40 lines): one item under "Your model" in the rail,
+  the existing `rail__item` and `model__dot` classes, no new styles. Polls every 20 s, stops while the tab is hidden.
+- `apps/studio/src/components/dash/Sidebar.tsx` (optional `bridge` prop), `app/page.tsx` and `app/settings/page.tsx` pass
+  it; `lib/bridge.ts` holds the bridge address the settings page already used.
+- Seen rendered as a static page with the real CSS (three states side by side), not in the running studio.
+
+**Gates:** tsc clean in engine, mcp, graph, library and studio; mcp tests 99 pass, 0 fail, 1 skipped (FalkorDB not set);
+secret scan of the diff clean.
+
+**Ready for C1 once Ishaan says go:** merge `claude-code-bridge` (e33ca6f) and deploy the worker and the studio. After the
+deploy, one real test on Windows is the open item: paste the new prompt into Claude Code on Windows and check it reaches
+DONE. Edit problems seen this round: none (no edit output was looked at).
+
 ## 2026-10-18 10:40 IST · main · docs only · @C1: the live bridge test by mode, the edge cases, and the one prompt commits
 
 **Which modes Claude Code can drive (code at a505ade, what the server runs).** Only one brain step reaches Claude Code:
@@ -1155,3 +1247,20 @@ Process: work on `vignesh/<feature>` branches only. Tab merges into `vignesh/age
 
 Requests for Claude Code: when a branch is ready, add an entry here in CLAUDE.md with its sha.
 - 2026-10-18 02:20 IST · Tab (bridge) · for Ishaan: Vignesh asked for Claude Code next to the API key menu, so `apps/studio/src/app/settings/page.tsx` now renders one extra card under `ModelForm`: `components/settings/ClaudeCodeCard.tsx` (new, reuses the `model__*`, `glass` and `btn` classes, no new CSS). It calls the bridge's `/api/brain/link` and `/api/brain/status` with the sign-in cookie (same address on a server; `http://localhost:3200` in dev, or `MOOVI_BRIDGE_PUBLIC_URL`), shows the connect command once, the `/mcp__moovi__run` step and a connected pill. The bridge allows that page through CORS (`corsOrigins` in packages/mcp/src/api.ts). Nothing else in the UI changed; restyle it freely.
+
+## 2026-10-18 11:55 IST · Tab (bridge) · @C1: merge claude-code-bridge into main (bridge only)
+
+Vignesh (11:51 IST): only the Claude Code bridge goes to main; C1 integrates; no change to the pipeline.
+
+Please merge `claude-code-bridge` head `e33ca6f` into `main` (now `8d737db`) as a normal merge commit. `git merge-tree` shows it merges clean, no conflicts.
+
+What it touches (16 files, all bridge scope, nothing in engine, edit, router, launch, showreel, styles or kits):
+- `packages/mcp/src/` api.ts, app.ts, index.ts, server.ts, setup.ts (new, one prompt setup script), tokens.ts
+- `packages/mcp/test/` revoke, setup, tokens tests
+- `apps/studio` Settings Claude Code card, `ClaudeCodePill.tsx` (shown only when Claude Code is the chosen key), Sidebar, app/page.tsx, lib/bridge.ts
+- `docs/agents/claude-code-bridge/TEST-WITH-CLAUDE-CODE.md`
+
+Gates on the branch: tsc clean in 5 packages, 99 MCP tests pass (1 skipped without FalkorDB), secret scan clean.
+
+After merge, with Ishaan's go: redeploy worker and studio on https://65-2-223-240.sslip.io (`sudo bash deploy/server-setup.sh 65-2-223-240.sslip.io --website https://moovi-three.vercel.app`), then check `/healthz` and an MCP `initialize`. Vignesh then does one real Windows paste test. Reply in CLAUDE1.md or BOARD.md with the merge sha.
+

@@ -43,3 +43,13 @@ export const typeChoice = (t: TypeId) => typeOf(t).name;
 export const notBuilt = (t: TypeId) => `${typeOf(t).name} is not built yet. Send me about five videos you like in this kind and I’ll learn it from them.`;
 /** The Edit type with no video attached (placeholder). */
 export const NEED_VIDEO = 'Send me the video to edit and I’ll start.';
+
+/* ───── the three presets (decision 19); placeholders, pending Ishaan ───── */
+/** A brief with no preset (the router refuses it). */
+export const NO_PRESET = 'Pick one first: Edit, Launch video or Showreel.';
+/** Launch with no site link (the skill path reads the live site). */
+export const LAUNCH_NEEDS_LINK = 'Launch video needs your site’s link. Paste it and send again.';
+/** Showreel with no words. */
+export const SHOWREEL_NEEDS_TEXT = 'Tell me the topic, or paste a link, for the showreel.';
+/** Showreel before its entry is wired. */
+export const SHOWREEL_NOT_READY = 'Showreel is being built right now. Try Edit or Launch video meanwhile.';

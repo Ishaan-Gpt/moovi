@@ -1,4 +1,7 @@
 # Changelog
+- 1.15.3 (2026-10-18): Showreel: a topic film's cta names no site, shop or studio (v2 invented lighthouse.org, WatchLab, Indigo Studio); the problem beat is a real problem, never a made-up disaster.
+- 1.15.2 (2026-10-18): Showreel script arc (Ishaan: "hook -> problem -> solution -> .. -> cta"): every Showreel script fills hook, problem, solution, climax, cta in order, read aloud; humanized writing laws; the old ban on a spoken CTA is removed; theme voices are tone only.
+- 1.15.0 (2026-10-18): Showreel branch references/showreel.md, read at runtime by the Showreel writer (packages/engine/src/showreel): the theme lock, the writing laws, four themes (night-stage, editorial, blueprint, real-footage) holding today's voices, pending Ishaan.
 - 1.14.0 (2026-10-18): Launch skillset absorbed to f15: launch.md reference intake, looks L-REF-3 "Product tour" and L-REF-4 "Calm one-hue"; canvas-engine 3D shots (three.js), soft fields, plates and glass; music-and-sound real bed, beat phase, beat warp, the owner pack by map.json; shots-and-transitions refs 3–4; camera.md rows (UI dive, screen pull-back, 3D dolly, calm push).
 - 1.13.8 (2026-10-18): launch.md item 7, the finish layers (real bed, owner sfx pack by map.json, cuts on the beat by a time warp, filter-free glass, sky band).
 - 1.13.4 (2026-10-18): launch.md shot-for-shot item 6 (owner on f12: "better, push it further"): the reference's own moves (deep dive into one real element, drag-and-drop, blur placeholders, type at reference size, 3D composited onto the light world), clips decode from Play.
@@ -132,3 +135,6 @@
 
 ## 1.14.1 (2026-10-18)
 - Rule: text behind the speaker is wider than the shoulders, centred at the neck, never across the face.
+
+## 1.15.1 (2026-10-18)
+- Owner rule: capable models invent each graphic; a small free model directs from the approved library menu (menu.json) and never builds from scratch.

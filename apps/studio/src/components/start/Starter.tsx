@@ -1,14 +1,15 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { clearHandoff, post, readHandoff, upload } from '@/lib/client';
+import { post, readHandoff } from '@/lib/client';
 
 const Moovi = dynamic(() => import('@moovi/character/react').then(m => m.Moovi), { ssr: false });
 const TARGET = 'moovi:brief:target';
 
 /**
- * The brief from the landing page becomes a project: a new project and its first chat, the files handed over, the
- * brief sent, then the office. A reload halfway resumes into the same chat instead of making a second project.
+ * The brief from the landing page becomes a project: a new project and its first chat, then the office with the brief
+ * box open, where the user picks a preset first (decision 19) and the landing page's words and files fill the box.
+ * A reload halfway resumes into the same chat instead of making a second project.
  */
 export function Starter() {
   const [line, setLine] = useState('Setting up your set');
@@ -30,16 +31,10 @@ export function Starter() {
           target = { pid: r.project.id, cid: r.chat.id };
           try { sessionStorage.setItem(TARGET, JSON.stringify(target)); } catch { /* private mode */ }
         }
-        const ids: string[] = [];
-        for (const [i, f] of h.files.entries()) {
-          setLine(h.files.length > 1 ? `Handing over ${f.name} (${i + 1} of ${h.files.length})` : `Handing over ${f.name}`);
-          ids.push((await upload(target.pid, target.cid, f)).id);
-        }
-        setLine('Giving Moovi your brief');
-        await post(`/projects/${target.pid}/chats/${target.cid}/messages`, { kind: 'brief', text: h.prompt, uploads: ids, ratio: h.ratio });
-        await clearHandoff();
+        // decision 19: no brief without a preset. The landing page's words and files stay handed over; the brief box in
+        // the new chat asks for the preset first and fills itself with them (BriefOverlay reads the hand-off)
         try { sessionStorage.removeItem(TARGET); } catch { /* private mode */ }
-        window.location.replace(`/studio/p/${target.pid}/c/${target.cid}`);
+        window.location.replace(`/studio/p/${target.pid}/c/${target.cid}?new=1`);
       } catch (e) { setErr((e as Error).message); }
     })();
   }, [attempt]);

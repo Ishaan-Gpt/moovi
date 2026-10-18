@@ -144,7 +144,8 @@ test('auto-pick, clip-moment: Auto picks the clip-moment style for a generic vis
 
 test('auto-pick, wiring: the upload edit asks for the auto style and renders the effects film when two or more effects fit', () => {
   const src = readFileSync(join(import.meta.dirname, '../src/router/edit.ts'), 'utf8');
-  assert.match(src, /style: 'auto', brief: inp\.brief/);
+  // the old edit page asks for the auto style; Edit mastery's player (the default, decision 17) runs its own spec
+  assert.match(src, /: \{ style: 'auto' \}\), brief: inp\.brief/);
   const ev = (fx: string) => ({ fx, t0: 1, t1: 2 }) as never;
   assert.equal(fxFilmFor({ effects: { events: [ev('stat-counter'), ev('checklist')] }, faces: 3, source: { duration: 20 } }, undefined).go, true);
   assert.equal(fxFilmFor({ effects: { events: [ev('stat-counter'), ev('checklist')] }, faces: 3, source: { duration: 20 } }, 'off').go, false);

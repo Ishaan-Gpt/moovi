@@ -67,6 +67,9 @@ const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
 const at = a => { if (typeof a === 'number') return a; if (!a) return START; const after = a.after === undefined ? 0 : at(a.after); let n = a.n || 1, w; for (const x of WORDS) if (x.t >= after - .01 && norm(x.text) === norm(a.w) && --n === 0) { w = x; break; } return (w ? (a.end ? w.end : w.t) : after) + (a.dt || 0); };
 if (SPEC.start) START = Math.max(START, at(SPEC.start) - .12);
 const FACEBOXES = []; window.__fb = FACEBOXES;
+// a desk print decodes only while it is the print on screen; every other one is paused (an always-playing print starved
+// the main video's decoder: a 1.6 s freeze)
+const DESKV = new Set();
 const faceSize = t => { let b = FACES[0]; for (const q of FACES) if (Math.abs(q.src_t - t) < Math.abs(b.src_t - t)) b = q; return { w: b.w, h: b.h }; };
 const faceAt = t => { if (!FACES.length) return { x: .5, y: .42 }; let k = 0; while (k + 1 < FACES.length && FACES[k + 1].src_t <= t) k++; const a = FACES[k], b = FACES[k + 1] || a, u = b === a ? 0 : clamp((t - a.src_t) / (b.src_t - a.src_t)); return { x: lerp(a.x + a.w / 2, b.x + b.w / 2, u), y: lerp(a.y + a.h / 2, b.y + b.h / 2, u) }; };
 
@@ -244,7 +247,7 @@ const DEVICES = {
         pr.style.transform = `translateY(${(-260 * (rs > 0 ? 0 : h) - (it.rise ? (it.rise.y ?? 90) : 0) * rs).toFixed(1)}px) scale(${((1 + (rs > 0 ? 0 : lift)) * (1 + ((it.rise ? it.rise.by : 1) - 1) * rs)).toFixed(3)}) rotate(${((it.r || 0) * (1 - rs) + spin).toFixed(2)}deg)`;
         const sh = it.kind === 'cut' ? 1 : 0, dx = 6 + 70 * h, dy = 9 + 95 * h, bl = 5 + 40 * h, op = (.42 - .25 * h);
         pr.style.filter = `drop-shadow(1px 2px ${sh ? 2 : 3}px rgba(34,22,10,${(.5 * (1 - h)).toFixed(2)})) drop-shadow(${dx.toFixed(0)}px ${dy.toFixed(0)}px ${bl.toFixed(0)}px rgba(40,26,12,${op.toFixed(2)}))${Math.abs(v) > .4 ? ` blur(${Math.min(9, Math.abs(v) * 2.2).toFixed(1)}px)` : ''}`;
-        const vid = pr.querySelector('video'); if (vid && vid.paused) vid.play().catch(() => {});
+        const vid = pr.querySelector('video'); if (vid && (p < 3.5 || (D.items || []).every((o, j) => j === i || at(o.at) <= a || at(o.at) > t))) { DESKV.add(vid); if (vid.paused) vid.play().catch(() => {}); }
         if (it.on) { const q = t - at(it.on), on = q >= 0 ? (q < .12 ? (Math.floor(q * 60) % 2) * .7 : E.out(win(q, .12, .5))) : 0; pr.querySelector('.on').style.opacity = on.toFixed(3); const gl = pr.querySelector('.glow'); gl.style.opacity = (on * (.85 + .15 * Math.sin(t * 23) * Math.sin(t * 7))).toFixed(3); gl.style.transform = `scale(${(.6 + .4 * on).toFixed(3)})`; }
         if (dd) { dd.style.opacity = '1'; dd.querySelectorAll('path.ln').forEach((pa, j) => { const ds = (it.doodle || [])[j], st = ds && typeof ds === 'object' && ds.at ? at(ds.at) - a : .35 + j * .25, tg = pa.dataset.mk ? dd.querySelector(`#${pa.dataset.mk} path`) : pa, len = tg.getTotalLength(); tg.style.strokeDasharray = String(len); tg.style.strokeDashoffset = String(len * (1 - E.ramp(win(p, st, st + ((ds && ds.dur) || it.inkDur || .5))))); }); }
         if (hd) { const la = it.labelAt ? at(it.labelAt) - a : .6, w = E.out(win(p, la, la + .45)); hd.style.opacity = w > 0 ? '1' : '0'; hd.style.clipPath = `inset(-30% ${(100 - w * 100).toFixed(1)}% -30% -10%)`; hd.style.translate = `${((Math.floor(t * 12) * 7.3 % 1) * 2).toFixed(1)}px 0`; if (w > .05) label = true; } });
@@ -286,6 +289,8 @@ let CAP, list;
 // sound
 const AC = new AudioContext(), buf = {}, load = async (k, f) => { buf[k] = await AC.decodeAudioData(await (await fetch('../../../packages/engine/assets/' + f)).arrayBuffer()); };
 const SOUNDS = { paper: 'sfx/fs-671917.wav', swipe: 'sfx/fs-147282.wav', scratch: 'sfx/kenney-scratch.wav', typing: 'sfx-style1/typing.mp3', click: 'sfx/kenney.click.wav', whoosh: 'sfx-style1/woosh-tight.wav', pop: 'sfx/ui.pop.wav', chime: 'sfx/tonal.chime.wav', riser: 'sfx/riser-short.wav', hit: 'sfx/fs.impact.soft-hit.wav', snap: 'sfx-style1/finger-snap-tight.wav', drop: 'sfx/fs.foley.water-drop.wav', notify: 'sfx/tonal.notify.wav' };
+// a spec may bring its own sounds (paths under engine/assets), e.g. library picks per video: { "sounds": { "hit": "sfx/….wav" } }
+Object.assign(SOUNDS, SPEC.sounds || {});
 await Promise.all([load('bed', SPEC.music?.file || 'music/bed.mp3'), ...Object.entries(SOUNDS).map(([k, f]) => load(k, f))]).catch(e => console.warn(e));
 let SFX = [], bedSrc = null, bedGain = null, lastT = -1, playing = false;
 const playAt = (k, gain, offset = 0, dur) => { if (!buf[k]) return null; const s = AC.createBufferSource(), g = AC.createGain(); s.buffer = buf[k]; g.gain.value = gain; s.connect(g).connect(AC.destination); s.start(AC.currentTime, offset, dur); return { s, g }; };
@@ -294,9 +299,10 @@ const stopBed = () => { try { bedSrc && bedSrc.stop(); } catch {} bedSrc = null;
 const beatAt = t => BEATS.findLast(b => t >= b.t0 - 1e-3) || BEATS[0];
 
 function frame(t) {
-  FACEBOXES.length = 0; ctx.clearRect(0, 0, 1080, 1920); ctxT.clearRect(0, 0, 1080, 1920); cc.clearRect(0, 0, 540, 960); for (const d of ov.children) d.style.display = 'none';
+  FACEBOXES.length = 0; DESKV.clear(); ctx.clearRect(0, 0, 1080, 1920); ctxT.clearRect(0, 0, 1080, 1920); cc.clearRect(0, 0, 540, 960); for (const d of ov.children) d.style.display = 'none';
   if (bedGain) bedGain.gain.value = (SPEC.music?.gain ?? .08) * (1 + .7 * win(t, END - 3, END - .3));
   const b = beatAt(t); b.layers.forEach((L, i) => DEVICES[L.t].draw(L, t, b, b.state[i]));
+  for (const v of ov.querySelectorAll('.desk video')) if (!DESKV.has(v) && !v.paused) v.pause();
   const M = 44, hit = (a, f) => a.x0 < f.x1 + M && a.x1 > f.x0 - M && a.y0 < f.y1 + M && a.y1 > f.y0 - M;
   for (const d of ov.children) { d.style.translate = ''; if (d.style.display === 'none' || d.classList.contains('desk') || !d.dataset.text) continue;
     const e = d.firstElementChild || d, x0 = d.offsetLeft + e.offsetLeft, y0 = d.offsetTop + e.offsetTop, box = { x0, y0, x1: x0 + e.offsetWidth, y1: y0 + e.offsetHeight };
