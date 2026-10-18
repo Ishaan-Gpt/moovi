@@ -10,7 +10,8 @@ import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { z } from 'zod';
 import { config, REPO } from '../config';
-import { ask } from '../runtime';
+import { ask, modelScope } from '../runtime';
+import { skillPrompt, tierFor, type SkillTier } from '../skill-prompt';
 import { runStyle } from '../styles/run';
 import { readSite, type Hooks, type RunResult } from '../styles/common';
 import type { StyleId } from '../styles/index';
@@ -95,11 +96,10 @@ export function checkPicks(a: ShowreelPicks, themes: Theme[], arc: Slot[], force
   return bad.length ? bad.join('; ') : null;
 }
 
-export function writerStep(themes: Theme[], laws: string, arc: Slot[], src: { brief?: string; site?: { url: string; text: string; title?: string } }, forced?: string): { system: string; prompt: string } {
+export function writerStep(themes: Theme[], skill: string, arc: Slot[], src: { brief?: string; site?: { url: string; text: string; title?: string } }, forced?: string): { system: string; prompt: string } {
   const system = [
     'You are the writer of a Moovi Showreel: a short voice-led film locked to ONE visual theme. Pick the theme that suits the brief, then write its voice-over in that theme\'s voice. Code casts every picture from the theme\'s own library, so each line must name something that can be shown.',
-    'The script arc (every theme; label each beat with its slot, in this order):', ...arc.map(x => `- ${x.does}`),
-    'Writing laws (the ishaan-motion skill, Showreel branch):', laws,
+    "The ishaan-motion skill (the owner's rules; the script arc is mandatory, label each beat with its slot: " + arc.map(x => x.id).join(' -> ') + '):', skill,
     'Answer with every field.',
   ].join('\n');
   const prompt = [
@@ -116,7 +116,9 @@ const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(
 /** The Showreel preset: the one entry the studio's router calls. */
 export async function showreel(input: ShowreelInput, h: Hooks = {}): Promise<ShowreelResult> {
   if (!input.brief?.trim() && !input.url) throw new Error('Showreel needs a topic, a brief or a link');
-  const { themes, laws, arc } = readSkill();
+  const { themes, arc } = readSkill();
+  // decision 20: the skill as a prompt hierarchy (full for a linked Claude Code, compact for the server model and API keys)
+  const tier: SkillTier = tierFor(modelScope()?.provider), skill = skillPrompt('showreel', tier);
   const forced = input.theme ? themes.find(t => t.id === input.theme || t.name.toLowerCase() === input.theme!.toLowerCase())?.id : undefined;
   if (input.theme && !forced) throw new Error(`no Showreel theme "${input.theme}" (themes: ${themes.map(t => t.name).join(', ')})`);
   const log = (s: string) => h.log?.(s), signal = input.signal ?? h.signal;
@@ -130,13 +132,14 @@ export async function showreel(input: ShowreelInput, h: Hooks = {}): Promise<Sho
   }
 
   h.start?.('brief'); let s = Date.now();
-  const step = writerStep(themes, laws, arc, { brief: input.brief, site }, forced);
+  const step = writerStep(themes, skill.text, arc, { brief: input.brief, site }, forced);
   const picks = await ask({ agent: 'showreel:write', tier: 'crew', deadlineMs: 60_000, signal, system: step.system, prompt: step.prompt, schema: PICKS,
     validate: a => checkPicks(a as ShowreelPicks, themes, arc, forced, !!(input.url || input.brand?.trim()), input.brief ?? '') }) as ShowreelPicks;
   const theme = themes.find(t => t.id === picks.theme)!;
   if (!RENDERERS.has(theme.renderer)) throw new Error(`theme ${theme.id}: renderer "${theme.renderer}" is not a Showreel renderer`);
   const lines = picks.beats.map(b => b.line.trim()), title = input.brand?.trim() || picks.title.trim();
   h.lap?.('brief', (Date.now() - s) / 1000);
+  log(`writer read the skill ${tier} (${skill.tokens} tokens: ${skill.sources.join(', ')})`);
   h.progress?.(`theme: ${theme.name} (${picks.why})`);
   h.progress?.(`colour ${picks.colour} from ${picks.colourFrom}`);
   log(`showreel: theme ${theme.id} → ${theme.renderer}; "${title}" ${picks.colour} (${picks.colourFrom}); ${picks.why}\n${picks.beats.map((b, i) => `  ${i + 1}. [${b.slot}] ${b.line}`).join('\n')}`);

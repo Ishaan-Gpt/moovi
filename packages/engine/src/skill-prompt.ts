@@ -26,7 +26,7 @@ export const COMPACT: Record<'global' | SkillType, [string, string][]> = {
   // the recipe; the devices' 'use when' rides in Edit mastery's menu (menu.json) beside it
   edit: [['references/edit-fundamentals.md', '## 12. ']],
   launch: [['references/launch.md', '## What won, in order']],
-  showreel: [['references/showreel.md', '## The lock'], ['references/showreel.md', '## Writing laws']],
+  showreel: [['references/showreel.md', '## The lock'], ['references/showreel.md', '## The script arc'], ['references/showreel.md', '## Writing laws']],
 };
 
 const read = (f: string) => readFileSync(join(SKILL_DIR(), f), 'utf8');
