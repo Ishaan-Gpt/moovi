@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, extname, join } from 'node:path';
 import { project as P, run as runQ, SYS, sys as S } from '@moovi/graph';
 import { publish } from '../bus';
@@ -16,14 +16,18 @@ import { fxMusic } from '../edit/effects/music';
 import { filmMix, renderFilm, useMix } from '../edit/film';
 import { prepareClip, renderMasteryFilm, skeletonSpec, worldCutouts, writeSpec } from '../edit/mastery';
 import { directMasterySpec } from '../edit/mastery-direct';
-import { directFromMenu, loadMenu, resolveFootage, resolveMusic, resolveSounds, sentencesOfWords, specFromPicks } from '../edit/mastery-menu';
+import { deviceSequence, directFromMenu, loadMenu, resolveFootage, resolveMusic, resolveSounds, sentencesOfWords, specFromPicks } from '../edit/mastery-menu';
 import { tierFor } from '../skill-prompt';
 import { modelScope } from '../runtime';
 
 /** The compact (menu) path as one call with the full spec's result shape: the picks, then the library for this video. */
-async function directedFromMenu(dir: string, words: { word: string; t: number; end: number }[], seconds: number, brief: string, signal?: AbortSignal): Promise<{ value: Record<string, unknown> | null; problems: string[][] }> {
+async function directedFromMenu(dir: string, words: { word: string; t: number; end: number }[], seconds: number, brief: string, projectDir: string, signal?: AbortSignal): Promise<{ value: Record<string, unknown> | null; problems: string[][] }> {
   const ss = sentencesOfWords(words.map(w => ({ word: w.word, t: w.t, end: w.end })));
-  const r = await directFromMenu({ sentences: ss, brief, ...(signal ? { signal } : {}), log: s => console.log(`[edit] ${s}`) });
+  // two clips never get the same film: the project's last film's device sequence is not taken again
+  const lastFile = join(projectDir, 'edit-last-film.json');
+  let previous: string[] = []; try { previous = (JSON.parse(readFileSync(lastFile, 'utf8')) as { devices: string[] }).devices ?? []; } catch { previous = []; }
+  const r = await directFromMenu({ sentences: ss, brief, previous, ...(signal ? { signal } : {}), log: s => console.log(`[edit] ${s}`) });
+  if (r.value) try { writeFileSync(lastFile, JSON.stringify({ devices: deviceSequence(r.value.answer) })); } catch { /* the next film just has no memory of this one */ }
   if (!r.value) return { value: null, problems: r.problems };
   const menu = loadMenu(), a = r.value.answer, events = [...JSON.stringify(menu).matchAll(/\{sfx:(\w+)\}/g)].map(m => m[1]!);
   const [sounds, music, footage] = await Promise.all([resolveSounds(events, words.length), resolveMusic(dir, ss.map(s => s.text), a.mood ?? '', seconds, signal), resolveFootage(dir, a.beats.filter(b => b.footage), signal)]);
@@ -186,7 +190,7 @@ export const editReel: Handler = async ctx => {
     const kept = words.filter(w => !((edl as { removed?: { src_in: number; src_out: number }[] }).removed ?? []).some(r => w.t >= r.src_in - 1e-3 && w.t < r.src_out - 1e-3));
     // decision 20: a linked Claude Code writes the whole spec from the full skill (and invents); the server model and every
     // user API key direct from Edit mastery's menu with the compact skill, and code fills only the menu's slots
-    directed = (tierFor(modelScope()?.provider) === 'compact' ? directedFromMenu(dir, kept, plan.source.duration, inp.brief ?? '', ctx.signal) : directMasterySpec({ words: kept.map(w => ({ word: w.word, t: w.t, end: w.end })), faces: edl.faces ?? [], duration: plan.source.duration, brief: inp.brief ?? '', files: worldCutouts(), ...(ctx.signal ? { signal: ctx.signal } : {}), log: s => console.log(`[edit] ${s}`) })
+    directed = (tierFor(modelScope()?.provider) === 'compact' ? directedFromMenu(dir, kept, plan.source.duration, inp.brief ?? '', ctx.projectDir, ctx.signal) : directMasterySpec({ words: kept.map(w => ({ word: w.word, t: w.t, end: w.end })), faces: edl.faces ?? [], duration: plan.source.duration, brief: inp.brief ?? '', files: worldCutouts(), ...(ctx.signal ? { signal: ctx.signal } : {}), log: s => console.log(`[edit] ${s}`) })
 )
       .then(async r => { if (r.value) { writeSpec(dir, r.value); await ctx.activity('note', 'the edit is directed: devices on its sentences'); } else console.log(`[edit] spec: the skeleton (${r.problems.flat().slice(0, 2).join('; ')})`); })
       .catch(e => console.warn(`[edit] spec: ${String((e as Error).message ?? e).slice(0, 160)}`));
