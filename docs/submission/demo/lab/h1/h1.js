@@ -11,7 +11,7 @@
 // The person is drawn for now (Ishaan's own clip replaces it: same framing, head centre x 0.5, eyes at y 0.42).
 import { clamp, lerp, prog, E, rand, noise, mk } from '../d1/cast.js';
 const W = 1920, H = 1080, FPS_REF = 24;
-const cv = document.getElementById('c'), g = cv.getContext('2d');
+const EMBED = !!window.H1_CANVAS, cv = window.H1_CANVAS ?? document.getElementById('c'), g = cv.getContext('2d'); // embedded: the hook page draws this canvas
 const T = { words: 0.08, stack: 0.25, gun: 0.5, fire: 0.75, neg: 0.83, shard: 0.875, burst: 0.96, end: 2.6 };
 const COPY = { right: ['BUILDING', 'A', 'SAAS', 'IS'], stack: ['DEAD', 'IN', '2026'], tiny: ['Moovi · Graph Hacks 2026', 'Your video production team.'], mark: 'moovi' };
 const RED = '#b3121a', CREAM = '#eeeadf', GREYW = '#ecebe8', INK = '#141414';
@@ -144,6 +144,7 @@ async function ensureAudio() { if (AC) return; AC = new AudioContext(); await Pr
 const now = () => playing ? (performance.now() - t0) / 1000 * rate() : held;
 const rate = () => +document.getElementById('rate').value;
 const seek = document.getElementById('seek'), tl = document.getElementById('t'), btn = document.getElementById('play');
+if (EMBED) { window.H1 = { frame, T, CUES }; } else {
 btn.onclick = async () => { await ensureAudio(); AC.resume(); if (playing) { held = now(); playing = false; btn.textContent = 'Play'; return; } if (held >= T.end - 0.02) held = 0; t0 = performance.now() - held * 1000 / rate(); fired = new Set(CUES.map((c, i) => c[0] < held - 0.02 ? i : -1)); playing = true; btn.textContent = 'Pause'; };
 seek.oninput = () => { playing = false; btn.textContent = 'Play'; held = +seek.value; };
 function loop() {
@@ -151,5 +152,6 @@ function loop() {
   if (playing && document.getElementById('sfx').checked) CUES.forEach(([a, f, gn], i) => { if (!fired.has(i) && t >= a && t - a < 0.12) { fired.add(i); const s = AC.createBufferSource(), v = AC.createGain(); s.buffer = BUF[f]; v.gain.value = gn; s.connect(v).connect(AC.destination); s.start(); } });
   frame(t); seek.value = t; tl.textContent = `${t.toFixed(2)} / ${T.end}`; requestAnimationFrame(loop);
 }
-window.H1 = { frame, T };
+window.H1 = { frame, T, CUES };
 Promise.all([`400 80px "Anton"`, `300 80px "Antonio"`, `800 20px "Inter Tight"`].map(f => document.fonts.load(f))).finally(loop);
+}

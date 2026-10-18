@@ -16,12 +16,13 @@ import * as THREE from 'three';
 import { RW, RH, clamp, lerp, prog, E, rand, noise, mk, duskSky, boyProfile, boyBack, girlShot, boyDuskShot } from './cast.js';
 import { allCards, panelFace, heroBody, coverPhoto, WIN } from './cards.js';
 
-const PX = 1.5, CW = Math.round(RW * PX), CH = Math.round(RH * PX), ASPECT = RW / RH;
+const OPT = window.D1_OPTS ?? {}; // embedded (the hook): { canvas, size: [w, h], lines, real, noHero }
+const PX = 1.5, CW = OPT.size ? OPT.size[0] : Math.round(RW * PX), CH = OPT.size ? OPT.size[1] : Math.round(RH * PX), ASPECT = CW / CH;
 const T = { water: 6.633, dive: 10.45, sun: 12.6, back: 16.4, inv: 18.7, dusk: 18.83, end: 25.28 };
 const PARTS = [[0, T.water, 'D1.1 card sphere'], [T.water, T.dive, 'D1.2 words in depth over the sea'], [T.dive, T.sun, 'D1.3 droste dive'], [T.sun, T.back, 'D1.4 backlit girl'], [T.back, T.inv, 'D1.5 tunnel out'], [T.inv, T.dusk, 'D1.6 negative flash'], [T.dusk, T.end, 'D1.7 words behind the head → grey']];
 
 /* ───────── renderer, targets, the final quad ───────── */
-const canvas = document.getElementById('c');
+const canvas = OPT.canvas ?? document.getElementById('c');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, preserveDrawingBuffer: true });
 renderer.setPixelRatio(1); renderer.setSize(CW, CH, false); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.NoToneMapping;
 const rt = new THREE.WebGLRenderTarget(CW, CH, { samples: 4 });
@@ -80,7 +81,7 @@ sea.material.fragmentShader = sea.material.fragmentShader.replace('#include <col
 const BOY = {};
 { const w = 1024, h = 1800, s = 1.55, nx = 512, ny = 806;
   for (const view of ['prof', 'b34', 'back']) { const c = mk(w, h), g = c.getContext('2d');
-    if (view === 'prof') boyProfile(g, 0, nx, ny, s, -0.14, { tee: '#7d8186', teeLit: '#a2a5a8', teeDark: '#3d4247', rim: 'rgba(255,180,120,0.55)' });
+    if (view === 'prof') boyProfile(g, 0, nx, ny, s, -0.14, { tee: '#4e5560', teeLit: '#6c7380', teeDark: '#2a2f36', rim: 'rgba(255,170,110,0.95)', arm: false });
     else boyBack(g, 0, nx, ny, s, view === 'b34' ? 0.55 : 0.12);
     BOY[view] = tex(c); } }
 const PXW = 1433; // px per world unit on the boy textures (head 0.24 world tall)
@@ -89,7 +90,7 @@ boy.position.set(0, 1.933 - 900 / PXW, 0); scene.add(boy);
 
 // the card sphere: a Fibonacci sphere, each card tangent to it (its face points out), a random roll
 const SPH = new THREE.Group(); SPH.position.copy(HEAD); scene.add(SPH);
-const LIST = allCards(), R = 0.9, N = 64, CARDS = [];
+const LIST = allCards(OPT.real), R = 0.9, N = 64, CARDS = [];
 LIST.forEach(o => { o.tex = tex(o.c); });
 for (let i = 0; i < N; i++) {
   const o = LIST[Math.floor(rand(i * 13 + 2) * LIST.length)], w = o.w * 1.35 * (0.85 + rand(i * 5) * 0.35), h = w * o.c.height / o.c.width;
@@ -119,7 +120,7 @@ function wordTex(s, blur) {
 }
 // placements in the sea frame: x = forward (towards the sea), y = up, z = right
 const S2 = (r, u, f) => new THREE.Vector3(f, u, r);
-const LINES = [ // placeholder copy (Ishaan's words), same rhythm as the reference's lyric
+const LINES = OPT.lines ? OPT.lines.map(L => ({ ...L, pos: S2(...L.pos) })) : [ // placeholder copy (Ishaan's words), same rhythm as the reference's lyric
   { words: ['If', 'you', 'could'], at: [6.7, 6.8, 6.9], pos: S2(0.02, 1.2, 0.62), out: 9.95 },
   { words: ['see', 'every', 'cut,'], at: [7.4, 7.5, 7.7], pos: S2(-0.16, 1.18, 1.5), out: 9.95 },
   { words: ['you', 'would'], at: [8.4, 8.5], pos: S2(-0.62, 1.12, 2.25), out: 9.95 },
@@ -242,7 +243,7 @@ function world(t) {
   const to = cam.position.clone().sub(boy.position); to.y = 0; boy.rotation.set(0, Math.atan2(to.x, to.z), 0);
   const az = Math.atan2(-to.x, to.z); boy.material.map = az < 0.5 ? BOY.prof : az < 1.25 ? BOY.b34 : BOY.back;
   // hero card / tunnel
-  HERO.visible = t >= T.water && t < T.inv;
+  HERO.visible = !OPT.noHero && t >= T.water && t < T.inv;
   if (HERO.visible) {
     const zEnd = 0.5 / KCARD;
     if (t < T.dive) { const p = cardPose(t); setHero(p.x, p.y, -p.z / KCARD, p.yaw); }
@@ -311,6 +312,9 @@ async function ensureAudio() { if (AC) return; AC = new AudioContext(); await Pr
 function hit(f, gain) { const b = BUF[f]; if (!b) return; const s = AC.createBufferSource(), g = AC.createGain(); s.buffer = b; g.gain.value = gain; s.connect(g).connect(AC.destination); s.start(); }
 
 /* ───────── transport (the reference video is the clock; its audio only with "original audio") ───────── */
+if (OPT.canvas) { await Promise.all(['italic 400 80px "Times New Roman"', '700 20px "Inter Tight"'].map(f => document.fonts.load(f))); LIST.splice(0, LIST.length, ...allCards(OPT.real)); LIST.forEach(o => { o.tex = tex(o.c); }); CARDS.forEach((c, i) => { const o = LIST[Math.floor(rand(i * 13 + 2) * LIST.length)]; c.m.material.map = o.tex; c.m.material.needsUpdate = true; }); }
+window.D1 = { render, T, PARTS, hold: t => render(t) };
+if (!OPT.canvas) {
 const video = document.getElementById('v'), seek = document.getElementById('seek'), tl = document.getElementById('t'), playBtn = document.getElementById('play'), lab = document.getElementById('lab');
 let playing = false, held = null;
 const now = () => held ?? video.currentTime;
@@ -333,8 +337,9 @@ function loop() {
 window.D1 = { render, T, PARTS, hold: t => { held = t; render(t); } };
 Promise.all(['italic 400 80px "Times New Roman"', '400 80px "Bodoni Moda"', '400 80px "Instrument Serif"', 'italic 400 80px "Instrument Serif"', '700 20px "Inter Tight"'].map(f => document.fonts.load(f))).finally(() => {
   // the card faces were drawn before the fonts settled: redraw them now
-  LIST.splice(0, LIST.length, ...allCards()); LIST.forEach((o, i) => { o.tex = tex(o.c); });
+  LIST.splice(0, LIST.length, ...allCards(OPT.real)); LIST.forEach((o, i) => { o.tex = tex(o.c); });
   CARDS.forEach((c, i) => { const o = LIST[Math.floor(rand(i * 13 + 2) * LIST.length)]; c.m.material.map = o.tex; c.m.material.needsUpdate = true; });
   panelMat.map = tex(panelFace(700)); panelMat.needsUpdate = true; body.material.map = tex(heroBody(700)); body.material.needsUpdate = true;
   video.muted = true; loop();
 });
+}

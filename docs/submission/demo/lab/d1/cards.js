@@ -113,12 +113,20 @@ export function heroBody(px = 600) {
 /** the cover photo that first fills the window (a Moovi film still: the boy at dusk) */
 export function coverPhoto() { const c = mk(348, 396), g = c.getContext('2d'); const sky = duskSky(348, 396, 0.86, 3); g.drawImage(sky, 0, 0); boyProfile(g, 0, 170, 300, 0.42, -0.2, { fill: '#141114' }); return c; }
 
-export function allCards() {
+/** a plain photo card: a real picture (a frame from the footage finder), soft rounded corners, nothing else */
+export function photoCard(img, maxW = 420) {
+  const ar = img.width / img.height, w = ar >= 1 ? maxW : Math.round(maxW * ar), h = ar >= 1 ? Math.round(maxW / ar) : maxW, c = mk(w, h), g = c.getContext('2d');
+  rr(g, 0, 0, w, h, 14); g.save(); g.clip(); g.drawImage(img, 0, 0, w, h); g.restore(); return c;
+}
+export function allCards(real) {
+  if (real) return real.map(r => ({ c: photoCard(r.img), w: 0.2 * (r.img.width >= r.img.height ? 1.15 : 0.8) }));
+
   const list = [];
   for (let i = 0; i < 8; i++) list.push({ c: shareCard(i, i % 3 !== 1), w: 0.17 });
   for (let i = 0; i < 4; i++) list.push({ c: widget(i), w: 0.22 });
   for (let i = 0; i < 4; i++) list.push({ c: lyric(i), w: 0.14 });
-  for (let i = 0; i < 4; i++) list.push({ c: coverCard(i), w: 0.12 });
+  if (real) real.slice(0, 6).forEach(r => { const c = mk(320, 320), g = c.getContext('2d'); g.save(); rr(g, 0, 0, 320, 320, 10); g.clip(); const s = Math.max(320 / r.img.width, 320 / r.img.height); g.drawImage(r.img, (320 - r.img.width * s) / 2, (320 - r.img.height * s) / 2, r.img.width * s, r.img.height * s); g.restore(); list.push({ c, w: 0.12 }); });
+  else for (let i = 0; i < 4; i++) list.push({ c: coverCard(i), w: 0.12 });
   list.push({ c: graphCard(), w: 0.2 });
   list.push({ c: presetCard('Edit', 'Upload, pick the part'), w: 0.15 }, { c: presetCard('Launch', 'From a site link'), w: 0.15 }, { c: presetCard('Showreel', 'A brand film'), w: 0.15 });
   return list;

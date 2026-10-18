@@ -94,7 +94,7 @@ export function boyProfile(g, t, x, y, s, look, o = {}) {
   const skin = o.fill ?? (o.skin ?? '#121012');
   sideTorso(g, t); const tg = g.createLinearGradient(-140, 0, 120, 0); tg.addColorStop(0, o.teeDark ?? '#3b3f44'); tg.addColorStop(0.65, o.tee ?? '#6f7378'); tg.addColorStop(1, o.teeLit ?? '#8c8f92');
   g.fillStyle = o.fill ?? tg; g.fill();
-  if (!o.fill) { // the sleeve hem and the arm under it
+  if (!o.fill && o.arm !== false) { // the sleeve hem and the arm under it
     g.fillStyle = skin; g.beginPath(); spline(g, [[-62, 520], [12, 516], [16, 760], [-50, 770]]); g.fill();
     g.fillStyle = o.tee ?? '#6f7378'; g.beginPath(); spline(g, [[-118, 360], [-30, 330], [36, 380], [40, 520], [-74, 532], [-122, 470]]); g.fill();
     g.strokeStyle = 'rgba(0,0,0,0.22)'; g.lineWidth = 4; g.beginPath(); g.moveTo(-108, 470); g.quadraticCurveTo(-30, 540, 38, 512); g.stroke();

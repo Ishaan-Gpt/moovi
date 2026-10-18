@@ -152,3 +152,6 @@
 
 ## 1.16.4 (2026-10-18)
 - Owner (demo film H1): show every iteration as an MP4 file with sound, sent to him; a live browser page is not a deliverable (lessons.md).
+
+## 1.16.5 (2026-10-18)
+- Owner (demo hook): inserts follow the spoken order and live only on their word; set-pieces are filled with real footage-finder pictures, never invented UI or placeholders (lessons.md).
