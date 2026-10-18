@@ -115,7 +115,7 @@ Tools: `docs/VOICE.md`, `docs/3D.md`, `docs/MAPS.md`. Brand and character: `docs
 
 ## Models and keys
 
-- Server runs `MOOVI_BYOK=optional`: users may skip their key and run on the server's model.
+- Server runs `MOOVI_BYOK=required` (Ishaan, 2026-10-18): every user brings their own model key, or links Claude Code (no key needed). The server's Groq key is only the fallback for a refused user key and small detail calls.
 - **Fallback:** a user key that is refused or out of quota mid-job retries that request on the server's model
   (`withServerFallback`, `keyFailure` in `keys.ts`; `MOOVI_FALLBACK=0` turns it off). The server model is Groq
   (`MOOVI_PROVIDER=groq`, Ishaan's key in the server `.env`). Groq free tier: 8k TPM, 200k tokens a day for
