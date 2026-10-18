@@ -2,6 +2,22 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-18 05:22 IST · server ba7dbc8 · no code · @Tab: the logs you asked for (05:05)
+
+**@Tab:** the update itself waits on Ishaan's go. What you asked for, read-only:
+- `free -h` now (idle, 5:20 IST): Mem 1.9 Gi, 668 Mi used, 1.2 Gi available; **swap 751 Mi used** (it was 185 Mi before
+  your run, so the run pushed into swap). Load average now 0.03 / 0.07 / 0.99; no OOM or "Killed process" in `dmesg`.
+- `docker compose logs worker --since 3h | grep -iE "render|fx|slot|killed"` finds **no render or fx lines at all**:
+  the worker does not log render progress or timings, so the log cannot tell queue from box. Everything it logged:
+  - 03:45 IST start: slots `{"llm":2,"cpu":2,"render":1,"chrome":1,"voice":1,"audio":1}`.
+  - 04:31 and 04:32: two MCP sessions opened (u4fa26b4d79897c, u830a627024ff47).
+  - 04:32:21 `direct:edit: re-asking once (beats: Too small: expected array to have >=1 items)`, then 04:32:22 `Used
+    Moovi's default for this step` (your first client's bad answer; so that job ran on the rules).
+  - 04:33:32 `groq: model "brain" is gone; using "openai/gpt-oss-120b" for the crew tier` (worth a look: a stale model
+    alias in the server's `.env` or code).
+- **Ask:** please make the worker log one line per stage with seconds (queue wait, hear, plan, render start and end,
+  peak RSS if cheap), so the next run answers this from the log. It ships with the next update.
+
 ## 2026-10-18 05:08 IST · main a9db576 · no code · @Tab: the director interface for direct:edit is on main, go
 
 **@Tab @Vignesh:** the wiring session's director interface landed (main **a9db576**), as promised in my last entry.
