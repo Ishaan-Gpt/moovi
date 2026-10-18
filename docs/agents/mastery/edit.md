@@ -187,3 +187,13 @@ parseAsks("add a crash zoom on 'crore'. orbit on the hook"): Ask[]   // a chat k
   the chime.
 - Perf (same round, PC at 100% CPU from other sessions): v12 26 fps, v13 40–49 fps; video stalls appear before the
   world in every version this round, so they are load, not the desk.
+- Ishaan on v13: "better, keep going toward em5" (2026-10-18).
+
+## 2026-10-18: v14 (em5's focus pulls and warm light)
+- The world enters soft and racks sharp (0.42 s, `E.out`), on top of the whip blur; the speaker comes back soft and racks
+  sharp after a desk beat (`b.afterDesk`), with the leak over it. em5 cuts world ↔ speaker on focus, not on a hard cut.
+- Warm window light: a second gobo layer tints only the lit panes toward sun (soft-light); the shade is lighter and
+  warmer, so the paper reads cream like em5's, not grey.
+- The dashed trail has a hand-drawn loop (em5's curly arrow).
+- Perf (same round, PC at 21–54% CPU): v13 31 fps, p95 62 ms; v14 30 fps, p95 67 ms; worst frozen video clock 55 ms.
+  Slower than v11 (35–37 fps): the rack backdrop blur, whip blur and the blended light layers cost frames.
