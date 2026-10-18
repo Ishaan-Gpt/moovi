@@ -288,6 +288,8 @@ export function setupApi(o: SetupApiOptions) {
     await hub.store.set(key(code), JSON.stringify(r), SETUP_STATUS_MS);
     const { token } = await hub.tokens.mint(r.user, 'Claude Code (one prompt)');
     const ticket = await hub.gate.mintTicket(r.user);
+    // the background Claude Code starts now: a video already waiting offers its next decision to it first (scope.ts)
+    if (startsNow) hub.presence.expect(r.user, SETUP_CONNECT_MS);
     if (!json || !req) return plain(`${token}\n${ticket}\n${childPrompt(ticket)}\n`);
     // the pasted prompt's plain commands read these fields; the token goes into `claude mcp add` and nowhere else
     const u = `${o.origin(req)}/api/brain/setup/${code}`;
@@ -303,6 +305,9 @@ export function setupApi(o: SetupApiOptions) {
     r.startedAt = hub.now(); delete r.exit;
     await hub.store.set(key(code), JSON.stringify(r), SETUP_STATUS_MS);
     const t = await hub.gate.mintTicket(r.user);
+    // command 2 starts the background Claude Code: until it calls in (or SETUP_CONNECT_MS passes), the user's videos
+    // offer their decisions to it first, so a clip uploaded before command 2 is picked up too (scope.ts laneState)
+    hub.presence.expect(r.user, SETUP_CONNECT_MS);
     return plain(`\n${t}\n${childPrompt(t)}\n`);
   }
 
@@ -322,32 +327,56 @@ export function setupApi(o: SetupApiOptions) {
     return Number.isFinite(n) ? n : null;
   }
 
+  /** the end of a user id, so two status readings (this line, the website's pill) can be told apart as one account or two */
+  const account = (user: string) => user.slice(-4);
+  /** how a running video's decisions are being made, from the last brain lane decision (hub.register onLane) */
+  const laneWords = (lane: string) => lane === 'claude-code' ? 'on your Claude Code' : lane === 'key' ? 'on your own model key' : lane === 'server' ? "on Moovi's server model" : lane === 'wait' ? 'waiting for your Claude Code' : 'with no model';
+
   async function status(code: string): Promise<Response> {
     const r = await read(code);
     if (!r) return plain('MOOVI: unknown or expired setup code.', 404);
     if (r.claimedAt === null) return plain('MOOVI: not set up yet: run command 1 from Moovi Settings first.');
+    const acct = ` (account ...${account(r.user)})`;
     // command 1 ran, command 2 not yet: connected, nothing started (the timers below count from the start)
-    if (r.startedAt === undefined) return plain('MOOVI: connected; Moovi is not started yet: run command 2 from Moovi Settings.');
+    if (r.startedAt === undefined) return plain(`MOOVI: connected; Moovi is not started yet: run command 2 from Moovi Settings.${acct}`);
     const now = hub.now(), claimed = r.claimedAt, started = r.startedAt;
-    const jobs = (await hub.board.recent(r.user)).filter(j => j.startedAt >= claimed || (r.running ?? []).includes(j.job)).sort((a, b) => a.startedAt - b.startedAt);
-    const last = jobs.at(-1);
+    // every video of this user that is running now, whenever it started (one uploaded before command 1 or 2 too), plus
+    // those that started since the claim and have ended (live test 2026-10-18: a video running on the server showed as
+    // "waiting for a video" because it was not counted)
+    const recent = await hub.board.recent(r.user);
+    const jobs = recent.filter(j => j.state === 'running' || j.startedAt >= claimed || (r.running ?? []).includes(j.job)).sort((a, b) => a.startedAt - b.startedAt);
+    const running = jobs.filter(j => j.state === 'running');
+    const last = running.at(-1) ?? jobs.at(-1);
     if (last?.state === 'done') return plain(`MOOVI: DONE ${last.title ?? 'your video'} ${last.url ?? ''}`.trim());
     if (last?.state === 'failed') return plain(`MOOVI: FAILED ${last.error ?? 'the website says why'}`);
     const seen = await lastSeen(r.user);
     const connected = seen !== null && seen >= started;
-    const pickUp = 'Open Claude Code and type /mcp__moovi__run to pick the video up.';
+    const quietS = connected ? Math.round((now - seen!) / 1000) : null;
+    // polling now: a window that pulls keeps this fresh; a step being thought about makes no calls for up to its answer window
+    const thinking = (await hub.queue.picked(r.user)).length > 0;
+    const live = connected && (now - seen! <= ONLINE_MS || (thinking && now - seen! <= SETUP_QUIET_MS));
+    const again = 'Run command 2 from Moovi Settings again.';
+    const log = 'Its log is moovi-brain.log in the temp folder (or in the moovi folder the setup script printed).';
     // the wrapper said the background Claude Code stopped
     if (r.exit) {
-      if (!last) return plain(r.exit.code === 0 ? 'MOOVI: IDLE: the background Claude Code stopped before a video started. Start one on the Moovi website, then type /mcp__moovi__run in Claude Code.'
-        : `MOOVI: FAILED: the background Claude Code stopped (exit ${r.exit.code})${connected ? '' : ' before it connected; is Claude Code signed in?'}. Its log is moovi-brain.log in the temp folder (or in the moovi folder the setup script printed).`);
-      if (r.exit.code !== 0 || now - r.exit.at > SETUP_EXIT_GRACE_MS) return plain(`MOOVI: FAILED: the background Claude Code stopped (exit ${r.exit.code}) while ${last.title ?? 'your video'} was still running. ${pickUp}`);
+      if (!last) return plain(r.exit.code === 0 ? `MOOVI: IDLE: the background Claude Code stopped before a video started. Upload a clip on the Moovi website, then ${again.toLowerCase()}`
+        : `MOOVI: FAILED: the background Claude Code stopped (exit ${r.exit.code})${connected ? '' : ' before it connected; is Claude Code signed in?'}. ${log}`);
+      if (r.exit.code !== 0 || now - r.exit.at > SETUP_EXIT_GRACE_MS) return plain(`MOOVI: FAILED: the background Claude Code stopped (exit ${r.exit.code}) while ${last.title ?? 'your video'} was still running. ${again}`);
     }
     // no word from the wrapper (a killed process, a sleeping computer): judge by when it last called Moovi
-    if (!connected && now - started > SETUP_CONNECT_MS) return plain('MOOVI: FAILED: the background Claude Code never connected. Is Claude Code signed in (run claude once)? Its log is moovi-brain.log in the temp folder (or in the moovi folder the setup script printed).');
-    if (connected && last && now - seen! > SETUP_QUIET_MS) return plain(`MOOVI: FAILED: the background Claude Code went quiet while ${last.title ?? 'your video'} was running. ${pickUp}`);
-    if (!last) return plain(now - started > SETUP_IDLE_MS ? 'MOOVI: IDLE: no video was started. Start one on the Moovi website, then type /mcp__moovi__run in Claude Code.'
-      : `MOOVI: ${connected ? 'connected' : 'connecting'}; waiting for a video: upload a clip on the Moovi website.`);
-    return plain(`MOOVI: working on ${last.title ?? 'your video'}.`);
+    if (!connected && now - started > SETUP_CONNECT_MS) return plain(`MOOVI: FAILED: the background Claude Code never connected. Is Claude Code signed in (run claude once)? ${log}${acct}`);
+    // it called in once and then went quiet: say so, video or not ("connected" here only ever means polling now)
+    if (connected && !live && now - seen! > SETUP_QUIET_MS) return plain(`MOOVI: FAILED: the background Claude Code stopped calling Moovi ${quietS} s ago${last ? ` while ${last.title ?? 'your video'} was running` : ''}. ${again} ${log}${acct}`);
+    const who = live ? 'connected' : connected ? `quiet for ${quietS} s` : 'connecting';
+    if (!last) return plain(now - started > SETUP_IDLE_MS ? `MOOVI: IDLE: no video was started. Upload a clip on the Moovi website, then ${again.toLowerCase()}`
+      : `MOOVI: ${who}; waiting for a video: upload a clip on the Moovi website.${acct}`);
+    // a running video: which brain is making its decisions, and whether one is waiting for this Claude Code now
+    const open = (await hub.queue.open(r.user)).filter(s => s.job === last.job);
+    const lane = await hub.lastLane(r.user);
+    const how = open.some(s => s.state === 'queued') ? `; a decision is waiting for your Claude Code (${Math.round((now - open[0]!.createdAt) / 1000)} s)`
+      : open.length ? '; your Claude Code is deciding now'
+      : lane && (lane.job === last.job || lane.job === null) ? `; its last decision ran ${laneWords(lane.lane)} (${lane.why})` : '';
+    return plain(`MOOVI: ${who}; working on ${last.title ?? 'your video'}${how}.${acct}`);
   }
 
   /** route by path under .../api/brain/setup (any base path), null for anything else */

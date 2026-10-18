@@ -7,13 +7,13 @@
  */
 import { byokMode, registerBrainHooks, registerBrainScope, serverModel } from '@moovi/engine/keys';
 import { currentRun } from '@moovi/engine/brain';
-import type { Runtime } from '@moovi/engine/runtime';
+import { isBrainAgent, type Runtime } from '@moovi/engine/runtime';
 import { JobBoard, type RunStatusOf } from './board';
 import type { BridgeOptions } from './bridge';
 import { Gate } from './lease';
 import { StepQueue } from './queue';
 import { brainScope, Presence } from './scope';
-import { memoryStore, type BrainStore } from './store';
+import { KEY, memoryStore, type BrainStore } from './store';
 import { connectCommand, TokenStore } from './tokens';
 
 export interface HubOptions {
@@ -23,6 +23,10 @@ export interface HubOptions {
   /** the engine's Run.status for a job, so the board settles a run stopped on the website (scripts/serve.ts reads the graph) */
   runStatus?: RunStatusOf | null;
 }
+
+/** the last brain lane decision for a user: which brain took the video's last decision, and why */
+export interface LaneRecord { job: string | null; agent: string; lane: string; why: string; at: number }
+export const LANE_TTL_MS = 24 * 3600_000;
 
 export class BrainHub {
   readonly queue: StepQueue;
@@ -42,6 +46,11 @@ export class BrainHub {
     this.board = new JobBoard(store, this.now, (p, c) => (base ? `${base}/studio/p/${p}/c/${c}` : null), opts.runStatus ?? null);
   }
   connectCommand(mcpUrl: string, token: string) { return connectCommand(mcpUrl, token); }
+  /** the user's last brain lane decision (register's onLane), or null */
+  async lastLane(user: string): Promise<LaneRecord | null> {
+    const v = await this.store.get(KEY.lane(user)).catch(() => null);
+    try { return v ? JSON.parse(v) as LaneRecord : null; } catch { return null; }
+  }
 
   /**
    * Plug the bridge into the engine in this process: brain calls of a user whose Claude Code is online go to their
@@ -53,7 +62,15 @@ export class BrainHub {
       user, own, queue: this.queue, presence: this.presence,
       job: () => currentRun() ?? `job-${user}`,
       server: o.server === undefined ? serverModel() : o.server, byok: byokMode(),
-      ...(o.onLane ? { onLane: (agent: string, lane: string, why: string) => o.onLane!(user, agent, lane, why) } : {}),
+      // every lane decision is kept for the status lines (setup status, /api/brain/status) and written to the worker
+      // log, so "which brain made this video" is a fact, not a guess (live test 2026-10-18: the log could not say)
+      onLane: (agent: string, lane: string, why: string) => {
+        o.onLane?.(user, agent, lane, why);
+        if (!isBrainAgent(agent)) return; // detail calls (key or server) are not "the brain"
+        const job = currentRun() ?? null;
+        console.log(`[bridge] lane ${user} ${job ?? '-'} ${agent} > ${lane} (${why})`);
+        void this.store.set(KEY.lane(user), JSON.stringify({ job, agent, lane, why, at: this.now() } satisfies LaneRecord), LANE_TTL_MS).catch(() => undefined);
+      },
       bridge: {
         ...(o.bridge ?? {}),
         onEvent: e => { o.bridge?.onEvent?.(e); if (e.type === 'queued') { const job = currentRun(); if (job) void this.board.start({ user, job }).catch(() => undefined); } },

@@ -89,7 +89,10 @@ export function brainApi(o: BrainApiOptions) {
     // the studio's small pill (Vignesh, Oct 18): shown to a user without a key of their own. Linked but not polling now
     // reads "linked" (command 1 done, command 2 not running), not "not connected": a linked user passes the key gate
     const pill = key ? null : !s.linked ? 'not_connected' : online ? 'connected' : jobs.length ? 'waiting' : 'linked';
-    return json({ ...s, online, claude_code: s.linked ? cc : 'off', lane, has_key: key, pill, notice: s.linked ? null : NOTICE.notConnected, jobs });
+    // which brain took the last decision of this user's video, and the account's last four characters, so the pill and
+    // the setup status line can be compared as one account (live test 2026-10-18: they seemed to disagree)
+    const last = await o.hub.lastLane(user);
+    return json({ ...s, online, claude_code: s.linked ? cc : 'off', lane, has_key: key, pill, notice: s.linked ? null : NOTICE.notConnected, jobs, account: user.slice(-4), last_lane: last ? { lane: last.lane, why: last.why, agent: last.agent, job: last.job, at: last.at } : null });
   }
 
   /** route by path: .../api/brain/link and .../api/brain/status (any base path), null for anything else */

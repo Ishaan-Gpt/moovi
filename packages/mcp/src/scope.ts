@@ -42,6 +42,31 @@ export class Presence {
     const v = await this.store.get(KEY.seen(user)).catch(() => null);
     const t = v === null ? NaN : Number(v);
     if (Number.isFinite(t) && t > (this.seen.get(user) ?? -Infinity)) this.seen.set(user, t);
+    const e = Number(await this.store.get(KEY.expect(user)).catch(() => null));
+    if (Number.isFinite(e) && e > (this.expected.get(user) ?? -Infinity)) this.expected.set(user, e);
+  }
+  /**
+   * A background Claude Code was just started for this user (command 2 minted its run ticket) and has not called in
+   * yet: it is expected for `ms`. Vignesh's live test, 2026-10-18 17:28 IST: the video was uploaded before command 2,
+   * so its brain step found Claude Code only linked and went to Moovi's server model while the new Claude Code was
+   * still starting. While one is expected, the lane switch offers brain steps to Claude Code first (laneState).
+   */
+  expect(user: string, ms: number) {
+    const until = this.now() + ms;
+    this.expected.set(user, until);
+    void this.store?.set(KEY.expect(user), String(until), ms).catch(() => undefined);
+  }
+  private expected = new Map<string, number>();
+  /** expected and not yet past its window */
+  expecting(user: string): boolean { return (this.expected.get(user) ?? -Infinity) > this.now(); }
+  /**
+   * What the lane switch reads: online while a window polls, and also while a just started background Claude Code is
+   * expected (its first pull is seconds away). A step offered then waits PICKUP_MS for it and moves on to the key or
+   * the server model if it never comes, so a job never hangs on an expected Claude Code.
+   */
+  laneState(user: string): LaneFacts['claudeCode'] {
+    const s = this.state(user);
+    return s !== 'online' && this.expecting(user) ? 'online' : s;
   }
   state(user: string): LaneFacts['claudeCode'] {
     const t = this.seen.get(user); if (t === undefined) return 'off';
@@ -54,12 +79,12 @@ export function brainScope(o: {
   bridge?: Partial<Omit<BridgeOptions, 'queue' | 'user' | 'job'>>;
   onLane?: Parameters<typeof laneRuntime>[0]['onLane'];
 }): ModelScope | null {
-  if (o.presence.state(o.user) === 'off') return null;
+  if (o.presence.laneState(o.user) === 'off') return null;
   const brain = bridgeRuntime({ queue: o.queue, user: o.user, job: o.job, ...(o.bridge ?? {}) });
   // the wait lane: the same queue and memo, a longer pickup window (no key and no server model may take the call)
   const waitBrain = bridgeRuntime({ queue: o.queue, user: o.user, job: o.job, ...(o.bridge ?? {}), pickupMs: o.bridge?.waitMs ?? WAIT_MS });
   const runtime = laneRuntime({
-    facts: () => ({ claudeCode: o.presence.state(o.user), hasKey: !!o.own, server: !!o.server, byok: o.byok }),
+    facts: () => ({ claudeCode: o.presence.laneState(o.user), hasKey: !!o.own, server: !!o.server, byok: o.byok }),
     brain, waitBrain, key: o.own?.runtime ?? null, server: o.server, ...(o.onLane ? { onLane: o.onLane } : {}),
     // a step's 'brain' (and the tier names) become the lane's own model ids; the server lane uses this machine's config
     ...(o.own?.models ? { models: { key: o.own.models } } : {}),

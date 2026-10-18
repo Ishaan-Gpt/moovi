@@ -32,6 +32,10 @@ export const KEY = {
   jobs: (user: string) => `ce:brain:jobs:${user}`,
   /** the user's picked, not yet answered steps (a dropped window's step is handed to the window that takes over) */
   held: (user: string) => `ce:brain:held:${user}`,
+  /** the last lane decision of the user's brain calls (hub.register onLane): which brain made the video's decisions */
+  lane: (user: string) => `ce:brain:lane:${user}`,
+  /** until when a background Claude Code that was just started (command 2) is expected to call in (scope.ts Presence) */
+  expect: (user: string) => `ce:brain:expect:${user}`,
 };
 
 /** In memory (tests, one process). `now` is injectable so expiry is testable without waiting. */
