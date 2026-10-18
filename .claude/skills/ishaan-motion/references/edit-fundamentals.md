@@ -32,6 +32,10 @@ Every time is a word anchor, never a typed second; every device is a reusable co
 spec (`docs/agents/mastery/edit-player/player.html`; the spec format in docs/agents/mastery/edit.md). Devices: cam
 (punch, push, looks, forms full / split / card / corner that morph), mg, burn, stat, filters, compare, desk, leak, tag,
 cascade, letters, input, sides, pill, wipe. Never the `window` form (1/10).
+**A capable model designs new graphics itself (owner, 2026-10-18):** when no built-in device acts a sentence out as
+well as a new one would, write an `art` layer: SVG or HTML with CSS, in the video's palette variables, animated only
+through `--t` / `--p` / `--e` (the edit's own clock, so the preview and the MP4 match). Premium means the motion laws
+still hold: eased from rest, staggered arrivals, lines that draw, one hero element, a sound on its arrival.
 
 ## 6. Sound (owner's Style 1 rules)
 One SFX stem by events (a sound on every arrival, min gap by priority, at most two punches), the typing tick under

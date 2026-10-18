@@ -143,3 +143,6 @@
 ## 1.16.1 (2026-10-18)
 - Owner: only his approved edit rules stay (the v1-v6 board-era sections and the retired looks' numbers are scrapped from edit-fundamentals §1-§9).
 - Owner rule: every edit shows the checklist (burn-in graphics, a form change, full-screen, camera, leaks, grade, palette from the footage, sfx on every arrival, music, smooth), at least 80-90%.
+
+## 1.16.2 (2026-10-18)
+- Owner: the capable model designs premium motion graphics itself (the player's `art` device: SVG/HTML + CSS on the edit's clock).

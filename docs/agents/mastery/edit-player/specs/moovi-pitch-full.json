@@ -105,20 +105,19 @@
      "push": 0.02
     },
     {
-     "t": "burn",
-     "items": [
-      {
-       "kind": "glass",
-       "text": "world's first",
-       "icon": "M12 3l2.6 5.6 6 .6-4.5 4 1.3 6-5.4-3.1-5.4 3.1 1.3-6-4.5-4 6-.6z",
-       "at": {
-        "w": "first"
-       },
-       "x": 80,
-       "y": 150,
-       "r": -4
-      }
-     ]
+     "t": "art",
+     "html": "<svg viewBox=\"0 0 480 300\" width=\"480\" height=\"300\"><defs><linearGradient id=\"gf\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#FFFFFF\"/><stop offset=\"1\" stop-color=\"var(--accent,#E0473A)\"/></linearGradient></defs><path class=\"ln\" d=\"M160 262 C 80 230, 60 130, 116 52\"/><path class=\"ln\" d=\"M320 262 C 400 230, 420 130, 364 52\"/><ellipse class=\"lf\" style=\"--i:0\" cx=\"132\" cy=\"232\" rx=\"16\" ry=\"7\" transform=\"rotate(-50 132 232)\"/><ellipse class=\"lf\" style=\"--i:1\" cx=\"104\" cy=\"190\" rx=\"16\" ry=\"7\" transform=\"rotate(-70 104 190)\"/><ellipse class=\"lf\" style=\"--i:2\" cx=\"96\" cy=\"140\" rx=\"16\" ry=\"7\" transform=\"rotate(-95 96 140)\"/><ellipse class=\"lf\" style=\"--i:3\" cx=\"110\" cy=\"92\" rx=\"16\" ry=\"7\" transform=\"rotate(-120 110 92)\"/><ellipse class=\"lf\" style=\"--i:4\" cx=\"348\" cy=\"232\" rx=\"16\" ry=\"7\" transform=\"rotate(50 348 232)\"/><ellipse class=\"lf\" style=\"--i:5\" cx=\"376\" cy=\"190\" rx=\"16\" ry=\"7\" transform=\"rotate(70 376 190)\"/><ellipse class=\"lf\" style=\"--i:6\" cx=\"384\" cy=\"140\" rx=\"16\" ry=\"7\" transform=\"rotate(95 384 140)\"/><ellipse class=\"lf\" style=\"--i:7\" cx=\"370\" cy=\"92\" rx=\"16\" ry=\"7\" transform=\"rotate(120 370 92)\"/><text class=\"w\" x=\"240\" y=\"128\" text-anchor=\"middle\">WORLD'S</text><text class=\"f\" x=\"240\" y=\"226\" text-anchor=\"middle\">FIRST</text></svg>",
+     "css": ".ln{fill:none;stroke:var(--accent,#E0473A);stroke-width:7;stroke-linecap:round;stroke-dasharray:320;stroke-dashoffset:calc(320 - 320 * min(1, var(--p) * 2.2))}.lf{fill:var(--accent,#E0473A);opacity:clamp(0, calc(var(--p) * 10 - var(--i) * .7 - 1), 1)}.w{font:400 46px 'Russo One';fill:#FFFFFF;letter-spacing:8px;opacity:clamp(0, calc(var(--p) * 5 - .8), 1)}.f{font:400 104px 'Russo One';fill:url(#gf);stroke:rgba(0,0,0,.35);stroke-width:2;transform-box:fill-box;transform-origin:center;scale:calc(1.5 - .5 * min(1, var(--e) * 1.6));opacity:clamp(0, calc(var(--p) * 4 - .4), 1)}svg{filter:drop-shadow(0 18px 30px rgba(0,0,0,.45))}",
+     "at": {
+      "w": "worlds"
+     },
+     "dur": 1.2,
+     "hold": 1.4,
+     "x": 300,
+     "y": 40,
+     "w": 480,
+     "h": 300,
+     "text": true
     }
    ]
   },

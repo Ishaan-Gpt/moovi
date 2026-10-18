@@ -104,6 +104,14 @@ keeps take 2 in every look.
   - `input` `{ placeholder | typed, from, to, y }` · `sides` `{ stills: [s1, s2], at, y }` · `pill` `{ keyword, at, avatar, y }`
   - `desk` (one tabletop world for the film) `{ focus: [x, y, scale], pip }` with the spec's top-level `desk: { w, h, items: [{ src, at, x, y, w, h, r, doodle: [svg paths], dx, dy, dw, dh, label, lx, ly, lr }] }`: real clips printed and taped, landing on their words; the camera pans to each
   - `leak` `{ at }`: a warm light leak sweeping across on its word
+  - `art` **(a graphic you design for this video)** `{ html: "<svg …>" or HTML, css: "<rules, nested under the graphic>", at, dur, hold, x, y, w, h, text: true when it shows words }`.
+    Use it whenever no built-in device acts the sentence out as well as a new one would: medals, diagrams, counters,
+    logos assembling, kinetic type, maps, timers. It moves only on the edit's own clock: the player sets `--t` (s since
+    `at`), `--p` (0..1 over `dur`) and `--e` (`--p` eased out) on it every frame, so animate with
+    `calc(var(--e) * …)`, `clamp(0, calc(var(--p) * 6 - 1), 1)` for staggers, `stroke-dashoffset` for lines that draw,
+    or scrub your own `@keyframes` with `animation: k 1s linear both paused; animation-delay: calc(var(--t) * -1s)`.
+    Colours from the palette's CSS variables (`var(--accent)`, `var(--paper)`, `var(--ink)` …); fonts: Russo One,
+    Manrope, Fraunces, JBMono, Marker. No script, no event handlers, no outside URLs (stripped).
   - spec-level `start` (an anchor: the edit begins on a word) and `theme.fall` (the dark fall-off under the captions); the grade is baked by `build-cut.mjs --grade "<ffmpeg chain>"`
   - `world` (a brand world) `{ stops, img: [{ src, x, y, w, h, enter, at, mask }], text: [{ html, y, at }], pip }` · `wipe` `{ src, at, dur }`
 - Rules the player enforces: text never covers a face (every drawn picture projects its face box; text graphics move
