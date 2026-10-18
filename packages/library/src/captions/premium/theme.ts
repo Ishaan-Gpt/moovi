@@ -72,3 +72,15 @@ export function metalKey(accent: string): string[] {
   // subtle: the top light only lifts the accent a little (the ref reads as gold, not as white fading to gold)
   return [hex(mix(mid, WHITE, 0.38)), hex(mix(mid, WHITE, 0.14)), hex(mid), hex(deep)];
 }
+
+/** A glossy display word (Premium Caption 4's red): a lit top, the accent, a deep base, and the shades of its 3D block. */
+export function glossKey(accent: string): { fill: string[]; side: string; dark: string } {
+  const [h, s] = toHsl(rgb(accent));
+  // deep and saturated (the ref's red reads as lacquer, not salmon): a small lift at the top, a dark base
+  const mid = fromHsl([h, Math.max(s, 0.88), 0.44]);
+  return {
+    fill: [hex(mix(mid, WHITE, 0.1)), hex(mid), hex(fromHsl([h, Math.max(s, 0.9), 0.34]))],
+    side: hex(fromHsl([h, Math.max(s, 0.85), 0.22])),
+    dark: hex(fromHsl([h, Math.max(s, 0.7), 0.1])),
+  };
+}

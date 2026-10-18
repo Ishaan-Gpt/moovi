@@ -191,6 +191,25 @@ function paintWord(ctx: CanvasRenderingContext2D, tier: TierSpec, text: string, 
 }
 
 /** The word's face (edge, fill, inner sheen) at full opacity, drawn once into its sprite. */
+/**
+ * The bevel: a lit rim on the top-left of each letter and a dark rim on the bottom-right (the letter minus itself
+ * shifted), softened a little, so a flat fill reads as a glossy, cut letter (Premium Caption 4's red).
+ */
+function bevel(c: CanvasRenderingContext2D, tier: TierSpec, text: string, x: number, y: number, px: number) {
+  const b = tier.bevel;
+  if (!b) return;
+  const d = Math.max(1, b.size * px);
+  const pad = Math.ceil(px * 0.3 + d);
+  const w = Math.ceil(c.measureText(text).width) + pad * 2, h = Math.ceil(px * 1.4) + pad * 2;
+  for (const [dx, col, a] of [[d, b.light, b.lightA], [-d, b.dark, b.darkA]] as const) {
+    const layer = new OffscreenCanvas(w, h), o = layer.getContext('2d')!;
+    setFace(o);
+    o.fillStyle = col; o.fillText(text, pad, pad + px);
+    o.globalCompositeOperation = 'destination-out'; o.fillText(text, pad + dx, pad + px + dx);
+    c.save(); c.globalAlpha = a; c.filter = `blur(${d * 0.4}px)`; c.drawImage(layer, x - pad, y - px - pad); c.restore();
+  }
+}
+
 function paintFace(ctx: CanvasRenderingContext2D, tier: TierSpec, text: string, x: number, y: number, px: number, S: number) {
   const alpha = 1;
   ctx.save();
@@ -201,10 +220,21 @@ function paintFace(ctx: CanvasRenderingContext2D, tier: TierSpec, text: string, 
     ctx.lineJoin = 'round'; ctx.strokeStyle = tier.edge.color; ctx.lineWidth = tier.edge.width * S / 1080;
     ctx.strokeText(text, x, y);
   }
+  if (tier.extrude) {
+    // 3D: the letters repeated down and to the right in darkening shades under the face (the reel's glossy red block)
+    // one copy per pixel of depth, so the block reads solid (sparse copies showed as stripes)
+    const ex = tier.extrude, n = Math.max(ex.steps ?? 10, Math.ceil(ex.depth * px));
+    for (let i = n; i >= 1; i--) {
+      const k = i / n;
+      ctx.fillStyle = k > 0.45 ? ex.dark : ex.color;
+      ctx.fillText(text, x + ex.depth * px * k * 0.35, y + ex.depth * px * k);
+    }
+  }
   if (!tier.sheen) {
     ctx.fillStyle = fillStyle(ctx, tier, y, px);
     round(ctx, tier, text, x, y, px);
     ctx.fillText(text, x, y);
+    bevel(ctx, tier, text, x, y, px);
     ctx.restore();
     return;
   }
@@ -281,6 +311,7 @@ export function drawCaption(ctx: CanvasRenderingContext2D, p: PremiumPreset, lis
   const c = list.find(c => t >= c.t0 && t < c.t1);
   if (!c) return;
   if (p.layout === 'stack') return drawStack(ctx, p, c, t, W, H, scene);
+  if (p.layout === 'poster') return drawPoster(ctx, p, c, t, W, H, scene);
   const S = Math.min(W, H);
   const [t1, t2] = p.tiers;
   const h1 = c.lead.length ? t1.size * S : 0;
@@ -309,7 +340,7 @@ export function ticks(list: Card[]): number[] {
 export interface Scene { face?: { x: number; y: number; w: number; h: number } | null; person?: CanvasImageSource | null }
 
 /** The anchor of a stack card, read once when the card starts (so the block never jumps while it holds). */
-type Anchor = { cx: number; cy: number; span: number; face: { x: number; y: number; w: number; h: number } | null };
+type Anchor = { cx: number; cy: number; span: number; face: { x: number; y: number; w: number; h: number } | null; wmax?: number };
 const ANCHORS = new Map<string, Anchor>();
 
 /**
@@ -413,6 +444,151 @@ function drawStack(ctx: CanvasRenderingContext2D, p: PremiumPreset, c: Card, t: 
   draw(true);
   if (scene.person && placed.some(l => l.items.some(i => i.tier.behind && t >= i.w.t))) { ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(scene.person, 0, 0, W, H); ctx.restore(); }
   draw(false);
+  ctx.restore();
+}
+
+/**
+ * The poster (Premium Caption 4, ref reel Dd1Mf7xzsbm): the key word is a giant, very tall condensed word standing
+ * behind the speaker from the forehead to below the shoulders ("COUNTRIES", "NOBODY"), its letters rising one after
+ * another out of a vertical motion trail. The words before it are a small handwritten script tucked on its top-left
+ * corner and written on left to right; the words after it are a white sans line over the chest, then the last words in
+ * script, right-aligned under the key. Tiers: [script, key, sans]. Text never covers the face.
+ */
+function drawPoster(ctx: CanvasRenderingContext2D, p: PremiumPreset, c: Card, t: number, W: number, H: number, scene: Scene) {
+  const S = Math.min(W, H);
+  const m = 0.04 * S;
+  const [script, key] = p.tiers;
+  const sans = p.tiers[2] ?? script;
+  const r = p.enter;
+
+  // the anchor, once per card: the key from the forehead to below the shoulders, on the wider free side of the face,
+  // tucked behind the speaker by a quarter of a face width at most, so every letter can still be read (centred on the
+  // face, the head hid the middle of the word)
+  const id = `poster|${c.t0}|${W}x${H}`;
+  let an = ANCHORS.get(id);
+  if (!an) {
+    const f = scene.face ?? null;
+    an = f
+      ? (f.x > 1 - f.x - f.w
+        ? { cx: (m + (f.x + f.w * 0.25) * W) / 2, cy: (f.y + f.h * 0.55) * H, span: f.h * H * 1.25, face: f, wmax: (f.x + f.w * 0.25) * W - m }
+        : { cx: ((f.x + f.w * 0.75) * W + W - m) / 2, cy: (f.y + f.h * 0.55) * H, span: f.h * H * 1.25, face: f, wmax: W - m - (f.x + f.w * 0.75) * W })
+      : { cx: W / 2, cy: p.y * H, span: H * 0.42, face: null, wmax: W - 2 * m };
+    if (ANCHORS.size > 500) ANCHORS.clear();
+    ANCHORS.set(id, an);
+  }
+
+  // the key: its cap height spans the anchor (shrunk if it would run past the frame)
+  // one key word per card (the reel's COUNTRIES, NOBODY): a second strong word joins the line after it
+  const keyWords = c.key.slice(0, 1);
+  const keyText = cased(key, keyWords.map(w => w.text).join(' '));
+  let kpx = font(ctx, key, S);
+  const k0 = Math.max(0.5, an.span / (kpx * cap));
+  kpx = font(ctx, key, S, k0);
+  const kw0 = ctx.measureText(keyText).width * (key.wide ?? 1);
+  const kfit = Math.min(1, (an.wmax ?? W - 2 * m) / kw0, (H - 2 * m) / (kpx * cap));
+  if (kfit < 1) kpx = font(ctx, key, S, k0 * kfit);
+  const kScale = k0 * Math.min(1, kfit);
+  const keyCap = kpx * cap, keyW = ctx.measureText(keyText).width * (key.wide ?? 1);
+  const keyLeft = Math.min(Math.max(an.cx - keyW / 2, m), W - m - keyW);
+  const keyTop = Math.min(Math.max(an.cy - keyCap / 2, m), H - m - keyCap);
+  const keyBase = keyTop + keyCap;
+
+  // the words around it
+  // after the key: the first half in white sans over the chest, the rest as closing script ("about working" / "tells you")
+  const tail = [...c.key.slice(1), ...c.tail];
+  let sansBase = 0;
+  const sansWords = tail.slice(0, tail.length >= 2 ? Math.ceil(tail.length / 2) : tail.length);
+  const closing = tail.slice(sansWords.length);
+
+  const drift = 1 + r.drift * (t - c.t0);
+  ctx.save();
+  ctx.translate(an.cx, an.cy); ctx.scale(drift, drift); ctx.translate(-an.cx, -an.cy);
+
+  // 1. the key, behind the speaker: letter by letter out of a vertical trail
+  if (keyWords.length && t >= keyWords[0]!.t) {
+    font(ctx, key, S, kScale);
+    const e = t - keyWords[0]!.t;
+    const kw = key.wide ?? 1;
+    let x = keyLeft;
+    const chars = [...keyText];
+    chars.forEach((ch, i) => {
+      const cw = ctx.measureText(ch).width * kw;
+      const le = e - i * r.stagger!;
+      if (le > 0) {
+        const k = fromRest(le / r.blurS);
+        const dy = (1 - k) * keyCap * (r.rise ?? 0.6);
+        ctx.save();
+        ctx.translate(x, 0); ctx.scale(kw, 1);
+        // the motion trail: faint copies below the letter while it travels, gone when it lands
+        if (k < 1) for (const [o, a] of [[0.18, 0.25], [0.36, 0.12]] as const) paintWord(ctx, key, ch, 0, keyBase + dy + o * keyCap * (1 - k), kpx, S, a * (1 - k) * clamp(le / r.fadeS));
+        paintWord(ctx, key, ch, 0, keyBase + dy, kpx, S, clamp(le / r.fadeS));
+        ctx.restore();
+      }
+      x += cw;
+    });
+  }
+  // the speaker over it
+  if (scene.person && keyWords.length && t >= keyWords[0]!.t) { ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(scene.person, 0, 0, W, H); ctx.restore(); }
+
+  // 2. the script lead, tucked on the key's top-left corner, written on left to right
+  const writeOn = (ws: Word[], x: number, base: number, alignRight: boolean) => {
+    if (!ws.length) return;
+    const px = font(ctx, script, S);
+    const text = cased(script, ws.map(w => w.text).join(' '));
+    const tw = ctx.measureText(text).width;
+    const e = t - ws[0]!.t;
+    if (e < 0) return;
+    const x0 = alignRight ? x - tw : x;
+    const k = fromRest(e / (r.writeS ?? 0.45));
+    ctx.save();
+    ctx.beginPath(); ctx.rect(x0 - px * 0.3, base - px * 1.4, (tw + px * 0.6) * k, px * 2.2); ctx.clip();
+    paintWord(ctx, script, text, x0, base, px, S, 1);
+    ctx.restore();
+  };
+  if (c.lead.length) {
+    const spx = font(ctx, script, S);
+    let lx = keyLeft + keyW * 0.02;
+    const f = an.face;
+    const lb = keyTop + spx * 0.55;
+    const lw = ctx.measureText(cased(script, c.lead.map(w => w.text).join(' '))).width;
+    // never into the face: move the script left of it when it would reach it
+    // never into the face: a script line overlapping it moves to the free side (left of it, or right of it)
+    const overF = f && lb > f.y * H - m && lb - spx < (f.y + f.h) * H + m && lx + lw > f.x * W - m && lx < (f.x + f.w) * W + m;
+    if (overF) lx = keyLeft + keyW / 2 < (f.x + f.w / 2) * W ? Math.max(m, f.x * W - m - lw) : Math.min(W - m - lw, (f.x + f.w) * W + m);
+    writeOn(c.lead, lx, lb, false);
+  }
+
+  // 3. the sans line over the chest (in front), then the closing script, right-aligned under the key
+  if (sansWords.length) {
+    const px = font(ctx, sans, S);
+    const text = cased(sans, sansWords.map(w => w.text).join(' '));
+    const tw = ctx.measureText(text).width;
+    let x = an.cx - tw / 2;
+    // over the chest, never on the face: at least a margin under the face box
+    const faceBottom = an.face ? (an.face.y + an.face.h) * H + m + px * cap : 0;
+    const base = Math.min(Math.max(keyBase - keyCap * 0.12, faceBottom), H - m);
+    sansBase = base;
+    let wx = x;
+    for (const w of sansWords) {
+      font(ctx, sans, S);
+      const s = cased(sans, w.text), ww = ctx.measureText(s).width;
+      const e = t - w.t;
+      if (e >= 0) {
+        const k = fromRest(e / 0.25);
+        ctx.save();
+        if (k < 1) ctx.filter = `blur(${(1 - k) * 0.01 * S}px)`;
+        paintWord(ctx, sans, s, wx, base + (1 - k) * 0.02 * S, px, S, clamp(e / 0.12));
+        ctx.restore();
+      }
+      wx += ww + ctx.measureText(' ').width;
+    }
+    x = wx;
+  }
+  if (closing.length) {
+    const spx = font(ctx, script, S);
+    const fb = Math.max(an.face ? (an.face.y + an.face.h) * H + m + spx * 0.9 : 0, sansBase ? sansBase + spx * 1.05 : 0);
+    writeOn(closing, keyLeft + keyW, Math.min(Math.max(keyBase + spx * 0.9, fb), H - m), true);
+  }
   ctx.restore();
 }
 

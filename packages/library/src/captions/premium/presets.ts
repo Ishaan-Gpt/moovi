@@ -5,7 +5,7 @@
  * preview and in the MP4 path (Chromium). None of these is a product default; wiring them into types comes later.
  */
 
-import { litKey, metalKey } from './theme';
+import { glossKey, litKey, metalKey } from './theme';
 
 export interface TierSpec {
   /** CSS font family, loaded from Google Fonts (`fonts` below) */
@@ -44,6 +44,10 @@ export interface TierSpec {
    * the colour, then pushed bright with `saturate`, `lift` and `contrast`, a `sheen` on top, shown at `opacity`
    */
   shiny?: { saturate: number; lift: number; contrast: number; sheen: number; opacity: number };
+  /** bevel: a lit top-left rim and a dark bottom-right rim, `size` a share of the font size */
+  bevel?: { size: number; light: string; dark: string; lightA: number; darkA: number };
+  /** 3D: the letters extruded down-right by `depth` (share of the font size) in `steps` layers, `color` then `dark` */
+  extrude?: { depth: number; color: string; dark: string; steps?: number };
   /** inner light: the letters' own shape blurred white over the fill, 0..1 */
   sheen?: number;
 }
@@ -70,9 +74,9 @@ export interface PremiumPreset {
    * short edge, sharp after `blurS` s), fading in over `fadeS`, and snaps to size on 1 - exp(-decay s) cos(freq s);
    * its glow flashes to 1 + `flash` and eases over `flashS`; the card then drifts smaller by `drift` per second.
    */
-  enter: { scaleFrom: number; decay: number; freq: number; blur: number; blurS: number; fadeS: number; flash: number; flashS: number; drift: number; rise?: number };
+  enter: { scaleFrom: number; decay: number; freq: number; blur: number; blurS: number; fadeS: number; flash: number; flashS: number; drift: number; rise?: number; stagger?: number; writeS?: number };
   /** how the card is laid out: stacked centred tiers (default) or the kinetic mixed-size stack */
-  layout?: 'tiers' | 'stack';
+  layout?: 'tiers' | 'stack' | 'poster';
   /** captionseasy equivalent: `captionseasy build --look <base> --set k=v …` */
   captionseasy: { look: number; set: Record<string, string | number | boolean> };
 }
@@ -229,4 +233,54 @@ export function premiumCaption3(): PremiumPreset {
   };
 }
 
-export const PREMIUM_PRESETS: PremiumPreset[] = [premiumCaption1('1.1'), premiumCaption1('1.2'), premiumCaption2(), premiumCaption3()];
+
+/** The swatch of reference 4 (red), for previews; the product takes the accent from the video like the others. */
+export const REF_ACCENT_4 = '#D42020';
+
+/**
+ * Premium Caption 4 (ref reel Dd1Mf7xzsbm, "3 different COUNTRIES", "Here's what NOBODY about working tells you"): a
+ * poster card. The key word giant in League Gothic narrowed to a very tall set, a glossy accent ramp on a 3D block with a
+ * drop shadow, standing behind the speaker from the forehead to below the shoulders, its letters rising one after
+ * another out of a motion trail. The words before it a small white Sacramento script on its top-left corner, written
+ * on; after it a white Poppins line over the chest, then the closing words in script under it, right-aligned.
+ */
+export function premiumCaption4(accent = REF_ACCENT_4): PremiumPreset {
+  const g = glossKey(accent);
+  // the small words must read on any background: a firm dark shadow under thin script and the sans line
+  const strong = { color: 'rgba(0,0,0,0.7)', blur: 0.022, dy: 0.006 };
+  return {
+    id: 'premium-4',
+    name: 'Premium Caption 4',
+    ref: 'reel Dd1Mf7xzsbm (0-3 s, 18-19 s)',
+    fonts: ['League+Gothic', 'Sacramento', 'Poppins:wght@600'],
+    layout: 'poster',
+    tiers: [
+      { font: 'Sacramento', weight: 400, casing: 'none', size: 0.095, tracking: 0, fill: '#FFFFFF', shadow: strong, round: 0.02 },
+      {
+        font: 'League Gothic', weight: 400, wide: 0.62, size: 0.3, tracking: 0.01, fill: g.fill, behind: true,
+        extrude: { depth: 0.05, color: g.side, dark: g.dark, steps: 12 },
+        bevel: { size: 0.018, light: '#FFD0C8', dark: '#3A0006', lightA: 0.55, darkA: 0.6 },
+        sheen: 0.12,
+        // a firm, dark drop shadow: the word stands off any wall (the ref separates it from a busy background)
+        shadow: { color: 'rgba(0,0,0,0.68)', blur: 0.04, dy: 0.02 },
+      },
+      { font: 'Poppins', weight: 600, casing: 'none', size: 0.05, tracking: -0.01, fill: '#FFFFFF', shadow: strong },
+    ],
+    y: 0.5,
+    gap: 0.01,
+    maxWords: 5,
+    tailMax: 3,
+    enter: { scaleFrom: 1, decay: 0, freq: 0, blur: 0, blurS: 0.22, fadeS: 0.06, flash: 0, flashS: 0.3, drift: -0.01, rise: 0.6, stagger: 0.035, writeS: 0.45 },
+    captionseasy: {
+      look: 34,
+      set: {
+        fontId: 'Poppins', fontWeight: 600, casing: 'none', letterSpacing: 0, lineHeight: 1,
+        'fill.color': '#FFFFFF', 'active.color': accent, 'hero.scale': 4, 'hero.fontId': 'League Gothic',
+        'shadow.enabled': true, 'shadow.color': 'rgba(0,0,0,0.5)', 'glow.enabled': false,
+        'position.y': 0.5, maxWordsPerCard: 5, 'entrance.type': 'rise',
+      },
+    },
+  };
+}
+
+export const PREMIUM_PRESETS: PremiumPreset[] = [premiumCaption1('1.1'), premiumCaption1('1.2'), premiumCaption2(), premiumCaption3(), premiumCaption4()];
