@@ -51,5 +51,3 @@ export const NO_PRESET = 'Pick one first: Edit, Launch video or Showreel.';
 export const LAUNCH_NEEDS_LINK = 'Launch video needs your site’s link. Paste it and send again.';
 /** Showreel with no words. */
 export const SHOWREEL_NEEDS_TEXT = 'Tell me the topic, or paste a link, for the showreel.';
-/** Showreel before its entry is wired. */
-export const SHOWREEL_NOT_READY = 'Showreel is being built right now. Try Edit or Launch video meanwhile.';

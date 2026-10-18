@@ -7,14 +7,17 @@ import { config } from '../config';
 import type { Handler } from '../ctx';
 import type { AgentId } from '../events';
 import { activity, stageLines } from '../live';
-import { STAGES, styleOf, type StyleId } from '../styles';
+import { STAGES, STYLES, styleOf, type StyleId } from '../styles';
+import { showreel, type ShowreelResult } from '../showreel';
 import { recordInserts } from '../styles/kit/borrow';
 import { runStyle, table } from '../styles/run';
 import { liveRefFile, type LiveRef } from '../styles/serve';
 import { reviewFilm, reviewLine, type Review } from '../review/film';
 import { chipOf } from '../review/lens';
 
-export interface ReelInput { style: StyleId; url?: string; script?: string; brand?: string; /** Auto's kit match (styles/kit/kits.ts) */ kit?: { id: string; name: string; palette: Record<string, string> } }
+export interface ReelInput { style: StyleId; url?: string; script?: string; brand?: string; /** Auto's kit match (styles/kit/kits.ts) */ kit?: { id: string; name: string; palette: Record<string, string> };
+  /** decision 19, the Showreel preset: showreel/index.ts writes the film and picks the theme, whose renderer then plays it (`style` is replaced by that renderer) */
+  showreel?: { brief?: string; url?: string; brand?: string } }
 
 const slug = (s: string) => s.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/[^a-z0-9]+/gi, '-').toLowerCase().replace(/^-|-$/g, '').slice(0, 40);
 
@@ -26,11 +29,15 @@ const slug = (s: string) => s.replace(/^https?:\/\//, '').replace(/^www\./, '').
  */
 export const styleReel: Handler = async ctx => {
   const inp = ctx.input<ReelInput>();
-  const info = styleOf(inp.style);
+  const sr = inp.showreel;
+  // the Showreel preset: its theme's renderer is known once the film plays (read back from its player)
+  const info = sr ? { ...styleOf(inp.style)!, name: 'Showreel', kind: 'Showreel', player: '' as never } : styleOf(inp.style);
+  let style: StyleId = inp.style;
+  const rendererOf = (player: string) => STYLES.find(x => x.player === player && x.id !== 'combined')?.id ?? style;
   // Launch films are 16:9; every other live style is vertical
   const fmt = inp.style === 'launch' ? 'landscape' : 'vertical';
   if (!info) throw new Error(`Unknown style "${inp.style}"`);
-  const id = `${slug(inp.url ?? inp.brand ?? 'script')}-${ctx.run.id.slice(-6)}`;
+  const id = `${slug(inp.url ?? sr?.url ?? inp.brand ?? sr?.brief?.slice(0, 40) ?? 'script')}-${ctx.run.id.slice(-6)}`;
   const [c] = await ctx.q<{ version: number | null }>(P.chat, { id: ctx.chat });
   const version = (c?.version ?? 0) + 1;
   const on = new Map<string, AgentId>();
@@ -40,11 +47,12 @@ export const styleReel: Handler = async ctx => {
   const t0 = Date.now();
   let announced = false;
 
-  const title = `${inp.url ? new URL(inp.url).hostname.replace(/^www\./, '') : inp.brand ?? 'Your script'} · ${info.name}`;
+  const link = inp.url ?? sr?.url;
+  const title = `${link ? new URL(link).hostname.replace(/^www\./, '') : inp.brand ?? sr?.brief?.slice(0, 40) ?? 'Your script'} · ${info.name}`;
   await ctx.q(P.setChat, { id: ctx.chat, title, status: null, at: Date.now() });
   await publish(ctx.chat, { type: 'title', title });
-  await ctx.say(`${info.name} (${info.kind}) it is. ${inp.url ? `Reading ${inp.url} now.` : 'Voicing your script now.'} I’ll show you each step with its time.`, 'note', undefined, 'moovi');
-  const r = await runStyle(inp.style, { url: inp.url, script: inp.script, brand: inp.brand, kit: inp.kit, id, signal: ctx.signal }, {
+  await ctx.say(`${info.name}${info.kind !== info.name ? ` (${info.kind})` : ''} it is. ${link ? `Reading ${link} now.` : sr ? 'Writing it now.' : 'Voicing your script now.'} I’ll show you each step with its time.`, 'note', undefined, 'moovi');
+  const hooks: Parameters<typeof runStyle>[2] = {
     log: s => console.log(`[reel ${ctx.run.id}] ${s}`),
     start: stage => {
       current = stage;
@@ -67,22 +75,26 @@ export const styleReel: Handler = async ctx => {
     },
     preview: async p => {
       // the video is ready to watch now: the live player through the studio's preview route
-      const ref: LiveRef = { style: inp.style, player: p.player, dir: p.dir, id: p.id, run: ctx.run.id, timings: {}, duration: p.duration };
+      if (sr) style = rendererOf(p.player);
+      const ref: LiveRef = { style, player: p.player, dir: p.dir, id: p.id, run: ctx.run.id, timings: {}, duration: p.duration };
       mkdirSync(join(ctx.projectDir, 'videos', ctx.chat), { recursive: true });
       writeFileSync(liveRefFile(ctx.projectDir, ctx.chat, version), JSON.stringify(ref, null, 1));
-      await ctx.q(P.setVideo, { id: ctx.run.video, status: 'ready', path: p.dir, poster: null, duration: p.duration, version, style: `live:${inp.style}`, format: fmt, at: Date.now() });
+      await ctx.q(P.setVideo, { id: ctx.run.video, status: 'ready', path: p.dir, poster: null, duration: p.duration, version, style: `live:${style}`, format: fmt, at: Date.now() });
       await ctx.q(P.setChat, { id: ctx.chat, title: null, status: 'ready', at: Date.now() });
       await publish(ctx.chat, { type: 'video', video: { id: ctx.run.video, status: 'ready', version, duration: p.duration, format: fmt, live: true } });
-      await ctx.say(`Here it is, playing live: ${p.duration.toFixed(1)} s of ${info.name}, ready ${p.seconds.toFixed(1)} s after you asked.${info.player === 's1-engine' ? '' : ' Lens is still pulling a contact sheet from it.'}`, 'video', { video: ctx.run.video, version, duration: p.duration, format: fmt, run: ctx.run.id, live: true, style: inp.style }, 'moovi');
+      await ctx.say(`Here it is, playing live: ${p.duration.toFixed(1)} s of ${info.name}, ready ${p.seconds.toFixed(1)} s after you asked.${info.player === 's1-engine' ? '' : ' Lens is still pulling a contact sheet from it.'}`, 'video', { video: ctx.run.video, version, duration: p.duration, format: fmt, run: ctx.run.id, live: true, style }, 'moovi');
       announced = true;
     },
-  }).finally(() => lines.end());
+  };
+  const r = await (sr ? showreel({ ...sr, id, ...(ctx.signal ? { signal: ctx.signal } : {}) }, hooks)
+    : runStyle(inp.style, { url: inp.url, script: inp.script, brand: inp.brand, kit: inp.kit, id, signal: ctx.signal }, hooks)).finally(() => lines.end());
+  if (sr) style = rendererOf(r.player);
   // Lens checks the film it just made (code checks on one still per beat and on the beat map) while it already plays:
   // a hard deadline, and a review that breaks only says so; it never fails the film. MOOVI_REVIEW=0 turns it off.
-  const review = (process.env.MOOVI_REVIEW ?? '1').trim() === '0' ? null : await lens(ctx, inp.style, r);
+  const review = (process.env.MOOVI_REVIEW ?? '1').trim() === '0' ? null : await lens(ctx, style, r);
   r.close(); // the studio serves the film itself; the local preview server was only for the contact sheet and the review
   // the inserts the style borrowed from the library graph, in this project's graph (Scene)-[:USES_ARTIFACT {slot: 'library'}]
-  const borrowed = await recordInserts((q, p) => ctx.q(q, p), ctx.run.id, inp.style, r.dir).catch(graphOr(e => { console.warn(`[reel] library inserts: ${String(e).slice(0, 120)}`); return 0; }, 'reel: library inserts'));
+  const borrowed = await recordInserts((q, p) => ctx.q(q, p), ctx.run.id, style, r.dir).catch(graphOr(e => { console.warn(`[reel] library inserts: ${String(e).slice(0, 120)}`); return 0; }, 'reel: library inserts'));
   if (borrowed) console.log(`[reel ${ctx.run.id}] ${borrowed} library insert(s) recorded`);
   for (const d of new Set(on.values())) void stat(d, 'done', 'done');
 
@@ -93,7 +105,7 @@ export const styleReel: Handler = async ctx => {
     const src = stills.length ? join(sd, stills[Math.floor(stills.length / 2)]!) : existsSync(join(r.dir, 'site.png')) ? join(r.dir, 'site.png') : null;
     if (src) execFileSync(config.ffmpeg, ['-v', 'error', '-y', '-i', src, '-vf', 'scale=432:-2', join(vdir, `v${version}.jpg`)]);
   } catch (e) { console.warn(`[reel] poster: ${String(e).slice(0, 120)}`); }
-  const ref: LiveRef = { style: inp.style, player: r.player, dir: r.dir, id: r.id, run: ctx.run.id, timings: r.timings, duration: r.duration };
+  const ref: LiveRef = { style, player: r.player, dir: r.dir, id: r.id, run: ctx.run.id, timings: r.timings, duration: r.duration };
   writeFileSync(liveRefFile(ctx.projectDir, ctx.chat, version), JSON.stringify(ref, null, 1));
   writeFileSync(join(r.dir, 'job-report.json'), JSON.stringify({ via: 'engine style-reel job', project: ctx.pid, chat: ctx.chat, run: ctx.run.id, task: ctx.task.id, seconds: r.timings, wall: +((Date.now() - t0) / 1000).toFixed(1) }, null, 1));
   if (existsSync(join(vdir, `v${version}.jpg`))) await ctx.q(P.setVideo, { id: ctx.run.video, status: null, path: null, poster: `${ctx.chat}/v${version}.jpg`, duration: null, version: null, style: null, format: null, at: Date.now() });
@@ -102,7 +114,7 @@ export const styleReel: Handler = async ctx => {
   if (!announced) throw new Error('the preview never came up');
   const rows = Object.entries(r.timings).map(([k, v]) => `${k} ${v.toFixed(1)} s`).join(' · ');
   await ctx.say(`Timings, stage by stage: ${rows}.`, 'note', { timings: r.timings, table: table({ studio: r.timings }) }, 'moovi');
-  return { output: { style: inp.style, id: r.id, dir: r.dir, player: r.player, version, timings: r.timings, duration: r.duration, sheet: r.sheet ?? null, review: review && { issues: review.issues.length, blocking: review.blocking, seconds: review.seconds } }, note: `${info.name} ready in ${(r.timings.to_preview ?? r.timings.total ?? 0).toFixed(1)} s` };
+  return { output: { style, ...(sr ? { theme: (r as ShowreelResult).theme, picks: (r as ShowreelResult).picks } : {}), id: r.id, dir: r.dir, player: r.player, version, timings: r.timings, duration: r.duration, sheet: r.sheet ?? null, review: review && { issues: review.issues.length, blocking: review.blocking, seconds: review.seconds } }, note: `${info.name} ready in ${(r.timings.to_preview ?? r.timings.total ?? 0).toFixed(1)} s` };
 };
 
 const REVIEW_MS = 60_000;
