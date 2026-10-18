@@ -42,6 +42,11 @@ export function effectsRuntime(D: FxRuntimeData) {
   const frameUrl = (i: number) => D.frames + '/f' + pad5(Math.max(1, Math.min(D.count, i))) + '.jpg';
   const maskUrl = (i: number) => D.masks + '/m' + pad5(Math.max(1, Math.min(D.count, i))) + '.png';
   const F = D.face, B = D.box;
+  // ./face-safe.ts, put in the page first by render.ts (fxPagePrelude): how much a graphic is in the face's way, 0..1
+  const G = globalThis as any;
+  if (typeof G.fxFaceShield !== 'function' || typeof G.fxOrbitRect !== 'function') throw new Error('effects page: the face-safe helpers are missing (evaluate fxPagePrelude() first)');
+  const faceIn = (r: { x: number; y: number; w: number; h: number }) => G.fxFaceShield(F, D.faceBox, r) as number;
+  const fxOrbitRect = G.fxOrbitRect as (f: typeof F, x: number, y: number, z: number) => { x: number; y: number; w: number; h: number };
 
   const css = `${D.fonts}
   *{box-sizing:border-box} html,body{margin:0;width:${W}px;height:${H}px;overflow:hidden;background:${INK};font-family:I,sans-serif}
@@ -99,13 +104,17 @@ export function effectsRuntime(D: FxRuntimeData) {
         const B2 = Array.from({ length: n }, (_, i) => mk(back, i)), F2 = Array.from({ length: n }, (_, i) => mk(front, i));
         return { e, hide, needsCut: true, draw: (t) => {
           const lt = t - e.t0, k = life(t, e, 0.55, 0.4), spin = (p.speed ?? 1.9) * lt + (p.phase ?? 0);
-          const rx = 440 * k, rz = 330 * k, cy = F.cy + 30;
+          const rx = 440 * k, rz = 330 * k, cy = F.cy + 30, op = clamp(k * 1.4);
           for (let i = 0; i < n; i++) {
             const a = spin + i * 2 * Math.PI / n, x = F.cx + Math.sin(a) * rx, z = Math.cos(a) * rz, y = cy - Math.cos(a) * 70 * k + Math.sin(a) * 40;
             const tf = `translate3d(${(x - 115).toFixed(1)}px,${(y - 200).toFixed(1)}px,${z.toFixed(1)}px) rotateY(${(Math.sin(a) * 28).toFixed(1)}deg)`;
-            const inFront = Math.cos(a) >= 0;
-            for (const [node, on] of [[F2[i]!, inFront], [B2[i]!, !inFront]] as [HTMLElement, boolean][]) {
-              show(node, on && k > 0.01); node.style.transform = tf; node.style.opacity = String(clamp(k * 1.4));
+            // the face stays clear (./face-safe.ts): a card coming round in front fades into the copy behind the
+            // speaker as it nears the face (the cutout hides it there, so it reads as passing behind the head); with
+            // no person mask nothing is in front of the back copy, so it fades out over the face instead
+            const w = faceIn(fxOrbitRect(F, x, y, z));
+            const inFront = Math.cos(a) >= 0, fo = inFront ? op * (1 - w) : 0, bo = (!inFront || w > 0) ? op * (D.masks ? 1 : 1 - w) : 0;
+            for (const [node, o] of [[F2[i]!, fo], [B2[i]!, bo]] as [HTMLElement, number][]) {
+              show(node, o > 0.01 && k > 0.01); node.style.transform = tf; node.style.opacity = String(o);
             }
           }
         } };

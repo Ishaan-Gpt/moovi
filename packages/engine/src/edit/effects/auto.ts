@@ -110,6 +110,12 @@ export interface AutoFx { events: FxEvent[]; picks: { fx: FxId; needs: string[];
 /** effects that wrap the speaker's head (the head swirl: cards pass behind the head and in front of it) need a face on screen */
 export const HEAD_FX: ReadonlySet<FxId> = new Set<FxId>(['orbit']);
 
+/** seconds of plain talking head between two effects that earn one more device */
+export const FILL_GAP = 3;
+/** the devices a flat stretch may take: each keeps the speaker's face clear (a punch in on the face, the room dimmed
+ *  around it, a timeline or a comment box low in the frame) */
+export const FILL_SAFE: ReadonlySet<FxId> = new Set<FxId>(['digital-zoom', 'spotlight', 'timeline-ui', 'comment-cta']);
+
 /**
  * Pick the effects a clip's words call for. Every line's needs go to the source; the best effect not used yet (and
  * not the one before it) becomes that line's cue. At most `max` effects (default one per 5 s, 3 to 5: a reel with more reads as noise), and lines closer than `spacing` seconds to
@@ -174,6 +180,42 @@ export async function autoFx(words: FxWord[], o: { src?: FxSource; max?: number;
   const up = cues.length >= 2 ? placeFx(words, cues, o.total).events.filter(e => FX[e.fx].kind !== 'transition') : [];
   const gap = gaps.find(g => !up.some(e => g.t > e.t0 - 0.05 && g.t < e.t1 + 0.05));
   if (gap && cues.length >= 2) { const wps = words.length / Math.max(1, words.at(-1)!.end - words[0]!.t); cues.push({ fx: wps > 2.6 ? 'whip-spin' : 'card-flip', at: gap.t }); }
+  // a flat stretch gets one more device: r5 (2026-10-18) held a plain talking head from 7.0 to 10.2 s with every pick
+  // spent. Where FILL_GAP s or more pass with nothing placed (a transition breaks a stretch too), a word near the middle
+  // of the longest such gap takes the library's best unused device that keeps the face clear (FILL_SAFE), else a
+  // Digital Zoom, held inside the gap; on top of `max` but never past 5 up, once per clip
+  if (cues.length >= 2) {
+    // every placed move breaks a stretch, the transition too (r6 first plan: the filler went to a gap the whip already broke)
+    const all = placeFx(words, cues, o.total).events.sort((a, b) => a.t0 - b.t0), ups = all.filter(e => FX[e.fx].kind !== 'transition');
+    const end = o.total ?? words.at(-1)!.end;
+    const holes: { a: number; b: number }[] = [];
+    let reach = all[0]?.t1 ?? end;
+    for (const e of all.slice(1)) { if (e.t0 - reach >= FILL_GAP) holes.push({ a: reach, b: e.t0 }); reach = Math.max(reach, e.t1); }
+    if (end - reach >= FILL_GAP) holes.push({ a: reach, b: end });
+    holes.sort((x, y) => (y.b - y.a) - (x.b - x.a));
+    // never past 5 effects up in one reel (more reads as noise; the transition is not counted)
+    if (ups.length >= 5) holes.length = 0;
+    fill: for (const h of holes) {
+      // the spoken words inside the gap (clear of its edges), nearest its middle first: a long line can span the gap
+      // and own an effect already, so the cue goes on a word, and that word's line gives the needs
+      const mid = (h.a + h.b) / 2;
+      const inside = words.filter(w => w.t >= h.a + 0.35 && w.t <= h.b - 0.35 - 0.6).sort((x, y) => Math.abs(x.t - mid) - Math.abs(y.t - mid));
+      for (const w of inside.slice(0, 6)) {
+        const i = lines.findIndex(l => w.t >= l.t0 && w.t <= l.t1), l = lines[i];
+        if (!l) continue;
+        const needs = detectNeeds(l.text, { index: i, count: lines.length });
+        const served = needs.length ? (await src.serving(needs)).map(r => r.id) : [];
+        const fx = [...served, 'digital-zoom' as FxId].find(id => FILL_SAFE.has(id) && !used.has(id) && (id !== 'comment-cta' || CTA_WORDS.test(l.text)));
+        if (!fx) continue;
+        const c = cueFor(fx, l), at = w.t, room = h.b - 0.3 - at, s = FX[fx];
+        if (room < s.min) continue;
+        cues.push({ fx, at, hold: +Math.min((s.min + s.max) / 3, room).toFixed(3), ...(c.params ? { params: c.params } : {}) });
+        picks.push({ fx, needs: needs.length ? needs : ['fill'], line: l.text, at, ...(o.faces ? { face: faceIn(l) } : {}) });
+        used.add(fx);
+        break fill;
+      }
+    }
+  }
   const placed = placeFx(words, cues, o.total);
   return { events: fitFx(placed.events), picks, missed: placed.missed, source: src.source };
 }
