@@ -30,6 +30,8 @@ import { checkAndRepair } from '../review/runner';
 import { scSfxEvents, studioCutEdl, SC_ID } from './templates/studio-cut';
 import { cleanVoice, quietPauses, type CleanVoice } from './voice';
 import { forksOf, linkInto } from '../change/fork';
+import { directBeats, type BeatPick } from './beatspec';
+import { lowerSpec, writeStills } from './beatlower';
 
 /**
  * The upload edit's plan stage, one function: probe, look (faces) beside hear (D1.2), the EDL (D1.3), and the voice
@@ -75,8 +77,13 @@ export interface PlanInput {
   style?: string;
   /** the user's words with the upload (the style auto-pick reads them) */
   brief?: string;
-  /** the reel effects library picked for this clip's words (edit/effects/auto.ts, effects.json; default true) */
+  /** the reel effects library picked for this clip's words (edit/effects/auto.ts, effects.json; default true; off when the director ran: the registry holds the effects) */
   effects?: boolean;
+  /** the director (edit/beatspec.ts): one registry pick per sentence written as the beat spec on edl.spec (default true;
+   *  MOOVI_EDIT_BEATS=0 turns it off). When it runs it replaces autoMoves, the D2.5 inserts and the reel effects film. */
+  beats?: boolean;
+  /** chat words that name a device for a sentence ("add a crash zoom on 'crore'"): they override the director's pick */
+  asks?: string;
   /** the creator's name or handle for the style's end card */
   handle?: string;
   /** CHECK on the first plan (review/runner.ts, code only; default true) */
@@ -113,6 +120,8 @@ export interface Planned {
   style: { id: string | null; why: string };
   /** the reel effects picked for the clip's words, on the source clock (effects.json), null when off or too few words */
   effects: AutoFx | null;
+  /** the director's picks (beats.json; the spec is on edl.spec), null when it did not run */
+  beats: { picks: BeatPick[]; missed: { i: number; why: string }[]; source: string } | null;
   /** why faces are missing, when they are (the look step's own words) */
   lookWhy?: string;
   /** the voice clean-up, running; resolves null when there is no audio or it failed */
@@ -285,8 +294,27 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
       else edl = d as never;
     } catch (e) { stopIfDown(e, 'edit: studio cut'); console.warn(`[edit] studio cut: ${String((e as Error).message ?? e).slice(0, 160)}`); }
   }
+  // the director (edit wiring step 2-3): per sentence its function, verb and hero word → one pick from the edit registry
+  // (the graph's editCast) → the beat spec on edl.spec, its cuts, X1 moves and sounds lowered onto the EDL. It casts
+  // the X1 moves, the inserts' number and list cards and the reel effects itself, so those three steps stand down.
+  let beats: Planned['beats'] = null;
+  if (!rough && !sc && !isD22(style) && o.beats !== false && process.env.MOOVI_EDIT_BEATS !== '0' && words.length >= 4) {
+    const before = JSON.stringify(edl);
+    try {
+      const kept = words.filter(w => srcToEdit(edl.shots, w.t) !== null);
+      const d = await directBeats(kept.length >= 4 ? kept : words, { askText: o.asks ?? '' });
+      const low = await lowerSpec(edl as never, d.spec);
+      const bad = validateEdl(edl as never).problems.filter(p => !p.startsWith('version'));
+      if (bad.length || EDIT.timeline(edl).problems.length) { edl = JSON.parse(before); console.warn(`[edit] director undone: ${bad.slice(0, 2).join('; ')}`); }
+      else {
+        await writeStills(join(dir, file), dir, low.stills);
+        beats = { picks: d.picks, missed: d.missed, source: d.source };
+        writeFileSync(join(dir, 'beats.json'), JSON.stringify({ source: d.source, reads: d.reads.map(r => ({ i: r.i, fn: r.fn, verbs: r.verbs, hero: r.hero, text: r.text })), picks: d.picks.map(p => ({ i: p.i, id: p.id, device: p.meta.device, why: p.why })), missed: d.missed, lowered: { cuts: low.cuts, sfx: low.sfx, moves: low.moves } }, null, 1));
+      }
+    } catch (e) { stopIfDown(e, 'edit: director'); edl = JSON.parse(before); beats = null; console.warn(`[edit] director: ${String((e as Error).message ?? e).slice(0, 160)}`); }
+  }
   // D2.7: the X1 moves a style asked for, on the beats they suit (first, so the inserts fit around them)
-  const want = rough || sc ? [] : ov?.moves ?? o.moves ?? autoMoves(edl as never);
+  const want = rough || sc ? [] : ov?.moves ?? o.moves ?? (beats ? [] : autoMoves(edl as never));
   let moves: string[] = [];
   if (want.length) {
     const before = JSON.stringify(edl);
@@ -298,7 +326,7 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
   }
   // D2.5: Style 1 UI cards and Editorial posters on the beats that call for one, cast from the same graph
   let ins: InsertTrace | null = null;
-  if (!rough && !sc && o.inserts !== false && o.library !== false) {
+  if (!rough && !sc && !beats && o.inserts !== false && o.library !== false) {
     const before = JSON.stringify(edl);
     try {
       ins = await castInserts(edl as never, { src: await openInserts() });
@@ -312,7 +340,7 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
   // the reel effects library (edit/effects): the effects this clip's words call for, cast from the same graph, on the
   // source clock (the effects film renders over the clip itself: router/edit.ts)
   let effects: AutoFx | null = null;
-  if (!rough && !sc && o.effects !== false && words.length >= 6) {
+  if (!rough && !sc && !beats && o.effects !== false && words.length >= 6) {
     try {
       // picked from the words the cut keeps (a slate or a retake the edit removed never gets an effect), on the source clock
       const kept = words.filter(w => srcToEdit(edl.shots, w.t) !== null);
@@ -365,5 +393,5 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
       return { file: m.file, lufs: m.lufs };
     }).catch(e => { console.warn(`[edit] studio cut mix: ${String((e as Error).message ?? e).slice(0, 160)}`); return null; })
     : Promise.resolve(null);
-  return { mix, edl, words, ...(language ? { language } : {}), heard, faces: look.faces.length, lap, duration: t.duration, source: { ...source, hasAudio: pr.hasAudio }, rough, cast, inserts: ins, moves, style: { id: isD22(style) ? style : null, why: styleWhy }, effects, ...(look.why ? { lookWhy: look.why } : {}), voice, restore };
+  return { mix, edl, words, ...(language ? { language } : {}), heard, faces: look.faces.length, lap, duration: t.duration, source: { ...source, hasAudio: pr.hasAudio }, rough, cast, inserts: ins, moves, style: { id: isD22(style) ? style : null, why: styleWhy }, effects, beats, ...(look.why ? { lookWhy: look.why } : {}), voice, restore };
 }

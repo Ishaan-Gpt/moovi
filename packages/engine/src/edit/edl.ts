@@ -167,6 +167,7 @@ export const EdlSchema = z.object({
   end: End.optional(),
   faces: z.array(Face).optional(),
   beats: z.array(Beat).optional(),
+  spec: z.record(z.string(), z.unknown()).optional().describe('the director’s beat spec (edit/beatspec.ts, docs/agents/mastery/edit.md): the one player draws its devices on their sentences (edit/beats-draw.ts)'),
   laws: z.object({ pause_max: sec, pause_keep: sec, hold_max: sec, snap_ms: z.number().min(0) }).optional().describe('the shared-law numbers this EDL was built with'),
   metrics: Metrics.optional(),
 });

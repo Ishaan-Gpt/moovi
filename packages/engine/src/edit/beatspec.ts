@@ -1,7 +1,7 @@
 import { cameraTrack, frame2d, parseCamera, resolveCall } from '@moovi/library/camera';
 import { CRAFT, graphOptional, library as L, needGraph, run } from '@moovi/graph';
 import { listItems } from '../styles/kit/needs';
-import { sentences } from './build';
+import { fxLines } from './effects/auto';
 import type { Word } from './cut';
 import { numberOf } from './inserts';
 import { assetIdOf, editRegistry, findEntry, type EditEntry, type EditFn, type EditLayer, type FaceRule, type SfxKey } from './registry';
@@ -45,6 +45,15 @@ const FN_RULES: [EditFn, RegExp][] = [
 
 /** words too common to be a verb the frame acts out (they stay in the registry for an explicit director pick) */
 const GENERIC = new Set('is so now with has this here back today all one two both into after before up down over across but not no this is'.split(' '));
+const CLAUSE = new Set(['and', 'which', 'because', 'so', 'but', 'then', 'while', 'where', 'into', 'aur', 'toh', 'kyunki']);
+/** a line still longer than 4 s (fxLines keeps a line with a comma whole, for lists) splits at clause words once a part runs 2.6 s */
+function clauses(ws: Word[]): Word[][] {
+  if (ws.length < 8 || ws.at(-1)!.end - ws[0]!.t <= 4 || listItems(ws.map(w => w.word).join(' ')).length >= 3) return [ws];
+  const out: Word[][] = []; let cur: Word[] = [];
+  ws.forEach((w, i) => { const nx = ws[i + 1]; cur.push(w); if (nx && cur.length > 3 && w.end - cur[0]!.t >= 2.6 && ws.length - i > 3 && CLAUSE.has(clean(nx.word))) { out.push(cur); cur = []; } });
+  if (cur.length) out.push(cur);
+  return out;
+}
 /** a spoken word → the registry verb it says (a light stem: -ing, -ed, -s, -es) */
 function verbOf(w: string, verbs: Set<string>): string | null {
   const k = clean(w); if (!k) return null;
@@ -52,10 +61,15 @@ function verbOf(w: string, verbs: Set<string>): string | null {
   return null;
 }
 
-/** Words → numbered sentences with their function, verbs and hero word (the rules; a model may replace any field). */
+/**
+ * Words → numbered lines with their function, verbs and hero word (the rules; a model may replace any field). A line is
+ * a sentence, closed early at a pause over 0.6 s or, once it runs 2.6 s, at a clause word (the effects picker's fxLines),
+ * so a 10 s run-on sentence gets a device per clause, not one for all of it.
+ */
 export function readSentences(words: Word[], r: EditEntry[] = editRegistry()): SentenceRead[] {
-  const ids = sentences(words), by = new Map<number, Word[]>();
-  words.forEach((w, k) => { const i = ids[k]!; by.set(i, [...(by.get(i) ?? []), w]); });
+  const by = new Map<number, Word[]>(), parts: Word[][] = [];
+  let k = 0; for (const l of fxLines(words)) { parts.push(...clauses(words.slice(k, k + l.words.length))); k += l.words.length; }
+  parts.forEach((p, i) => by.set(i, p));
   const vocab = new Set(r.flatMap(e => e.verbs).filter(v => !GENERIC.has(v))), out: SentenceRead[] = [];
   [...by.entries()].forEach(([i, ws], n) => {
     const text = ws.map(w => w.word).join(' ');
@@ -117,7 +131,10 @@ export function parseAsks(text: string, r: EditEntry[] = editRegistry()): Ask[] 
   for (const raw of text.split(/[.;\n]|\band then\b|\balso\b/i)) {
     const s = raw.trim(); if (!s) continue;
     const m = s.match(/^(?:please\s+)?(?:add|put|use|give|do|i want|make)?\s*(?:an?\s+|the\s+|some\s+)?(.+?)\s+(?:on|at|for|over|when (?:i|he|she|they) says?)\s+(.+)$/i);
-    const what = (m?.[1] ?? s).replace(/\b(effect|move|please)\b/gi, '').trim(), where = m?.[2]?.trim() ?? '';
+    // a brief's plain words are not asks: a clause asks only with a verb (add / put / use ...) or a quoted word to land on
+    // or a place in the edit ('crore', the hook, the end, sentence 3)
+    if (!/^(please\s+)?(add|put|use|give|i want)\b/i.test(s) && !/["'“‘][^"'”’]+["'”’]|^(the\s+)?(hook|start|beginning|opening|end|ending|cta|intro|outro)$|^sentence\s+\d+$/i.test(m?.[2]?.trim() ?? '')) continue;
+    const what = (m?.[1] ?? s).replace(/^(please\s+)?(add|put|use|give|i want)\s+(an?\s+|the\s+|some\s+)?/i, '').replace(/\b(effect|move|please)\b/gi, '').trim(), where = m?.[2]?.trim() ?? '';
     const e = findEntry(what, r) ?? (() => { const c = parseCamera(what, { scope: 'edit' }); return c.calls[0] ? findEntry(`camera:${c.calls[0].move}`, r) : null; })();
     if (!e) continue;
     const ask: Ask = { entry: e.id };
@@ -269,7 +286,7 @@ function layersOf(p: BeatPick, s: SentenceRead, o: SpecOpts): { layers: SpecLaye
       const ws = s.words.filter(w => clean(w.word).length > 3 && !STOP.has(clean(w.word))).slice(0, 3);
       return { layers: [{ t: 'burn', items: ws.map((w, k) => ({ kind: 'glass', text: w.word.replace(/[^\p{L}\p{N}%₹$'-]/gu, ''), at: anchor(w, s), x: 120 + k * 260, y: 1380 + (k % 2) * 60, r: [-6, 4, 8][k] })) }], sfx: ws.map(w => ({ at: anchor(w, s), k: 'pop' as SfxKey })) };
     }
-    case 'filters': return { layers: [{ t: 'filters', at: hA, y: 1300 }], sfx: snd(hA) };
+    case 'filters': return { layers: [{ t: 'filters', at: hA, y: 1560 }], sfx: snd(hA) };
     case 'compare': return { layers: [{ t: 'cam', form: 'split', z: 1.04 }, { t: 'compare', still: r3(o.stills?.[0] ?? s.t0 + 0.2), labels: ['before', 'after'], look: 'saturate(1.25) contrast(1.08)', at: first, at2: hA, y: 120 }], sfx: [...snd(first), ...snd(hA)] };
     case 'sides': return { layers: [{ t: 'sides', stills: (o.stills ?? [s.t0, s.t1]).slice(0, 2).map(r3), at: hA, y: 300 }], sfx: snd(hA) };
     case 'mg': {

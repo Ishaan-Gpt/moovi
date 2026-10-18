@@ -13,6 +13,7 @@ import { FX } from '../edit/effects/catalog';
 import type { FxEvent } from '../edit/effects/plan';
 import { fxLines } from '../edit/effects/auto';
 import { fxMusic } from '../edit/effects/music';
+import { filmMix, renderFilm, useMix } from '../edit/film';
 import { activity, stageLines } from '../live';
 import { startRun } from '../runs';
 import { liveRefFile, type LiveRef } from '../styles/serve';
@@ -124,7 +125,7 @@ export const editReel: Handler = async ctx => {
   const dir = join(ctx.dir, 'edit');
   // probe, look, hear, plan, and the voice clean-up started beside the preview: one function, the bench runs it too
   const plan = await planEdit({ path: u.path, dir, name: u.name, signal: ctx.signal, onStage: step, onDone: done, onNote: text => ctx.activity('note', text),
-    style: 'auto', brief: inp.brief ?? '', requireWords: !NO_WORDS.test(inp.brief ?? ''), ...(inp.caption ? { caption: inp.caption } : {}), ...(inp.names?.length ? { names: inp.names } : {}) }).finally(() => lines.end());
+    style: 'auto', brief: inp.brief ?? '', requireWords: !NO_WORDS.test(inp.brief ?? ''), ...(inp.caption ? { caption: inp.caption } : {}), ...(inp.names?.length ? { names: inp.names } : {}), asks: inp.brief ?? '' }).finally(() => lines.end());
   void plan.restore.then(r => r && ctx.activity('note', r.restored
     ? `cleaned and upscaled your clip from ${r.from.w}x${r.from.h} to ${r.to.w}x${r.to.h}${r.graded ? ', graded' : ''} (${r.seconds} s)`
     : `graded your clip (${r.seconds} s)`));
@@ -153,7 +154,28 @@ export const editReel: Handler = async ctx => {
   // plan's cut with the effects and the captions drawn over it (edit/effects/onedit.ts) becomes the delivered version,
   // so the studio and the Claude Code bridge both get one finished video with the effects in it
   let fxVersion: number | null = null;
-  const fx = fxFilmFor(plan);
+  // one film (edit wiring step 3): when the director wrote a beat spec, the delivered MP4 is the preview page itself,
+  // captured frame by frame (edit/film.ts), over the soundtrack the preview then plays too (mix.m4a: voice, bed, sounds)
+  if (plan.beats && plan.beats.picks.length && (process.env.MOOVI_EDIT_FILM ?? 'on') !== 'off') {
+    const names = [...new Set(plan.beats.picks.map(p => p.meta.device.replace(/^cam.move:/, '').replace(/^cam./, 'camera ')))];
+    await ctx.say(`Your edit has ${plan.beats.picks.length} moments from the library (${names.join(', ')}), in the preview above. The finished video with the same moments follows in a few minutes.`, 'note', undefined, 'moovi');
+    try {
+      const lines = fxLines(words.map(w => ({ word: w.word, t: w.t, end: w.end }))).map(l => l.text);
+      const bed = await fxMusic(lines, plan.duration, ctx.signal ? { signal: ctx.signal } : {});
+      await plan.restore.catch(() => null); const cleaned = await plan.voice.catch(() => null);
+      if (cleaned?.file && existsSync(cleaned.file)) { const m = await filmMix(dir, { voice: cleaned.file, bed: bed ? { file: bed.file } : null }); useMix(dir, m.file); }
+      const v2 = version + 1, file = join(vdir, `v${v2}.mp4`), r = await renderFilm({ dir, out: file });
+      await ctx.q(P.setVideo, { id: ctx.run.video, status: 'ready', path: file, poster, duration: +t.duration.toFixed(2), version: v2, style: 'edit+film', format: 'vertical', at: Date.now() });
+      await publish(ctx.chat, { type: 'video', video: { id: ctx.run.video, status: 'ready', version: v2, duration: +t.duration.toFixed(2), format: 'vertical' } });
+      await ctx.say(`Here’s your finished edit, the same film as the preview${bed ? `, music: ${bed.pick.track.title}` : ''} (rendered in ${r.seconds.toFixed(0)} s).`, 'video', { video: ctx.run.video, version: v2, duration: +t.duration.toFixed(2), format: 'vertical', run: ctx.run.id, style: 'edit+film' }, 'moovi');
+      fxVersion = v2;
+    } catch (e) {
+      const why = fxReason(e);
+      console.warn(`[edit] film: ${why}`);
+      await ctx.say(`The finished video did not render this time (${why}); the live edit above stands.`, 'note', undefined, 'moovi');
+    }
+  }
+  const fx = plan.beats ? { go: false, why: 'the director cast the effects into the beat spec (one film)' } : fxFilmFor(plan);
   if (fx.go && plan.effects) {
     const names = [...new Set(plan.effects.events.map(e => FX[e.fx].label))];
     await ctx.say(`Adding ${names.length} effects from the library to your edit (${names.join(', ')}). The finished video follows in a few minutes; the live preview above is yours meanwhile.`, 'note', undefined, 'moovi');
