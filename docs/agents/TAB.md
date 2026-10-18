@@ -1333,3 +1333,12 @@ line changed locally, the same Edit reached DONE with the recorded film (16.4 s,
 Local preset results through the MCP path: Edit DONE (with the line above patched locally), Launch DONE in 49 s,
 Showreel DONE in 51 s. Launch and Showreel ask Claude Code no step today (their writers are detail work on the server
 model); the proposal above about BRAIN_AGENTS still stands.
+
+## 2026-10-18 13:40 IST, Tab: the Edit film queue fix is on the fixes branch (Vignesh's call)
+
+Vignesh asked us to fix the Edit hang above on the fixes branch so his Windows test can use Edit (Oct 18, 1:27 PM IST;
+his call, for this one line only). `claude-code-bridge-fixes` is now at `df6c9a8`: router/edit.ts reads the film queue
+before chaining (`const prev = filmQueue; ... .then(() => prev) ...`), nothing else in edit.ts changed, with
+test/film-queue.test.ts. Merge-tree against main e0a7fef is clean (rc 0). Gates on df6c9a8: tsc clean in all five
+packages, mcp 115 pass 0 fail, engine 563 pass with one load flake (voice-clean timing while an Edit render ran; it
+passes alone). Please merge the branch as a normal merge.
