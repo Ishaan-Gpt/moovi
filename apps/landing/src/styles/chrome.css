@@ -33,11 +33,12 @@ html[data-intro="done"] .intro { display: none; }
 .header.is-scrolled .header__logo, .header.is-menu .header__logo { opacity: 1; transform: none; }
 /* the logo: "moovı", the halo as the dot on the i */
 .logo { display: inline-flex; align-items: center; }
-.logo__word { display: inline-flex; align-items: flex-end; font-weight: 700; font-size: 27px; letter-spacing: -.05em; line-height: .9; padding-top: .62em; }
-.logo__i { position: relative; display: inline-block; }
-.logo__halo { position: absolute; left: 50%; bottom: .56em; width: .92em; height: .92em; max-width: none; translate: -50% 0; filter: saturate(1.7) brightness(.9) drop-shadow(0 1px 1.5px rgb(43 103 198 / .55)); }
+.logo__word { display: inline-flex; align-items: flex-end; font-weight: 700; font-size: 27px; letter-spacing: -.05em; line-height: .9; padding-top: .46em; }
+.logo__i { position: relative; display: inline-flex; align-items: flex-end; padding: 0 .07em 0 .05em; }
+.logo__stem { display: block; width: .15em; height: .5em; margin-bottom: .02em; border-radius: .075em; background: var(--ice-text); }
+.logo__halo { position: absolute; left: 50%; bottom: .56em; width: .58em; height: .58em; max-width: none; translate: -58% 0; filter: saturate(1.7) brightness(.88) drop-shadow(0 1px 1.5px rgb(43 103 198 / .5)); }
 .header__logo:hover .logo__halo { animation: halo-tick 8s infinite; }
-.header__logo { padding: 2px 22px 6px 14px; }
+.header__logo { padding: 4px 18px 7px 14px; }
 /* over the hero: no pill behind the logo or the nav (the active blob is the only shape) */
 .header:not(.is-scrolled) :is(.header__logo, .header__nav).goo-glass { background: none; border-color: transparent; box-shadow: none; }
 .header :is(.header__logo, .header__nav).goo-glass { transition: transform .5s var(--ease-jelly), box-shadow .5s var(--ease), border-color .5s var(--ease); }

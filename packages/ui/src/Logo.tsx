@@ -27,13 +27,13 @@ export function Wordmark({ className, style }: { className?: string; style?: CSS
   );
 }
 
-/** The logo: the wordmark "moovı" with the halo itself as the dot on the i (it steps once a second on hover, see the app's CSS). */
+/** The logo: the wordmark "moovi" (the i a drawn stem, so no font dot competes) with the halo itself as its dot (it steps once a second on hover, see the app's CSS). */
 export function Logo({ className, base = '' }: { className?: string; base?: string }) {
   return (
     <span className={`logo ${className ?? ''}`} aria-label="Moovi">
       <span className="logo__word" aria-hidden="true">
         <span>moov</span>
-        <span className="logo__i"><span>ı</span><HaloMark className="logo__halo" size={48} base={base} /></span>
+        <span className="logo__i"><i className="logo__stem" /><HaloMark className="logo__halo" size={48} base={base} /></span>
       </span>
     </span>
   );
