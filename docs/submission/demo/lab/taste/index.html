@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Taste Graph</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700;800;900&family=Instrument+Serif:ital@0;1&display=block">
+<style>
+  html, body { margin: 0; background: #0b0f14; }
+  .stage { position: relative; width: 1920px; height: 1080px; }
+  #world { position: absolute; inset: 0; width: 1920px; height: 1080px; opacity: 0; }
+  #c { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+  video { display: none; }
+</style>
+</head>
+<body>
+<div class="stage"><canvas id="world"></canvas><canvas id="office" style="position:absolute;inset:0;width:1920px;height:1080px;opacity:0"></canvas><canvas id="c" width="1920" height="1080"></canvas></div>
+<video id="ed" src="/data/demo/out/t1-engineer-goat.mp4" muted playsinline preload="auto"></video>
+<script type="module" src="taste.js"></script>
+</body>
+</html>
