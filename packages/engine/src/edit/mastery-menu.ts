@@ -18,7 +18,8 @@ import { PLAYER_DIR } from './mastery';
  */
 export const MENU_AGENT = 'direct:edit-menu';
 
-export interface MenuDevice { id: string; use: string; layers: Record<string, unknown>[]; sfx?: Record<string, unknown>[]; desk_item?: Record<string, unknown>; places?: Record<string, number | number[]>[]; desk?: { w: number; h: number }; after?: string }
+export interface MenuDevice { id: string; use: string; layers: Record<string, unknown>[]; sfx?: Record<string, unknown>[]; desk_item?: Record<string, unknown>; places?: Record<string, number | number[]>[]; desk?: { w: number; h: number }; after?: string; doodles?: Record<string, { use: string; paths: string[] } | string> }
+const doodleNames = (d: MenuDevice) => Object.keys(d.doodles ?? {}).filter(k => k !== '_');
 export interface Menu { rules: string[]; slots: Record<string, string>; captions: { allowed: string[]; default: string; accent: string }; devices: MenuDevice[]; end?: { sfx?: Record<string, unknown>[] } }
 export const loadMenu = (): Menu => JSON.parse(readFileSync(join(PLAYER_DIR, 'menu.json'), 'utf8')) as Menu;
 
@@ -43,7 +44,8 @@ export function sentencesOfWords(ws: { word: string; t: number; end: number }[])
 /** The step: the compact skill, Edit mastery's menu as a digest, this clip's sentences. */
 export function menuStep(sentences: Sentence[], menu: Menu, brief = '') {
   const skill = skillPrompt('edit', 'compact');
-  const devices = menu.devices.map(d => `- ${d.id}: ${d.use}${slotsOf(d).length ? ` [give: ${slotsOf(d).join(', ')}]` : ''}`).join('\n');
+  const doodles = (d: MenuDevice) => doodleNames(d).length ? `\n  doodle is one of: ${doodleNames(d).map(n => `${n} (${(d.doodles![n] as { use: string }).use})`).join('; ')}` : '';
+  const devices = menu.devices.map(d => `- ${d.id}: ${d.use}${slotsOf(d).length ? ` [give: ${slotsOf(d).join(', ')}]` : ''}${doodles(d)}`).join('\n');
   const slots = Object.entries(menu.slots).filter(([k]) => !k.startsWith('{sfx') && !k.startsWith('{music') && !['{line}', '{last}'].includes(k)).map(([k, v]) => `${k} ${v}`).join('\n');
   const system = [
     skill.text,
@@ -57,7 +59,7 @@ export function menuStep(sentences: Sentence[], menu: Menu, brief = '') {
   return { system, prompt, tokens: estimateTokens(system) + estimateTokens(prompt), skillTokens: skill.tokens };
 }
 
-export interface Pick { i: number; device: string; hero?: string; hero2?: string; name?: string; role?: string; phrase?: string; number?: string; next?: string; unit?: string; chars?: string; items?: string[]; still?: number; footage?: string }
+export interface Pick { i: number; device: string; doodle?: string; hero?: string; hero2?: string; name?: string; role?: string; phrase?: string; number?: string; next?: string; unit?: string; chars?: string; items?: string[]; still?: number; footage?: string }
 export interface MenuAnswer { caption?: string; mood?: string; beats: Pick[] }
 
 const norm = (s: string) => s.toLowerCase().normalize('NFKD').replace(/[^\p{L}\p{N}]/gu, '');
@@ -66,7 +68,7 @@ const FULL_SCREEN = new Set(['split', 'card', 'corner-br', 'corner-tl', 'corner-
 const awayFromSpeaker = (d: MenuDevice) => !!d.places || d.layers.some(l => l.t === 'mg' || l.t === 'desk' || FULL_SCREEN.has(String(l.form ?? '')));
 
 /** Check the picks against the menu, the rules and the sentences: plain problems per beat (empty = all fine). Pure. */
-export function checkPicks(a: MenuAnswer, sentences: Sentence[], menu: Menu): { problems: string[]; bad: Set<number> } {
+export function checkPicks(a: MenuAnswer, sentences: Sentence[], menu: Menu, previous: string[] = []): { problems: string[]; bad: Set<number> } {
   const problems: string[] = [], bad = new Set<number>(), byId = new Map(menu.devices.map(d => [d.id, d]));
   const said = (s: Sentence, text: string) => { const w = new Set(s.words.map(x => norm(x.word))); return text.split(/\s+/).filter(Boolean).every(t => w.has(norm(t))); };
   const flag = (i: number, why: string) => { problems.push(`sentence ${i}: ${why}`); bad.add(i); };
@@ -82,15 +84,23 @@ export function checkPicks(a: MenuAnswer, sentences: Sentence[], menu: Menu): { 
       const v = (b as unknown as Record<string, unknown>)[slot];
       if (slot === 'still' || slot === 'footage') { if (slot === 'footage' && (typeof v !== 'string' || !v.trim())) flag(b.i, `${b.device} needs "footage" (what the footage shows)`); continue; }
       if (slot === 'role') continue;
+      if (slot === 'doodle') { if (!doodleNames(d).includes(String(v))) flag(b.i, `${b.device} needs "doodle", one of ${doodleNames(d).join(', ')}`); continue; }
       if (v === undefined || v === null || v === '' || (Array.isArray(v) && !v.length)) { flag(b.i, `${b.device} needs "${slot}"`); continue; }
       for (const t of Array.isArray(v) ? v : [String(v)]) if (!['next'].includes(slot) && !said(s, String(t))) flag(b.i, `"${t}" (${slot}) is not said in that sentence: on-screen words are the speaker's own`);
     }
+    if (d.desk_item && String(d.desk_item.label ?? '').includes('{phrase}') && String(b.phrase ?? '').length > 16) flag(b.i, `the print's label "${b.phrase}" is over 16 characters`);
     if (d.places) { desks++; if (desks > d.places.length) flag(b.i, `at most ${d.places.length} ${d.id} per film`); }
     if (b.device === 'leak') { leaks++; if (!prevAway) flag(b.i, 'a leak only returns to the speaker after a desk-print or a full-screen device'); if (leaks > 3) flag(b.i, 'at most three leaks'); }
     prev = b.device; prevAway = awayFromSpeaker(d);
   });
+  // two clips never get the same film: not the last film's device sequence again
+  const seq = deviceSequence(a);
+  if (seq.length >= 2 && seq.join(' ') === previous.join(' ')) problems.push(`the same devices in the same order as the last film (${seq.join(', ')}): pick for this clip`);
   return { problems: [...new Set(problems)].slice(0, 14), bad };
 }
+
+/** the film's devices in order, the plain speaker left out (what "the same film" compares) */
+export const deviceSequence = (a: MenuAnswer) => [...(a.beats ?? [])].sort((x, y) => x.i - y.i).map(b => b.device).filter(d => d !== 'speaker');
 
 /* ───── filling the slots ───── */
 type Anchor = { w: string; after: number; dt?: number };
@@ -114,6 +124,7 @@ export function fillDevice(d: MenuDevice, b: Pick, s: Sentence, o: { place?: Rec
     let m = v.match(/^\{(line|hero|hero2|last)\}(?:\+([\d.]+))?$/); if (m) return { ...anchors[m[1]!]!, ...(m[2] ? { dt: +m[2] } : {}) };
     m = v.match(/^\{sfx:(\w+)\}$/); if (m) return m[1];
     m = v.match(/^\{place\.(\w+)\}$/); if (m) return o.place?.[m[1]!];
+    if (v === '{doodle}') { const x = d.doodles?.[String(b.doodle)]; if (!x || typeof x === 'string') { missing = true; return undefined; } return x.paths; }
     if (/^\{footage:<query>\}$/.test(v)) { if (!o.footageSrc) missing = true; return o.footageSrc ?? undefined; }
     m = v.match(/^\{(\w+)(?:\[(\d+)\])?\}$/);
     if (m) {
@@ -124,7 +135,7 @@ export function fillDevice(d: MenuDevice, b: Pick, s: Sentence, o: { place?: Rec
     return v;
   };
   const layers = fill(d.layers) as Record<string, unknown>[], sfx = (fill(d.sfx ?? []) as Record<string, unknown>[]);
-  const deskItem = d.desk_item ? { ...(fill(Object.fromEntries(Object.entries(d.desk_item).filter(([k]) => k !== 'doodle'))) as Record<string, unknown>), ...Object.fromEntries(Object.entries(o.place ?? {}).filter(([k]) => k !== 'focus')) } : undefined;
+  const deskItem = d.desk_item ? { ...(fill(d.desk_item) as Record<string, unknown>), ...Object.fromEntries(Object.entries(o.place ?? {}).filter(([k]) => k !== 'focus')) } : undefined;
   return missing ? null : { layers, sfx, ...(deskItem ? { deskItem } : {}) };
 }
 
@@ -205,7 +216,7 @@ export async function resolveFootage(dir: string, picks: Pick[], signal?: AbortS
 const PickShape = { caption: z.string().optional(), mood: z.string().optional(), beats: z.array(z.object({ i: z.number(), device: z.string() }).passthrough()) };
 
 /** Ask, check, one repair re-ask with the exact errors; then the picks that pass (the rest play as the speaker). */
-export async function directFromMenu(i: { sentences: Sentence[]; brief?: string; signal?: AbortSignal; log?: (s: string) => void }): Promise<Checked<{ answer: MenuAnswer; bad: Set<number> } | null> & { tokens: number }> {
+export async function directFromMenu(i: { sentences: Sentence[]; brief?: string; /** the last film's device sequence (rejected if repeated) */ previous?: string[]; signal?: AbortSignal; log?: (s: string) => void }): Promise<Checked<{ answer: MenuAnswer; bad: Set<number> } | null> & { tokens: number }> {
   const menu = loadMenu(), step = menuStep(i.sentences, menu, i.brief ?? '');
   let last: { answer: MenuAnswer; bad: Set<number> } | null = null;
   const r = await askChecked<{ answer: MenuAnswer; bad: Set<number> } | null>({
@@ -218,7 +229,7 @@ export async function directFromMenu(i: { sentences: Sentence[]; brief?: string;
       let a: MenuAnswer;
       try { a = (raw && typeof raw === 'object' ? raw : JSON.parse(String(raw).replace(/^```(json)?|```$/g, '').trim())) as MenuAnswer; } catch { return { ok: false, problems: ['not one JSON object'] }; }
       if (!Array.isArray(a.beats)) return { ok: false, problems: ['"beats" must be a list, one beat per sentence'] };
-      const c = checkPicks(a, i.sentences, menu); last = { answer: a, bad: c.bad };
+      const c = checkPicks(a, i.sentences, menu, i.previous ?? []); last = { answer: a, bad: c.bad };
       return c.problems.length ? { ok: false, problems: c.problems } : { ok: true, value: { answer: a, bad: c.bad } };
     },
     fallback: () => last,

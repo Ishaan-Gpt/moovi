@@ -42,3 +42,15 @@ test('code fills only the menu\'s slots: anchors on the said words, library soun
   const desk = specFromPicks({ beats: [{ i: 0, device: 'speaker' }, { i: 1, device: 'desk-print', footage: 'scissors cutting paper', phrase: 'cut 300' }, { i: 2, device: 'speaker' }] }, ss, menu, { sounds: {}, music: null, footage: {} });
   assert.equal(desk.desk, undefined);
 });
+
+test('desk-print: a doodle by name from the menu, a label of at most 16 characters; never the last film again', () => {
+  const ss = sentencesOfWords(words), menu = loadMenu();
+  const desk = menu.devices.find(x => x.id === 'desk-print')!;
+  const pick = { i: 1, device: 'desk-print', footage: 'scissors', phrase: 'cut 300 pauses', doodle: 'tick' };
+  const f = fillDevice(desk, pick, ss[1]!, { place: desk.places![0], footageSrc: '../../../v/footage/s1.mp4' })!;
+  assert.deepEqual(f.deskItem!.doodle, (desk.doodles!.tick as { paths: string[] }).paths, 'the paths are copied from the menu');
+  const p = checkPicks({ beats: [{ i: 0, device: 'speaker' }, { ...pick, doodle: 'spiral', phrase: 'It cut 300 pauses to' }, { i: 2, device: 'speaker' }] }, ss, menu).problems.join(' | ');
+  assert.ok(p.includes('needs "doodle"') && p.includes('over 16 characters'), p);
+  const film = { beats: [{ i: 0, device: 'speaker' }, { i: 1, device: 'punch', hero: 'cut' }, { i: 2, device: 'punch', hero: 'Watch' }] };
+  assert.ok(checkPicks(film, ss, menu, ['punch', 'punch']).problems.some(x => x.includes('same devices in the same order')));
+});
