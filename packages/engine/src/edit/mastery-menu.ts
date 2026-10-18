@@ -49,7 +49,7 @@ export function sentencesOfWords(ws: { word: string; t: number; end: number }[])
 }
 
 /** The step: the compact skill, Edit mastery's menu as a digest, this clip's sentences. */
-export function menuStep(sentences: Sentence[], menu: Menu, brief = '') {
+export function menuStep(sentences: Sentence[], menu: Menu, brief = '', ranks: Map<number, string[]> = new Map()) {
   const skill = skillPrompt('edit', 'compact');
   const doodles = (d: MenuDevice) => doodleNames(d).length ? `\n  doodle is one of: ${doodleNames(d).map(n => `${n} (${(d.doodles![n] as { use: string }).use})`).join('; ')}` : '';
   const devices = menu.devices.map(d => `- ${d.id}: ${d.use}${slotsOf(d).length ? ` [give: ${slotsOf(d).join(', ')}]` : ''}${doodles(d)}`).join('\n');
@@ -60,10 +60,11 @@ export function menuStep(sentences: Sentence[], menu: Menu, brief = '') {
     `RULES:\n${menu.rules.map(r => `- ${r}`).join('\n')}`,
     `DEVICES:\n${devices}`,
     `SLOTS:\n${slots}`,
+    ...(ranks.size ? ['A sentence may carry the library graph\'s ranking of menu devices for what it says (library: …): a hint from the craft graph; you still pick for the sentence.'] : []),
     ...(menu.coverage ? [`EVERY FILM MUST SHOW (the owner's checklist; a film that misses one is sent back):\n${menu.coverage.picked.map(c => `- ${c.what}${c.min ? ` (at least ${c.min})` : ''}: one of ${c.devices.join(', ')}`).join('\n')}\n- a short clip (under 6 sentences): ${menu.coverage.short_clip ?? 'as many as fit'}\nLight leaks, the grade, the music and the sounds are added by code: never pick them.`] : []),
     `Answer one JSON object: { "caption": one of ${JSON.stringify(menu.captions.allowed)}, "mood": "<one word for the music bed>", "beats": [ { "i": <sentence number>, "device": "<id>", "hero": "<word>", ...the slots it needs } ] }, one beat per sentence.`,
   ].join('\n\n');
-  const prompt = [`BRIEF: ${brief.trim().slice(0, 200) || '(none)'}`, 'SENTENCES (number [start s] words):', ...sentences.map(s => `${s.i} [${s.t0.toFixed(1)}] ${s.text}`)].join('\n');
+  const prompt = [`BRIEF: ${brief.trim().slice(0, 200) || '(none)'}`, 'SENTENCES (number [start s] words):', ...sentences.map(s => `${s.i} [${s.t0.toFixed(1)}] ${s.text}${ranks.get(s.i)?.length ? ` (library: ${ranks.get(s.i)!.join(', ')})` : ''}`)].join('\n');
   return { system, prompt, tokens: estimateTokens(system) + estimateTokens(prompt), skillTokens: skill.tokens };
 }
 
@@ -269,11 +270,30 @@ export async function resolveFootage(dir: string, picks: Pick[], signal?: AbortS
   return out;
 }
 
+/**
+ * The Designer's library cast (decision 19, per-video library use): per sentence, the craft graph's named query editCast
+ * ranks the edit registry for what the sentence does and the verbs it says; a menu device ranks by its best-ranked layer.
+ * The model reads it as a hint and still picks from the menu (the menu, its rules and the checks are unchanged).
+ */
+export async function libraryRanks(ss: Sentence[], menu: Menu, top = 3): Promise<Map<number, string[]>> {
+  const { openCaster, readSentences } = await import('./beatspec');
+  const caster = await openCaster(), out = new Map<number, string[]>();
+  await Promise.all(ss.map(async s => {
+    const r = readSentences(s.words as never); if (!r.length) return;
+    const rows = await caster.cast({ fn: r[0]!.fn, verbs: [...new Set(r.flatMap(x => x.verbs))], recent: [], n: 8 });
+    const rank = new Map<string, number>(); rows.forEach((x, k) => { if (!rank.has(x.edit.device)) rank.set(x.edit.device, k); });
+    const ids = menu.devices.filter(d => d.id !== 'speaker').map(d => ({ id: d.id, k: Math.min(99, ...d.layers.map(l => rank.get(String(l.t)) ?? 99)) }))
+      .filter(x => x.k < 99).sort((a, b) => a.k - b.k).slice(0, top).map(x => x.id);
+    if (ids.length) out.set(s.i, ids);
+  }));
+  return out;
+}
+
 const PickShape = { caption: z.string().optional(), mood: z.string().optional(), beats: z.array(z.object({ i: z.number(), device: z.string() }).passthrough()) };
 
 /** Ask, check, one repair re-ask with the exact errors; then the picks that pass (the rest play as the speaker). */
-export async function directFromMenu(i: { sentences: Sentence[]; brief?: string; /** the last film's device sequence (rejected if repeated) */ previous?: string[]; /** lanes not to use (the compact step after Claude Code did not answer) */ skipLanes?: ('claude-code' | 'key' | 'server')[]; signal?: AbortSignal; log?: (s: string) => void }): Promise<Checked<{ answer: MenuAnswer; bad: Set<number> } | null> & { tokens: number }> {
-  const menu = loadMenu(), step = menuStep(i.sentences, menu, i.brief ?? '');
+export async function directFromMenu(i: { sentences: Sentence[]; brief?: string; /** the Designer's library ranking per sentence (libraryRanks) */ ranks?: Map<number, string[]>; /** the last film's device sequence (rejected if repeated) */ previous?: string[]; /** lanes not to use (the compact step after Claude Code did not answer) */ skipLanes?: ('claude-code' | 'key' | 'server')[]; signal?: AbortSignal; log?: (s: string) => void }): Promise<Checked<{ answer: MenuAnswer; bad: Set<number> } | null> & { tokens: number }> {
+  const menu = loadMenu(), step = menuStep(i.sentences, menu, i.brief ?? '', i.ranks);
   let last: { answer: MenuAnswer; bad: Set<number> } | null = null;
   const r = await askChecked<{ answer: MenuAnswer; bad: Set<number> } | null>({
     label: MENU_AGENT, ...(i.log ? { log: i.log } : {}),

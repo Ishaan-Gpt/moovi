@@ -31,3 +31,16 @@ test('specDevices: the player layers per beat, the camera left out', () => {
   assert.deepEqual(specDevices({ beats: [{ layers: [{ t: 'cam' }] }, { layers: [{ t: 'cam' }, { t: 'letters' }, { t: 'pill' }] }] }), ['speaker', 'letters+pill']);
   assert.deepEqual(specDevices(null), []);
 });
+
+test('the Designer\'s library cast: the craft graph ranks menu devices per sentence, and the menu step shows it as a hint', async () => {
+  const { libraryRanks, loadMenu, menuStep, sentencesOfWords } = await import('../src/edit/mastery-menu');
+  const said = 'Revenue grew from 2 crore to 10 crore. Compare the old way and the new way. My name is Ravi.'.split(' ');
+  const ss = sentencesOfWords(said.map((word, k) => ({ word, t: k * 0.4, end: k * 0.4 + 0.35 })));
+  const menu = loadMenu(), ranks = await libraryRanks(ss, menu), ids = new Set(menu.devices.map(d => d.id));
+  assert.ok(ranks.size > 0, 'some sentence is ranked');
+  for (const r of ranks.values()) { assert.ok(r.length <= 3); for (const id of r) assert.ok(ids.has(id) && id !== 'speaker', id); }
+  const step = menuStep(ss, menu, '', ranks);
+  assert.match(step.prompt, /\(library: [a-z-]+/);
+  const plain = menuStep(ss, menu, '').tokens;
+  assert.ok(step.tokens - plain <= 60 + 12 * ss.length, `the ranks add ${step.tokens - plain} tokens`);
+});

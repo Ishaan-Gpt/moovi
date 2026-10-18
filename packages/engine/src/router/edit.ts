@@ -16,25 +16,34 @@ import { fxMusic } from '../edit/effects/music';
 import { filmMix, renderFilm, useMix } from '../edit/film';
 import { lookFromFootage, prepareClip, renderMasteryFilm, skeletonSpec, worldCutouts, writeSpec } from '../edit/mastery';
 import { directMasterySpec } from '../edit/mastery-direct';
-import { completeCoverage, deviceSequence, directFromMenu, loadMenu, resolveFootage, resolveMusic, resolveSounds, sentencesOfWords, specFromPicks } from '../edit/mastery-menu';
+import { completeCoverage, deviceSequence, directFromMenu, libraryRanks, loadMenu, resolveFootage, resolveMusic, resolveSounds, sentencesOfWords, specFromPicks } from '../edit/mastery-menu';
 import { tierFor } from '../skill-prompt';
 import { briefWithMemory, readEditMemory, rememberEdit, specDevices, type EditMemory } from '../edit/memory';
 import { modelScope } from '../runtime';
 
+type Tag = (agent: 'designer' | 'sound' | 'lens' | 'keeper', kind: 'start' | 'done', text: string, scope: string) => void;
+
 /** The compact (menu) path as one call with the full spec's result shape: the picks, then the library for this video. */
-async function directedFromMenu(dir: string, words: { word: string; t: number; end: number }[], seconds: number, brief: string, memory: EditMemory, signal?: AbortSignal, o: { model?: boolean; footage?: boolean; skipLanes?: ('claude-code' | 'key' | 'server')[] } = {}): Promise<{ value: Record<string, unknown> | null; problems: string[][]; devices: string[] }> {
+async function directedFromMenu(dir: string, words: { word: string; t: number; end: number }[], seconds: number, brief: string, memory: EditMemory, signal?: AbortSignal, o: { model?: boolean; footage?: boolean; skipLanes?: ('claude-code' | 'key' | 'server')[]; /** a stage under the agent that does it (the synapse view) */ tag?: Tag } = {}): Promise<{ value: Record<string, unknown> | null; problems: string[][]; devices: string[] }> {
+  const tag: Tag = o.tag ?? (() => undefined);
   const ss = sentencesOfWords(words.map(w => ({ word: w.word, t: w.t, end: w.end })));
   // two clips never get the same film: the user's last edit's device sequence (Keeper, in their graph) is not taken again
   const previous = memory.previous;
+  // the Designer casts from the library first: the craft graph ranks the menu per sentence (a hint the model reads)
+  const menu = loadMenu();
+  let ranks = new Map<number, string[]>();
+  if (o.model !== false) { tag('designer', 'start', 'ranking the library for each sentence', 'library'); ranks = await libraryRanks(ss, menu); tag('designer', 'done', `library: ${ranks.size} of ${ss.length} sentences ranked`, 'library'); }
   // model false: no call at all (the first preview, or every lane failed): Edit mastery's checklist completion alone
   const r = o.model === false ? { value: null, problems: [['no model call']] } as Awaited<ReturnType<typeof directFromMenu>>
-    : await directFromMenu({ sentences: ss, brief: briefWithMemory(brief, memory), previous, ...(o.skipLanes ? { skipLanes: o.skipLanes } : {}), ...(signal ? { signal } : {}), log: s => console.log(`[edit] ${s}`) }).catch(e => ({ value: null, problems: [[`no answer: ${String((e as Error).message ?? e).slice(0, 120)}`]], tokens: 0 }) as unknown as Awaited<ReturnType<typeof directFromMenu>>);
+    : await directFromMenu({ sentences: ss, brief: briefWithMemory(brief, memory), ranks, previous, ...(o.skipLanes ? { skipLanes: o.skipLanes } : {}), ...(signal ? { signal } : {}), log: s => console.log(`[edit] ${s}`) }).catch(e => ({ value: null, problems: [[`no answer: ${String((e as Error).message ?? e).slice(0, 120)}`]], tokens: 0 }) as unknown as Awaited<ReturnType<typeof directFromMenu>>);
   // the owner's checklist is made whole by code from the menu when the model missed part of it (or failed)
-  const menu = loadMenu(), events = [...JSON.stringify(menu).matchAll(/\{sfx:(\w+)\}/g)].map(m => m[1]!);
+  const events = [...JSON.stringify(menu).matchAll(/\{sfx:(\w+)\}/g)].map(m => m[1]!);
   let a = completeCoverage(r.value?.answer ?? null, ss, menu, r.value?.bad ?? new Set());
   // footage: none for the instant first preview (it never waits on the footage finder); a desk-print whose clip was not
   // found is cast again by the completion without the desk, so another full-screen device (compare, letter tiles) fills it
+  tag('sound', 'start', 'casting sounds and the music bed from the library', 'sound');
   const [sounds, music] = await Promise.all([resolveSounds(events, words.length), resolveMusic(dir, ss.map(s => s.text), a.mood ?? '', seconds, signal)]);
+  tag('sound', 'done', `sound: ${Object.keys(sounds).length} sfx${music ? ' and a bed' : ''}`, 'sound');
   let footage = o.footage === false ? {} : await resolveFootage(dir, a.beats.filter(b => b.footage), signal);
   const missed = a.beats.filter(b => b.footage && !footage[b.i]).map(b => b.i);
   if (missed.length) {
@@ -196,6 +205,7 @@ export const editReel: Handler = async ctx => {
     // the preview plays now from the upload's own picture; the graded cut swaps in when the restore ends (the MP4 waits for it)
     await prepareClip(dir, join(dir, plan.source.file));
     const kept = words.filter(w => !((edl as { removed?: { src_in: number; src_out: number }[] }).removed ?? []).some(r => w.t >= r.src_in - 1e-3 && w.t < r.src_out - 1e-3));
+    const tag: Tag = (agent, kind, text, scope) => void activity(ctx.chat, agent, ctx.task.id, kind, text, { scope });
     // Keeper reads this user's memory first (lessons, caption and sound notes, preferences, the last edit): the model reads it
     void activity(ctx.chat, 'keeper', ctx.task.id, 'start', 'reading what you taught me', { scope: 'memory' });
     const memory = await readEditMemory((q, p) => ctx.uq(q, p));
@@ -209,7 +219,7 @@ export const editReel: Handler = async ctx => {
     // decision 20: a linked Claude Code writes the whole spec from the full skill (and invents); the server model and every
     // user API key direct from Edit mastery's menu with the compact skill, and code fills only the menu's slots
     void activity(ctx.chat, 'designer', ctx.task.id, 'start', 'casting devices on the sentences', { scope: 'direct' });
-    const menuStep = (skip?: ('claude-code' | 'key' | 'server')[]) => directedFromMenu(dir, kept, plan.source.duration, inp.brief ?? '', memory, ctx.signal, skip ? { skipLanes: skip } : {});
+    const menuStep = (skip?: ('claude-code' | 'key' | 'server')[]) => directedFromMenu(dir, kept, plan.source.duration, inp.brief ?? '', memory, ctx.signal, { ...(skip ? { skipLanes: skip } : {}), tag });
     // a full-tier answer that did not come (or did not pass) moves on to the compact menu step on a key or the server model
     directed = (tierFor(modelScope()?.provider) === 'compact' ? menuStep() : directMasterySpec({ words: kept.map(w => ({ word: w.word, t: w.t, end: w.end })), faces: edl.faces ?? [], duration: plan.source.duration, brief: briefWithMemory(inp.brief ?? '', memory), files: worldCutouts(), ...(ctx.signal ? { signal: ctx.signal } : {}), log: s => console.log(`[edit] ${s}`) })
 ).then(r => r.value ? r : (console.log(`[edit] spec: Claude Code gave none (${r.problems.flat().slice(0, 1).join('')}); the menu step on a key or the server model`), menuStep(['claude-code'])))
