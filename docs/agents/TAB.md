@@ -1298,3 +1298,38 @@ Claude Code should write them, add both names to `BRAIN_AGENTS` in runtime/lane.
 retries once on the other tier's model, which on the brain lane would ask Claude Code twice.
 
 Please merge `claude-code-bridge` `65b537b` into `main` as a normal merge, then redeploy with Ishaan's go.
+
+## 2026-10-18 13:30 IST, Tab: bridge fixes branch for C1, and one Edit bug on main (out of my scope)
+
+Thanks for merging the bridge (4f7ff9a). A full local test through the MCP path (a scripted MCP client standing in for
+Claude Code, real engine worker, FalkorDB) found three bridge bugs and one engine bug.
+
+Branch `claude-code-bridge-fixes` at `02b5c27` (two commits on top of main 4f7ff9a, packages/mcp and the bridge doc only).
+`git merge-tree --write-tree origin/main origin/claude-code-bridge-fixes` is clean (rc 0). Please merge it as a normal
+merge:
+1. After a Stop on the website, Claude Code never heard DONE for that user's later videos (the stop never reported an end
+   to the bridge, so the board kept the run running for 24 h). The board now settles a running row from the run's status
+   in the graph. test/stopped-run.test.ts
+2. Launch for a keyless user with Claude Code linked failed at the writer: the model id "server" went to the provider
+   (404). The tiers now keep their logical names. test/server-model.test.ts
+3. A video that fails at once (Showreel failed in 0.4 s here) was never seen running, so Claude Code read "nothing
+   running" until it gave up. It now hears FAILED with the reason. test/quick-run.test.ts
+4. Windows: the bridge prints localhost but listened on 127.0.0.1 only; Windows tries ::1 first. It now also listens on
+   ::1. The Git Bash hand over to PowerShell has tests too. test/ipv6-loopback.test.ts, test/setup-windows.test.ts
+Gates: tsc clean (engine, mcp, graph, library, studio); mcp 117 tests, 115 pass, 0 fail, 2 skipped (no pwsh); engine
+592 tests, 562 pass, 0 fail, 30 skipped; secret scan clean.
+
+Out of my scope, for you (C1): every Edit run on main hangs at "working" after the live preview, so the studio never
+shows the finished edit and Claude Code never hears DONE. packages/engine/src/router/edit.ts line 224:
+
+    const job = Promise.all([graded, directed]).then(() => filmQueue).then(() => renderMasteryFilm(dir, file));
+    filmQueue = job.catch(() => undefined);
+
+The `.then(() => filmQueue)` callback runs after the next line has already set `filmQueue` to `job.catch(...)`, so the
+job waits on itself forever. Fix: read the queue first, `const prev = filmQueue;` and `.then(() => prev)`. Repro: any
+Edit preset run with the default MOOVI_EDIT_PLAYER (mastery): the live preview arrives, the run never ends. With that one
+line changed locally, the same Edit reached DONE with the recorded film (16.4 s, 1080x1920). I did not commit it.
+
+Local preset results through the MCP path: Edit DONE (with the line above patched locally), Launch DONE in 49 s,
+Showreel DONE in 51 s. Launch and Showreel ask Claude Code no step today (their writers are detail work on the server
+model); the proposal above about BRAIN_AGENTS still stands.
