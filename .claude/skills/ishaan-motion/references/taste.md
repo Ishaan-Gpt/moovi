@@ -40,6 +40,8 @@
   out loses the "half your audience" read.
 
 ## Craft
+- **Never a black or empty frame** (Ishaan, 2026-10-18: "that must never happen"). A beat whose clip or picture failed takes a broader search, a still, or another beat's clip at a new moment; a dark plate under a card is a black screen.
+- **Every promo film is understood by second 3** (Ishaan, 2026-10-18, Showreel v2 0/10): the viewer can say what the brand does; a film about a topic instead of the brand fails.
 - Drawn props need material: texture at two scales (coarse mottling + fine grain in overlay), a light direction
   (gradient), edge occlusion (blurred dark inner stroke), a rim light, creases/details, a cast shadow.
 - Hands: tapered fingers (wider at the base), knuckle creases, a palm that reads; never sausages.

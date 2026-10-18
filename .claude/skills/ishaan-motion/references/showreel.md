@@ -5,6 +5,16 @@ theme-locked film. The product's Showreel writer (`packages/engine/src/showreel`
 18): the themes below, each theme's voice and the writing laws are what the writer is told. Edit this file and the
 product changes on the next deploy.
 
+## What a Showreel is (Ishaan, 2026-10-18, v2 at 0/10: "it was supposed to be a brand showreel")
+- **A brand showreel.** Every Showreel promotes ONE brand: the user's site, product, shop or name. Never a film about a
+  general topic. The brand comes from the link, else from the brief; a brief with no brand gets one question, never a
+  topic film.
+- **The writer is the creative director.** Before a word, decide the one idea: what the brand does, for whom, and why
+  it matters to them. Every line serves that idea.
+- **Understood, watched, remembered.** By second 3 the viewer knows what this is about. Each beat opens a question the
+  next one answers, so they stay to the end. They leave knowing the brand's name, what it does and what to do next.
+  If a stranger could watch it and not say what the brand does, the script failed.
+
 ## The lock
 - One theme per film, chosen once (named by the user, else picked by the writer from the brief). Every beat is drawn
   in that theme's world: its stage, palette, type, props and sound. A film never mixes looks that break the theme.
@@ -15,14 +25,14 @@ product changes on the next deploy.
 ## The script arc (Ishaan, 2026-10-18: "hook -> problem -> solution -> .. -> cta")
 Every Showreel script, in every theme, follows this arc. The theme's voice is the tone on top; it never changes the
 arc. The writer labels each line with its slot, in this order:
-- hook (1 line, 3-9 words): stops the scroll in the viewer's own words: a surprise, a sharp pain or an open question
-  the film answers. Never a definition, never "Have you ever", never the topic's name alone.
-- problem (1-2 lines): what goes wrong or what is at stake, concrete and felt.
-- solution (2-3 lines): the answer, and how it works, one concrete picture a line.
-- climax (1 line): the peak, the sharpest and most quotable line of the film.
-- cta (1 line, 3-9 words): read aloud. What to do next: with a brand, the action and its name; with a topic, a line
-  that makes the viewer act (try it, look for it, follow for the next one). With no brand or link given, the cta
-  names no site, shop, studio or address: none exists, so any name is invented.
+- hook (1 line, 3-9 words): stops the scroll with the viewer's own pain or wish, the one this brand answers. Plain
+  enough to grasp on one listen. Never a riddle, never a definition, never "Have you ever".
+- problem (1-2 lines): what that pain costs them today, concrete and felt.
+- solution (2-3 lines): the brand by name ("Meet <Brand>." or "<Brand> does …"), then what it actually does, one
+  concrete picture a line, in the brand's own words from the site or brief.
+- climax (1 line): the payoff for the viewer, the sharpest and most quotable line of the film.
+- cta (1 line, 3-9 words): read aloud: the brand's name and the action (with a link given, its domain). Never a name
+  or address the link or brief does not give.
 
 ## Writing laws (every theme)
 - Humanized and spoken: how a person talks, contractions, "you", rhythm that varies (a short line after a long one).
@@ -30,6 +40,8 @@ arc. The writer labels each line with its slot, in this order:
 - Plain, specific, concrete nouns the viewer could point at. Sentence case. 3 to 12 words a line.
 - No hype words (revolutionary, seamless, unleash, supercharge, next-gen, game-changer), no exclamation marks, no
   emoji, no "in this video".
+- Never a black or empty frame. Every beat shows a real clip, a photo or a drawn picture that matches its line; when
+  the footage finder has nothing, the beat takes a broader search, a still, or another beat's clip at a new moment.
 - Never invent a number, a name, a website or a claim the brief or site does not give (the problem too: a real problem, not a made-up disaster).
 
 Every theme below holds TODAY's values (moved from the old styles' voices on 2026-10-18). They are references to beat,
