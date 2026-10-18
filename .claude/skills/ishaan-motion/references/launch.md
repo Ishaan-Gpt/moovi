@@ -127,3 +127,11 @@ rebuild. The procedure:
    before it loads sharp; type slides at the reference's size (72 px at 1080); a 3D object on a light world is
    composited (difference/invert), never shown in its black render tile. Keep every clip decoding from Play; a clip
    that starts or seeks mid-film stalls a frame.
+7. **"Push hard" (owner on f13, 2026-10-18) means the finish layers, not new scenes (f14):** a real music bed from
+   the library (product-safe, e.g. Mixkit) with its drop on the film's big reveal; the owner's Style 1 sound pack
+   placed by `assets/sfx-style1/map.json` events (card-in, word, cascade, scene, max 2 punches, 60 ms min gap,
+   risers end on the cut, no ducking), never synth beeps; every cut snapped to the bed's beat by a piecewise time
+   warp (speed changes only on a cut, within ±15 %); glass cards are the frame behind them downsampled twice (no
+   filter), with a tint, a rim and a top sheen; the day sky carried into the light world as a soft band under the
+   type (ref 3). Peaks under -1 dBFS; render the score while the page loads so Play starts at once.
+   The bed choice is Ishaan's: f14 used "Golden Storm"; offer the alternatives (Rising Sun, Close Up) with it.
