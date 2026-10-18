@@ -2,9 +2,11 @@
 import { useState } from 'react';
 import { HaloMark } from '@moovi/ui';
 import { post } from '@/lib/client';
+import { ClaudeCodePill } from './ClaudeCodePill';
 
-/** The dashboard's left rail: the mark, Projects and Your model at the top, the profile at the bottom (with sign out). */
-export function Sidebar({ user, current = 'projects' }: { user: { name: string; email: string }; current?: 'projects' | 'model' }) {
+/** The dashboard's left rail: the mark, Projects and Your model at the top (with the Claude Code pill for a Claude Code
+ *  user), the profile at the bottom (with sign out). */
+export function Sidebar({ user, current = 'projects', bridge }: { user: { name: string; email: string }; current?: 'projects' | 'model'; bridge?: string }) {
   const [open, setOpen] = useState(false);
   const out = async () => { await post('/auth/signout', {}).catch(() => undefined); window.location.href = '/studio/auth?mode=signin'; };
   return (
@@ -19,6 +21,7 @@ export function Sidebar({ user, current = 'projects' }: { user: { name: string; 
           <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="7" cy="10" r="3.6" fill="none" stroke="currentColor" strokeWidth="1.5" /><path d="M10.6 10H17M14.2 10v2.6M16.4 10v1.8" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
           Your model
         </a>
+        {bridge && <ClaudeCodePill bridge={bridge} />}
       </nav>
       <div className="rail__me">
         {open && (
