@@ -10,22 +10,25 @@ Open `http://localhost:4377/docs/submission/demo/lab/<id>/`. Reference media liv
 only, never committed). People in the references are drawn and animated in code for now; Ishaan's own clips replace
 them later, one slot per person.
 
-## D1 Card Sky — instagram.com/p/DdUA650hdvS (25.3 s, ~117 BPM, hard cuts at 6.63 s and 18.7 s)
+## D1 Card Sky — instagram.com/p/DdUA650hdvS (live picture 1080×756 inside 9:16, 25.28 s)
 
-Rebuilt at 16:9 with Moovi's own UI in place of the music cards. `lab/d1/` (`d1.js`, a pure function of t).
+v2 (2026-10-18, after Ishaan's 2/10 on v1: "copy it exactly … the sphere became a weird idk what"): an exact copy in
+three.js, measured at 10 fps, in the reference's own frame, with "original beside" for side-by-side checking.
+Re-skinned only: Moovi cards, placeholder copy, a drawn cast (Ishaan's clips replace the people later).
 
-| Part | Time | What it is | Demo use |
+| Part | Time | Measured from the reference | Ours |
 |---|---|---|---|
-| D1.1 card storm | 0–6.6 | ~64 UI cards tumbling in 3D around a figure, some behind and some in front, depth blur by distance, slow push | Moovi's films, preset cards, crew lines and graph cards orbiting the user: "everything Moovi makes" |
-| D1.2 serif words in depth | 6.6–11 | water, a held card drifting down, italic serif words blurring in one by one, one giant word passing near the lens out of focus, the back of a head near the lens | the problem/promise lines |
-| D1.3 dive into the card | 11–12.4 | log-space push into the card's cover; the cover is the next shot, with a smaller framed copy inside (droste); the shot spills past the card edges so the hand-over has no seam | from a film card into the real product |
-| D1.4 backlit figure | 12.4–16.6 | low sun, one soft bloom wrapping the silhouette, hair as filled ribbons in gusts with gold fringe | the human moment (Ishaan's clip later) |
-| D1.5 pull-out to a wall | 16.6–18.7 | the shot shrinks into a framed print on a white gallery wall, the name stacked above it, then a whip back to the card | "a film by Moovi" proof beat |
-| D1.6 white matte flash | 18.7–19.1 | the figure as a pure white cut-out over a cool sky, 0.4 s | a rhythm punctuation before a big line |
-| D1.7 words behind the head | 19.1–25.3 | tall condensed serif words in wine behind the head (the head cuts the type), then the whole grade drains to grey, a small handle with two sparkles | the closing line / CTA |
+| D1.1 card sphere | 0–6.63 | ~60 cards on a sphere round the head, tangent (edge-on at the sides, mirrored on the far half); cards sweep in past the lens 0–0.5 s; jump cuts every 0.1 s between profile and rear 3/4 for 0.8 s; the spin dies to ~0 at 1.35 s then cruises; whoosh + low boom at 0.1–0.4 s | Fibonacci sphere, 64 cards, R 0.9, 6-sample motion blur through the open |
+| D1.2 words in depth | 6.63–10.45 | over the shoulder above the sea, camera trucks left and forward; Times-italic lines standing in 3D, each word fades in grey → white; lines pass the lens big ("If" exits lower right at 8.0); the card rides top-centre → left edge → glides in with a light streak (9.8) and turns to face us | 3D word planes (sharp + blurred copies), a shaded sea, card in camera space |
+| D1.3 droste dive | 10.45–12.6 | the cover photo sinks, revealing nested cover frames (each ~0.7×), joined by white walls; the camera flies the tunnel, the last window opens on the girl | 5 nested frames + box walls, geometric (log) pacing |
+| D1.4 backlit girl | 12.6–16.4 | girl in profile, sun just left of her face with a vertical streak, hair gusts at ~13.4 and ~15.4 | drawn, hair as soft locks |
+| D1.5 tunnel out | 16.4–18.7 | the same tunnel in reverse to the card over the sea; a riser 17.1 → 18.7 | reverse path, riser-short ends on 18.7 |
+| D1.6 negative flash | 18.7–18.83 | two frames of the next shot colour-inverted (blue sky, white figure) | invert of D1.7's first frame |
+| D1.7 words behind the head | 18.83–25.28 | the boy at dusk, camera tilts up (he sinks); tall crimson condensed Didone in two rows round the head, each word cuts on whole (20.9 / 21.8 / 22.6 / 23.0); the i-dots are four-point stars; a small handle at 23.1; the grade drains to grey 23.3–24.6; near-silence 19.8–20.8 before the first word | Bodoni Moda stretched, crimson #a8131d |
 
-Sound: the owner's Style 1 pack (`packages/engine/assets/sfx-style1`) on the measured onsets. Copy on screen is a
-placeholder from concept A; the words, palette and music are Ishaan's call.
+Sound: the reference is a song with three designed moves (the open's whoosh + boom, the riser into the negative, the
+hush before the words). Ours places the owner's Style 1 files on those moves; "original audio" plays the song for
+timing checks only (it is not ours to ship). The demo film's music bed is Ishaan's pick.
 
 ## R4 Red Table — instagram.com/p/DZsVuGdx2cE (108 s, already cloned on 2026-10-16)
 

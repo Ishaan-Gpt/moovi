@@ -5,40 +5,45 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>D1 Card Sky</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;600;800&display=block">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400&family=Instrument+Serif:ital@0;1&family=Inter+Tight:ital,wght@0,400;0,500;0,600;0,700;0,800;1,700&family=Tinos:ital@1&display=block">
+<script type="importmap">{ "imports": { "three": "/node_modules/.pnpm/three@0.170.0/node_modules/three/build/three.module.js" } }</script>
 <style>
   :root { --bg: #0d1013; --ink: #eef3f6; --dim: #8b969d; --line: #232a30; }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font: 14px/1.4 "Inter Tight", system-ui, sans-serif; }
-  .wrap { display: flex; gap: 14px; justify-content: center; align-items: center; padding: 12px 16px; height: calc(100% - 60px); }
-  .pane { position: relative; max-height: 100%; background: #000; border-radius: 10px; overflow: hidden; }
-  #main { aspect-ratio: 16 / 9; width: min(100%, calc((100vh - 84px) * 16 / 9)); }
-  #orig { aspect-ratio: 9 / 16; height: 100%; display: none; }
+  .wrap { display: flex; gap: 12px; justify-content: center; align-items: center; padding: 12px 16px; height: calc(100% - 52px); }
+  .pane { position: relative; aspect-ratio: 1080 / 756; width: min(100%, calc((100vh - 76px) * 1080 / 756)); background: #000; border-radius: 8px; overflow: hidden; }
+  body.cmp .pane { width: min(calc(50% - 6px), calc((100vh - 76px) * 1080 / 756)); }
+  #orig { display: none; }
   body.cmp #orig { display: block; }
-  canvas, video { width: 100%; height: 100%; display: block; }
+  canvas { width: 100%; height: 100%; display: block; }
+  /* the reference's live picture is 1080×756 at y 582 of its 1080×1920 frame */
+  #v { position: absolute; left: 0; width: 100%; height: 253.97%; top: -76.98%; object-fit: fill; }
   .tag { position: absolute; left: 8px; top: 8px; font-size: 11px; color: var(--dim); background: #000a; padding: 2px 6px; border-radius: 4px; }
-  .bar { height: 48px; display: flex; gap: 14px; align-items: center; padding: 0 16px; border-top: 1px solid var(--line); }
+  #part { position: absolute; left: 10px; bottom: 10px; font: 600 13px "Inter Tight", sans-serif; color: #fff; background: #000a; padding: 4px 8px; border-radius: 4px; }
+  .bar { height: 44px; display: flex; gap: 14px; align-items: center; padding: 0 16px; border-top: 1px solid var(--line); }
   button { background: var(--ink); color: var(--bg); border: 0; border-radius: 999px; padding: 7px 16px; font: 600 13px "Inter Tight", sans-serif; cursor: pointer; }
   input[type=range] { flex: 1; }
   label { color: var(--dim); display: flex; gap: 6px; align-items: center; white-space: nowrap; }
   #t { font-variant-numeric: tabular-nums; color: var(--dim); min-width: 96px; }
-  @media (max-width: 760px) { body.cmp #orig { display: none; } .bar { flex-wrap: wrap; height: auto; padding: 8px 16px; } }
+  @media (max-width: 760px) { body.cmp .pane { width: 100%; } .wrap { flex-direction: column; } .bar { flex-wrap: wrap; height: auto; padding: 8px 16px; } }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="pane" id="main"><canvas id="c" width="1920" height="1080"></canvas><span class="tag">D1 card sky · Moovi cards · drawn cast</span></div>
+  <div class="pane"><canvas id="c"></canvas><span class="tag">D1 · exact copy · Moovi cards · drawn cast</span><span id="part"></span></div>
   <div class="pane" id="orig"><video id="v" src="/data/demo/refs/d1/ref.mp4" playsinline preload="auto"></video><span class="tag">original</span></div>
 </div>
 <div class="bar">
   <button id="play">Play</button>
   <input id="seek" type="range" min="0" max="25.28" step="0.01" value="0">
   <span id="t">0.00 / 25.28</span>
-  <label><input id="cmp" type="checkbox"> original beside</label>
-  <label><input id="oa" type="checkbox"> original audio</label>
+  <label><input id="cmp" type="checkbox" checked> original beside</label>
+  <label><input id="oa" type="checkbox" checked> original audio</label>
   <label><input id="sfx" type="checkbox" checked> Style 1 sfx</label>
-  <label><input id="lab" type="checkbox" checked> part labels</label>
+  <label><input id="lab" type="checkbox"> part labels</label>
 </div>
-<script src="d1.js"></script>
+<script>document.body.classList.add('cmp');</script>
+<script type="module" src="d1.js"></script>
 </body>
 </html>

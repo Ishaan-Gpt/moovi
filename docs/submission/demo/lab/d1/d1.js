@@ -1,449 +1,340 @@
-// D1 "Card Sky" (instagram.com/p/DdUA650hdvS, 25.3 s, ~117 BPM): rebuilt at 16:9 for the Moovi demo, every part kept
-// as a reusable piece. The reference's music-player cards become Moovi's own UI (film players, preset cards, crew
-// lines, graph nodes); the people are drawn and animated in code for now (Ishaan sends his own clips later, each
-// person sits in one slot: CAST.boy / CAST.girl / CAST.back).
-// Parts: D1.1 card storm in 3D around a figure · D1.2 serif words in depth over water · D1.3 dive into a card's art
-// (droste) · D1.4 backlit figure, sun bloom, hair in wind · D1.5 pull-out into a frame on a white wall · D1.6 white
-// matte flash · D1.7 tall serif words behind the head, then the grade drains to grey.
-// Every frame is a pure function of t (ishaan-motion §9): seeded random only.
-'use strict';
-const W = 1920, H = 1080;
-const cv = document.getElementById('c'), out = cv.getContext('2d');
-const buf = document.createElement('canvas'); buf.width = W; buf.height = H;
-let ctx = buf.getContext('2d');
-const video = document.getElementById('v');
+// D1 "Card Sky", exact copy (instagram.com/p/DdUA650hdvS: live picture 1080×756, 25.28 s), re-skinned with Moovi's
+// cards and a drawn cast. Measured at 10 fps (docs/submission/demo/lab/README.md has the shot log).
+//  D1.1 0–6.63   a SPHERE of ~96 cards around the boy's head, tangent to it (edge-on at the sides, mirrored on the far
+//                half), flying in and spinning fast while the camera jump-cuts between profile and rear 3/4 every
+//                0.1 s; the spin dies to ~0 at 1.35 s, then cruises (~0.8 rad/s)
+//  D1.2 6.63–10.45 over the shoulder above the sea: the camera trucks left and forward past Times-italic words
+//                standing in 3D; the hero card rides top-centre → left edge → glides in and turns to face us
+//  D1.3 10.45–12.6 the cover photo sinks into a droste of nested cover frames; the camera flies the white tunnel
+//                into the last window, where the girl's shot fills the frame
+//  D1.4 12.6–16.4 backlit girl, low sun, hair gusts at 13.4 and 15.45
+//  D1.5 16.4–18.7 the same tunnel in reverse, out to the card over the sea (riser ends on 18.7)
+//  D1.6 18.7–18.83 two frames of the next shot in colour negative
+//  D1.7 18.83–25.28 the boy at dusk, tall crimson Didone words cut on behind his head (20.9 / 21.8 / 22.6 / 23.0),
+//                i-dots are four-point stars, a handle at 23.1, the grade drains to grey 23.3–24.6
+import * as THREE from 'three';
+import { RW, RH, clamp, lerp, prog, E, rand, noise, mk, duskSky, boyProfile, boyBack, girlShot, boyDuskShot } from './cast.js';
+import { allCards, panelFace, heroBody, coverPhoto, WIN } from './cards.js';
 
-/* ───────── core helpers (the canvas port of ishaan-motion's engine) ───────── */
-const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
-const lerp = (a, b, k) => a + (b - a) * k;
-const prog = (t, t0, d) => clamp((t - t0) / d);
-function bez(x1, y1, x2, y2) {
-  const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx, cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
-  const X = s => ((ax * s + bx) * s + cx) * s, Y = s => ((ay * s + by) * s + cy) * s;
-  return x => { x = clamp(x); let lo = 0, hi = 1; for (let i = 0; i < 28; i++) { const m = (lo + hi) / 2; X(m) < x ? lo = m : hi = m; } return Y((lo + hi) / 2); };
-}
-const E = { ramp: bez(0.86, 0, 0.07, 1), hard: bez(0.95, 0, 0.05, 1), out: bez(0.16, 1, 0.3, 1), outBack: bez(0.34, 1.32, 0.64, 1), in: bez(0.7, 0, 0.84, 0), settle: x => 1 - Math.pow(1 - clamp(x), 4) };
-const logPull = (S0, k) => Math.pow(S0, Math.pow(1 - clamp(k), 4));
-function rand(s) { const x = Math.sin(s * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
-function noise(x, s = 0) { const i = Math.floor(x), f = x - i, u = f * f * (3 - 2 * f); return lerp(rand(i + s * 57), rand(i + 1 + s * 57), u) * 2 - 1; }
-const mk = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
-const SERIF = '"Instrument Serif", Georgia, serif', SANS = '"Inter Tight", system-ui, sans-serif';
+const PX = 1.5, CW = Math.round(RW * PX), CH = Math.round(RH * PX), ASPECT = RW / RH;
+const T = { water: 6.633, dive: 10.45, sun: 12.6, back: 16.4, inv: 18.7, dusk: 18.83, end: 25.28 };
+const PARTS = [[0, T.water, 'D1.1 card sphere'], [T.water, T.dive, 'D1.2 words in depth over the sea'], [T.dive, T.sun, 'D1.3 droste dive'], [T.sun, T.back, 'D1.4 backlit girl'], [T.back, T.inv, 'D1.5 tunnel out'], [T.inv, T.dusk, 'D1.6 negative flash'], [T.dusk, T.end, 'D1.7 words behind the head → grey']];
 
-/* ───────── the grid: measured onsets of the reference (beat ≈ 0.513 s) ───────── */
-const CUT = { water: 6.63, dive: 10.95, sun: 12.4, wall: 16.6, matte: 18.7, dusk: 19.1, words: 20.94, grey: 23.0, end: 25.28 };
-const PARTS = [
-  [0, CUT.water, 'D1.1 card storm · 3D UI cards around a figure'],
-  [CUT.water, CUT.dive, 'D1.2 serif words in depth over water'],
-  [CUT.dive, CUT.sun, 'D1.3 dive into the card art (droste)'],
-  [CUT.sun, CUT.wall, 'D1.4 backlit figure · sun bloom · hair in wind'],
-  [CUT.wall, CUT.matte, 'D1.5 pull-out into a frame on a white wall'],
-  [CUT.matte, CUT.dusk, 'D1.6 white matte flash'],
-  [CUT.dusk, CUT.end, 'D1.7 tall serif words behind the head → grey'],
-];
+/* ───────── renderer, targets, the final quad ───────── */
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(CW, CH, false); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.NoToneMapping;
+const rt = new THREE.WebGLRenderTarget(CW, CH, { samples: 4 });
+const acc = new THREE.WebGLRenderTarget(CW, CH, { type: THREE.HalfFloatType });
+const ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+const quadGeo = new THREE.PlaneGeometry(2, 2);
+const accMat = new THREE.MeshBasicMaterial({ map: rt.texture, transparent: true, blending: THREE.AdditiveBlending, depthTest: false, depthWrite: false, toneMapped: false });
+const accScene = new THREE.Scene(); accScene.add(new THREE.Mesh(quadGeo, accMat));
+const outMat = new THREE.MeshBasicMaterial({ map: acc.texture, depthTest: false, toneMapped: false });
+const outScene = new THREE.Scene(); outScene.add(new THREE.Mesh(quadGeo, outMat));
+// 2D shots: drawn in c2, shown through a quad
+const c2 = mk(RW, RH), g2 = c2.getContext('2d');
+const tex2 = new THREE.CanvasTexture(c2); tex2.colorSpace = THREE.SRGBColorSpace;
+const flatScene = new THREE.Scene(); flatScene.add(new THREE.Mesh(quadGeo, new THREE.MeshBasicMaterial({ map: tex2, depthTest: false, toneMapped: false })));
 
-/* ───────── palette (lab only; the film's palette is Ishaan's pick) ───────── */
-const P = {
-  ice: '#F7FAFD', iceBlue: '#CFE6F7', // Moovi's mark (@moovi/brand)
-  duskTop: '#59626e', duskMid: '#b9a596', duskGlow: '#f2a65a', duskHot: '#ffd27a', duskLow: '#2a2622',
-  water: '#1d2b33', waterDeep: '#0e171c', waterLit: '#9fb2bb',
-  wine: '#6b1420', ink: '#0f1215', figure: '#14110f',
-};
+/* ───────── the world ───────── */
+const scene = new THREE.Scene();
+const cam = new THREE.PerspectiveCamera(50, ASPECT, 0.001, 200);
+scene.add(new THREE.AmbientLight(0xffffff, 1.6));
+const sunL = new THREE.DirectionalLight(0xffffff, 1.4); sunL.position.set(-1, 2, 1.5); scene.add(sunL);
+const HEAD = new THREE.Vector3(0, 1.6, 0), CAM_H = 1.44;
+const tex = c => { const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; };
 
-/* ───────── textures, built once ───────── */
-const TEX = {};
-function cloudsInto(g, w, h, seed, tint, n = 70, yMin = 0, yMax = 0.6) {
-  for (let i = 0; i < n; i++) {
-    const x = rand(i * 3 + seed) * w, y = lerp(yMin, yMax, Math.pow(rand(i * 3 + 1 + seed), 1.3)) * h, r = 60 + rand(i * 3 + 2 + seed) * 240;
-    const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, tint(0.32)); gr.addColorStop(1, tint(0));
-    g.fillStyle = gr; g.beginPath(); g.ellipse(x, y, r * 2.4, r * 0.55, 0, 0, 7); g.fill();
-  }
-}
-function buildDusk() { // D1.1 / D1.7 sky: a grey cloud deck over a burning horizon band
-  const c = mk(2400, 1350), g = c.getContext('2d');
-  const s = g.createLinearGradient(0, 0, 0, 1350);
-  s.addColorStop(0, P.duskTop); s.addColorStop(0.42, P.duskMid); s.addColorStop(0.66, P.duskGlow); s.addColorStop(0.73, P.duskHot); s.addColorStop(0.78, '#e2763c'); s.addColorStop(0.86, '#5b3a2c'); s.addColorStop(1, P.duskLow);
-  g.fillStyle = s; g.fillRect(0, 0, 2400, 1350);
-  g.filter = 'blur(18px)'; cloudsInto(g, 2400, 1350, 11, a => `rgba(70,74,84,${a})`, 90, 0, 0.55); cloudsInto(g, 2400, 1350, 29, a => `rgba(230,190,160,${a * 0.6})`, 40, 0.3, 0.62);
-  cloudsInto(g, 2400, 1350, 47, a => `rgba(255,120,60,${a * 0.7})`, 26, 0.68, 0.76); g.filter = 'none';
-  TEX.dusk = c;
-}
-function buildSun() { // D1.4 sky: pale gold, a low sun, a soft grey ceiling
-  const c = mk(2400, 1350), g = c.getContext('2d');
-  const s = g.createLinearGradient(0, 0, 0, 1350); s.addColorStop(0, '#7d7c78'); s.addColorStop(0.3, '#d9d2b0'); s.addColorStop(0.55, '#fbeeaa'); s.addColorStop(0.8, '#f4e08c'); s.addColorStop(1, '#c9b56e');
-  g.fillStyle = s; g.fillRect(0, 0, 2400, 1350);
-  g.filter = 'blur(22px)'; cloudsInto(g, 2400, 1350, 5, a => `rgba(110,108,100,${a})`, 60, 0, 0.32); cloudsInto(g, 2400, 1350, 77, a => `rgba(255,250,220,${a * 0.5})`, 30, 0.35, 0.7); g.filter = 'none';
-  TEX.sun = c;
-}
-function buildBlueSky() { // D1.6: a cool, saturated sky behind the white matte
-  const c = mk(2200, 1240), g = c.getContext('2d');
-  const s = g.createLinearGradient(0, 0, 0, 1240); s.addColorStop(0, '#4f7fb3'); s.addColorStop(0.55, '#a9c6e2'); s.addColorStop(0.62, '#e9eef2'); s.addColorStop(0.7, '#5d86b0'); s.addColorStop(1, '#2d4f78');
-  g.fillStyle = s; g.fillRect(0, 0, 2200, 1240); g.filter = 'blur(16px)'; cloudsInto(g, 2200, 1240, 91, a => `rgba(255,255,255,${a})`, 60, 0.05, 0.6); g.filter = 'none';
-  TEX.blue = c;
-}
-function buildWater() { // D1.2: slate water, waves as stacked bright crests and dark troughs, rows tighten toward the horizon
-  const c = mk(2600, 1500), g = c.getContext('2d');
-  const s = g.createLinearGradient(0, 0, 0, 1500); s.addColorStop(0, '#2e3e47'); s.addColorStop(0.5, P.water); s.addColorStop(1, P.waterDeep);
-  g.fillStyle = s; g.fillRect(0, 0, 2600, 1500);
-  let y = 0, row = 0;
-  while (y < 1500) {
-    const gap = 6 + Math.pow(y / 1500, 1.6) * 46; // perspective: rows widen toward the viewer
-    for (let i = 0; i < 2600 / (40 + gap * 3); i++) {
-      const x = rand(row * 131 + i) * 2600, len = (40 + gap * 6) * (0.5 + rand(row * 7 + i)), th = gap * (0.18 + rand(i + row) * 0.25);
-      const lit = rand(row * 3 + i * 5) > 0.55;
-      g.fillStyle = lit ? `rgba(170,190,198,${0.10 + rand(i * 9 + row) * 0.22})` : `rgba(5,10,14,${0.25 + rand(i * 11 + row) * 0.3})`;
-      g.beginPath(); g.ellipse(x, y + gap * 0.5, len, th, (rand(i * 13 + row) - 0.5) * 0.08, 0, 7); g.fill();
-    }
-    y += gap; row++;
-  }
-  TEX.water = c;
-}
+// sky cylinder for D1.1 (the horizon row sits 0.38 of a frame below centre, as measured)
+const RC = 30, Y_TOP = CAM_H + 20, Y_BOT = CAM_H - 16;
+const hz = (Y_TOP - (CAM_H - 0.455 * 2 * Math.tan(25 * Math.PI / 180) * RC)) / (Y_TOP - Y_BOT);
+const sky = new THREE.Mesh(new THREE.CylinderGeometry(RC, RC, Y_TOP - Y_BOT, 96, 1, true), new THREE.MeshBasicMaterial({ map: tex(duskSky(4096, 1400, hz, 11)), side: THREE.BackSide, toneMapped: false }));
+sky.position.y = (Y_TOP + Y_BOT) / 2; scene.add(sky);
 
-/* ───────── Moovi UI cards (the reference's music players, made ours) ───────── */
-const FILMS = [ // real Moovi films, named as the mastery logs name them
-  { t: 'Resend · launch v14', a: 'Launch video', hue: ['#151515', '#3a3a3a', '#f2f2ee'] },
-  { t: 'Linear · launch', a: 'Launch video', hue: ['#1b1d3a', '#5e6ad2', '#e8e9ff'] },
-  { t: 'Lab vlog · v10', a: 'Edit', hue: ['#2b2117', '#c8955a', '#fff1dd'] },
-  { t: 'Blue Bottle · showreel', a: 'Showreel', hue: ['#13324a', '#4c9bd6', '#e8f4ff'] },
-  { t: 'moovi · brand film', a: 'Showreel', hue: ['#1c2630', P.iceBlue, P.ice] },
-  { t: 'Premium captions 4', a: 'Edit', hue: ['#3b0d12', '#d8323c', '#ffe8e3'] },
-];
-function rr(g, x, y, w, h, r) { g.beginPath(); g.roundRect(x, y, w, h, r); }
-function artInto(g, x, y, w, h, f, seed) { // a film's cover: its own hue, a horizon, a figure or a type mark
-  const s = g.createLinearGradient(x, y, x + w, y + h); s.addColorStop(0, f.hue[1]); s.addColorStop(1, f.hue[0]);
-  g.fillStyle = s; g.fillRect(x, y, w, h);
-  g.fillStyle = f.hue[2]; g.globalAlpha = 0.85;
-  const k = seed % 3;
-  if (k === 0) { g.beginPath(); g.arc(x + w * 0.62, y + h * 0.42, w * 0.16, 0, 7); g.fill(); g.globalAlpha = 0.35; g.fillRect(x, y + h * 0.62, w, h * 0.38); }
-  else if (k === 1) { g.font = `italic 400 ${w * 0.34}px ${SERIF}`; g.textAlign = 'center'; g.fillText(f.a.split(' ')[0].toLowerCase(), x + w / 2, y + h * 0.62); }
-  else { for (let i = 0; i < 5; i++) { g.globalAlpha = 0.18 + i * 0.12; rr(g, x + w * 0.12, y + h * (0.16 + i * 0.14), w * (0.3 + rand(seed + i) * 0.5), h * 0.07, 6); g.fill(); } }
-  g.globalAlpha = 1;
-}
-function playerCard(f, seed, dark = true) { // 300×470: cover, title, "Moovi", progress, controls
-  const c = mk(300, 470), g = c.getContext('2d');
-  g.fillStyle = dark ? '#16191c' : P.ice; rr(g, 0, 0, 300, 470, 22); g.fill();
-  g.save(); rr(g, 18, 18, 264, 264, 12); g.clip(); artInto(g, 18, 18, 264, 264, f, seed); g.restore();
-  const ink = dark ? '#eef2f4' : '#14181b', dim = dark ? 'rgba(238,242,244,0.5)' : 'rgba(20,24,27,0.5)';
-  g.fillStyle = ink; g.font = `700 21px ${SANS}`; g.textAlign = 'left'; g.fillText(f.t, 20, 316);
-  g.fillStyle = dim; g.font = `500 16px ${SANS}`; g.fillText(`Moovi · ${f.a}`, 20, 340);
-  g.fillStyle = dim; rr(g, 20, 368, 260, 5, 3); g.fill(); g.fillStyle = ink; rr(g, 20, 368, 70 + rand(seed) * 150, 5, 3); g.fill();
-  g.fillStyle = ink; g.beginPath(); g.arc(150, 420, 24, 0, 7); g.fill();
-  g.fillStyle = dark ? '#16191c' : P.ice; g.fillRect(141, 409, 6, 22); g.fillRect(153, 409, 6, 22);
-  for (const sx of [-1, 1]) { g.fillStyle = ink; g.beginPath(); g.moveTo(150 + sx * 62, 420); g.lineTo(150 + sx * 48, 410); g.lineTo(150 + sx * 48, 430); g.fill(); g.fillRect(150 + sx * 64 - (sx > 0 ? 0 : 3), 410, 3, 20); }
-  g.fillStyle = '#4fd18b'; g.beginPath(); g.arc(266, 316, 9, 0, 7); g.fill();
-  return c;
-}
-function presetCard(name, line) {
-  const c = mk(300, 380), g = c.getContext('2d');
-  g.fillStyle = P.ice; rr(g, 0, 0, 300, 380, 24); g.fill();
-  g.fillStyle = P.iceBlue; rr(g, 18, 18, 264, 200, 14); g.fill();
-  g.fillStyle = '#14181b'; g.font = `italic 400 64px ${SERIF}`; g.textAlign = 'left'; g.fillText(name, 26, 290);
-  g.fillStyle = 'rgba(20,24,27,0.55)'; g.font = `500 17px ${SANS}`; g.fillText(line, 28, 326);
-  g.fillStyle = '#14181b'; rr(g, 28, 340, 84, 24, 12); g.fill(); g.fillStyle = P.ice; g.font = `700 13px ${SANS}`; g.fillText('PRESET', 44, 357);
-  return c;
-}
-function crewCard(agent, line, n) {
-  const c = mk(380, 128), g = c.getContext('2d');
-  g.fillStyle = 'rgba(22,25,28,0.94)'; rr(g, 0, 0, 380, 128, 20); g.fill();
-  g.fillStyle = P.iceBlue; g.beginPath(); g.arc(46, 46, 24, 0, 7); g.fill();
-  g.fillStyle = '#14181b'; g.font = `800 20px ${SANS}`; g.textAlign = 'center'; g.fillText(agent[0], 46, 53);
-  g.textAlign = 'left'; g.fillStyle = '#eef2f4'; g.font = `700 19px ${SANS}`; g.fillText(agent, 84, 42);
-  g.fillStyle = 'rgba(238,242,244,0.55)'; g.font = `500 14px ${SANS}`; g.fillText(`desk ${n} · working`, 84, 62);
-  g.fillStyle = '#eef2f4'; g.font = `500 17px ${SANS}`; g.fillText(line, 22, 104);
-  return c;
-}
-function graphCard(seed) {
-  const c = mk(340, 260), g = c.getContext('2d');
-  g.fillStyle = '#101417'; rr(g, 0, 0, 340, 260, 20); g.fill();
-  g.fillStyle = 'rgba(238,242,244,0.55)'; g.font = `600 13px ${SANS}`; g.fillText('FalkorDB · why this edit?', 18, 30);
-  const N = [[60, 120, 'Decision'], [170, 80, 'Rule'], [280, 130, 'Feedback'], [150, 200, 'Asset']];
-  g.strokeStyle = 'rgba(207,230,247,0.6)'; g.lineWidth = 2;
-  [[0, 1], [1, 2], [0, 3]].forEach(([a, b]) => { g.beginPath(); g.moveTo(N[a][0], N[a][1]); g.lineTo(N[b][0], N[b][1]); g.stroke(); });
-  N.forEach(([x, y, s], i) => { g.fillStyle = i === 2 ? P.iceBlue : '#2a3238'; g.beginPath(); g.arc(x, y, 15, 0, 7); g.fill(); g.fillStyle = '#eef2f4'; g.font = `600 13px ${SANS}`; g.textAlign = 'center'; g.fillText(s, x, y + 34); });
-  return c;
-}
-const CREW = [['Editor', 'cut 3 retakes, kept take 2'], ['Sound', 'riser lands on the cut'], ['Writer', 'hook: "every cut has a reason"'], ['Lens', 'checked · 0 to fix'], ['Keeper', 'remembered: bigger captions'], ['Designer', 'cast 4 moves from the library'], ['Researcher', 'read the site, 6 proof shots'], ['Moovi', 'picked Launch video']];
-function blurred(c, px) { if (!px) return c; const pad = px * 3, o = mk(c.width + pad * 2, c.height + pad * 2), g = o.getContext('2d'); g.filter = `blur(${px}px)`; g.drawImage(c, pad, pad); o.pad = pad; return o; }
-function buildCards() {
-  const list = [];
-  FILMS.forEach((f, i) => { list.push(playerCard(f, i * 7 + 1, true)); list.push(playerCard(f, i * 7 + 4, i % 2 === 0)); });
-  list.push(presetCard('Edit', 'Upload, pick the part')); list.push(presetCard('Launch', 'From a site link')); list.push(presetCard('Showreel', 'A brand film, theme-locked'));
-  CREW.forEach(([a, l], i) => list.push(crewCard(a, l, i + 1)));
-  list.push(graphCard(1)); list.push(graphCard(2));
-  TEX.cards = list.map(c => [c, blurred(c, 4), blurred(c, 10)]);
-  TEX.hero = playerCard(FILMS[4], 3, false); // the card D1.2 holds and D1.3 dives into
-}
-
-/* ───────── the drawn cast (stand-ins for Ishaan's clips) ───────── */
-function spline(pts, closed = true) { // Catmull-Rom through points
-  const n = pts.length; ctx.moveTo(pts[0][0], pts[0][1]);
-  for (let i = 0; i < (closed ? n : n - 1); i++) {
-    const p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n], p3 = pts[(i + 2) % n];
-    ctx.bezierCurveTo(p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6, p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6, p2[0], p2[1]);
-  }
-}
-const HEAD = [[-38, -6], [-70, -60], [-96, -138], [-88, -214], [-40, -266], [30, -268], [70, -232], [82, -194], [79, -176], [108, -142], [86, -128], [91, -114], [84, -102], [89, -92], [80, -64], [52, -46], [36, -10]];
-function headPath(look) { // profile facing right; look < 0 tilts the chin up, pivoting at the neck
-  ctx.save(); ctx.translate(0, -24); ctx.rotate(look); ctx.translate(0, 24);
-  ctx.beginPath(); spline(HEAD); ctx.closePath();
-  for (let i = 0; i < 9; i++) { const a = lerp(3.5, 5.55, i / 8), r = 104 + (i % 2) * 6; ctx.moveTo(Math.cos(a) * r - 8 + 26, Math.sin(a) * r - 150 + 23); ctx.arc(Math.cos(a) * r - 8, Math.sin(a) * r - 150, 26, 0, 7); }
-  ctx.restore();
-}
-function torsoPath(t) {
-  const b = 1 + 0.006 * Math.sin(t * 1.7);
-  ctx.beginPath(); spline([[-46, -8], [-60, 30], [-200, 96 * b], [-262, 180], [-290, 700], [250, 700], [232, 170], [176, 92 * b], [44, 30], [40, -8]], true); ctx.closePath();
-}
-/** CAST.boy: a young man in profile, looking up; rim-lit on the sky side. o = { x, y, s, look, rim, fill, tee } */
-function boy(t, o) {
-  ctx.save(); ctx.translate(o.x, o.y); ctx.scale(o.s, o.s);
-  const look = o.look ?? (-0.12 + 0.05 * Math.sin(t * 0.6) + noise(t * 0.4, 3) * 0.03);
-  // torso first (a tee that catches a little sky), then the head over it
-  torsoPath(t); const tg = ctx.createLinearGradient(-200, 0, 240, 0); tg.addColorStop(0, o.tee ?? '#3a3532'); tg.addColorStop(1, o.teeLit ?? '#6d635c'); ctx.fillStyle = o.fill ?? tg; ctx.fill();
-  if (o.rim) { ctx.save(); torsoPath(t); ctx.clip(); ctx.translate(-7, 0); torsoPath(t); ctx.fillStyle = o.fill ?? (o.tee ?? '#3a3532'); ctx.restore(); }
-  headPath(look); ctx.fillStyle = o.fill ?? P.figure; ctx.fill();
-  if (o.rim) { // a warm rim along the face: draw the head in light, then the head again nudged back in dark
-    ctx.save(); headPath(look); ctx.clip(); ctx.fillStyle = o.rim; ctx.fillRect(-200, -400, 400, 500); ctx.translate(-6, 2); headPath(look); ctx.fillStyle = o.fill ?? P.figure; ctx.fill(); ctx.restore();
-  }
-  ctx.restore();
-}
-/** CAST.girl: profile facing left, long hair streaming in the wind, backlit (D1.4) */
-function girl(t, o) {
-  ctx.save(); ctx.translate(o.x, o.y); ctx.scale(-o.s, o.s); // mirrored: faces left
-  const look = -0.05 + noise(t * 0.5, 9) * 0.04;
-  torsoPath(t); ctx.fillStyle = '#1b1612'; ctx.fill();
-  headPath(look); ctx.fillStyle = '#1b1612'; ctx.fill();
-  // hair: a mass behind the head plus strands lifted by gusts (noise in time, phase along the strand)
-  ctx.save(); ctx.translate(0, -24); ctx.rotate(look); ctx.translate(0, 24);
-  ctx.fillStyle = '#1b1612'; ctx.beginPath(); spline([[-20, -270], [-96, -226], [-120, -120], [-130, 20], [-90, 160], [-40, 120], [-50, -10], [-30, -150]]); ctx.fill();
-  // hair in wind: tapered ribbons (filled, not lines) whose spines wave on a travelling sine, lifted by gusts; the
-  // outermost few catch the sun as thin gold edges (backlit hair glows at its fringe)
-  const gust = 0.5 + 0.5 * noise(t * 0.7, 21);
-  const ribbon = (i, lit) => {
-    const sy = -238 + i * 17 + rand(i) * 8, len = 210 + rand(i * 3) * 170, wid = lit ? 2.5 : 16 + rand(i * 5) * 14, ph = rand(i * 7) * 6, n = 14, top = [], bot = [];
-    for (let k = 0; k <= n; k++) {
-      const u = k / n, x = -70 - u * len * (0.55 + gust * 0.55), wave = Math.sin(t * 2.6 - u * 5 + ph) * 22 * u * (0.5 + gust), y = sy + u * u * 150 * (1 - gust * 0.65) + wave, hw = wid * (1 - u * 0.92) / 2;
-      top.push([x, y - hw]); bot.push([x, y + hw]);
-    }
-    ctx.beginPath(); top.forEach(([x, y], k) => k ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); bot.reverse().forEach(([x, y]) => ctx.lineTo(x, y)); ctx.closePath();
-    ctx.fillStyle = lit ? 'rgba(255,214,150,0.6)' : '#1b1612'; ctx.fill();
-  };
-  for (let i = 0; i < 14; i++) ribbon(i, false);
-  for (let i = 0; i < 5; i++) ribbon(i * 3 + 1, true);
-  ctx.restore(); ctx.restore();
-}
-/** CAST.back: the back of a head and a shoulder, near the lens, out of focus (D1.2) */
-function backOfHead(t, x, y, s, blur) {
-  ctx.save(); ctx.filter = `blur(${blur}px)`; ctx.translate(x + noise(t * 0.3, 4) * 6, y); ctx.scale(s, s); ctx.fillStyle = '#0b0f12';
-  ctx.beginPath(); ctx.ellipse(0, -150, 120, 150, 0.08, 0, 7); ctx.fill();
-  ctx.beginPath(); spline([[-60, -20], [-300, 60], [-420, 400], [380, 400], [260, 40], [60, -20]]); ctx.fill();
-  ctx.restore();
-}
-
-/* ───────── shared drawing ───────── */
-function sky(tex, t, z = 1.04, dx = 0, dy = 0) { const w = W * z * 1.25, h = H * z * 1.25; ctx.drawImage(tex, (W - w) / 2 + dx - t * 6, (H - h) / 2 + dy, w, h); }
-function vignette(a = 0.35) { const v = ctx.createRadialGradient(W / 2, H / 2, H * 0.4, W / 2, H / 2, H * 1.05); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, `rgba(0,0,0,${a})`); ctx.fillStyle = v; ctx.fillRect(0, 0, W, H); }
-function grain(t, a = 0.05) { const s = Math.floor(t * 24); ctx.save(); ctx.globalAlpha = a; for (let i = 0; i < 900; i++) { ctx.fillStyle = rand(i + s * 977) > 0.5 ? '#fff' : '#000'; ctx.fillRect(rand(i * 2 + s) * W, rand(i * 3 + s * 7) * H, 2, 2); } ctx.restore(); }
-
-/* ───────── D1.1 card storm ───────── */
-const STORM = Array.from({ length: 64 }, (_, i) => ({
-  tex: i % 24, x: (rand(i * 5) - 0.5) * 2600, y: (rand(i * 5 + 1) - 0.5) * 1500, z: (rand(i * 5 + 2) - 0.42) * 1700,
-  rx: rand(i * 5 + 3) * 6, ry: rand(i * 5 + 4) * 6, rz: (rand(i * 7) - 0.5) * 0.9, vr: 0.25 + rand(i * 9) * 0.7, fall: 30 + rand(i * 11) * 70, sw: rand(i * 13) * 6,
+// the sea for D1.2 / D1.3 / D1.5: a shaded plane, normals from summed waves, fresnel to a grey sky, soft specular
+const sea = new THREE.Mesh(new THREE.PlaneGeometry(400, 400, 1, 1), new THREE.ShaderMaterial({
+  uniforms: { uT: { value: 0 }, uDeep: { value: new THREE.Color('#081014') }, uMid: { value: new THREE.Color('#2b3e48') }, uSky: { value: new THREE.Color('#7f909a') } },
+  vertexShader: 'varying vec3 vW; void main(){ vec4 w = modelMatrix*vec4(position,1.); vW = w.xyz; gl_Position = projectionMatrix*viewMatrix*w; }',
+  fragmentShader: `uniform float uT; uniform vec3 uDeep, uMid, uSky; varying vec3 vW;
+    float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7)))*43758.5453); }
+    float vn(vec2 p){ vec2 i=floor(p), f=fract(p); vec2 u=f*f*(3.-2.*f); return mix(mix(hash(i),hash(i+vec2(1,0)),u.x), mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),u.x), u.y); }
+    float H(vec2 p){ float h=0.; float a=0.5; vec2 d=vec2(1.,0.25);
+      for(int i=0;i<6;i++){ float k = 6.2831/(2.2*pow(0.62,float(i))); vec2 dir = normalize(d + vec2(sin(float(i)*1.7), cos(float(i)*2.3))*0.6);
+        h += a*sin(dot(dir,p)*k - uT*sqrt(9.8*k)*0.55 + float(i)*1.3); a *= 0.62; }
+      return h*0.095 + (vn(p*3. + uT*0.3)-0.5)*0.03 + (vn(p*9. - uT*0.6)-0.5)*0.012; }
+    void main(){ vec2 p = vW.xz; float e = 0.02;
+      vec3 N = normalize(vec3(H(p-vec2(e,0.))-H(p+vec2(e,0.)), 2.*e, H(p-vec2(0.,e))-H(p+vec2(0.,e))));
+      vec3 V = normalize(cameraPosition - vW); float fr = pow(1.-max(dot(N,V),0.), 3.);
+      vec3 col = mix(uDeep, uMid, clamp(H(p)*6.+0.5, 0., 1.)); col = mix(col, uSky, fr*0.85);
+      vec3 L = normalize(vec3(0.3, 0.6, 1.)); col += vec3(0.5,0.55,0.58)*pow(max(dot(reflect(-V,N), L),0.), 60.)*0.6;
+      float fog = clamp(length(vW.xz-cameraPosition.xz)/60., 0., 1.); col = mix(col, uSky*0.75, fog);
+      gl_FragColor = vec4(col,1.);
+      #include <colorspace_fragment>
+    }`,
 }));
-function stormCards(t, camZ, layer) { // layer 'back' (z ≥ 0, behind the figure) or 'front'
-  const F = 1100, cx = W / 2, cy = H / 2;
-  const items = STORM.map(c => {
-    const a = c.sw + t * 0.12, x = c.x * Math.cos(a * 0.15) + c.z * Math.sin(a * 0.15) * 0.4, z = c.z * Math.cos(a * 0.15) - c.x * Math.sin(a * 0.15) * 0.15 - camZ;
-    const y = ((c.y + t * c.fall + 750) % 1500) - 750; return { c, x, y, z };
-  }).filter(o => (layer === 'back' ? o.z >= 0 : o.z < 0) && o.z > -F * 0.8).sort((a, b) => b.z - a.z);
-  for (const { c, x, y, z } of items) {
-    const s = F / (F + z), sx = cx + x * s, sy = cy + y * s;
-    const ry = c.ry + t * c.vr, rx = c.rx + t * c.vr * 0.6, rz = c.rz + Math.sin(t * 0.5 + c.sw) * 0.2;
-    const dof = Math.abs(z - 120); const lvl = dof > 700 ? 2 : dof > 330 ? 1 : 0, img = TEX.cards[c.tex][lvl], pad = img.pad ?? 0;
-    const fx = Math.cos(ry), fy = Math.cos(rx); if (Math.abs(fx) < 0.06) continue;
-    ctx.save(); ctx.translate(sx, sy); ctx.rotate(rz); ctx.transform(fx, Math.sin(ry) * 0.18, Math.sin(rx) * 0.12, fy, 0, 0); ctx.scale(s * 0.95, s * 0.95);
-    ctx.globalAlpha = clamp(1.4 - z / 1500); if (fx < 0) ctx.filter = 'brightness(0.55)'; // the back of a card reads darker
-    ctx.drawImage(img, -img.width / 2, -img.height / 2); ctx.restore();
+sea.rotation.x = -Math.PI / 2; sea.position.y = 0; scene.add(sea);
+// (the ShaderMaterial writes linear colour into the render target; the final quad converts to sRGB)
+sea.material.fragmentShader = sea.material.fragmentShader.replace('#include <colorspace_fragment>', '');
+
+// the boy: a billboard whose drawing follows the camera (profile from his right side, rear 3/4, back)
+const BOY = {};
+{ const w = 1024, h = 1800, s = 1.55, nx = 512, ny = 806;
+  for (const view of ['prof', 'b34', 'back']) { const c = mk(w, h), g = c.getContext('2d');
+    if (view === 'prof') boyProfile(g, 0, nx, ny, s, -0.14, { tee: '#7d8186', teeLit: '#a2a5a8', teeDark: '#3d4247', rim: 'rgba(255,180,120,0.55)' });
+    else boyBack(g, 0, nx, ny, s, view === 'b34' ? 0.55 : 0.12);
+    BOY[view] = tex(c); } }
+const PXW = 1433; // px per world unit on the boy textures (head 0.24 world tall)
+const boy = new THREE.Mesh(new THREE.PlaneGeometry(1024 / PXW, 1800 / PXW), new THREE.MeshBasicMaterial({ map: BOY.prof, transparent: true, alphaTest: 0.02, toneMapped: false }));
+boy.position.set(0, 1.933 - 900 / PXW, 0); scene.add(boy);
+
+// the card sphere: a Fibonacci sphere, each card tangent to it (its face points out), a random roll
+const SPH = new THREE.Group(); SPH.position.copy(HEAD); scene.add(SPH);
+const LIST = allCards(), R = 0.9, N = 64, CARDS = [];
+LIST.forEach(o => { o.tex = tex(o.c); });
+for (let i = 0; i < N; i++) {
+  const o = LIST[Math.floor(rand(i * 13 + 2) * LIST.length)], w = o.w * 1.35 * (0.85 + rand(i * 5) * 0.35), h = w * o.c.height / o.c.width;
+  const y = 1 - 2 * (i + 0.5) / N, r = Math.sqrt(1 - y * y), ph = i * 2.39996 + (rand(i) - 0.5) * 0.4;
+  const dir = new THREE.Vector3(Math.cos(ph) * r, y * 0.92, Math.sin(ph) * r).normalize();
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: o.tex, side: THREE.DoubleSide, transparent: true, alphaTest: 0.05, toneMapped: false }));
+  const pivot = new THREE.Group(); pivot.add(m); SPH.add(pivot);
+  CARDS.push({ m, pivot, dir, rr: R * (0.94 + rand(i * 3) * 0.12), roll: (rand(i * 7) - 0.5) * 0.9, at: -0.04 + rand(i * 11) * 0.5, s2: i % 6 === 3 });
+}
+function placeCards(t) {
+  for (const c of CARDS) {
+    const k = E.out(prog(t, c.at, 0.4)), rr = c.rr * (1 + 0.9 * (1 - k)); // they sweep in from just outside the sphere, past the lens
+    c.m.position.copy(c.dir).multiplyScalar(rr); c.m.lookAt(c.dir.clone().multiplyScalar(rr * 2)); c.m.rotateZ(c.roll);
+    c.m.visible = (t < T.water ? true : c.s2) && t >= c.at;
   }
 }
-function d1Storm(t) {
-  const k = t / CUT.water, camZ = lerp(0, 260, E.settle(k)); // a slow push through the storm
-  ctx.save(); const z = 1 + k * 0.05; ctx.translate(W / 2, H / 2); ctx.scale(z, z); ctx.translate(-W / 2, -H / 2);
-  sky(TEX.dusk, t, 1.02);
-  stormCards(t, camZ, 'back');
-  boy(t, { x: 930 - k * 30, y: 840, s: 0.98 + k * 0.05, rim: 'rgba(255,170,100,0.9)' });
-  stormCards(t, camZ, 'front');
-  ctx.restore(); vignette(0.32);
-}
+// the sphere's spin: fast at the open, dying to ~0 at 1.35 s, cruising at 0.8 rad/s; slow (0.25) over the sea
+const OMEGA = t => t < T.water ? 5.6 * Math.exp(-t / 0.32) + 0.8 * E.io(prog(t, 1.2, 1.1)) : 0.25;
+const THETA = (() => { const dt = 0.005, a = [0]; for (let t = dt; t <= T.end + 0.01; t += dt) a.push(a[a.length - 1] + OMEGA(t) * dt); return t => a[Math.min(a.length - 1, Math.max(0, Math.round(t / dt)))]; })();
 
-/* ───────── D1.2 serif words in depth over water ───────── */
-const LYRIC = [ // placeholder copy (on-screen words are Ishaan's): concept A's line
-  { s: 'If you could', at: 6.8, x: 760, y: 600, px: 140 }, { s: 'see every cut', at: 7.85, x: 800, y: 760, px: 140 },
-  { s: 'you would', at: 8.89, x: 780, y: 560, px: 156 }, { s: 'know why', at: 9.36, x: 820, y: 730, px: 156 },
+/* ───────── D1.2 words in 3D (Times italic, as the reference) ───────── */
+const WORD_PX = 0.00112, SERIF_IT = 'italic 400 160px "Times New Roman", Tinos, Times, serif';
+function wordTex(s, blur) {
+  const g0 = mk(10, 10).getContext('2d'); g0.font = SERIF_IT; const w = Math.ceil(g0.measureText(s).width) + 80, c = mk(w, 230), g = c.getContext('2d');
+  g.font = SERIF_IT; g.fillStyle = '#fff'; g.shadowColor = 'rgba(0,0,0,0.45)'; g.shadowBlur = 18; g.shadowOffsetY = 4; if (blur) g.filter = `blur(${blur}px)`; g.fillText(s, 40, 160);
+  return { t: tex(c), w: w * WORD_PX, h: 230 * WORD_PX, adv: (g0.measureText(s + ' ').width) * WORD_PX };
+}
+// placements in the sea frame: x = forward (towards the sea), y = up, z = right
+const S2 = (r, u, f) => new THREE.Vector3(f, u, r);
+const LINES = [ // placeholder copy (Ishaan's words), same rhythm as the reference's lyric
+  { words: ['If', 'you', 'could'], at: [6.7, 6.8, 6.9], pos: S2(0.02, 1.2, 0.62), out: 9.95 },
+  { words: ['see', 'every', 'cut,'], at: [7.4, 7.5, 7.7], pos: S2(-0.16, 1.18, 1.5), out: 9.95 },
+  { words: ['you', 'would'], at: [8.4, 8.5], pos: S2(-0.62, 1.12, 2.25), out: 9.95 },
+  { words: ['know', 'why.'], at: [8.9, 9.05], pos: S2(-0.62, 1.0, 2.25), out: 9.95 },
 ];
-function serifWords(t, w, outAt) {
-  const words = w.s.split(' '); ctx.font = `italic 400 ${w.px}px ${SERIF}`; ctx.textAlign = 'left';
-  const total = ctx.measureText(w.s).width; let x = w.x - total / 2;
-  words.forEach((word, i) => {
-    const at = w.at + i * 0.13 + (rand(i + w.at) - 0.5) * 0.05, k = E.out(prog(t, at, 0.55)), o = 1 - E.in(prog(t, outAt, 0.4)), ww = ctx.measureText(word + ' ').width;
-    if (k > 0 && o > 0) {
-      ctx.save(); ctx.globalAlpha = k * o; ctx.filter = `blur(${(1 - k) * 10 + (1 - o) * 14}px)`; ctx.fillStyle = `rgb(${lerp(150, 240, k)},${lerp(160, 244, k)},${lerp(166, 246, k)})`;
-      ctx.shadowColor = 'rgba(0,0,0,0.4)'; ctx.shadowBlur = 24; ctx.fillText(word, x, w.y + (1 - k) * 14 - (1 - o) * 20); ctx.restore();
-    }
-    x += ww;
+const WORDS = [];
+for (const L of LINES) {
+  const parts = L.words.map(s => ({ s, a: wordTex(s, 0), b: wordTex(s, 9) }));
+  const total = parts.reduce((n, p) => n + p.a.adv, 0); let x = -total / 2;
+  parts.forEach((p, i) => {
+    const grp = new THREE.Group(); scene.add(grp);
+    const mA = new THREE.Mesh(new THREE.PlaneGeometry(p.a.w, p.a.h), new THREE.MeshBasicMaterial({ map: p.a.t, transparent: true, depthWrite: false, toneMapped: false }));
+    const mB = new THREE.Mesh(new THREE.PlaneGeometry(p.b.w, p.b.h), new THREE.MeshBasicMaterial({ map: p.b.t, transparent: true, depthWrite: false, toneMapped: false }));
+    grp.add(mB, mA); WORDS.push({ grp, mA, mB, line: L, off: x + p.a.w / 2 - 40 * WORD_PX, at: L.at[i] }); x += p.a.adv;
   });
 }
-function heroCard(t, x, y, s, rot = 0, blur = 0) { const c = TEX.hero; ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(s, s); if (blur) ctx.filter = `blur(${blur}px)`; ctx.shadowColor = 'rgba(0,0,0,0.45)'; ctx.shadowBlur = 60; ctx.shadowOffsetY = 30; ctx.drawImage(c, -c.width / 2, -c.height / 2); ctx.restore(); }
-function d1Water(t) {
-  const lt = t - CUT.water, k = lt / (CUT.dive - CUT.water);
-  ctx.save(); ctx.filter = 'blur(1.5px)'; const z = 1.06 + k * 0.05; ctx.drawImage(TEX.water, -300 - lt * 26, -260 + Math.sin(lt * 0.9) * 10, 2600 * z, 1500 * z); ctx.restore();
-  ctx.save(); ctx.globalAlpha = 0.5; ctx.drawImage(TEX.water, -500 + lt * 14, -120, 2900, 1700); ctx.restore(); // a second swell for parallax
-  // the held card: drifts down from above, settles slightly left of centre, then floats (D1.3 takes it from here)
-  const ck = E.settle(prog(lt, 0, 1.8)); heroCard(t, lerp(1420, 1460, k), lerp(-300, 400, ck) + Math.sin(lt * 1.3) * 8, 1.25, -0.04 + Math.sin(lt * 0.7) * 0.02, (1 - ck) * 6);
-  serifWords(t, LYRIC[0], 8.6); serifWords(t, LYRIC[1], 8.6); serifWords(t, LYRIC[2], 10.7); serifWords(t, LYRIC[3], 10.7);
-  // one giant word passes near the lens, defocused (the reference's "If you")
-  { const gk = prog(t, 7.2, 1.9); if (gk > 0 && gk < 1) { ctx.save(); ctx.globalAlpha = Math.sin(gk * Math.PI) * 0.9; ctx.filter = 'blur(7px)'; ctx.font = `italic 400 300px ${SERIF}`; ctx.fillStyle = '#f2f5f6'; ctx.fillText('every', lerp(1500, 1050, gk), 1000); ctx.restore(); } }
-  backOfHead(t, 1830, 1020, 1.6, 10);
-  vignette(0.45);
-}
-
-/* ───────── D1.3 dive into the card art (droste), D1.4 backlit figure ───────── */
-const sceneB = mk(W, H), gB = sceneB.getContext('2d');
-function d1Sun(t, into = ctx) {
-  const prev = ctx; ctx = into; const lt = t - CUT.sun, z = 1.05 + Math.max(0, lt) * 0.012;
-  sky(TEX.sun, t, z, -60, 40);
-  const sx = 760, sy = 600; // the sun sits just behind the head's edge
-  girl(t, { x: 960, y: 1090, s: 1.5 });
-  ctx.save(); ctx.globalCompositeOperation = 'lighter';
-  const b = ctx.createRadialGradient(sx, sy, 0, sx, sy, 520); b.addColorStop(0, 'rgba(255,250,225,1)'); b.addColorStop(0.08, 'rgba(255,240,190,0.95)'); b.addColorStop(0.25, 'rgba(255,214,120,0.35)'); b.addColorStop(1, 'rgba(255,200,90,0)');
-  ctx.fillStyle = b; ctx.fillRect(0, 0, W, H); ctx.restore(); // one soft bloom; it wraps the silhouette's edge
-  vignette(0.25); ctx = prev;
-}
-function d1Dive(t) { // the held card grows; its cover is live scene B; inside the cover sits a smaller copy (droste); push in
-  const lt = t - CUT.dive, k = prog(lt, 0, CUT.sun - CUT.dive);
-  d1Sun(t, gB);
-  d1WaterBackdrop(t);
-  const c = TEX.hero, art = { x: 18, y: 18, w: 264, h: 264 }; // cover rect inside the card
-  // log-space push (scale is exponential in the eased time) until the cover is exactly the frame's height: the cover
-  // shows scene B's centre square, so at k = 1 the cover IS the middle of scene B
-  const s0 = 1.25, e = E.hard(k), sc = s0 * Math.pow(H / art.h / s0, e);
-  const cx = lerp(1460, W / 2, e), cy = lerp(400, H / 2, e);
-  ctx.save(); ctx.translate(cx, cy); ctx.rotate(lerp(-0.04, 0, E.hard(k))); ctx.scale(sc, sc);
-  const ox = -c.width / 2, oy = -c.height / 2, ax = ox + art.x + art.w / 2, ay = oy + art.y + art.h / 2;
-  ctx.translate(-(ax) * E.hard(k), -(ay) * E.hard(k)); // move the cover's centre to the frame centre as we push
-  ctx.drawImage(c, ox, oy);
-  ctx.restore();
-  // past 60 % of the push, scene B spills out beyond the card's edges, so the hand-over at k = 1 has no seam
-  const spill = E.in(prog(k, 0.6, 0.4)); if (spill) { ctx.save(); ctx.globalAlpha = spill; ctx.drawImage(sceneB, 0, 0); ctx.restore(); }
-  ctx.save(); ctx.translate(cx, cy); ctx.rotate(lerp(-0.04, 0, e)); ctx.scale(sc, sc); ctx.translate(-ax * e, -ay * e);
-  // live cover: scene B cropped to a square, then a white frame with scene B again inside (two levels)
-  ctx.save(); ctx.beginPath(); ctx.rect(ox + art.x, oy + art.y, art.w, art.h); ctx.clip();
-  ctx.drawImage(sceneB, (W - H) / 2, 0, H, H, ox + art.x, oy + art.y, art.w, art.h);
-  const fw = art.w * 0.34; ctx.globalAlpha = 1 - E.hard(prog(k, 0.55, 0.35)); ctx.fillStyle = P.ice; ctx.fillRect(ax - fw / 2 - 5, ay - fw / 2 - 5, fw + 10, fw + 10); ctx.drawImage(sceneB, (W - H) / 2, 0, H, H, ax - fw / 2, ay - fw / 2, fw, fw);
-  ctx.globalAlpha = 1; ctx.fillStyle = '#14181b'; ctx.font = `800 ${art.w * 0.07}px ${SANS}`; ctx.textAlign = 'center'; ctx.globalAlpha = 1 - k; ctx.fillText('moovi', ax, oy + art.y + 22); ctx.globalAlpha = 1;
-  ctx.restore(); ctx.restore();
-  // the cover now fills the frame exactly: hand over to scene B (a match cut, not a dissolve)
-  if (k >= 0.999) ctx.drawImage(sceneB, 0, 0);
-}
-function d1WaterBackdrop(t) { const lt = t - CUT.water; ctx.drawImage(TEX.water, -300 - lt * 26, -260, 2600 * 1.11, 1500 * 1.11); vignette(0.5); }
-
-/* ───────── D1.5 pull-out into a frame on a white wall ───────── */
-function d1Wall(t) {
-  const lt = t - CUT.wall, k = E.hard(prog(lt, 0, 1.5)), back = E.in(prog(lt, 1.6, 0.45));
-  d1Sun(t, gB);
-  // the white gallery: two walls meeting in a soft corner, light falling from the left
-  const g = ctx.createLinearGradient(0, 0, W, 0); g.addColorStop(0, '#e9eaea'); g.addColorStop(0.5, '#f6f7f7'); g.addColorStop(1, '#dcdede'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = 'rgba(0,0,0,0.05)'; ctx.fillRect(W * 0.78, 0, 4, H);
-  const fw = lerp(W, 560, k), fh = fw * H / W, fx = W / 2 - fw / 2, fy = lerp(0, 330, k);
-  ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.18)'; ctx.shadowBlur = 40 * k; ctx.shadowOffsetY = 18 * k; ctx.fillStyle = '#fff'; ctx.fillRect(fx - 26 * k, fy - 26 * k, fw + 52 * k, fh + 52 * k); ctx.restore();
-  ctx.drawImage(sceneB, fx, fy, fw, fh);
-  // the stacked name above the frame (the reference's "blond / blond"), each line a beat apart
-  ['moovi', 'moovi', 'moovi'].forEach((s, i) => { const a = prog(lt, 0.55 + i * 0.12, 0.3); if (!a) return; ctx.save(); ctx.globalAlpha = a * (1 - i * 0.3); ctx.fillStyle = '#121416'; ctx.font = `800 ${86 - i * 18}px ${SANS}`; ctx.textAlign = 'center'; ctx.fillText(s, W / 2, fy - 50 - i * 0 + i * 64 - 120 + (1 - E.out(a)) * 14); ctx.restore(); });
-  ctx.fillStyle = '#121416'; ctx.globalAlpha = k; ctx.font = `600 18px ${SANS}`; ctx.textAlign = 'center'; ctx.fillText('a film by Moovi', W / 2, fy + fh + 70); ctx.globalAlpha = 1;
-  if (back > 0) { // whip back to the card over water, accelerating into the cut
-    ctx.save(); ctx.globalAlpha = back; d1WaterBackdrop(t); heroCard(t, W / 2 + (1 - back) * 400, H / 2, 1.1); ctx.restore();
+function placeWords(t) {
+  const right = new THREE.Vector3(0, 0, 1);
+  for (const w of WORDS) {
+    const vis = t >= T.water && t < T.dive; w.grp.visible = vis; if (!vis) continue;
+    w.grp.position.copy(w.line.pos).addScaledVector(right, w.off);
+    w.grp.quaternion.copy(cam.quaternion); // face the lens
+    const k = E.out(prog(t, w.at, 0.3)), sharp = prog(t, w.at + 0.07, 0.28), out = E.in(prog(t, w.line.out, 0.35));
+    const d = w.grp.position.distanceTo(cam.position), near = clamp((0.42 - d) / 0.25); // defocus when it passes close to the lens
+    const fa = sharp * (1 - near) * (1 - out);
+    w.mA.material.opacity = fa; w.mA.material.color.setScalar(lerp(0.62, 1, sharp));
+    w.mB.material.opacity = Math.max(k * (1 - sharp), near, out) * k * (1 - E.in(prog(t, w.line.out + 0.2, 0.25)));
   }
 }
 
-/* ───────── D1.6 white matte flash ───────── */
-function d1Matte(t) { sky(TEX.blue, t, 1.05); ctx.save(); ctx.shadowColor = 'rgba(255,255,255,0.9)'; ctx.shadowBlur = 30; boy(t, { x: 900, y: 800, s: 1.2, fill: '#ffffff', look: -0.15 }); ctx.restore(); }
+/* ───────── the hero card, the droste frames, the girl at the end of the tunnel ───────── */
+const HERO = new THREE.Group(); scene.add(HERO);
+const S = 0.7, NF = 5, ZF = [0]; for (let i = 1; i <= NF; i++) ZF.push(ZF[i - 1] - 0.5 * Math.pow(S, i - 1));
+const panelTex = tex(panelFace(700));
+const panelMat = new THREE.MeshLambertMaterial({ map: panelTex, transparent: true, alphaTest: 0.5, side: THREE.DoubleSide });
+const wallMat = new THREE.MeshLambertMaterial({ color: 0xf1f1ef, side: THREE.DoubleSide });
+const winC = (WIN.y + WIN.h / 2); // window centre in panel units; every level's window centre sits on the axis (0,0)
+const winRect = sc => [[WIN.x * sc, (WIN.y - winC) * sc], [(WIN.x + WIN.w) * sc, (WIN.y - winC + WIN.h) * sc]];
+for (let i = 0; i <= NF; i++) {
+  const sc = Math.pow(S, i), p = new THREE.Mesh(new THREE.PlaneGeometry(sc, sc), panelMat);
+  p.position.set(0, -winC * sc, ZF[i]); HERO.add(p);
+  if (i > 0) { // the box between window i-1 and panel i: four walls, white, lit so the tunnel reads
+    const [[ax0, ay0], [ax1, ay1]] = winRect(Math.pow(S, i - 1)), bx0 = -0.5 * sc, bx1 = 0.5 * sc, by0 = (-0.5 - winC) * sc, by1 = (0.5 - winC) * sc, z0 = ZF[i - 1], z1 = ZF[i];
+    const quad = (a, b, c, d) => { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute([...a, ...b, ...c, ...a, ...c, ...d], 3)); g.computeVertexNormals(); HERO.add(new THREE.Mesh(g, wallMat)); };
+    quad([ax0, ay0, z0], [ax1, ay0, z0], [bx1, by0, z1], [bx0, by0, z1]); quad([ax0, ay1, z0], [ax1, ay1, z0], [bx1, by1, z1], [bx0, by1, z1]);
+    quad([ax0, ay0, z0], [ax0, ay1, z0], [bx0, by1, z1], [bx0, by0, z1]); quad([ax1, ay0, z0], [ax1, ay1, z0], [bx1, by1, z1], [bx1, by0, z1]);
+  }
+}
+const WH5 = WIN.h * Math.pow(S, NF), GAP = WH5 / 0.6, TAN = Math.tan(25 * Math.PI / 180), GZ = ZF[NF] - GAP, ZSTOP = GZ + 0.8 * GAP;
+const girlTex = new THREE.CanvasTexture(c2); girlTex.colorSpace = THREE.SRGBColorSpace;
+const girlPlane = new THREE.Mesh(new THREE.PlaneGeometry(2 * 0.8 * GAP * TAN * ASPECT, 2 * 0.8 * GAP * TAN), new THREE.MeshBasicMaterial({ map: girlTex, toneMapped: false }));
+girlPlane.position.set(0, 0, GZ); HERO.add(girlPlane);
+{ // the last box: window NF to the girl's plane, so the tunnel stays closed until the camera is through
+  const [[ax0, ay0], [ax1, ay1]] = winRect(Math.pow(S, NF)), gw = girlPlane.geometry.parameters.width / 2, gh = girlPlane.geometry.parameters.height / 2, z0 = ZF[NF], z1 = GZ;
+  const quad = (a, b, c, d) => { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute([...a, ...b, ...c, ...a, ...c, ...d], 3)); g.computeVertexNormals(); HERO.add(new THREE.Mesh(g, wallMat)); };
+  quad([ax0, ay0, z0], [ax1, ay0, z0], [gw, -gh, z1], [-gw, -gh, z1]); quad([ax0, ay1, z0], [ax1, ay1, z0], [gw, gh, z1], [-gw, gh, z1]);
+  quad([ax0, ay0, z0], [ax0, ay1, z0], [-gw, gh, z1], [-gw, -gh, z1]); quad([ax1, ay0, z0], [ax1, ay1, z0], [gw, gh, z1], [gw, -gh, z1]);
+}
+const body = new THREE.Mesh(new THREE.PlaneGeometry(1.18, 1.78), new THREE.MeshLambertMaterial({ map: tex(heroBody(700)), transparent: true, alphaTest: 0.5 }));
+body.position.set(0, -winC - (1.78 - 1.18) / 2 + 0.0, -0.004); body.position.y = -winC + 0.5 - 1.18 / 2 * 0 - (1.78 / 2 - (1.18 - 1) / 2) + 0.0; HERO.add(body);
+body.position.y = -winC + 0.5 + 0.09 - 1.78 / 2; // the panel's top edge sits 0.09 under the body's top edge
+const photo = new THREE.Mesh(new THREE.PlaneGeometry(WIN.w, WIN.h), new THREE.MeshBasicMaterial({ map: tex(coverPhoto()), transparent: true, toneMapped: false }));
+HERO.add(photo);
+const shine = new THREE.Mesh(new THREE.PlaneGeometry(0.12, 2.4), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
+shine.rotation.z = -0.5; HERO.add(shine);
+const KCARD = 0.18; // world size of one panel unit
+/** zc: the camera's distance to panel 0 in panel units (droste pacing is geometric) */
+function droste(u, from, to) { const a = 4.2, l = (Math.exp(-a * u) - Math.exp(-a)) / (1 - Math.exp(-a)); return to + (from - to) * l; }
+function photoLevel(L) { const i = Math.floor(L), f = L - i; const z = i >= NF ? ZF[NF] : lerp(ZF[i], ZF[i + 1], f); return { z: z - 0.003, s: Math.pow(S, L) }; }
 
-/* ───────── D1.7 tall serif words behind the head, then the grade drains to grey ───────── */
-const BIG = [ // placeholder copy (Ishaan's words): one line, two rows, behind the head
-  { s: 'Every cut', at: 20.94, x: 640, y: 470 }, { s: 'has a', at: 21.95, x: 1330, y: 470 }, { s: 'reason', at: 22.45, x: 1240, y: 880 },
+/* ───────── cameras per shot ───────── */
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+function look(pos, target) { cam.position.copy(pos); cam.up.set(0, 1, 0); cam.lookAt(target); }
+// D1.1 open: a jump cut every 0.1 s between the profile (A) and a rear 3/4 (B); x is where the boy sits in frame
+const OPEN = [['A', 0.47], ['B', 0.6], ['A', 0.55], ['B', 0.6], ['A', 0.22], ['B', 0.5], ['A', 0.42], ['B', 0.68]];
+function camSphere(t) {
+  const D = 1.43, slot = Math.floor(t / 0.1), o = t < 0.8 ? OPEN[slot] : ['A', 0.47];
+  const az = o[0] === 'A' ? 0 : -0.95, drift = 0.01 * Math.sin(t * 0.7);
+  const pos = V(Math.sin(az) * D, CAM_H + drift, Math.cos(az) * D);
+  const fwd = HEAD.clone().setY(CAM_H).sub(pos).normalize(), right = new THREE.Vector3().crossVectors(fwd, V(0, 1, 0)).normalize();
+  const W2 = D * TAN * ASPECT; const target = HEAD.clone().setY(CAM_H).addScaledVector(right, (0.5 - o[1]) * 2 * W2);
+  const push = 1 - 0.035 * E.io(prog(t, 0.8, 5.8)); pos.lerp(target, 1 - push);
+  look(pos, target);
+}
+const KEYS2 = [ // the sea dolly: [t, cam r,u,f, look r,u,f]
+  [T.water, -0.1, 1.86, -0.95, -0.04, 0.55, 1.5],
+  [7.6, -0.3, 1.72, 0.2, -0.3, 0.45, 2.4],
+  [8.3, -0.45, 1.66, 1.05, -0.5, 0.42, 3.2],
+  [9.6, -0.55, 1.64, 1.45, -0.62, 0.45, 3.6],
+  [T.dive, -0.62, 1.63, 1.62, -0.82, 0.5, 3.7],
 ];
-function tallWord(t, w) {
-  const k = E.out(prog(t, w.at - 0.06, 0.5)); if (!k) return;
-  ctx.save(); ctx.translate(w.x, w.y); ctx.scale(0.6, 1.38 * lerp(1.06, 1, k)); ctx.font = `400 300px ${SERIF}`; ctx.textAlign = 'center'; ctx.letterSpacing = '-6px';
-  ctx.globalAlpha = k; ctx.filter = `blur(${(1 - k) * 8}px)`; ctx.fillStyle = P.wine; ctx.fillText(w.s, 0, 0); ctx.restore();
+function camSea(t) {
+  let i = 0; while (i < KEYS2.length - 2 && t > KEYS2[i + 1][0]) i++;
+  const a = KEYS2[i], b = KEYS2[i + 1], k = clamp((t - a[0]) / (b[0] - a[0])), e = i === 0 ? E.io(k) * 0.6 + k * 0.4 : k; // smooth: mostly linear between keys, eased at the start
+  const p = j => lerp(a[j], b[j], e);
+  look(S2(p(1), p(2), p(3)), S2(p(4), p(5), p(6)));
 }
-function d1Dusk(t) {
-  const lt = t - CUT.dusk, z = 1.04 + lt * 0.008;
-  ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(z, z); ctx.translate(-W / 2, -H / 2);
-  sky(TEX.dusk, t, 1.0, 0, 60);
-  BIG.forEach(w => tallWord(t, w)); // behind the figure: the head cuts the type
-  boy(t, { x: 980, y: 850, s: 1.35, look: lerp(-0.02, -0.2, E.settle(prog(lt, 0.4, 3))), rim: 'rgba(255,170,100,0.85)' });
-  ctx.restore();
-  // a small handle with two sparkles, after the last word (the reference's signature)
-  const h = prog(t, 23.4, 0.4); if (h) { ctx.save(); ctx.globalAlpha = h; ctx.fillStyle = P.wine; ctx.font = `italic 400 34px ${SERIF}`; ctx.textAlign = 'center'; ctx.fillText('moovi', 980, 700); for (const sx of [-80, 80]) { const r = 10 * (0.8 + 0.2 * Math.sin(t * 6 + sx)); ctx.beginPath(); ctx.moveTo(980 + sx, 690 - r); ctx.lineTo(980 + sx + r * 0.25, 690); ctx.lineTo(980 + sx, 690 + r); ctx.lineTo(980 + sx - r * 0.25, 690); ctx.fill(); } ctx.restore(); }
-  vignette(0.3);
+// the hero card rides in camera space: [t, x, y, z, yaw]
+const KEYSC = [[T.water, 0.01, 0.26, -1.05, 0.2], [7.6, -0.04, 0.23, -1.0, 0.25], [8.1, -0.22, 0.2, -0.92, 0.35], [8.6, -0.56, 0.13, -0.85, 0.5], [9.55, -0.55, 0.13, -0.84, 0.5], [10.25, -0.06, 0.03, -0.55, 0.0], [T.dive, -0.02, 0.02, -0.5, 0]];
+function cardPose(t) {
+  let i = 0; while (i < KEYSC.length - 2 && t > KEYSC[i + 1][0]) i++;
+  const a = KEYSC[i], b = KEYSC[i + 1], e = i === 4 ? E.ramp(clamp((t - a[0]) / (b[0] - a[0]))) : E.io(clamp((t - a[0]) / (b[0] - a[0])));
+  return { x: lerp(a[1], b[1], e), y: lerp(a[2], b[2], e), z: lerp(a[3], b[3], e), yaw: lerp(a[4], b[4], e) };
 }
-
-/* ───────── the frame ───────── */
-function frame(t) {
-  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.filter = 'none'; ctx.globalCompositeOperation = 'source-over';
-  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
-  if (t < CUT.water) d1Storm(t);
-  else if (t < CUT.dive) d1Water(t);
-  else if (t < CUT.sun) d1Dive(t);
-  else if (t < CUT.wall) d1Sun(t);
-  else if (t < CUT.matte) d1Wall(t);
-  else if (t < CUT.dusk) d1Matte(t);
-  else d1Dusk(t);
-  grain(t, 0.045);
-  // the grade: from 23.0 s everything drains to a cool grey (the reference's ending)
-  const grey = E.settle(prog(t, CUT.grey, 1.6));
-  out.filter = grey ? `grayscale(${grey}) contrast(${1 + grey * 0.08}) brightness(${1 - grey * 0.04})` : 'none';
-  out.drawImage(buf, 0, 0); out.filter = 'none';
-  if (document.getElementById('lab').checked) { const p = PARTS.find(p => t >= p[0] && t < p[1]) ?? PARTS[PARTS.length - 1]; out.fillStyle = 'rgba(0,0,0,0.55)'; out.fillRect(24, H - 70, out.measureText(p[2]).width + 40, 46); out.font = `600 22px ${SANS}`; out.fillStyle = '#fff'; out.fillText(p[2], 44, H - 39); }
+function setHero(x, y, zc, yaw, k = KCARD) { // place HERO in camera space: zc in panel units in front of the lens
+  const local = V(x, y, -zc * k); HERO.position.copy(cam.localToWorld(local)); HERO.quaternion.copy(cam.quaternion); HERO.rotateY(yaw); HERO.scale.setScalar(k);
 }
 
-/* ───────── sound: the owner's Style 1 pack, placed on the measured grid ───────── */
-const SFX_BASE = '/packages/engine/assets/sfx-style1/';
-const CUES = [ // [time, file, gain]
-  [0.02, 'woosh-short.wav', 0.35], [2.41, 'fs.ui.pop-9.wav', 0.18], [4.25, 'fs.ui.pop-4.wav', 0.16],
-  [CUT.water - 0.02, 'fs.whoosh.swosh-whoosh-air-cut.wav', 0.45], [6.8, 'ui.pop.wav', 0.14], [7.85, 'ui.pop.wav', 0.14], [8.89, 'ui.pop.wav', 0.14], [9.36, 'ui.pop.wav', 0.14],
-  [CUT.sun - 1.3, 'riser-short.wav', 0.45], [CUT.sun, 'fs.impact.soft-hit.wav', 0.4], [CUT.wall, 'woosh-tight.wav', 0.4], [17.2, 'fs.ui.pop-9.wav', 0.2],
-  [CUT.matte - 0.4, 'woosh-short.wav', 0.35], [CUT.matte, 'finger-snap-tight.wav', 0.5], [CUT.dusk, 'fs.impact.soft-hit.wav', 0.35],
-  [20.94, 'fs.impact.punch2.wav', 0.28], [21.95, 'fs.impact.soft-hit.wav', 0.3], [22.45, 'fs.impact.punch2.wav', 0.32], [23.4, 'tonal.chime.wav', 0.3],
+/* ───────── one world frame ───────── */
+function world(t) {
+  sea.material.uniforms.uT.value = t;
+  const seaShot = t >= T.water; sky.visible = !seaShot; sea.visible = seaShot;
+  SPH.rotation.y = THETA(t); placeCards(t); SPH.visible = t < T.dive;
+  // camera
+  let photoL = 0;
+  if (t < T.water) camSphere(t);
+  else camSea(Math.min(t, T.dive));
+  // boy billboard: face the lens around Y; pick the drawing by where the lens is
+  boy.visible = t < T.dive;
+  const to = cam.position.clone().sub(boy.position); to.y = 0; boy.rotation.set(0, Math.atan2(to.x, to.z), 0);
+  const az = Math.atan2(-to.x, to.z); boy.material.map = az < 0.5 ? BOY.prof : az < 1.25 ? BOY.b34 : BOY.back;
+  // hero card / tunnel
+  HERO.visible = t >= T.water && t < T.inv;
+  if (HERO.visible) {
+    const zEnd = 0.5 / KCARD;
+    if (t < T.dive) { const p = cardPose(t); setHero(p.x, p.y, -p.z / KCARD, p.yaw); }
+    else if (t < T.sun) { // D1.3 the dive
+      const u = prog(t, T.dive + 0.08, T.sun - T.dive - 0.08), lead = E.io(prog(t, T.dive, 0.3));
+      const zc = droste(E.settle(u) * 0.25 + u * 0.75, zEnd, ZSTOP);
+      setHero(lerp(-0.02, 0, lead), lerp(0.02, 0, lead), zc, 0); photoL = E.out(prog(t, T.dive - 0.08, 0.4)) * NF;
+    } else { // D1.5 back out (riser ends on T.inv)
+      const u = prog(t, T.back, T.inv - 0.25 - T.back), zc = droste(1 - (E.io(u) * 0.35 + u * 0.65), zEnd * 0.62, ZSTOP);
+      setHero(0, 0, zc, 0); photoL = (1 - E.out(prog(t, T.inv - 0.6, 0.45))) * NF;
+    }
+    const pl = photoLevel(photoL); photo.position.set(0, 0, pl.z); photo.scale.setScalar(pl.s); photo.material.opacity = 1 - prog(photoL, NF - 0.6, 0.6); photo.visible = photo.material.opacity > 0.01;
+    girlPlane.visible = t > T.dive - 0.01;
+    // a light streak crosses the glass as the card turns in (9.7–10.0)
+    const sk = prog(t, 9.7, 0.35); shine.material.opacity = Math.sin(sk * Math.PI) * 0.5; shine.position.set(lerp(-0.9, 0.9, sk), -0.3, 0.01);
+  }
+  placeWords(t);
+}
+
+/* ───────── render: world through the accumulator (motion blur on the open), or a 2D shot ───────── */
+function renderWorld(t) {
+  // shutter: long through the spinning open, otherwise one sample
+  const fast = t < 1.2, n = fast ? 6 : 1, sh = fast ? 1 / 40 : 0, segStart = t < 0.8 ? Math.floor(t / 0.1) * 0.1 : 0.8;
+  accMat.opacity = 1 / n;
+  for (let i = 0; i < n; i++) {
+    const ti = Math.max(segStart, t - sh * (i / Math.max(1, n - 1)));
+    world(ti); renderer.setRenderTarget(rt); renderer.setClearColor(0x000000, 1); renderer.clear(); renderer.render(scene, cam);
+    renderer.setRenderTarget(acc); if (i === 0) { renderer.setClearColor(0x000000, 1); renderer.clear(); } renderer.render(accScene, ortho);
+  }
+  renderer.setRenderTarget(null); renderer.render(outScene, ortho);
+}
+const TALL = [ // placeholder copy, laid out exactly as the reference's two rows around the head (1080×756 px)
+  { s: 'Every cut', x: 75, base: 278, w: 470, at: 20.9 }, { s: 'has a', x: 585, base: 357, w: 330, at: 21.8 },
+  { s: 'reason', x: 245, base: 540, w: 300, at: 22.6, dot: null }, { s: 'why', x: 590, base: 585, w: 215, at: 23.0 },
+];
+function tallWords(g, t) {
+  g.save(); g.fillStyle = '#a8131d';
+  for (const w of TALL) { if (t < w.at) continue;
+    g.save(); g.font = '400 100px "Bodoni Moda", "Instrument Serif", serif'; const m = g.measureText(w.s).width;
+    g.translate(w.x, w.base); g.scale(w.w / m, 2.55); g.letterSpacing = '0px'; g.fillText(w.s, 0, 0); g.restore(); }
+  if (t >= 23.1) { g.font = 'italic 700 15px "Inter Tight", sans-serif'; g.fillText('moovi', 503, 402); }
+  const star = (x, y, r) => { g.beginPath(); g.moveTo(x, y - r); g.quadraticCurveTo(x, y, x + r * 0.42, y); g.quadraticCurveTo(x, y, x, y + r); g.quadraticCurveTo(x, y, x - r * 0.42, y); g.quadraticCurveTo(x, y, x, y - r); g.fill(); };
+  if (t >= 22.6) star(312, 365, 15); if (t >= 23.0) star(733, 405, 15);
+  g.restore();
+}
+function render(t) {
+  if (t < T.sun || (t >= T.back && t < T.inv)) {
+    if (t >= T.dive) { girlShot(g2, Math.min(Math.max(t, T.sun - 0.01), T.back), T.sun); girlTex.needsUpdate = true; } // the girl plays inside the tunnel
+    renderWorld(t);
+  } else {
+    if (t < T.back) girlShot(g2, t, T.sun);
+    else if (t < T.dusk) { boyDuskShot(g2, T.dusk, T.dusk, null); const tmp = mk(RW, RH), tg = tmp.getContext('2d'); tg.filter = 'invert(1)'; tg.drawImage(c2, 0, 0); g2.drawImage(tmp, 0, 0); }
+    else boyDuskShot(g2, t, T.dusk, g => tallWords(g, t), E.io(prog(t, 23.3, 1.3)));
+    tex2.needsUpdate = true; renderer.setRenderTarget(null); renderer.render(flatScene, ortho);
+  }
+}
+
+/* ───────── sound: the reference's pattern, the owner's Style 1 files ───────── */
+const SFX = '/packages/engine/assets/sfx-style1/';
+const CUES = [ // [t, file, gain]: the whip-in (whoosh + low boom), the dive whoosh, the riser into the negative, its hit
+  [0.04, 'woosh-tight.wav', 0.5], [0.22, 'fs.impact.punch2.wav', 0.55], [10.8, 'fs.whoosh.swosh-whoosh-air-cut.wav', 0.35],
+  [T.inv - 1.56, 'riser-short.wav', 0.5], [T.inv, 'finger-snap-tight.wav', 0.55],
 ];
 let AC, BUF = {}, fired = new Set();
-async function ensureAudio() {
-  if (AC) return; AC = new AudioContext();
-  await Promise.all([...new Set(CUES.map(c => c[1]))].map(async f => { try { BUF[f] = await AC.decodeAudioData(await (await fetch(SFX_BASE + f)).arrayBuffer()); } catch (e) { console.warn('sfx', f, e); } }));
-}
-function hit(f, gain) { const b = BUF[f]; if (!b || !AC) return; const s = AC.createBufferSource(), g = AC.createGain(); s.buffer = b; g.gain.value = gain; s.connect(g).connect(AC.destination); s.start(); }
+async function ensureAudio() { if (AC) return; AC = new AudioContext(); await Promise.all([...new Set(CUES.map(c => c[1]))].map(async f => { try { BUF[f] = await AC.decodeAudioData(await (await fetch(SFX + f)).arrayBuffer()); } catch (e) { console.warn(f, e); } })); }
+function hit(f, gain) { const b = BUF[f]; if (!b) return; const s = AC.createBufferSource(), g = AC.createGain(); s.buffer = b; g.gain.value = gain; s.connect(g).connect(AC.destination); s.start(); }
 
-/* ───────── transport: the reference video is the clock (muted unless "original audio") ───────── */
-let playing = false;
-const seek = document.getElementById('seek'), tl = document.getElementById('t'), playBtn = document.getElementById('play');
-function now() { return video.currentTime; }
+/* ───────── transport (the reference video is the clock; its audio only with "original audio") ───────── */
+const video = document.getElementById('v'), seek = document.getElementById('seek'), tl = document.getElementById('t'), playBtn = document.getElementById('play'), lab = document.getElementById('lab');
+let playing = false, held = null;
+const now = () => held ?? video.currentTime;
 function setT(t) { video.currentTime = t; fired = new Set(CUES.map((c, i) => c[0] < t - 0.05 ? i : -1)); }
-playBtn.onclick = async () => {
-  await ensureAudio(); AC.resume();
+playBtn.onclick = async () => { await ensureAudio(); AC.resume(); held = null;
   if (playing) { video.pause(); playing = false; playBtn.textContent = 'Play'; return; }
-  if (video.ended || now() >= CUT.end - 0.05) setT(0);
-  video.muted = !document.getElementById('oa').checked; await video.play(); playing = true; playBtn.textContent = 'Pause';
-};
+  if (video.currentTime >= T.end - 0.05) setT(0); video.muted = !document.getElementById('oa').checked; await video.play(); playing = true; playBtn.textContent = 'Pause'; };
 video.onended = () => { playing = false; playBtn.textContent = 'Play'; };
-seek.oninput = () => setT(+seek.value);
+seek.oninput = () => { held = null; setT(+seek.value); };
 document.getElementById('cmp').onchange = e => document.body.classList.toggle('cmp', e.target.checked);
 document.getElementById('oa').onchange = e => { video.muted = !e.target.checked; };
+const tag = document.getElementById('part');
 function loop() {
   const t = now();
   if (playing && document.getElementById('sfx').checked) CUES.forEach(([a, f, g], i) => { if (!fired.has(i) && t >= a && t - a < 0.15) { fired.add(i); hit(f, g); } });
-  frame(t); seek.value = t; tl.textContent = `${t.toFixed(2)} / ${CUT.end}`;
+  render(t); seek.value = t; tl.textContent = `${t.toFixed(2)} / ${T.end}`;
+  const p = PARTS.find(p => t >= p[0] && t < p[1]) ?? PARTS[PARTS.length - 1]; tag.textContent = lab.checked ? p[2] : ''; tag.style.display = lab.checked ? 'block' : 'none';
   requestAnimationFrame(loop);
 }
-window.D1 = { frame, CUT, PARTS }; // for sweeps and stills
-document.fonts.load(`italic 400 80px "Instrument Serif"`).then(() => document.fonts.load(`400 80px "Instrument Serif"`)).then(() => document.fonts.load(`700 20px "Inter Tight"`)).finally(() => {
-  buildDusk(); buildSun(); buildBlueSky(); buildWater(); buildCards(); video.muted = true; loop();
+window.D1 = { render, T, PARTS, hold: t => { held = t; render(t); } };
+Promise.all(['italic 400 80px "Times New Roman"', '400 80px "Bodoni Moda"', '400 80px "Instrument Serif"', 'italic 400 80px "Instrument Serif"', '700 20px "Inter Tight"'].map(f => document.fonts.load(f))).finally(() => {
+  // the card faces were drawn before the fonts settled: redraw them now
+  LIST.splice(0, LIST.length, ...allCards()); LIST.forEach((o, i) => { o.tex = tex(o.c); });
+  CARDS.forEach((c, i) => { const o = LIST[Math.floor(rand(i * 13 + 2) * LIST.length)]; c.m.material.map = o.tex; c.m.material.needsUpdate = true; });
+  panelMat.map = tex(panelFace(700)); panelMat.needsUpdate = true; body.material.map = tex(heroBody(700)); body.material.needsUpdate = true;
+  video.muted = true; loop();
 });
