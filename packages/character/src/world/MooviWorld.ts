@@ -1,7 +1,7 @@
 import { vertexShader } from '../moovi/shaders';
 import { QUALITY, initialTier, lowerTier, type QualityName } from '../moovi/quality';
 import { lerp3, mul, rotX, rotY, rotZ, type Vec3 } from '../moovi/math';
-import { worldFragment, type WorldVariant } from './worldShader';
+import { CREW_N, worldFragment, type WorldVariant } from './worldShader';
 import { HALO_R, HALO_T, HALO_TILT, HALO_Y } from '../halo';
 
 /**
@@ -40,7 +40,7 @@ export function defaultScene(): WorldScene {
     look: { x: 0, y: 0, follow: 1 },
     halo: { r: HALO_R, t: HALO_T, y: HALO_Y, tilt: HALO_TILT, spin: .5, bubble: 1, bridge: .03 },
     morph: { amount: 0, play: 1, frame: 0, wave: 0, screen: 0, fill: 0 },
-    crew: [0, 1, 2, 0, 2].map(tint => ({ x: 0, y: 0, z: 0, r: 0, tint })),
+    crew: [0, 1, 2, 0, 2, 1, 0].map(tint => ({ x: 0, y: 0, z: 0, r: 0, tint })),
     split: .08,
     orb: { x: 0, y: 0, z: 0, r: 0, glow: 1 },
     floor: { y: -1.04, on: 1, strength: 1 },
@@ -526,7 +526,7 @@ export class MooviWorld {
     this.playFrame = { pos: playPos, rot: playRot };
     gl.uniform2f(u.uLook, this.gaze[0], this.gaze[1]);
     gl.uniform1f(u.uEyeH, .165 * (1 - .93 * blink) * (1 - .45 * squint) * (1 + .12 * m.lean));
-    const crew = new Float32Array(20), crewB = new Float32Array(20);
+    const crew = new Float32Array(CREW_N * 4), crewB = new Float32Array(CREW_N * 4);
     sc.crew.forEach((cm, i) => {
       crew.set([cm.x, cm.y, cm.z, Math.max(0, cm.r)], i * 4);
       const yaw = Math.atan2(c.x - cm.x, c.z - cm.z);

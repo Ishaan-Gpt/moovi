@@ -18,7 +18,7 @@ export function getWorld() { return world; }
 
 export const ui = {
   labels: 0,                       // crew name tags visible (0..1)
-  sub: ['', '', '', '', ''],       // a line under each name tag (role, or the event it just handled)
+  sub: ['', '', '', '', '', '', ''], // a line under each name tag (role, or the event it just handled)
   aurora: 0,                       // edge glow (0..1)
   hover: 0,                        // can Moovi be hovered to wave (only where the page invites it)
   halo: null as HTMLElement | null, // an element kept centred on Moovi's halo ring, sized to it (memory chapter)
@@ -27,7 +27,7 @@ export const ui = {
   screen: null as HTMLElement | null, // what plays on him while he is a screen (problem): pinned to the screen's face
 };
 
-export const CREW = ['Scribe', 'Cutter', 'Beat', 'Lens', 'Keeper'] as const;
+export const CREW = ['Editor', 'Researcher', 'Writer', 'Sound', 'Designer', 'Lens', 'Keeper'] as const;
 
 /* ───────────── the film script: keyframes as diffs, merged into full snapshots ───────────── */
 

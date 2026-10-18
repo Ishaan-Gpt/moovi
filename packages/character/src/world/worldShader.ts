@@ -1,11 +1,14 @@
 import type { QualityTier } from '../moovi/quality';
 import { haloGlsl } from '../halo';
 
+/** How many crew blobs the world holds (Moovi's seven specialists). */
+export const CREW_N = 7;
+
 export interface WorldVariant { morph: boolean; memory: boolean; word: boolean }
 
 /**
  * Moovi's world as one signed-distance field, rendered full-screen with a free camera:
- * Moovi (jelly body, pseudopod arms, drop feet, jelly halo), five crew blobs that can merge with him
+ * Moovi (jelly body, pseudopod arms, drop feet, jelly halo), seven crew blobs that can merge with him
  * (smooth union with a large k = gooey bridges) and split off, morph shapes (play / frame / waveform / screen),
  * a halo that can swell into a ring of memory nodes, the "moovi" wordmark as jelly letters that stream out of
  * his back, and an emissive task bead (analytic sphere + glow).
@@ -21,6 +24,7 @@ precision highp float;
 #define MORPH ${v.morph ? 1 : 0}
 #define MEMORY ${v.memory ? 1 : 0}
 #define WORD ${v.word ? 1 : 0}
+#define CREW_N ${CREW_N}
 
 uniform vec2 uRes; uniform float uTime;
 uniform int uTaps; // the normal's 4 taps, as a uniform so its loop isn't unrolled into 4 copies of the scene (much faster to compile)
@@ -32,7 +36,7 @@ uniform vec3 uHaloPos; uniform mat3 uHaloRot; uniform vec2 uHaloRT; uniform vec3
 uniform float uMorph; uniform vec4 uMorphW; uniform vec3 uPlayPos; uniform mat3 uPlayRot;
 uniform vec3 uScreen; // screen morph: half width, half height (the viewport's aspect), eye height
 uniform vec2 uLook; uniform float uEyeH;
-uniform vec4 uCrew[5]; uniform vec4 uCrewB[5]; uniform float uSplitK;
+uniform vec4 uCrew[CREW_N]; uniform vec4 uCrewB[CREW_N]; uniform float uSplitK;
 uniform vec4 uOrb; uniform float uOrbGlow;
 uniform vec3 uFloor; // y, on, strength
 uniform vec4 uLetter[5]; uniform vec4 uLetterB[5]; uniform vec3 uWordFrom, uWB0, uWB1; // letters: centre+size, (shape, strand); strand root; bounds
@@ -197,7 +201,7 @@ float crewD(int i, vec3 pw){
  * the normal, the thickness samples), the normal's four taps run in a loop, and the march records which body it hit
  * instead of evaluating the scene again to find out.
  */
-int gOwner = -1;   // the body nearest the last mapScene() point: -1 Moovi, -2 his letters, 0..4 crew
+int gOwner = -1;   // the body nearest the last mapScene() point: -1 Moovi, -2 his letters, 0..CREW_N-1 crew
 float mapScene(vec3 pw, bool letters){
   float d = mooviD(pw);
   int own = -1;
@@ -205,7 +209,7 @@ float mapScene(vec3 pw, bool letters){
   if (letters) { float wd = wordD(pw); if (wd < d) own = -2; d = smin(d, wd, .12); }
 #endif
   float best = d; gOwner = own;
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < CREW_N; i++) {
     vec4 c = uCrew[i];
     if (c.w < .001) continue;
     float bound = length(pw - c.xyz) - c.w*1.3;
@@ -284,7 +288,7 @@ void main(){
   float t0 = 1e9, t1 = -1e9, e;
   float s;
   if (uBoundM.w > 0.) { s = sphereHit(ro, rd, uBoundM.xyz, uBoundM.w, e); if (e > 0.) { t0 = min(t0, s); t1 = max(t1, e); } }
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < CREW_N; i++) {
     if (uCrew[i].w < .001) continue;
     s = sphereHit(ro, rd, uCrew[i].xyz, uCrew[i].w*1.5 + uSplitK, e);
     if (e > 0.) { t0 = min(t0, s); t1 = max(t1, e); }
@@ -315,7 +319,7 @@ void main(){
     vec3 fp = ro + rd*tf;
     vec2 m = (fp.xz - uMPos.xz - vec2(-.12, -.15)*uMScale) / (vec2(1.25, .95)*uMScale);
     float occ = exp(-dot(m, m)*2.2)*.40*smoothstep(2.2*uMScale, 0., max(0., uMPos.y - 1.*uMScale - uFloor.x));
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < CREW_N; i++) {
       if (uCrew[i].w < .001) continue;
       vec2 c = (fp.xz - uCrew[i].xz)/uCrew[i].w;
       occ += exp(-dot(c, c)*1.6)*.32*smoothstep(1.6, 0., (uCrew[i].y - uFloor.x)/uCrew[i].w - .9);

@@ -1,6 +1,6 @@
 'use client';
 import { defaultScene, HALO_R, HALO_TILT, type WorldScene } from '@moovi/character';
-import { merge, xs, type SceneDiff } from './world';
+import { CREW, merge, xs, type SceneDiff } from './world';
 
 /**
  * The film, as keyframes. Each chapter starts exactly where the previous one ended, because every
@@ -15,6 +15,17 @@ export interface Script { hero: Keys; problem: Keys; directed: Keys; crew: Keys;
 const FLOOR = -1.04;
 const crewY = (r: number) => FLOOR + r * 1.1;   // drop feet reach 1.04r below the centre
 const hide = { r: 0, x: 0, y: 0, z: 0 };
+
+/** The crew: Moovi's seven specialists (lib/content.ts → crew, in pipeline order). */
+const N = CREW.length;
+const all = <T,>(f: (i: number) => T): T[] => Array.from({ length: N }, (_, i) => f(i));
+/** A crew diff that changes member `i` only. */
+const only = (i: number, c: NonNullable<SceneDiff['crew']>[number]) => all(j => (j === i ? c : {})) as SceneDiff['crew'];
+
+/** When the camera visits each member in the crew chapter: [arrive, leave] in chapter progress (Crew.tsx shows the cards). */
+export const CREW_SPOTS = all(i => [.3 + .095 * i, .3 + .095 * i + .085] as const);
+/** When the task bead lands on each member in the how chapter (How.tsx advances the steps). */
+export const HOW_CATCH = all(i => .24 + .1 * i);
 
 /**
  * Where the hero's jelly wordmark sits. Landscape: parted around him, "mo" to his left and "ovi" to his right, sized
@@ -32,7 +43,7 @@ function wordLayout(W: number) {
 export function buildScript(): Script {
   const X = xs();
   const W = X === 1 ? 1 : 0;   // landscape only: shift the camera so copy and Moovi share the frame side by side
-  let s = merge(defaultScene(), { crew: [hide, hide, hide, hide, hide], split: .9 });
+  let s = merge(defaultScene(), { crew: all(() => hide), split: .9 });
   const at = (t: number, d: SceneDiff): Key => { s = merge(s, d); return [t, s]; };
   const thru = (t: number, d: SceneDiff): Key => { s = merge(s, d); return [t, s, new Set(Object.keys(d))]; };
 
@@ -82,44 +93,43 @@ export function buildScript(): Script {
     at(1, { cam: { x: 2.2, y: .8, z: 7.2, ty: .25 }, moovi: { think: .3 }, halo: { spin: .5, tilt: HALO_TILT } }),
   ];
 
-  /* 4 · the crew: he splits into five, then the camera visits each */
-  const R = .46;
-  const ring = [[-2.6, .3], [-1.45, 1.6], [0, 2.3], [1.45, 1.6], [2.6, .3]] as const;
+  /* 4 · the crew: he splits into seven, evenly spaced on a shallow arc, then the camera visits each (portrait: two
+   * staggered rows, so the narrow blobs never touch) */
+  const R = W ? .42 : .36;
+  const ring = all(i => { const u = i - (N - 1) / 2; return [u, W ? .3 + 1.4 * (1 - (u / 3) ** 2) : (i % 2 ? 1.7 : .3)] as const; });
   const crewAt = (i: number, r = R) => ({ x: ring[i]![0] * X, y: crewY(r), z: ring[i]![1], r });
   const crew: Keys = [
     at(0, {}),
     at(.06, { cam: { x: 0, y: .55, z: 7.6, ty: .2 }, moovi: { think: 0, z: -.4 } }),
     at(.1, { moovi: { squash: .5, celebrate: 1 } }),
-    at(.22, { cam: { y: 1.7, z: 10.4, ty: -.2 }, moovi: { squash: 0 }, split: .06, crew: [0, 1, 2, 3, 4].map(i => crewAt(i)) }),
+    at(.22, { cam: { y: 1.7, z: W ? 11 : 12, ty: -.2 }, moovi: { squash: 0 }, split: .06, crew: all(i => crewAt(i)) }),
   ];
-  const spot = (i: number, t0: number, t1: number) => {
+  CREW_SPOTS.forEach(([t0, t1], i) => {
     const c = crewAt(i, R * 1.18);
-    crew.push(at(t0, { cam: { x: c.x * .8, y: .9, z: c.z + 3.6, tx: c.x, ty: c.y + .05, tz: c.z }, moovi: { celebrate: 0, direct: 1 }, look: { x: Math.sign(c.x) || 0, y: -.4, follow: 0 }, crew: Object.assign([R, R, R, R, R].map(() => ({})), { [i]: c }) as SceneDiff['crew'] }));
-    crew.push(at(t1, { crew: Object.assign([{}, {}, {}, {}, {}], { [i]: crewAt(i) }) as SceneDiff['crew'] }));
-  };
-  spot(0, .32, .44); spot(1, .46, .58); spot(2, .6, .72); spot(3, .74, .86); spot(4, .88, .97);
-  crew.push(at(1, { cam: { x: 0, y: 1.7, z: 10.4, tx: 0, ty: -.2, tz: 0 }, moovi: { direct: 0 }, look: { follow: 1 } }));
+    crew.push(at(t0, { cam: { x: c.x * .8, y: .9, z: c.z + 3.6, tx: c.x, ty: c.y + .05, tz: c.z }, moovi: { celebrate: 0, direct: 1 }, look: { x: Math.sign(c.x) || 0, y: -.4, follow: 0 }, crew: only(i, c) }));
+    crew.push(at(t1, { crew: only(i, crewAt(i)) }));
+  });
+  crew.push(at(1, { cam: { x: 0, y: 1.7, z: W ? 11 : 12, tx: 0, ty: -.2, tz: 0 }, moovi: { direct: 0 }, look: { follow: 1 } }));
 
   /* 5 · how they work: they line up and pass the task bead down the line (portrait: smaller, wider apart, so
    * the blobs never touch and merge) */
   const P = W === 0;
-  const line = P ? [-.75, 0, .75, 1.5, 2.25] : [-1.1, .1, 1.3, 2.5, 3.7];
-  const RL = P ? .32 : R;
+  const line = all(i => P ? -.9 + .62 * i : -1.3 + .95 * i);
+  const RL = P ? .26 : .38;
   const lineY = crewY(RL);
-  const boss = P ? -1.7 : -2.5;
+  const boss = P ? -1.9 : -2.6;
   const how: Keys = [
     at(0, {}),
-    at(.1, { cam: { x: P ? .3 : .6, y: 1.0, z: P ? 15 : 11.2, tx: P ? .3 : .6, ty: -.25, tz: 0 }, moovi: { x: boss, z: 0, s: P ? .5 : .62 }, crew: line.map(x => ({ x, y: lineY, z: 0, r: RL })), orb: { x: boss + .3, y: .25, z: .3, r: 0, glow: 1 } }),
+    at(.1, { cam: { x: P ? .45 : .9, y: 1.0, z: P ? 14 : 12.4, tx: P ? .45 : .9, ty: -.25, tz: 0 }, moovi: { x: boss, z: 0, s: P ? .5 : .62 }, crew: line.map(x => ({ x, y: lineY, z: 0, r: RL })), orb: { x: boss + .3, y: .25, z: .3, r: 0, glow: 1 } }),
     at(.14, { orb: { r: .15 }, moovi: { direct: 1 } }),
   ];
-  const hop = (t: number, i: number) => {
+  HOW_CATCH.forEach((t, i) => {
     const from = how[how.length - 1]![1].orb;
     const to = { x: line[i]!, y: lineY + RL * 1.25, z: .2 };
-    how.push(at(t - .055, { orb: { x: (from.x + to.x) / 2, y: Math.max(from.y, to.y) + 1.1, z: .3 } }));
-    how.push(at(t, { orb: to, moovi: { direct: 0 }, crew: Object.assign([{}, {}, {}, {}, {}], { [i]: { y: lineY + .6 * RL } }) as SceneDiff['crew'] }));
-    how.push(at(t + .04, { crew: Object.assign([{}, {}, {}, {}, {}], { [i]: { y: lineY } }) as SceneDiff['crew'] }));
-  };
-  hop(.27, 0); hop(.4, 1); hop(.53, 2); hop(.66, 3); hop(.79, 4);
+    how.push(at(t - .05, { orb: { x: (from.x + to.x) / 2, y: Math.max(from.y, to.y) + 1.1, z: .3 } }));
+    how.push(at(t, { orb: to, moovi: { direct: 0 }, crew: only(i, { y: lineY + .6 * RL }) }));
+    how.push(at(t + .035, { crew: only(i, { y: lineY }) }));
+  });
   how.push(at(.9, { orb: { x: -1, y: 2.6, z: .3 } }));
   how.push(at(.97, { orb: { x: boss, y: .5, z: .3, r: .2 }, moovi: { celebrate: 1 } }));
   how.push(at(1, { orb: { r: 0 }, moovi: { celebrate: 0 } }));
@@ -127,7 +137,7 @@ export function buildScript(): Script {
   /* 6 · memory: the crew melts back into him, the halo rises and swells into a ring of memories */
   const memory: Keys = [
     at(0, {}),
-    at(.16, { cam: { x: 0, y: .55, z: 7.6, tx: 0, ty: .22, tz: 0 }, moovi: { x: 0, s: 1 }, crew: [0, 1, 2, 3, 4].map(() => ({ x: 0, y: -.1, z: 0, r: 0 })), split: .9 }),
+    at(.16, { cam: { x: 0, y: .55, z: 7.6, tx: 0, ty: .22, tz: 0 }, moovi: { x: 0, s: 1 }, crew: all(() => ({ x: 0, y: -.1, z: 0, r: 0 })), split: .9 }),
     at(.42, { cam: { x: .55 * W, y: 2.05, z: 6.6, tx: .55 * W, ty: 1.95 }, moovi: { y: -.2, lean: .3 }, halo: { r: 1.1, tilt: 1.43, bubble: 6.5, y: 2.05, spin: .25 }, look: { x: 0, y: 1, follow: .2 } }),
     at(1, { halo: { spin: .15 } }),
   ];
@@ -157,8 +167,8 @@ export function buildScript(): Script {
   const finale: Keys = [
     at(0, {}),
     at(.16, { moovi: { x: -1.6 * W, y: 0, s: .95, squint: 0 }, cam: { x: 0, y: .9, z: 9.2 + 1.6 * (1 - W), ty: -2.4 * (1 - W) }, look: { follow: 1 }, split: .9,
-      crew: [0, 1, 2, 3, 4].map(() => ({ x: -1.6 * W, y: -.1, z: 0, r: 0 })) }),
-    at(.34, { split: .06, moovi: { wave: 1, celebrate: 0 }, crew: [[-2.95, .5], [-2.25, 1.6], [-.45, 1.8], [.4, .7], [-1.5, 2.4]].map(([x, z]) => ({ x: (x! + 1.6 * (1 - W)) * X, y: crewY(R * .9), z: z!, r: R * .9 })) }),
+      crew: all(() => ({ x: -1.6 * W, y: -.1, z: 0, r: 0 })) }),
+    at(.34, { split: .06, moovi: { wave: 1, celebrate: 0 }, crew: [[-2.95, .5], [-2.25, 1.6], [-.45, 1.8], [.4, .7], [-1.5, 2.4], [-1.1, 3.1], [.1, 2.6]].map(([x, z]) => ({ x: (x! + 1.6 * (1 - W)) * X, y: crewY(R * .85), z: z!, r: R * .85 })) }),
     at(1, { moovi: { wave: 1 } }),
   ];
 

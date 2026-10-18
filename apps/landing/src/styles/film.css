@@ -160,14 +160,14 @@ html[data-nowebgl] .hero2__word { display: flex; }
   box-shadow: inset 0 1px 0 var(--ce-surface), 0 30px 60px -36px color-mix(in oklab, var(--ce-frost-mid) 70%, transparent); }
 .cw__card--left { left: calc(var(--pad) - 26px); }
 .cw__card--right { right: calc(var(--pad) + 26px); text-align: right; justify-items: end; }
-.cw__name { margin: 0; font-family: var(--font-serif); font-style: italic; font-weight: 340; font-size: calc(190 * var(--u)); line-height: .85; letter-spacing: -.03em; display: flex; overflow: clip; padding-bottom: .06em; }
+.cw__name { margin: 0; font-family: var(--font-serif); font-style: italic; font-weight: 340; /* a long name (Researcher) shrinks to the card */ font-size: min(calc(190 * var(--u)), calc((min(480px, 35vw) - 52px) * 2.1 / var(--chars, 6))); line-height: .85; letter-spacing: -.03em; display: flex; overflow: clip; padding-bottom: .06em; }
 .cw__name span { display: inline-block; }
 .cw__role { margin: 0; display: flex; gap: 12px; align-items: baseline; }
 .cw__line { margin: 0; }
 
 /* 5 · how */
 .hw__head { position: absolute; left: var(--pad); top: calc(var(--header-h) + 4svh); margin: 0; }
-.hw__rail { position: absolute; left: 50%; translate: -50% 0; top: calc(var(--header-h) + 2svh); margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(6, minmax(70px, 1fr)); gap: 10px; width: min(760px, 60vw); }
+.hw__rail { position: absolute; left: 50%; translate: -50% 0; top: calc(var(--header-h) + 2svh); margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(8, minmax(64px, 1fr)); gap: 10px; width: min(880px, 64vw); }
 .hw__rail li { display: grid; gap: 4px; position: relative; padding-top: 10px; }
 .hw__rail li::before { content: ''; position: absolute; left: 0; right: 0; top: 0; border-top: 1.5px dotted var(--cut); }
 .hw__tick { position: absolute; left: 0; right: 0; top: -1px; height: 3px; border-radius: 3px; background: var(--accent); transform-origin: 0 50%; transform: scaleX(0); }
@@ -241,9 +241,9 @@ html[data-nowebgl] .hero2__word { display: flex; }
   .dr__aside, .dr__foot { right: var(--pad); }
   .dr__foot { font-size: 22px; }
   .cw__card { top: auto; bottom: 6svh; width: auto; left: calc(var(--pad) - 10px) !important; right: calc(var(--pad) - 10px) !important; padding: 16px 18px; text-align: left; justify-items: start; }
-  .cw__name { font-size: 16vw; }
+  .cw__name { font-size: min(16vw, calc((100vw - var(--pad) * 2 - 16px) * 2.1 / var(--chars, 6))); }
   .cw__line { font-size: 16px; }
-  .hw__rail { top: auto; bottom: 30svh; width: calc(100vw - var(--pad) * 2); grid-template-columns: repeat(6, 1fr); }
+  .hw__rail { top: auto; bottom: 30svh; width: calc(100vw - var(--pad) * 2); grid-template-columns: repeat(8, 1fr); }
   .hw__rail .t-sub2 { display: none; }
   .hw__panel { width: auto; right: var(--pad); bottom: 6svh; }
   .hw__n { font-size: 15vw; }

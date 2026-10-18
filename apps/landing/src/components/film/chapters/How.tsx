@@ -4,9 +4,10 @@ import { Chapter, type Build } from '../Chapter';
 import { how, crew } from '@/lib/content';
 import { ui } from '@/lib/world';
 import { splitMasked } from '@/lib/gsap';
+import { HOW_CATCH } from '@/lib/script';
 
 /** When the bead lands on each specialist (matches lib/script.ts → how); step 0 is Moovi taking the brief. */
-const CATCH = [.27, .4, .53, .66, .79];
+const CATCH = HOW_CATCH;
 const STEP_AT = [.1, ...CATCH, .9];
 
 /**

@@ -56,31 +56,36 @@ export const problem = {
 
 export const directed = {
   big: 'Directed by AI',
-  aside: ['One director.', 'Five specialists.', 'Zero “as an AI model”.'],
-  foot: '* A crew of six, actually.',
+  aside: ['One director.', 'Seven specialists.', 'One memory.'],
+  foot: '* A crew of eight, actually.',
   hover: 'Hover Moovi to say hi',
 };
 
-export type CrewId = 'scribe' | 'cutter' | 'beat' | 'lens' | 'keeper';
+export type CrewId = 'editor' | 'researcher' | 'writer' | 'sound' | 'designer' | 'lens' | 'keeper';
 export const crewIntro = ['He doesn’t work alone.', 'meet the crew'];
+/** The seven specialists, in the order a film passes through them (docs/PIPELINE.html). */
 export const crew: { id: CrewId; name: string; role: string; line: string }[] = [
-  { id: 'scribe', name: 'Scribe', role: 'Script & copy', line: 'Writes every line. A claim only ships if it traces back to a fact you gave him.' },
-  { id: 'cutter', name: 'Cutter', role: 'Edit', line: 'Picks shots and transitions by walking the graph for the best path. Never the same recipe twice.' },
-  { id: 'beat', name: 'Beat', role: 'Sound', line: 'Finds the track, finds the beat, and lands every cut on it.' },
-  { id: 'lens', name: 'Lens', role: 'Critic', line: 'Watches the cut, flags what feels off and hands it straight back to whoever owns it.' },
-  { id: 'keeper', name: 'Keeper', role: 'Memory', line: 'Writes down every note you give, and always knows which one is the newest.' },
+  { id: 'editor', name: 'Editor', role: 'Your footage', line: 'Finds your best take, cuts clean, rescues weak shots and cleans your voice.' },
+  { id: 'researcher', name: 'Researcher', role: 'Facts', line: 'Reads your site and finds the facts behind the film, each one with its source.' },
+  { id: 'writer', name: 'Writer', role: 'Script', line: 'Writes the hook and every line. A claim only ships if it traces back to a fact.' },
+  { id: 'sound', name: 'Sound', role: 'Voice & music', line: 'Casts the voice, picks the track, and lands every cut on the beat.' },
+  { id: 'designer', name: 'Designer', role: 'Look', line: 'Locks one look for the film and casts a visual for every beat. Never the same recipe twice.' },
+  { id: 'lens', name: 'Lens', role: 'Critic', line: 'Checks every frame against the rules and hands back whatever feels off.' },
+  { id: 'keeper', name: 'Keeper', role: 'Memory', line: 'Turns your notes into rules, and always knows which one is the newest.' },
 ];
 
 export const how = {
   heading: ['One brief in,', 'a finished cut out.'],
   sample: 'Sample run · brightcafe.example',
   steps: [
-    { n: '01', title: 'Brief', text: 'You say what it’s for. Moovi turns it into a plan and pins the tasks to a board inside the graph.', tag: 'brief.received' },
-    { n: '02', title: 'Script', text: 'Scribe claims the script. “Best coffee in town” has no source, so it’s out. “Open from 7am” has one, so it’s in.', tag: 'claim.rejected · 1' },
-    { n: '03', title: 'Cut', text: 'Cutter walks the graph for the best path through your shots, skipping last week’s recipe.', tag: 'path.found' },
-    { n: '04', title: 'Score', text: 'Beat finds a 124 BPM track and snaps all twelve cuts to the kick.', tag: 'cuts.snapped · 12' },
-    { n: '05', title: 'Review', text: 'Lens spots the end card touching the logo and hands it back. Fixed in seconds.', tag: 'issue.fixed' },
-    { n: '06', title: 'Remember', text: 'Keeper files your note: “music a bit louder” now replaces “quiet bed”. The next video starts here.', tag: 'feedback.saved' },
+    { n: '01', title: 'Brief', text: 'You say what it’s for. Moovi plans the run and pins the tasks to a board inside the graph.', tag: 'brief.received' },
+    { n: '02', title: 'Footage', text: 'Editor keeps the best take of the pour and cleans the café noise out of your voice.', tag: 'take.picked' },
+    { n: '03', title: 'Facts', text: 'Researcher reads brightcafe.example: open from 7am, oat milk at no extra cost. Every fact keeps its source.', tag: 'facts.found · 4' },
+    { n: '04', title: 'Script', text: 'Writer drafts the lines. “Best coffee in town” has no source, so it’s out. “Open from 7am” has one, so it’s in.', tag: 'claim.rejected · 1' },
+    { n: '05', title: 'Sound', text: 'Sound casts a warm voice and snaps all twelve cuts to a 124 BPM kick.', tag: 'cuts.snapped · 12' },
+    { n: '06', title: 'Look', text: 'Designer locks one look and casts a visual for every beat, skipping last week’s recipe.', tag: 'beats.cast · 9' },
+    { n: '07', title: 'Review', text: 'Lens spots the end card touching the logo and hands it back. Fixed in seconds.', tag: 'issue.fixed' },
+    { n: '08', title: 'Remember', text: 'Keeper files your note: “music a bit louder” now replaces “quiet bed”. The next video starts here.', tag: 'feedback.saved' },
   ],
   done: 'v1 · 30s · 1080×1920 · ready',
 };
@@ -106,7 +111,7 @@ export const styles = {
 export const paper = {
   heading: ['Under the hood,', 'for the curious.'],
   title: 'Moovi-1: a director harness on a temporal graph',
-  abstract: 'We present Moovi-1, a multi-agent harness for video production. One planning agent decomposes a brief into tasks on a graph blackboard; five specialists claim, execute and review them. All context lives in FalkorDB: brand facts, shots, decisions and feedback, with SUPERSEDES edges for change over time and one isolated graph per brand. Every decision writes its provenance, so any frame can answer “why?” with a path.',
+  abstract: 'We present Moovi-1, a multi-agent harness for video production. One planning agent decomposes a brief into tasks on a graph blackboard; seven specialists claim, execute and review them. All context lives in FalkorDB: brand facts, shots, decisions and feedback, with SUPERSEDES edges for change over time and one isolated graph per brand. Every decision writes its provenance, so any frame can answer “why?” with a path.',
   columns: [
     { h: 'Harness', items: ['Director on Claude Opus', 'Specialists on Sonnet, memory on Haiku', 'Agents share nothing but the graph', 'Every step emits an event you can watch'] },
     { h: 'Graph', items: ['FalkorDB, one graph per brand', 'Temporal memory via SUPERSEDES', 'Truth guard: no path, no claim', 'Shot paths via algo.SPpaths'] },

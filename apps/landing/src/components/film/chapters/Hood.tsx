@@ -1,6 +1,7 @@
 'use client';
 import { Chapter } from '../Chapter';
 import { paper } from '@/lib/content';
+import { CREW } from '@/lib/world';
 
 /** "Under the hood": the real architecture on a sheet of paper. Moovi steps aside and reads over your shoulder. */
 export function Hood() {
@@ -33,15 +34,15 @@ export function Hood() {
 }
 
 function Arch() {
-  const xs = [70, 160, 250, 340, 430];
+  const xs = [46, 114, 182, 250, 318, 386, 454];
   return (
     <svg viewBox="0 0 500 300" className="paper__svg">
       <g className="arch-box"><rect x="190" y="12" width="120" height="34" rx="17" /><text x="250" y="34">Brief</text></g>
       <path className="arch-line" d="M250 46V70" />
       <g className="arch-box arch-box--lead"><rect x="170" y="70" width="160" height="40" rx="20" /><text x="250" y="95">Moovi · director</text></g>
       {xs.map((x, i) => <path key={i} className="arch-line" d={`M250 110 C 250 130, ${x} 126, ${x} 146`} />)}
-      {['Scribe', 'Cutter', 'Beat', 'Lens', 'Keeper'].map((n, i) => (
-        <g key={n} className="arch-box"><rect x={xs[i]! - 40} y="146" width="80" height="30" rx="15" /><text x={xs[i]} y="166">{n}</text></g>
+      {CREW.map((n, i) => (
+        <g key={n} className="arch-box arch-box--crew"><rect x={xs[i]! - 32} y="146" width="64" height="30" rx="15" /><text x={xs[i]} y="166">{n}</text></g>
       ))}
       {xs.map((x, i) => <path key={`g${i}`} className="arch-line arch-line--dot" d={`M${x} 176 C ${x} 196, 250 192, 250 212`} />)}
       <g className="arch-box arch-box--graph"><rect x="150" y="212" width="200" height="36" rx="18" /><text x="250" y="235">FalkorDB graph</text></g>

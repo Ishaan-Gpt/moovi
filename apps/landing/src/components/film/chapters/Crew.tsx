@@ -4,12 +4,11 @@ import { Chapter, type Build } from '../Chapter';
 import { crew, crewIntro } from '@/lib/content';
 import { ui } from '@/lib/world';
 import { splitMasked } from '@/lib/gsap';
+import { CREW_SPOTS as SPOTS } from '@/lib/script';
 
-/** spotlight windows, matching the camera visits in the script (lib/script.ts → crew) */
-const SPOTS = [[.32, .44], [.46, .58], [.6, .72], [.74, .86], [.88, .97]] as const;
 
 /**
- * The split. Moovi cheers, his body bulges and five specialists bud out of the jelly. Name tags land on their
+ * The split. Moovi cheers, his body bulges and seven specialists bud out of the jelly. Name tags land on their
  * heads; then the camera visits each one while a big profile card says who they are and what they write to the graph.
  */
 export function Crew() {
@@ -31,20 +30,20 @@ export function Crew() {
 
     q('.cw__card').forEach((card, i) => {
       const [t0, t1] = SPOTS[i]!;
-      tl.fromTo(card, { opacity: 0, x: i < 3 ? -60 : 60, filter: 'blur(10px)' }, { opacity: 1, x: 0, filter: 'blur(0px)', duration: .035, ease: 'power3.out', immediateRender: false }, t0 + .01);
-      tl.fromTo(card.querySelectorAll('.cw__name span'), { yPercent: 110 }, { yPercent: 0, stagger: .004, duration: .03, ease: 'power3.out', immediateRender: false }, t0 + .015);
-      tl.fromTo(card, { opacity: 1 }, { opacity: 0, filter: 'blur(10px)', duration: .025, immediateRender: false }, t1 - .015);
+      tl.fromTo(card, { opacity: 0, x: i < 3 ? -60 : 60, filter: 'blur(10px)' }, { opacity: 1, x: 0, filter: 'blur(0px)', duration: .025, ease: 'power3.out', immediateRender: false }, t0 + .005);
+      tl.fromTo(card.querySelectorAll('.cw__name span'), { yPercent: 110 }, { yPercent: 0, stagger: { amount: .012 }, duration: .02, ease: 'power3.out', immediateRender: false }, t0 + .008);
+      tl.fromTo(card, { opacity: 1 }, { opacity: 0, filter: 'blur(10px)', duration: .02, immediateRender: false }, t1 - .012);
     });
   }, []);
 
   return (
-    <Chapter id="crew" name="crew" vh={600}
+    <Chapter id="crew" name="crew" vh={720}
       front={<>
         <h2 className="cw__intro"><span className="duo__lead">{crewIntro[0]}</span><span className="duo__big">{crewIntro[1]}</span></h2>
         {crew.map((c, i) => (
           // the card goes on the side away from Moovi, who stands behind the ring's centre
           <article key={c.id} className={`cw__card ${i < 3 ? 'cw__card--left' : 'cw__card--right'}`}>
-            <h3 className="cw__name">{c.name.split('').map((ch, j) => <span key={j}>{ch}</span>)}</h3>
+            <h3 className="cw__name" style={{ "--chars": c.name.length } as React.CSSProperties}>{c.name.split('').map((ch, j) => <span key={j}>{ch}</span>)}</h3>
             <p className="cw__role t-sub1">{c.role}</p>
             <p className="cw__line t-body1">{c.line}</p>
           </article>

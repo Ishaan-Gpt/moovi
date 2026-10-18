@@ -118,6 +118,7 @@
 .paper__svg { width: 100%; height: auto; }
 .arch-box rect { fill: #fff; stroke: var(--ink); stroke-width: 1.2; }
 .arch-box text { font-size: 12px; text-anchor: middle; fill: var(--ink); font-weight: 500; }
+.arch-box--crew text { font-size: 10.5px; letter-spacing: -.01em; }
 .arch-box--lead rect { fill: var(--ice); }
 .arch-box--graph rect { fill: var(--ink); stroke: none; }
 .arch-box--graph text { fill: #fff; }
@@ -146,3 +147,5 @@
 @keyframes row-in { from { opacity: 0; transform: translateY(8px); filter: blur(4px); } }
 @keyframes thumb-hop { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-10%); } }
 @media (prefers-reduced-motion: reduce) { .crew-blob__body, .crew-blob__eye, .studio__blob { animation: none; } }
+/* a phone is too narrow to justify: the gaps between words open up */
+@media (max-width: 760px) { .paper__abstract p { text-align: left; hyphens: manual; } }
