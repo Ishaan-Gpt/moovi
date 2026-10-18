@@ -155,7 +155,7 @@ const workerSrc = [
   "  }",
   "  let r; try { r = seg.segmentForVideo(e.data.bmp, e.data.ts); } catch (err) { self.postMessage({ error: String(err) }); return; } finally { e.data.bmp.close(); }",
   "  const mk = r.confidenceMasks[0], a = mk.getAsFloat32Array(), out = new Uint8ClampedArray(a.length * 4);",
-  "  for (let i = 0; i < a.length; i++) out[i * 4 + 3] = Math.max(0, Math.min(255, (a[i] - 0.35) * 3.3 * 255));",
+  "  for (let i = 0; i < a.length; i++) out[i * 4 + 3] = Math.max(0, Math.min(255, (a[i] - 0.18) * 2.6 * 255));",
   "  self.postMessage({ w: mk.width, h: mk.height, data: out }, [out.buffer]); if (r.close) r.close();",
   "};",
 ].join(String.fromCharCode(10));
@@ -193,7 +193,7 @@ function personAt(W, H, sync) {
     const mk = r.confidenceMasks[0], a = mk.getAsFloat32Array();
     maskC.width = mk.width; maskC.height = mk.height;
     const mc = maskC.getContext('2d'), id = mc.createImageData(mk.width, mk.height);
-    for (let i = 0; i < a.length; i++) id.data[i * 4 + 3] = Math.max(0, Math.min(255, (a[i] - 0.35) * 3.3 * 255));
+    for (let i = 0; i < a.length; i++) id.data[i * 4 + 3] = Math.max(0, Math.min(255, (a[i] - 0.18) * 2.6 * 255));
     mc.putImageData(id, 0, 0); r.close?.();
   }
   if (personC.width !== W || personC.height !== H) { personC.width = W; personC.height = H; }

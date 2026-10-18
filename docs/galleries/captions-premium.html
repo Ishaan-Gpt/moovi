@@ -825,23 +825,27 @@ function drawPoster(ctx, p, c, t, W, H, scene) {
     const [script, key] = p.tiers;
     const sans = p.tiers[2] ?? script;
     const r = p.enter;
-    // the anchor, once per card: centred on the face, the key from the forehead to below the shoulders (v2, approved look)
+    // the anchor, once per card: centred on the speaker, below the face
     const id = `poster|${c.t0}|${W}x${H}`;
     let an = ANCHORS.get(id);
     if (!an) {
         const f = scene.face ?? null;
         an = f
-            ? { cx: (f.x + f.w / 2) * W, cy: (f.y + f.h * 0.55) * H, span: f.h * H * 1.25, face: f }
-            : { cx: W / 2, cy: p.y * H, span: H * 0.42, face: null };
+            // like Caption 3 (the look Ishaan approved for text behind the speaker): the key is wider than the shoulders
+            // (3.2 face widths) and centred at the neck, so both ends of the word show beside the body and only the neck and
+            // shoulders pass in front of it, where the cut-out is solid; across the face, every hole in the matte shows
+            ? { cx: (f.x + f.w / 2) * W, cy: (f.y + f.h) * H - 0.08 * f.h * H, span: f.h * H * 0.95, face: f, wmax: Math.min(W - 2 * m, f.w * W * 3.2) }
+            : { cx: W / 2, cy: p.y * H, span: H * 0.42, face: null, wmax: W * 0.62 };
         if (ANCHORS.size > 500)
             ANCHORS.clear();
         ANCHORS.set(id, an);
     }
-    // the key: its cap height spans the anchor (shrunk if it would run past the frame)
+    // the key: as wide as the shoulders span (its height capped at about a face), never past the frame
     const keyWords = c.key;
     const keyText = cased(key, keyWords.map(w => w.text).join(' '));
     let kpx = font(ctx, key, S);
-    const k0 = Math.max(0.5, an.span / (kpx * cap));
+    const kw1 = ctx.measureText(keyText).width * (key.wide ?? 1);
+    const k0 = Math.max(0.3, Math.min(an.span / (kpx * cap), (an.wmax ?? W - 2 * m) / Math.max(1, kw1)));
     kpx = font(ctx, key, S, k0);
     const kw0 = ctx.measureText(keyText).width * (key.wide ?? 1);
     const kfit = Math.min(1, (W - 2 * m) / kw0, (H - 2 * m) / (kpx * cap));
@@ -1100,7 +1104,7 @@ const workerSrc = [
   "  }",
   "  let r; try { r = seg.segmentForVideo(e.data.bmp, e.data.ts); } catch (err) { self.postMessage({ error: String(err) }); return; } finally { e.data.bmp.close(); }",
   "  const mk = r.confidenceMasks[0], a = mk.getAsFloat32Array(), out = new Uint8ClampedArray(a.length * 4);",
-  "  for (let i = 0; i < a.length; i++) out[i * 4 + 3] = Math.max(0, Math.min(255, (a[i] - 0.35) * 3.3 * 255));",
+  "  for (let i = 0; i < a.length; i++) out[i * 4 + 3] = Math.max(0, Math.min(255, (a[i] - 0.18) * 2.6 * 255));",
   "  self.postMessage({ w: mk.width, h: mk.height, data: out }, [out.buffer]); if (r.close) r.close();",
   "};",
 ].join(String.fromCharCode(10));
@@ -1138,7 +1142,7 @@ function personAt(W, H, sync) {
     const mk = r.confidenceMasks[0], a = mk.getAsFloat32Array();
     maskC.width = mk.width; maskC.height = mk.height;
     const mc = maskC.getContext('2d'), id = mc.createImageData(mk.width, mk.height);
-    for (let i = 0; i < a.length; i++) id.data[i * 4 + 3] = Math.max(0, Math.min(255, (a[i] - 0.35) * 3.3 * 255));
+    for (let i = 0; i < a.length; i++) id.data[i * 4 + 3] = Math.max(0, Math.min(255, (a[i] - 0.18) * 2.6 * 255));
     mc.putImageData(id, 0, 0); r.close?.();
   }
   if (personC.width !== W || personC.height !== H) { personC.width = W; personC.height = H; }

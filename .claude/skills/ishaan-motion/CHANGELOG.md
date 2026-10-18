@@ -129,3 +129,6 @@
 
 ## 1.13.10 (2026-10-18)
 - Owner rule: the edit's motion graphics, clips and UI components are tailored to each video, never a fixed set.
+
+## 1.14.1 (2026-10-18)
+- Rule: text behind the speaker is wider than the shoulders, centred at the neck, never across the face.

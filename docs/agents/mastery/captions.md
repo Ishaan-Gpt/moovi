@@ -120,7 +120,7 @@ renderer composites the latest mask, and until the first mask arrives it segment
 drawn over the speaker. The face detector runs a few times a second, since a card's place is fixed when it starts.
 Entries leave rest and land at rest (`fromRest`: 1 - (1 - x^1.3)^3), per the owner rule "speed is a curve, never a step".
 
-## Premium Caption 4 (in review 2026-10-18)
+## Premium Caption 4 (approved 2026-10-18)
 
 Ref: the reel https://www.instagram.com/p/Dd1Mf7xzsbm/ ("3 different COUNTRIES", "Here's what NOBODY about working tells
 you"; local copy `data/refs/captions/c05/`). A poster card: one key word giant in League Gothic narrowed to a very tall
@@ -138,3 +138,7 @@ one key word per card, the gallery now plays every preset at once on the same cl
 Then: "you made it worse, get back to previous; when I said I am unable to read, I meant the minimum appear time:
 appearing too fast and leaving too fast". Back to v2 placement (key centred behind the speaker); the readable-time fix
 applies to every preset.
+Then: "very bad, the text behind the background is the worst yet; check how Caption 3 placed text behind the subject
+smoothly, learn it and put it in the skill". v4: the key is wider than the shoulders (3.2 face widths), centred at the
+neck, its height capped at about a face, so only the neck and shoulders pass in front of it; the person matte is more
+solid (confidence 0.18 to 0.56) so small holes close. "Caption 4 v4 is good. Ship it."
