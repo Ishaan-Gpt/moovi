@@ -12,6 +12,7 @@
  * never throws; `laneRuntime` throws only the typed errors below. No I/O here: the bridge itself (packages/mcp) is the
  * `brain` runtime passed in.
  */
+import { config } from '../config';
 import type { AgentRequest, AgentResult, CompleteRequest, Runtime } from './types';
 
 export type Lane = 'claude-code' | 'key' | 'server' | 'wait' | 'none';
@@ -89,12 +90,29 @@ export interface LaneRuntimeOptions {
   waitBrain?: Runtime | null;
   /** every lane decision, for the job's activity and LOG proofs */
   onLane?: (agent: string, lane: Lane, why: string) => void;
+  /** the concrete model per tier on the key and server lanes (server default: this machine's config.models) */
+  models?: { key?: Partial<Record<ModelTier, string>>; server?: Partial<Record<ModelTier, string>> };
+}
+
+type ModelTier = 'director' | 'crew' | 'fast';
+/** the names a step may ask for instead of a model id: 'brain' is the strongest tier, the tiers by name */
+export const LOGICAL_MODELS: Readonly<Record<string, ModelTier>> = { brain: 'director', director: 'director', crew: 'crew', fast: 'fast' };
+/**
+ * A logical name to the lane's own model id (Claude Code keeps the name: it answers with its own model). On the server
+ * lane 'brain' went to the provider as a model id and came back "model is gone" (live server log, 2026-10-18 04:33 IST),
+ * so the first step of every job paid a failed call and ran on whatever the provider's list put first.
+ */
+export function concreteModel(lane: Lane, m: string, models: LaneRuntimeOptions['models'] = {}): string {
+  const tier = LOGICAL_MODELS[m];
+  if (!tier || (lane !== 'key' && lane !== 'server')) return m;
+  const ms = lane === 'key' ? models.key : (models.server ?? config.models);
+  return ms?.[tier] && !LOGICAL_MODELS[ms[tier]!] && ms[tier] !== 'server' ? ms[tier]! : m;
 }
 
 /** A Runtime that sends each call down the lane `pickLane` names, moving on when Claude Code does not pick a step up. */
 export function laneRuntime(o: LaneRuntimeOptions): Runtime {
   const of = (lane: Lane) => (lane === 'claude-code' ? o.brain : lane === 'key' ? o.key : lane === 'server' ? o.server : null) ?? null;
-  const route = async <T>(agent: string, go: (rt: Runtime) => Promise<T>): Promise<T> => {
+  const route = async <T>(agent: string, go: (rt: Runtime, lane: Lane) => Promise<T>): Promise<T> => {
     let f = o.facts();
     for (let hop = 0; hop < LANE_ORDER.length + 1; hop++) {
       let { lane, why } = pickLane(agent, f);
@@ -106,10 +124,10 @@ export function laneRuntime(o: LaneRuntimeOptions): Runtime {
       o.onLane?.(agent, lane, why);
       if (lane === 'wait') {
         if (!o.waitBrain) throw new BrainWaiting(agent);
-        try { return await go(o.waitBrain); } catch (e) { if (e instanceof BrainNotPickedUp) throw new BrainWaiting(agent); throw e; }
+        try { return await go(o.waitBrain, lane); } catch (e) { if (e instanceof BrainNotPickedUp) throw new BrainWaiting(agent); throw e; }
       }
       if (lane === 'none') throw new NoModelForAgent(agent, why);
-      try { return await go(of(lane)!); }
+      try { return await go(of(lane)!, lane); }
       catch (e) {
         // not picked up in time: this call moves on (key, server), or waits for Claude Code when nothing else can take it
         if (lane === 'claude-code' && e instanceof BrainNotPickedUp) { f = { ...f, claudeCode: 'linked' }; continue; }
@@ -121,7 +139,7 @@ export function laneRuntime(o: LaneRuntimeOptions): Runtime {
   return {
     name: 'lanes',
     vision: !!(o.brain?.vision || o.key?.vision || o.server?.vision),
-    run: (req: AgentRequest): Promise<AgentResult> => route(req.agent, rt => rt.run(req)),
-    complete: (req: CompleteRequest): Promise<string> => route(req.agent, rt => (rt.complete ? rt.complete(req) : Promise.reject(new Error(`${rt.name} has no single-answer call`)))),
+    run: (req: AgentRequest): Promise<AgentResult> => route(req.agent, (rt, lane) => rt.run({ ...req, model: concreteModel(lane, req.model, o.models) })),
+    complete: (req: CompleteRequest): Promise<string> => route(req.agent, (rt, lane) => (rt.complete ? rt.complete({ ...req, model: concreteModel(lane, req.model, o.models) }) : Promise.reject(new Error(`${rt.name} has no single-answer call`)))),
   };
 }

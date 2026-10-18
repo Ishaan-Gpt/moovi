@@ -91,10 +91,10 @@ export async function consumeCommands(consumer: string, handle: (cmd: Command) =
 
 /* ───────── ready queues (the scheduler's pointers) ───────── */
 
-export interface Ready { project: string; task: string }
+export interface Ready { project: string; task: string; /** when it was queued (ms): the worker logs how long it waited */ at?: number }
 export async function enqueue(resource: string, item: Ready) {
   const r = await redis();
-  await r.lPush(readyQueue(resource), JSON.stringify(item));
+  await r.lPush(readyQueue(resource), JSON.stringify({ ...item, at: item.at ?? Date.now() }));
 }
 export async function dequeue(conn: Client, resource: string, timeoutS = 2): Promise<Ready | null> {
   const v = await conn.brPop(readyQueue(resource), timeoutS);

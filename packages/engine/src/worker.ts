@@ -105,6 +105,8 @@ export class Worker {
     const agent = desk(t.agent);
     const beat = setInterval(() => { void pq(pid, P.heartbeat, { id, worker: this.id, lease: lease(), note: null }).catch(() => undefined); }, Math.max(5000, config.leaseMs / 3));
     const t0 = Date.now();
+    // one line per task start and end with seconds (C1, 2026-10-18 05:22: the log could not tell a queue from a slow box)
+    console.log(`[engine] ${id} (${t.kind}) start on ${t.resource}${item.at ? `, waited ${((t0 - item.at) / 1000).toFixed(1)} s in the queue` : ''}`);
     await status(run.chat, agent, id, 'working', head(t.kind, t.scope), group(t.kind));
     await activity(run.chat, agent, id, 'start', t.title, { scope: t.scope ?? undefined });
     await publish(run.chat, { type: 'task', task: { id, kind: t.kind, agent: t.agent, scope: t.scope, title: t.title, status: 'running', attempts: t.attempts } });
@@ -131,6 +133,7 @@ export class Worker {
         await spawn(pid, runId, out.spawn, known);
       }
       await pq(pid, P.finish, { id, output: out.output === undefined ? null : JSON.stringify(out.output), at: Date.now(), note: out.note ?? null });
+      console.log(`[engine] ${id} (${t.kind}) done in ${((Date.now() - t0) / 1000).toFixed(1)} s; worker peak rss ${Math.round(process.resourceUsage().maxRSS / 1024)} MB`);
       if (out.reopen) await reopen(pid, runId, out.reopen.keys, out.reopen.feedback);
       await status(run.chat, agent, id, 'done', 'done');
       await activity(run.chat, agent, id, 'done', out.note ?? t.title, { ms: Date.now() - t0, scope: t.scope ?? undefined });
@@ -146,7 +149,7 @@ export class Worker {
         await publish(run.chat, { type: 'task', task: { id, kind: t.kind, agent: t.agent, scope: t.scope, title: t.title, status: 'cancelled', attempts: t.attempts } });
         return;
       }
-      console.error(`[engine] ${id} (${t.kind}) failed:`, msg);
+      console.error(`[engine] ${id} (${t.kind}) failed after ${((Date.now() - t0) / 1000).toFixed(1)} s:`, msg);
       const [f] = await pq<{ status: string }>(pid, P.fail, { id, error: msg.slice(0, 2000), at: Date.now() });
       await status(run.chat, agent, id, f?.status === 'ready' ? 'working' : 'error', f?.status === 'ready' ? 'retrying' : 'failed');
       await activity(run.chat, agent, id, 'fail', `${t.title}: ${msg}`, { ms: Date.now() - t0, scope: t.scope ?? undefined });

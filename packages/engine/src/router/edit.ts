@@ -118,7 +118,7 @@ export const editReel: Handler = async ctx => {
   const t0 = Date.now();
   const lines = stageLines(ctx.chat, ctx.task.id), said = new Map<string, string>();
   const step = async (stage: string, text: string) => { said.set(stage, text); lines.start('editor', stage, text); await publish(ctx.chat, { type: 'status', agent: 'editor', state: 'working', text, task: `${ctx.task.id}:editor` }).catch(() => undefined); void activity(ctx.chat, 'editor', ctx.task.id, 'start', text, { scope: stage }); };
-  const done = (stage: string, s: number) => { lines.done('editor', stage, Math.round(s * 1000), said.get(stage) ?? stage); void activity(ctx.chat, 'editor', ctx.task.id, 'done', `${stage} · ${s.toFixed(1)} s`, { ms: Math.round(s * 1000), scope: stage }); };
+  const done = (stage: string, s: number) => { console.log(`[edit] ${ctx.task.id} ${stage} ${s.toFixed(1)} s`); lines.done('editor', stage, Math.round(s * 1000), said.get(stage) ?? stage); void activity(ctx.chat, 'editor', ctx.task.id, 'done', `${stage} · ${s.toFixed(1)} s`, { ms: Math.round(s * 1000), scope: stage }); };
 
   await ctx.say(`I’ll edit ${u.name}: cut the pauses, punch in on each new thought and caption every word. It plays live as soon as the plan is ready.`, 'note', undefined, 'moovi');
   const dir = join(ctx.dir, 'edit');
@@ -162,7 +162,8 @@ export const editReel: Handler = async ctx => {
       const bed = await fxMusic(lines, plan.source.duration, ctx.signal ? { signal: ctx.signal } : {});
       const restored = await plan.restore.catch(() => null), cleaned = await plan.voice.catch(() => null);
       const { renderEditFx } = await import('../edit/effects/onedit');
-      const v2 = version + 1, file = join(vdir, `v${v2}.mp4`);
+      const v2 = version + 1, file = join(vdir, `v${v2}.mp4`), tr = Date.now();
+      console.log(`[edit] ${ctx.task.id} effects render start: ${plan.effects.events.length} effects, ${plan.duration.toFixed(1)} s of film`);
       const base = { video: restored?.file && existsSync(restored.file) ? restored.file : u.path, shots: edl.shots, words: words.map(w => ({ word: w.word, t: w.t, end: w.end })), out: file, audio: plan.source.hasAudio !== false, voice: cleaned?.file ?? null };
       let r: Awaited<ReturnType<typeof renderEditFx>>;
       try { r = await renderEditFx({ ...base, events: plan.effects.events, work: join(dir, 'fx-work'), music: bed ? { file: bed.file } : null }); }
@@ -175,6 +176,7 @@ export const editReel: Handler = async ctx => {
         r = await renderEditFx({ ...base, video: u.path, events: simple.length ? simple : plan.effects.events, work: join(dir, 'fx-work-2'), music: null });
       }
       const used = [...new Set(r.events.map(e => FX[e.fx].label))];
+      console.log(`[edit] ${ctx.task.id} effects render done in ${((Date.now() - tr) / 1000).toFixed(1)} s (${used.join(', ')})${r.events.length < plan.effects.events.length ? `; ${plan.effects.events.length - r.events.length} dropped at render` : ''}`);
       await ctx.q(P.setVideo, { id: ctx.run.video, status: 'ready', path: file, poster, duration: +r.seconds.toFixed(2), version: v2, style: 'edit+fx', format: 'vertical', at: Date.now() });
       await publish(ctx.chat, { type: 'video', video: { id: ctx.run.video, status: 'ready', version: v2, duration: +r.seconds.toFixed(2), format: 'vertical' } });
       await ctx.say(`Here’s your finished edit with effects: ${used.join(', ')}${bed ? `, music: ${bed.pick.track.title}` : ''}.`, 'video', { video: ctx.run.video, version: v2, duration: +r.seconds.toFixed(2), format: 'vertical', run: ctx.run.id, style: 'edit+fx' }, 'moovi');

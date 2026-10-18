@@ -61,6 +61,8 @@ export function brainScope(o: {
   const runtime = laneRuntime({
     facts: () => ({ claudeCode: o.presence.state(o.user), hasKey: !!o.own, server: !!o.server, byok: o.byok }),
     brain, waitBrain, key: o.own?.runtime ?? null, server: o.server, ...(o.onLane ? { onLane: o.onLane } : {}),
+    // a step's 'brain' (and the tier names) become the lane's own model ids; the server lane uses this machine's config
+    ...(o.own?.models ? { models: { key: o.own.models } } : {}),
   });
   const base = o.own ?? { models: { director: 'server', crew: 'server', fast: 'server' }, deadlineScale: 1, drawsWell: true };
   return { ...base, runtime, provider: BRIDGE_PROVIDER, ...(o.own?.audio ? { audio: o.own.audio } : {}) } as ModelScope;

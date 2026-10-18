@@ -102,3 +102,21 @@ test('lane 24: the wait lane queues on the long-pickup bridge and parks only whe
   const none = laneRuntime({ facts: () => F({ claudeCode: 'linked' }), brain });
   await assert.rejects(none.complete!(creq('direct:edit') as never), BrainWaiting, 'without a wait bridge it parks at once, as before');
 });
+
+test('lane 7: a step\'s "brain" reaches the key and server lanes as their own model id, Claude Code keeps the name', async () => {
+  // live server log, 2026-10-18 04:33 IST: groq: model "brain" is gone; using "openai/gpt-oss-120b" for the crew tier
+  const seen: string[] = [];
+  const spy = (name: string): Runtime => ({ name, vision: false,
+    run: async req => { seen.push(`${name}:${req.model}`); return { text: name, turns: 1, calls: 0, stopped: 'end', ms: 1 }; },
+    complete: async req => { seen.push(`${name}:${req.model}`); return '{}'; } });
+  const models = { key: { director: 'own-big', crew: 'own-mid', fast: 'own-small' }, server: { director: 'srv-big', crew: 'srv-mid', fast: 'srv-small' } };
+  const req = (model: string) => ({ agent: 'direct:edit', system: 's', prompt: 'p', model, deadlineMs: 1000 });
+  await laneRuntime({ facts: () => F({ claudeCode: 'online', hasKey: true }), brain: spy('brain'), key: spy('key'), models }).complete!(req('brain'));
+  await laneRuntime({ facts: () => F({ hasKey: true }), key: spy('key'), models }).complete!(req('brain'));
+  await laneRuntime({ facts: () => F({ server: true, byok: 'optional' }), server: spy('server'), models }).complete!(req('brain'));
+  await laneRuntime({ facts: () => F({ hasKey: true }), key: spy('key'), models }).run({ ...req('fast'), agent: 'edit:romanize', tools: [], maxTurns: 1 } as never);
+  await laneRuntime({ facts: () => F({ hasKey: true }), key: spy('key'), models }).complete!(req('claude-sonnet-x'));
+  // a scope with placeholder models ('server') keeps the name rather than sending a placeholder
+  await laneRuntime({ facts: () => F({ hasKey: true }), key: spy('key'), models: { key: { director: 'server', crew: 'server', fast: 'server' } } }).complete!(req('brain'));
+  assert.deepEqual(seen, ['brain:brain', 'key:own-big', 'server:srv-big', 'key:own-small', 'key:claude-sonnet-x', 'key:brain']);
+});
