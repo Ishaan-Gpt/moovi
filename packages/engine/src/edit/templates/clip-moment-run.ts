@@ -452,12 +452,12 @@ export async function makeClipMoment(i: CmRunInput): Promise<CmRunResult> {
   const parts: string[] = [], inputs: string[] = [], partOf = new Map<number, number>();
   // never a black frame (Ishaan, 2026-10-18): a beat with no matching clip, and the end card, take another beat's clip at a
   // later moment, punched in, so the picture never goes dark; only a film with no clip at all falls back to the dark plate
-  const pool = clips.flat().filter(c => c?.path);
-  if (!pool.length) log('WARNING: no clip for any beat: the film plays on a dark plate (fix the footage search)');
+  const spare = clips.flat().filter(c => c?.path);
+  if (!spare.length) log('WARNING: no clip for any beat: the film plays on a dark plate (fix the footage search)');
   spans.forEach((s, k) => {
     const bi = beatOf(s.t0), n = partOf.get(bi) ?? 0, mine = bi >= clips.length ? [] : clips[bi] ?? [], own = mine[n % Math.max(1, mine.length)], len = Math.max(0.1, s.t1 - s.t0);
     partOf.set(bi, n + 1);
-    const c = own ?? (pool.length ? pool[(bi * 3 + n + 1) % pool.length] : undefined), borrowed = !own && !!c;
+    const c = own ?? (spare.length ? spare[(bi * 3 + n + 1) % spare.length] : undefined), borrowed = !own && !!c;
     if (!c) inputs.push('-f', 'lavfi', '-t', len.toFixed(3), '-i', `color=c=0x0c0b0a:s=${W}x${H}:r=30`);
     else inputs.push('-stream_loop', '-1', '-ss', borrowed ? (2.2 + 1.3 * (k % 3)).toFixed(1) : '0.4', '-t', len.toFixed(3), '-i', c.path!);
     const punch = borrowed ? `,scale=iw*1.18:ih*1.18,crop=${W}:${H}` : '';
