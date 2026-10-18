@@ -1,5 +1,46 @@
 # Tab
 
+## 2026-10-18 10:40 IST · main · docs only · @C1: the live bridge test by mode, the edge cases, and the one prompt commits
+
+**Which modes Claude Code can drive (code at a505ade, what the server runs).** Only one brain step reaches Claude Code:
+`direct:edit`. `BRAIN_AGENTS` in runtime/lane.ts also lists `direct:film` and `direct:look`, but at a505ade
+`directFilm` (router/direct-film.ts) is defined and never called and `direct:look` has no caller. `direct:edit` runs
+for an uploaded clip with no style picked (chat.ts routeEdit, then edit/job.ts directionFor), only in a job whose
+scope is the bridge and only when the clip has words. Inside that one step Claude Code picks the look (base, atlas,
+handmade, studio-minimal, studio-cut) and the cleanup (light, balanced, tight). Every other route (a plain text brief,
+which makes the combined film; the styles s1, s4, s5, darkvox, anatomy, launch, clip-moment; a "like this" reference
+brief; a clip with no words) runs on the user's key or the server model and never asks Claude Code anything.
+
+**Live runs on Ishaan's server, scripted MCP client, one at a time, test clip vignesh-test-1:**
+1. "Edit my video", the client answered badly twice (the engine re-asked once with the problems, then used the rules):
+   PASS. 828 s on the server. Steps asked: direct:edit twice (the re-ask). No server errors. v2.mp4 downloads
+   (23.5 MB, 1080x1920, 30 fps, 17.7 s, AAC 48 kHz). The picture looks right at 1 fps: captions all the way, orbit
+   cards clear of the face, phone mockup, the giant word.
+2. base look, balanced cleanup, a valid answer: accepted on the first try (one step). I stopped it at 593 s with the
+   website's Stop when Vignesh said MCP work only (10:14); the render was cancelled, nothing downloaded.
+3. atlas, handmade, studio-minimal, studio-cut: not run, same reason.
+
+**Edge cases (short MCP calls; one 2.6 s clip edit, no render):**
+- A made up token, and the old token after a new one was made: both refused with 401 and the plain message.
+- A wrong run ticket, or none: `idle`, "Type /mcp__moovi__run ...". Correct.
+- moovi_answer with text that is not JSON: refused, "the answer is not valid JSON". A wrong look or cleanup value:
+  refused, naming the allowed values. A step id that does not exist: refused, "unknown or expired step". The step
+  stays open each time.
+- Claude Code closed mid step without answering, then a new window connected with a new ticket: it got the SAME step
+  after 118 s (the lease lapses, because a closed window does not say goodbye over HTTP), answered it, and the 2.6 s
+  clip finished: PASS.
+- Very short clip (2.6 s): PASS, one step, done 2 s after the answer. Its first step came 185 s after the brief
+  (runs 1 and 2: 8 s), while the server was still finishing the stopped run 2. The run prompt's 15 minutes cover it.
+- A clip with no speech: not run (it never reaches Claude Code: directionFor returns before asking when there are no
+  words).
+
+**For C1: no edit problems to report from run 1.** Bridge notes, mine, no code yet: (a) the "video is ready" link
+points to moovi-three.vercel.app (MOOVI_PUBLIC_URL); right if that site fronts this server, else it should be this
+server's address. (b) After done, a further moovi_next says "waiting" rather than idle; harmless, the loop stops at done.
+
+**One prompt setup (my 10:05 proposal above):** prototype on `claude-code-bridge` only, commits 296c554 and 36e5542
+(branch head 36e5542). mcp tests 90 pass, tsc clean. Still waits on Ishaan's go before main or the server.
+
 ## 2026-10-18 10:05 IST · main · docs only · @C1 @Ishaan: proposal, one prompt instead of two steps to connect Claude Code
 
 **What Vignesh asked (09:46):** "rather than having 2 code can we have 1 prompt then claude code itself runs and sets
