@@ -8,13 +8,23 @@ import type { TypeId } from '@moovi/library/types';
 export type AttachmentRole = 'footage' | 'reference' | 'asset';
 export interface Attachment { upload: string; role: AttachmentRole }
 
+/** The three presets the studio offers (decision 19): the user picks one first; a brief without one is refused. */
+export const PRESETS = ['edit', 'launch', 'showreel'] as const;
+export type Preset = (typeof PRESETS)[number];
+/** The part of an uploaded clip to edit, in seconds of the original (decision 19: picked right at upload). */
+export interface Trim { upload: string; in: number; out: number }
+
 export type Command =
   /** a new chat's first brief: make the video */
   | { type: 'brief'; user: string; project: string; chat: string; text: string; ratio?: 'auto' | '9:16' | '16:9' | '1:1' | '4:5'; uploads: string[]; message: string; style?: { id: 's1' | 's4' | 's5' | 'darkvox' | 'anatomy' | 'launch' | 'combined' | 'clip-moment'; url?: string; script?: string; brand?: string };
       /** the type card the user tapped (MOOVI_ROUTER=pipeline; old briefs leave it out). Not `type`: that key is the command's own kind */
       filmType?: TypeId;
       /** a role per upload, from the studio's role chips (MOOVI_ROUTER=pipeline); a missing one is decided by the router */
-      attachments?: Attachment[] }
+      attachments?: Attachment[];
+      /** the preset the user picked first (decision 19); none: the router refuses the brief */
+      preset?: Preset;
+      /** Edit: only this part of the clip is edited */
+      trim?: Trim }
   /** a message in a chat (to Moovi, or to an @agent; may refer to the video with @video) */
   | { type: 'message'; user: string; project: string; chat: string; text: string; mentions: string[]; uploads: string[]; message: string }
   /** the answer to a question card */

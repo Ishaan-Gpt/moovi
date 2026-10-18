@@ -1,4 +1,5 @@
-// pnpm engine:run "<brief>" [--upload <file>…] [--ratio 9:16]
+// pnpm engine:run "<brief>" --preset edit|launch|showreel [--upload <file>…] [--ratio 9:16]
+// (decision 19: a brief with no preset is refused unless MOOVI_DEFAULT_STYLE=crew, which runs the old crew)
 // M2: one video made end to end with no person in the loop, by the real crew, printing what the office would show.
 import { copyFileSync, statSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -7,6 +8,7 @@ import { closeMemory, health, project as P, projectGraph, run as runQ, SYS, sys 
 import { blocking, follow, history } from '../src/bus';
 import { createChat, createProject, signIn, signUp } from '../src/accounts';
 import { handleCommand } from '../src/chat';
+import type { Preset } from '../src/commands';
 import { ensureDir } from '../src/bench';
 import { projectDir } from '../src/ctx';
 import { newId } from '../src/ids';
@@ -19,6 +21,7 @@ const args = process.argv.slice(2);
 const brief = args.find(a => !a.startsWith('--') && !args[args.indexOf(a) - 1]?.startsWith('--')) ?? 'Make a 30 second reel explaining a free app that turns your voice notes into a clean to-do list.';
 const uploads = args.flatMap((a, i) => (a === '--upload' ? [args[i + 1]!] : []));
 const ratio = (args[args.indexOf('--ratio') + 1] ?? 'auto') as 'auto';
+const preset = args.includes('--preset') ? args[args.indexOf('--preset') + 1] as Preset : undefined;
 if (!(await health()).ok) { console.error('FalkorDB is down'); process.exit(1); }
 
 // a local CLI account (created once), a fresh project and chat
@@ -39,7 +42,7 @@ await say(proj.id, chat.id, null, brief);
 const w = new Worker({ handlers: HANDLERS, onCommand: handleCommand });
 await w.start();
 const t0 = Date.now();
-await handleCommand({ type: 'brief', user: me.id, project: proj.id, chat: chat.id, text: brief, ratio, uploads: ups, message: newId('m') });
+await handleCommand({ type: 'brief', user: me.id, project: proj.id, chat: chat.id, text: brief, ratio, uploads: ups, message: newId('m'), ...(preset ? { preset } : {}) });
 
 const conn = await blocking();
 let last = '0', done = false, ok = false;

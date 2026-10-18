@@ -56,7 +56,7 @@ async function previousFilm(ctx: Parameters<Handler>[0]): Promise<{ type: TypeId
 }
 
 const DOMAIN = /\b[a-z0-9-]+\.(?:com|io|ai|app|dev|co|org|net|so|xyz|in)\b/i;
-const linkIn = (s: string) => s.match(/https?:\/\/[^\s)]+/)?.[0] ?? (s.match(DOMAIN) ? `https://${s.match(DOMAIN)![0]}` : undefined);
+export const linkIn = (s: string) => s.match(/https?:\/\/[^\s)]+/)?.[0] ?? (s.match(DOMAIN) ? `https://${s.match(DOMAIN)![0]}` : undefined);
 const isFamily = (s: string): s is FamilyId => s in FAMILIES;
 
 /** The style-reel input for a generated type: its look, with the link, the user's script, or a script the director writes. */
