@@ -125,7 +125,7 @@ export const editReel: Handler = async ctx => {
   const dir = join(ctx.dir, 'edit');
   // probe, look, hear, plan, and the voice clean-up started beside the preview: one function, the bench runs it too
   const plan = await planEdit({ path: u.path, dir, name: u.name, signal: ctx.signal, onStage: step, onDone: done, onNote: text => ctx.activity('note', text),
-    style: 'auto', brief: inp.brief ?? '', requireWords: !NO_WORDS.test(inp.brief ?? ''), ...(inp.caption ? { caption: inp.caption } : {}), ...(inp.names?.length ? { names: inp.names } : {}), asks: inp.brief ?? '' }).finally(() => lines.end());
+    style: 'auto', brief: inp.brief ?? '', requireWords: !NO_WORDS.test(inp.brief ?? ''), ...(inp.caption ? { caption: inp.caption } : {}), ...(inp.names?.length ? { names: inp.names } : {}), asks: inp.brief ?? '', footage: (process.env.MOOVI_EDIT_FOOTAGE ?? 'on') !== 'off' }).finally(() => lines.end());
   void plan.restore.then(r => r && ctx.activity('note', r.restored
     ? `cleaned and upscaled your clip from ${r.from.w}x${r.from.h} to ${r.to.w}x${r.to.h}${r.graded ? ', graded' : ''} (${r.seconds} s)`
     : `graded your clip (${r.seconds} s)`));
@@ -163,11 +163,13 @@ export const editReel: Handler = async ctx => {
       const lines = fxLines(words.map(w => ({ word: w.word, t: w.t, end: w.end }))).map(l => l.text);
       const bed = await fxMusic(lines, plan.duration, ctx.signal ? { signal: ctx.signal } : {});
       await plan.restore.catch(() => null); const cleaned = await plan.voice.catch(() => null);
+      const clips = (await plan.footage.catch(() => [])).filter(c => c.frames > 0);
+      if (clips.length) await ctx.activity('note', `real footage for ${clips.map(c => `"${c.query}"`).join(', ')} (${clips.map(c => c.provider).join(', ')})`);
       if (cleaned?.file && existsSync(cleaned.file)) { const m = await filmMix(dir, { voice: cleaned.file, bed: bed ? { file: bed.file } : null }); useMix(dir, m.file); }
       const v2 = version + 1, file = join(vdir, `v${v2}.mp4`), r = await renderFilm({ dir, out: file });
       await ctx.q(P.setVideo, { id: ctx.run.video, status: 'ready', path: file, poster, duration: +t.duration.toFixed(2), version: v2, style: 'edit+film', format: 'vertical', at: Date.now() });
       await publish(ctx.chat, { type: 'video', video: { id: ctx.run.video, status: 'ready', version: v2, duration: +t.duration.toFixed(2), format: 'vertical' } });
-      await ctx.say(`Here’s your finished edit, the same film as the preview${bed ? `, music: ${bed.pick.track.title}` : ''} (rendered in ${r.seconds.toFixed(0)} s).`, 'video', { video: ctx.run.video, version: v2, duration: +t.duration.toFixed(2), format: 'vertical', run: ctx.run.id, style: 'edit+film' }, 'moovi');
+      await ctx.say(`Here’s your finished edit, the same film as the preview${bed ? `, music: ${bed.pick.track.title}` : ''}${clips.length ? `, footage: ${clips.map(c => c.credit).join('; ')}` : ''} (rendered in ${r.seconds.toFixed(0)} s).`, 'video', { video: ctx.run.video, version: v2, duration: +t.duration.toFixed(2), format: 'vertical', run: ctx.run.id, style: 'edit+film' }, 'moovi');
       fxVersion = v2;
     } catch (e) {
       const why = fxReason(e);

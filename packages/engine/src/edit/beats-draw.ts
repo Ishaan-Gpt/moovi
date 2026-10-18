@@ -172,6 +172,17 @@ var MOOVI_BEATS = function (E, o) {
         var clips = (L.stills || []).map(function (s, i) { return '<div style="flex:1;border-radius:14px;overflow:hidden;border:2px solid ' + (i % 2 ? 'rgba(255,255,255,.2)' : 'var(--accent,#fff)') + '"><img src="' + still(s) + '" style="width:100%;height:100%;object-fit:cover"></div>'; }).join('');
         return { d: el('<div style="position:relative;width:1000px;height:420px;padding:28px 30px;box-sizing:border-box;border-radius:30px;background:rgba(14,14,16,.82);backdrop-filter:blur(14px);box-shadow:0 30px 70px rgba(0,0,0,.5)"><div style="display:flex;gap:8px;height:120px;margin-bottom:18px">' + clips + '</div><div style="display:flex;gap:8px;height:56px;margin-bottom:18px"><div style="flex:2;border-radius:12px;background:rgba(255,255,255,.12)"></div><div style="flex:1;border-radius:12px;background:var(--accent,#fff);opacity:.85"></div><div style="flex:3;border-radius:12px;background:rgba(255,255,255,.12)"></div></div><div style="display:flex;align-items:center;gap:5px;height:80px">' + bars + '</div><div class="ph" style="position:absolute;top:18px;bottom:18px;width:6px;border-radius:3px;background:var(--accent,#fff)"></div></div>', 'left:40px;top:' + (L.y == null ? 1380 : L.y) + 'px') }; },
       draw: function (L, t, b, St) { var a0 = at(L.at), lt = t - a0; if (lt < 0) return; var k = spring(lt), o = eio(win(t, b.t1 - .3, b.t1)); show(St.d, { transform: 'translateY(' + ((1 - k) * 520 + o * 520).toFixed(1) + 'px)' }); St.d.querySelector('.ph').style.left = (30 + eio(win(t, a0 + .2, b.t1 - .2)) * 930).toFixed(1) + 'px'; } },
+    /** a cut-away to real footage (edit/broll.ts lays the clip out as frames): full frame, the speaker in a corner; before the clip lands, the speaker */
+    broll: { picture: true, build: function (L) { var ims = []; for (var i = 1; i <= (L.frames || 0); i++) { var im = new Image(); im.src = '/v/footage/' + L.name + '/f' + String(i).padStart(3, '0') + '.jpg'; ims.push(im); } return { ims: ims }; },
+      draw: function (L, t, b, St) { var a0 = at(L.at), lt = t - a0;
+        if (!St.ims.length || lt < 0) { DEVICES.cam.draw({ z: 1.04 }, t, b); return; }
+        var im = St.ims[Math.max(0, Math.min(St.ims.length - 1, Math.floor(lt * (L.fps || 15))))];
+        if (im.complete && im.naturalWidth) { var k = Math.max(1080 / im.naturalWidth, 1920 / im.naturalHeight) * (1.04 + .02 * eio(lt / Math.max(1, b.t1 - a0))), w = im.naturalWidth * k, h = im.naturalHeight * k;
+          ctx.save(); ctx.globalAlpha = eo(lt / .15); ctx.drawImage(im, (1080 - w) / 2, (1920 - h) / 2, w, h); ctx.restore(); }
+        var r = FORMS['corner-br'];
+        ctxT.save(); ctxT.shadowColor = 'rgba(0,0,0,.55)'; ctxT.shadowBlur = 40; ctxT.shadowOffsetY = 14; ctxT.fillStyle = '#000'; ctxT.beginPath(); ctxT.roundRect(r[0], r[1], r[2], r[3], r[4]); ctxT.fill(); ctxT.restore();
+        drawVideo({ x: r[0], y: r[1], w: r[2], h: r[3] }, 1.1, .4, r[4], 0, ctxT);
+        ctxT.save(); ctxT.strokeStyle = 'rgba(255,255,255,.3)'; ctxT.lineWidth = 4; ctxT.beginPath(); ctxT.roundRect(r[0], r[1], r[2], r[3], r[4]); ctxT.stroke(); ctxT.restore(); } },
     // lowered onto the EDL by the job (cuts, X1 inserts): the page's own layers draw them
     cut: null, x1: null,
   };
@@ -183,7 +194,7 @@ var MOOVI_BEATS = function (E, o) {
   var lastKey = '';
 
   // every picture the devices show (the clip's stills), loaded before the page says it is ready: a captured frame never misses one
-  var pics = [].slice.call(ov.querySelectorAll('img')); BEATS.forEach(function (b) { b.state.forEach(function (st) { if (st && st.im) pics.push(st.im); }); });
+  var pics = [].slice.call(ov.querySelectorAll('img')); BEATS.forEach(function (b) { b.state.forEach(function (st) { if (st && st.im) pics.push(st.im); if (st && st.ims) pics.push.apply(pics, st.ims); }); });
   var ready = Promise.all(pics.map(function (im) { return im.decode ? im.decode().catch(function () {}) : null; }));
   return {
     beats: BEATS, ready: ready,

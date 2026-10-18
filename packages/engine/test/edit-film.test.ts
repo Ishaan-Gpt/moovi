@@ -75,3 +75,15 @@ test('UI rows cast through the one player: a notification asked by name becomes 
   assert.deepEqual(validateEdl(e).problems.filter(p => !p.startsWith('version')), []);
   assert.ok(R.filter(x => x.id.startsWith('ui:') && x.built).length >= 70, 'most UI rows are drawn');
 });
+
+test('footage cut-aways: only cast when the job fetches footage; the query is the thing named; the page draws them', async () => {
+  const ws = [W('We', 0.2, 0.3), W('post', 0.35, 0.6), W('them', 0.65, 0.8), W('to', 0.85, 0.9), W('Instagram', 0.95, 1.6), W('daily.', 1.65, 2.3)];
+  const reads = readSentences(ws, R), asks = parseAsks("add footage on 'Instagram'", R);
+  const off = await castBeats(reads, registryCaster(R), { registry: R, asks });
+  assert.equal(off.picks[0]?.id, 'effect:edit-broll', 'an ask names it whatever the default');
+  const auto = await castBeats(reads, registryCaster(R), { registry: R });
+  assert.ok(!auto.picks.some(p => p.id === 'effect:edit-broll'), 'never cast unasked without footage');
+  const spec = beatSpecOf(reads, off.picks), L = spec.beats[0]!.layers[0]!;
+  assert.equal(L.t, 'broll'); assert.match(String(L.query), /^instagram/);
+  assert.match(PAGE, /broll: \{ picture: true/);
+});

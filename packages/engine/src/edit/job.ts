@@ -32,6 +32,7 @@ import { cleanVoice, quietPauses, type CleanVoice } from './voice';
 import { forksOf, linkInto } from '../change/fork';
 import { directBeats, type BeatSpec } from './beatspec';
 import { lowerSpec, writeStills } from './beatlower';
+import { fetchBroll, type BrollDone } from './broll';
 
 /**
  * The upload edit's plan stage, one function: probe, look (faces) beside hear (D1.2), the EDL (D1.3), and the voice
@@ -82,6 +83,9 @@ export interface PlanInput {
   /** the director (edit/beatspec.ts): one registry pick per sentence written as the beat spec on edl.spec (default true;
    *  MOOVI_EDIT_BEATS=0 turns it off). When it runs it replaces autoMoves, the D2.5 inserts and the reel effects film. */
   beats?: boolean;
+  /** real footage cut-aways (edit/broll.ts): the director may cast them and their clips are fetched after the first
+   *  preview (network: the footage finder). Default off; the studio's edit job turns it on. */
+  footage?: boolean;
   /** chat words that name a device for a sentence ("add a crash zoom on 'crore'"): they override the director's pick */
   asks?: string;
   /** the creator's name or handle for the style's end card */
@@ -130,6 +134,8 @@ export interface Planned {
   restore: Promise<Restored | null>;
   /** the finished soundtrack (a Studio Cut: voice, bed and the Style 1 stem, mix.m4a), running; null when there is none */
   mix: Promise<{ file: string; lufs: number } | null>;
+  /** the footage cut-aways' clips, fetching after the plan (footage.json); [] when none were cast */
+  footage: Promise<BrollDone[]>;
 }
 
 export const EDIT_PALETTE = () => ({ ink: color.ink, paper: color.surface, accent: color.ice, accent2: color.frostMid, deep: color.ink, pop: color.iceWhite });
@@ -305,7 +311,7 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
       const ws = kept.length >= 4 ? kept : words;
       // the bridge's direction carries the brain's reads and picks (edit/direct-spec.ts, Creative mode): that is the
       // spec the one player draws (beatspec.json); else the rules' director, with the person's chat asks
-      const d = direction?.spec ? { ...(await specOfDirection(direction, ws)), from: 'direction' as const } : { ...(await directBeats(ws, { askText: o.asks ?? '' })), from: 'rules' as const };
+      const d = direction?.spec ? { ...(await specOfDirection(direction, ws)), from: 'direction' as const } : { ...(await directBeats(ws, { askText: o.asks ?? '', footage: !!o.footage })), from: 'rules' as const };
       const low = await lowerSpec(edl as never, d.spec);
       const bad = validateEdl(edl as never).problems.filter(p => !p.startsWith('version'));
       if (bad.length || EDIT.timeline(edl).problems.length) { edl = JSON.parse(before); console.warn(`[edit] director undone: ${bad.slice(0, 2).join('; ')}`); }
@@ -396,5 +402,8 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
       return { file: m.file, lufs: m.lufs };
     }).catch(e => { console.warn(`[edit] studio cut mix: ${String((e as Error).message ?? e).slice(0, 160)}`); return null; })
     : Promise.resolve(null);
-  return { mix, edl, words, ...(language ? { language } : {}), heard, faces: look.faces.length, lap, duration: t.duration, source: { ...source, hasAudio: pr.hasAudio }, rough, cast, inserts: ins, moves, style: { id: isD22(style) ? style : null, why: styleWhy }, effects, beats, ...(look.why ? { lookWhy: look.why } : {}), voice, restore };
+  // the footage cut-aways the director cast: their clips found and laid out as frames now, beside the voice and the restore
+  const hasBroll = !!(edl as { spec?: { beats: { layers: { t: string }[] }[] } }).spec?.beats.some(b => b.layers.some(l => l.t === 'broll'));
+  const footage: Promise<BrollDone[]> = hasBroll ? fetchBroll(dir, patch, o.signal ? { signal: o.signal } : {}).catch(e => { console.warn(`[edit] footage: ${String((e as Error).message ?? e).slice(0, 160)}`); return []; }) : Promise.resolve([]);
+  return { mix, footage, edl, words, ...(language ? { language } : {}), heard, faces: look.faces.length, lap, duration: t.duration, source: { ...source, hasAudio: pr.hasAudio }, rough, cast, inserts: ins, moves, style: { id: isD22(style) ? style : null, why: styleWhy }, effects, beats, ...(look.why ? { lookWhy: look.why } : {}), voice, restore };
 }

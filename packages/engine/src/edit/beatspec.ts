@@ -30,6 +30,8 @@ export interface SentenceRead {
 
 const clean = (s: string) => s.toLowerCase().replace(/[^\p{L}\p{N}%₹$]/gu, '');
 const STOP = new Set('a an the and or but so to of in on at for with is are was were be been it this that you your i we our my me us they its from by as if then than there here what when how who why which just like really very can will do does did have has had not no yes all me hai ki ka ke ko se main mein toh bhi aur ye wo yeh woh na'.split(' '));
+/** words a footage search must never carry: pronouns, filler verbs, fillers */
+const QSTOP = new Set('them they their this that these those get got make made want need going gonna basically really actually guys everyone something thing things stuff people know think'.split(' '));
 const NUM = /\d|\b(two|three|four|five|six|seven|eight|nine|ten|twenty|thirty|fifty|hundred|thousand|million|billion|lakh|lakhs|crore|crores)\b/i;
 const FN_RULES: [EditFn, RegExp][] = [
   ['cta', /\b(comment|follow|subscribe|link in (my |the )?bio|dm me|sign up|try it|download|join|click|save this|share this)\b/i],
@@ -280,6 +282,13 @@ function layersOf(p: BeatPick, s: SentenceRead, o: SpecOpts): { layers: SpecLaye
       return { layers: [{ t: 'strike', tags, at: first, y: 300 }], sfx: tags.map(() => ({ at: first, k: 'pop' as SfxKey })) };
     }
     case 'timeline': return { layers: [{ t: 'timeline', stills: across(o, 4), at: first, y: 1480 }], sfx: snd(first) };
+    case 'broll': {
+      // the query: the hero and the content words around it (the thing the line names), fetched after the first preview
+      // the query is the thing named: the hero, with the next word when it is a noun-like word (not a pronoun or a filler verb)
+      const ws = s.words.map(w => clean(w.word)), hi = ws.indexOf(clean(s.hero)), nx = hi >= 0 ? ws[hi + 1] : undefined;
+      const query = [clean(s.hero), ...(nx && nx.length > 3 && !STOP.has(nx) && !QSTOP.has(nx) ? [nx] : [])].join(' ');
+      return { layers: [{ t: 'broll', name: `b${s.i}`, query, at: first, dur: Math.min(p.meta.max, Math.max(p.meta.min, s.t1 - s.t0)) }], sfx: snd(first) };
+    }
     case 'leak': return { layers: [{ t: 'leak', at: first }], sfx: snd(first) };
     case 'wipe': return { layers: [{ t: 'wipe', src: o.brandMark, at: first, dur: 0.45 }], sfx: snd(first) };
     case 'stat': {
