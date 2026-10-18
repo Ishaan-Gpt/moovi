@@ -3,7 +3,8 @@
 Premium captions built reference by reference with Ishaan (decisions 14 to 16: short iterations, his answers are the
 taste). Code: `packages/library/src/captions/premium/` (presets, `draw.ts` painter shared by the live preview and the
 MP4 path, `theme.ts` accent ramp). Gallery: `docs/galleries/captions-premium.html`, rebuilt by
-`pnpm --filter @moovi/engine exec tsx scripts/caption-premium.ts` (serve the repo root with byte ranges to play it).
+`pnpm --filter @moovi/engine exec tsx scripts/caption-premium.ts`; `... caption-premium.ts serve` plays it on localhost
+(the repo root with byte ranges).
 Not a product default yet: wiring into types comes later with Ishaan.
 
 ## Rules from Ishaan (every caption)
@@ -78,9 +79,11 @@ the colour (light blue over the beige wall, orange or green over others). The wo
 edge, never into the face; the words after it sit below, right-aligned. Plain words in white Montserrat (content
 Medium, connectors Regular and smaller). Words slide up out of a blur. No accent.
 
-The gallery reads the face box and the person matte with MediaPipe in the browser (tasks-vision 0.10.14 from
-jsDelivr, models from Google storage). The MP4 path needs the same two models vendored or cached before this preset
-can render on the server.
+The gallery reads the face box and the person matte with MediaPipe, with no CDN (2026-10-18): the runtime is the npm
+package `@mediapipe/tasks-vision@0.10.14` (an engine dependency, so the Docker image has it), the two models are in
+`packages/engine/assets/vision/`, Montserrat in `assets/renderer/fonts/`. Proof: `OFFLINE=1 tsx scripts/caption-premium.ts
+still 3 6.4 out.png` aborts every non-local request and still renders the matte and the face box, pixel-identical to the
+old CDN still. Both models fall back to the CPU delegate where there is no GPU.
 
 Ishaan's words, in order (it took eight rounds):
 1. "Caption 3, difference style" (v1 Sora kinetic stack, gradient): "you neither got 3D nor the difference style,

@@ -4,11 +4,17 @@
  * painted by the same draw.ts the MP4 path uses, with Style 1's typing tick per word.
  *
  *   tsx scripts/caption-premium.ts                                          build the gallery
- *   tsx scripts/caption-premium.ts still <1.1|1.2> <t> <out.png> [ref.png] [accent|video]   one frame
+ *   tsx scripts/caption-premium.ts still <1.1|1.2|2|3> <t> <out.png> [ref.png] [accent|video]   one frame
+ *   tsx scripts/caption-premium.ts serve [port]                             the gallery on localhost (byte ranges)
+ *
+ * The person matte and face box (Caption 3) run on MediaPipe from this repo, never a CDN: the runtime is the npm
+ * package @mediapipe/tasks-vision (engine dependency), the two models are in packages/engine/assets/vision, Montserrat
+ * is in assets/renderer/fonts. OFFLINE=1 aborts every request that is not to the local server (the server proof).
  */
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { readFileSync, writeFileSync, existsSync, statSync, createReadStream } from 'node:fs';
+import { createServer } from 'node:http';
+import { resolve, dirname, extname, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 import { chromium } from 'playwright-core';
 import { config } from '../src/config';
@@ -19,6 +25,7 @@ const root = resolve(here, '../../..');
 const dir = resolve(root, 'packages/library/src/captions/premium');
 const out = resolve(root, 'docs/galleries/captions-premium.html');
 const WORDS = resolve(root, 'docs/galleries/captions-premium.words.json');
+const LOCAL_FONTS = ['Montserrat'];
 
 function js(file: string): string {
   const src = readFileSync(resolve(dir, file), 'utf8');
@@ -29,11 +36,13 @@ function js(file: string): string {
 function build(): string {
   // the clip's own words (Whisper, from the edit round); kept beside the gallery so it opens without data/
   const words = JSON.parse(readFileSync(WORDS, 'utf8')) as { text: string; t: number; end: number }[];
-  const families = [...new Set(PREMIUM_PRESETS.flatMap(p => p.fonts))].map(f => 'family=' + f).join('&');
+  // fonts bundled in the repo are served locally (the same Google family, as a Fontsource variable woff2)
+  const families = [...new Set(PREMIUM_PRESETS.flatMap(p => p.fonts))].filter(f => !LOCAL_FONTS.some(l => f.startsWith(l))).map(f => 'family=' + f).join('&');
   const html = `<!doctype html><html><head><meta charset="utf-8"><title>Premium captions</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?${families}&display=block">
 <style>
+@font-face{font-family:'Montserrat';font-style:normal;font-weight:100 900;font-display:block;src:url(../../packages/engine/assets/renderer/fonts/montserrat-latin-wght-normal.woff2) format('woff2')}
 :root{--bg:#0B0D10;--ink:#F7FAFD;--dim:#8A96A3;--line:#1F2630;--ice:#CFE6F7}
 body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,sans-serif}
 main{max-width:1100px;margin:0 auto;padding:24px 16px}
@@ -107,21 +116,29 @@ function sfx() {
 setInterval(sfx, 15);
 // the person matte (MediaPipe selfie segmenter, in the browser): the speaker cut out of each frame, so words of a
 // a behind tier sit in depth behind them
+// MediaPipe from this repo (no CDN): the npm runtime and the vendored models, as absolute URLs so the worker resolves them too
+const repo = p => new URL(p, location.href).href;
+const VISION = repo('../../packages/engine/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs');
+const WASM = repo('../../packages/engine/node_modules/@mediapipe/tasks-vision/wasm');
+const SEG_MODEL = repo('../../packages/engine/assets/vision/selfie_segmenter.tflite');
+const FACE_MODEL = repo('../../packages/engine/assets/vision/blaze_face_short_range.tflite');
 let seg = null, faceDet = null;
 const segReady = (async () => {
   try {
-    const m = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs');
-    const fs = await m.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm');
-    seg = await m.ImageSegmenter.createFromOptions(fs, { baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite', delegate: 'GPU' }, runningMode: 'VIDEO', outputConfidenceMasks: true, outputCategoryMask: false });
-    const faceOpts = delegate => ({ baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite', delegate }, runningMode: 'VIDEO' });
+    const m = await import(VISION);
+    const fs = await m.FilesetResolver.forVisionTasks(WASM);
+    // GPU where there is one, CPU on a headless server
+    const segOpts = delegate => ({ baseOptions: { modelAssetPath: SEG_MODEL, delegate }, runningMode: 'VIDEO', outputConfidenceMasks: true, outputCategoryMask: false });
+    seg = await m.ImageSegmenter.createFromOptions(fs, segOpts('GPU')).catch(() => m.ImageSegmenter.createFromOptions(fs, segOpts('CPU')));
+    const faceOpts = delegate => ({ baseOptions: { modelAssetPath: FACE_MODEL, delegate }, runningMode: 'VIDEO' });
     faceDet = await m.FaceDetector.createFromOptions(fs, faceOpts('GPU')).catch(() => m.FaceDetector.createFromOptions(fs, faceOpts('CPU')));
     window.faceState = () => ({ ready: !!faceDet, box: faceBox });
   } catch (e) { console.warn('person matte unavailable', e); }
 })();
+window.visionState = () => ({ matte: !!seg, face: !!faceDet, box: faceBox });
 const maskC = document.createElement('canvas'), personC = document.createElement('canvas'), segIn = document.createElement('canvas');
 // during playback the matte runs in a worker on a small copy of the frame, so the frame loop never waits on the model;
 // the renderer composites the latest mask (stills segment their exact frame on the page, synchronously)
-const VISION = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs';
 const workerSrc = [
   "let seg = null;",
   "self.onmessage = async e => {",
@@ -150,7 +167,7 @@ matteWorker.onmessage = e => {
   maskC.getContext('2d').putImageData(new ImageData(e.data.data, e.data.w, e.data.h), 0, 0);
   maskReady = true;
 };
-matteWorker.postMessage({ init: true, vision: VISION, wasm: 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm', model: 'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite' });
+matteWorker.postMessage({ init: true, vision: VISION, wasm: WASM, model: SEG_MODEL });
 function pumpMatte() {
   if (!wReady || wBusy || v.readyState < 2 || v.currentTime === wSent) return;
   wSent = v.currentTime; wBusy = true;
@@ -229,16 +246,49 @@ window.still = async (vr, t, refUrl, acc) => {
   return html;
 }
 
+// the repo root over http with byte ranges (video seeks; MediaPipe fetches its wasm and models, which file:// refuses)
+const MIME: Record<string, string> = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.json': 'application/json', '.wasm': 'application/wasm', '.tflite': 'application/octet-stream', '.woff2': 'font/woff2', '.mp4': 'video/mp4', '.mp3': 'audio/mpeg', '.wav': 'audio/wav', '.png': 'image/png', '.jpg': 'image/jpeg' };
+// a still may also read one file outside the repo (a reference, a clip) through /@fs/<absolute path>
+function serve(port = 0, extra: string[] = []): Promise<number> {
+  const srv = createServer((req, res) => {
+    const p = decodeURIComponent(new URL(req.url!, 'http://x').pathname);
+    const file = p.startsWith('/@fs/') && extra.includes(p.slice(5)) ? p.slice(5) : resolve(root, '.' + p);
+    if (!(file.startsWith(root + sep) || extra.includes(file)) || !existsSync(file) || !statSync(file).isFile()) { res.writeHead(404).end(); return; }
+    const size = statSync(file).size, type = MIME[extname(file).toLowerCase()] ?? 'application/octet-stream';
+    const m = /bytes=(\d*)-(\d*)/.exec(req.headers.range ?? '');
+    if (!m) { res.writeHead(200, { 'content-type': type, 'content-length': size, 'accept-ranges': 'bytes' }); createReadStream(file).pipe(res); return; }
+    const a = m[1] ? Number(m[1]) : Math.max(0, size - Number(m[2])), z = m[1] && m[2] ? Math.min(size - 1, Number(m[2])) : size - 1;
+    res.writeHead(206, { 'content-type': type, 'content-length': z - a + 1, 'content-range': `bytes ${a}-${z}/${size}`, 'accept-ranges': 'bytes' });
+    createReadStream(file, { start: a, end: z }).pipe(res);
+  });
+  return new Promise(ok => srv.listen(port, '127.0.0.1', () => ok((srv.address() as { port: number }).port)));
+}
+
 const [cmd, id, t, png, ref, accent] = process.argv.slice(2);
 writeFileSync(out, build());
 console.log('gallery', out);
+if (cmd === 'serve') {
+  const port = await serve(Number(id) || 4310);
+  console.log(`http://127.0.0.1:${port}/docs/galleries/captions-premium.html`);
+}
 if (cmd === 'still') {
-  const b = await chromium.launch({ headless: true, args: ['--allow-file-access-from-files'], ...(config.chrome.path ? { executablePath: config.chrome.path } : { channel: config.chrome.channel }) });
+  const outside = [process.env.CLIP, ref].filter((f): f is string => !!f && existsSync(f)).map(f => resolve(f)).filter(f => !f.startsWith(root + sep));
+  const port = await serve(0, outside), origin = `http://127.0.0.1:${port}`;
+  const url = (f: string) => outside.includes(resolve(f)) ? origin + '/@fs/' + encodeURIComponent(resolve(f)) : origin + '/' + resolve(f).slice(root.length + 1).split(sep).map(encodeURIComponent).join('/');
+  const b = await chromium.launch({ headless: true, ...(config.chrome.path ? { executablePath: config.chrome.path } : { channel: config.chrome.channel }) });
   const page = await b.newPage({ viewport: { width: 1400, height: 900 } });
-  await page.goto(pathToFileURL(out).href + (process.env.CLIP ? '?clip=' + encodeURIComponent(pathToFileURL(resolve(process.env.CLIP)).href) : ''));
+  const blocked: string[] = [];
+  if (process.env.OFFLINE === '1') await page.context().route('**/*', r => r.request().url().startsWith(origin + '/') ? r.continue() : (blocked.push(r.request().url()), r.abort()));
+  page.on('console', m => { if (m.type() === 'warning' || m.type() === 'error') console.log('page', m.type(), m.text()); });
+  await page.goto(url(out) + (process.env.CLIP ? '?clip=' + encodeURIComponent(url(process.env.CLIP)) : ''));
   await page.evaluate(([i, tt, r, a]) => (window as unknown as { still: (a: string, b: number, c?: string, d?: string) => Promise<void> }).still(i!, Number(tt), r || undefined, a || undefined),
-    [id, t, ref && existsSync(ref) ? pathToFileURL(resolve(ref)).href : '', accent ?? ''] as const);
+    [id, t, ref && existsSync(ref) ? url(ref) : '', accent ?? ''] as const);
   await page.locator('#still').screenshot({ path: resolve(png!) });
+  const vs = await page.evaluate(() => (window as unknown as { visionState: () => { matte: boolean; face: boolean; box: unknown } }).visionState());
   await b.close();
-  console.log('still', png);
+  console.log('still', png, '| matte', vs.matte, '| face', vs.face, JSON.stringify(vs.box));
+  if (blocked.length) console.log('blocked (OFFLINE=1):', [...new Set(blocked.map(u => new URL(u).host))].join(', '));
+  // Caption 3 places its highlight behind the speaker and its cards off the face: without either it is not Caption 3
+  if (id === '3' && !(vs.matte && vs.face)) { console.error('Caption 3 needs the person matte and the face detector'); process.exit(1); }
+  process.exit(0);
 }
