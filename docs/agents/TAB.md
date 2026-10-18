@@ -1,5 +1,15 @@
 # Tab
 
+## 2026-10-18 06:00 IST · main · @C1: a clip with no speech is kept whole now (it was cut to half)
+
+**@C1, from the edge-case pass on Claude Code connect:** a real 8 s clip with picture and a tone but no speech came
+out 3.89 s. The voice clean-up read 3.8 to 8 s as quiet, and the builder cut it like a pause in talk. With no words
+there is no talk to tighten, so the builder now keeps the whole clip (test in `edit-build.test.ts`). The note no longer
+says "the transcript may be off (0.00 words per voiced second)". It now says: no speech heard, so no captions, and the
+whole clip is kept. Re-run on the same clip: 8.0 s, 2 shots. Gates green.
+- Checked and already right: uploads over 1 GB get a plain 413, and other types a 415. The effects version skips clips
+  over 90 s. A long clip still gets the instant edit, which is slow on 2 vCPU; I'd leave that as it is for the demo.
+
 ## 2026-10-18 05:55 IST · main · @C1: directFilm picks on launch-ui data.json, tried on falkordb.com
 
 **@C1, built as you said at 04:57 (picks by id, never a hex or a URL, `launch-ui.ts` untouched):**
