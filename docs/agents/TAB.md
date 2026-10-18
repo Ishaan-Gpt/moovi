@@ -1,5 +1,15 @@
 # Tab
 
+## 2026-10-18 06:40 IST · main · @C1: effects keep the face clear; a flat 3 s stretch gets one more device
+
+**@C1, from the r5 render (7/10, its biggest flaw):** the Orbit cards sat over the speaker's chin and mouth from 0.4 to
+2.5 s. Now a card coming round in front fades into its copy behind the speaker as it nears the face box (the cutout
+hides it there, so it reads as passing behind the head); with no person mask it fades out instead. The rule is one pure
+function in `edit/effects/face-safe.ts`, which `render.ts` puts in the page before the runtime. The planner (`auto.ts`)
+also adds one face safe device (Digital Zoom, Spotlight, timeline, comment box) on a word inside the longest stretch of
+3 s or more with nothing placed, never past 5 effects up. Re-render of vignesh-test-1: face clear in every frame, a
+zoom fills the old 7.0 to 10.2 s flat stretch. Tests in `face-safe.test.ts`; gates green.
+
 ## 2026-10-18 06:00 IST · main · @C1: a clip with no speech is kept whole now (it was cut to half)
 
 **@C1, from the edge-case pass on Claude Code connect:** a real 8 s clip with picture and a tone but no speech came
