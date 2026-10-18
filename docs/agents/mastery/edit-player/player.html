@@ -33,7 +33,7 @@ html,body{margin:0;height:100%;background:var(--page,#111);overflow:hidden;font-
 #gate{position:absolute;inset:0;display:grid;place-items:center;z-index:5;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);cursor:pointer;font:700 54px Manrope;color:#fff}
 </style></head>
 <body>
-<div id="stage"><video id="v" preload="auto" playsinline></video><canvas id="cv" width="1080" height="1920"></canvas><div id="ov"></div><canvas id="cvt" width="1080" height="1920" style="position:absolute;inset:0"></canvas><canvas id="cap" width="540" height="960" style="width:1080px;height:1920px"></canvas><div id="gate">loading…</div></div>
+<div id="stage"><video id="v" preload="auto" playsinline></video><canvas id="cv" width="1080" height="1920"></canvas><div id="ov"></div><canvas id="cvt" width="1080" height="1920" style="position:absolute;inset:0;z-index:2"></canvas><canvas id="cap" width="540" height="960" style="width:1080px;height:1920px;z-index:2"></canvas><div id="gate">loading…</div></div>
 <div id="bar"><button id="pp">Play</button><input id="sc" type="range" min="0" max="1000" value="0"><span id="tc">0.00</span></div>
 <script src="../../../packages/library/src/kits/motion/core.js"></script>
 <script type="module">
@@ -144,6 +144,11 @@ async function gobo(D) { const c = document.createElement('canvas'), W = 1600, H
 function warmGobo() { const W = 1600, H = 2000, c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'); g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
   g.save(); g.filter = 'blur(26px)'; g.translate(W * .5, H * .5); g.transform(1, .12, -.38, 1, 0, 0); g.fillStyle = 'rgb(255,214,150)'; const pw = 520, ph = 600, gap = 30; for (let r = 0; r < 3; r++) for (let q = 0; q < 2; q++) g.fillRect(-pw - gap / 2 + q * (pw + gap), -1.5 * ph - gap + r * (ph + gap), pw, ph); g.restore(); return c.toDataURL('image/jpeg', .9); }
 async function buildDeskAssets() { if (!SPEC.desk) return; DESK.gobo = await gobo(SPEC.desk); DESK.warm = warmGobo(); }
+/** cached DOM lookups for the per-frame draw (querySelector on every frame costs a style recalc and garbage) */
+/** write a style only when it changes (an unchanged filter string still re-validates the layer) */
+const setCss = (e, k, v) => { if (e && e['_' + k] !== v) { e['_' + k] = v; e.style[k] = v; } };
+const QC = new WeakMap(), qmap = r => { let m = QC.get(r); if (!m) QC.set(r, m = {}); return m; };
+const qs = (r, sel) => { const m = qmap(r); return sel in m ? m[sel] : (m[sel] = r.querySelector(sel)); }, qsa = (r, sel) => { const m = qmap(r); return m['*' + sel] ??= [...r.querySelectorAll(sel)]; };
 function buildDesk() { const D = SPEC.desk, doodle = (it, i) => it.doodle ? `<svg class="doodle" data-i="${i}" style="position:absolute;left:${it.dx ?? it.x}px;top:${it.dy ?? it.y + (it.h || 300) + 20}px;overflow:visible" width="${it.dw ?? 400}" height="${it.dh ?? 300}" viewBox="0 0 ${it.dw ?? 400} ${it.dh ?? 300}" fill="none" stroke="var(--ink,#3A2E28)" stroke-width="${it.sw ?? 8}" stroke-linecap="round" stroke-linejoin="round" filter="url(#marker)">${it.doodle.map((d, j) => { const o = typeof d === 'string' ? { d } : d, id = `mk${i}_${j}`; return o.dash ? `<mask id="${id}" maskUnits="userSpaceOnUse" x="-60" y="-60" width="${(it.dw ?? 400) + 120}" height="${(it.dh ?? 300) + 120}"><path d="${o.d}" stroke="#fff" stroke-width="${(it.sw ?? 8) * 3}"/></mask><path class="ln" d="${o.d}" stroke-dasharray="${o.dash}" data-mk="${id}" mask="url(#${id})"/>` : `<path class="ln" d="${o.d}"/>`; }).join('')}</svg>` : '';
   const label = (it, i) => it.label ? `<div class="hand" data-i="${i}" style="left:${it.lx}px;top:${it.ly}px;transform:rotate(${it.lr ?? -4}deg);${it.ls ? `font-size:${it.ls}px` : ''}">${it.label}</div>` : '';
   const item = (it, i) => { if (it.kind === 'cut') { const h = cutH(it.src, it.w), m = CUTMETA[it.src] || {}; return `<div class="it co" data-i="${i}" style="left:${it.x}px;top:${it.y}px;width:${it.w}px;height:${h}px"><img src="${CUTS_DIR + it.src}.png" style="width:100%;height:100%${it.flip ? ';transform:scaleX(-1)' : ''}">${it.on ? `<div class="glow"></div><img class="on" src="${CUTS_DIR + (it.srcOn || it.src + '-on')}.png">` : ''}${it.screen && m.quad ? `<video muted loop playsinline preload="auto" src="${it.screen}" style="position:absolute;left:0;top:0;width:640px;height:400px;object-fit:cover;transform-origin:0 0;transform:${quadCss(m.quad.map(([x, y]) => [x * it.w, y * h]), 640, 400)};filter:saturate(.9) contrast(1.05) brightness(1.04)"></video>` : ''}</div>`; }
@@ -152,7 +157,7 @@ function buildDesk() { const D = SPEC.desk, doodle = (it, i) => it.doodle ? `<sv
     return `<div class="it" data-i="${i}" style="left:${it.x}px;top:${it.y}px;width:${it.w}px;height:${it.h}px">${sheets}<div class="print" style="left:0;top:0;width:100%;height:100%"><video muted loop playsinline preload="auto" src="${it.src}"></video><i class="tape"></i></div></div>`; };
   const d = el(`<svg width="0" height="0" style="position:absolute"><filter id="marker"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="2" seed="4"/><feDisplacementMap in="SourceGraphic" scale="5"/></filter></svg>
     <div class="plane" style="position:absolute;left:0;top:0;width:${D.w}px;height:${D.h}px;transform-origin:0 0"><div class="grain"></div>${(D.items || []).map((it, i) => item(it, i) + doodle(it, i) + label(it, i)).join('')}<div class="wlight" style="background-image:url(${DESK.gobo})"></div><div class="wlight wwarm" style="background-image:url(${DESK.warm})"></div><div class="ddim"></div><div class="rack"></div></div>
-    <div class="spk" style="position:absolute;left:700px;top:1290px;width:330px;height:452px;transform-origin:50% 60%;display:none"><div class="print" style="left:0;top:0;width:100%;height:100%"><canvas width="298" height="382" style="display:block;width:100%;height:100%"></canvas><i class="tape" style="width:120px;margin-left:-60px;transform:rotate(4deg)"></i></div></div>
+    <div class="spk" style="position:absolute;left:700px;top:1290px;width:330px;height:452px;transform-origin:50% 60%;display:none"><div class="print" style="left:0;top:0;width:100%;height:100%"><div style="width:100%;height:100%;background:#2a2420"></div><i class="tape" style="width:120px;margin-left:-60px;top:-32px;transform:rotate(4deg)"></i></div></div>
     ${(D.props || []).map((pp, i) => `<div class="prop" data-i="${i}" style="position:absolute;left:0;top:0;width:${D.w}px;height:${D.h}px;transform-origin:0 0;pointer-events:none"><img src="${CUTS_DIR + pp.src}.png" style="position:absolute;left:${pp.x}px;top:${pp.y}px;width:${pp.w}px;transform-origin:50% 50%"></div>`).join('')}`, 'left:0;top:0;width:1080px;height:1920px;overflow:hidden');
   d.classList.add('desk'); return d; }
 
@@ -226,16 +231,16 @@ const DEVICES = {
   desk: { build: (L, b) => { if (!DESK.d) DESK.d = buildDesk(); return {}; },
     draw: (L, t, b) => { const D = SPEC.desk, d = DESK.d; show(d); const k = t - b.t0, f = L.focus, pf = b.prevDesk || f, m = b.prevDesk ? E.hard(win(k, 0, .75)) : 1, c = pf.map((v, i) => lerp(v, f[i], m)), bd = Math.max(.5, b.t1 - b.t0), sc = c[2] * (1 + .018 * bd * eio(k / bd));
       const cam = (z = 0) => { const s = sc * (1 + z); return `translate(${(540 - c[0] * s).toFixed(1)}px,${(960 - c[1] * s).toFixed(1)}px) scale(${s.toFixed(4)})`; };
-      d.querySelector('.plane').style.transform = cam();
+      qs(d, '.plane').style.transform = cam();
       const pv = b.prevDesk ? Math.hypot(f[0] - pf[0], f[1] - pf[1]) * sc * (E.hard(win(k + .02, 0, .75)) - E.hard(win(k - .02, 0, .75))) / .04 : 0, wb = Math.max(Math.min(16, pv / 30 * .28), 14 * (1 - E.out(win(k, 0, .42))));
-      for (const e of [d.querySelector('.plane'), ...d.querySelectorAll('.prop')]) e.style.filter = wb > .5 ? `blur(${wb.toFixed(1)}px)` : '';
+      for (const e of [qs(d, '.plane'), ...qsa(d, '.prop')]) setCss(e, 'filter', wb > .5 ? `blur(${wb.toFixed(1)}px)` : '');
       // the window light: a pane gobo with leaf shadows on the paper, drifting slowly; on each visit it sweeps in
-      const sweep = E.out(win(k, 0, .55)), lts = d.querySelectorAll('.wlight');
+      const sweep = E.out(win(k, 0, .55)), lts = qsa(d, '.wlight');
       lts.forEach((lt, j) => { lt.style.transform = `translate(${(-140 + t * 9 - (1 - sweep) * 700).toFixed(1)}px,${(-60 + t * 4).toFixed(1)}px)`; lt.style.opacity = ((j ? .45 : 1) * (.25 + .75 * sweep)).toFixed(3); });
       // the paper itself brightens as the light arrives (light is the transition)
-      d.querySelector('.ddim').style.opacity = ((1 - sweep) * .24).toFixed(3);
+      qs(d, '.ddim').style.opacity = ((1 - sweep) * .24).toFixed(3);
       let label = false, rack = 0;
-      (D.items || []).forEach((it, i) => { const a = at(it.at), p = t - a, pr = d.querySelector(`.it[data-i="${i}"]`), dd = d.querySelector(`.doodle[data-i="${i}"]`), hd = d.querySelector(`.hand[data-i="${i}"]`);
+      (D.items || []).forEach((it, i) => { const a = at(it.at), p = t - a, pr = qs(d, `.it[data-i="${i}"]`), dd = qs(d, `.doodle[data-i="${i}"]`), hd = qs(d, `.hand[data-i="${i}"]`);
         if (p < 0) { pr.style.opacity = '0'; if (dd) dd.style.opacity = '0'; if (hd) hd.style.opacity = '0'; return; }
         // a physical drop: falls from height under gravity, bounces twice (restitution .3), settles; blur from velocity
         let [h, v] = drop(p, it.drop ?? 1); const lift = h * .55, spin = (it.spin ?? 9) * Math.exp(-p * 5) * Math.cos(p * 9);
@@ -246,25 +251,35 @@ const DEVICES = {
         pr.style.opacity = clamp(p * 10).toFixed(2);
         pr.style.transform = `translateY(${(-260 * (rs > 0 ? 0 : h) - (it.rise ? (it.rise.y ?? 90) : 0) * rs).toFixed(1)}px) scale(${((1 + (rs > 0 ? 0 : lift)) * (1 + ((it.rise ? it.rise.by : 1) - 1) * rs)).toFixed(3)}) rotate(${((it.r || 0) * (1 - rs) + spin).toFixed(2)}deg)`;
         const sh = it.kind === 'cut' ? 1 : 0, dx = 6 + 70 * h, dy = 9 + 95 * h, bl = 5 + 40 * h, op = (.42 - .25 * h);
-        pr.style.filter = `drop-shadow(1px 2px ${sh ? 2 : 3}px rgba(34,22,10,${(.5 * (1 - h)).toFixed(2)})) drop-shadow(${dx.toFixed(0)}px ${dy.toFixed(0)}px ${bl.toFixed(0)}px rgba(40,26,12,${op.toFixed(2)}))${Math.abs(v) > .4 ? ` blur(${Math.min(9, Math.abs(v) * 2.2).toFixed(1)}px)` : ''}`;
-        const vid = pr.querySelector('video'); if (vid && (p < 3.5 || (D.items || []).every((o, j) => j === i || at(o.at) <= a || at(o.at) > t))) { DESKV.add(vid); if (vid.paused) vid.play().catch(() => {}); }
-        if (it.on) { const q = t - at(it.on), on = q >= 0 ? (q < .12 ? (Math.floor(q * 60) % 2) * .7 : E.out(win(q, .12, .5))) : 0; pr.querySelector('.on').style.opacity = on.toFixed(3); const gl = pr.querySelector('.glow'); gl.style.opacity = (on * (.85 + .15 * Math.sin(t * 23) * Math.sin(t * 7))).toFixed(3); gl.style.transform = `scale(${(.6 + .4 * on).toFixed(3)})`; }
-        if (dd) { dd.style.opacity = '1'; dd.querySelectorAll('path.ln').forEach((pa, j) => { const ds = (it.doodle || [])[j], st = ds && typeof ds === 'object' && ds.at ? at(ds.at) - a : .35 + j * .25, tg = pa.dataset.mk ? dd.querySelector(`#${pa.dataset.mk} path`) : pa, len = tg.getTotalLength(); tg.style.strokeDasharray = String(len); tg.style.strokeDashoffset = String(len * (1 - E.ramp(win(p, st, st + ((ds && ds.dur) || it.inkDur || .5))))); }); }
+        const sc1 = `1px 2px ${sh ? 2 : 3}px rgba(34,22,10,${(.5 * (1 - h)).toFixed(2)})`, sc2 = `${dx.toFixed(0)}px ${dy.toFixed(0)}px ${bl.toFixed(0)}px rgba(40,26,12,${op.toFixed(2)})`;
+        if (sh) setCss(qs(pr, 'img'), 'filter', `drop-shadow(${sc1}) drop-shadow(${sc2})`); else if (it.kind !== 'ink') { setCss(qs(pr, '.print'), 'boxShadow', `${sc1}, ${sc2}`); qsa(pr, ':scope > img').forEach(e => setCss(e, 'filter', `drop-shadow(${sc2})`)); }
+        setCss(pr, 'filter', Math.abs(v) > .4 ? `blur(${Math.min(9, Math.abs(v) * 2.2).toFixed(1)}px)` : '');
+        // footage plays only while its print is in the frame and is the newest one (a hidden video still costs a decoder)
+        const vid = qs(pr, 'video'); if (vid) { const vis = it.x < c[0] + 560 / sc && it.x + it.w > c[0] - 560 / sc && it.y < c[1] + 980 / sc && it.y + (it.h || it.w) > c[1] - 980 / sc, fresh = p < 3.5 || (D.items || []).every((o, j) => j === i || at(o.at) <= a || at(o.at) > t); if (vis && fresh) { DESKV.add(vid); if (vid.paused) vid.play().catch(() => {}); } }
+        if (it.on) { const q = t - at(it.on), on = q >= 0 ? (q < .12 ? (Math.floor(q * 60) % 2) * .7 : E.out(win(q, .12, .5))) : 0; qs(pr, '.on').style.opacity = on.toFixed(3); const gl = qs(pr, '.glow'); gl.style.opacity = (on * (.85 + .15 * Math.sin(t * 23) * Math.sin(t * 7))).toFixed(3); gl.style.transform = `scale(${(.6 + .4 * on).toFixed(3)})`; }
+        if (dd) { dd.style.opacity = '1'; qsa(dd, 'path.ln').forEach((pa, j) => { const ds = (it.doodle || [])[j], st = ds && typeof ds === 'object' && ds.at ? at(ds.at) - a : .35 + j * .25, tg = pa.dataset.mk ? qs(dd, `#${pa.dataset.mk} path`) : pa, len = (tg.__len ||= tg.getTotalLength()); tg.style.strokeDasharray = String(len); tg.style.strokeDashoffset = String(len * (1 - E.ramp(win(p, st, st + ((ds && ds.dur) || it.inkDur || .5))))); }); }
         if (hd) { const la = it.labelAt ? at(it.labelAt) - a : .6, w = E.out(win(p, la, la + .45)); hd.style.opacity = w > 0 ? '1' : '0'; hd.style.clipPath = `inset(-30% ${(100 - w * 100).toFixed(1)}% -30% -10%)`; hd.style.translate = `${((Math.floor(t * 12) * 7.3 % 1) * 2).toFixed(1)}px 0`; if (w > .05) label = true; } });
       // framing props slide in from the corners on their word, nearer the lens: parallax and depth of field
-      (D.props || []).forEach((pp, i) => { const e = d.querySelector(`.prop[data-i="${i}"]`), q = t - at(pp.at ?? b.from), z = pp.z ?? .3, s = E.out(win(q, 0, pp.dur ?? .9)), fx = { tl: [-1, -1], tr: [1, -1], bl: [-1, 1], br: [1, 1] }[pp.from || 'tl'];
+      (D.props || []).forEach((pp, i) => { const e = qs(d, `.prop[data-i="${i}"]`), q = t - at(pp.at ?? b.from), z = pp.z ?? .3, s = E.out(win(q, 0, pp.dur ?? .9)), fx = { tl: [-1, -1], tr: [1, -1], bl: [-1, 1], br: [1, 1] }[pp.from || 'tl'];
         if (q < 0) { e.style.opacity = '0'; return; } e.style.opacity = '1';
         const ox = (1 - s) * fx[0] * 520, oy = (1 - s) * fx[1] * 520, sw = Math.sin(t * .9 + i) * 1.2;
         e.style.transform = `${cam(z)} translate(${ox.toFixed(1)}px,${oy.toFixed(1)}px)`; e.firstElementChild.style.transform = `rotate(${((pp.r || 0) + (1 - s) * fx[0] * 25 + sw).toFixed(2)}deg)`;
         if (!e.dataset.f) { e.dataset.f = '1'; e.firstElementChild.style.filter = `blur(${(pp.blur ?? z * 14).toFixed(1)}px) drop-shadow(${(40 * z + 20).toFixed(0)}px ${(60 * z + 26).toFixed(0)}px ${(30 * z + 16).toFixed(0)}px rgba(40,26,12,.35))`; } });
-      const rk = d.querySelector('.rack'); if (rack > .3) { rk.style.display = ''; rk.style.backdropFilter = `blur(${rack.toFixed(1)}px)`; } else rk.style.display = 'none';
+      const rk = qs(d, '.rack'); if (rack > .3) { rk.style.display = ''; rk.style.backdropFilter = `blur(${rack.toFixed(1)}px)`; } else rk.style.display = 'none';
       if (label) d.dataset.text = '1'; else delete d.dataset.text;
-      const sp = d.querySelector('.spk'); sp.style.display = L.pip === 'print' ? '' : 'none';
-      if (L.pip === 'print') { const q = t - DESK.first, [h] = drop(q, .6), cv2 = sp.querySelector('canvas'), n = FACEBOXES.length;
-        sp.style.transform = `translateY(${(-300 * h).toFixed(1)}px) scale(${(1 + h * .5).toFixed(3)}) rotate(${(5 + 8 * h).toFixed(2)}deg)`;
-        sp.style.filter = `drop-shadow(1px 2px 3px rgba(34,22,10,${(.5 * (1 - h)).toFixed(2)})) drop-shadow(${(10 + 70 * h).toFixed(0)}px ${(16 + 95 * h).toFixed(0)}px ${(14 + 40 * h).toFixed(0)}px rgba(40,26,12,.4))`;
-        drawVideo(t, { x: 0, y: 0, w: cv2.width, h: cv2.height }, 1.08, .4, 0, 0, cv2.getContext('2d'));
-        const ox = 716, oy = 1306; for (let j = n; j < FACEBOXES.length; j++) { const q2 = FACEBOXES[j]; FACEBOXES[j] = { x0: q2.x0 + ox, y0: q2.y0 + oy, x1: q2.x1 + ox, y1: q2.y1 + oy }; } }
+      const sp = qs(d, '.spk'); sp.style.display = L.pip === 'print' ? '' : 'none';
+      if (L.pip === 'print') { const q = t - DESK.first, [h] = drop(q, .6), ty = -300 * h, s1 = 1 + h * .5, rot = 5 + 8 * h;
+        sp.style.transform = `translateY(${ty.toFixed(1)}px) scale(${s1.toFixed(3)}) rotate(${rot.toFixed(2)}deg)`;
+        setCss(qs(sp, '.print'), 'boxShadow', `1px 2px 3px rgba(34,22,10,${(.5 * (1 - h)).toFixed(2)}), ${(10 + 70 * h).toFixed(0)}px ${(16 + 95 * h).toFixed(0)}px ${(14 + 40 * h).toFixed(0)}px rgba(40,26,12,.4)`);
+        // the speaker is painted on the GPU canvas in the print's own transform (a small 2D canvas fed a 1080p video costs
+        // ~40 ms a frame in a readback); the DOM print under it is only the paper, its shadow and the tape
+        // the speaker is the <video> element itself, cropped and turned by CSS on the compositor: any canvas downscale of a
+        // 1080p frame stalls 30-50 ms per new frame (measured), a composited video costs nothing
+        const sa = EDL.source.w / EDL.source.h, f0 = faceAt(t), fs = faceSize(t), H = 382 * 1.08, W = H * sa; let x = 149 - f0.x * W, y = .4 * 382 - f0.y * H; x = Math.min(0, Math.max(298 - W, x)); y = Math.min(0, Math.max(382 - H, y));
+        Object.assign(V.style, { opacity: '1', zIndex: '1', objectFit: 'fill', width: W.toFixed(1) + 'px', height: H.toFixed(1) + 'px', transformOrigin: '0 0',
+          transform: `translate(865px,${(1561.2 + ty).toFixed(1)}px) scale(${s1.toFixed(3)}) rotate(${rot.toFixed(2)}deg) translate(${(-149 + x).toFixed(1)}px,${(-255.2 + y).toFixed(1)}px)`,
+          clipPath: `inset(${(-y).toFixed(1)}px ${(W + x - 298).toFixed(1)}px ${(H + y - 382).toFixed(1)}px ${(-x).toFixed(1)}px)` }); DESK.vOn = true;
+        FACEBOXES.push({ x0: 716 + x + (f0.x - fs.w / 2) * W, y0: 1306 + ty + y + (f0.y - fs.h / 2) * H, x1: 716 + x + (f0.x + fs.w / 2) * W, y1: 1306 + ty + y + (f0.y + fs.h / 2) * H }); }
       else if (L.pip) { drawVideo(t, { x: 690, y: 1320, w: 340, h: 520 }, 1.05, .4, 34, 0, ctxT); ctxT.save(); ctxT.strokeStyle = TH.ring || 'rgba(255,255,255,.5)'; ctxT.lineWidth = 6; ctxT.beginPath(); ctxT.roundRect(690, 1320, 340, 520, 34); ctxT.stroke(); ctxT.restore(); } } },
   /** a warm light leak sweeping across the frame on its word (the reference's way back to the speaker) */
   leak: { build: L => ({ d: el('<div style="position:absolute;inset:-20% -60%;background:radial-gradient(40% 35% at 50% 50%,rgba(255,214,120,.95),rgba(255,140,40,.55) 45%,rgba(255,120,40,0) 70%);mix-blend-mode:screen"></div>', 'left:0;top:0;width:1080px;height:1920px;overflow:hidden') }),
@@ -301,8 +316,9 @@ const beatAt = t => BEATS.findLast(b => t >= b.t0 - 1e-3) || BEATS[0];
 function frame(t) {
   FACEBOXES.length = 0; DESKV.clear(); ctx.clearRect(0, 0, 1080, 1920); ctxT.clearRect(0, 0, 1080, 1920); cc.clearRect(0, 0, 540, 960); for (const d of ov.children) d.style.display = 'none';
   if (bedGain) bedGain.gain.value = (SPEC.music?.gain ?? .08) * (1 + .7 * win(t, END - 3, END - .3));
-  const b = beatAt(t); b.layers.forEach((L, i) => DEVICES[L.t].draw(L, t, b, b.state[i]));
+  const b = beatAt(t); if (DESK.d) DESK.vOn = false; b.layers.forEach((L, i) => DEVICES[L.t].draw(L, t, b, b.state[i]));
   for (const v of ov.querySelectorAll('.desk video')) if (!DESKV.has(v) && !v.paused) v.pause();
+  if (DESK.d && !DESK.vOn && V.style.zIndex) for (const k of ['opacity', 'zIndex', 'objectFit', 'width', 'height', 'transformOrigin', 'transform', 'clipPath']) V.style[k] = '';
   const M = 44, hit = (a, f) => a.x0 < f.x1 + M && a.x1 > f.x0 - M && a.y0 < f.y1 + M && a.y1 > f.y0 - M;
   for (const d of ov.children) { d.style.translate = ''; if (d.style.display === 'none' || d.classList.contains('desk') || !d.dataset.text) continue;
     const e = d.firstElementChild || d, x0 = d.offsetLeft + e.offsetLeft, y0 = d.offsetTop + e.offsetTop, box = { x0, y0, x1: x0 + e.offsetWidth, y1: y0 + e.offsetHeight };
@@ -313,12 +329,14 @@ function frame(t) {
   const textOn = [...ov.children].some(d => d.dataset.text && d.style.display !== 'none' && +(d.style.opacity || 1) > .05);
   if (CAP && !b.noCaption && !textOn && !Q.has('nocap')) drawCaption(cc, capP, list, t, 540, 960);
 }
+/** ?prof: per-frame cost of frame() (JS + style writes), for perf work */
+const PROF = Q.has('prof') ? (window.__prof = []) : null;
 function loop() {
   let t = toSrc(V.currentTime);
   if (playing && MAP && V.ended) { pause(); V.currentTime = 0; }
   if (playing && !MAP) { const c = CUTS.find(([a, b]) => t >= a && t < b - .02); if (c) { if (c[0] >= END - .02) { pause(); V.currentTime = START; } else { V.currentTime = c[1]; t = c[1]; } } }
   if (playing && lastT >= 0 && t > lastT && t - lastT < 1.5) for (const [s, k, g, off, dur] of SFX) if (s > lastT && s <= t) playAt(k, g, off || 0, dur);
-  lastT = t; frame(t); $('tc').textContent = t.toFixed(2) + ' s'; if (!$('sc').matches(':active')) $('sc').value = String(Math.round((t - START) / (END - START) * 1000));
+  lastT = t; const c0 = PROF ? performance.now() : 0; frame(t); if (PROF) PROF.push([t, performance.now() - c0, beatAt(t).layers.some(L => L.t === 'desk') ? 1 : 0, performance.now()]); $('tc').textContent = t.toFixed(2) + ' s'; if (!$('sc').matches(':active')) $('sc').value = String(Math.round((t - START) / (END - START) * 1000));
   requestAnimationFrame(loop);
 }
 async function play() { $('gate').style.display = 'none'; AC.resume().catch(() => {}); const s0 = toSrc(V.currentTime); if (s0 < START || s0 >= END - .05 || V.ended) V.currentTime = toOut(START); try { await V.play(); } catch { $('gate').style.display = ''; $('gate').textContent = 'tap again to play ▶'; return; } playing = true; startBed(); $('pp').textContent = 'Pause'; }

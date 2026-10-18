@@ -209,3 +209,13 @@ parseAsks("add a crash zoom on 'crore'. orbit on the hook"): Ask[]   // a chat k
   face; v10-style string doodles no longer crash the v13 desk code.
 - Open: a 1.6 s video-clock freeze in headless perf on this player (the v10 interview too; v10's own player 289 ms),
   not yet isolated.
+
+## 2026-10-18: smoothness (Ishaan: "still lowkey hanging")
+- Measured cause: drawing the 1080p clip downscaled onto a canvas stalls 30–50 ms on every new video frame (bench: a
+  full-size draw costs under 4 ms). The desk's speaker print did exactly that every frame (~45 ms of JS per desk frame).
+  Now the speaker print is the `<video>` element itself, cropped and turned by CSS on the compositor; the DOM print
+  under it is only paper, shadow and tape. Desk frames: JS ~45 ms → 1.4–2.7 ms.
+- Desk clips play only while their print is on screen and is the newest (merged with db4f70f's rule); shadows sit on
+  the static cut-out image or as a box-shadow, so a playing clip never re-runs a blur filter; DOM lookups and path
+  lengths are cached; styles are written only when they change.
+- Not done: no hidden pre-roll of clips (it would decode footage in the background, which Ishaan asked to stop).
