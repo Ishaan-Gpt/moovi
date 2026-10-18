@@ -13,12 +13,12 @@ import { brainScope, Gate, memoryStore, Presence, StepQueue } from '../src/index
 const W = (word: string, t: number, end: number) => ({ word, t, end });
 const words = [W('This', 0.2, 0.4), W('chip', 0.45, 0.8), W('is', 0.85, 0.95), W('tiny.', 1.0, 1.4), W('It', 2.0, 2.1), W('has', 2.15, 2.3), W('19', 2.35, 2.6), W('billion', 2.65, 3.0), W('transistors.', 3.05, 3.8)];
 
-function rig(own: Runtime | null = null, pickupMs?: number) {
+function rig(own: Runtime | null = null, pickupMs?: number, specLimitMs?: number) {
   const store = memoryStore(), queue = new StepQueue(store), presence = new Presence();
   const gate = new Gate(store, queue, Date.now, u => presence.touch(u));
   const lanes: string[] = [];
   const o: ModelScope | null = own ? { runtime: own, models: { director: 'd', crew: 'c', fast: 'f' }, provider: 'test', deadlineScale: 1, drawsWell: true } : null;
-  const scope = () => brainScope({ user: 'u1', queue, presence, job: () => 'job-1', own: o, server: null, byok: 'required', bridge: { pollMs: 5, ...(pickupMs ? { pickupMs, waitMs: pickupMs } : {}) }, onLane: (agent, lane) => lanes.push(`${agent}>${lane}`) });
+  const scope = () => brainScope({ user: 'u1', queue, presence, job: () => 'job-1', own: o, server: null, byok: 'required', bridge: { pollMs: 5, ...(pickupMs ? { pickupMs, waitMs: pickupMs } : {}), ...(specLimitMs ? { stepLimits: { [DIRECT_SPEC_AGENT]: specLimitMs }, log: () => undefined } : {}) }, onLane: (agent, lane) => lanes.push(`${agent}>${lane}`) });
   return { gate, presence, scope, lanes };
 }
 
@@ -48,13 +48,12 @@ test('decision 20: a linked Claude Code gets the Edit spec step with the full sk
   assert.deepEqual(r.lanes, [`${DIRECT_SPEC_AGENT}>claude-code`]);
 });
 
-test('decision 20: nobody picks the spec step up: it moves to the key, as every brain step does', async () => {
+test('decision 20: nobody picks the spec step up: no key and no wait lane (0fb36ba), it falls back at the spec\'s own limit', async () => {
   const keySaw: string[] = [];
   const key: Runtime = { name: 'key', vision: false, run: async () => { throw new Error('x'); }, complete: async (q: CompleteRequest) => { keySaw.push(q.agent); return '{"beats":[]}'; } };
-  const r = rig(key, 60); r.presence.touch('u1');
+  const r = rig(key, 60, 150); r.presence.touch('u1');
   const out = await withModel(r.scope()!, () => directMasterySpec({ words, duration: 4 }));
-  assert.equal(out.value, null, 'an empty answer is the skeleton');
-  assert.ok(keySaw.length >= 1 && keySaw.every(a => a === DIRECT_SPEC_AGENT), keySaw.join(','));
-  assert.equal(r.lanes[0], `${DIRECT_SPEC_AGENT}>claude-code`);
-  assert.ok(r.lanes.includes(`${DIRECT_SPEC_AGENT}>key`), r.lanes.join(' '));
+  assert.equal(out.value, null, 'no answer is the default; the router runs the menu step next');
+  assert.deepEqual(keySaw, [], 'the full tier never goes to the key');
+  assert.deepEqual(r.lanes, [`${DIRECT_SPEC_AGENT}>claude-code`], r.lanes.join(' '));
 });

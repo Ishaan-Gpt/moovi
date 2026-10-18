@@ -143,7 +143,13 @@ export function buildMcp(hub: BrainHub, ctx: SessionCtx): McpServer {
         if (await tokenGone()) return text({ status: 'idle', message: TOKEN_REMOVED });
         await hub.gate.keepAlive(session, leases);
         const p = await hub.gate.pull(user, session, ticket);
-        if ('step' in p) { otherSince = undefined; leases.set(p.step.job, p.lease); watched.add(p.step.job); return stepView(p.step, p.lease); }
+        if ('step' in p) {
+          otherSince = undefined; leases.set(p.step.job, p.lease); watched.add(p.step.job);
+          const view = stepView(p.step, p.lease), first = view.content[0];
+          // the size Claude Code is handed, so a step too big for it is a number in the log (direct:edit-spec: about 38 KB)
+          console.log(`[bridge] step handed ${p.step.job} ${p.step.agent} ${p.step.id} (${first?.type === 'text' ? first.text.length : 0} characters, ${p.step.images?.length ?? 0} images, user ${user})`);
+          return view;
+        }
         if (p.idle === IDLE_NO_TICKET) return text({ status: 'idle', message: IDLE_NO_TICKET });
         // another window holds the video: keep waiting (it may have been closed without saying so); its lease lapses
         // 2 min after its last call (5 min 15 s mid answer) and the next pull here takes the video over
@@ -211,35 +217,48 @@ export function buildMcp(hub: BrainHub, ctx: SessionCtx): McpServer {
     description: 'Answers the step moovi_next gave you, as one JSON object matching its answer_schema. Returns the next step (or done) so you can keep going.',
     inputSchema: {
       step: z.string().max(40).describe('the step id from moovi_next'),
-      answer: z.union([z.record(z.string(), z.unknown()), z.string().max(MAX_ANSWER_CHARS)]).describe('the answer object (or its JSON text)'),
+      answer: z.union([z.record(z.string(), z.unknown()), z.string()]).describe(`the answer object (or its JSON text), at most ${MAX_ANSWER_CHARS} characters`),
       lease: z.string().max(40).optional().describe('the lease from the step (optional)'),
       wait_s: z.number().min(0).max(45).optional().describe('how long to wait for the next step, at most 45 s'),
     },
     annotations: { readOnlyHint: false, openWorldHint: false, idempotentHint: true },
   }, async (args, extra) => {
     const s = await hub.queue.get(args.step);
-    if (!s || s.user !== user) return text({ ok: false, problems: ['unknown or expired step: call moovi_next'] }, true);
+    // every refusal goes back to Claude Code as a tool error with the reason AND into the worker log, so a refused answer
+    // no longer reads as "picked the step up but did not answer" (Claude 1, 2026-10-18 18:20 IST: direct:edit-spec)
+    const refuse = (problems: string[], more: Record<string, unknown> = {}): CallToolResult => {
+      console.log(`[bridge] submit rejected ${s?.job ?? '-'} ${problems.join('; ').slice(0, 300)} (user ${user}, step ${s?.id ?? args.step}, ${s?.agent ?? 'unknown agent'})`);
+      return text({ ok: false, ...(s ? { step: s.id } : {}), problems, ...more }, true);
+    };
+    const fixIt = { message: 'Fix these and call moovi_answer again with the same step.' };
+    if (!s || s.user !== user) return refuse(['unknown or expired step: call moovi_next']);
     let answer: unknown = args.answer;
-    if (typeof answer === 'string') { try { answer = JSON.parse(answer); } catch { return text({ ok: false, problems: ['the answer is not valid JSON'], step: s.id }, true); } }
+    if (typeof answer === 'string') {
+      // the length is checked here, not in the input schema, so a too long answer is logged and answered with its size
+      if (answer.length > MAX_ANSWER_CHARS) return refuse([`the answer is too long (${answer.length} characters, at most ${MAX_ANSWER_CHARS})`], fixIt);
+      try { answer = JSON.parse(answer); } catch { return refuse(['the answer is not valid JSON'], fixIt); }
+    }
     const raw = JSON.stringify(answer);
-    if (raw.length > MAX_ANSWER_CHARS) return text({ ok: false, problems: [`the answer is too long (${raw.length} characters, at most ${MAX_ANSWER_CHARS})`], step: s.id }, true);
+    if (raw.length > MAX_ANSWER_CHARS) return refuse([`the answer is too long (${raw.length} characters, at most ${MAX_ANSWER_CHARS})`], fixIt);
     if (s.state === 'answered') {
       // idempotent: the same answer again just moves on; a different one is refused (queue.ts)
-      if (s.answer !== raw) return text({ ok: false, step: s.id, problems: ['this step is already answered'] }, true);
+      if (s.answer !== raw) return refuse(['this step is already answered']);
       return moveOn(s.id, args.wait_s, extra as unknown as Extra);
     }
+    if (s.state === 'expired' || s.state === 'cancelled') return refuse([`this step ${s.state === 'expired' ? 'expired (Moovi stopped waiting and went on without it)' : 'was cancelled'}: call moovi_next`]);
     if (s.state === 'picked') {
       // item 23: an answer over the step's token cap (plan 23.3) is refused with the step left open; the estimate runs
       // high on purpose, so a quarter of slack keeps an honest answer near the cap from being refused
       const used = estimateTokens(raw);
-      if (s.maxOut && used > Math.ceil(s.maxOut * OVER_CAP_SLACK)) return text({ ok: false, step: s.id, problems: [overBudget(used, s.maxOut)], message: 'Fix these and call moovi_answer again with the same step.' }, true);
+      if (s.maxOut && used > Math.ceil(s.maxOut * OVER_CAP_SLACK)) return refuse([overBudget(used, s.maxOut)], fixIt);
       const problems = precheck(s.schema, answer);
-      if (problems.length) return text({ ok: false, step: s.id, problems, message: 'Fix these and call moovi_answer again with the same step.' }, true);
+      if (problems.length) return refuse(problems, fixIt);
     }
     const lease = args.lease ?? leases.get(s.job);
-    if (!lease) return text({ ok: false, problems: ['this window does not hold this video: call moovi_next'] }, true);
+    if (!lease) return refuse(['this window does not hold this video: call moovi_next']);
     const r = await hub.gate.submit(user, session, lease, s.id, raw);
-    if (!r.ok) return text({ ok: false, step: s.id, problems: [r.why] }, true);
+    if (!r.ok) return refuse([r.why]);
+    console.log(`[bridge] answered ${s.job} ${s.agent} ${s.id} (${raw.length} characters, user ${user})`);
     watched.add(s.job);
     return moveOn(s.id, args.wait_s, extra as unknown as Extra);
   });
