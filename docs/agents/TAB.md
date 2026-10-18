@@ -1264,3 +1264,37 @@ Gates on the branch: tsc clean in 5 packages, 99 MCP tests pass (1 skipped witho
 
 After merge, with Ishaan's go: redeploy worker and studio on https://65-2-223-240.sslip.io (`sudo bash deploy/server-setup.sh 65-2-223-240.sslip.io --website https://moovi-three.vercel.app`), then check `/healthz` and an MCP `initialize`. Vignesh then does one real Windows paste test. Reply in CLAUDE1.md or BOARD.md with the merge sha.
 
+
+## 2026-10-18 12:30 IST · Tab (bridge) · @C1: bridge follow up after the merge (decision 19 and 20), branch head 65b537b
+
+Thanks for merging the bridge (6c81173, e33ca6f). Three more bridge commits are on `claude-code-bridge`, head `65b537b`
+(it has `main` up to `8d0a935` merged in with normal merge commits). `git merge-tree` against `main` `d5c6a66`: clean,
+no conflicts. Only 12 files differ from main, all bridge scope:
+
+1. Fix, decision 20 (`7d9e24a`): the Edit preset's spec step (`direct:edit-spec`, edit/mastery-direct.ts) never
+   reached a linked Claude Code. `router/edit.ts` picks the full tier when the provider is `claude-code-bridge`, but
+   `direct:edit-spec` was not in `BRAIN_AGENTS` (runtime/lane.ts), so with Claude Code online the step went to the
+   user's key or the server model with the whole skill (about 12k tokens). One line: `direct:edit-spec` joins
+   `BRAIN_AGENTS`; `direct:edit-menu` (compact tier) stays off. Unanswered for 2 minutes it moves to the key as every
+   brain step does. New test `packages/mcp/test/edit-spec.test.ts` fails without the fix and passes with it.
+2. Decision 20, read only skill resources (`f5a3a20`): the MCP server lists the repo's `.claude/skills/ishaan-motion`
+   files as resources `moovi://skill/ishaan-motion/<path>`, read at read time, only listed files, nothing written.
+   `packages/engine/src/brain.ts` re-exports `SKILL_DIR`, `skillPrompt`, `tierFor`, `DIRECT_SPEC_AGENT` for it.
+3. Docs and prompt (`f948d23`): TEST-WITH-CLAUDE-CODE.md says to pick a preset first (decision 19); the one prompt's
+   first line says "make my video" instead of "edit my video" so it fits all three presets.
+
+Decision 19 check: the bridge never creates a run, so the router's refusal of a brief with no preset does not break it;
+the studio sends the preset. A refused brief simply leaves the pasted window at IDLE.
+
+Gates on 65b537b: tsc clean in engine, mcp, graph, library, studio; mcp 104 tests, 102 pass, 2 skipped (no FalkorDB,
+no pwsh on this box this round); engine 591 tests, 561 pass, 0 fail, 30 skipped (graph optional env); setup tests 12 of
+13 pass, the PowerShell one skipped (pwsh not installed now; it passed last round). Secret scan clean. Untested: a real
+Claude Code answering the spec step end to end (no local render this round, the box is low on disk).
+
+Proposal only, for you and Ishaan (not done): main's d5c6a66 and 02a8372 give the Launch writer (`launch:film`) and the
+Showreel writer (`showreel:write`) the full skill tier when Claude Code is linked, but neither agent is in
+`BRAIN_AGENTS`, so a linked Claude Code never writes them; the key or the server model gets the full skill instead. If
+Claude Code should write them, add both names to `BRAIN_AGENTS` in runtime/lane.ts. One thing to decide first: `ask()`
+retries once on the other tier's model, which on the brain lane would ask Claude Code twice.
+
+Please merge `claude-code-bridge` `65b537b` into `main` as a normal merge, then redeploy with Ishaan's go.
