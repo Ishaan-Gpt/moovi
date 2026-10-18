@@ -21,10 +21,10 @@ test('the compact Edit step fits a free model and checks picks against Edit mast
   const ss = sentencesOfWords(words), menu = loadMenu();
   assert.equal(ss.length, 3);
   assert.ok(menuStep(ss, menu).tokens < 4500, `${menuStep(ss, menu).tokens} tokens`);
-  const ok = checkPicks({ caption: '1.1', beats: [{ i: 0, device: 'speaker' }, { i: 1, device: 'number-split', hero: '300', hero2: '150', number: '300', next: '150', unit: 'pauses' }, { i: 2, device: 'speaker' }] }, ss, menu);
+  const ok = checkPicks({ caption: '1.1', beats: [{ i: 0, device: 'punch', hero: 'Ishaan' }, { i: 1, device: 'number-split', hero: '300', hero2: '150', number: '300', next: '150', unit: 'pauses' }, { i: 2, device: 'speaker' }] }, ss, menu);
   assert.deepEqual(ok.problems, []);
   const bad = checkPicks({ caption: '9', beats: [{ i: 0, device: 'compare' }, { i: 1, device: 'name-tag', hero: 'cut', name: 'Elon' }, { i: 2, device: 'sparkle' }] }, ss, menu).problems.join(' | ');
-  for (const why of ['caption "9"', 'first and the last beat', 'not said in that sentence', 'not a device in the menu']) assert.ok(bad.includes(why), `${why}: ${bad}`);
+  for (const why of ['caption "9"', 'the first beat keeps the speaker', 'not said in that sentence', 'not a device in the menu']) assert.ok(bad.includes(why), `${why}: ${bad}`);
 });
 
 test('code fills only the menu\'s slots: anchors on the said words, library sounds by event key, the speaker\'s own words', () => {

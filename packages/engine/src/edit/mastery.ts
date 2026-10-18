@@ -1,4 +1,4 @@
-import { execFile, spawn } from 'node:child_process';
+import { execFile, execFileSync, spawn } from 'node:child_process';
 import { copyFileSync, createReadStream, existsSync, linkSync, mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { createRequire } from 'node:module';
@@ -75,10 +75,64 @@ export async function prepareClip(dir: string, picture?: string): Promise<{ grad
   try { linkSync(src, join(work, 'hd.mp4')); } catch { copyFileSync(src, join(work, 'hd.mp4')); }
   copyFileSync(join(dir, 'edl.json'), join(work, 'edl.json'));
   const env = { ...process.env, PATH: `${dirname(config.ffmpeg)}${delimiter}${process.env.PATH ?? ''}` };
-  await new Promise<void>((res, rej) => execFile(process.execPath, [join(PLAYER_DIR, 'build-cut.mjs'), work], { env, timeout: 600_000 }, err => err ? rej(err) : res()));
+  const grade = (() => { try { const g = (JSON.parse(readFileSync(join(PLAYER_DIR, 'menu.json'), 'utf8')) as { auto?: { grade?: string } }).auto?.grade ?? ''; return g.slice(g.indexOf('curves=') >= 0 ? g.indexOf('curves=') : g.length); } catch { return ''; } })();
+  await new Promise<void>((res, rej) => execFile(process.execPath, [join(PLAYER_DIR, 'build-cut.mjs'), work, ...(grade ? ['--grade', grade] : [])], { env, timeout: 600_000 }, err => err ? rej(err) : res()));
   renameSync(join(work, 'cut.mp4'), join(dir, 'cut.mp4')); renameSync(join(work, 'cut.json'), join(dir, 'cut.json'));
   rmSync(work, { recursive: true, force: true });
   return { graded };
+}
+
+/* ───── the look from the footage (owner: colours from the brand, else the footage; never a device's last colours) ───── */
+type RGB = [number, number, number];
+const lin = (c: number) => { c /= 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+const gam = (c: number) => Math.round(255 * Math.min(1, Math.max(0, c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055)));
+function toOklch([r, g, b]: RGB): [number, number, number] {
+  const R = lin(r), G = lin(g), B = lin(b);
+  const l = Math.cbrt(0.4122214708 * R + 0.5363325363 * G + 0.0514459929 * B), m = Math.cbrt(0.2119034982 * R + 0.6806995451 * G + 0.1073969566 * B), s = Math.cbrt(0.0883024619 * R + 0.2817188376 * G + 0.6299787005 * B);
+  const L = 0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s, A = 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s, Bb = 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s;
+  return [L, Math.hypot(A, Bb), (Math.atan2(Bb, A) * 180 / Math.PI + 360) % 360];
+}
+function hex(L: number, C: number, h: number, alpha?: number): string {
+  const a = C * Math.cos(h * Math.PI / 180), b = C * Math.sin(h * Math.PI / 180);
+  const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3, m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3, s = (L - 0.0894841775 * a - 1.291485548 * b) ** 3;
+  const rgb = [4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s, -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s, -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s].map(gam);
+  return alpha === undefined ? '#' + rgb.map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase() : `rgba(${rgb.join(',')},${alpha})`;
+}
+/**
+ * The palette and theme of one edit from its own footage: the frame's dominant hue (its walls, its light) tints every
+ * neutral, the most saturated colour in the frame (clothes, a sign) is the one accent ramp. Paper, ink, panels, tags and
+ * the ground are OKLCH steps of those two hues, so every built-in device arrives re-skinned for this video.
+ */
+export function lookFromFootage(dir: string): { palette: Record<string, string>; theme: Record<string, unknown> } | null {
+  const src = ['cut.mp4', 'hd.mp4'].map(f => join(dir, f)).find(existsSync);
+  if (!src) return null;
+  const px: RGB[] = [];
+  for (const at of [0.15, 0.4, 0.65, 0.9]) {
+    try {
+      const d = (JSON.parse(readFileSync(join(dir, 'edl.json'), 'utf8')) as { source: { duration: number } }).source.duration;
+      const raw = execFileSync(config.ffmpeg, ['-v', 'error', '-ss', String(+(d * at).toFixed(2)), '-i', src, '-frames:v', '1', '-vf', 'scale=24:42', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], { maxBuffer: 1 << 20 }) as Buffer;
+      for (let i = 0; i + 2 < raw.length; i += 3) px.push([raw[i]!, raw[i + 1]!, raw[i + 2]!]);
+    } catch { /* a frame that cannot be read is skipped */ }
+  }
+  if (px.length < 100) return null;
+  const lch = px.map(toOklch);
+  // the dominant hue: a chroma-weighted circular mean over the frame; the accent: the most saturated tenth's mean hue
+  const circ = (xs: [number, number, number][]) => { let x = 0, y = 0; for (const [, c, h] of xs) { x += c * Math.cos(h * Math.PI / 180); y += c * Math.sin(h * Math.PI / 180); } return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360; };
+  const dom = circ(lch), sat = [...lch].sort((a, b) => b[1] - a[1]).slice(0, Math.max(10, lch.length / 10) | 0), acc = circ(sat);
+  const ac = Math.min(0.16, Math.max(0.08, sat.reduce((a, x) => a + x[1], 0) / sat.length));
+  const palette = {
+    page: hex(0.17, 0.012, dom), panel: hex(0.21, 0.014, dom), 'panel-ink': hex(0.93, 0.012, dom),
+    tag: hex(0.16, 0.012, dom, 0.74), 'accent-soft': hex(0.88, 0.04, acc), card: hex(0.96, 0.01, dom), 'card-ink': hex(0.2, 0.02, dom),
+    mat: 'rgba(255,255,255,.06)', 'mat-hi': 'rgba(255,255,255,.18)', 'mat-edge': 'rgba(255,255,255,.28)', 'mat-ink': hex(0.98, 0.006, dom),
+    paper: hex(0.91, 0.022, dom), 'paper-hi': hex(0.95, 0.016, dom), 'paper-lo': hex(0.84, 0.03, dom), ink: hex(0.3, Math.min(0.07, ac * 0.6), acc),
+    accent: hex(0.72, ac, acc),
+  };
+  const theme = {
+    fall: hex(0.12, 0.01, dom, 0.42), ring: 'rgba(255,255,255,.75)',
+    ground: [[0, hex(0.32, 0.03, dom)], [0.5, hex(0.2, 0.02, dom)], [1, hex(0.12, 0.012, dom)]],
+    grid: hex(0.9, 0.02, dom, 0.04), bloom: [540, 820, 820, hex(0.75, ac * 0.8, acc, 0.16)],
+  };
+  return { palette, theme };
 }
 
 /** Serve the player for one edit folder on a local port (the capture, local previews); resolves the player's URL. */
@@ -109,7 +163,8 @@ export function skeletonSpec(dir: string): Record<string, unknown> {
   const first = ws.find(w => !cut(w.t));
   const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
   const start = first && norm(first.word) ? { w: norm(first.word), after: +Math.max(0, first.t - 0.01).toFixed(3) } : null;
-  return { caption: { variant: '1.1', accent: 'video' }, ...(start ? { start } : {}), beats: [{ from: start ?? 0, layers: [{ t: 'cam' }] }], sfx: [] };
+  const look = lookFromFootage(dir);
+  return { caption: { variant: '1.1', accent: 'video' }, ...(start ? { start } : {}), ...(look ? { palette: look.palette, theme: look.theme } : {}), beats: [{ from: start ?? 0, layers: [{ t: 'cam' }] }], sfx: [] };
 }
 
 /**

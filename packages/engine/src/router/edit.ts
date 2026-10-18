@@ -14,9 +14,9 @@ import type { FxEvent } from '../edit/effects/plan';
 import { fxLines } from '../edit/effects/auto';
 import { fxMusic } from '../edit/effects/music';
 import { filmMix, renderFilm, useMix } from '../edit/film';
-import { prepareClip, renderMasteryFilm, skeletonSpec, worldCutouts, writeSpec } from '../edit/mastery';
+import { lookFromFootage, prepareClip, renderMasteryFilm, skeletonSpec, worldCutouts, writeSpec } from '../edit/mastery';
 import { directMasterySpec } from '../edit/mastery-direct';
-import { deviceSequence, directFromMenu, loadMenu, resolveFootage, resolveMusic, resolveSounds, sentencesOfWords, specFromPicks } from '../edit/mastery-menu';
+import { completeCoverage, deviceSequence, directFromMenu, loadMenu, resolveFootage, resolveMusic, resolveSounds, sentencesOfWords, specFromPicks } from '../edit/mastery-menu';
 import { tierFor } from '../skill-prompt';
 import { modelScope } from '../runtime';
 
@@ -27,11 +27,11 @@ async function directedFromMenu(dir: string, words: { word: string; t: number; e
   const lastFile = join(projectDir, 'edit-last-film.json');
   let previous: string[] = []; try { previous = (JSON.parse(readFileSync(lastFile, 'utf8')) as { devices: string[] }).devices ?? []; } catch { previous = []; }
   const r = await directFromMenu({ sentences: ss, brief, previous, ...(signal ? { signal } : {}), log: s => console.log(`[edit] ${s}`) });
-  if (r.value) try { writeFileSync(lastFile, JSON.stringify({ devices: deviceSequence(r.value.answer) })); } catch { /* the next film just has no memory of this one */ }
-  if (!r.value) return { value: null, problems: r.problems };
-  const menu = loadMenu(), a = r.value.answer, events = [...JSON.stringify(menu).matchAll(/\{sfx:(\w+)\}/g)].map(m => m[1]!);
+  // the owner's checklist is made whole by code from the menu when the model missed part of it (or failed)
+  const menu = loadMenu(), a = completeCoverage(r.value?.answer ?? null, ss, menu, r.value?.bad ?? new Set()), events = [...JSON.stringify(menu).matchAll(/\{sfx:(\w+)\}/g)].map(m => m[1]!);
+  try { writeFileSync(lastFile, JSON.stringify({ devices: deviceSequence(a) })); } catch { /* the next film just has no memory of this one */ }
   const [sounds, music, footage] = await Promise.all([resolveSounds(events, words.length), resolveMusic(dir, ss.map(s => s.text), a.mood ?? '', seconds, signal), resolveFootage(dir, a.beats.filter(b => b.footage), signal)]);
-  return { value: specFromPicks(a, ss, menu, { sounds, music, footage }, r.value.bad), problems: r.problems };
+  return { value: specFromPicks(a, ss, menu, { sounds, music, footage, look: lookFromFootage(dir) }), problems: r.problems };
 }
 
 import { activity, stageLines } from '../live';

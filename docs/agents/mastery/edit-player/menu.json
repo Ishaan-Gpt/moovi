@@ -491,10 +491,20 @@
      ]
     }
    }
-  },
-  {
-   "id": "leak",
-   "use": "only as the return to the speaker after a desk-print or a full-screen device; at most three per film",
+  }
+ ],
+ "end": {
+  "sfx": [
+   {
+    "at": "{last}",
+    "k": "{sfx:chime}",
+    "g": 0.45
+   }
+  ]
+ },
+ "auto": {
+  "leak": {
+   "what": "the beat after any desk-print or any device that takes the speaker out of full frame starts with a warm light leak (the flare) and a whoosh",
    "layers": [
     {
      "t": "leak",
@@ -508,15 +518,65 @@
      "g": 0.35
     }
    ]
-  }
- ],
- "end": {
-  "sfx": [
+  },
+  "push": {
+   "what": "a plain speaker beat over 3 s gets a slow push (camera speed eases in and out)",
+   "push": 0.02
+  },
+  "grade": "v10's grade baked into cut.mp4 after the owner's LUT: curves=master='0/0 0.6/0.57 1/0.9',colorbalance=bs=-0.04:bm=-0.03:bh=-0.04,eq=saturation=1.18",
+  "theme": "palette and ground sampled from the footage (or the brand's site when there is one); every device is drawn in it"
+ },
+ "coverage": {
+  "_": "Owner, 2026-10-18: every edit shows these, at least 80-90% of them; a film that misses one is re-asked with the missing ones named.",
+  "picked": [
    {
-    "at": "{last}",
-    "k": "{sfx:chime}",
-    "g": 0.45
+    "id": "burn",
+    "what": "a burned-in graphic over the speaker",
+    "devices": [
+     "name-tag",
+     "glass-widgets",
+     "badges",
+     "filter-carousel",
+     "number-split"
+    ]
+   },
+   {
+    "id": "form",
+    "what": "the speaker's frame changes form (split, card or corner) and morphs back",
+    "devices": [
+     "number-split",
+     "look-flip",
+     "compare",
+     "letter-tiles"
+    ]
+   },
+   {
+    "id": "fullscreen",
+    "what": "a full-screen beat away from the speaker (real footage on the desk, tiles, a compare)",
+    "devices": [
+     "desk-print",
+     "letter-tiles",
+     "compare"
+    ]
+   },
+   {
+    "id": "camera",
+    "what": "at least two punch-ins on stressed words",
+    "devices": [
+     "punch"
+    ],
+    "min": 2
    }
-  ]
+  ],
+  "automatic": [
+   "grade",
+   "theme",
+   "music",
+   "sfx on every device + the end chime",
+   "leak after every away beat",
+   "push on long holds",
+   "captions"
+  ],
+  "short_clip": "a film of under 6 sentences needs burn + camera + one of form/fullscreen"
  }
 }
