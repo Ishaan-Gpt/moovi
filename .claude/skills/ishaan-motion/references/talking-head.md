@@ -45,6 +45,7 @@ Grade footage that sits under white words (about brightness 0.6). Drawn stand-in
 - Inside a chunk, **words arrive on their own stamps** (rise ~12 px, blur 9 → 0, grey → white, 0.26 s), and the
   centred line re-flows as each word grows in. White heavy sans (Inter Tight 800, ~66 px), soft dark shadow (blur ~26, 70%).
 - A named term (product, technique) switches that chunk to the condensed face in caps.
+- **Text behind the speaker:** wider than the shoulders (~3.2 face widths), centred at the neck, height about a face; only the neck and shoulders cross it. Never across the face (matte holes show), never tall and narrow (the torso hides it).
 - **Readable time:** every caption card stays up at least 1.2 s (merge a shorter one into its neighbour) and holds up to 1 s after its last word; never a 0.3 s flash.
 - **Captions never cover the face** (owner, 2026-10-18): place them beside or below it with a margin; use a face detector.
 - **Hide captions while a big-word moment is on screen.** Two text layers fight.

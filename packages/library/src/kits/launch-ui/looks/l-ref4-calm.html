@@ -1,0 +1,282 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Resend · Meet Resend (v15)</title>
+<base href="./assets/">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=block" rel="stylesheet">
+<style>
+html,body{margin:0;height:100%;background:#0B0A09;overflow:hidden;font-family:Inter,system-ui,sans-serif;color:#ddd}
+#wrap{position:absolute;inset:0 0 52px 0;display:grid;place-items:center}
+canvas{display:block;max-width:100%;max-height:100%;aspect-ratio:16/9;background:#0B0A09}
+#bar{position:absolute;left:0;right:0;bottom:0;height:52px;display:flex;gap:12px;align-items:center;padding:0 16px;box-sizing:border-box}
+button{border:0;border-radius:999px;background:#EFEBE5;color:#0B0A09;padding:8px 18px;font:600 13px Inter;cursor:pointer}
+input{flex:1} video{display:none}
+</style></head><body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<div id="wrap"><canvas id="cv" width="1920" height="1080"></canvas></div>
+<div id="bar"><button id="pl">Play</button><input id="sk" type="range" min="0" max="3200" value="0"><span id="tc">0.00</span></div>
+<script>
+/* RESEND · v15 — ref 4 (Notely, instagram.com/p/DeO1Rh7x5Qm) rebuilt shot for shot in Resend's stone: one material, tiny type,
+   soft fields, a 3D stack and a 3D desk (three.js), the real dashboard in glass, a word cycler, the name out of scrambled letters. */
+const W = 1920, H = 1080, DUR = 21.1, B = 0.5;
+const cv = document.getElementById('cv'); let X = cv.getContext('2d');
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v)), lerp = (a, b, k) => a + (b - a) * k, sc = (t, a, b) => clamp((t - a) / (b - a));
+function bez(x1, y1, x2, y2) { return k => { if (k <= 0) return 0; if (k >= 1) return 1; let u = k; for (let i = 0; i < 8; i++) { const x = 3 * (1 - u) ** 2 * u * x1 + 3 * (1 - u) * u * u * x2 + u ** 3 - k, dx = 3 * (1 - u) ** 2 * x1 + 6 * (1 - u) * u * (x2 - x1) + 3 * u * u * (1 - x2); if (Math.abs(dx) < 1e-6) break; u = clamp(u - x / dx); } return 3 * (1 - u) ** 2 * u * y1 + 3 * (1 - u) * u * u * y2 + u ** 3; }; }
+const E = { out: bez(0.16, 1, 0.3, 1), io: bez(0.65, 0, 0.35, 1), soft: bez(0.4, 0, 0.2, 1), in: k => k * k * k, outBack: bez(0.34, 1.32, 0.64, 1) };
+const spring = k => k >= 1 ? 1 : 1 - Math.exp(-6.5 * k) * Math.cos(9.5 * k);
+const logS = (S0, k) => Math.pow(S0, 1 - clamp(k));
+const hash = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+// the premium speed ramp as an EASING: rest → ≈2× → ≈0.5× → ≈2× → rest (@moovi/library/camera EASES['speed-ramp'])
+const RAMP = (() => { const n = 512, v = u => Math.sin(Math.PI * u) ** 2 * (0.15 + 0.85 * Math.sin(2 * Math.PI * u) ** 2), acc = [0]; for (let i = 1; i <= n; i++) acc.push(acc[i - 1] + v((i - 0.5) / n) / n); return acc.map(a => a / acc[n]); })();
+const ramp = u => { if (u <= 0) return 0; if (u >= 1) return 1; const f = u * 512, i = Math.floor(f); return RAMP[i] + (RAMP[i + 1] - RAMP[i]) * (f - i); };
+// Resend's palette, read from its CSS: one warm stone ramp, no hue
+const ST = { 950: '#0B0A09', 900: '#12110F', 850: '#191816', 800: '#22201E', 700: '#2E2B28', 600: '#464442', 500: '#6C6A67', 400: '#8C8A86', 300: '#A3A09B', 200: '#C7C2BC', 100: '#E3DED7', 50: '#EFEBE5' };
+const rgba = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
+const font = (px, w = 600, f = 'Inter', it = '') => `${it}${w} ${px}px "${f}"`;
+function txt(s, x, y, o = {}) { X.save(); X.font = font(o.px || 24, o.w || 500, o.f || 'Inter', o.it || ''); X.fillStyle = o.c || ST[950]; X.textAlign = o.align || 'left'; X.globalAlpha *= o.a ?? 1; try { X.letterSpacing = (o.ls ?? 0) + 'px'; } catch (e) {} X.fillText(s, x, y); X.restore(); }
+function tw(s, px, w = 500, f = 'Inter', ls = 0) { X.save(); X.font = font(px, w, f); try { X.letterSpacing = ls + 'px'; } catch (e) {} const m = X.measureText(s).width; X.restore(); return m; }
+function rr(x, y, w, h, r) { X.beginPath(); X.roundRect(x, y, w, h, r); }
+function cover(im, x, y, w, h, fx = 0.5, fy = 0.5) { const iw = im.videoWidth || im.naturalWidth || im.width, ih = im.videoHeight || im.naturalHeight || im.height; if (!iw) return; const r = Math.max(w / iw, h / ih), dw = iw * r, dh = ih * r; X.drawImage(im, x + (w - dw) * fx, y + (h - dh) * fy, dw, dh); }
+
+// ── assets: the brand's real screens and renders, real moving plates, the logo ──
+const IM = {}, VD = {};
+const imgs = { logo: 'img/logo.png', metrics: 'real/screenshot-metrics.png', analytics: 'real/screenshot-zoom-analytics.png', m8: 'media/m8.jpg', m3: 'media/m3.jpg' };
+for (const [k, s] of Object.entries(imgs)) { const im = new Image(); im.src = s; IM[k] = im; }
+const vids = {};
+for (const [k, s] of Object.entries(vids)) { const v = document.createElement('video'); v.src = s; v.muted = true; v.loop = true; v.playsInline = true; v.preload = 'auto'; document.body.appendChild(v); VD[k] = v; }
+let PLAYING = false;
+// a moving plate while playing (synced to the film's clock), its poster frame for stills
+function plate(name, t, t0, x, y, w, h, fx, fy) { const v = VD[name]; if (PLAYING && v && v.readyState >= 2) { const want = Math.max(0, t - t0 + 1) % (v.duration || 10); if (v.paused) { v.currentTime = want; v.play().catch(() => {}); } cover(v, x, y, w, h, fx, fy); } else cover(IM[name + 'P'] || IM[name], x, y, w, h, fx, fy); }
+function pauseIdle(active) { for (const [k, v] of Object.entries(VD)) if (!active.includes(k) && !v.paused) v.pause(); }
+
+// ── sprites (baked once; blur by downsampling, never a per-frame filter) ──
+const SPR = new Map(), BL = [0, 1, 2, 3, 4, 6, 8, 10, 13, 16];
+function sprite(key, w, h, pad, draw) { let c = SPR.get(key); if (c) return c; c = document.createElement('canvas'); c.width = Math.ceil(w + pad * 2); c.height = Math.ceil(h + pad * 2); c.pad = pad; c.bw = w; c.bh = h; c.blurs = {}; const keep = X; X = c.getContext('2d'); try { X.translate(pad, pad); draw(); } finally { X = keep; } SPR.set(key, c); return c; }
+function blurOf(c, px) { const l = BL.reduce((m, b) => Math.abs(b - px) < Math.abs(m - px) ? b : m, 0); if (!l) return c; if (c.blurs[l]) return c.blurs[l]; const k = 1 / (1 + l * 0.42), a = document.createElement('canvas'); a.width = Math.max(2, Math.round(c.width * k)); a.height = Math.max(2, Math.round(c.height * k)); const g = a.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(c, 0, 0, a.width, a.height); const b2 = document.createElement('canvas'); b2.width = Math.max(2, Math.round(a.width * 0.7)); b2.height = Math.max(2, Math.round(a.height * 0.7)); const gb = b2.getContext('2d'); gb.imageSmoothingQuality = 'high'; gb.drawImage(a, 0, 0, b2.width, b2.height); c.blurs[l] = b2; return b2; }
+function put(c, x, y, w, h, o = {}) { const sx = w / c.bw, sy = h / c.bh, img = blurOf(c, (o.blur || 0) / Math.max(0.05, sx)); X.save(); X.globalAlpha *= o.a ?? 1; X.drawImage(img.bmp || img, x - c.pad * sx, y - c.pad * sy, c.width * sx, c.height * sy); X.restore(); }
+const wordSpr = (s, px, wt, f, col, ls) => sprite(`w:${s}|${px}|${wt}|${f}|${col}|${ls}`, tw(s, px, wt, f, ls) + 6, px * 1.35, 24, () => txt(s, 3, px * 1.02, { px, w: wt, f, c: col, ls }));
+const shadowSpr = (w, h, r, a) => sprite(`sh:${w}x${h}x${r}x${a}`, w, h, 120, () => { X.shadowColor = `rgba(11,10,9,${a})`; X.shadowBlur = 90; X.shadowOffsetY = 40; rr(0, 0, w, h, r); X.fillStyle = ST[950]; X.fill(); });
+// image as a framed window (with a baked shadow), drawn at any size
+function windowImg(im, x, y, w, h, r = 22, o = {}) { put(shadowSpr(800, Math.round(800 * h / w), Math.round(r * 800 / w), o.sa ?? 0.5), x, y, w, h); X.save(); rr(x, y, w, h, r); X.clip(); X.fillStyle = ST[950]; X.fillRect(x, y, w, h); if (o.crop) { const [cx, cy, cw, ch] = o.crop, iw = im.naturalWidth, ih = im.naturalHeight; X.drawImage(im, cx * iw, cy * ih, cw * iw, ch * ih, x, y, w, h); } else cover(im, x, y, w, h); X.restore(); X.save(); rr(x + 0.5, y + 0.5, w - 1, h - 1, r); X.strokeStyle = o.edge || 'rgba(239,235,229,0.16)'; X.lineWidth = 1.5; X.stroke(); X.restore(); }
+function mark(x, y, s) { const im = IM.logo; X.save(); rr(x, y, s, s, s * 0.26); X.clip(); X.fillStyle = '#fff'; X.fillRect(x, y, s, s); if (im.naturalWidth) X.drawImage(im, x - s * 0.04, y - s * 0.04, s * 1.08, s * 1.08); X.restore(); }
+function cursor(x, y, press = 0) { X.save(); X.translate(x, y); X.scale(1 - press * 0.14, 1 - press * 0.14); X.beginPath(); X.moveTo(0, 0); X.lineTo(0, 40); X.lineTo(10, 30); X.lineTo(18, 47); X.lineTo(25, 44); X.lineTo(18, 28); X.lineTo(31, 28); X.closePath(); X.fillStyle = 'rgba(11,10,9,0.25)'; X.translate(2, 4); X.fill(); X.translate(-2, -4); X.fillStyle = ST[50]; X.fill(); X.strokeStyle = ST[950]; X.lineWidth = 2.2; X.stroke(); X.restore(); }
+const press = (t, at) => clamp(1 - Math.abs(t - at) / 0.08);
+
+// ── type: word-by-word lines and letter-by-letter names, from sprites ──
+function line(s, x, y, px, t, t0, o = {}) { // centred, words rise 10 px out of a blur; the line re-flows as it grows
+  const ws = s.split(' '), col = o.c || ST[950], gap = px * 0.27, dts = ws.map((w, i) => t0 + i * (o.step ?? 0.12));
+  const shown = ws.filter((_, i) => t >= dts[i]).length; if (!shown) return;
+  const sp = ws.map(w => wordSpr(w, px, o.w || 500, o.f || 'Inter', col, -px * 0.02)), widths = sp.map(c => c.bw - 6);
+  const total = widths.slice(0, shown).reduce((a, b) => a + b, 0) + gap * (shown - 1), full = widths.reduce((a, b) => a + b, 0) + gap * (ws.length - 1);
+  const out = o.out ? E.in(sc(t, o.out, o.out + 0.3)) : 0; let cx = (o.left ? x : x - lerp(total, full, 0.35) / 2);
+  ws.forEach((w, i) => { const k = E.out(sc(t, dts[i], dts[i] + 0.45)); if (k > 0) put(sp[i], cx - 3 + (1 - k) * (o.dx || 0), y - px * 1.02 + (1 - k) * 10 - out * 8, sp[i].bw, sp[i].bh, { a: clamp(k * 2) * (1 - out), blur: (1 - k) * 7 + out * 10 }); cx += widths[i] + gap; });
+}
+function typed(s, x, y, px, t, t0, o = {}) { const n = Math.floor(clamp((t - t0) / (o.dur ?? 0.5)) * s.length); if (n <= 0) return; const part = s.slice(0, n), c = wordSpr(part, px, o.w || 600, 'Inter', o.c || ST[50], -px * 0.02); put(c, x - 3, y - px * 1.02, c.bw, c.bh, { a: o.a ?? 1 }); }
+
+// ── worlds ──
+function world(light, t) { X.fillStyle = light ? '#FBFAF8' : ST[950]; X.fillRect(0, 0, W, H); const g = X.createRadialGradient(W / 2, H * 1.18, 0, W / 2, H * 1.18, H * 0.95); g.addColorStop(0, light ? rgba(ST[200], 0.85) : rgba(ST[600], 0.55)); g.addColorStop(0.55, light ? rgba(ST[100], 0.35) : rgba(ST[700], 0.18)); g.addColorStop(1, rgba(light ? '#FBFAF8' : ST[950], 0)); X.fillStyle = g; X.fillRect(0, 0, W, H); }
+
+// ── v15 · ref 4 (Notely, instagram.com/p/DeO1Rh7x5Qm) rebuilt shot for shot in Resend's stone ──
+// a 3D stack of Resend's emails lands → a desk with a laptop whose screen asks the question → tiny type blurs in on a
+// soft light field → "shouldn't feel like a chore." → a dark sweep: "meet" / "Resend." → a light burst, the real dashboard
+// in glass pulls into focus, then defocuses into a moving field → "Send your receipts / updates / launches" → "Everything
+// tracked." → "All with" → the name resolves out of scrambled letters beside the mark.
+function paint(w, h, fn) { const c = document.createElement('canvas'); c.width = w; c.height = h; const keep = X; X = c.getContext('2d'); try { fn(); } finally { X = keep; } return c; }
+// frosted glass: the frame behind it, downsampled twice (a blur with no filter), a tint, a rim, a top sheen
+const GA = document.createElement('canvas'), GB = document.createElement('canvas'); GA.width = 480; GA.height = 270; GB.width = 120; GB.height = 68;
+function glass(x, y, w, h, r, light = 0.5, a = 1) {
+  const ga = GA.getContext('2d'), gb = GB.getContext('2d'), sw = Math.min(GA.width, w / 4), sh = Math.min(GA.height, h / 4), tw2 = Math.max(4, w / 16), th2 = Math.max(4, h / 16);
+  ga.drawImage(cv, x, y, w, h, 0, 0, sw, sh); gb.drawImage(GA, 0, 0, sw, sh, 0, 0, tw2, th2);
+  X.save(); X.globalAlpha *= a; put(shadowSpr(800, Math.round(800 * h / w), Math.round(r * 800 / w), 0.4), x, y, w, h);
+  X.save(); rr(x, y, w, h, r); X.clip(); X.drawImage(GB, 0, 0, tw2, th2, x - 6, y - 6, w + 12, h + 12);
+  X.fillStyle = `rgba(239,235,229,${0.06 + 0.1 * light})`; X.fillRect(x, y, w, h); const s2 = X.createLinearGradient(0, y, 0, y + h * 0.5); s2.addColorStop(0, 'rgba(255,255,255,0.16)'); s2.addColorStop(1, 'rgba(255,255,255,0)'); X.fillStyle = s2; X.fillRect(x, y, w, h * 0.5); X.restore();
+  rr(x + 0.75, y + 0.75, w - 1.5, h - 1.5, r); X.strokeStyle = 'rgba(255,255,255,0.32)'; X.lineWidth = 1.5; X.stroke(); X.restore(); }
+
+// ── 3D (three.js): the stack of emails and the desk ──
+let R3 = null, S1 = null, C1 = null, CARDS = [], S2 = null, C2 = null, SCR = null, SCRC = null, GHOST = null;
+function cardFace(i) { const w = 1024, h = 640; return paint(w, h, () => {
+  const dark = i === 1 || i === 3; X.fillStyle = dark ? ST[900] : i === 5 ? ST[100] : '#FBFAF8'; X.fillRect(0, 0, w, h);
+  if (i === 2) { cover(IM.analytics, 0, 0, w, h, 0.0, 0.5); return; }
+  mark(48, 44, 56); txt(i === 3 ? 'send.ts' : 'Acme', 122, 84, { px: 30, w: 700, c: dark ? ST[50] : ST[950] });
+  if (i === 0 || i === 4) { txt(i ? 'Your order shipped' : 'Welcome aboard, Sam.', 48, 172, { px: 46, w: 700, c: ST[950], ls: -1 }); txt('Here is everything you need to get started.', 48, 222, { px: 26, w: 500, c: ST[500] }); X.save(); rr(48, 256, w - 96, h - 300, 18); X.clip(); cover(IM[i ? 'm3' : 'm8'], 48, 256, w - 96, h - 300); X.restore(); }
+  if (i === 1) { txt('Your receipt', 48, 172, { px: 46, w: 700, c: ST[50], ls: -1 }); [['Pro plan', '$20.00'], ['Emails sent', '50,000'], ['Domains', '3'], ['Total', '$20.00']].forEach(([a, b], k) => { txt(a, 48, 262 + k * 78, { px: 30, w: 500, c: ST[300] }); txt(b, w - 48, 262 + k * 78, { px: 30, w: 600, c: ST[50], align: 'right' }); X.fillStyle = ST[700]; X.fillRect(48, 286 + k * 78, w - 96, 2); }); }
+  if (i === 3) { ["import { Resend } from 'resend';", '', 'await resend.emails.send({', "  from: 'Acme <hi@acme.dev>',", "  to: 'sam@example.com',", "  subject: 'Welcome aboard',", '  react: <Welcome />,', '});'].forEach((l, k) => txt(l, 48, 190 + k * 50, { px: 30, w: 400, f: 'JetBrains Mono', c: k === 0 ? ST[400] : ST[100] })); }
+  if (i === 5) { txt('Weekly digest', 48, 172, { px: 46, w: 700, c: ST[950], ls: -1 }); for (let k = 0; k < 6; k++) { X.fillStyle = ST[200]; X.fillRect(48, 240 + k * 56, (w - 96) * (0.92 - (k % 3) * 0.14), 18); } }
+}); }
+let SCRKEY = ''; function screenFace(t) { const w = 1280, h = 800; { const n0 = Math.floor(clamp((t - 4.15) / 0.75) * 23), key = n0 + '|' + (Math.floor(t * 2) % 2) + '|' + Math.round(E.out(sc(t, 4.0, 4.6)) * 8); if (key === SCRKEY) return; SCRKEY = key; } if (!GHOST) GHOST = paint(w, h, () => { X.filter = 'blur(10px)'; txt('Every', 120, 260, { px: 250, w: 600, c: ST[200], a: 0.55 }); txt('scattered', 330, 720, { px: 250, w: 600, c: ST[200], a: 0.55 }); X.filter = 'none'; });
+  const keep = X; X = SCRC.getContext('2d'); X.setTransform(0.75, 0, 0, 0.75, 0, 0); try { const g = X.createLinearGradient(0, 0, w, h); g.addColorStop(0, '#FBFAF8'); g.addColorStop(1, ST[100]); X.fillStyle = g; X.fillRect(0, 0, w, h);
+    X.globalAlpha = 0.5 + 0.5 * E.out(sc(t, 4.0, 4.6)); X.drawImage(GHOST, 0, 0); X.globalAlpha = 1;
+    const s = 'Every email, scattered?', n = Math.floor(clamp((t - 4.15) / 0.75) * s.length); txt(s.slice(0, n), w / 2 - tw(s, 46, 500) / 2, h / 2 + 16, { px: 46, w: 500, c: ST[900] });
+    if (Math.floor(t * 2) % 2 === 0 || n < s.length) { X.fillStyle = ST[900]; X.fillRect(w / 2 - tw(s, 46, 500) / 2 + tw(s.slice(0, n), 46, 500) + 4, h / 2 - 22, 3, 46); }
+  } finally { X = keep; } SCR.needsUpdate = true; }
+function std(c, o = {}) { return new THREE.MeshStandardMaterial({ color: c, roughness: o.r ?? 0.8, metalness: o.m ?? 0, ...(o.map ? { map: o.map } : {}) }); }
+function init3() {
+  if (!window.THREE) return; R3 = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); R3.setPixelRatio(1); R3.setSize(1440, 810, false);
+  R3.outputEncoding = THREE.sRGBEncoding; R3.toneMapping = THREE.ACESFilmicToneMapping; R3.toneMappingExposure = 1.05; R3.shadowMap.enabled = true; R3.shadowMap.type = THREE.PCFShadowMap;
+  const tex = c => { const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t; };
+  // the stack: six of Resend's emails fall onto a paper floor and land fanned, soft sun shadows
+  S1 = new THREE.Scene(); S1.background = new THREE.Color(ST[50]); C1 = new THREE.PerspectiveCamera(28, W / H, 0.1, 100);
+  S1.add(new THREE.HemisphereLight(0xffffff, 0xC7C2BC, 0.7)); const sun = new THREE.DirectionalLight(0xfff8f0, 0.95); sun.position.set(-2.5, 7, 3.5); sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024); sun.shadow.radius = 9; Object.assign(sun.shadow.camera, { left: -4, right: 4, top: 4, bottom: -4, near: 0.5, far: 20 }); sun.shadow.bias = -0.0004; S1.add(sun);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.ShadowMaterial({ opacity: 0.16 })); floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; S1.add(floor);
+  for (let i = 0; i < 6; i++) { const top = std(0xffffff, { map: tex(cardFace(i)), r: 0.6 }), side = std(i === 1 || i === 3 ? ST[900] : ST[100]); const m = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.014, 1.0), [side, side, top, side, side, side]); m.castShadow = true; m.receiveShadow = true; S1.add(m); CARDS.push(m); }
+  // the desk: a stone wall, a dark desk, Resend-black laptop, a lamp, a cup of pencils; a warm sun from the right
+  S2 = new THREE.Scene(); S2.background = new THREE.Color(ST[100]); C2 = new THREE.PerspectiveCamera(30, W / H, 0.1, 100);
+  S2.add(new THREE.HemisphereLight(0xfffaf4, 0x6c6a67, 0.5)); const sun2 = new THREE.DirectionalLight(0xfff1e2, 1.25); sun2.position.set(4.5, 1.9, 2.2); sun2.castShadow = true; sun2.shadow.mapSize.set(1024, 1024); sun2.shadow.radius = 7; Object.assign(sun2.shadow.camera, { left: -4, right: 4, top: 4, bottom: -2, near: 0.5, far: 20 }); sun2.shadow.bias = -0.0005; S2.add(sun2);
+  const wall = new THREE.Mesh(new THREE.PlaneGeometry(14, 8), std(ST[100], { r: 0.95 })); wall.position.set(0, 2, -1.1); wall.receiveShadow = true; S2.add(wall);
+  const grain = paint(1024, 256, () => { X.fillStyle = ST[300]; X.fillRect(0, 0, 1024, 256); for (let k = 0; k < 140; k++) { X.strokeStyle = rgba(k % 3 ? ST[400] : ST[200], 0.45); X.lineWidth = 1 + hash(k) * 2; X.beginPath(); const y = hash(k * 3.1) * 256; X.moveTo(0, y); for (let x = 0; x <= 1024; x += 64) X.lineTo(x, y + Math.sin(x * 0.006 + k) * 6); X.stroke(); } });
+  const desk = new THREE.Mesh(new THREE.BoxGeometry(7, 0.08, 4.2), std(0xffffff, { map: tex(grain), r: 0.55 })); desk.position.set(0, -0.04, 1.0); desk.receiveShadow = true; desk.castShadow = true; S2.add(desk);
+  const alu = std(ST[800], { r: 0.32, m: 0.7 }); const base = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.035, 0.94), alu); base.position.set(0, 0.0175, 0); base.castShadow = true; S2.add(base);
+  const lid = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.9, 0.024), alu); lid.position.set(0, 0.035 + 0.45, -0.46); lid.castShadow = true; S2.add(lid);
+  SCRC = document.createElement('canvas'); SCRC.width = 960; SCRC.height = 600; SCR = tex(SCRC); const scr = new THREE.Mesh(new THREE.PlaneGeometry(1.31, 0.82), new THREE.MeshBasicMaterial({ map: SCR, toneMapped: false })); scr.position.set(0, 0.035 + 0.46, -0.446); S2.add(scr);
+  const ink = std(ST[900], { r: 0.4, m: 0.3 }); const lb = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.19, 0.03, 48), ink); lb.position.set(-1.35, 0.015, -0.35); const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.95, 16), ink); pole.position.set(-1.35, 0.49, -0.35);
+  const shade = new THREE.Mesh(new THREE.SphereGeometry(0.32, 48, 24, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: ST[900], roughness: 0.35, metalness: 0.4, side: THREE.DoubleSide })); shade.position.set(-1.35, 0.97, -0.35);
+  const ball = new THREE.Mesh(new THREE.SphereGeometry(0.07, 24, 16), ink); ball.position.set(-1.35, 0.62, -0.35); [lb, pole, shade, ball].forEach(m => { m.castShadow = true; S2.add(m); });
+  const bulb = new THREE.PointLight(0xfff0dc, 0.9, 2.4, 2); bulb.position.set(-1.35, 0.9, -0.35); S2.add(bulb);
+  const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.09, 0.22, 40, 1, true), new THREE.MeshStandardMaterial({ color: ST[100], roughness: 0.25, side: THREE.DoubleSide })); cup.position.set(1.22, 0.11, -0.3); cup.castShadow = true; S2.add(cup);
+  for (let k = 0; k < 4; k++) { const p = new THREE.Mesh(new THREE.CylinderGeometry(0.009, 0.009, 0.42, 8), std(k % 2 ? ST[300] : ST[600])); p.position.set(1.22 + (k - 1.5) * 0.03, 0.27, -0.3 + (k % 2) * 0.02); p.rotation.z = (k - 1.5) * 0.12; p.castShadow = true; S2.add(p); }
+}
+function stack3(t) {
+  if (!R3) { X.fillStyle = ST[50]; X.fillRect(0, 0, W, H); return; }
+  const FIN = [[0.55, 0.0, -0.25, -0.18], [0.95, 0.014, 0.05, 0.22], [0.25, 0.028, 0.15, -0.05], [0.8, 0.042, -0.05, 0.42], [0.5, 0.056, 0.18, -0.3], [0.7, 0.07, -0.12, 0.08]];
+  CARDS.forEach((m, i) => { const [x, y, z, ry] = FIN[i], t0 = 0.05 + i * 0.3, k = E.out(sc(t, t0, t0 + 1.05)), sp = spring(sc(t, t0 + 0.35, t0 + 1.3));
+    m.position.set(x + (1 - k) * (i % 2 ? 0.9 : -0.7), y + (1 - k) * (2.6 + i * 0.25), z + (1 - k) * 0.6); m.rotation.set((1 - sp) * (i % 2 ? 0.9 : -0.8), ry + (1 - sp) * (i % 2 ? -1.1 : 1.2), (1 - sp) * 0.5); m.visible = t > t0 - 0.05; });
+  const u = sc(t, 0, 3.9), a = lerp(-0.18, -0.05, E.io(u)), d = lerp(4.7, 4.1, E.io(u)); C1.position.set(-0.05 + Math.sin(a) * d * 0.55, d * 0.8, Math.cos(a) * d * 0.6); C1.lookAt(-0.2, 0, 0.05); C1.updateProjectionMatrix();
+  R3.shadowMap.autoUpdate = true; R3.render(S1, C1); X.drawImage(R3.domElement, 0, 0, W, H);
+  soft('Too many emails.', 250, H / 2 - 6, 40, t, 1.55, { left: true, c: ST[900], out: 3.55 }); soft('Too many tools.', 250, H / 2 + 46, 40, t, 1.95, { left: true, c: ST[300], out: 3.55 });
+}
+function desk3(t) {
+  if (!R3) { X.fillStyle = ST[200]; X.fillRect(0, 0, W, H); return; }
+  screenFace(t); if (!desk3.done) { R3.shadowMap.needsUpdate = true; desk3.done = true; } const u = E.io(sc(t, 3.9, 5.3)); C2.position.set(lerp(0.05, 0, u), lerp(0.62, 0.58, u), lerp(3.35, 3.0, u)); C2.lookAt(0, 0.46, -0.4); C2.updateProjectionMatrix();
+  R3.shadowMap.autoUpdate = false; R3.render(S2, C2); X.drawImage(R3.domElement, 0, 0, W, H); R3.shadowMap.autoUpdate = true;
+}
+// ── the soft fields: a few big blobs drawn at 160×90 and scaled up (smooth, no filter) ──
+const MF = document.createElement('canvas'), MF2 = document.createElement('canvas'); MF.width = MF2.width = 160; MF.height = MF2.height = 90;
+const FIELDS = { light: [ST[100], ['#FBFAF8', ST[50], ST[200], '#FBFAF8']], dark: [ST[950], [ST[800], ST[850], ST[700], ST[900]]], mid: [ST[700], [ST[300], ST[600], ST[950], ST[200]]] };
+function blobs(g, name, t, a = 1) { const [base, cs] = FIELDS[name]; g.globalAlpha = a; g.fillStyle = base; g.fillRect(0, 0, 160, 90);
+  cs.forEach((c, i) => { const x = 80 + Math.sin(t * 0.35 + i * 1.9) * 55, y = 45 + Math.cos(t * 0.28 + i * 2.6) * 30, r = 55 + 15 * Math.sin(t * 0.4 + i); const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, rgba(c, 0.95)); gr.addColorStop(1, rgba(c, 0)); g.fillStyle = gr; g.fillRect(0, 0, 160, 90); }); g.globalAlpha = 1; }
+function field(name, t, o = {}) { const g = MF.getContext('2d'); blobs(g, name, t); if (o.to) { // a soft blob of the next field grows from top-left
+    const k = o.k, R = lerp(1, 260, k), g2 = MF2.getContext('2d'); g2.globalCompositeOperation = 'source-over'; blobs(g2, o.to, t); g2.globalCompositeOperation = 'destination-in';
+    const m = g2.createRadialGradient(40, 18, 0, 40, 18, R); m.addColorStop(0, 'rgba(0,0,0,1)'); m.addColorStop(0.62, 'rgba(0,0,0,1)'); m.addColorStop(1, 'rgba(0,0,0,0)'); g2.fillStyle = m; g2.fillRect(0, 0, 160, 90); g2.globalCompositeOperation = 'source-over'; g.drawImage(MF2, 0, 0); }
+  if (o.burst) { const gr = g.createRadialGradient(80, -10, 0, 80, -10, 90); gr.addColorStop(0, rgba(ST[200], 0.8 * o.burst)); gr.addColorStop(1, rgba(ST[200], 0)); g.fillStyle = gr; g.fillRect(0, 0, 160, 90); }
+  X.imageSmoothingEnabled = true; X.imageSmoothingQuality = 'high'; X.drawImage(MF, 0, 0, W, H); }
+// tiny type, word by word: each word drifts in from the right out of a blur (ref 4)
+function soft(s, x, y, px, t, t0, o = {}) { line(s, x, y, px, t, t0, { step: 0.26, w: 500, dx: 16, ...o }); }
+// the name out of scrambled letters, the mark beside it
+const GLY = 'ABCDEFGHJKLMNPRSTUVWXYZ0123456789#%&@';
+function scramble(t, t0) { const s = 'Resend', y = H / 2 + 22, px = 66, full = tw(s, px, 700, 'Inter', -1.5), x0 = W / 2 - full / 2 + 40;
+  let cx = x0; for (let i = 0; i < s.length; i++) { const lock = t0 + 0.18 + i * 0.07, k = E.out(sc(t, t0 + i * 0.04, lock)), ch = t >= lock ? s[i] : GLY[Math.floor(hash(i * 13 + Math.floor(t * 24)) * GLY.length)];
+    if (t > t0 + i * 0.04) { const c = wordSpr(ch, px, 700, 'Inter', ST[50], -1.5); put(c, cx - 3, y - px * 1.02, c.bw, c.bh, { a: clamp(k * 2), blur: t >= lock ? 0 : 5 }); }
+    cx += tw(s[i], px, 700, 'Inter', -1.5) - 1.5; }
+  const mk = spring(sc(t, t0 + 0.55, t0 + 1.0)); if (mk > 0) { X.save(); X.translate(x0 - 58, y - 24); X.scale(Math.min(mk, 1.05), Math.min(mk, 1.05)); mark(-30, -30, 60); X.restore(); } }
+const metricsSpr = () => sprite('metrics', 1440, 769, 0, () => { X.save(); rr(0, 0, 1440, 769, 18); X.clip(); X.drawImage(IM.metrics, 0, 0, 1440, 769); X.restore(); });
+function scenesB(t) {
+  if (t < 8.4) { field('light', t); // 5.3–8.4 the light field
+    if (t < 6.3) soft('Reaching every inbox', W / 2, H / 2 + 12, 34, t, 5.35, { c: ST[800], out: 6.05 });
+    else soft("shouldn't feel like a chore.", W / 2, H / 2 + 12, 34, t, 6.4, { c: ST[800], step: 0.3 }); return; }
+  if (t < 10.7) { const k = E.io(sc(t, 8.4, 9.05)); field('light', t, { to: 'dark', k }); // the dark sweep
+    if (t < 8.75) soft("shouldn't feel like a chore.", W / 2, H / 2 + 12, 34, t, 6.4, { c: ST[800], step: 0.3, out: 8.45 });
+    if (t >= 9.0 && t < 10.0) soft('meet', W / 2, H / 2 + 12, 34, t, 9.1, { c: ST[200], out: 9.75 });
+    if (t >= 10.0) soft('Resend.', W / 2, H / 2 + 12, 34, t, 10.05, { c: ST[50], w: 600 }); return; }
+  if (t < 13.0) { // the burst; the real dashboard in glass pulls into focus, holds, then defocuses into the moving field
+    const burst = clamp(E.out(sc(t, 10.6, 11.0)) - E.in(sc(t, 11.4, 12.2)) * 0.7), toMid = E.io(sc(t, 12.55, 13.0));
+    field('dark', t, { burst, to: toMid > 0 ? 'mid' : null, k: toMid });
+    if (t < 10.95) soft('Resend.', W / 2, H / 2 + 12, 34, t, 10.05, { c: ST[50], w: 600, out: 10.7 });
+    const fin = E.out(sc(t, 10.75, 11.6)), out = E.in(sc(t, 12.5, 12.95)), s = lerp(0.92, 1, fin) + (t - 11) * 0.012, w = 1180 * s, h = w * 769 / 1440, x = W / 2 - w / 2, y = H / 2 - h / 2 + (1 - fin) * 40;
+    if (fin > 0 && out < 1) { if (fin > 0.6) glass(x - 26, y - 26, w + 52, h + 52, 34, 0.4, (fin - 0.6) / 0.4 * (1 - out)); put(metricsSpr(), x, y, w, h, { blur: (1 - fin) * 16 + out * 16, a: clamp(fin * 2) * (1 - out) }); }
+    return; }
+  field('mid', t);
+  if (t < 15.6) { const xl = W / 2 - tw('Send your launches', 34, 500) / 2; soft('Send your', xl, H / 2 + 12, 34, t, 13.15, { c: ST[100], left: true }); // the word cycler
+    const WD = [['receipts', 13.55, 14.3], ['updates', 14.35, 15.1], ['launches', 15.15, 15.55]], xw = xl + tw('Send your ', 34, 500) + 3;
+    for (const [w, a, b] of WD) { const i = E.out(sc(t, a, a + 0.4)), o = E.in(sc(t, b - 0.2, b)); if (i > 0 && o < 1) { const c = wordSpr(w, 34, 500, 'Inter', ST[300], -0.7); put(c, xw + (1 - i) * 18 - o * 10, H / 2 + 12 - 34 * 1.02 - (1 - i) * 6, c.bw, c.bh, { a: clamp(i * 2) * (1 - o), blur: (1 - i) * 8 + o * 8 }); } }
+    return; }
+  if (t < 17.3) { soft('Everything tracked.', W / 2, H / 2 + 12, 34, t, 15.7, { c: ST[100], out: 17.05 }); return; }
+  if (t < 18.0) { soft('All with', W / 2, H / 2 + 12, 40, t, 17.35, { c: ST[200], out: 17.8 }); return; }
+  scramble(t, 18.05);
+}
+
+// ── the frame ──
+const nz = document.createElement('canvas'); nz.width = nz.height = 256; { const g = nz.getContext('2d'), d = g.createImageData(256, 256); let sd = 7; for (let i = 0; i < d.data.length; i += 4) { sd = (sd * 16807) % 2147483647; const v = (sd / 2147483647) * 255; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; } g.putImageData(d, 0, 0); }
+let GRAIN = null;
+function render(t) {
+  X.setTransform(1, 0, 0, 1, 0, 0); X.globalAlpha = 1; X.filter = 'none';
+  const cs = 1 + t * 0.0012; X.save(); X.translate(W / 2, H / 2); X.scale(cs, cs); X.translate(-W / 2, -H / 2);
+  if (t < 3.9) stack3(t); else if (t < 5.3) desk3(t); else scenesB(t);
+  X.restore();
+  if (!GRAIN) GRAIN = X.createPattern(nz, 'repeat'); const light = t < 8.6;
+  X.save(); X.globalAlpha = 0.04; X.globalCompositeOperation = light ? 'multiply' : 'screen'; const f = Math.floor(t * 30); X.translate(-Math.floor(hash(f) * 256), -Math.floor(hash(f + 7) * 256)); X.fillStyle = GRAIN; X.fillRect(0, 0, W + 256, H + 256); X.restore();
+}
+
+// ── sound: a real bed (Mixkit "Close Up", Mixkit free licence, 103 BPM) whose lift lands ON the dashboard reveal, and the
+// owner's Style 1 sound pack (engine/assets/sfx-style1) placed by its own map.json event rules: card-in = woosh on arrival
+// + a soft land, word = a typing slice + a click, cascade = every 2nd item fading, max 2 punches, min gap 60 ms by
+// priority, risers END on the cut, no ducking. The film is cut on a 120 BPM grid; it plays at 127.6/120 so every cut
+// lands on the track's beat (K = audio seconds per film second).
+const BPM = 103.0, K = 1, BEAT = 60 / BPM, B0 = 10.7, OFF = 0.08 + 27 * 60 / 103.0 - B0;
+// every cut on the bed's beat: film time → audio time is piecewise linear between the cuts, each cut snapped to the
+// beat (floor or ceil, whichever keeps the shot's speed nearest 1×; ±15 % at most), so the speed only changes ON a cut
+const KN = [0, 3.9, 5.3, 6.3, 8.4, 9.0, 10.0, 10.7, 13.0, 15.6, 17.3, 18.0, 21.1], AK = [0];
+for (let i = 1; i < KN.length; i++) { const a = KN[i] * K, b0 = B0, n = (a - b0) / BEAT, prev = AK[i - 1], d = (KN[i] - KN[i - 1]) * K;
+  if (i === KN.length - 1) { AK.push(a); break; } const c = [Math.floor(n), Math.ceil(n)].map(m => b0 + m * BEAT).filter(x => x > prev + 0.1); AK.push(c.sort((x, y) => Math.abs((x - prev) / d - 1) - Math.abs((y - prev) / d - 1))[0] ?? a); }
+const pw = (xs, ys, v) => { if (v <= xs[0]) return ys[0] + (v - xs[0]) * (ys[1] - ys[0]) / (xs[1] - xs[0]); for (let i = 1; i < xs.length; i++) if (v <= xs[i]) return ys[i - 1] + (v - xs[i - 1]) * (ys[i] - ys[i - 1]) / (xs[i] - xs[i - 1]); const n = xs.length - 1; return ys[n] + (v - xs[n]) * (ys[n] - ys[n - 1]) / (xs[n] - xs[n - 1]); };
+const toA = f => pw(KN, AK, f), toF = a => pw(AK, KN, a), DUR_A = toA(DUR);
+const SND = { typing: 'typing.mp3', click: 'kenney.click.wav', mouse: 'fs.ui.mouse-2-button-fast-click.wav', pop: 'ui.pop.wav', 'pop-4': 'fs.ui.pop-4.wav', 'pop-9': 'fs.ui.pop-9.wav', drop: 'fs.foley.water-drop.wav', 'drop-splash': 'fs.foley.water-drop-splash.wav', 'woosh-short': 'woosh-short.wav', 'woosh-tight': 'woosh-tight.wav', 'air-cut': 'fs.whoosh.swosh-whoosh-air-cut.wav', 'soft-hit': 'fs.impact.soft-hit.wav', punch: 'fs.impact.punch2.wav', riser: 'riser.mp3', 'riser-short': 'riser-short.wav', 'ui-riser': 'ui-riser.mp3', chime: 'tonal.chime.wav', notify: 'tonal.notify.wav', snap: 'finger-snap-tight.wav' };
+const ALIGN = { mouse: 'peak', 'drop-splash': 'peak', 'woosh-short': 'peak', 'woosh-tight': 'peak', 'air-cut': 'peak', punch: 'peak', snap: 'peak', riser: 'end', 'riser-short': 'end' };
+const EV = { word: ['typing', -24, ['click', -31]], 'key-word': ['snap', -24], pop: ['pop-4', -25], cascade: ['pop-9', -29], 'card-in': ['woosh-short', -25, ['soft-hit', -32]], 'slide-out': ['woosh-tight', -30], scene: ['air-cut', -25], 'hard-hit': ['punch', -21], stat: ['chime', -27], notify: ['notify', -30], accent: ['drop', -27], 'click-ui': ['mouse', -27], 'ui-reveal': ['ui-riser', -32], build: ['riser', -30], 'build-short': ['riser-short', -30], cta: ['drop-splash', -28], thud: ['soft-hit', -22] };
+const PRI = ['hard-hit', 'scene', 'card-in', 'key-word', 'stat', 'cta', 'pop', 'notify', 'click-ui', 'accent', 'word', 'cascade', 'slide-out', 'ui-reveal', 'build', 'build-short', 'thud'];
+const words = (t0, n, step = 0.12) => [...Array(n).keys()].map(i => ['word', t0 + i * step]);
+const letters = (t0, n, step) => [...Array(n).keys()].map(i => ['word', t0 + i * step]);
+const CUES = [['ui-reveal', 0.0], ...[...Array(6).keys()].map(i => ['cascade', 0.05 + i * 0.3 + 0.6]), ...words(1.55, 3, 0.26), ...words(1.95, 3, 0.26), ['slide-out', 3.6],
+  ['scene', 3.9], ...letters(4.15, 8, 0.094), ['scene', 5.3], ...words(5.35, 3, 0.26), ['slide-out', 6.1], ...words(6.4, 5, 0.3),
+  ['ui-reveal', 8.4], ['word', 9.1], ['word', 10.05], ['stat', 10.7], ['card-in', 11.0], ['slide-out', 12.5], ['scene', 12.6],
+  ...words(13.15, 2, 0.26), ['word', 13.55], ['word', 14.35], ['word', 15.15], ...words(15.7, 2, 0.26), ['slide-out', 17.05], ...words(17.35, 2, 0.26),
+  ['ui-reveal', 17.6], ...letters(18.23, 6, 0.07), ['pop', 18.6], ['cta', 18.65]];
+const dbg = (b) => { const d = b.getChannelData(0); let pk = 0, pi = 0, e = 0, n = 0; for (let i = 0; i < d.length; i++) { const a = Math.abs(d[i]); if (a > pk) { pk = a; pi = i; } } const a0 = Math.max(0, pi - b.sampleRate * 0.05), a1 = Math.min(d.length, pi + b.sampleRate * 0.15); for (let i = a0; i < a1; i++) { e += d[i] * d[i]; n++; } return { rms: 10 * Math.log10(e / Math.max(1, n) + 1e-12), peakAt: pi / b.sampleRate }; };
+function onsets(b) { const d = b.getChannelData(0), win = Math.round(b.sampleRate * 0.01), en = []; for (let i = 0; i + win < d.length; i += win) { let e = 0; for (let j = 0; j < win; j++) e += d[i + j] * d[i + j]; en.push(e / win); } const out = []; let last = -1; for (let k = 3; k < en.length; k++) { const avg = (en[k - 1] + en[k - 2] + en[k - 3]) / 3 + 1e-7; if (en[k] > avg * 4 && en[k] > 1e-4 && k - last > 6) { out.push(k * 0.01); last = k; } } return out; }
+async function score() {
+  const SR = 44100, ac = new OfflineAudioContext(2, Math.ceil(SR * DUR_A), SR);
+  const load = async f => ac.decodeAudioData(await (await fetch('snd/' + f)).arrayBuffer());
+  const bufs = {}; await Promise.all(Object.entries(SND).map(async ([k, f]) => { bufs[k] = await load(f); }));
+  const bed = await load('bed2.m4a'), meta = {}; for (const [k, b] of Object.entries(bufs)) meta[k] = dbg(b); const typeOn = onsets(bufs.typing);
+  const lim = ac.createDynamicsCompressor(); lim.threshold.value = -10; lim.knee.value = 2; lim.ratio.value = 12; lim.attack.value = 0.001; lim.release.value = 0.1; const clip = ac.createWaveShaper(), cu = new Float32Array(2048); for (let i = 0; i < 2048; i++) { const x = i / 1023.5 - 1; cu[i] = Math.tanh(x * 1.2) / Math.tanh(1.2) * 0.89; } clip.curve = cu; const pre = ac.createGain(); pre.gain.value = 0.62; lim.connect(pre); pre.connect(clip); clip.connect(ac.destination);
+  const fx = ac.createGain(); fx.gain.value = 2.0; fx.connect(lim); // the SFX stem +6 dB (owner rule)
+  const room = ac.createConvolver(), ir = ac.createBuffer(2, SR * 0.6, SR); for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); let sd = 9 + c; for (let i = 0; i < d.length; i++) { sd = (sd * 16807) % 2147483647; d[i] = (sd / 1073741823.5 - 1) * Math.pow(1 - i / d.length, 4); } } room.buffer = ir; const wet = ac.createGain(); wet.gain.value = 0.12; fx.connect(room); room.connect(wet); wet.connect(lim);
+  // the bed: enters on the film's first frame mid-build, its drop on the pull-back; the filter closes for the break, reopens on the end mark, fades
+  const bs = ac.createBufferSource(); bs.buffer = bed; const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 0.7; const bg = ac.createGain();
+  const F = toA; lp.frequency.setValueAtTime(1400, 0); lp.frequency.exponentialRampToValueAtTime(3000, F(8.4)); lp.frequency.exponentialRampToValueAtTime(900, F(10.0)); lp.frequency.exponentialRampToValueAtTime(18000, F(10.7));
+  bg.gain.setValueAtTime(0.0001, 0); bg.gain.exponentialRampToValueAtTime(0.5, 0.6); bg.gain.setValueAtTime(0.5, F(19.6)); bg.gain.linearRampToValueAtTime(0.0001, F(21.1));
+  bs.connect(lp); lp.connect(bg); bg.connect(lim); bs.start(0, OFF);
+  // the cues, thinned by the owner's min gap (60 ms) in priority order, at most 2 punches
+  const cues = CUES.map(([e, t]) => ({ e, t: F(t) })).sort((a, b) => PRI.indexOf(a.e) - PRI.indexOf(b.e)), kept = []; let punches = 0;
+  for (const c of cues) { if (c.e === 'hard-hit' && ++punches > 2) continue; if (kept.some(k => Math.abs(k.t - c.t) < 0.06 && k.e !== 'build' && c.e !== 'build')) continue; kept.push(c); }
+  let ci = 0, sd = 3; const jit = () => { sd = (sd * 16807) % 2147483647; return (sd / 2147483647 - 0.5) * 2; };
+  const playS = (name, t, db, o = {}) => { const b = bufs[name], m = meta[name]; if (!b) return; const s = ac.createBufferSource(), g = ac.createGain(); s.buffer = b; s.playbackRate.value = o.rate ?? 1;
+    const lin = Math.pow(10, (db + jit() * 1 - m.rms) / 20), al = ALIGN[name]; let start = t, off = o.off ?? 0, dur = o.len;
+    if (al === 'peak') start = t - m.peakAt; if (al === 'end') start = t - b.duration; if (start < 0) { off -= start; start = 0; }
+    g.gain.value = Math.min(lin, 4); s.connect(g); g.connect(fx); if (dur) { g.gain.setValueAtTime(g.gain.value, start + dur * 0.8); g.gain.linearRampToValueAtTime(0, start + dur); } s.start(start, off, dur ? dur + 0.01 : undefined); };
+  for (const c of kept.sort((a, b) => a.t - b.t)) { const [snd, db, then] = EV[c.e];
+    if (snd === 'typing') { const o = typeOn[(ci++ * 7) % typeOn.length] ?? 0; playS('typing', c.t, db, { off: o, len: 0.06 }); }
+    else if (c.e === 'cascade') { const i = Math.round((toF(c.t) - 0.65) / 0.3); if (i % 2) continue; playS(snd, c.t, db - i * 1.0, { rate: 1 + i * 0.04 }); }
+    else playS(snd, c.t, db);
+    if (then) playS(then[0], c.t, then[1]); }
+  // a granular shimmer under the stipple, kept from the synth (no sample does this)
+  for (let i = 0; i < 36; i++) { const o = ac.createOscillator(), g = ac.createGain(), t = F(0.04 + i * 0.024); o.frequency.value = 2400 + hash(i) * 1400; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.012, t + 0.002); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05); o.connect(g); g.connect(fx); o.start(t); o.stop(t + 0.06); }
+  return ac.startRendering();
+}
+// ── the player: the audio is the clock; videos play in sync while playing, posters for stills ──
+const qs = new URLSearchParams(location.search), sk = document.getElementById('sk'), tc = document.getElementById('tc'), pl = document.getElementById('pl');
+let SCORE = null, actx = null, buf = null, src = null, t0 = 0, at = 0;
+window.__render = t => render(t);
+(async () => {
+  await Promise.all([document.fonts.load('600 100px Inter'), document.fonts.load('500 100px Inter'), document.fonts.load('700 100px Inter'), document.fonts.load('400 30px "JetBrains Mono"')]).catch(() => null); await document.fonts.ready;
+  await Promise.all(Object.values(IM).map(im => im.decode().catch(() => null))); init3();
+  for (let w = 0; w < DUR; w += 0.25) render(w); for (const c of [...SPR.values()]) for (const l of BL) blurOf(c, l);
+  await Promise.all([...SPR.values()].flatMap(c => [c, ...Object.values(c.blurs)]).map(async d => { d.bmp = await createImageBitmap(d); }));
+  render(Number(qs.get('t') ?? 0)); window.__ready = true; SCORE = score().then(b => (buf = b)).catch(e => console.warn('score', e));
+})();
+function play() { if (!actx) actx = new AudioContext(); const go = () => { src = actx.createBufferSource(); src.buffer = buf; src.connect(actx.destination); src.start(0, at); t0 = actx.currentTime - at; for (const v of Object.values(VD)) v.play().catch(() => {}); PLAYING = true; pl.textContent = 'Pause'; loop(); }; if (buf) go(); else { pl.textContent = '…'; (SCORE || score()).then(b => { buf = buf || b; go(); }); } }
+function pause() { if (src) src.stop(); PLAYING = false; at = actx.currentTime - t0; pl.textContent = 'Play'; for (const v of Object.values(VD)) v.pause(); }
+function loop() { if (!PLAYING) return; at = actx.currentTime - t0; if (at >= DUR_A) { pause(); at = 0; } const ft = toF(at); render(ft); sk.value = Math.round(ft * 100); tc.textContent = ft.toFixed(2); requestAnimationFrame(loop); }
+pl.onclick = () => (PLAYING ? pause() : play());
+sk.oninput = () => { const was = PLAYING; if (was) pause(); at = toA(sk.value / 100); render(sk.value / 100); tc.textContent = (sk.value / 100).toFixed(2); if (was) play(); };
+addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); PLAYING ? pause() : play(); } });
+</script></body></html>

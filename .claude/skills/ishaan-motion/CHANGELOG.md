@@ -1,4 +1,5 @@
 # Changelog
+- 1.14.0 (2026-10-18): Launch skillset absorbed to f15: launch.md reference intake, looks L-REF-3 "Product tour" and L-REF-4 "Calm one-hue"; canvas-engine 3D shots (three.js), soft fields, plates and glass; music-and-sound real bed, beat phase, beat warp, the owner pack by map.json; shots-and-transitions refs 3–4; camera.md rows (UI dive, screen pull-back, 3D dolly, calm push).
 - 1.13.8 (2026-10-18): launch.md item 7, the finish layers (real bed, owner sfx pack by map.json, cuts on the beat by a time warp, filter-free glass, sky band).
 - 1.13.4 (2026-10-18): launch.md shot-for-shot item 6 (owner on f12: "better, push it further"): the reference's own moves (deep dive into one real element, drag-and-drop, blur placeholders, type at reference size, 3D composited onto the light world), clips decode from Play.
 - 1.13.3 (2026-10-18): launch.md "When Ishaan sends a reference to match, rebuild it shot for shot" (Ishaan on f11: 2/10, "not at all the premium launch video i sent"): map the reference second by second, use the brand's REAL product screens and renders, real moving plates, one continuous camera per section.
@@ -122,6 +123,9 @@
 
 ## 1.13.9 (2026-10-18)
 - Rule: caption cards at least 1.2 s on screen, hold up to 1 s after the last word.
+
+## 1.13.10 (2026-10-18)
+- Rule: text behind the speaker is wider than the shoulders, centred at the neck, never across the face.
 
 ## 1.13.10 (2026-10-18)
 - Owner rule: the edit's motion graphics, clips and UI components are tailored to each video, never a fixed set.

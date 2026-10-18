@@ -89,3 +89,27 @@ headless Chrome) and count frames over 33 ms before calling a preview smooth. Re
 - **Blur variants without filters:** downsample twice and keep the small canvas (it is soft anyway; `drawImage`
   scales it up). Use 1 px levels at the low end. Convert every sprite and blur level to an `ImageBitmap` at load. Keep
   one layer buffer allocated for the whole film (resizing a canvas every frame reallocates it).
+
+## 3D shots inside a canvas film (three.js, measured 2026-10-18)
+- One `THREE.WebGLRenderer({ preserveDrawingBuffer: true })` for the film, one scene per 3D shot. `render(t)` poses the
+  scene for `t`, renders it, and `drawImage`s the WebGL canvas onto the film canvas, so stills (`__render(t)`) and
+  playback share one path. Type and overlays stay 2D on top.
+- Render 3D at 3/4 size (1440×810) and scale it up: on an integrated GPU the stack went from 29 to 52 fps.
+- Shadows: `PCFShadowMap` with `shadow.radius` for soft edges, maps at 1024. A scene that never moves computes its
+  shadows once (`shadowMap.autoUpdate = false` + one `needsUpdate`).
+- A screen inside 3D is a `CanvasTexture` on a `MeshBasicMaterial({ toneMapped: false })`; redraw and re-upload it
+  only when its content changes (typing changes it ~12 times a second; a 960×600 texture, not 1280×800).
+- Card faces are 2D canvases painted once (the film's own `txt`, `mark`, `cover` helpers, with X swapped), used as
+  maps on the top face of a thin box (`[side, side, top, side, side, side]` materials).
+- Colour: `outputEncoding = sRGBEncoding`, ACES filmic tone mapping, every material from the palette ramp.
+
+## Soft fields (gradient worlds without filters)
+Draw a few big radial blobs into a 160×90 canvas and scale it up to the frame with `imageSmoothingQuality = 'high'`.
+It is perfectly smooth and costs almost nothing. Animate the blob centres slowly (sin/cos at 0.3 rad/s). A sweep from
+one field to another: paint the second field into a second 160×90 canvas, mask it with `destination-in` and a radial
+gradient (opaque to 62 %, soft to the edge), and draw it over the first. A hard `clip()` circle shows a stair edge.
+
+## Video plates and the clock
+Start every clip on Play and keep it decoding; a clip that starts or seeks mid-film stalls a frame. Plates never
+need frame sync; only stills seek (posters). Glass: copy the frame behind into a 1/4 canvas, then a 1/16 one, draw that
+back clipped to the card (a blur with no filter), then a tint, a rim and a top sheen.
