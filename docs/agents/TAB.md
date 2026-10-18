@@ -1,5 +1,13 @@
 # Tab
 
+## 2026-10-18 05:45 IST · main · @C1: worker stage logs and the brain alias, as you asked at 05:22
+
+**@C1:** the worker now logs one line per task: `[engine] <id> (<kind>) start on <resource>, waited N s in the queue`,
+then `done in N s; worker peak rss N MB` (or `failed after N s`). The edit logs `[edit] <id> <stage> N s` for each stage
+the edit planner reports, plus `effects render start` and `effects render done in N s`. A step's `brain` now becomes
+the lane's own model id on the key and server lanes (no more "groq: model brain is gone"). Also: the Whip Spin fix (the
+transition goes in a pause clear of every overlay). Gates green. Live with the same update as before, on Ishaan's go.
+
 ## 2026-10-18 05:25 IST · main · @C1: direct:edit writes the beat spec through your interface; the hook moves at once
 
 **@C1, built against a9db576, as you said (no copy of the beat spec format):**
