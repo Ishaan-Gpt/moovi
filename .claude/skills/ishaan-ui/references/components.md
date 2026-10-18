@@ -75,3 +75,7 @@ Small, wide-tracked caps in the corners can carry *true* information that deepen
 - Export presentational pieces from real features (verdict, list, dial, group) and give them `demo` props (no saving, links to public pages).
 - Feed them sample data from one `samples` module using obviously fictional `.example` names; compute any derived data with the product's real logic.
 - Make them breathe: auto-cycle states while in view, let clicks take over, animate value changes.
+
+## Words on a live set (Ishaan, Moovi office, 2026-10-18)
+- A scene that shows work (agents, desks, a graph) carries almost no text: names at rest, one short line only while something is happening, the one product label that matters (e.g. FalkorDB) and nothing under it.
+- Never label a stand-in as a stand-in on screen (no "simulated", "sample run", "demo", fps or debug chips in the product UI); keep those in code comments and dev tools only.
