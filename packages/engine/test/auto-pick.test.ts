@@ -158,6 +158,8 @@ test('auto-pick, wiring: the upload edit asks for the auto style and renders the
   assert.equal(fxFilmFor({ effects: { events: [ev('stat-counter'), ev('whip-spin')] }, faces: 3, source: { duration: 20 } }, undefined).go, false);
   assert.equal(fxFilmFor({ effects: { events: [ev('stat-counter'), ev('checklist')] }, faces: 0, source: { duration: 20 } }, undefined).go, false);
   const job = readFileSync(join(import.meta.dirname, '../src/edit/job.ts'), 'utf8');
-  assert.match(job, /o\.moves \?\? autoMoves\(edl/);
+  // the director (edit/beatspec.ts) casts the moves and effects from the registry when it runs; without it, the old auto picks
+  assert.match(job, /o\.moves \?\? \(beats \? \[\] : autoMoves\(edl/);
+  assert.match(job, /!rough && !sc && !beats && o\.effects !== false/);
   assert.match(job, /autoFx\(\(kept\.length >= 6 \? kept : words\)\.map/);
 });

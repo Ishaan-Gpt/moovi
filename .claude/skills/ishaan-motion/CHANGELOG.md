@@ -1,4 +1,5 @@
 # Changelog
+- 1.13.4 (2026-10-18): launch.md shot-for-shot item 6 (owner on f12: "better, push it further"): the reference's own moves (deep dive into one real element, drag-and-drop, blur placeholders, type at reference size, 3D composited onto the light world), clips decode from Play.
 - 1.13.3 (2026-10-18): launch.md "When Ishaan sends a reference to match, rebuild it shot for shot" (Ishaan on f11: 2/10, "not at all the premium launch video i sent"): map the reference second by second, use the brand's REAL product screens and renders, real moving plates, one continuous camera per section.
 - 1.13.1 (2026-10-18): references/camera.md (which camera move where, durations, eases, the smooth-speed law); motion-feel "smooth as butter"; canvas-engine rAF measuring, filter-free blur variants, bitmaps; launch.md look L-UI-2 "One material" and the f7–f10 lessons.
 - 1.12.3 (2026-10-18): launch.md "smooth, filled, and ramped": sprite/blur-variant rendering rule with measured frame times, the media tools (footage finder + drawn art), the premium speed ramp (camera:speed-ramp).

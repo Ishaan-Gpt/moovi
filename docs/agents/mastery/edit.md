@@ -136,6 +136,19 @@ parseAsks("add a crash zoom on 'crore'. orbit on the hook"): Ask[]   // a chat k
   from the camera layer: `[dt, scale, cx, cy, roll]`), `cut` (`{ type, at, dur }`, lowered onto the EDL's cut at that
   word) and `x1` (`{ n, at, dur }`, lowered through `applyMove`).
 
+### Where the spec goes (step 3, one film)
+- `planEdit` writes the spec on `edl.spec`: from the bridge's direction when it carries `spec` (`specOfDirection`, its
+  reads and picks; also saved as `beatspec.json`), else from the rules' director with the person's chat asks. Its cuts,
+  X1 moves and sounds are lowered onto the EDL (`edit/beatlower.ts`); `beats.json` says what was picked and why.
+- The studio's edit page draws it (`edit/beats-draw.ts`, the devices above ported from this player), and the delivered
+  MP4 is that page captured frame by frame (`edit/film.ts`) over one soundtrack (`mix.m4a`: voice, bed, the sounds) the
+  preview plays too. What the server owns stays the server's: the clip, the cut, the grade, the music file.
+- Anchors are words (`w`, `n`, `after`), resolved on the clip's own words and mapped through the cut; a word the cut
+  removed lands on the next kept frame.
+- Not in the product page yet: `desk` (the tabletop world, its cut-out assets), `theme` / `palette` from the spec (the
+  page uses the EDL palette), `caption.variant` (the page keeps its caption styles; Premium Caption 1 is Caption
+  mastery's), and the player's Manrope / Russo One fonts (Inter Tight and Anton stand in until they are vendored).
+
 ## 2026-10-18: v10 "better" (em5's grammar on a new interview take)
 - Kept: the baked grade, one tabletop world with real printed clips that land, self-drawing doodles, a warm light
   leak back to the speaker (Ishaan noticed and liked it), starting on the speaker's own line.
@@ -152,3 +165,13 @@ parseAsks("add a crash zoom on 'crore'. orbit on the hook"): Ask[]   // a chat k
   sweeps in on every visit. Ink draws on its own words and labels write on from the left.
 - Measured with perf.ts (2 runs each, same machine): v10 31 fps, p95 35 ms; v11 35–37 fps, p95 43–48 ms, worst frame
   149 ms, no frozen video clock over 100 ms (the world is warmed once at load).
+- Ishaan on v11: "better" (2026-10-18).
+
+## 2026-10-18: v12 (toward em5: camera and focus)
+- Whip pans between the desk's stations blur with the camera's own speed (180-degree shutter, `E.hard` pan).
+- A rack focus: an item with `rise` lifts toward the lens on its word (the bulb on "3D"), grows, and the table behind it
+  goes soft (a backdrop blur); its own ink and label stay sharp with it.
+- Real paper sheets (the a4 cut-out) stacked under each print (`stack`); a dashed ink trail that draws itself across the
+  pan from the laptop to the megaphone (`kind: "ink"`, dashed lines now draw on through a mask).
+- Corner leaves are sharp, the nearest pencils most blurred (per-prop `blur`), as in em5.
+- Perf this round is not trustworthy: the PC was at 100% CPU from other sessions (v10 itself failed to load in time).

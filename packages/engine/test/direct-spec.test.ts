@@ -6,7 +6,7 @@ import { directEditJsonSchema, EXAMPLE_DIRECTION, liveMenus, MAX_PICKS, readDire
 import { directEditStep, sentencesOf } from '../src/edit/direct';
 import { specOfDirection } from '../src/edit/direct-spec';
 import { registryCaster, readSentences } from '../src/edit/beatspec';
-import { assetIdOf, editRegistry } from '../src/edit/registry';
+import { menuEntries, assetIdOf, editRegistry } from '../src/edit/registry';
 
 // C1, 2026-10-18 05:08 IST: direct:edit may fill reads or picks (by registry id); beatSpecOf writes the beat spec.
 const say = 'Hello guys, I am Vignesh. Most people waste three hours a day on their phone. Type one line and Moovi edits it. Comment MOOVI and I will send it.';
@@ -14,7 +14,7 @@ const words = (() => { let t = 0.3; return say.split(' ').map(w => { const o = {
 const menus = liveMenus();
 const texts: string[] = []; for (const s of sentencesOf(words)) texts[s.i] = s.text;
 const ctx = { sentences: texts.length, menus, texts };
-const built = editRegistry().filter(e => e.built).map(assetIdOf);
+const built = menuEntries(editRegistry()).map(assetIdOf);
 const base: Direction = { ...EXAMPLE_DIRECTION, beats: [0, 1, 2, 3].map(i => ({ i, tag: EXAMPLE_DIRECTION.beats[i]!.tag })), moves: [], cards: [] };
 
 test('direct:edit spec: the menu is the registry the player draws, by id; the step offers it', () => {

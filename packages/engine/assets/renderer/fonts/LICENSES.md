@@ -18,3 +18,4 @@ subsets (from Fontsource). They are bundled so every render uses the exact same 
 | roboto-latin-wght-*.woff2 | Roboto (100–900) | Christian Robertson |
 | inter-latin-wght-*.woff2 | Inter (100–900), standard width | Rasmus Andersson |
 | permanent-marker-latin-400-normal.woff2 | Permanent Marker (400) | Font Diner (Apache License 2.0) |
+| montserrat-latin-wght-normal.woff2 | Montserrat (100–900; Premium Caption 3) | Julieta Ulanovsky |

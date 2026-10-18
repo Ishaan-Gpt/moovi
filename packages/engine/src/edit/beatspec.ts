@@ -1,7 +1,7 @@
 import { cameraTrack, frame2d, parseCamera, resolveCall } from '@moovi/library/camera';
 import { CRAFT, graphOptional, library as L, needGraph, run } from '@moovi/graph';
 import { listItems } from '../styles/kit/needs';
-import { sentences } from './build';
+import { fxLines } from './effects/auto';
 import type { Word } from './cut';
 import { numberOf } from './inserts';
 import { assetIdOf, editRegistry, findEntry, type EditEntry, type EditFn, type EditLayer, type FaceRule, type SfxKey } from './registry';
@@ -30,6 +30,8 @@ export interface SentenceRead {
 
 const clean = (s: string) => s.toLowerCase().replace(/[^\p{L}\p{N}%₹$]/gu, '');
 const STOP = new Set('a an the and or but so to of in on at for with is are was were be been it this that you your i we our my me us they its from by as if then than there here what when how who why which just like really very can will do does did have has had not no yes all me hai ki ka ke ko se main mein toh bhi aur ye wo yeh woh na'.split(' '));
+/** words a footage search must never carry: pronouns, filler verbs, fillers */
+const QSTOP = new Set('them they their this that these those get got make made want need going gonna basically really actually guys everyone something thing things stuff people know think'.split(' '));
 const NUM = /\d|\b(two|three|four|five|six|seven|eight|nine|ten|twenty|thirty|fifty|hundred|thousand|million|billion|lakh|lakhs|crore|crores)\b/i;
 const FN_RULES: [EditFn, RegExp][] = [
   ['cta', /\b(comment|follow|subscribe|link in (my |the )?bio|dm me|sign up|try it|download|join|click|save this|share this)\b/i],
@@ -45,6 +47,15 @@ const FN_RULES: [EditFn, RegExp][] = [
 
 /** words too common to be a verb the frame acts out (they stay in the registry for an explicit director pick) */
 const GENERIC = new Set('is so now with has this here back today all one two both into after before up down over across but not no this is'.split(' '));
+const CLAUSE = new Set(['and', 'which', 'because', 'so', 'but', 'then', 'while', 'where', 'into', 'aur', 'toh', 'kyunki']);
+/** a line still longer than 4 s (fxLines keeps a line with a comma whole, for lists) splits at clause words once a part runs 2.6 s */
+function clauses(ws: Word[]): Word[][] {
+  if (ws.length < 8 || ws.at(-1)!.end - ws[0]!.t <= 4 || listItems(ws.map(w => w.word).join(' ')).length >= 3) return [ws];
+  const out: Word[][] = []; let cur: Word[] = [];
+  ws.forEach((w, i) => { const nx = ws[i + 1]; cur.push(w); if (nx && cur.length > 3 && w.end - cur[0]!.t >= 2.6 && ws.length - i > 3 && CLAUSE.has(clean(nx.word))) { out.push(cur); cur = []; } });
+  if (cur.length) out.push(cur);
+  return out;
+}
 /** a spoken word → the registry verb it says (a light stem: -ing, -ed, -s, -es) */
 function verbOf(w: string, verbs: Set<string>): string | null {
   const k = clean(w); if (!k) return null;
@@ -52,10 +63,15 @@ function verbOf(w: string, verbs: Set<string>): string | null {
   return null;
 }
 
-/** Words → numbered sentences with their function, verbs and hero word (the rules; a model may replace any field). */
+/**
+ * Words → numbered lines with their function, verbs and hero word (the rules; a model may replace any field). A line is
+ * a sentence, closed early at a pause over 0.6 s or, once it runs 2.6 s, at a clause word (the effects picker's fxLines),
+ * so a 10 s run-on sentence gets a device per clause, not one for all of it.
+ */
 export function readSentences(words: Word[], r: EditEntry[] = editRegistry()): SentenceRead[] {
-  const ids = sentences(words), by = new Map<number, Word[]>();
-  words.forEach((w, k) => { const i = ids[k]!; by.set(i, [...(by.get(i) ?? []), w]); });
+  const by = new Map<number, Word[]>(), parts: Word[][] = [];
+  let k = 0; for (const l of fxLines(words)) { parts.push(...clauses(words.slice(k, k + l.words.length))); k += l.words.length; }
+  parts.forEach((p, i) => by.set(i, p));
   const vocab = new Set(r.flatMap(e => e.verbs).filter(v => !GENERIC.has(v))), out: SentenceRead[] = [];
   [...by.entries()].forEach(([i, ws], n) => {
     const text = ws.map(w => w.word).join(' ');
@@ -117,7 +133,10 @@ export function parseAsks(text: string, r: EditEntry[] = editRegistry()): Ask[] 
   for (const raw of text.split(/[.;\n]|\band then\b|\balso\b/i)) {
     const s = raw.trim(); if (!s) continue;
     const m = s.match(/^(?:please\s+)?(?:add|put|use|give|do|i want|make)?\s*(?:an?\s+|the\s+|some\s+)?(.+?)\s+(?:on|at|for|over|when (?:i|he|she|they) says?)\s+(.+)$/i);
-    const what = (m?.[1] ?? s).replace(/\b(effect|move|please)\b/gi, '').trim(), where = m?.[2]?.trim() ?? '';
+    // a brief's plain words are not asks: a clause asks only with a verb (add / put / use ...) or a quoted word to land on
+    // or a place in the edit ('crore', the hook, the end, sentence 3)
+    if (!/^(please\s+)?(add|put|use|give|i want)\b/i.test(s) && !/["'“‘][^"'”’]+["'”’]|^(the\s+)?(hook|start|beginning|opening|end|ending|cta|intro|outro)$|^sentence\s+\d+$/i.test(m?.[2]?.trim() ?? '')) continue;
+    const what = (m?.[1] ?? s).replace(/^(please\s+)?(add|put|use|give|i want)\s+(an?\s+|the\s+|some\s+)?/i, '').replace(/\b(effect|move|please)\b/gi, '').trim(), where = m?.[2]?.trim() ?? '';
     const e = findEntry(what, r) ?? (() => { const c = parseCamera(what, { scope: 'edit' }); return c.calls[0] ? findEntry(`camera:${c.calls[0].move}`, r) : null; })();
     if (!e) continue;
     const ask: Ask = { entry: e.id };
@@ -169,7 +188,8 @@ export async function castBeats(reads: SentenceRead[], caster: Caster, o: CastOp
   for (const a of o.asks ?? []) {
     const i = a.sentence !== undefined ? reads.at(a.sentence)?.i
       : a.on ? reads.find(s => s.words.some(w => clean(w.word) === clean(a.on!)) || s.text.toLowerCase().includes(a.on!.toLowerCase()))?.i
-      : a.fn ? reads.find(s => s.fn === a.fn)?.i : reads[0]?.i;
+      // "the hook" is the opening line whatever its function (it may read as who, number, ...)
+      : a.fn ? (reads.find(s => s.fn === a.fn) ?? (a.fn === 'hook' ? reads[0] : undefined))?.i : reads[0]?.i;
     if (i === undefined) { missed.push({ i: -1, why: `${a.entry}: no sentence matches "${a.on ?? a.fn ?? a.sentence}"` }); continue; }
     forced.set(i, a);
   }
@@ -190,6 +210,7 @@ export async function castBeats(reads: SentenceRead[], caster: Caster, o: CastOp
     let pick: CastRow | null = null, why = '';
     for (const x of rows) {
       if (x.edit.layer === 'cut') continue;   // cuts go between beats (below), never on a sentence
+      if (picks.slice(-recentN).some(p => p.meta.device === x.edit.device)) continue;   // a UI row on a recent device is the same look again
       if (!STRONG.has(s.fn) && !verbHit(x)) continue;
       if (x.edit.layer === 'world' && n - lastWorld < 3) continue;   // one full-screen world at a time, never back to back
       const no = feasible(x.edit, s, o); if (no) { why ||= `${x.id}: ${no}`; continue; }
@@ -218,7 +239,7 @@ export interface Anchor { w: string; after?: number; n?: number; dt?: number; en
 export interface SpecLayer { t: string; [k: string]: unknown }
 export interface SpecBeat { from: Anchor; i: number; fn: EditFn; hero: string; pick: string | null; layers: SpecLayer[] }
 export interface BeatSpec { version: 1; beats: SpecBeat[]; sfx: { at: Anchor; k: SfxKey; g: number }[]; picks: { i: number; id: string; why: string }[] }
-export interface SpecOpts { brandMark?: string | null; /** source seconds of two contrasting stills for `sides` and `compare` */ stills?: number[] }
+export interface SpecOpts { brandMark?: string | null; /** source seconds of two contrasting stills for `sides` and `compare` */ stills?: number[]; /** the clip's spoken span (source seconds), for stills across it */ span?: [number, number] }
 
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
 /** a word anchor: the first match of the word at or after the sentence's start (source seconds) */
@@ -232,6 +253,9 @@ export function camKeys(move: string, dur?: number, rate = 15): number[][] {
   return Array.from({ length: n + 1 }, (_, k) => { const t = d * k / n, f = frame2d(cameraTrack([call], t)); return [r3(t), r3(f.scale || 1), r3(f.cx), r3(f.cy), r3(f.roll)]; });
 }
 
+/** n stills spread across the spoken span (the clip's own moments, for orbit and the timeline) */
+const across = (o: SpecOpts, n: number) => { const [a, b] = o.span ?? [0, 10]; return Array.from({ length: n }, (_, k) => r3(a + (b - a) * (0.08 + 0.84 * k / Math.max(1, n - 1)))); };
+
 /** One pick → its layers and sounds. Positions are the mastery player's (1080 x 1920 design px); text moves clear of faces at draw time. */
 function layersOf(p: BeatPick, s: SentenceRead, o: SpecOpts): { layers: SpecLayer[]; sfx: { at: Anchor; k: SfxKey }[] } {
   const h = heroWord(s), hA = anchor(h, s), first = anchor(s.words[0]!, s), last = anchor(s.words.at(-1)!, s, 0);
@@ -244,8 +268,27 @@ function layersOf(p: BeatPick, s: SentenceRead, o: SpecOpts): { layers: SpecLaye
   if (dev === 'cam.pullback') return { layers: [{ t: 'cam', form: 'window', z: 1.04 }], sfx: snd(first) };
   if (dev.startsWith('cam.move:')) { const move = dev.slice(9), dur = Math.min(p.meta.max, Math.max(p.meta.min, s.t1 - h.t)); return { layers: [{ t: 'cam', z: 1.04, Y: 0.36, move, at: hA, keys: camKeys(move, dur) }], sfx: snd(hA) }; }
   if (dev.startsWith('cut.')) return { layers: [{ t: 'cut', type: dev.slice(4), at: first, dur: p.meta.min }], sfx: snd(first) };
+  // a UI row drawn as one of the insert step's cards (notify, comment, title): lowered onto the EDL's inserts
+  if (dev.startsWith('ui.')) return { layers: [{ t: 'ui', draw: dev.slice(3), asset: p.id, at: first, dur: Math.min(p.meta.max, Math.max(p.meta.min, s.t1 - s.t0)) }], sfx: snd(first) };
   if (dev.startsWith('x1.')) return { layers: [{ t: 'x1', n: dev.slice(3), at: first, dur: Math.min(p.meta.max, Math.max(p.meta.min, s.t1 - s.t0)) }], sfx: [] };
   switch (dev) {
+    case 'orbit': return { layers: [{ t: 'orbit', stills: across(o, 5), at: first }], sfx: snd(first) };
+    case 'freeze': {
+      const keys = s.words.filter(w => clean(w.word).length > 3 && !STOP.has(clean(w.word)) && w !== h).slice(0, 1);
+      return { layers: [{ t: 'freeze', still: r3(h.t), at: hA, labels: [{ text: s.hero }, ...keys.map(w => ({ text: w.word.replace(/[^\p{L}\p{N}%₹$'-]/gu, '') }))] }], sfx: snd(hA) };
+    }
+    case 'strike': {
+      const items = listItems(s.text).slice(0, 3), tags = items.length >= 2 ? items : s.words.filter((w, k) => k > 0 && /^[A-Z]/.test(w.word) && w.word !== 'I').slice(0, 3).map(w => w.word.replace(/[^\p{L}\p{N}'-]/gu, ''));
+      return { layers: [{ t: 'strike', tags, at: first, y: 300 }], sfx: tags.map(() => ({ at: first, k: 'pop' as SfxKey })) };
+    }
+    case 'timeline': return { layers: [{ t: 'timeline', stills: across(o, 4), at: first, y: 1480 }], sfx: snd(first) };
+    case 'broll': {
+      // the query: the hero and the content words around it (the thing the line names), fetched after the first preview
+      // the query is the thing named: the hero, with the next word when it is a noun-like word (not a pronoun or a filler verb)
+      const ws = s.words.map(w => clean(w.word)), hi = ws.indexOf(clean(s.hero)), nx = hi >= 0 ? ws[hi + 1] : undefined;
+      const query = [clean(s.hero), ...(nx && nx.length > 3 && !STOP.has(nx) && !QSTOP.has(nx) ? [nx] : [])].join(' ');
+      return { layers: [{ t: 'broll', name: `b${s.i}`, query, at: first, dur: Math.min(p.meta.max, Math.max(p.meta.min, s.t1 - s.t0)) }], sfx: snd(first) };
+    }
     case 'leak': return { layers: [{ t: 'leak', at: first }], sfx: snd(first) };
     case 'wipe': return { layers: [{ t: 'wipe', src: o.brandMark, at: first, dur: 0.45 }], sfx: snd(first) };
     case 'stat': {
@@ -269,7 +312,7 @@ function layersOf(p: BeatPick, s: SentenceRead, o: SpecOpts): { layers: SpecLaye
       const ws = s.words.filter(w => clean(w.word).length > 3 && !STOP.has(clean(w.word))).slice(0, 3);
       return { layers: [{ t: 'burn', items: ws.map((w, k) => ({ kind: 'glass', text: w.word.replace(/[^\p{L}\p{N}%₹$'-]/gu, ''), at: anchor(w, s), x: 120 + k * 260, y: 1380 + (k % 2) * 60, r: [-6, 4, 8][k] })) }], sfx: ws.map(w => ({ at: anchor(w, s), k: 'pop' as SfxKey })) };
     }
-    case 'filters': return { layers: [{ t: 'filters', at: hA, y: 1300 }], sfx: snd(hA) };
+    case 'filters': return { layers: [{ t: 'filters', at: hA, y: 1560 }], sfx: snd(hA) };
     case 'compare': return { layers: [{ t: 'cam', form: 'split', z: 1.04 }, { t: 'compare', still: r3(o.stills?.[0] ?? s.t0 + 0.2), labels: ['before', 'after'], look: 'saturate(1.25) contrast(1.08)', at: first, at2: hA, y: 120 }], sfx: [...snd(first), ...snd(hA)] };
     case 'sides': return { layers: [{ t: 'sides', stills: (o.stills ?? [s.t0, s.t1]).slice(0, 2).map(r3), at: hA, y: 300 }], sfx: snd(hA) };
     case 'mg': {
@@ -283,6 +326,7 @@ function layersOf(p: BeatPick, s: SentenceRead, o: SpecOpts): { layers: SpecLaye
 /** The beat spec from the reads and the picks. Pure: the same reads and picks give the same spec. */
 export function beatSpecOf(reads: SentenceRead[], picks: BeatPick[], o: SpecOpts = {}): BeatSpec {
   const byI = new Map(picks.map(p => [p.i, p])), beats: SpecBeat[] = [], sfx: BeatSpec['sfx'] = [];
+  if (!o.span && reads.length) o = { ...o, span: [reads[0]!.t0, reads.at(-1)!.t1] };
   for (const s of reads) {
     const p = byI.get(s.i), l = p ? layersOf(p, s, o) : { layers: [], sfx: [] };
     beats.push({ from: anchor(s.words[0]!, s), i: s.i, fn: s.fn, hero: s.hero, pick: p?.id ?? null, layers: l.layers });

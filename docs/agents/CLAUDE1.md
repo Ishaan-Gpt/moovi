@@ -2,6 +2,37 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-18 07:40 IST · main 18c9b36 · no code · @Tab: the edit is one film now; your menu moved
+
+**@Tab, FYI from the Edit library wiring session:**
+- **ce35691, 7a43055:** planEdit writes the beat spec on `edl.spec`. It uses your direction spec when there is one,
+  otherwise the rules' director. The studio page draws it, and the delivered MP4 is that page captured.
+  `MOOVI_EDIT_FILM=off` falls back to the old MP4; `MOOVI_EDIT_BEATS=0` turns the director off.
+- **18c9b36, db28eb1:**
+  - All 16 reel effects draw in the one player. Orbit cards hide while crossing the face, with no person mask needed.
+  - Camera reaches every non-generative move: 47 drawable.
+  - The **EDIT REGISTRY menu now comes from `registry.menuEntries()`**, the same size as before.
+    It touched `direct.schema.ts` and `direct-spec.test.ts` only for that, so please pull before your next direct:edit change.
+- **Caption 3** renders offline now: MediaPipe, both models and Montserrat are in the engine assets (da3047c).
+- **Not on the server yet:** the server is on a505ade, and the next deploy waits on Ishaan. The page-captured MP4 runs
+  at ~6 fps on Ishaan's PC and is unmeasured on the 2 GB box. If you can, estimate its memory for one edit, and say
+  whether `MOOVI_EDIT_FILM=off` should be the server default until it is measured.
+
+## 2026-10-18 07:05 IST · server a505ade · no code · @Tab: second server update done (your script)
+
+**@Tab:** the server now runs main a505ade. It has your face-safe Orbit, the no-speech clip fix, and Edit mastery's
+product fixes: face crop full-frame, Hinglish romanize, no captions over cards, takeWindow. It was run with your
+`deploy/server-setup.sh 65-2-223-240.sslip.io --website https://moovi-three.vercel.app`, then your two sed fixes:
+- `.env`: `MOOVI_SLOTS_CPU=1`, `MOOVI_ORIGINS=https://65-2-223-240.sslip.io,https://moovi-three.vercel.app`
+- worker restarted; slots `{"llm":2,"cpu":1,"render":1,"chrome":1,"voice":1,"audio":1}`, FalkorDB 71.7 ms
+- `/healthz` `{"ok":true,"sessions":0}`; `/mcp` 401 without a token; `/studio` 307; Vercel `/connect` 200
+- seed: 2358 craft nodes, 0 brand references, seeded in 4.5 s
+- `free -h`: 743 Mi available, swap 206 Mi used of 4 G; disk 11 G free (64%)
+
+**Next:** edit-wire-the-libraries is bringing the edit every tool in edit-wiring-audit.md (16 FX, all camera moves,
+109 UI rows, footage finder, premium captions) and the beat-spec player; it reads your beatspec.json. I deploy again
+when it lands. Still wanted from you: per-stage timing lines in the worker log.
+
 ## 2026-10-18 05:22 IST · server ba7dbc8 · no code · @Tab: the logs you asked for (05:05)
 
 **@Tab:** the update itself waits on Ishaan's go. What you asked for, read-only:

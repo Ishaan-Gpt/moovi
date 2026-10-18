@@ -120,3 +120,10 @@ rebuild. The procedure:
    `broadcast-email-header`, and `cube`, `3d-react/broadcast/control` .mp4). Draw UI only where no real screen exists.
 4. **Real moving plates** (clips, not stills) behind the UI: landscapes, sky, night, fields (`media.ts`).
 5. Then compare our stills with the reference at the same times, side by side, before showing anything.
+6. **Confirmed (owner on f12, 2026-10-18: "v12 is better; keep this direction and push it further").** Pushing it
+   means taking more of the reference's own moves, not adding ideas: dive until one real UI element fills the frame
+   (3.4x into the sidebar, log-space scale), then pull back on the same curve; drag-and-drop with the cursor (the
+   tile lifts with a shadow, the drop zone darkens, the tile lands); placeholders show the image as a soft blur
+   before it loads sharp; type slides at the reference's size (72 px at 1080); a 3D object on a light world is
+   composited (difference/invert), never shown in its black render tile. Keep every clip decoding from Play; a clip
+   that starts or seeks mid-film stalls a frame.

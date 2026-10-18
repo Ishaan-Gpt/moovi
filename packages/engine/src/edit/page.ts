@@ -9,6 +9,7 @@ import { CAPTION_FONTS, CAPTION_STYLES } from './captions';
 import { EDIT_SRC } from './lib';
 import { INSERT_DRAW_SRC } from './inserts-draw';
 import { TEMPLATES_SRC } from './templates';
+import { BEATS_CSS, BEATS_HTML, BEATS_SRC } from './beats-draw';
 
 const CLIENT = `
 (async () => {
@@ -29,16 +30,19 @@ fit(); addEventListener('resize', fit);
 await Promise.all([ST.font, ST.key, LK && { family: LK.family, weight: LK.weight, italic: LK.italic }].filter(Boolean).map(f => document.fonts.load((f.italic ? 'italic ' : '') + f.weight + ' 40px "' + f.family + '"').catch(() => null)));
 
 /* ── the two decks ── */
-const A = $('va'), B = $('vb'), M = { cuts: [], kicks: 0, firstFrame: null, t0: performance.now() };
+let A = $('va'), B = $('vb'); const M = { cuts: [], kicks: 0, firstFrame: null, t0: performance.now() };
 // ?layer=over: captions and inserts only, on a transparent page, no video (the MP4 renderer's overlay, edit/render.ts)
 const LAYER = Q.get('layer') === 'over';
+// ?capture=1: the MP4 (edit/film.ts) draws each output frame from its captured picture (an <img>), the page otherwise unchanged
+const CAPTURE = Q.has('capture');
+if (CAPTURE) { const im = document.createElement('img'); im.id = 'va'; im.className = 'on'; for (const [k, f] of [['readyState', () => im.complete && im.naturalWidth ? 4 : 0], ['videoWidth', () => im.naturalWidth], ['videoHeight', () => im.naturalHeight]]) Object.defineProperty(im, k, { get: f }); A.replaceWith(im); B.remove(); A = im; B = im; }
 // an EDL that names a template (src/edit/templates) gets its scene components drawn on #tpl above the footage
 const TPL = (!LAYER && E.template && typeof MOOVI_TEMPLATES !== 'undefined' && MOOVI_TEMPLATES[E.template.id]) || null;
 if (TPL) await TPL.init({ E, W, H, canvas: $('tpl'), decks: [A, B] });
 if (LAYER) { for (const el of [document.documentElement, document.body, stage]) el.style.background = 'transparent'; A.remove(); B.remove(); $('bg').style.visibility = 'hidden'; }
-else { A.src = '/v/' + E.source.file; B.src = '/v/' + E.source.file + '?b'; }
+else if (!CAPTURE) { A.src = '/v/' + E.source.file; B.src = '/v/' + E.source.file + '?b'; }
 const meta = v => v.readyState >= 1 ? Promise.resolve() : new Promise((r, j) => { v.addEventListener('loadedmetadata', r, { once: true }); v.addEventListener('error', () => j(new Error('the clip could not be loaded (' + (v.error && v.error.code) + ')')), { once: true }); });
-if (!LAYER) await Promise.all([meta(A), meta(B)]);
+if (!LAYER && !CAPTURE) await Promise.all([meta(A), meta(B)]);
 let cur = A, nxt = B, si = 0, rolled = false, playing = false, wall0 = 0, base = 0, tNow = 0;
 // a paused element can go idle and never finish a seek: a muted play() kicks the fetch, paused again on seeked (R10)
 const seekTo = (v, t) => new Promise(r => {
@@ -130,6 +134,9 @@ function drawFx(t) { const k = EDIT.transitionAt(E, t).flash; fx.style.opacity =
 // the same library row's ffmpeg filter in render.ts)
 const STY = $('sty'), SID = String(E.style_id || ''), SL = E.style_laws || null, GRADE = SL && SL.grade ? SL.grade.css : '';
 const STYLED = /^(atlas|handmade|studio-minimal)$/.test(SID);
+// the director's beat spec (edit/beatspec.ts, E.spec): the one player's devices on their sentences (edit/beats-draw.ts)
+const BT = typeof MOOVI_BEATS !== 'undefined' ? MOOVI_BEATS(E, { W, H, grade: GRADE }) : null;
+let BTN = null;
 if (STYLED) stage.classList.add('st-' + SID);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 function jitter(k, n) { const x = Math.sin(k * 12.9898 + n * 78.233) * 43758.5453; return x - Math.floor(x) - 0.5; }
@@ -192,11 +199,11 @@ function drawStyle(t) {
 }
 // the library's sounds (E.sfx, cast by edit/cast.ts from the graph) played as the output clock passes them
 // the finished soundtrack (edit/job.ts: voice, bed and the Style 1 stem mixed on the output clock) plays instead of the clip's sound
-const MIX = E.mix && E.mix.file && !LAYER && !STILL ? new Audio('/v/' + E.mix.file) : null;
+const MIX = E.mix && E.mix.file && !LAYER && !STILL && !CAPTURE ? new Audio('/v/' + E.mix.file) : null;
 if (MIX) MIX.preload = 'auto';
 // stepped sync (never playbackRate: changing it often stalls the element): reseek only past 0.15 s of drift
 function syncMix(t) { if (MIX && playing && !MIX.seeking && Math.abs(MIX.currentTime - t) > 0.15) MIX.currentTime = t; }
-const SFX = (E.sfx || []).filter(s => s.file && !MIX).map(s => ({ t: s.t, g: Math.min(1, Math.pow(10, ((s.gain_db ?? -24) + 20) / 20)), a: LAYER || STILL ? null : new Audio('/sfx/' + s.file) }));
+const SFX = (E.sfx || []).filter(s => s.file && !MIX).map(s => ({ t: s.t, g: Math.min(1, Math.pow(10, ((s.gain_db ?? -24) + 20) / 20)), a: LAYER || STILL || CAPTURE ? null : new Audio('/sfx/' + s.file) }));
 let sfxT = -1;
 function playSfx(t) { if (sfxT >= 0) for (const s of SFX) if (s.a && s.t > sfxT && s.t <= t) { s.a.currentTime = 0; s.a.volume = s.g; s.a.play().catch(() => {}); } sfxT = t; }
 // the blurred fill behind a 'fit' shot: the visible deck drawn small every frame and blurred by CSS (cheap)
@@ -221,10 +228,15 @@ function draw(t) {
   cur.style.transform = (x.dx || x.dy ? 'translate(' + (x.dx * W).toFixed(1) + 'px,' + (x.dy * H).toFixed(1) + 'px) ' : '') + 'scale(' + (f.scale * x.zoom).toFixed(4) + ')';
   cur.style.filter = ((x.blur > 0.5 ? 'blur(' + (x.blur * W / 1080).toFixed(1) + 'px) ' : '') + GRADE).trim();
   drawCaptions(t); drawInserts(t); drawFx(t); drawStyle(t);
+  BTN = BT ? BT.draw(t, cur, EDIT.srcAt(E, t), EDIT.faceOutAt(E, t)) : null;
   // the logo end card is a black card: no caption over it (sm-v1: 'YEP,' drawn across '@VIGNESH')
   // (and it keeps drawInserts' own hide under a full-frame card: before, this line put the caption back over it)
   cap.style.visibility = (E.end && E.end.kind === 'logo' && t >= E.end.t0) || (!TPL && INSERTS.capHidden(E, t)) ? 'hidden' : '';
   if (TPL) { TPL.draw(t, cur, g); cap.style.visibility = TPL.hideCaptions(t) ? 'hidden' : ''; }
+  // one text layer per frame: a beat device that says words hides the caption
+  if (BTN && BTN.text) cap.style.visibility = 'hidden';
+  // a beat that drew the picture (a card, a split) has its own face box: the caption moves below it, else above it
+  else if (BTN && BTN.face) { const f = BTN.face, h = cap.offsetHeight / H / 2 + 0.012, y = cap.offsetTop / H; if (y + h > f.y0 && y - h < f.y1) { const below = f.y1 + h, above = f.y0 - h; cap.style.top = ((below < 0.85 ? below : Math.max(0.08 + h, above)) * H).toFixed(1) + 'px'; } }
   if (!STILL) { $('tl').textContent = t.toFixed(1) + ' / ' + D.toFixed(1); $('s').value = String(Math.round(t / D * 1000)); }
 }
 
@@ -267,15 +279,23 @@ function stop() { playing = false; sfxT = -1; if (MIX) MIX.pause(); cur.pause();
 $('p').onclick = () => playing ? stop() : start();
 $('s').oninput = async e => { const was = playing; stop(); const t = +e.target.value / 1000 * D; await place(t); draw(t); if (was) start(); };
 
+if (CAPTURE) {
+  // one output frame from its captured picture (film/f<n>.jpg in the edit folder), drawn exactly as playback draws it
+  window.__frame = async (t, file) => { if (cur.getAttribute('src') !== '/v/' + file) { cur.src = '/v/' + file; await cur.decode().catch(() => null); } draw(t); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); };
+  if (BT) await BT.ready;
+  window.__ready = true; return;
+}
 window.__render = async t => { stop(); await place(t); if (TPL) await TPL.ready(t); draw(t); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); };
 window.__play = () => start();
 window.__metrics = () => ({ duration: D, shots: S.length, cuts: M.cuts, kicks: M.kicks, firstFrame: M.firstFrame, done: !!window.__done });
 if (LAYER) {
   // the overlay layer: the drawn markup is the frame's state, so equal markup means an equal picture
-  window.__over = async t => { drawCaptions(t); drawInserts(t); drawFx(t); drawStyle(t); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); };
+  const overBeats = t => { if (BT) { BTN = BT.draw(t, null, EDIT.srcAt(E, t), EDIT.faceOutAt(E, t)); if (BTN.text) cap.style.visibility = 'hidden'; } };
+  window.__over = async t => { drawCaptions(t); drawInserts(t); drawFx(t); overBeats(t); drawStyle(t); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); };
   window.__overKeys = ts => ts.map(t => { drawCaptions(t); drawInserts(t); const k = drawFx(t), c = cap.innerHTML, i = ins.innerHTML, y = drawStyle(t); return c || i || k || y ? cap.className + c + '|' + i + '|' + k + '|' + y : ''; });
   window.__ready = true; return;
 }
+if (BT) await BT.ready;
 await place(STILL ? +Q.get('t') : 0); draw(STILL ? +Q.get('t') : 0);
 window.__ready = true;
 })().catch(e => { document.body.insertAdjacentHTML('beforeend', '<pre style="color:#f66;padding:16px;position:absolute;top:0;white-space:pre-wrap">' + String(e && e.stack || e) + '</pre>'); window.__error = String(e); });
@@ -318,6 +338,8 @@ html,body{margin:0;height:100%;background:#111;color:#eee;font:14px system-ui,sa
 #sty .e-logo b{font:800 92px 'Inter',sans-serif;color:#fff;letter-spacing:.18em;text-transform:uppercase}
 
 #fx{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+#stage img#va{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;will-change:transform}
+${BEATS_CSS}
 .ins{position:absolute;box-sizing:border-box;border-radius:40px;background:color-mix(in srgb,var(--deep) 92%,transparent);box-shadow:0 24px 80px rgba(0,0,0,.45);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--paper);font:700 54px/1.1 'Inter Tight',sans-serif;text-align:center;padding:40px}
 .ins i{font:500 26px 'JetBrains Mono',monospace;font-style:normal;opacity:.6}
 .cap{position:absolute;left:70px;right:70px;transform:translateY(-50%);text-align:center;pointer-events:none}
@@ -333,9 +355,10 @@ input[type=range]{flex:1}
 </style></head><body>
 <div id="wrap"><div id="frame" style="position:relative"><div id="stage">
 <canvas id="bg" width="108" height="192"></canvas><video id="va" playsinline preload="auto"></video><video id="vb" playsinline preload="auto" muted></video>
-<div id="ins"></div><canvas id="tpl"></canvas><div id="sty"></div><div id="cap" class="cap"></div><div id="fx"></div>
+<div id="ins"></div><canvas id="tpl"></canvas><div id="sty"></div>${BEATS_HTML}<div id="cap" class="cap"></div><div id="fx"></div>
 </div></div></div>
 <div id="bar"><button id="p">Play</button><input id="s" type="range" min="0" max="1000" value="0"><span id="tl">0.0</span></div>
-<script>${EDIT_SRC}\n${INSERT_DRAW_SRC}\nvar CAPTION_STYLES = ${JSON.stringify(CAPTION_STYLES)};\n${TEMPLATES_SRC}</script>
+<script>${EDIT_SRC}\n${INSERT_DRAW_SRC}\nvar CAPTION_STYLES = ${JSON.stringify(CAPTION_STYLES)};\n${TEMPLATES_SRC}
+${BEATS_SRC}</script>
 <script>${CLIENT}</script>
 </body></html>`;

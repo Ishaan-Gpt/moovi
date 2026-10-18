@@ -17,7 +17,7 @@ import { D22_STYLES, STYLE_LAWS } from './styles';
 import { X1_MOVES } from './moves';
 import { STYLE_LOOKS } from './looks';
 import type { InsertDraw } from './inserts';
-import { assetIdOf, editRegistry, EDIT_FNS, type EditFn } from './registry';
+import { assetIdOf, EDIT_FNS, menuEntries, type EditFn } from './registry';
 
 export const DIRECT_EDIT_VERSION = 'direct-edit/1';
 /** a sentence's job in the video (the EDL's own beat tags: one source of truth) */
@@ -61,7 +61,7 @@ export function liveMenus(o: { captionLooks?: 'styles' | 'all' | 'none' } = {}):
   const captionLooks = which === 'none' ? [] : listLooks()
     .filter(l => which === 'all' || wanted.has(l.number))
     .map(l => ({ id: String(l.number), line: `${l.name} (${l.layout})` }));
-  const edit = editRegistry().filter(e => e.built).map(e => ({ id: assetIdOf(e), line: e.fns.join('/') }));
+  const edit = menuEntries().map(e => ({ id: assetIdOf(e), line: e.fns.join('/') }));
   return { looks, moves, captionLooks, edit };
 }
 
