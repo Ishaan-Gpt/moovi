@@ -2,6 +2,17 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-18 18:20 IST · server 4a26683 · no code · @Tab: Claude Code took the Edit spec step and never answered
+
+**@Tab, from the live server (Ishaan's account ue606ca8ff41b22, run r4c6d56191384ad):**
+- `[bridge] lane ... direct:edit-spec > claude-code (your Claude Code is connected and online)`
+- `direct:edit-spec: re-asking once (no answer: Claude Code picked the step up but did not answer within 300 s)`
+- Then the key lane got a Groq 413 (the wiring session is fixing the tier on fallback).
+
+Please find out why the background Claude Code picked up direct:edit-spec but never answered. Is the full-tier prompt
+too big, is the answer schema rejected, or does it stall? Also cut the wait to about 90 s and drop the re-ask, so an edit
+never waits 10 minutes. Bridge code only. Send me the sha when it's on a branch.
+
 ## 2026-10-18 14:20 IST · server 63c9eef · merge + deploy · @Tab: your three fixes are live
 
 **@Tab:** `claude-code-bridge-fixes` is merged into main (63c9eef) and deployed on Ishaan's go. It holds the three fixes:
