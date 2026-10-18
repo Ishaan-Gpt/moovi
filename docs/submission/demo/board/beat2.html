@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Beat 2 Board</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;600;800&display=block">
+<style>
+  :root { --bg: #0c0b0a; --panel: #15130f; --ink: #f1ece2; --dim: #9b9384; --warm: #e7c98a; --red: #b3121a; --line: #2a2620; }
+  * { box-sizing: border-box; } body { margin: 0; background: var(--bg); color: var(--ink); font: 22px/1.35 "Inter Tight", sans-serif; width: 1920px; }
+  header { padding: 40px 56px 24px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: end; }
+  h1 { font: italic 400 64px/1 "Instrument Serif", serif; margin: 0; } .meta { color: var(--dim); font-size: 18px; text-align: right; }
+  .theme { grid-column: 1 / -1; display: flex; gap: 14px; align-items: center; color: var(--dim); font-size: 17px; }
+  .sw { width: 34px; height: 22px; border-radius: 4px; display: inline-block; }
+  .ribbon { margin: 22px 56px 6px; display: flex; height: 38px; border-radius: 6px; overflow: hidden; font-size: 14px; font-weight: 600; }
+  .ribbon div { display: flex; align-items: center; justify-content: center; border-right: 2px solid var(--bg); background: #2a241b; color: var(--warm); }
+  .card { display: grid; grid-template-columns: 1040px 1fr; gap: 36px; margin: 26px 56px; padding: 22px; background: var(--panel); border-radius: 14px; }
+  .frame { width: 1040px; height: 585px; border-radius: 8px; overflow: hidden; position: relative; background: #000; }
+  .frame img.fill { position: absolute; inset: -40px; width: calc(100% + 80px); height: calc(100% + 80px); object-fit: cover; filter: blur(30px) brightness(0.55); }
+  .frame img.main { position: relative; display: block; height: 100%; margin: 0 auto; }
+  .frame img.wide { width: 100%; height: 100%; object-fit: cover; }
+  .frame .regrade { filter: sepia(0.55) saturate(1.4) hue-rotate(-18deg) brightness(0.62) contrast(1.15); }
+  .tag { position: absolute; left: 12px; bottom: 12px; font-size: 14px; background: #000b; color: var(--warm); padding: 4px 9px; border-radius: 4px; }
+  .t { font: 600 18px "Inter Tight"; color: var(--warm); letter-spacing: 0.04em; }
+  .vo { font: italic 400 44px/1.15 "Instrument Serif", serif; margin: 8px 0 18px; } .vo b { color: var(--warm); font-weight: 400; }
+  table { border-collapse: collapse; width: 100%; } td { padding: 9px 0; border-top: 1px solid var(--line); vertical-align: top; font-size: 20px; }
+  td:first-child { width: 128px; color: var(--dim); font: 600 15px "Inter Tight"; letter-spacing: 0.08em; padding-top: 12px; }
+  .src { color: var(--dim); font-size: 16px; margin-top: 12px; }
+</style></head>
+<body>
+<header>
+  <div><div class="t">BEAT 2 · THE WAVE · 0:12 → 0:30 · 18 s</div><h1>"After vibe coding comes vibe editing."</h1></div>
+  <div class="meta">Moovi demo film · board v1 · 16:9 1920×1080<br>world: C-Clone's dark warm-lit serif room, carried from the hook's dusk</div>
+  <div class="theme">PALETTE <span class="sw" style="background:#0c0b0a"></span><span class="sw" style="background:#2a241b"></span><span class="sw" style="background:#e7c98a"></span><span class="sw" style="background:#f1ece2"></span><span class="sw" style="background:#b3121a"></span> near-black · umber · warm key light · bone type · one crimson accent (the hook's red)   ·   TYPE Instrument Serif italic for the hero word, Inter Tight for small labels</div>
+</header>
+<div class="ribbon"><div style="flex:3">AI generators 3.0</div><div style="flex:4">new wave · code 4.0</div><div style="flex:3">every frame 3.0</div><div style="flex:3">every cut 3.0</div><div style="flex:3">vibe editing 3.0</div><div style="flex:2">riding it 2.0</div></div>
+
+<div class="card"><div class="frame"><img class="wide" src="/data/demo/out/board/pick/0.jpg"><span class="tag">IN FROM · the hook's last frame (hook-v3)</span></div>
+<div><div class="t">0:12 · CARRY-IN</div><div class="vo">(the hook ends on red)</div><table>
+<tr><td>CAM</td><td>the red field drains to near-black as the camera pulls back</td></tr>
+<tr><td>FX</td><td>the last red light shrinks to a few warm points: they become the old screens</td></tr>
+<tr><td>TRANSITION</td><td>match cut: the points land as the tumbling TVs of the next shot</td></tr></table></div></div>
+
+<div class="card"><div class="frame"><img class="fill" src="/data/demo/out/board/pick/1.jpg"><img class="main" src="/data/demo/out/board/pick/1.jpg"><span class="tag">C-Clone · floating TVs (rebuilt 16:9)</span></div>
+<div><div class="t">0:12 – 0:15 · "We had <b>AI video generators</b>."</div><div class="vo">We had <b>AI video generators</b>.</div><table>
+<tr><td>CAM</td><td>slow push through a cloud of gold-framed TVs tumbling in the dark</td></tr>
+<tr><td>GFX</td><td>each screen loops a real generated-looking clip (footage finder), all slightly wrong, flickering</td></tr>
+<tr><td>TYPE</td><td>"AI video generators" small, bone, centred under the cloud</td></tr>
+<tr><td>SFX</td><td>low hum, CRT ticks as screens flicker</td></tr>
+<tr><td>OUT</td><td>the screens power off one by one; the last line of light stays</td></tr></table></div></div>
+
+<div class="card"><div class="frame"><img class="wide regrade" src="/data/demo/out/board/pick/2.jpg"><span class="tag">SaasWAVE · the pen draws a line (regraded dark)</span></div>
+<div><div class="t">0:15 – 0:19 · "Now there's a new wave: <b>videos written in code</b>."</div><div class="vo">Now there's a new wave: <b>videos written in code</b>.</div><table>
+<tr><td>CAM</td><td>top-down on a dark desk, tracking the pen tip</td></tr>
+<tr><td>GFX</td><td>the leftover light line becomes a pen stroke that writes real Moovi code as it moves; the stroke rises into a wave</td></tr>
+<tr><td>TYPE</td><td>"written in code" in serif italic, laid along the stroke</td></tr>
+<tr><td>SFX</td><td>pen scratch, then a whoosh as the line lifts</td></tr>
+<tr><td>OUT</td><td>the wave of code rolls toward the lens and fills it</td></tr></table></div></div>
+
+<div class="card"><div class="frame"><img class="fill" src="/data/demo/out/board/pick/3.jpg"><img class="main" src="/data/demo/out/board/pick/3.jpg"><span class="tag">C-Clone · glowing serif word, glass shards (rebuilt 16:9)</span></div>
+<div><div class="t">0:19 – 0:22 · "Every <b>frame</b> is code,"</div><div class="vo">Every <b>frame</b> is code,</div><table>
+<tr><td>CAM</td><td>held close, shallow depth, shards drift past the lens</td></tr>
+<tr><td>TYPE</td><td>"frame" huge in glowing bone serif; the glass shards around it are film frames, each showing its own line of code</td></tr>
+<tr><td>FX</td><td>one warm bloom behind the word, sparks drifting up</td></tr>
+<tr><td>OUT</td><td>a shard flies to the lens and becomes the next frame</td></tr></table></div></div>
+
+<div class="card"><div class="frame"><img class="fill" src="/data/demo/out/board/pick/4.jpg"><img class="main" src="/data/demo/out/board/pick/4.jpg"><span class="tag">C-Clone · serif word with a cursive flourish + R4 selection box</span></div>
+<div><div class="t">0:22 – 0:25 · "every <b>cut</b> is a decision <b>you can read</b>."</div><div class="vo">every <b>cut</b> is a decision you can read.</div><table>
+<tr><td>CAM</td><td>a slow slide right along a timeline</td></tr>
+<tr><td>GFX</td><td>the word "decision" sits in a design-tool selection box (R4); a thin line runs from the cut to a small label: the reason, e.g. <i>"because: your feedback, 2 videos ago"</i></td></tr>
+<tr><td>SFX</td><td>a click on the cut, a soft pop on the label</td></tr>
+<tr><td>OUT</td><td>the label's line stretches into the next shot's window frame</td></tr></table></div></div>
+
+<div class="card"><div class="frame"><img class="fill" src="/data/demo/out/board/pick/5.jpg"><img class="main" src="/data/demo/out/board/pick/5.jpg"><span class="tag">C-Clone · the person at the night window (rebuilt 16:9)</span></div>
+<div><div class="t">0:25 – 0:28 · "After vibe coding comes <b>vibe editing</b>."</div><div class="vo">After vibe coding comes <b>vibe editing</b>.</div><table>
+<tr><td>CAM</td><td>wide, the person (you) at a desk in front of a big night window, a slow push</td></tr>
+<tr><td>GFX</td><td>"vibe coding" floats up as a small chip; on the beat it flips to <b>vibe editing</b> as the screen fills with a timeline</td></tr>
+<tr><td>FX</td><td>the desk lamp warms up on "editing"</td></tr>
+<tr><td>SFX</td><td>a card flip, then the music lifts</td></tr></table></div></div>
+
+<div class="card"><div class="frame"><img class="fill" src="/data/demo/out/board/pick/6.jpg"><img class="main" src="/data/demo/out/board/pick/6.jpg"><span class="tag">C-Clone · the crimson ribbon (+ SaasWAVE's 3D ribbon move)</span></div>
+<div><div class="t">0:28 – 0:30 · "And we're <b>riding it</b>."</div><div class="vo">And we're <b>riding it</b>.</div><table>
+<tr><td>CAM</td><td>the camera rides the crimson ribbon (the hook's red) through the frame, fast</td></tr>
+<tr><td>GFX</td><td>the ribbon is the wave from 0:15, now in the brand's accent</td></tr>
+<tr><td>SFX</td><td>a rising whoosh into the next beat</td></tr>
+<tr><td>OUT</td><td>the ribbon wraps the frame and wipes into beat 3, "This is Moovi"</td></tr></table>
+<div class="src">Sources: C-Clone (MotionEasy, clone 3), SaasWAVE (clone 2), R4 red-table, the hook. People are stand-ins for your clips; on-screen pictures from the footage finder.</div></div></div>
+</body></html>
