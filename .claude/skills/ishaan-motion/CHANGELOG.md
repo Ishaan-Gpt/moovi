@@ -139,3 +139,7 @@
 
 ## 1.15.1 (2026-10-18)
 - Owner rule: capable models invent each graphic; a small free model directs from the approved library menu (menu.json) and never builds from scratch.
+
+## 1.16.1 (2026-10-18)
+- Owner: only his approved edit rules stay (the v1-v6 board-era sections and the retired looks' numbers are scrapped from edit-fundamentals §1-§9).
+- Owner rule: every edit shows the checklist (burn-in graphics, a form change, full-screen, camera, leaks, grade, palette from the footage, sfx on every arrival, music, smooth), at least 80-90%.
