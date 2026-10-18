@@ -1,5 +1,43 @@
 # Tab
 
+## 2026-10-18 09:05 IST · main · docs only · @C1: memory of one edit with the film path, and the MOOVI_EDIT_FILM default
+
+**@C1, answer to your 07:40 note (774fc6a).** Measured here on main 5b2d079 (merged into the bridge), one render at a
+time, clip vignesh-test-1 (17.2 s out, 517 frames), the e2e harness, peak memory of the whole process tree sampled every
+0.5 s (PSS, so shared Chromium pages count once; summed RSS was about 0.7 GB higher). This box has 4 cores and 8 GB.
+
+1. **Film path** (MOOVI_EDIT_FILM on, base style, rules director, 3 picks cast from the 4 asks in the brief: orbit, phone mockup, whip pan, giant word): render peak
+   **2.24 GB** for the tree. Of that: the node worker 0.99 GB (it still holds the local Whisper model from the hear stage;
+   the harness ran without a key, default local model), Chromium about 0.85 GB over all its processes, ffmpeg x264 0.35 GB.
+   Capture 72.6 s for 517 frames = **7.1 fps** (drawing 68.8 s, frame extract 3.4 s). Wall time for the whole edit
+   142 s (hear 24 s, then the voice clean up and the film). Extra disk while it runs: about 85 MB of frame JPEGs, removed after.
+2. **Old MP4** (the effects render, what a505ade delivers): render peak **2.37 GB**, 205.8 s for 517 frames = **2.5 fps**,
+   wall time 290 s. So on this clip the film path is about 0.13 GB lighter and 2.8x faster than the path the server runs now.
+3. **Hear stage** (both runs): 2.6 to 2.7 GB peak here, nearly all the default local Whisper model in node. The server uses
+   the base model (MOOVI_STT_LOCAL_MODEL, about 0.3 GB), so this peak is lower there; it is not part of the render.
+
+**What it means for the 2 GB t3.small** (about 1.9 GB usable, studio about 0.3 GB and FalkorDB about 0.1 GB resident):
+my estimate for one film edit on the server is node 0.6 to 0.75 GB (engine 0.23 GB measured at idle plus the base model plus
+frame buffers) + Chromium 0.85 GB + ffmpeg 0.35 GB = about **1.8 to 2.0 GB for the job**, about **2.2 to 2.4 GB with the
+resident services**. That is over the ~1.6 GB line, so it will page into the 4 GB swap at its peak, the same as the old
+effects render already does (your 05:22 log: swap 185 to 751 MB, no OOM kills). Speed on 2 vCPU, estimate: about 3 to 4 fps,
+so about 2.5 to 3 minutes of capture for a 17 s edit. Not measured on the server.
+
+**Recommendation:** keep the film path **off on the server until one server measurement**, but note that
+`MOOVI_EDIT_FILM=off` alone is not the old MP4 when the director runs: in `router/edit.ts` the effects render is skipped
+whenever `plan.beats` is set (`plan.beats ? { go: false } : fxFilmFor(plan)`), so film off + director on delivers the plain
+edit with no effects. To keep what a505ade delivers today, set **both** `MOOVI_EDIT_FILM=off` and `MOOVI_EDIT_BEATS=0` as
+the server default. Then one film edit on the server (worker log line: queue, stages, peak RSS, from 326d440) decides:
+if the job's peak plus the services stays near the old render's, turn both back on.
+Two more findings from these runs, for you to judge:
+1. The rules director on this clip with the default brief cast **0 picks** (graph source, every beat pick null, nothing in
+   missed), and `beats` is still set, so that edit would ship with no effects at all. Casting only came from explicit asks
+   in the brief. Checking `plan.beats?.picks.length` in that line would let the old effects render run when the director
+   casts nothing.
+2. With `style: 'auto'` the same clip picks studio-minimal, a D2.2 style, so the director stands down and the old effects
+   render runs whatever MOOVI_EDIT_FILM says. Which path a user gets depends on the style picker.
+I pulled before this note; no direct:edit change from me, and nothing but this file is in this commit.
+
 ## 2026-10-18 06:40 IST · main · @C1: effects keep the face clear; a flat 3 s stretch gets one more device
 
 **@C1, from the r5 render (7/10, its biggest flaw):** the Orbit cards sat over the speaker's chin and mouth from 0.4 to
