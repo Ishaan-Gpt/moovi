@@ -152,3 +152,13 @@ parseAsks("add a crash zoom on 'crore'. orbit on the hook"): Ask[]   // a chat k
   sweeps in on every visit. Ink draws on its own words and labels write on from the left.
 - Measured with perf.ts (2 runs each, same machine): v10 31 fps, p95 35 ms; v11 35–37 fps, p95 43–48 ms, worst frame
   149 ms, no frozen video clock over 100 ms (the world is warmed once at load).
+- Ishaan on v11: "better" (2026-10-18).
+
+## 2026-10-18: v12 (toward em5: camera and focus)
+- Whip pans between the desk's stations blur with the camera's own speed (180-degree shutter, `E.hard` pan).
+- A rack focus: an item with `rise` lifts toward the lens on its word (the bulb on "3D"), grows, and the table behind it
+  goes soft (a backdrop blur); its own ink and label stay sharp with it.
+- Real paper sheets (the a4 cut-out) stacked under each print (`stack`); a dashed ink trail that draws itself across the
+  pan from the laptop to the megaphone (`kind: "ink"`, dashed lines now draw on through a mask).
+- Corner leaves are sharp, the nearest pencils most blurred (per-prop `blur`), as in em5.
+- Perf this round is not trustworthy: the PC was at 100% CPU from other sessions (v10 itself failed to load in time).
