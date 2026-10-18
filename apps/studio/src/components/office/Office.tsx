@@ -7,7 +7,7 @@ import { post, upload } from '@/lib/client';
 import { ChatPanel, type ChatSummary } from '../chat/ChatPanel';
 import type { ComposerHandle } from '../chat/Composer';
 import { VideoPopup } from '../video/VideoPopup';
-import { BriefOverlay, type BriefExtra, type Ratio } from './BriefOverlay';
+import { BriefOverlay, type BriefExtra, type BriefSeed, type Ratio } from './BriefOverlay';
 import { Stage } from './Stage';
 import { OfficeWorld } from '../office3d/OfficeWorld';
 import { useSimulatedCrew } from '../office3d/simulate';
@@ -39,7 +39,11 @@ export function Office({ pid, project, chat, messages, chats, startNew }: {
   const [chatOpen, setChatOpen] = useState(true);
   const [wide, setWide] = useState(true);
   const [sheet, setSheet] = useState(0);
-  const [brief, setBrief] = useState(startNew || (!messages.length && chat.status === 'new'));
+  // a chat that has made nothing yet opens on the brief box, also an older one whose first brief was refused
+  // (it has messages but no run and no video): the box is the one way a video starts, with its preset and part picker
+  const [brief, setBrief] = useState(startNew || (chat.status !== 'working' && chat.version === 0 && chat.videoStatus !== 'ready'));
+  // what the chat box hands to the brief box when it can't send it itself (words and files, Edit for a video)
+  const [seed, setSeed] = useState<BriefSeed | null>(null);
   const [shown, setShown] = useState<number | null>(null);
   const [docked, setDocked] = useState(true);
   const [visit, setVisit] = useState<AgentId | null>(null);
@@ -87,7 +91,13 @@ export function Office({ pid, project, chat, messages, chats, startNew }: {
   const asking = state.messages.some(m => m.kind === 'question' && !state.messages.some(a => a.role === 'user' && a.data?.question === m.data?.question));
   const mooviState: MooviState = pulse ?? (visit ? 'listen' : me === 'working' ? 'think' : me === 'waiting' || asking ? 'listen' : me === 'error' ? 'review' : 'idle');
 
+  // nothing made in this chat yet: a message from the chat box would be a brief without a preset, which the engine refuses
+  const fresh = !state.run && !(video && video.version > 0) && chat.status !== 'working';
   const send = useCallback(async (text: string, files: File[]) => {
+    // one way in for a video: a first brief, or any video attached later, goes through the brief box (preset, part
+    // picker, upload, brief), never straight from the chat box
+    const clip = files.some(f => f.type.startsWith('video/'));
+    if (fresh || clip) { setSeed({ text, files, preset: clip ? 'edit' : undefined, at: Date.now() }); setBrief(true); return; }
     const uploads: string[] = [];
     for (const f of files) uploads.push((await upload(pid, cid, f)).id);
     const kind = state.messages.length || state.run ? 'message' : 'brief';
@@ -95,7 +105,7 @@ export function Office({ pid, project, chat, messages, chats, startNew }: {
     dispatch({ type: 'local', message: r.message });
     const who = [...text.matchAll(/@([a-z]+)/gi)].map(m => m[1]!.toLowerCase()).find(m => m !== 'moovi' && MENTIONABLE.includes(m as AgentId));
     if (who) setVisit(who as AgentId);
-  }, [pid, cid, state.messages.length, state.run, dispatch]);
+  }, [pid, cid, state.messages.length, state.run, dispatch, fresh]);
 
   const answer = useCallback((question: string, choice: string, label: string) => {
     void post(`/projects/${pid}/chats/${cid}/messages`, { kind: 'answer', question, choice, label }).catch(() => undefined);
@@ -104,16 +114,16 @@ export function Office({ pid, project, chat, messages, chats, startNew }: {
 
   /** The brief box: in an empty chat it starts this chat; otherwise it opens a new chat (one chat, one video). */
   const startBrief = useCallback(async (text: string, files: File[], ratio: Ratio, extra: BriefExtra) => {
-    const fresh = !state.messages.length && !state.run;
     const target = fresh ? cid : (await post<{ chat: { id: string } }>(`/projects/${pid}/chats`, {})).chat.id;
     const uploads: string[] = [];
     for (const f of files) uploads.push((await upload(pid, target, f)).id);
     // decision 19: every brief names its preset; Edit's trim belongs to the clip, which the brief box sends first
     const trim = extra.trim && uploads[0] ? { upload: uploads[0], in: extra.trim.in, out: extra.trim.out } : undefined;
     const r = await post<{ message: ChatMessage }>(`/projects/${pid}/chats/${target}/messages`, { kind: 'brief', text, uploads, ratio, preset: extra.preset, ...(trim ? { trim } : {}) });
+    setSeed(null);
     if (target === cid) { dispatch({ type: 'local', message: r.message }); setBrief(false); setChatOpen(true); }
     else router.push(`/p/${pid}/c/${target}`);
-  }, [pid, cid, state.messages.length, state.run, dispatch, router]);
+  }, [pid, cid, fresh, dispatch, router]);
 
   const tweak = useCallback(() => {
     setDocked(true);
@@ -164,7 +174,7 @@ export function Office({ pid, project, chat, messages, chats, startNew }: {
 
       {graph && <SynapseView source={{ pid, cid }} onClose={() => setGraph(false)} />}
 
-      <BriefOverlay open={brief} canClose={state.messages.length > 0 || !!state.run} previous={previous} onClose={() => setBrief(false)} onSubmit={startBrief} />
+      <BriefOverlay open={brief} seed={seed} canClose={state.messages.length > 0 || !!state.run} previous={previous} onClose={() => { setBrief(false); setSeed(null); }} onSubmit={startBrief} />
     </div>
   );
 }

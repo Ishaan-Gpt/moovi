@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /**
  * The part of the clip to edit (decision 19: picked right at upload). The clip plays in a small player; two handles on
@@ -9,8 +9,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 export function ClipRange({ file, value, onChange, disabled }: {
   file: File; value: { in: number; out: number } | null; onChange: (r: { in: number; out: number } | null) => void; disabled?: boolean;
 }) {
-  const url = useMemo(() => URL.createObjectURL(file), [file]);
-  useEffect(() => () => URL.revokeObjectURL(url), [url]);
+  // the clip's local link is made and revoked by one effect (a memoised link revoked by an effect's cleanup dies when
+  // React re-runs effects, and the player then shows nothing: no picker)
+  const [url, setUrl] = useState('');
+  useEffect(() => { const u = URL.createObjectURL(file); setUrl(u); return () => URL.revokeObjectURL(u); }, [file]);
   const video = useRef<HTMLVideoElement>(null);
   const [dur, setDur] = useState(0);
   const a = value?.in ?? 0, b = value?.out ?? dur;
@@ -25,7 +27,7 @@ export function ClipRange({ file, value, onChange, disabled }: {
 
   return (
     <div className="nb__range">
-      <video ref={video} src={url} controls playsInline preload="metadata" onLoadedMetadata={e => setDur(e.currentTarget.duration || 0)} onTimeUpdate={onTime} />
+      <video ref={video} src={url || undefined} controls playsInline preload="metadata" onLoadedMetadata={e => setDur(e.currentTarget.duration || 0)} onTimeUpdate={onTime} />
       {dur > 0 && <>
         <label className="nb__range-row"><span>Start {t(a)}</span>
           <input type="range" min={0} max={dur} step={0.1} value={a} disabled={disabled} onChange={e => { const x = Math.min(+e.target.value, b - 0.5); set(x, b); if (video.current) video.current.currentTime = x; }} />

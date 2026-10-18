@@ -8,6 +8,8 @@ import { PRESET_CARDS, PRESET_HINTS } from './type-words';
 
 /** What the brief box hands over besides the words and files: the preset (always) and, for Edit, the part to edit. */
 export interface BriefExtra { preset: Preset; trim?: { in: number; out: number } }
+/** Words and files the chat box hands over (a first brief, or a video attached later); `at` makes each hand-over new. */
+export interface BriefSeed { text: string; files: File[]; preset?: Preset; at: number }
 
 export type Ratio = 'auto' | '9:16' | '16:9' | '1:1' | '4:5';
 const RATIOS: { id: Ratio; label: string; hint: string }[] = [
@@ -26,8 +28,8 @@ const LINK = /https?:\/\/\S+|\b[a-z0-9-]+\.(?:com|io|ai|app|dev|co|org|net|so|xy
  * (and words if you like); Showreel takes a topic, a link or a brief. A brief handed over from the landing page fills
  * the box once a preset is picked. Plain on purpose: the Frontend session styles it.
  */
-export function BriefOverlay({ open, canClose, previous, onClose, onSubmit }: {
-  open: boolean; canClose: boolean; previous: string | null;
+export function BriefOverlay({ open, seed = null, canClose, previous, onClose, onSubmit }: {
+  open: boolean; seed?: BriefSeed | null; canClose: boolean; previous: string | null;
   onClose: () => void; onSubmit: (text: string, files: File[], ratio: Ratio, extra: BriefExtra) => Promise<void>;
 }) {
   const [preset, setPreset] = useState<Preset | null>(null);
@@ -44,6 +46,8 @@ export function BriefOverlay({ open, canClose, previous, onClose, onSubmit }: {
   const [handed, setHanded] = useState(false);
   // a brief that arrives whole from the landing page (preset and what it needs) is sent at once: never asked twice
   const auto = useRef(false);
+  // one send at a time, even before the busy state has rendered (a double click, Enter plus click, the auto-send)
+  const sending = useRef(false);
   const area = useRef<HTMLTextAreaElement>(null);
   const file = useRef<HTMLInputElement>(null);
   const pick = useRef<HTMLDivElement>(null);
@@ -55,6 +59,14 @@ export function BriefOverlay({ open, canClose, previous, onClose, onSubmit }: {
     if (!open) return;
     void readHandoff().then(h => { if (!h) return; setText(t => t || h.prompt); setFiles(f => (f.length ? f : h.files)); setRatio(h.ratio); if (h.preset) { setPreset(p => p ?? h.preset!); auto.current = true; } setHanded(true); });
   }, [open]);
+  // the chat box's words and files fill the box; a video makes it Edit (the part picker shows, nothing is sent yet)
+  useEffect(() => {
+    if (!open || !seed) return;
+    setText(seed.text); setErr('');
+    if (seed.preset) setPreset(seed.preset);
+    const keep = seed.preset === 'edit' ? [...seed.files.filter(f => f.type.startsWith('video/')).slice(0, 1), ...seed.files.filter(f => !f.type.startsWith('video/'))] : seed.files;
+    setFiles(keep.slice(0, 6));
+  }, [open, seed]);
   useEffect(() => { if (open && preset) requestAnimationFrame(() => area.current?.focus()); }, [open, preset]);
   useEffect(() => { const el = area.current; if (!el) return; el.style.height = 'auto'; el.style.height = `${Math.min(el.scrollHeight, 200)}px`; }, [text]);
   useEffect(() => { setTrim(null); }, [clip]);
@@ -82,9 +94,9 @@ export function BriefOverlay({ open, canClose, previous, onClose, onSubmit }: {
   const ready = preset === 'edit' ? !!clip : preset === 'launch' ? LINK.test(words()) : !!text.trim();
   const submit = async (e?: FormEvent) => {
     e?.preventDefault();
-    if (busy || !preset) return;
+    if (busy || sending.current || !preset) return;
     if (!ready) { setNudge(n => n + 1); if (preset === 'edit') file.current?.click(); else area.current?.focus(); return; }
-    setBusy(true); setErr('');
+    sending.current = true; setBusy(true); setErr('');
     // Edit sends the clip first, so the trim belongs to it
     const send = preset === 'edit' && clip ? [clip, ...files.filter(f => f !== clip)] : files;
     try {
@@ -93,7 +105,7 @@ export function BriefOverlay({ open, canClose, previous, onClose, onSubmit }: {
       if (handed) { await clearHandoff(); setHanded(false); }
     }
     catch (x) { setErr((x as Error).message); }
-    finally { setBusy(false); }
+    finally { sending.current = false; setBusy(false); }
   };
   useEffect(() => {
     if (!auto.current || !open || busy || !preset) return;
