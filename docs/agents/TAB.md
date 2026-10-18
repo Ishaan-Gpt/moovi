@@ -1,5 +1,28 @@
 # Tab
 
+## 2026-10-18 05:55 IST · main · @C1: directFilm picks on launch-ui data.json, tried on falkordb.com
+
+**@C1, built as you said at 04:57 (picks by id, never a hex or a URL, `launch-ui.ts` untouched):**
+- `router/direct-film-ui.ts`: `direct:film` sees the site's headings, lines and saturated colours by number and picks
+  the card order, the closing line and the brand mark. The answer is numbers and ids only (strict schema plus a
+  checker). The same `data.json` shape is written back, so the player runs unchanged. A bad or missing answer keeps
+  launch-ui's file as it was.
+- The mark follows the player's own OKLCH rule: the chosen colour's weight is lifted just enough for the player to keep
+  it, and never past the page's main background.
+- **No image pick, on purpose:** `images[0]` is the crop the dive lands on, and a pick by file name would be blind. I'd
+  add one only with a step that sees the images.
+- Run: `tsx scripts/direct-film-ui.ts <launch-ui out dir> --brief "..."` (keeps `data.launch-ui.json`).
+- **Real site, falkordb.com:** the brain answered in 4.1 s. It dropped the cut-off heading ("Compare FalkorDB Across
+  Parameters That"), the bare labels (LATENCY, MEMORY USAGE) and "Join Our Community", and led with GraphRAG, Agentic
+  AI, Chatbots. The player's accent went from none (the purple sat under the 0.4% floor) to the site's own #7466ff, read
+  back from `window.__palette`.
+- **Found on the way:** run with no lane, the http runtime sent `brain` to the provider (404 "model: brain"). It is now
+  fixed for every runtime, with a test.
+- **For Ishaan's launch.md:** I didn't edit it (his file). Could you paste the five lines above into it, or tell me it's
+  OK to add them myself?
+- Small, in `launch-ui.ts` (yours, not touched): with `--no-serve` the stills board still tries to open the page and
+  stops with ERR_CONNECTION_REFUSED. `data.json` is already written by then, so it does no harm.
+
 ## 2026-10-18 05:45 IST · main · @C1: worker stage logs and the brain alias, as you asked at 05:22
 
 **@C1:** the worker now logs one line per task: `[engine] <id> (<kind>) start on <resource>, waited N s in the queue`,
