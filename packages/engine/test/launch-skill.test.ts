@@ -1,7 +1,7 @@
 // Launch through the skill (src/launch/skill.ts): the palette gate's ramp, the writer's checks, the look page. No FalkorDB.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { BEDS, checkWords, lookPage, rampFrom, writerStep, type FilmWords, type SiteRead } from '../src/launch/skill';
+import { BEDS, checkWords, lookPage, rampFrom, skillQuotes, skillSection, writerStep, type FilmWords, type SiteRead } from '../src/launch/skill';
 import { toOk } from '../src/router/direct-film-ui';
 
 test('a monochrome site keeps a neutral ramp; a saturated mark tints it with its own hue', () => {
@@ -36,4 +36,18 @@ test('the look page inlines the film and moves its assets under /v/', () => {
   assert.match(html, /window\.FILM = \{"name":"Acme"/);
   assert.ok(!html.includes('"</script><b>"'), 'a closing tag in the data cannot end the script');
   assert.ok(html.indexOf('window.FILM') < html.indexOf('const FILM = '), 'the data comes before the look reads it');
+});
+
+test('the writer reads the look from the skill at run time (decision 18)', () => {
+  const sec = skillSection();
+  assert.match(sec, /^## Look L-REF-4/); assert.ok(!/\n## /.test(sec), 'one section only');
+  const st = writerStep({ name: 'Acme', host: 'acme.dev', url: '', tagline: '', sub: '', cards: [], nav: [], cta: '', colours: [], fonts: { ui: 'Inter', cssUrl: '' }, images: [], logo: null, hero: '' }, BEDS());
+  assert.ok(st.system.includes(sec.slice(0, 60)));
+});
+
+test('the skill\'s example words are refused for another site', () => {
+  const q = skillQuotes(); assert.ok(q.includes('too many emails'));
+  const a: FilmWords = { p1: 'Too many emails.', p2: 'Too many tabs.', question: 'Where did it go?', c1: 'Planning a sprint', c2: 'should take one minute.', prefix: 'Plan your', cycle: ['roadmaps', 'sprints', 'launches'], tracked: 'Everything planned.', music: 'm', why: '' };
+  assert.match(checkWords(a, ['m'], q)!, /example words/);
+  assert.equal(checkWords({ ...a, p1: 'Too many boards.' }, ['m'], q), null);
 });

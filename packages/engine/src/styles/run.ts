@@ -21,8 +21,9 @@ export async function runStyle(style: StyleId, input: RunInput, hooks: Hooks = {
       case 's5': return (await import('./s5')).run(input, hooks);
       case 'darkvox': return (await import('./darkvox')).run(input, hooks);
       case 'anatomy': return (await import('./anatomy')).run(input, hooks);
-      // a site URL runs through the skill (a reference look worn by the site); a script, or MOOVI_LAUNCH=pipeline, the twelve-looks pipeline
-      case 'launch': return input.url && process.env.MOOVI_LAUNCH !== 'pipeline' ? (await import('../launch/skill')).run(input, hooks) : (await import('./launch')).run(input, hooks);
+      // decision 18: Launch runs through the skill (a reference look worn by the site) and replaces the twelve-looks
+      // pipeline; MOOVI_LAUNCH=pipeline is the emergency switch back, never a default or a fallback
+      case 'launch': return process.env.MOOVI_LAUNCH === 'pipeline' ? (await import('./launch')).run(input, hooks) : (await import('../launch/skill')).run(input, hooks);
       case 'clip-moment': return (await import('./clip-moment')).run(input, hooks);
       default: throw new Error(`Unknown style "${String(style)}"`);
     }

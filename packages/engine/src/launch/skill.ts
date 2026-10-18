@@ -91,8 +91,12 @@ export const FILM_WORDS = {
   why: z.string().describe('one short line: why these words and this bed suit the site'),
 };
 export type FilmWords = { p1: string; p2: string; question: string; c1: string; c2: string; prefix: string; cycle: string[]; tracked: string; music: string; why: string };
-export function checkWords(a: FilmWords, beds: string[]): string | null {
+/** the skill quotes the film it was learned on (Resend's words): those quotes are examples, never this site's copy */
+export const skillQuotes = () => [...skillSection().matchAll(/"([^"]{3,60})"/g)].flatMap(m => m[1]!.split(/\s*\/\s*/)).map(q => q.toLowerCase().replace(/[^a-z ]/g, '').trim()).filter(q => q.split(' ').length >= 2);
+export function checkWords(a: FilmWords, beds: string[], quotes: string[] = []): string | null {
   const bad: string[] = [];
+  const own = (x: string) => x.toLowerCase().replace(/[^a-z ]/g, '').trim(), copied = [a.p1, a.p2, a.question, a.c1, a.c2, a.tracked, `${a.prefix} ${a.cycle[0] ?? ''}`].filter(x => quotes.includes(own(x)));
+  if (copied.length) bad.push(`these are the skill's example words, not this site's: ${copied.join(' | ')}; write the site's own`);
   if (!wordsN(4)(a.p1) || !wordsN(4)(a.p2)) bad.push('p1 and p2 are at most 4 words each');
   if (!/\?$/.test(a.question.trim()) || !wordsN(5)(a.question)) bad.push('question is 3-5 words and ends with "?"');
   if (!wordsN(4)(a.c1)) bad.push('c1 is at most 4 words'); if (!wordsN(6)(a.c2)) bad.push('c2 is at most 6 words');
@@ -101,11 +105,22 @@ export function checkWords(a: FilmWords, beds: string[]): string | null {
   if (!beds.includes(a.music)) bad.push(`music is one of: ${beds.join(', ')}`);
   return bad.length ? bad.join('; ') : null;
 }
+/** The look's section of the skill's Launch branch (.claude/skills/ishaan-motion/references/launch.md), read at run time
+ * (decision 18: a skill push changes the product on the next deploy). A missing skill is a loud stop, never a guess. */
+export const SKILL_LAUNCH = join(REPO, '.claude', 'skills', 'ishaan-motion', 'references', 'launch.md');
+export function skillSection(heading = '## Look L-REF-4'): string {
+  if (!existsSync(SKILL_LAUNCH)) throw new Error(`the ishaan-motion skill is missing (${SKILL_LAUNCH})`);
+  const md = readFileSync(SKILL_LAUNCH, 'utf8').replace(/\r\n/g, '\n'), i = md.indexOf(heading);
+  if (i < 0) throw new Error(`the skill's Launch branch has no "${heading}" section`);
+  const j = md.indexOf('\n## ', i + heading.length); return md.slice(i, j < 0 ? undefined : j).trim().slice(0, 2400);
+}
 export function writerStep(site: SiteRead, beds: MusicTrack[]): { system: string; prompt: string } {
   const system = [
+    `THE LOOK, from the ishaan-motion skill:\n${skillSection()}`,
     'You write the words of a 21-second premium product-launch film, the "Calm one-hue" look (after a Notely launch film): slow, quiet, tiny type that drifts in word by word, one material in the brand\'s own tints.',
     'The film: a stack of the product\'s own pages lands ("Too many …. / Too many …."); a laptop asks the question; "<c1> <c2>" on a soft field; "meet" / the name; the real product in glass; "<prefix> <cycle word>" three times; "<tracked>"; "All with"; the name.',
     'Rules (Ishaan\'s, the ishaan-motion skill): plain, specific, the site\'s own nouns; no hype words (revolutionary, seamless, unleash, supercharge, next-gen), no exclamation marks, no emoji; sentence case; never invent a number or a claim the site does not make.',
+    'The look\'s quoted words come from the film it was learned on: they show the shape only. Never reuse them; write this site\'s own.',
     'Pick the bed whose mood suits the brand from MUSIC (calm and confident fits this look). Answer with every field.',
   ].join('\n');
   const prompt = [
@@ -124,7 +139,8 @@ export function lookPage(film: Record<string, unknown>): string {
 }
 
 export async function run(o: RunInput, h: Hooks = {}): Promise<RunResult> {
-  const url = o.url; if (!url) throw new Error('Launch through the skill needs a site URL');
+  // the look is worn by a real site (its screens, colours, logo): a script alone has none of those to show
+  const url = o.url; if (!url) throw new Error('Launch makes a film from your site: paste its link (a script alone has no product screens to show)');
   const C = clock(h), { T, log } = C, lap = C.lap;
   const id = o.id ?? hostSlug(url), dir = join(config.data, 'launch', id); mkdirSync(dir, { recursive: true });
   const host = new URL(url).hostname.replace(/^www\./, '');
@@ -135,9 +151,9 @@ export async function run(o: RunInput, h: Hooks = {}): Promise<RunResult> {
   lap('site', s); h.progress?.(`read ${site.name}: ${site.cards.length} headings, ${site.images.length} pictures, ${site.colours.length} colours`);
 
   s = Date.now(); C.begin('write');
-  const beds = BEDS(), ids = beds.map(t => t.id), step = writerStep(site, beds);
+  const beds = BEDS(), ids = beds.map(t => t.id), step = writerStep(site, beds), quotes = skillQuotes();
   const words = await ask({ agent: 'launch:film', tier: 'crew', deadlineMs: 60_000, signal: o.signal, system: step.system, prompt: step.prompt, schema: FILM_WORDS,
-    validate: a => checkWords(a as FilmWords, ids) }) as FilmWords;
+    validate: a => checkWords(a as FilmWords, ids, host === 'resend.com' ? [] : quotes) }) as FilmWords;
   const track = beds.find(t => t.id === words.music)!;
   log(`words: ${words.p1} / ${words.p2} · ${words.question} · ${words.c1} ${words.c2} · ${words.prefix} ${words.cycle.join('/')} · ${words.tracked}\nmusic: ${track.title} (${track.id}) · ${words.why}`);
   h.progress?.(`the writer's words: "${words.p1} ${words.p2}" · "${words.question}" · "${words.c1} ${words.c2}" · "${words.prefix} ${words.cycle.join(' / ')}" · "${words.tracked}"`);
