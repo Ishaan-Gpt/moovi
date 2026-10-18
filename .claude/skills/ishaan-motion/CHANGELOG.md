@@ -116,5 +116,5 @@
 ## 1.13.5 (2026-10-18)
 - Lesson: glossy display type (deep fill, bevel rims, solid extrusion, firm shadow); small words need a firm shadow.
 
-## 1.13.6 (2026-10-18)
-- Edit: the speaker form is picked per beat from the measured face size (window over about 0.62 of the frame width, else full); widget icons are real SVG strokes.
+## 1.13.7 (2026-10-18)
+- Removed the edit `window` form rule and its automatic picker (1.13.6 and the lab-vlog note): Claude's own invention, never the owner's taste; the owner rated the edit it produced 1/10.

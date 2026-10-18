@@ -114,14 +114,6 @@ the caption is hidden for that span. Two texts in one frame is bad taste.
   graphic must explain; returns full for the punchline. Continuity comes from the morph: the rect, corner radius and
   ring animate from the previous beat's form over about 0.35 s.
 
-- **A face that fills the frame** (an arm's-length selfie cropped to 9:16) leaves no room for text without covering it:
-  the speaker goes into a large `window` (about 85% of the width, mid-frame) over the theme's ground (not a blurred copy of
-  the same face), text in the bands above and below (learned on the lab vlog, 2026-10-18).
-  The form is chosen from the measured face, never by hand per shot: the face's width as a share of a full 9:16
-  frame, averaged over each beat (over about 0.62 → `window`, else `full`), so it changes only at a beat boundary and
-  morphs there, never mid-beat (player `form: "auto"`, threshold `windowAt`).
-- **Widget icons are real strokes:** a glass widget's icon is an SVG path drawn at the text's weight (stroke about
-  2.2 on a 24 grid, round joins), sized about 1.2× the cap height; an icon that fails to draw is a bug, not a style.
 
 **B. Burned-in premium UI over the picture (speaker still on screen):**
 - Glass or theme-material widgets placed in the frame's empty space (desk plane, beside the head, above the
