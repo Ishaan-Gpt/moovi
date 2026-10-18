@@ -16,6 +16,6 @@ test('beats must follow the arc in order and within each slot count', () => {
 });
 
 test('a topic film cta never names an invented site or studio', () => {
-  for (const l of ['Check the lighthouse schedule at lighthouse.org.', 'Explore the inner beat at WatchLab.', 'Discover the shade at Indigo Studio.']) assert.ok(inventedName(l), l);
-  for (const l of ['Next foggy night, look for the beam.', 'Follow for the next one.', 'Open the back of your watch and listen.']) assert.ok(!inventedName(l), l);
+  for (const l of ['Check the lighthouse schedule at lighthouse.org.', 'Explore the inner beat at WatchLab.', 'Discover the shade at Indigo Studio.', 'Visit Kyoto Indigo Studio, learn the craft.']) assert.ok(inventedName(l), l);
+  for (const l of ['Next foggy night, look for the beam.', 'Follow for the next one.', 'Open the back of your watch and listen.', 'Walk Sassoon Dock before sunrise.']) assert.ok(!inventedName(l, "a morning at Mumbai's Sassoon dock"), l);
 });
