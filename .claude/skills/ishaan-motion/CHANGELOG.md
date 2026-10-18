@@ -155,3 +155,6 @@
 
 ## 1.16.5 (2026-10-18)
 - Owner (demo hook): inserts follow the spoken order and live only on their word; set-pieces are filled with real footage-finder pictures, never invented UI or placeholders (lessons.md).
+
+## 1.16.6 (2026-10-18)
+- Owner (demo beat 2): a 3D reference is rebuilt in 3D, never flattened to 2D; only headline type may be a 2D overlay (lessons.md).
