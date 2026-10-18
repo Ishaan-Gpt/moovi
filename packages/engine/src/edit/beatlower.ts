@@ -5,6 +5,8 @@ import { config } from '../config';
 import type { Anchor, BeatSpec } from './beatspec';
 import type { Edl } from './edl';
 import { applyMove, type MoveResult } from './moves';
+import { faceCover, headlineOf, type FRAMES } from './inserts';
+import { EDIT, type PlayerEdl } from './lib';
 import { srcToEdit } from './effects/onedit';
 import { rmsOf } from './render';
 import type { SfxKey } from './registry';
@@ -34,11 +36,16 @@ export function anchorSrc(e: Pick<Edl, 'words'>, a: Anchor | number): number {
 /** a word anchor → output seconds (null when the edit cut that moment) */
 export const anchorOut = (e: Pick<Edl, 'words' | 'shots'>, a: Anchor | number) => srcToEdit(e.shots, anchorSrc(e, a));
 
-export interface Lowered { cuts: number; moves: MoveResult[]; sfx: number; stills: number[] }
+export interface Lowered { cuts: number; moves: MoveResult[]; sfx: number; stills: number[]; cards: number }
+
+/** where each card drawer may sit, first that clears the face over its whole time (the insert step's own order) */
+const CARD_FRAMES: Record<string, (keyof typeof FRAMES)[]> = { notify: ['top_band', 'beside_head'], comment: ['card_box', 'top_half', 'top_band'], title: ['card_box', 'top_half'] };
+const CARD_KIND: Record<string, 'phone' | 'ui' | 'title'> = { notify: 'phone', comment: 'ui', title: 'title' };
 
 /** Write the spec's cuts, X1 moves and sounds onto the EDL, in place; `e.spec` holds the spec. Sound levels need the files' RMS. */
 export async function lowerSpec(e: Edl, spec: BeatSpec): Promise<Lowered> {
-  const out: Lowered = { cuts: 0, moves: [], sfx: 0, stills: [] };
+  const out: Lowered = { cuts: 0, moves: [], sfx: 0, stills: [], cards: 0 };
+  const total = e.shots.at(-1)!.t_out;
   const bounds = e.shots.slice(0, -1).map(s => s.t_out);
   for (const b of spec.beats) for (const L of b.layers) {
     if (L.t === 'cut') {
@@ -49,6 +56,15 @@ export async function lowerSpec(e: Edl, spec: BeatSpec): Promise<Lowered> {
       if (type === 'paper_tear') { out.moves.push(applyMove(e, '13', { t: c })); continue; }
       e.cuts = [...(e.cuts ?? []).filter(x => Math.abs(x.t - c) > 0.02), { t: c, type: type as NonNullable<Edl['cuts']>[number]['type'], dur: Number(L.dur) || 0.3, trigger: 'beat' as const, rule_id: 'beat.cut' }].sort((a, z) => a.t - z.t);
       out.cuts++;
+    } else if (L.t === 'ui') {
+      const t = anchorOut(e, L.at as Anchor); if (t === null) continue;
+      const draw = String(L.draw), t0 = +Math.max(0.3, t).toFixed(3), t1 = +Math.min(total - 0.3, t0 + (Number(L.dur) || 2)).toFixed(3); if (t1 - t0 < 1) continue;
+      if ((e.inserts ?? []).some(x => t0 < x.t1 + 0.6 && t1 > x.t0 - 0.6)) continue;
+      const faces = [t0 + 0.05, (t0 + t1) / 2, t1 - 0.05].map(x => EDIT.faceOutAt(e as unknown as PlayerEdl, x));
+      const frame = (CARD_FRAMES[draw] ?? ['card_box']).find(f => Math.max(...faces.map(fc => faceCover(f, fc))) < 0.12); if (!frame) continue;
+      const ws = e.words.filter(w => { const o = srcToEdit(e.shots, w.src_t0); return o !== null && o >= t0 - 0.05 && o < t1; });
+      e.inserts = [...(e.inserts ?? []), { t0, t1, kind: CARD_KIND[draw] ?? 'ui', frame, label: ws.map(w => w.text).join(' ').slice(0, 80), asset_ref: String(L.asset), need: 'beat-ui', rule_id: 'beat.ui', params: { lib: 's1', draw, words: headlineOf(ws) } } as NonNullable<Edl['inserts']>[number]].sort((a, z) => a.t0 - z.t0);
+      out.cards++;
     } else if (L.t === 'x1') {
       const t = anchorOut(e, L.at as Anchor); if (t === null) continue;
       out.moves.push(applyMove(e, String(L.n), { t, dur: Number(L.dur) || undefined, gap: 0.6 } as never));

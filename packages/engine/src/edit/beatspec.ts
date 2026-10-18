@@ -208,6 +208,7 @@ export async function castBeats(reads: SentenceRead[], caster: Caster, o: CastOp
     let pick: CastRow | null = null, why = '';
     for (const x of rows) {
       if (x.edit.layer === 'cut') continue;   // cuts go between beats (below), never on a sentence
+      if (picks.slice(-recentN).some(p => p.meta.device === x.edit.device)) continue;   // a UI row on a recent device is the same look again
       if (!STRONG.has(s.fn) && !verbHit(x)) continue;
       if (x.edit.layer === 'world' && n - lastWorld < 3) continue;   // one full-screen world at a time, never back to back
       const no = feasible(x.edit, s, o); if (no) { why ||= `${x.id}: ${no}`; continue; }
@@ -265,6 +266,8 @@ function layersOf(p: BeatPick, s: SentenceRead, o: SpecOpts): { layers: SpecLaye
   if (dev === 'cam.pullback') return { layers: [{ t: 'cam', form: 'window', z: 1.04 }], sfx: snd(first) };
   if (dev.startsWith('cam.move:')) { const move = dev.slice(9), dur = Math.min(p.meta.max, Math.max(p.meta.min, s.t1 - h.t)); return { layers: [{ t: 'cam', z: 1.04, Y: 0.36, move, at: hA, keys: camKeys(move, dur) }], sfx: snd(hA) }; }
   if (dev.startsWith('cut.')) return { layers: [{ t: 'cut', type: dev.slice(4), at: first, dur: p.meta.min }], sfx: snd(first) };
+  // a UI row drawn as one of the insert step's cards (notify, comment, title): lowered onto the EDL's inserts
+  if (dev.startsWith('ui.')) return { layers: [{ t: 'ui', draw: dev.slice(3), asset: p.id, at: first, dur: Math.min(p.meta.max, Math.max(p.meta.min, s.t1 - s.t0)) }], sfx: snd(first) };
   if (dev.startsWith('x1.')) return { layers: [{ t: 'x1', n: dev.slice(3), at: first, dur: Math.min(p.meta.max, Math.max(p.meta.min, s.t1 - s.t0)) }], sfx: [] };
   switch (dev) {
     case 'orbit': return { layers: [{ t: 'orbit', stills: across(o, 5), at: first }], sfx: snd(first) };

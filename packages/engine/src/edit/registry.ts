@@ -1,6 +1,7 @@
 import { CAMERA_MOVES } from '@moovi/library/camera';
 import type { AssetRow } from '@moovi/graph';
 import { FX, FX_IDS, type FxId } from './effects/catalog';
+import { ui as catalogUi } from '../library/catalog';
 
 /**
  * The edit registry: ONE list of everything an edit can put on a sentence (edit wiring audit, step 1). The X1 moves,
@@ -160,14 +161,47 @@ const NEED_FN: Record<string, EditFn[]> = {
 /** UI rows (the library's `ui` category) as entries: cast through the insert step; their functions come from their needs. */
 export function uiEntries(rows: Pick<AssetRow, 'id' | 'name' | 'category' | 'needs' | 'tags'>[]): EditEntry[] {
   return rows.filter(r => r.category === 'ui').map(r => {
-    const fns = [...new Set((r.needs ?? []).flatMap(n => NEED_FN[n] ?? []))];
-    return { id: r.id, name: r.name, device: `ui:${r.id.slice(3)}`, layer: 'graphic' as const, fns: fns.length ? fns : ['show' as EditFn], verbs: [], face: 'clear' as const, sfx: 'pop' as const,
-      min: 1.2, max: 3.5, aka: [r.name.toLowerCase()], built: false, auto: true, rank: 1 };
+    const slug = r.id.slice(3), dev = UI_DEVICE.find(([re]) => re.test(slug))?.[1] ?? null, hand = dev ? HAND.find(e => e.device === dev) : undefined;
+    const fns = [...new Set([...(r.needs ?? []).flatMap(n => NEED_FN[n] ?? []), ...(hand?.fns ?? [])])];
+    const card = dev?.startsWith('ui.') ?? false;
+    return { id: r.id, name: r.name, device: dev ?? `ui:${slug}`, layer: card ? 'text' as const : hand?.layer ?? 'graphic' as const, fns: fns.length ? fns : ['show' as EditFn], verbs: hand?.verbs ?? [],
+      face: card ? 'clear' as const : hand?.face ?? 'clear' as const, sfx: hand ? hand.sfx : 'pop' as const, min: hand?.min ?? 1.4, max: hand?.max ?? 3, aka: [r.name.toLowerCase()],
+      built: !!dev, auto: true, rank: 1, ...(hand?.needs ? { needs: hand.needs } : {}) };
   });
 }
 
-/** The whole registry: hand entries, camera moves, UI rows (pass the catalogue's ui rows; omitted = none). */
-export function editRegistry(ui: Parameters<typeof uiEntries>[0] = []): EditEntry[] {
+/**
+ * Each UI row → the one player's device that shows it (edit wiring step 4: the 109 rows cast through the devices and the
+ * insert drawers, no new looks; the row's id rides on the pick, so the EDL and the credits name it). `ui.<drawer>` is a
+ * card drawn by edit/inserts-draw.ts (notify, comment, title), lowered onto the EDL as an insert. Unmapped rows (a cursor,
+ * a file, a stamp, the owl) stay listed, not drawn.
+ */
+const UI_DEVICE: [RegExp, string][] = [
+  [/^(notification|voiceNote|card-notif)$/, 'ui.notify'],
+  [/^(chat|commentFeed|replySticker|card-chat)$/, 'ui.comment'],
+  [/^(dictionaryCard|panel|stickyNote|priceTag|trialCard|card-quote)$/, 'ui.title'],
+  [/^(typebox|searchBar)$/, 'input'],
+  [/^(commentComposer|ctaPill|pillButton)$/, 'pill'],
+  [/^(reachChart|num3d|flipBoard|watchCountdown|coin|progressPill|card-stat|card-price|chart-.*)$/, 'stat'],
+  [/^(editorTimeline|voiceTrack|card-timeline)$/, 'timeline'],
+  [/^(checklistRow|receipt|receiptLine|card-list)$/, 'cascade'],
+  [/^(crowd|logoGrid|iconRing)$/, 'orbit'],
+  [/^(deck|carousel|mediaCard|clip-.*|img-poster)$/, 'sides'],
+  [/^(swatch|card-toggles)$/, 'filters'],
+  [/^(phone|lockphone|reelUi|phoneCaption|device-phone|device-tablet)$/, 'cam.phone'],
+  [/^(browser|laptop|device-laptop|device-browser)$/, 'cam.pullback'],
+  [/^(highlighter|marker|selectionRing|focusBrackets)$/, 'x1.14'],
+  [/^loupe$/, 'cam.dim'],
+  [/^burst$/, 'letters'],
+  [/^(badge|iconCard|card-reviews|card-chips)$/, 'burn'],
+];
+
+/** the catalogue's UI rows (library/catalog.ts ui()), once; catalog imports this file too, so only ever read inside a call */
+let UI_ROWS: Parameters<typeof uiEntries>[0] | null = null;
+const uiRows = () => UI_ROWS ??= catalogUi();
+
+/** The whole registry: hand entries, camera moves, UI rows (the catalogue's, unless given). */
+export function editRegistry(ui: Parameters<typeof uiEntries>[0] = uiRows()): EditEntry[] {
   const out = [...HAND, ...cameraEntries(), ...uiEntries(ui)], seen = new Set<string>();
   return out.filter(e => !seen.has(e.id) && !!seen.add(e.id));
 }

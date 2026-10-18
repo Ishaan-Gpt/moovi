@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import { config } from '../src/config';
-import { beatSpecOf, castBeats, readSentences, registryCaster } from '../src/edit/beatspec';
+import { beatSpecOf, castBeats, parseAsks, readSentences, registryCaster } from '../src/edit/beatspec';
 import { anchorOut, BEAT_SOUNDS, lowerSpec } from '../src/edit/beatlower';
 import { buildEdl } from '../src/edit/build';
 import { validateEdl } from '../src/edit/edl';
@@ -62,4 +62,16 @@ test('one film: the page captured frame by frame, the beat devices drawn into th
     assert.equal(+v.nb_frames, Math.round(EDIT.timeline(e).duration * 30));
     assert.equal(r.frames, +v.nb_frames);
   } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('UI rows cast through the one player: a notification asked by name becomes the insert step card, clear of the face', async () => {
+  const e = buildEdl({ source: { file: 'src.mp4', duration: 4.4, w: 480, h: 854, fps: 30 }, words, palette });
+  const reads = readSentences(words, R), { picks } = await castBeats(reads, registryCaster(R), { registry: R, asks: parseAsks('add a notification on sentence 2', R) });
+  assert.equal(picks.find(p => p.i === reads[1]!.i)?.id, 'ui:notification');
+  const low = await lowerSpec(e, beatSpecOf(reads, picks));
+  assert.equal(low.cards, 1);
+  const card = (e.inserts ?? []).find(x => x.asset_ref === 'ui:notification')!;
+  assert.equal(card.params?.draw, 'notify');
+  assert.deepEqual(validateEdl(e).problems.filter(p => !p.startsWith('version')), []);
+  assert.ok(R.filter(x => x.id.startsWith('ui:') && x.built).length >= 70, 'most UI rows are drawn');
 });
