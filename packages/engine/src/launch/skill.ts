@@ -5,7 +5,8 @@
 // screens), the film writer (the server model in Precise mode, the user's Claude Code in Creative mode, through the
 // runtime's lanes) writes the film's words and picks its music bed from the library, and the look plays live with
 // the owner's Style 1 sound pack, cut on the bed's beat. The picks are shown to the user, never fixed defaults.
-// Stages: site → write ∥ music → assemble → live preview. One look today: L-REF-4 "Calm one-hue" (ref 4, Notely).
+// Decision 19: the music menu, every sound and the camera are cast per film from the FalkorDB library (skill-cast.ts).
+// Stages: site → write → music ∥ library cast → assemble → live preview. One look today: L-REF-4 "Calm one-hue" (ref 4, Notely).
 import { spawn } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -14,7 +15,8 @@ import { config, REPO } from '../config';
 import { fetchMusic, MUSIC_TRACKS, useScopeOf, type MusicTrack } from '../audio/music-lib';
 import { ask } from '../runtime';
 import { servePlayer } from '../s4/player';
-import { remember } from '../styles/kit';
+import { recentSetups, remember } from '../styles/kit';
+import { castCamera, castLookSounds, castMenu, LOOK_PARTS, recordParts } from './skill-cast';
 import { clock, ENGINE, hostSlug, killTree, TSX, type Hooks, type RunInput, type RunResult } from '../styles/common';
 import { toOk } from '../router/direct-film-ui';
 
@@ -151,7 +153,7 @@ export async function run(o: RunInput, h: Hooks = {}): Promise<RunResult> {
   lap('site', s); h.progress?.(`read ${site.name}: ${site.cards.length} headings, ${site.images.length} pictures, ${site.colours.length} colours`);
 
   s = Date.now(); C.begin('write');
-  const beds = BEDS(), ids = beds.map(t => t.id), step = writerStep(site, beds), quotes = skillQuotes();
+  const beds = await castMenu(BEDS()), ids = beds.map(t => t.id), step = writerStep(site, beds), quotes = skillQuotes();
   const words = await ask({ agent: 'launch:film', tier: 'crew', deadlineMs: 60_000, signal: o.signal, system: step.system, prompt: step.prompt, schema: FILM_WORDS,
     validate: a => checkWords(a as FilmWords, ids, host === 'resend.com' ? [] : quotes) }) as FilmWords;
   const track = beds.find(t => t.id === words.music)!;
@@ -161,9 +163,14 @@ export async function run(o: RunInput, h: Hooks = {}): Promise<RunResult> {
   lap('write', s);
 
   s = Date.now(); C.begin('music');
-  const bedFile = await fetchMusic(track, { signal: o.signal }); copyFileSync(bedFile, join(dir, 'bed.m4a'));
-  const beat = await beatOf(bedFile, track.bpm);
+  const seed = `${id}:${Date.now()}`;
+  const [beat, lib, cam] = await Promise.all([
+    fetchMusic(track, { signal: o.signal }).then(f => { copyFileSync(f, join(dir, 'bed.m4a')); return beatOf(f, track.bpm); }),
+    castLookSounds(dir), castCamera(seed, recentSetups('launch')),
+  ]);
   log(`bed: ${beat.bpm} BPM, phase ${beat.phase} s, lift at ${beat.lift} s (lands on the dashboard reveal)`);
+  log(`library: ${Object.keys(lib.sound.files).length} sounds for ${Object.keys(lib.sound.events).length} events (${lib.source}${lib.why ? `: ${lib.why}` : ''}) · camera ${cam.why.join(' · ')}`);
+  h.progress?.(`cast from the library: ${lib.used.length} sound effects across ${Object.keys(lib.sound.events).length} moments, the camera ${cam.why.join('; ')}`);
   lap('music', s);
 
   s = Date.now(); C.begin('assemble');
@@ -173,7 +180,7 @@ export async function run(o: RunInput, h: Hooks = {}): Promise<RunResult> {
   // the two giant ghost words behind the typed question: its two longest words, in their order
   const qw = words.question.replace(/[?.,!]/g, '').split(/\s+/).filter(Boolean), long2 = [...qw].sort((a, b) => b.length - a.length).slice(0, 2), q = qw.filter(w => long2.includes(w)).slice(0, 2);
   const film = {
-    look: LOOK.id, name: site.name, host, font: site.fonts.ui, fontCss: site.fonts.cssUrl, ramp, mono, sfx: '/sfx-style1/',
+    look: LOOK.id, name: site.name, host, font: site.fonts.ui, fontCss: site.fonts.cssUrl, ramp, mono, sfx: '', sound: lib.sound, camera: cam.camera,
     img: { logo: site.logo ?? 'img/hero.jpg', dash: shots[0], analytics: shots[1] ?? shots[0], m8: pics[2] ?? shots[0], m3: pics[3] ?? shots[0], cards: pics.slice(0, 6) },
     words: { p1: words.p1, p2: words.p2, question: words.question, ghost1: q[0] ?? qw[0], ghost2: q[1] ?? qw.at(-1), c1: words.c1, c2: words.c2, meet: 'meet', prefix: words.prefix, cycle: words.cycle, tracked: words.tracked, allWith: 'All with' },
     music: { file: 'bed.m4a', bpm: beat.bpm, lift: beat.lift, id: track.id, title: track.title, licence: track.licence },
@@ -183,7 +190,8 @@ export async function run(o: RunInput, h: Hooks = {}): Promise<RunResult> {
   const page = lookPage(film); writeFileSync(join(dir, 'index.html'), page);
   lap('assemble', s);
 
-  remember('launch', { id: `${id}:${Date.now()}`, setups: [LOOK.id], arc: LOOK.id, site: host });
+  remember('launch', { id: seed, setups: [LOOK.id, ...cam.used.map(u => u.id)], arc: LOOK.id, site: host });
+  await recordParts(seed, host, [{ id: track.id, role: 'music' }, ...lib.used, ...cam.used, ...LOOK_PARTS], log);
   const { url: pv, close } = await servePlayer(dir, o.port ?? 0, page);
   T.to_preview = C.since0(); T.total = T.to_preview;
   log(`\nPREVIEW ${pv}  (${T.to_preview}s)`);

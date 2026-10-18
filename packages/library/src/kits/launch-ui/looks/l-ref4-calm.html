@@ -27,6 +27,8 @@ const FILM = (() => { const d = { name: 'Resend', font: 'Inter', fontCss: null, 
   music: { file: 'snd/bed2.m4a', bpm: 103.0, lift: 0.08 + 27 * 60 / 103.0 } };
   const f = window.FILM || {}; return { ...d, ...f, img: { ...d.img, ...(f.img || {}) }, words: { ...d.words, ...(f.words || {}) }, music: { ...d.music, ...(f.music || {}) } }; })();
 const WD_ = FILM.words, UIF = FILM.font || 'Inter';
+// the film's camera, cast per film from the library graph's camera moves (src/launch/skill.ts castCamera)
+const CAM = { stack: { dist: 0.13, arc: 0.13, sign: 1, ease: 'io' }, desk: { push: 0.105, ease: 'io' }, dash: { ease: 'out', drift: 0.012 }, ...(FILM.camera || {}) };
 if (FILM.fontCss) { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = FILM.fontCss; document.head.appendChild(l); }
 const W = 1920, H = 1080, DUR = 21.1, B = 0.5;
 const cv = document.getElementById('cv'); let X = cv.getContext('2d');
@@ -38,6 +40,7 @@ const logS = (S0, k) => Math.pow(S0, 1 - clamp(k));
 const hash = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
 // the premium speed ramp as an EASING: rest → ≈2× → ≈0.5× → ≈2× → rest (@moovi/library/camera EASES['speed-ramp'])
 const RAMP = (() => { const n = 512, v = u => Math.sin(Math.PI * u) ** 2 * (0.15 + 0.85 * Math.sin(2 * Math.PI * u) ** 2), acc = [0]; for (let i = 1; i <= n; i++) acc.push(acc[i - 1] + v((i - 0.5) / n) / n); return acc.map(a => a / acc[n]); })();
+const EZ = name => ({ io: E.io, smooth: E.io, out: E.out, linear: x => x, 'speed-ramp': u => ramp(u) })[name] || E.io;
 const ramp = u => { if (u <= 0) return 0; if (u >= 1) return 1; const f = u * 512, i = Math.floor(f); return RAMP[i] + (RAMP[i + 1] - RAMP[i]) * (f - i); };
 // Resend's palette, read from its CSS: one warm stone ramp, no hue
 const ST = FILM.ramp || { 950: '#0B0A09', 900: '#12110F', 850: '#191816', 800: '#22201E', 700: '#2E2B28', 600: '#464442', 500: '#6C6A67', 400: '#8C8A86', 300: '#A3A09B', 200: '#C7C2BC', 100: '#E3DED7', 50: '#EFEBE5' };
@@ -151,13 +154,13 @@ function stack3(t) {
   const FIN = [[0.55, 0.0, -0.25, -0.18], [0.95, 0.014, 0.05, 0.22], [0.25, 0.028, 0.15, -0.05], [0.8, 0.042, -0.05, 0.42], [0.5, 0.056, 0.18, -0.3], [0.7, 0.07, -0.12, 0.08]];
   CARDS.forEach((m, i) => { const [x, y, z, ry] = FIN[i], t0 = 0.05 + i * 0.3, k = E.out(sc(t, t0, t0 + 1.05)), sp = spring(sc(t, t0 + 0.35, t0 + 1.3));
     m.position.set(x + (1 - k) * (i % 2 ? 0.9 : -0.7), y + (1 - k) * (2.6 + i * 0.25), z + (1 - k) * 0.6); m.rotation.set((1 - sp) * (i % 2 ? 0.9 : -0.8), ry + (1 - sp) * (i % 2 ? -1.1 : 1.2), (1 - sp) * 0.5); m.visible = t > t0 - 0.05; });
-  const u = sc(t, 0, 3.9), a = lerp(-0.18, -0.05, E.io(u)), d = lerp(4.7, 4.1, E.io(u)); C1.position.set(-0.05 + Math.sin(a) * d * 0.55, d * 0.8, Math.cos(a) * d * 0.6); C1.lookAt(-0.2, 0, 0.05); C1.updateProjectionMatrix();
+  const u = sc(t, 0, 3.9), k = EZ(CAM.stack.ease)(u), a = lerp(-0.115 - CAM.stack.sign * CAM.stack.arc / 2, -0.115 + CAM.stack.sign * CAM.stack.arc / 2, k), d = lerp(4.7, 4.7 * (1 - CAM.stack.dist), k); C1.position.set(-0.05 + Math.sin(a) * d * 0.55, d * 0.8, Math.cos(a) * d * 0.6); C1.lookAt(-0.2, 0, 0.05); C1.updateProjectionMatrix();
   R3.shadowMap.autoUpdate = true; R3.render(S1, C1); X.drawImage(R3.domElement, 0, 0, W, H);
   soft(WD_.p1, 250, H / 2 - 6, 40, t, 1.55, { left: true, c: ST[900], out: 3.55 }); soft(WD_.p2, 250, H / 2 + 46, 40, t, 1.95, { left: true, c: ST[300], out: 3.55 });
 }
 function desk3(t) {
   if (!R3) { X.fillStyle = ST[200]; X.fillRect(0, 0, W, H); return; }
-  screenFace(t); if (!desk3.done) { R3.shadowMap.needsUpdate = true; desk3.done = true; } const u = E.io(sc(t, 3.9, 5.3)); C2.position.set(lerp(0.05, 0, u), lerp(0.62, 0.58, u), lerp(3.35, 3.0, u)); C2.lookAt(0, 0.46, -0.4); C2.updateProjectionMatrix();
+  screenFace(t); if (!desk3.done) { R3.shadowMap.needsUpdate = true; desk3.done = true; } const u = EZ(CAM.desk.ease)(sc(t, 3.9, 5.3)); C2.position.set(lerp(0.05, 0, u), lerp(0.62, 0.58, u), lerp(3.35, 3.35 * (1 - CAM.desk.push), u)); C2.lookAt(0, 0.46, -0.4); C2.updateProjectionMatrix();
   R3.shadowMap.autoUpdate = false; R3.render(S2, C2); X.drawImage(R3.domElement, 0, 0, W, H); R3.shadowMap.autoUpdate = true;
 }
 // ── the soft fields: a few big blobs drawn at 160×90 and scaled up (smooth, no filter) ──
@@ -192,7 +195,7 @@ function scenesB(t) {
     const burst = clamp(E.out(sc(t, 10.6, 11.0)) - E.in(sc(t, 11.4, 12.2)) * 0.7), toMid = E.io(sc(t, 12.55, 13.0));
     field('dark', t, { burst, to: toMid > 0 ? 'mid' : null, k: toMid });
     if (t < 10.95) soft(FILM.name + '.', W / 2, H / 2 + 12, 34, t, 10.05, { c: ST[50], w: 600, out: 10.7 });
-    const fin = E.out(sc(t, 10.75, 11.6)), out = E.in(sc(t, 12.5, 12.95)), s = lerp(0.92, 1, fin) + (t - 11) * 0.012, w = 1180 * s, h = w * 769 / 1440, x = W / 2 - w / 2, y = H / 2 - h / 2 + (1 - fin) * 40;
+    const fin = EZ(CAM.dash.ease)(sc(t, 10.75, 11.6)), out = E.in(sc(t, 12.5, 12.95)), s = lerp(0.92, 1, fin) + (t - 11) * CAM.dash.drift, w = 1180 * s, h = w * 769 / 1440, x = W / 2 - w / 2, y = H / 2 - h / 2 + (1 - fin) * 40;
     if (fin > 0 && out < 1) { if (fin > 0.6) glass(x - 26, y - 26, w + 52, h + 52, 34, 0.4, (fin - 0.6) / 0.4 * (1 - out)); put(metricsSpr(), x, y, w, h, { blur: (1 - fin) * 16 + out * 16, a: clamp(fin * 2) * (1 - out) }); }
     return; }
   field('mid', t);
@@ -233,6 +236,11 @@ const toA = f => pw(KN, AK, f), toF = a => pw(AK, KN, a), DUR_A = toA(DUR);
 const SND = { typing: 'typing.mp3', click: 'kenney.click.wav', mouse: 'fs.ui.mouse-2-button-fast-click.wav', pop: 'ui.pop.wav', 'pop-4': 'fs.ui.pop-4.wav', 'pop-9': 'fs.ui.pop-9.wav', drop: 'fs.foley.water-drop.wav', 'drop-splash': 'fs.foley.water-drop-splash.wav', 'woosh-short': 'woosh-short.wav', 'woosh-tight': 'woosh-tight.wav', 'air-cut': 'fs.whoosh.swosh-whoosh-air-cut.wav', 'soft-hit': 'fs.impact.soft-hit.wav', punch: 'fs.impact.punch2.wav', riser: 'riser.mp3', 'riser-short': 'riser-short.wav', 'ui-riser': 'ui-riser.mp3', chime: 'tonal.chime.wav', notify: 'tonal.notify.wav', snap: 'finger-snap-tight.wav' };
 const ALIGN = { mouse: 'peak', 'drop-splash': 'peak', 'woosh-short': 'peak', 'woosh-tight': 'peak', 'air-cut': 'peak', punch: 'peak', snap: 'peak', riser: 'end', 'riser-short': 'end' };
 const EV = { word: ['typing', -24, ['click', -31]], 'key-word': ['snap', -24], pop: ['pop-4', -25], cascade: ['pop-9', -29], 'card-in': ['woosh-short', -25, ['soft-hit', -32]], 'slide-out': ['woosh-tight', -30], scene: ['air-cut', -25], 'hard-hit': ['punch', -21], stat: ['chime', -27], notify: ['notify', -30], accent: ['drop', -27], 'click-ui': ['mouse', -27], 'ui-reveal': ['ui-riser', -32], build: ['riser', -30], 'build-short': ['riser-short', -30], cta: ['drop-splash', -28], thud: ['soft-hit', -22] };
+// the library graph's cast (src/launch/skill.ts → audio/sounds castSounds): event → its sfx assets in rotation, each
+// cut its own way (an onset slice for typing), the event's level and follow-up from map.json's rules
+const SLICE = { typing: 0.06 }, ROT = {};
+if (FILM.sound) { for (const [k, f] of Object.entries(FILM.sound.files)) { SND[k] = f.src; if (f.align) ALIGN[k] = f.align; if (f.slices) SLICE[k] = f.sliceLen || 0.06; }
+  for (const [e, v] of Object.entries(FILM.sound.events)) { ROT[e] = v.keys; EV[e] = [v.keys[0], v.db, v.then ? [v.then, v.thenDb] : undefined]; } }
 const PRI = ['hard-hit', 'scene', 'card-in', 'key-word', 'stat', 'cta', 'pop', 'notify', 'click-ui', 'accent', 'word', 'cascade', 'slide-out', 'ui-reveal', 'build', 'build-short', 'thud'];
 const words = (t0, n, step = 0.12) => [...Array(n).keys()].map(i => ['word', t0 + i * step]);
 const letters = (t0, n, step) => [...Array(n).keys()].map(i => ['word', t0 + i * step]);
@@ -246,8 +254,9 @@ function onsets(b) { const d = b.getChannelData(0), win = Math.round(b.sampleRat
 async function score() {
   const SR = 44100, ac = new OfflineAudioContext(2, Math.ceil(SR * DUR_A), SR);
   const load = async f => ac.decodeAudioData(await (await fetch(FILM.sfx + f)).arrayBuffer());
-  const bufs = {}; await Promise.all(Object.entries(SND).map(async ([k, f]) => { bufs[k] = await load(f); }));
-  const bed = await ac.decodeAudioData(await (await fetch(FILM.music.file)).arrayBuffer()), meta = {}; for (const [k, b] of Object.entries(bufs)) meta[k] = dbg(b); const typeOn = onsets(bufs.typing);
+  const need = new Set([...new Set(CUES.map(c => c[0]))].filter(e => EV[e]).flatMap(e => { const [k, , th] = EV[e]; return [...(ROT[e] || [k]), ...(th ? [th[0]] : [])]; }));
+  const bufs = {}; await Promise.all([...need].filter(k => SND[k]).map(async k => { try { bufs[k] = await load(SND[k]); } catch (e) { console.warn('sound', k, e); } }));
+  const bed = await ac.decodeAudioData(await (await fetch(FILM.music.file)).arrayBuffer()), meta = {}; for (const [k, b] of Object.entries(bufs)) meta[k] = dbg(b); const ONS = {}, rc = {};
   const lim = ac.createDynamicsCompressor(); lim.threshold.value = -10; lim.knee.value = 2; lim.ratio.value = 12; lim.attack.value = 0.001; lim.release.value = 0.1; const clip = ac.createWaveShaper(), cu = new Float32Array(2048); for (let i = 0; i < 2048; i++) { const x = i / 1023.5 - 1; cu[i] = Math.tanh(x * 1.2) / Math.tanh(1.2) * 0.89; } clip.curve = cu; const pre = ac.createGain(); pre.gain.value = 0.62; lim.connect(pre); pre.connect(clip); clip.connect(ac.destination);
   const fx = ac.createGain(); fx.gain.value = 2.0; fx.connect(lim); // the SFX stem +6 dB (owner rule)
   const room = ac.createConvolver(), ir = ac.createBuffer(2, SR * 0.6, SR); for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); let sd = 9 + c; for (let i = 0; i < d.length; i++) { sd = (sd * 16807) % 2147483647; d[i] = (sd / 1073741823.5 - 1) * Math.pow(1 - i / d.length, 4); } } room.buffer = ir; const wet = ac.createGain(); wet.gain.value = 0.12; fx.connect(room); room.connect(wet); wet.connect(lim);
@@ -264,8 +273,8 @@ async function score() {
     const lin = Math.pow(10, (db + jit() * 1 - m.rms) / 20), al = ALIGN[name]; let start = t, off = o.off ?? 0, dur = o.len;
     if (al === 'peak') start = t - m.peakAt; if (al === 'end') start = t - b.duration; if (start < 0) { off -= start; start = 0; }
     g.gain.value = Math.min(lin, 4); s.connect(g); g.connect(fx); if (dur) { g.gain.setValueAtTime(g.gain.value, start + dur * 0.8); g.gain.linearRampToValueAtTime(0, start + dur); } s.start(start, off, dur ? dur + 0.01 : undefined); };
-  for (const c of kept.sort((a, b) => a.t - b.t)) { const [snd, db, then] = EV[c.e];
-    if (snd === 'typing') { const o = typeOn[(ci++ * 7) % typeOn.length] ?? 0; playS('typing', c.t, db, { off: o, len: 0.06 }); }
+  for (const c of kept.sort((a, b) => a.t - b.t)) { const [snd0, db, then] = EV[c.e], keys = ROT[c.e] || [snd0], snd = keys[(rc[c.e] = (rc[c.e] ?? -1) + 1) % keys.length];
+    if (SLICE[snd] && bufs[snd]) { const on = (ONS[snd] ??= onsets(bufs[snd])); playS(snd, c.t, db, { off: on.length ? on[(ci++ * 7) % on.length] : 0, len: SLICE[snd] }); }
     else if (c.e === 'cascade') { const i = Math.round((toF(c.t) - 0.65) / 0.3); if (i % 2) continue; playS(snd, c.t, db - i * 1.0, { rate: 1 + i * 0.04 }); }
     else playS(snd, c.t, db);
     if (then) playS(then[0], c.t, then[1]); }

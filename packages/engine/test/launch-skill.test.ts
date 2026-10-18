@@ -1,7 +1,10 @@
 // Launch through the skill (src/launch/skill.ts): the palette gate's ramp, the writer's checks, the look page. No FalkorDB.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { BEDS, checkWords, lookPage, rampFrom, skillQuotes, skillSection, writerStep, type FilmWords, type SiteRead } from '../src/launch/skill';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { LOOK_EVENTS } from '../src/launch/skill-cast';
+import { BEDS, LOOK, LOOKS_DIR, checkWords, lookPage, rampFrom, skillQuotes, skillSection, writerStep, type FilmWords, type SiteRead } from '../src/launch/skill';
 import { toOk } from '../src/router/direct-film-ui';
 
 test('a monochrome site keeps a neutral ramp; a saturated mark tints it with its own hue', () => {
@@ -50,4 +53,10 @@ test('the skill\'s example words are refused for another site', () => {
   const a: FilmWords = { p1: 'Too many emails.', p2: 'Too many tabs.', question: 'Where did it go?', c1: 'Planning a sprint', c2: 'should take one minute.', prefix: 'Plan your', cycle: ['roadmaps', 'sprints', 'launches'], tracked: 'Everything planned.', music: 'm', why: '' };
   assert.match(checkWords(a, ['m'], q)!, /example words/);
   assert.equal(checkWords({ ...a, p1: 'Too many boards.' }, ['m'], q), null);
+});
+
+test('the look plays exactly the library events Launch casts', () => {
+  const html = readFileSync(join(LOOKS_DIR, LOOK.file), 'utf8'), cues = html.slice(html.indexOf('const CUES = ['), html.indexOf('];', html.indexOf('const CUES = [')));
+  const used = new Set([...cues.matchAll(/\['([a-z-]+)',/g)].map(m => m[1]!).concat(cues.includes('words(') || cues.includes('letters(') ? ['word'] : []));
+  for (const e of used) assert.ok((LOOK_EVENTS as readonly string[]).includes(e), `the look plays "${e}", which Launch must cast from the library`);
 });
