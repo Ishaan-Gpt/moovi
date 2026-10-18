@@ -52,6 +52,9 @@ test('auto-pick, hook: the first line moves in its first seconds, a number still
   const first = [...r.events].sort((a, b) => a.t0 - b.t0)[0]!;
   assert.ok(first.t0 < 1.0, `the first effect starts with the hook line (${JSON.stringify(r.events.map(e => [e.fx, e.t0]))})`);
   assert.deepEqual(checkFx(r.events), [], 'house rules hold');
+  // a transition never sits under an effect that is up (the render would drop it: the live run lost its Whip Spin)
+  for (const tr of r.events.filter(e => FX[e.fx].kind === 'transition'))
+    assert.ok(!r.events.some(e => FX[e.fx].kind !== 'transition' && tr.t0 > e.t0 - 0.05 && tr.t0 < e.t1), `${tr.fx} at ${tr.t0} under ${JSON.stringify(r.events)}`);
   // a hook that is a number keeps its counter on the number
   const num = at('Most people waste three hours a day on their phone. Here is how I fixed it.');
   const s2 = (await autoFx(num, { src: catalogueFx(), total: num.at(-1)!.end + 0.5 })).events.find(e => e.fx === 'stat-counter');

@@ -169,7 +169,11 @@ export async function autoFx(words: FxWord[], o: { src?: FxSource; max?: number;
   }
   // one transition between two picked moments, on the longest pause between lines (a whip for fast talk, else a flip)
   const gaps = lines.slice(1).map((l, i) => ({ t: lines[i]!.t1, g: l.t0 - lines[i]!.t1 })).filter(g => g.g > 0.25 && g.t > 1).sort((a, b) => b.g - a.g);
-  if (gaps[0] && cues.length >= 2) { const wps = words.length / Math.max(1, words.at(-1)!.end - words[0]!.t); cues.push({ fx: wps > 2.6 ? 'whip-spin' : 'card-flip', at: gaps[0].t }); }
+  // never under an effect that is up: the render drops a transition there (onedit.ts), and the live run announced a
+  // Whip Spin that the finished video did not have (2026-10-18). So the longest pause that is clear of every overlay.
+  const up = cues.length >= 2 ? placeFx(words, cues, o.total).events.filter(e => FX[e.fx].kind !== 'transition') : [];
+  const gap = gaps.find(g => !up.some(e => g.t > e.t0 - 0.05 && g.t < e.t1 + 0.05));
+  if (gap && cues.length >= 2) { const wps = words.length / Math.max(1, words.at(-1)!.end - words[0]!.t); cues.push({ fx: wps > 2.6 ? 'whip-spin' : 'card-flip', at: gap.t }); }
   const placed = placeFx(words, cues, o.total);
   return { events: fitFx(placed.events), picks, missed: placed.missed, source: src.source };
 }
