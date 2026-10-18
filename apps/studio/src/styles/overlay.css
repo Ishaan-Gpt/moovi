@@ -168,7 +168,11 @@
 .vpop__times .is-sum { padding-top: 5px; border-top: 1px solid var(--line); font-weight: 600; color: var(--ink); }
 @media (max-width: 760px) { .vpop__frame.is-live { width: min(100%, calc((58svh - 56px) * 9 / 16)); height: 58svh; } }
 
-/* the one way in (MOOVI_ROUTER=pipeline): type cards reuse the style strip; each file gets a role chip (looks pending Ishaan) */
-.nb__style[data-soon] { opacity: .62; }
-.nb__role { width: auto !important; height: 22px !important; padding: 0 9px; border-radius: 999px !important; font-size: 11.5px; font-weight: 600; color: var(--accent) !important; background: #fff; box-shadow: 0 0 0 1px var(--line) inset; white-space: nowrap; }
-.nb__role[data-role="auto"] { color: var(--ink-2) !important; }
+/* decision 19: the Edit preset's clip and the part to edit (plain; the Frontend session styles it) */
+.nb__range { display: grid; gap: 8px; margin: 0 0 8px; }
+.nb__range video { width: 100%; max-height: 260px; border-radius: 14px; background: var(--ice-soft); }
+.nb__range-row { display: grid; grid-template-columns: 92px 1fr; align-items: center; gap: 10px; font-family: var(--mono); font-size: 12px; }
+.nb__range-row input { width: 100%; }
+.nb__range-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.nb__range-acts em { font-style: normal; font-family: var(--mono); font-size: 12px; margin-left: auto; }
+.nb__pickclip { margin: 0 0 8px; }
