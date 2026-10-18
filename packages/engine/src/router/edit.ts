@@ -157,7 +157,7 @@ export const editReel: Handler = async ctx => {
   // one film (edit wiring step 3): when the director wrote a beat spec, the delivered MP4 is the preview page itself,
   // captured frame by frame (edit/film.ts), over the soundtrack the preview then plays too (mix.m4a: voice, bed, sounds)
   if (plan.beats && plan.beats.picks.length && (process.env.MOOVI_EDIT_FILM ?? 'on') !== 'off') {
-    const names = [...new Set(plan.beats.picks.map(p => p.meta.device.replace(/^cam.move:/, '').replace(/^cam./, 'camera ')))];
+    const names = [...new Set(plan.beats.picks.map(p => p.id.replace(/^[a-z0-9]+:(reel-|edit-|x1-\d+-|s1-)?/, '').replace(/-/g, ' ')))];
     await ctx.say(`Your edit has ${plan.beats.picks.length} moments from the library (${names.join(', ')}), in the preview above. The finished video with the same moments follows in a few minutes.`, 'note', undefined, 'moovi');
     try {
       const lines = fxLines(words.map(w => ({ word: w.word, t: w.t, end: w.end }))).map(l => l.text);

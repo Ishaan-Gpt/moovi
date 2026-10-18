@@ -30,7 +30,7 @@ import { checkAndRepair } from '../review/runner';
 import { scSfxEvents, studioCutEdl, SC_ID } from './templates/studio-cut';
 import { cleanVoice, quietPauses, type CleanVoice } from './voice';
 import { forksOf, linkInto } from '../change/fork';
-import { directBeats, type BeatPick } from './beatspec';
+import { directBeats, type BeatSpec } from './beatspec';
 import { lowerSpec, writeStills } from './beatlower';
 
 /**
@@ -121,7 +121,7 @@ export interface Planned {
   /** the reel effects picked for the clip's words, on the source clock (effects.json), null when off or too few words */
   effects: AutoFx | null;
   /** the director's picks (beats.json; the spec is on edl.spec), null when it did not run */
-  beats: { picks: BeatPick[]; missed: { i: number; why: string }[]; source: string } | null;
+  beats: { picks: BeatSpec['picks']; missed: { i: number; why: string }[]; source: string; from: 'direction' | 'rules' } | null;
   /** why faces are missing, when they are (the look step's own words) */
   lookWhy?: string;
   /** the voice clean-up, running; resolves null when there is no audio or it failed */
@@ -302,14 +302,17 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
     const before = JSON.stringify(edl);
     try {
       const kept = words.filter(w => srcToEdit(edl.shots, w.t) !== null);
-      const d = await directBeats(kept.length >= 4 ? kept : words, { askText: o.asks ?? '' });
+      const ws = kept.length >= 4 ? kept : words;
+      // the bridge's direction carries the brain's reads and picks (edit/direct-spec.ts, Creative mode): that is the
+      // spec the one player draws (beatspec.json); else the rules' director, with the person's chat asks
+      const d = direction?.spec ? { ...(await specOfDirection(direction, ws)), from: 'direction' as const } : { ...(await directBeats(ws, { askText: o.asks ?? '' })), from: 'rules' as const };
       const low = await lowerSpec(edl as never, d.spec);
       const bad = validateEdl(edl as never).problems.filter(p => !p.startsWith('version'));
       if (bad.length || EDIT.timeline(edl).problems.length) { edl = JSON.parse(before); console.warn(`[edit] director undone: ${bad.slice(0, 2).join('; ')}`); }
       else {
         await writeStills(join(dir, file), dir, low.stills);
-        beats = { picks: d.picks, missed: d.missed, source: d.source };
-        writeFileSync(join(dir, 'beats.json'), JSON.stringify({ source: d.source, reads: d.reads.map(r => ({ i: r.i, fn: r.fn, verbs: r.verbs, hero: r.hero, text: r.text })), picks: d.picks.map(p => ({ i: p.i, id: p.id, device: p.meta.device, why: p.why })), missed: d.missed, lowered: { cuts: low.cuts, sfx: low.sfx, moves: low.moves } }, null, 1));
+        beats = { picks: d.spec.picks, missed: d.missed, source: d.source, from: d.from };
+        writeFileSync(join(dir, 'beats.json'), JSON.stringify({ source: d.source, from: d.from, beats: d.spec.beats.map(b => ({ i: b.i, fn: b.fn, hero: b.hero, pick: b.pick })), picks: d.spec.picks, missed: d.missed, lowered: { cuts: low.cuts, sfx: low.sfx, moves: low.moves } }, null, 1));
       }
     } catch (e) { stopIfDown(e, 'edit: director'); edl = JSON.parse(before); beats = null; console.warn(`[edit] director: ${String((e as Error).message ?? e).slice(0, 160)}`); }
   }

@@ -136,6 +136,19 @@ parseAsks("add a crash zoom on 'crore'. orbit on the hook"): Ask[]   // a chat k
   from the camera layer: `[dt, scale, cx, cy, roll]`), `cut` (`{ type, at, dur }`, lowered onto the EDL's cut at that
   word) and `x1` (`{ n, at, dur }`, lowered through `applyMove`).
 
+### Where the spec goes (step 3, one film)
+- `planEdit` writes the spec on `edl.spec`: from the bridge's direction when it carries `spec` (`specOfDirection`, its
+  reads and picks; also saved as `beatspec.json`), else from the rules' director with the person's chat asks. Its cuts,
+  X1 moves and sounds are lowered onto the EDL (`edit/beatlower.ts`); `beats.json` says what was picked and why.
+- The studio's edit page draws it (`edit/beats-draw.ts`, the devices above ported from this player), and the delivered
+  MP4 is that page captured frame by frame (`edit/film.ts`) over one soundtrack (`mix.m4a`: voice, bed, the sounds) the
+  preview plays too. What the server owns stays the server's: the clip, the cut, the grade, the music file.
+- Anchors are words (`w`, `n`, `after`), resolved on the clip's own words and mapped through the cut; a word the cut
+  removed lands on the next kept frame.
+- Not in the product page yet: `desk` (the tabletop world, its cut-out assets), `theme` / `palette` from the spec (the
+  page uses the EDL palette), `caption.variant` (the page keeps its caption styles; Premium Caption 1 is Caption
+  mastery's), and the player's Manrope / Russo One fonts (Inter Tight and Anton stand in until they are vendored).
+
 ## 2026-10-18: v10 "better" (em5's grammar on a new interview take)
 - Kept: the baked grade, one tabletop world with real printed clips that land, self-drawing doodles, a warm light
   leak back to the speaker (Ishaan noticed and liked it), starting on the speaker's own line.
