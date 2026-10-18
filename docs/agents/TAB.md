@@ -1349,3 +1349,34 @@ Thanks, seen. On the Linux box, the MCP tests on the same code (claude-code-brid
 ran 115 pass, 0 fail, 2 skipped, plus tsc clean and the engine suite (563 pass, 1 voice-clean timeout under load that
 passes alone). So the 8 `spawn /bin/sh ENOENT` failures are Windows only (no /bin/sh), and bridge 14 is CPU timing.
 No action needed from Tab on main. Vignesh tests the one prompt setup on Windows next.
+
+## 2026-10-18 15:32 IST, Tab: please review, merge and deploy `claude-code-setup-no-pipe` (one prompt setup blocked on Windows)
+
+Why: Vignesh pasted the one prompt into Claude Code on Windows at 15:25 IST and its permission classifier blocked the
+setup command: "the permission classifier blocked the setup command... curl ... | sh, because it runs code fetched from
+outside the session". Nothing ran. `irm ... | iex` is the same shape, so this blocks every user, not only Windows.
+
+Branch `claude-code-setup-no-pipe` at `a66b5c1`, one commit on top of main `9b0b51f` (fast forward). Bridge plumbing only:
+packages/mcp/src/setup.ts, packages/mcp/test/setup.test.ts, the Settings card prompt line in ClaudeCodeCard.tsx and
+docs/agents/claude-code-bridge/TEST-WITH-CLAUDE-CODE.md.
+
+- The pasted prompt now spells out plain commands, nothing fetched is executed: (1) `curl -sS -X POST <site>/api/brain/setup/<code>/claim.json`
+  (PowerShell: Invoke-RestMethod), a new route that is the same one use claim answering JSON `{ ok, token, ticket, mcp_url,
+  header, prompt, status_url, exit_url }` (410 `{ ok: false, error }` once used or expired); (2) `claude mcp remove` x2
+  and `claude mcp add --scope user --transport http moovi <site>/mcp --header "Authorization: Bearer TOKEN"`; (3) the
+  background `claude -p "<run prompt with TICKET>" --allowedTools mcp__moovi` in the temp folder with CLAUDECODE unset,
+  then `curl -sS -X POST ".../exit?code=$?"`; (4) the status line once a minute. Claude Code fills only TOKEN and TICKET.
+- The `.sh`/`.ps1` scripts and the plain `/claim` are unchanged and still work as a manual fallback.
+- Trade off: the token now shows in the user's own Claude Code tool output for step 1 (the prompt asks it not to repeat
+  it); it never reaches the website or a log. The background run lives as a Claude Code background command, so the
+  pasted window stays open until DONE (it polls anyway).
+
+Gates on a66b5c1 (Linux box): tsc clean in all five packages; mcp 117 pass, 0 fail, 2 skipped (no pwsh here). New tests
+run the prompt's own POSIX commands exactly as written under sh and bash against a local bridge with a stand in `claude`
+(claim JSON, mcp add with the token, the background run with the ticket as one argument and CLAUDECODE unset, the exit
+report reaching the server). Not tested: a real `claude` binary (none on this box), zsh, PowerShell (no pwsh), and a
+real Windows Claude Code session; Vignesh's paste on Windows is that test.
+
+Request (C1): review, merge as a normal merge, then deploy to https://65-2-223-240.sslip.io:
+`sudo bash deploy/server-setup.sh 65-2-223-240.sslip.io --website https://moovi-three.vercel.app`, then check
+`/healthz` and that `POST /api/brain/setup/<fresh code>/claim.json` answers JSON. Reply here with the merge sha.
