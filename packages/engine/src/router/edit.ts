@@ -212,7 +212,7 @@ export const editReel: Handler = async ctx => {
 ).then(r => r.value ? r : (console.log(`[edit] spec: Claude Code gave none (${r.problems.flat().slice(0, 1).join('')}); the menu step on a key or the server model`), menuStep(['claude-code'])))
       .then(async r => { if (r.value) { writeSpec(dir, r.value); await ctx.activity('note', 'the edit is directed: devices on its sentences'); } else console.log(`[edit] spec: the skeleton (${r.problems.flat().slice(0, 2).join('; ')})`); })
       .catch(e => console.warn(`[edit] spec: ${String((e as Error).message ?? e).slice(0, 160)}`));
-    graded = plan.restore.catch(() => null).then(r => r ? prepareClip(dir).then(() => undefined) : undefined).catch(e => console.warn(`[edit] graded cut: ${String((e as Error).message ?? e).slice(0, 160)}`));
+    graded = plan.restore.catch(() => null).then(r => r ? prepareClip(dir).then(() => { console.log(`[edit] ${ctx.task.id} graded cut ready`); }) : undefined).catch(e => console.warn(`[edit] graded cut: ${String((e as Error).message ?? e).slice(0, 160)}`));
     done('player', (Date.now() - p0) / 1000);
   }
   // it plays now: the edit preview player through the studio's preview route, like the live styles
@@ -241,7 +241,17 @@ export const editReel: Handler = async ctx => {
     const v2 = version + 1, file = join(vdir, `v${v2}.mp4`);
     // read the queue now: by the time the .then runs, filmQueue is this job itself, and a job that waits on itself never ends
     const prev = filmQueue;
-    const job = Promise.all([graded, directed]).then(() => prev).then(() => renderMasteryFilm(dir, file));
+    // every stage says itself until the film is done (a long render is never silent): the wait, then the capture's progress
+    const w0 = Date.now();
+    await step('film-wait', 'finishing the graded picture and the direction');
+    const job = Promise.all([graded, directed]).then(async () => { done('film-wait', (Date.now() - w0) / 1000); await prev; })
+      .then(async () => {
+        await step('film', 'recording the finished video');
+        const f0 = Date.now(); let shown = -1;
+        const r = await renderMasteryFilm(dir, file, { onFrame: (k, n) => { const pct = Math.floor(k / n * 10) * 10; if (pct > shown) { shown = pct; const sec = ((Date.now() - f0) / 1000).toFixed(0); console.log(`[edit] ${ctx.task.id} film ${pct}% (${k}/${n} frames, ${sec} s)`); if (pct % 20 === 0) void ctx.activity('note', `recording the finished video: ${pct}% (${sec} s)`); } } });
+        done('film', (Date.now() - f0) / 1000);
+        return r;
+      });
     filmQueue = job.catch(() => undefined);
     try {
       const r = await job;

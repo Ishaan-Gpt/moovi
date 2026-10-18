@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { z } from 'zod';
 import { REPO } from '../config';
-import { askChecked, estimateTokens, runtime, type Checked, type History } from '../runtime';
+import { estimateTokens, reaskText, runtime, type Checked, type History } from '../runtime';
 import { PLAYER_DIR } from './mastery';
 import { skillPrompt } from '../skill-prompt';
 
@@ -81,35 +81,35 @@ export function checkMasterySpec(spec: Record<string, unknown>, i: { words: { wo
 export const SPEC_WAIT_MS = 90_000;
 
 export async function directMasterySpec(i: SpecInput & { signal?: AbortSignal; log?: (s: string) => void; waitMs?: number }): Promise<Checked<Record<string, unknown> | null>> {
-  let noAnswer: string | null = null;
   if (i.words.length < 4) return { value: null, source: 'default', problems: [['too few words']], tries: 0, note: 'the skeleton' };
-  const step = masterySpecStep(i);
-  return askChecked<Record<string, unknown> | null>({
-    label: DIRECT_SPEC_AGENT, ...(i.log ? { log: i.log } : {}),
-    ask: async (history?: History) => {
-      // no answer in time (Claude Code picked the step up and went quiet): no re-ask, the edit moves on to the menu step
-      if (noAnswer) throw new Error(noAnswer);
-      const rt = runtime();
-      if (!rt.complete) throw new Error(`${rt.name} has no single-answer call`);
-      // the full tier only fits Claude Code: a key or the server model gets the compact menu step instead (the router's next step)
-      const ac = new AbortController(), timer = setTimeout(() => ac.abort(), i.waitMs ?? SPEC_WAIT_MS);
-      i.signal?.addEventListener('abort', () => ac.abort(), { once: true });
-      try {
-        return await Promise.race([
-          rt.complete({ agent: DIRECT_SPEC_AGENT, system: step.system, prompt: step.prompt, schema: SpecShape, model: 'brain', deadlineMs: i.waitMs ?? SPEC_WAIT_MS, skipLanes: ['key', 'server'], ...(history ? { history } : {}), signal: ac.signal }),
-          new Promise<never>((_, rej) => ac.signal.addEventListener('abort', () => rej(new Error(`no answer within ${Math.round((i.waitMs ?? SPEC_WAIT_MS) / 1000)} s`)), { once: true })),
-        ]);
-      } catch (e) { noAnswer = String((e as Error).message ?? e).slice(0, 160); throw e; }
-      finally { clearTimeout(timer); }
-    },
-    read: raw => {
-      let spec: Record<string, unknown>;
-      if (raw && typeof raw === 'object') spec = { ...(raw as Record<string, unknown>) };
-      else try { spec = JSON.parse(String(raw).replace(/^```(json)?|```$/g, '').trim()); } catch { return { ok: false, problems: ['not one JSON object'] }; }
-      delete spec.clip;
-      const p = checkMasterySpec(spec, { words: i.words, devices: step.devices, files: i.files ?? new Set() });
-      return p.length ? { ok: false, problems: p } : { ok: true, value: spec };
-    },
-    fallback: () => null,
-  });
+  const step = masterySpecStep(i), wait = i.waitMs ?? SPEC_WAIT_MS;
+  // one ask on Claude Code only (the full tier never goes to a key or the server model, where it is too large), at most `wait`
+  const ask = async (history?: History): Promise<string> => {
+    const rt = runtime();
+    if (!rt.complete) throw new Error(`${rt.name} has no single-answer call`);
+    const ac = new AbortController(), timer = setTimeout(() => ac.abort(), wait);
+    i.signal?.addEventListener('abort', () => ac.abort(), { once: true });
+    try {
+      return await Promise.race([
+        rt.complete({ agent: DIRECT_SPEC_AGENT, system: step.system, prompt: step.prompt, schema: SpecShape, model: 'brain', deadlineMs: wait, skipLanes: ['key', 'server'], ...(history ? { history } : {}), signal: ac.signal }),
+        new Promise<never>((_, rej) => ac.signal.addEventListener('abort', () => rej(new Error(`no answer within ${Math.round(wait / 1000)} s`)), { once: true })),
+      ]);
+    } finally { clearTimeout(timer); }
+  };
+  const read = (raw: unknown): { ok: true; value: Record<string, unknown> } | { ok: false; problems: string[] } => {
+    let spec: Record<string, unknown>;
+    if (raw && typeof raw === 'object') spec = { ...(raw as Record<string, unknown>) };
+    else try { spec = JSON.parse(String(raw).replace(/^```(json)?|```$/g, '').trim()); } catch { return { ok: false, problems: ['not one JSON object'] }; }
+    delete spec.clip;
+    const p = checkMasterySpec(spec, { words: i.words, devices: step.devices, files: i.files ?? new Set() });
+    return p.length ? { ok: false, problems: p } : { ok: true, value: spec };
+  };
+  let raw1: string;
+  // no answer (Claude Code offline or quiet): no re-ask, the edit moves straight on to the menu step
+  try { raw1 = await ask(); } catch (e) { const why = String((e as Error).message ?? e).slice(0, 160); i.log?.(`${DIRECT_SPEC_AGENT}: no answer (${why}); the menu step next`); return { value: null, source: 'default', problems: [[`no answer: ${why}`]], tries: 1, note: 'no answer' }; }
+  const r1 = read(raw1); if (r1.ok) return { value: r1.value, source: 'brain', problems: [], tries: 1 };
+  // an answer the player cannot draw as written: one repair with its exact problems
+  i.log?.(`${DIRECT_SPEC_AGENT}: one repair (${r1.problems.slice(0, 3).join('; ')})`);
+  try { const r2 = read(await ask([{ role: 'assistant', text: raw1 }, { role: 'user', text: reaskText(r1.problems) }])); if (r2.ok) return { value: r2.value, source: 'reask', problems: [r1.problems], tries: 2 }; return { value: null, source: 'default', problems: [r1.problems, r2.problems], tries: 2, note: 'the menu step next' }; }
+  catch (e) { return { value: null, source: 'default', problems: [r1.problems, [`no answer: ${String((e as Error).message ?? e).slice(0, 120)}`]], tries: 2, note: 'the menu step next' }; }
 }
