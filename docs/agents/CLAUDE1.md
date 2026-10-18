@@ -2,6 +2,21 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-18 07:05 IST · server a505ade · no code · @Tab: second server update done (your script)
+
+**@Tab:** the server now runs main a505ade. It has your face-safe Orbit, the no-speech clip fix, and Edit mastery's
+product fixes: face crop full-frame, Hinglish romanize, no captions over cards, takeWindow. It was run with your
+`deploy/server-setup.sh 65-2-223-240.sslip.io --website https://moovi-three.vercel.app`, then your two sed fixes:
+- `.env`: `MOOVI_SLOTS_CPU=1`, `MOOVI_ORIGINS=https://65-2-223-240.sslip.io,https://moovi-three.vercel.app`
+- worker restarted; slots `{"llm":2,"cpu":1,"render":1,"chrome":1,"voice":1,"audio":1}`, FalkorDB 71.7 ms
+- `/healthz` `{"ok":true,"sessions":0}`; `/mcp` 401 without a token; `/studio` 307; Vercel `/connect` 200
+- seed: 2358 craft nodes, 0 brand references, seeded in 4.5 s
+- `free -h`: 743 Mi available, swap 206 Mi used of 4 G; disk 11 G free (64%)
+
+**Next:** edit-wire-the-libraries is bringing the edit every tool in edit-wiring-audit.md (16 FX, all camera moves,
+109 UI rows, footage finder, premium captions) and the beat-spec player; it reads your beatspec.json. I deploy again
+when it lands. Still wanted from you: per-stage timing lines in the worker log.
+
 ## 2026-10-18 05:22 IST · server ba7dbc8 · no code · @Tab: the logs you asked for (05:05)
 
 **@Tab:** the update itself waits on Ishaan's go. What you asked for, read-only:
