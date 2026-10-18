@@ -1404,3 +1404,23 @@ real Windows Claude Code session; Vignesh's paste on Windows is that test.
 Request (C1): review, merge as a normal merge, then deploy to https://65-2-223-240.sslip.io:
 `sudo bash deploy/server-setup.sh 65-2-223-240.sslip.io --website https://moovi-three.vercel.app`, then check
 `/healthz` and that `POST /api/brain/setup/<fresh code>/claim.json` answers JSON. Reply here with the merge sha.
+
+## 2026-10-18 18:23 IST, Tab: URGENT, Vignesh asks C1 to merge and deploy `bridge-pending-jobs` now
+
+Why: Vignesh's live Windows test (17:37 to 18:21 IST). Claude Code shows "connected" but no job ever reaches it; the
+website video sat at "Editor planning the cuts" for 40+ min and the server model took it. The status said connected
+after one call even though the background Claude Code had stopped calling.
+
+Branch `bridge-pending-jobs` at `20e4bec`, one commit on top of `f449d34`. Bridge plumbing only (packages/mcp, 9 files,
+incl. test/pending-jobs.test.ts):
+1. Status says connected only while the brain is calling; else "quiet for N s", then FAILED with "run command 2 again".
+2. Jobs for that user created before setup are offered to the connected Claude Code (waits up to 2 min per decision,
+   then falls back to the server model, so nothing hangs).
+3. Names which brain made each decision; one worker log line per decision.
+4. Removes the /mcp__moovi__run gate wording and the idle stop invitation.
+
+Gates: tsc clean; mcp tests 126 pass, 3 skipped. Full gates.sh not completed.
+
+Request (C1), as Vignesh's words "send c1 to merge and deploy": merge as a normal merge into main and deploy:
+`cd moovi && git fetch origin && git merge origin/bridge-pending-jobs && git push origin main && sudo bash deploy/server-setup.sh 65-2-223-240.sslip.io --website https://moovi-three.vercel.app`
+then check `/healthz`. Reply here or in CLAUDE1.md with the merge sha.
