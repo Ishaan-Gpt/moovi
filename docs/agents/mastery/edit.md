@@ -197,3 +197,15 @@ parseAsks("add a crash zoom on 'crore'. orbit on the hook"): Ask[]   // a chat k
 - The dashed trail has a hand-drawn loop (em5's curly arrow).
 - Perf (same round, PC at 21–54% CPU): v13 31 fps, p95 62 ms; v14 30 fps, p95 67 ms; worst frozen video clock 55 ms.
   Slower than v11 (35–37 fps): the rack backdrop blur, whip blur and the blended light layers cost frames.
+
+## Lab vlog v3 (2026-10-18): back to v10's grammar
+- Ishaan rated the lab vlog's `window` form edit 1/10. The window form (and the auto picker) were Claude's own
+  invention, so both are removed from the player and the skill (1.13.7). The 9/10 bar is v10 (em5's grammar, 83a8565).
+- v3 runs that grammar on the vlog: the speaker full frame and graded, punches on "grinding" and "goes", three desk
+  beats with real prints that land (Mixkit soldering and typing footage, his own lab shot), self-drawing doodles,
+  handwritten labels in his words ("electronics lab", "hyped in", "wonderful team"), the speaker in a pip, light leaks
+  back to him; Keshav named live. Paper and ink from the footage (the lab's sage-cream wall, his plaid's blue-grey).
+- Player: a face that fills the frame puts text in the edge band with more free room (below the chin), never on the
+  face; v10-style string doodles no longer crash the v13 desk code.
+- Open: a 1.6 s video-clock freeze in headless perf on this player (the v10 interview too; v10's own player 289 ms),
+  not yet isolated.
