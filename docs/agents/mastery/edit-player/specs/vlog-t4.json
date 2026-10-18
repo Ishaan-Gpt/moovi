@@ -1,0 +1,256 @@
+{
+ "name": "Lab vlog take 4 \u00b7 the recipe (edit-fundamentals \u00a712)",
+ "clip": "../../edit-t4/take4/base/",
+ "why": "a walk-through vlog: no abstract middle, so no full-screen world; the speaker carries it with tags on the place and the person, a punch on the stressed words, his own 'prepped / hyped' as glass widgets beside his head, a light leak into his palm over the lens; palette from the footage (cool lab whites, his blue plaid), caption accent read from the video; the selfie fills a 9:16 frame, so the speaker sits in a large window over the blurred room, text above and below it",
+ "palette": {
+  "page": "#111418",
+  "panel": "#171b20",
+  "panel-ink": "#E6ECF2",
+  "tag": "rgba(10,14,20,.72)",
+  "accent-soft": "#CFE0EE",
+  "mat": "rgba(255,255,255,.06)",
+  "mat-hi": "rgba(255,255,255,.18)",
+  "mat-edge": "rgba(255,255,255,.28)",
+  "mat-ink": "#FFFFFF"
+ },
+ "theme": {
+  "fall": "rgba(6,8,12,.45)",
+  "ring": "rgba(255,255,255,.75)",
+  "ground": [
+   [
+    0,
+    "#2B3542"
+   ],
+   [
+    0.5,
+    "#161C24"
+   ],
+   [
+    1,
+    "#0A0D12"
+   ]
+  ],
+  "grid": "rgba(200,220,240,.04)",
+  "bloom": [
+   540,
+   820,
+   820,
+   "rgba(150,190,230,.16)"
+  ]
+ },
+ "caption": {
+  "variant": "1.1",
+  "accent": "video"
+ },
+ "music": {
+  "file": "music/bed.mp3",
+  "start": 2,
+  "gain": 0.07
+ },
+ "beats": [
+  {
+   "from": {
+    "w": "hi"
+   },
+   "layers": [
+    {
+     "t": "cam",
+     "z": 1.04,
+     "Y": 0.42,
+     "form": "window"
+    },
+    {
+     "t": "tag",
+     "name": "Electronics Lab",
+     "role": "RV",
+     "at": {
+      "w": "electronics"
+     },
+     "hold": 2.2,
+     "x": 80,
+     "y": 230
+    }
+   ]
+  },
+  {
+   "from": {
+    "w": "here",
+    "after": 4.9
+   },
+   "layers": [
+    {
+     "t": "cam",
+     "z": 1.08,
+     "Y": 0.42,
+     "punch": {
+      "w": "grinding"
+     },
+     "by": 1.07,
+     "form": "window"
+    }
+   ]
+  },
+  {
+   "from": {
+    "w": "and",
+    "after": 6.9
+   },
+   "layers": [
+    {
+     "t": "cam",
+     "z": 1.04,
+     "Y": 0.42,
+     "form": "window"
+    },
+    {
+     "t": "tag",
+     "name": "Keshav",
+     "at": {
+      "w": "keshav"
+     },
+     "hold": 1.8,
+     "x": 80,
+     "y": 230
+    }
+   ]
+  },
+  {
+   "from": {
+    "w": "so",
+    "after": 11
+   },
+   "layers": [
+    {
+     "t": "cam",
+     "z": 1.06,
+     "Y": 0.42,
+     "form": "window"
+    },
+    {
+     "t": "burn",
+     "items": [
+      {
+       "kind": "glass",
+       "text": "prepped up",
+       "icon": "M5 12l5 5 9-10",
+       "at": {
+        "w": "prepped"
+       },
+       "x": 80,
+       "y": 150,
+       "r": -5
+      },
+      {
+       "kind": "glass",
+       "text": "hyped in",
+       "icon": "M13 2L4 14h7l-1 8 9-12h-7z",
+       "at": {
+        "w": "hyped"
+       },
+       "x": 560,
+       "y": 290,
+       "r": 5
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "from": {
+    "w": "let's"
+   },
+   "layers": [
+    {
+     "t": "cam",
+     "z": 1.1,
+     "Y": 0.42,
+     "punch": {
+      "w": "goes"
+     },
+     "by": 1.07,
+     "form": "window"
+    }
+   ]
+  },
+  {
+   "from": {
+    "w": "all",
+    "after": 17
+   },
+   "layers": [
+    {
+     "t": "cam",
+     "z": 1.04,
+     "Y": 0.42,
+     "push": 0.02,
+     "form": "window"
+    },
+    {
+     "t": "leak",
+     "at": {
+      "w": "catch"
+     }
+    }
+   ]
+  }
+ ],
+ "sfx": [
+  {
+   "at": {
+    "w": "electronics"
+   },
+   "k": "whoosh",
+   "g": 0.35
+  },
+  {
+   "at": {
+    "w": "grinding"
+   },
+   "k": "hit",
+   "g": 0.5
+  },
+  {
+   "at": {
+    "w": "keshav"
+   },
+   "k": "whoosh",
+   "g": 0.35
+  },
+  {
+   "at": {
+    "w": "prepped"
+   },
+   "k": "pop",
+   "g": 0.45
+  },
+  {
+   "at": {
+    "w": "hyped"
+   },
+   "k": "pop",
+   "g": 0.45
+  },
+  {
+   "at": {
+    "w": "goes"
+   },
+   "k": "hit",
+   "g": 0.45
+  },
+  {
+   "at": {
+    "w": "catch"
+   },
+   "k": "whoosh",
+   "g": 0.4
+  },
+  {
+   "at": {
+    "w": "you",
+    "after": 19
+   },
+   "k": "chime",
+   "g": 0.45
+  }
+ ]
+}
