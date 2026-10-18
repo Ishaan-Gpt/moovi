@@ -10,6 +10,7 @@
  *   POST /api/brain/setup                 website (cookie): a one time setup code and the prompt text
  *   GET  /api/brain/setup/<code>.sh|.ps1  the script (no secret in it; safe to read before running)
  *   POST /api/brain/setup/<code>/claim    the script's call: first use only, mints the token and a run ticket
+ *   POST /api/brain/setup/<code>/claim.json  the same claim as JSON, for the plain commands in the pasted prompt
  *   POST /api/brain/setup/<code>/exit     the background Claude Code's wrapper says it stopped (?code=<exit code>)
  *   GET  /api/brain/setup/<code>/status   one plain line (DONE/FAILED/IDLE at the end), for the pasted window
  *
@@ -47,17 +48,32 @@ export function childPrompt(ticket: string): string {
   return `You are the Moovi brain for one video. Call the moovi_next tool with ticket set to ${ticket}. Then do what each result says: on think, decide as its system and task ask and call moovi_answer; on working or waiting, call moovi_next again at once. Never ask anything and never stop early. At done, failed or idle print one line that starts with MOOVI and stop.`;
 }
 
-/** The text the website shows (one copy button). One line works everywhere Claude Code runs a POSIX shell (macOS,
- *  Linux, and Windows, where Claude Code's shell is Git Bash and the sh script hands over to PowerShell itself); the
- *  PowerShell line is only for a shell without sh. Said once in the card, not here: the code works once, for 30 min. */
-export function setupPrompt(origin: string, code: string): string {
+/** The text the website shows (one copy button). Plain commands only, each written out in full (Vignesh 2026-10-18
+ *  15:25 IST: Claude Code's permission classifier blocked `curl ... | sh` "because it runs code fetched from outside the
+ *  session"). Claude Code runs a claim call that answers JSON, `claude mcp add` with the token from that answer, and the
+ *  background `claude -p` with the ticket from that answer; nothing fetched is ever executed. The POSIX lines work in
+ *  sh, bash and zsh (macOS, Linux, and Git Bash, Claude Code's shell on Windows); the PowerShell lines are for a
+ *  PowerShell shell. The .sh/.ps1 scripts stay as a manual fallback. Said once in the card, not here: the code works
+ *  once, for 30 min. The only blanks Claude Code fills are TOKEN and TICKET, both from the claim's JSON. */
+export function setupPrompt(origin: string, code: string, mcpUrl = `${origin}/mcp`): string {
   const base = `${origin}/api/brain/setup/${code}`;
+  const child = childPrompt('TICKET');
   return [
-    'Connect Moovi and make my video. Do every step yourself and ask me nothing.',
-    `1. Run: curl -fsSL ${base}.sh | sh`,
-    `   If your shell has no sh, run instead: powershell -NoProfile -Command "irm ${base}.ps1 | iex"`,
-    '2. Run the progress command it prints about once a minute. Tell me in one short line when it changes.',
-    '3. Stop at DONE (give me the link), FAILED or IDLE.',
+    `Connect Moovi and make my video. Run these commands yourself, one at a time, and ask me nothing. They are plain commands to my own Moovi server at ${origin}; nothing is downloaded and run.`,
+    '1. Claim my one use setup code:',
+    `   curl -sS -X POST ${base}/claim.json`,
+    `   (PowerShell: Invoke-RestMethod -Method Post -Uri ${base}/claim.json)`,
+    '   It answers JSON with a token and a ticket. If ok is false, tell me its error and stop. Do not show me the token.',
+    '2. Add Moovi to Claude Code for later sessions. Put the token from step 1 in place of TOKEN. Errors from the two remove commands are fine:',
+    '   claude mcp remove moovi -s local',
+    '   claude mcp remove moovi -s user',
+    `   claude mcp add --scope user --transport http moovi ${mcpUrl} --header "Authorization: Bearer TOKEN"`,
+    '3. Start Moovi as a background command (it runs for several minutes). Put the ticket from step 1 in place of TICKET:',
+    `   cd "\${TMPDIR:-/tmp}" && env -u CLAUDECODE -u CLAUDE_CODE_ENTRYPOINT claude -p "${child}" --allowedTools mcp__moovi > moovi-brain.log 2>&1 < /dev/null; curl -sS -X POST "${base}/exit?code=$?"`,
+    `   (PowerShell: $env:CLAUDECODE = $null; $env:CLAUDE_CODE_ENTRYPOINT = $null; Start-Process -WindowStyle Hidden -WorkingDirectory $env:TEMP -FilePath (Get-Command claude -CommandType Application | Select-Object -First 1).Source -ArgumentList '-p "${child}" --allowedTools mcp__moovi')`,
+    `4. About once a minute run: curl -sS ${base}/status   (PowerShell: Invoke-RestMethod ${base}/status). Tell me in one short line when it changes.`,
+    '5. Stop at DONE (give me the link), FAILED or IDLE.',
+    'If a step is blocked, show me that exact command so I can run it myself, then carry on.',
   ].join('\n');
 }
 
@@ -201,13 +217,14 @@ export function setupApi(o: SetupApiOptions) {
     const code = SETUP_PREFIX + randomBytes(16).toString('hex');
     const now = hub.now();
     await hub.store.set(key(code), JSON.stringify({ user: u, createdAt: now, claimedAt: null } satisfies SetupRecord), SETUP_MS);
-    return Response.json({ prompt: setupPrompt(o.origin(req), code), expires_at: now + SETUP_MS }, { headers: { 'cache-control': 'no-store' } });
+    return Response.json({ prompt: setupPrompt(o.origin(req), code, o.mcpUrl(req)), expires_at: now + SETUP_MS }, { headers: { 'cache-control': 'no-store' } });
   }
 
   /** first use only: the token (replacing any old one, like Make a new command) and a run ticket for the background window.
    *  Two scripts racing on one code: the setNx lock lets exactly one through. */
-  async function claim(code: string): Promise<Response> {
-    const used = () => plain('MOOVI: this setup code was already used or has expired.', 410);
+  async function claim(code: string, json = false, req?: Request): Promise<Response> {
+    const usedText = 'MOOVI: this setup code was already used or has expired.';
+    const used = () => json ? Response.json({ ok: false, error: `${usedText} Copy a fresh prompt from Moovi Settings.` }, { status: 410, headers: { 'cache-control': 'no-store' } }) : plain(usedText, 410);
     const r = await read(code);
     if (!r || r.claimedAt !== null) return used();
     if (!(await hub.store.setNx(`${key(code)}:claim`, '1', SETUP_STATUS_MS))) return used();
@@ -216,7 +233,10 @@ export function setupApi(o: SetupApiOptions) {
     await hub.store.set(key(code), JSON.stringify(r), SETUP_STATUS_MS);
     const { token } = await hub.tokens.mint(r.user, 'Claude Code (one prompt)');
     const ticket = await hub.gate.mintTicket(r.user);
-    return plain(`${token}\n${ticket}\n${childPrompt(ticket)}\n`);
+    if (!json || !req) return plain(`${token}\n${ticket}\n${childPrompt(ticket)}\n`);
+    // the pasted prompt's plain commands read these fields; the token goes into `claude mcp add` and nowhere else
+    const u = `${o.origin(req)}/api/brain/setup/${code}`;
+    return Response.json({ ok: true, token, ticket, mcp_url: o.mcpUrl(req), header: `Authorization: Bearer ${token}`, prompt: childPrompt(ticket), status_url: `${u}/status`, exit_url: `${u}/exit` }, { headers: { 'cache-control': 'no-store' } });
   }
 
   /** the wrapper's last word: the background Claude Code stopped with this exit code (first report wins) */
@@ -250,11 +270,11 @@ export function setupApi(o: SetupApiOptions) {
     // the wrapper said the background Claude Code stopped
     if (r.exit) {
       if (!last) return plain(r.exit.code === 0 ? 'MOOVI: IDLE: the background Claude Code stopped before a video started. Start one on the Moovi website, then type /mcp__moovi__run in Claude Code.'
-        : `MOOVI: FAILED: the background Claude Code stopped (exit ${r.exit.code})${connected ? '' : ' before it connected; is Claude Code signed in?'}. Its log is in the moovi folder the setup printed.`);
+        : `MOOVI: FAILED: the background Claude Code stopped (exit ${r.exit.code})${connected ? '' : ' before it connected; is Claude Code signed in?'}. Its log is moovi-brain.log in the temp folder (or in the moovi folder the setup script printed).`);
       if (r.exit.code !== 0 || now - r.exit.at > SETUP_EXIT_GRACE_MS) return plain(`MOOVI: FAILED: the background Claude Code stopped (exit ${r.exit.code}) while ${last.title ?? 'your video'} was still running. ${pickUp}`);
     }
     // no word from the wrapper (a killed process, a sleeping computer): judge by when it last called Moovi
-    if (!connected && now - claimed > SETUP_CONNECT_MS) return plain('MOOVI: FAILED: the background Claude Code never connected. Is Claude Code signed in (run claude once)? Its log is in the moovi folder the setup printed.');
+    if (!connected && now - claimed > SETUP_CONNECT_MS) return plain('MOOVI: FAILED: the background Claude Code never connected. Is Claude Code signed in (run claude once)? Its log is moovi-brain.log in the temp folder (or in the moovi folder the setup script printed).');
     if (connected && last && now - seen! > SETUP_QUIET_MS) return plain(`MOOVI: FAILED: the background Claude Code went quiet while ${last.title ?? 'your video'} was running. ${pickUp}`);
     if (!last) return plain(now - claimed > SETUP_IDLE_MS ? 'MOOVI: IDLE: no video was started. Start one on the Moovi website, then type /mcp__moovi__run in Claude Code.'
       : `MOOVI: ${connected ? 'connected' : 'connecting'}; waiting for a video: upload a clip on the Moovi website.`);
@@ -272,10 +292,11 @@ export function setupApi(o: SetupApiOptions) {
       const h = new Headers(r.headers); for (const [k, v] of Object.entries(corsHeaders(origin!))) h.set(k, v);
       return new Response(r.body, { status: r.status, headers: h });
     }
-    const m = /\/api\/brain\/setup\/(mvs_[0-9a-f]{32})(\.sh|\.ps1|\/claim|\/exit|\/status)$/.exec(p);
+    const m = /\/api\/brain\/setup\/(mvs_[0-9a-f]{32})(\.sh|\.ps1|\/claim\.json|\/claim|\/exit|\/status)$/.exec(p);
     if (!m) return /\/api\/brain\/setup\//.test(p) ? plain('MOOVI: unknown setup link.', 404) : null;
     const [, code, what] = m as unknown as [string, string, string];
     if (what === '/claim') return req.method === 'POST' ? claim(code) : plain('POST', 405);
+    if (what === '/claim.json') return req.method === 'POST' ? claim(code, true, req) : Response.json({ ok: false, error: 'POST' }, { status: 405 });
     if (what === '/exit') return req.method === 'POST' ? exit(code, req) : plain('POST', 405);
     if (req.method !== 'GET') return plain('GET', 405);
     if (what === '/status') return status(code);

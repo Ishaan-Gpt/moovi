@@ -10,7 +10,8 @@ type Status = { linked: boolean; online: boolean; claude_code?: string; token_la
  * address ('' when it shares this site's address, as on a server). The token shows once, right after it is made.
  * One prompt setup (Vignesh, Oct 18: "1 prompt then claude code itself runs and sets up"): the main button gets a
  * prompt from /api/brain/setup (packages/mcp/src/setup.ts) to paste into Claude Code, which connects itself and runs;
- * the old two step command stays as the by hand way.
+ * the old two step command stays as the by hand way. The prompt holds plain commands only (no `curl | sh`, which Claude
+ * Code's permission classifier blocks).
  */
 export function ClaudeCodeCard({ bridge }: { bridge: string }) {
   const [status, setStatus] = useState<Status>(null);
@@ -65,7 +66,7 @@ export function ClaudeCodeCard({ bridge }: { bridge: string }) {
       <p className="model__ok"><span className="model__dot" aria-hidden="true" style={{ opacity: status?.online ? 1 : 0.35 }} />Use <b>Claude Code</b> (no key)<span className="muted"> · {state}{status?.linked && status.token_last4 ? `, token ending ${status.token_last4}` : ''}</span></p>
       <ol className="model__small">
         <li>Upload a clip here.</li>
-        <li>Copy your setup prompt and paste it into Claude Code. It connects itself and keeps going until the video is done.</li>
+        <li>Copy your setup prompt and paste it into Claude Code. It runs a few plain commands, connects itself and keeps going until the video is done.</li>
       </ol>
       {prompt && (
         <label className="field"><span>Your setup prompt (works once, for 30 minutes)</span>
