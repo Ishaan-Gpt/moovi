@@ -53,7 +53,7 @@ export function childPrompt(ticket: string): string {
 export function setupPrompt(origin: string, code: string): string {
   const base = `${origin}/api/brain/setup/${code}`;
   return [
-    'Connect Moovi and edit my video. Do every step yourself and ask me nothing.',
+    'Connect Moovi and make my video. Do every step yourself and ask me nothing.',
     `1. Run: curl -fsSL ${base}.sh | sh`,
     `   If your shell has no sh, run instead: powershell -NoProfile -Command "irm ${base}.ps1 | iex"`,
     '2. Run the progress command it prints about once a minute. Tell me in one short line when it changes.',
