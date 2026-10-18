@@ -43,11 +43,15 @@ export const writeJson = (f: string, v: unknown) => { ensureDir(dirname(f)); wri
 
 export interface Probe { duration: number; width?: number; height?: number; fps?: number; hasAudio: boolean; hasVideo: boolean; codec?: string }
 export async function probe(file: string): Promise<Probe> {
-  const { stdout } = await sh(config.ffprobe, ['-v', 'error', '-show_entries', 'format=duration:stream=codec_type,codec_name,width,height,r_frame_rate', '-of', 'json', file], { timeout: 60_000 });
-  const j = JSON.parse(stdout) as { format?: { duration?: string }; streams?: { codec_type: string; codec_name?: string; width?: number; height?: number; r_frame_rate?: string }[] };
+  const { stdout } = await sh(config.ffprobe, ['-v', 'error', '-show_entries', 'format=duration:stream=codec_type,codec_name,width,height,r_frame_rate:stream_side_data=rotation:stream_tags=rotate', '-of', 'json', file], { timeout: 60_000 });
+  const j = JSON.parse(stdout) as { format?: { duration?: string }; streams?: { codec_type: string; codec_name?: string; width?: number; height?: number; r_frame_rate?: string; side_data_list?: { rotation?: number }[]; tags?: { rotate?: string } }[] };
   const v = j.streams?.find(s => s.codec_type === 'video'), a = j.streams?.find(s => s.codec_type === 'audio');
   const [n, d] = (v?.r_frame_rate ?? '0/1').split('/').map(Number);
-  return { duration: Number(j.format?.duration ?? 0), width: v?.width, height: v?.height, fps: d ? n! / d : undefined, hasAudio: !!a, hasVideo: !!v, codec: v?.codec_name };
+  // a phone clip stored portrait with a 90° rotation flag plays (and decodes, ffmpeg autorotates) landscape: the size
+  // every step works in is the displayed one, not the stored one
+  const rot = Math.abs(Number(v?.side_data_list?.find(x => x.rotation !== undefined)?.rotation ?? v?.tags?.rotate ?? 0)) % 180;
+  const [width, height] = rot === 90 ? [v?.height, v?.width] : [v?.width, v?.height];
+  return { duration: Number(j.format?.duration ?? 0), width, height, fps: d ? n! / d : undefined, hasAudio: !!a, hasVideo: !!v, codec: v?.codec_name };
 }
 
 /** Integrated loudness (LUFS) and true peak (dBTP), by ffmpeg's EBU R128 filter. */
