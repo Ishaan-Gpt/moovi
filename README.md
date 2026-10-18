@@ -8,6 +8,12 @@ From the makers of MotionEasy and CaptionsEasy.
 The landing page runs on Vercel; the studio, the film-making worker and FalkorDB run on one AWS server
 (`docs/DEPLOY.md`). Every push to `main` redeploys the landing page.
 
+## The graph (FalkorDB)
+
+![Moovi's FalkorDB graph schema](docs/img/falkordb-graph.png)
+
+One FalkorDB server holds separate graphs per user and per project (`user_<uid>`, `proj_<pid>`) plus the `craft`, `sys` and `styles` graphs. The crews call fixed, named Cypher queries, and shortestPath explains why each choice was made.
+
 ## Repository
 
 ```
