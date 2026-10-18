@@ -26,7 +26,7 @@ with no model key of their own:
 Hearing the clip needs no key since Oct 18: with no `GROQ_API_KEY` or `OPENAI_API_KEY`, Moovi runs Whisper on your own
 machine (about 5 s for a 20 s clip). A Groq or OpenAI key is optional: faster on long clips and more accurate.
 
-## 0a. One prompt setup (branch claude-code-bridge, prototype, waits on Ishaan's go)
+## 0a. One prompt setup (on main since Oct 18; fixes on branch claude-code-bridge-fixes)
 
 Instead of the command plus `/mcp__moovi__run`: in Moovi Settings press "Copy my setup prompt" (or `/connect`, "Make my
 setup prompt") and paste it into Claude Code. Claude Code runs one line (`curl -fsSL .../<code>.sh | sh` everywhere;
@@ -51,6 +51,25 @@ SKILL.md and edit reference in its system text (about 12k tokens), and falls bac
 The same skill files are also listed as read only MCP resources (`moovi://skill/ishaan-motion/...`), so Claude Code
 can open Launch and Showreel references from its resource picker. Tests: `packages/mcp/test/edit-spec.test.ts`,
 `packages/mcp/test/skill.test.ts`.
+
+## 0b. Windows one prompt test (Oct 18)
+
+1. `git fetch && git checkout claude-code-bridge-fixes` (main plus the bridge fixes), then `pnpm install`.
+2. Three terminals at the repo root: `pnpm dev:landing`, `pnpm dev:studio`, `pnpm dev:bridge` (not `dev:engine`).
+   The bridge now also listens on `[::1]:3200`, because Windows tries `::1` first for `localhost`; its terminal says
+   `also listening on [::1]:3200`.
+3. Sign in at `http://localhost:3000/studio` (an account with no model key), open Settings, press
+   **Copy my setup prompt**, paste it into Claude Code. Claude Code runs the `curl ... | sh` line in Git Bash; the script
+   sees Windows and hands over to PowerShell (`powershell.exe`), which adds Moovi to Claude Code and starts the background
+   Claude Code in a hidden window. Expect `MOOVI: connected (run rt_...)` and a progress command (`curl.exe -fsS .../status`).
+4. Start a video on the website. Edit on current main: the film step after the live preview waits on itself
+   (router/edit.ts, in TAB.md for C1), so the run stays at working and Claude Code never hears DONE. Until that line is
+   fixed, test Launch video or Showreel, or put `MOOVI_EDIT_PLAYER=old` in `.env.local` for the Edit test.
+5. Watch for: a FAILED line that names the cause (no claude in that shell, code used or older than 30 min, claude mcp add
+   failed), and that the progress command moves from working to DONE with the studio link. A video that fails at once
+   now reaches Claude Code as FAILED with its reason (before, it read "nothing running" until it gave up). Keep the
+   pasted Claude Code window open until DONE. If something breaks, send section 8's items plus the MOOVI lines and the
+   log path the script printed (in `%TEMP%\moovi`).
 
 ## 1. One time setup
 

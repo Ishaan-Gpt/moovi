@@ -221,7 +221,9 @@ export const editReel: Handler = async ctx => {
   // the delivered MP4 is recorded from that same player (its own sounds), one film at a time
   if (M) {
     const v2 = version + 1, file = join(vdir, `v${v2}.mp4`);
-    const job = Promise.all([graded, directed]).then(() => filmQueue).then(() => renderMasteryFilm(dir, file));
+    // read the queue now: by the time the .then runs, filmQueue is this job itself, and a job that waits on itself never ends
+    const prev = filmQueue;
+    const job = Promise.all([graded, directed]).then(() => prev).then(() => renderMasteryFilm(dir, file));
     filmQueue = job.catch(() => undefined);
     try {
       const r = await job;

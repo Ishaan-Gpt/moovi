@@ -165,3 +165,18 @@ export function webRoute(fn: (req: Request) => Promise<Response | null>, o: { ma
     return true;
   };
 }
+
+/**
+ * "localhost" is ::1 first on Windows (and in Node 17+ and Bun clients), while the bridge prints localhost and listens
+ * on 127.0.0.1: the setup script's PowerShell, curl and Claude Code's own client then met a refusal on ::1 before (or
+ * instead of) the IPv4 answer. A second listener on ::1 with the same handlers answers there too. Best effort: a machine
+ * with no IPv6 loopback (or the port taken there) gets null and runs on 127.0.0.1 as before.
+ */
+export async function alsoOnIpv6Loopback(server: Server, port: number): Promise<Server | null> {
+  const v6 = createServer();
+  for (const l of server.listeners('request')) v6.on('request', l as (req: IncomingMessage, res: ServerResponse) => void);
+  return new Promise(res => {
+    v6.once('error', () => res(null));
+    v6.listen(port, '::1', () => res(v6));
+  });
+}

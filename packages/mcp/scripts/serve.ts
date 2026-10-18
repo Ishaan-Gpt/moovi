@@ -6,7 +6,8 @@
 // `pnpm dev:engine` (MOOVI_BRIDGE_WORKER=0 serves the bridge alone). FalkorDB is required (DECISIONS.md 13).
 import { sessionUser } from '@moovi/engine';
 import { loadModel } from '@moovi/engine/keys';
-import { BrainHub, bridgeApp, corsOrigins, falkorStore, memoryStore, sessionCookieAuth, type BrainStore } from '../src/index';
+import { project as P, projectGraph, run as runQ } from '../../graph/src/index';
+import { alsoOnIpv6Loopback, BrainHub, bridgeApp, corsOrigins, falkorStore, memoryStore, sessionCookieAuth, type BrainStore } from '../src/index';
 
 const port = Number(process.env.MOOVI_BRIDGE_PORT ?? 3200), host = process.env.MOOVI_BRIDGE_HOST ?? '127.0.0.1';
 let store: BrainStore;
@@ -20,7 +21,9 @@ try {
   console.warn('[bridge] MOOVI_GRAPH_OPTIONAL=1: steps and tokens live in memory and are lost on restart (local dev only)');
   store = memoryStore();
 }
-const hub = new BrainHub(store, { publicUrl: process.env.MOOVI_PUBLIC_URL ?? 'http://localhost:3000' });
+// the board asks the graph for a run's status, so a video stopped on the website ends for Claude Code too
+const runStatus = async (project: string, run: string) => (await runQ<{ status: string }>(projectGraph(project), P.run, { id: run }))[0]?.status ?? null;
+const hub = new BrainHub(store, { publicUrl: process.env.MOOVI_PUBLIC_URL ?? 'http://localhost:3000', runStatus });
 const fixed = process.env.MOOVI_BRIDGE_URL?.trim();
 // pages that may call /api/brain/* with the user's cookie: MOOVI_ORIGINS, and in local dev the studio on another
 // localhost port (its Settings card "Use Claude Code")
@@ -34,6 +37,8 @@ const app = bridgeApp(hub, {
   log: line => console.log(line),
 });
 await new Promise<void>(res => app.http.listen(port, host, res));
+// the default loopback also answers on ::1, where Windows resolves the printed localhost first (alsoOnIpv6Loopback)
+if (host === '127.0.0.1' && await alsoOnIpv6Loopback(app.http, port)) console.log(`[bridge] also listening on [::1]:${port} (localhost on Windows)`);
 // the sign-in cookie of the website on localhost reaches this port only under the same host name, so print localhost
 const shown = host === '0.0.0.0' || host === '127.0.0.1' || host === '::1' ? 'localhost' : host;
 console.log(`[bridge] Claude Code bridge on http://${shown}:${port}/mcp · connect page http://${shown}:${port}/connect (open it in the browser you are signed in to Moovi with)`);

@@ -8,7 +8,7 @@
 import { byokMode, registerBrainHooks, registerBrainScope, serverModel } from '@moovi/engine/keys';
 import { currentRun } from '@moovi/engine/brain';
 import type { Runtime } from '@moovi/engine/runtime';
-import { JobBoard } from './board';
+import { JobBoard, type RunStatusOf } from './board';
 import type { BridgeOptions } from './bridge';
 import { Gate } from './lease';
 import { StepQueue } from './queue';
@@ -20,6 +20,8 @@ export interface HubOptions {
   now?: () => number;
   /** the website's public origin, for the "your video is ready" link (MOOVI_PUBLIC_URL) */
   publicUrl?: string | null;
+  /** the engine's Run.status for a job, so the board settles a run stopped on the website (scripts/serve.ts reads the graph) */
+  runStatus?: RunStatusOf | null;
 }
 
 export class BrainHub {
@@ -37,7 +39,7 @@ export class BrainHub {
     this.presence = new Presence(this.now, store);
     this.gate = new Gate(store, this.queue, this.now, u => this.presence.touch(u));
     this.tokens = new TokenStore(store, this.now);
-    this.board = new JobBoard(store, this.now, (p, c) => (base ? `${base}/studio/p/${p}/c/${c}` : null));
+    this.board = new JobBoard(store, this.now, (p, c) => (base ? `${base}/studio/p/${p}/c/${c}` : null), opts.runStatus ?? null);
   }
   connectCommand(mcpUrl: string, token: string) { return connectCommand(mcpUrl, token); }
 

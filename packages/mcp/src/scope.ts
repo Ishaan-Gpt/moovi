@@ -64,6 +64,9 @@ export function brainScope(o: {
     // a step's 'brain' (and the tier names) become the lane's own model ids; the server lane uses this machine's config
     ...(o.own?.models ? { models: { key: o.own.models } } : {}),
   });
-  const base = o.own ?? { models: { director: 'server', crew: 'server', fast: 'server' }, deadlineScale: 1, drawsWell: true };
+  // no key of their own: the tiers keep their logical names, which the lane turns into the server's model ids (the
+  // literal 'server' went to the provider as a model id: "model: server" 404, the Launch writer on a keyless user with
+  // Claude Code linked, local e2e 2026-10-18). Claude Code ignores the model; it answers with its own.
+  const base = o.own ?? { models: { director: 'director', crew: 'crew', fast: 'fast' }, deadlineScale: 1, drawsWell: true };
   return { ...base, runtime, provider: BRIDGE_PROVIDER, ...(o.own?.audio ? { audio: o.own.audio } : {}) } as ModelScope;
 }

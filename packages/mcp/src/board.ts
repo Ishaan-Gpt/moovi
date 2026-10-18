@@ -17,8 +17,14 @@ export interface JobInfo {
   error?: string | null;
 }
 
+/** the engine's own word on a run (the graph's Run.status), or null when it cannot be read */
+export type RunStatusOf = (project: string, run: string) => Promise<string | null>;
+/** what Claude Code hears when the user stopped the video on the website */
+export const STOPPED = 'the video was stopped on the Moovi website';
+const ENDED = new Set(['done', 'failed', 'cancelled']);
+
 export class JobBoard {
-  constructor(readonly store: BrainStore, readonly now: () => number = Date.now, readonly urlOf: (project: string, chat: string) => string | null = () => null) {}
+  constructor(readonly store: BrainStore, readonly now: () => number = Date.now, readonly urlOf: (project: string, chat: string) => string | null = () => null, readonly statusOf: RunStatusOf | null = null) {}
 
   async get(job: string): Promise<JobInfo | null> { const v = await this.store.get(KEY.job(job)); return v ? JSON.parse(v) as JobInfo : null; }
   private async put(j: JobInfo) { await this.store.set(KEY.job(j.job), JSON.stringify(j), JOB_TTL_MS); }
@@ -44,11 +50,23 @@ export class JobBoard {
     return j;
   }
 
-  /** the user's recent jobs, newest last */
+  /**
+   * The user's recent jobs, newest last. A row still "running" is checked against the engine's run (statusOf): a run
+   * the user stopped on the website (the stop command never reports an end here) or one whose end never arrived is
+   * settled from the graph, so it cannot keep every later video at "working" for the board's 24 h.
+   */
   async recent(user: string): Promise<JobInfo[]> {
     const ids = await this.store.range(KEY.jobs(user));
     const out: JobInfo[] = [];
-    for (const id of ids) { const j = await this.get(id); if (j) out.push(j); else await this.store.remove(KEY.jobs(user), id); }
+    for (const id of ids) {
+      let j = await this.get(id);
+      if (!j) { await this.store.remove(KEY.jobs(user), id); continue; }
+      if (j.state === 'running' && j.project && this.statusOf) {
+        const s = await this.statusOf(j.project, j.job).catch(() => null);
+        if (s && ENDED.has(s)) j = await this.finish({ job: j.job, ok: s === 'done', error: s === 'cancelled' ? STOPPED : (s === 'failed' ? 'the run failed' : null) }) ?? j;
+      }
+      out.push(j);
+    }
     return out;
   }
   async running(user: string): Promise<JobInfo[]> { return (await this.recent(user)).filter(j => j.state === 'running'); }
