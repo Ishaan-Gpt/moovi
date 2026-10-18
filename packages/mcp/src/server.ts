@@ -100,6 +100,10 @@ export function buildMcp(hub: BrainHub, ctx: SessionCtx): McpServer {
   const watched = new Set<string>();
   // since when this window has been waiting on a video another window holds (undefined: it is not)
   let otherSince: number | undefined;
+  // since when this window has been looking for videos: one that starts AND ends between two looks (a preset refused at
+  // once, a writer with no model) was never seen running, so without this Claude Code heard "nothing running" and gave up
+  // without telling the user it failed (local Showreel e2e 2026-10-18: failed in 0.4 s, Claude Code read "waiting")
+  let lookingSince: number | undefined;
   // item 20: a window that closes gives its videos back at once, so a /mcp__moovi__run in another window goes on right away
   mcp.server.onclose = () => { void hub.gate.release(session, leases).catch(() => undefined); };
 
@@ -122,6 +126,7 @@ export function buildMcp(hub: BrainHub, ctx: SessionCtx): McpServer {
     if (!(await hub.gate.useTicket(user, session, ticket))) return text({ status: 'idle', message: IDLE_NO_TICKET });
     let blocked = false;
     const started = hub.now();
+    lookingSince ??= started;
     tokenCheckedAt = started; // the request itself was just verified
     const got = await longPoll<CallToolResult>({
       waitMs: Math.min(waitS * 1000, WAIT_MAX_MS), signal: extra.signal, onProgress: progress(extra),
@@ -143,11 +148,15 @@ export function buildMcp(hub: BrainHub, ctx: SessionCtx): McpServer {
           if (elsewhere.every(Boolean)) { blocked = true; return null; }
         }
         otherSince = undefined;
+        if (!watched.size && lookingSince !== undefined) {
+          const since = lookingSince;
+          for (const j of await hub.board.recent(user)) if (j.state !== 'running' && j.startedAt >= since) watched.add(j.job);
+        }
         if (!watched.size) return null;
         const mine = (await Promise.all([...watched].map(j => hub.board.get(j)))).filter(j => j !== null);
         if (mine.length && mine.every(j => j.state !== 'running')) {
           const last = mine.sort((a, b) => (a.endedAt ?? 0) - (b.endedAt ?? 0)).at(-1)!;
-          watched.clear(); leases.clear();
+          watched.clear(); leases.clear(); lookingSince = hub.now();
           return text(last.state === 'done'
             ? { status: 'done', title: last.title, url: last.url, seconds: Math.round(((last.endedAt ?? hub.now()) - last.startedAt) / 1000), message: 'The video is ready on the Moovi website. Tell the user, with the link if there is one, and stop.' }
             : { status: 'failed', url: last.url, ...(last.error ? { reason: last.error } : {}), message: failedMessage(last.error) });
@@ -234,6 +243,7 @@ export function buildMcp(hub: BrainHub, ctx: SessionCtx): McpServer {
   }, async () => {
     ticket = await hub.gate.mintTicket(user);
     await hub.gate.useTicket(user, session, ticket);
+    lookingSince ??= hub.now();
     return { description: 'Moovi: be the brain for one video', messages: [{ role: 'user', content: { type: 'text', text: runPrompt(ticket) } }] };
   });
 

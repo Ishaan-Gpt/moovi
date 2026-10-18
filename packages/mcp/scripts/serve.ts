@@ -7,7 +7,7 @@
 import { sessionUser } from '@moovi/engine';
 import { loadModel } from '@moovi/engine/keys';
 import { project as P, projectGraph, run as runQ } from '../../graph/src/index';
-import { BrainHub, bridgeApp, corsOrigins, falkorStore, memoryStore, sessionCookieAuth, type BrainStore } from '../src/index';
+import { alsoOnIpv6Loopback, BrainHub, bridgeApp, corsOrigins, falkorStore, memoryStore, sessionCookieAuth, type BrainStore } from '../src/index';
 
 const port = Number(process.env.MOOVI_BRIDGE_PORT ?? 3200), host = process.env.MOOVI_BRIDGE_HOST ?? '127.0.0.1';
 let store: BrainStore;
@@ -37,6 +37,8 @@ const app = bridgeApp(hub, {
   log: line => console.log(line),
 });
 await new Promise<void>(res => app.http.listen(port, host, res));
+// the default loopback also answers on ::1, where Windows resolves the printed localhost first (alsoOnIpv6Loopback)
+if (host === '127.0.0.1' && await alsoOnIpv6Loopback(app.http, port)) console.log(`[bridge] also listening on [::1]:${port} (localhost on Windows)`);
 // the sign-in cookie of the website on localhost reaches this port only under the same host name, so print localhost
 const shown = host === '0.0.0.0' || host === '127.0.0.1' || host === '::1' ? 'localhost' : host;
 console.log(`[bridge] Claude Code bridge on http://${shown}:${port}/mcp · connect page http://${shown}:${port}/connect (open it in the browser you are signed in to Moovi with)`);
