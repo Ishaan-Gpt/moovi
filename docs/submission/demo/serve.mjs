@@ -1,7 +1,7 @@
 // The demo's one preview server: serves the repo root (so /packages/... kits and /data/demo/... media resolve) with
 // byte-range support, so video and audio seek. Usage: node docs/submission/demo/serve.mjs [port]
 import { createServer } from 'node:http';
-import { createReadStream, statSync } from 'node:fs';
+import { createReadStream, statSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, normalize, extname, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -13,6 +13,13 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '
 
 createServer((req, res) => {
   let p = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+  if (req.method === 'POST' && p.startsWith('/save/')) { // frames from a page render → data/demo/out/<dir>/<file>
+    const rel = p.slice(6).replace(/[^\w./-]/g, '').replace(/\.\.+/g, '.'), dest = normalize(join(ROOT, 'data/demo/out', rel));
+    if (!dest.startsWith(normalize(join(ROOT, 'data/demo/out')))) { res.writeHead(403).end(); return; }
+    mkdirSync(dirname(dest), { recursive: true }); const chunks = [];
+    req.on('data', c => chunks.push(c)); req.on('end', () => { writeFileSync(dest, Buffer.concat(chunks)); res.writeHead(200).end('ok'); });
+    return;
+  }
   if (p.endsWith('/')) p += 'index.html';
   const file = normalize(join(ROOT, p));
   if (!file.startsWith(ROOT)) { res.writeHead(403).end(); return; }
