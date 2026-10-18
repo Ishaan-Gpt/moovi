@@ -21,7 +21,8 @@ arc. The writer labels each line with its slot, in this order:
 - solution (2-3 lines): the answer, and how it works, one concrete picture a line.
 - climax (1 line): the peak, the sharpest and most quotable line of the film.
 - cta (1 line, 3-9 words): read aloud. What to do next: with a brand, the action and its name; with a topic, a line
-  that makes the viewer act (try it, look for it, follow for the next one).
+  that makes the viewer act (try it, look for it, follow for the next one). With no brand or link given, the cta
+  names no site, shop, studio or address: none exists, so any name is invented.
 
 ## Writing laws (every theme)
 - Humanized and spoken: how a person talks, contractions, "you", rhythm that varies (a short line after a long one).
@@ -29,7 +30,7 @@ arc. The writer labels each line with its slot, in this order:
 - Plain, specific, concrete nouns the viewer could point at. Sentence case. 3 to 12 words a line.
 - No hype words (revolutionary, seamless, unleash, supercharge, next-gen, game-changer), no exclamation marks, no
   emoji, no "in this video".
-- Never invent a number, a name or a claim the brief or site does not give.
+- Never invent a number, a name, a website or a claim the brief or site does not give (the problem too: a real problem, not a made-up disaster).
 
 Every theme below holds TODAY's values (moved from the old styles' voices on 2026-10-18). They are references to beat,
 not defaults Ishaan chose: each changes only with his verdict on a film (decision 15 and 16).

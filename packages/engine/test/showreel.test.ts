@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { checkArc, readSkill } from '../src/showreel';
+import { checkArc, inventedName, readSkill } from '../src/showreel';
 
 test('the skill gives the Showreel themes and the hook -> problem -> solution -> climax -> cta arc', () => {
   const { themes, arc } = readSkill();
@@ -13,4 +13,9 @@ test('beats must follow the arc in order and within each slot count', () => {
   assert.deepEqual(checkArc(['hook', 'problem', 'solution', 'solution', 'climax', 'cta'].map(b), arc), []);
   assert.ok(checkArc(['problem', 'hook', 'solution', 'solution', 'climax', 'cta'].map(b), arc).length);
   assert.ok(checkArc(['hook', 'problem', 'solution', 'climax'].map(b), arc).some(p => p.includes('cta')));
+});
+
+test('a topic film cta never names an invented site or studio', () => {
+  for (const l of ['Check the lighthouse schedule at lighthouse.org.', 'Explore the inner beat at WatchLab.', 'Discover the shade at Indigo Studio.']) assert.ok(inventedName(l), l);
+  for (const l of ['Next foggy night, look for the beam.', 'Follow for the next one.', 'Open the back of your watch and listen.']) assert.ok(!inventedName(l), l);
 });

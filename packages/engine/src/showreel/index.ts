@@ -76,8 +76,12 @@ export function checkArc(beats: Beat[], arc: Slot[]): string[] {
   return bad;
 }
 
-export function checkPicks(a: ShowreelPicks, themes: Theme[], arc: Slot[], forced?: string): string | null {
+/** No brand and no link: the cta may not name a site, shop or studio (any name there is invented). */
+export const inventedName = (line: string) => /\b[a-z0-9-]+\.(com|org|net|io|ai|co|in|app|dev)\b/i.test(line) || /\b(at|on|visit|with)\s+(the\s+)?[A-Z][a-z]+\s?[A-Z]?/.test(line.replace(/^\S+\s/, ''));
+
+export function checkPicks(a: ShowreelPicks, themes: Theme[], arc: Slot[], forced?: string, named = false): string | null {
   const bad: string[] = checkArc(a.beats, arc), t = themes.find(x => x.id === a.theme);
+  const cta = a.beats.find(b => b.slot === 'cta'); if (!named && cta && inventedName(cta.line)) bad.push('cta names a site or place-name that the brief does not give: make the viewer act without naming one');
   a.lines = a.beats.map(b => b.line);
   if (!t) return `theme is one of: ${themes.map(x => x.id).join(', ')}`;
   if (forced && a.theme !== forced) bad.push(`theme must be "${forced}" (the user chose it)`);
@@ -127,7 +131,7 @@ export async function showreel(input: ShowreelInput, h: Hooks = {}): Promise<Sho
   h.start?.('brief'); let s = Date.now();
   const step = writerStep(themes, laws, arc, { brief: input.brief, site }, forced);
   const picks = await ask({ agent: 'showreel:write', tier: 'crew', deadlineMs: 60_000, signal, system: step.system, prompt: step.prompt, schema: PICKS,
-    validate: a => checkPicks(a as ShowreelPicks, themes, arc, forced) }) as ShowreelPicks;
+    validate: a => checkPicks(a as ShowreelPicks, themes, arc, forced, !!(input.url || input.brand?.trim())) }) as ShowreelPicks;
   const theme = themes.find(t => t.id === picks.theme)!;
   if (!RENDERERS.has(theme.renderer)) throw new Error(`theme ${theme.id}: renderer "${theme.renderer}" is not a Showreel renderer`);
   const lines = picks.beats.map(b => b.line.trim()), title = input.brand?.trim() || picks.title.trim();
