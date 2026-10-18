@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, extname, join } from 'node:path';
 import { project as P, run as runQ, SYS, sys as S } from '@moovi/graph';
 import { publish } from '../bus';
 import type { Command } from '../commands';
@@ -75,6 +75,20 @@ export function fxReason(e: unknown): string {
   return last.length > 220 ? last.slice(0, 217) + '...' : last;
 }
 
+/** A valid trim {in, out} in seconds (in < out, both finite, in >= 0), else null (the whole clip). Pure. */
+export function trimSpan(t: { in?: number; out?: number } | undefined): { in: number; out: number } | null {
+  if (!t) return null;
+  const a = Number(t.in ?? 0), b = Number(t.out);
+  return Number.isFinite(a) && Number.isFinite(b) && a >= 0 && b - a >= 0.5 ? { in: +a.toFixed(3), out: +b.toFixed(3) } : null;
+}
+/** The picked part of the upload as its own file (frame-accurate: re-encoded at a high quality), cached by its span. */
+async function trimmed(src: string, out: string, p: { in: number; out: number }): Promise<string> {
+  if (existsSync(out)) return out;
+  mkdirSync(dirname(out), { recursive: true });
+  execFileSync(config.ffmpeg, ['-v', 'error', '-y', '-ss', String(p.in), '-i', src, '-t', String(+(p.out - p.in).toFixed(3)), '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '14', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '192k', '-movflags', '+faststart', out]);
+  return out;
+}
+
 /** If this brief is an edit of the user's own clip, start its run (true); else leave it to the other paths. */
 export async function routeEdit(cmd: Brief, uploads: Upload[]): Promise<boolean> {
   const target = editTarget(cmd, uploads);
@@ -121,7 +135,7 @@ async function recordEditWhy(ctx: Parameters<Handler>[0], plan: Awaited<ReturnTy
 }
 
 export const editReel: Handler = async ctx => {
-  const inp = ctx.input<{ upload: string; caption?: string; names?: string[]; brief?: string }>();
+  const inp = ctx.input<{ upload: string; caption?: string; names?: string[]; brief?: string; trim?: { in?: number; out?: number } }>();
   const [u] = (await ctx.q<Upload>(P.uploads, { chat: ctx.chat })).filter(x => x.id === inp.upload);
   if (!u) throw new Error('The clip to edit is missing');
   const t0 = Date.now();
@@ -135,7 +149,10 @@ export const editReel: Handler = async ctx => {
   const M = mastery();
   let graded: Promise<void> = Promise.resolve(), directed: Promise<void> = Promise.resolve();
   // the player path needs the hearing, the cuts, the faces and the graded picture; the old page's casting steps stay off
-  const plan = await planEdit({ path: u.path, dir, name: u.name, signal: ctx.signal, onStage: step, onDone: done, onNote: text => ctx.activity('note', text),
+  // decision 19: the upload's part picker sends trim {in, out} seconds; only that part is edited
+  const part = trimSpan(inp.trim);
+  const clipPath = part ? await trimmed(u.path, join(dir, '..', `trim-${part.in}-${part.out}${extname(u.name) || '.mp4'}`), part) : u.path;
+  const plan = await planEdit({ path: clipPath, dir, name: u.name, signal: ctx.signal, onStage: step, onDone: done, onNote: text => ctx.activity('note', text),
     ...(M ? { library: false, inserts: false, effects: false, beats: false, moves: [], check: false } : { style: 'auto' }), brief: inp.brief ?? '', requireWords: !NO_WORDS.test(inp.brief ?? ''), ...(inp.caption ? { caption: inp.caption } : {}), ...(inp.names?.length ? { names: inp.names } : {}), asks: inp.brief ?? '', footage: process.env.MOOVI_EDIT_FOOTAGE === 'on' }).finally(() => lines.end());
   void plan.restore.then(r => r && ctx.activity('note', r.restored
     ? `cleaned and upscaled your clip from ${r.from.w}x${r.from.h} to ${r.to.w}x${r.to.h}${r.graded ? ', graded' : ''} (${r.seconds} s)`
@@ -168,7 +185,7 @@ export const editReel: Handler = async ctx => {
   const vdir = join(ctx.projectDir, 'videos', ctx.chat); mkdirSync(vdir, { recursive: true });
   writeFileSync(liveRefFile(ctx.projectDir, ctx.chat, version), JSON.stringify(ref, null, 1));
   let poster: string | null = null;
-  try { execFileSync(config.ffmpeg, ['-v', 'error', '-y', '-ss', String(EDIT.srcAt(edl, t.duration / 2)), '-i', u.path, '-frames:v', '1', '-vf', 'scale=432:-2', join(vdir, `v${version}.jpg`)]); poster = `${ctx.chat}/v${version}.jpg`; } catch (e) { console.warn(`[edit] poster: ${String(e).slice(0, 120)}`); }
+  try { execFileSync(config.ffmpeg, ['-v', 'error', '-y', '-ss', String(EDIT.srcAt(edl, t.duration / 2)), '-i', clipPath, '-frames:v', '1', '-vf', 'scale=432:-2', join(vdir, `v${version}.jpg`)]); poster = `${ctx.chat}/v${version}.jpg`; } catch (e) { console.warn(`[edit] poster: ${String(e).slice(0, 120)}`); }
   const title = `${u.name.replace(/\.[^.]+$/, '')} · Edit`;
   await ctx.q(P.setChat, { id: ctx.chat, title, status: 'ready', at: Date.now() });
   await publish(ctx.chat, { type: 'title', title });
@@ -228,7 +245,7 @@ export const editReel: Handler = async ctx => {
       const { renderEditFx } = await import('../edit/effects/onedit');
       const v2 = version + 1, file = join(vdir, `v${v2}.mp4`), tr = Date.now();
       console.log(`[edit] ${ctx.task.id} effects render start: ${plan.effects.events.length} effects, ${plan.duration.toFixed(1)} s of film`);
-      const base = { video: restored?.file && existsSync(restored.file) ? restored.file : u.path, shots: edl.shots, words: words.map(w => ({ word: w.word, t: w.t, end: w.end })), out: file, audio: plan.source.hasAudio !== false, voice: cleaned?.file ?? null };
+      const base = { video: restored?.file && existsSync(restored.file) ? restored.file : clipPath, shots: edl.shots, words: words.map(w => ({ word: w.word, t: w.t, end: w.end })), out: file, audio: plan.source.hasAudio !== false, voice: cleaned?.file ?? null };
       let r: Awaited<ReturnType<typeof renderEditFx>>;
       try { r = await renderEditFx({ ...base, events: plan.effects.events, work: join(dir, 'fx-work'), music: bed ? { file: bed.file } : null }); }
       catch (e1) {
@@ -237,7 +254,7 @@ export const editReel: Handler = async ctx => {
         console.warn(`[edit] effects edit, first try: ${why1}`);
         await ctx.activity('note', `effects render hit a problem (${why1}), trying once more without the music and the cutout`);
         const simple = plan.effects.events.filter(e => !FX[e.fx].behind);
-        r = await renderEditFx({ ...base, video: u.path, events: simple.length ? simple : plan.effects.events, work: join(dir, 'fx-work-2'), music: null });
+        r = await renderEditFx({ ...base, video: clipPath, events: simple.length ? simple : plan.effects.events, work: join(dir, 'fx-work-2'), music: null });
       }
       const used = [...new Set(r.events.map(e => FX[e.fx].label))];
       console.log(`[edit] ${ctx.task.id} effects render done in ${((Date.now() - tr) / 1000).toFixed(1)} s (${used.join(', ')})${r.events.length < plan.effects.events.length ? `; ${plan.effects.events.length - r.events.length} dropped at render` : ''}`);

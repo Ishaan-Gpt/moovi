@@ -55,3 +55,10 @@ test('a model-written spec plays only when the player can draw it as written (el
   const p = checkMasterySpec(bad, { words, devices, files }).join(' | ');
   for (const why of ['not said', 'not a device', 'window form', 'cam z 0', 'design px', 'not a file']) assert.ok(p.includes(why), `${why}: ${p}`);
 });
+
+test('an upload\'s picked part (trim in/out) is what the edit edits; a bad span is the whole clip', async () => {
+  const { trimSpan } = await import('../src/router/edit');
+  assert.deepEqual(trimSpan({ in: 2.5, out: 31 }), { in: 2.5, out: 31 });
+  assert.deepEqual(trimSpan({ out: 12 }), { in: 0, out: 12 });
+  for (const bad of [undefined, { in: 5, out: 5.2 }, { in: -1, out: 4 }, { in: 3 }, { in: 9, out: 2 }]) assert.equal(trimSpan(bad as never), null);
+});
