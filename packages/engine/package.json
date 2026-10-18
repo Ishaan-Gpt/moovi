@@ -8,6 +8,7 @@
     ".": "./src/index.ts",
     "./bus": "./src/bus.ts",
     "./events": "./src/events.ts",
+    "./synapse-shape": "./src/synapse-shape.ts",
     "./commands": "./src/commands.ts",
     "./styles": "./src/styles/index.ts",
     "./styles/serve": "./src/styles/serve.ts",

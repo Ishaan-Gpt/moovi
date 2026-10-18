@@ -2911,6 +2911,57 @@ MATCH (r:Reference)-[:TAUGHT]->(k:Kit {id: $kit})
 RETURN r.id AS ref, coalesce(r.title, r.id) AS title
 ```
 
+## proj_<pid>: the synapse (how a run used the memory: agents, named queries, rows; never query text or values)
+
+### `saveSynapse` (write)
+
+A finished run keeps its synapse: the call events (names, counts, times only) and one CALLED edge per agent and named query.
+
+```cypher
+MATCH (r:Run {id: $run})
+MERGE (s:Synapse {run: $run})
+SET s.events = $events, s.calls = $n, s.at = $at
+MERGE (r)-[:TRACED]->(s)
+WITH r
+UNWIND $calls AS c
+MERGE (a:Agent {id: c.agent})
+MERGE (k:Call {name: c.name, graph: c.graph})
+MERGE (a)-[e:CALLED {run: $run}]->(k)
+SET e.n = c.n, e.rows = c.rows, e.ms = c.ms
+RETURN count(e) AS edges
+```
+
+### `synapseOf` (read-only)
+
+A finished run’s kept synapse (its call events), for the replay.
+
+```cypher
+MATCH (:Run {id: $run})-[:TRACED]->(s:Synapse)
+RETURN s.events AS events, s.calls AS calls, s.at AS at
+LIMIT 1
+```
+
+### `synapseCalls` (read-only)
+
+Which agent called which named query in a run, how often, how many rows: the synapse as a graph.
+
+```cypher
+MATCH (a:Agent)-[e:CALLED {run: $run}]->(k:Call)
+RETURN a.id AS agent, k.name AS name, k.graph AS graph, e.n AS n, e.rows AS rows, e.ms AS ms
+ORDER BY n DESC
+```
+
+### `runsOfChat` (read-only)
+
+Every run of a chat’s video, newest first (the synapse view’s run picker).
+
+```cypher
+MATCH (:Chat {id: $chat})-[:MAKES]->(:Video)-[:BUILT_BY]->(r:Run)
+RETURN r.id AS id, r.n AS n, r.status AS status, r.kind AS kind, r.at AS at, r.updated AS updated
+ORDER BY r.n DESC
+LIMIT 20
+```
+
 
 ## proj_<pid>: who voices each film
 

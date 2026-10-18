@@ -7,7 +7,8 @@ import { activeProjects, blocking, consumeCommands, dequeue, enqueue, markActive
 import type { Command } from './commands';
 import { config, type Resource } from './config';
 import { TaskCtx, desk, type Claimed, type Handler, type RunRow } from './ctx';
-import { activity, attributeQueries, inScope, pq, say, status } from './live';
+import { activity, attributeQueries, inScope, pq, say, scope, status } from './live';
+import { keepSynapse, recordSynapse } from './synapse';
 import { keyOf, promote, recover, reopen, runState, spawn, tid } from './scheduler';
 
 /**
@@ -57,6 +58,7 @@ export class Worker {
 
   async start() {
     attributeQueries();
+    recordSynapse(() => scope.getStore()); // the studio's live FalkorDB view (synapse.ts)
     const n = await this.recoverAll();
     console.log(`[engine] worker ${this.id}: re-queued ${n} task(s); slots ${JSON.stringify(config.slots)}`);
     for (const res of this.o.resources ?? (Object.keys(config.slots) as Resource[])) for (let i = 0; i < config.slots[res]; i++) this.loops.push(this.loop(res));
@@ -166,6 +168,7 @@ export class Worker {
       await pq(pid, P.setRun, { id: runId, status: 'failed', error: msg.slice(0, 500), at: Date.now(), brief: null, skill: null, card: null, match: null });
       await say(pid, run.chat, 'moovi', `I couldn’t finish this one: ${t.title.toLowerCase()} failed (${msg.slice(0, 220)}). Ask me to try again, or change the brief.`, 'error');
       await publish(run.chat, { type: 'run', run: { id: runId, n: run.n, status: 'failed' } });
+      void keepSynapse(pid, run.chat, runId);
       await brainRun({ type: 'end', user, project: pid, run: runId, chat: run.chat, ok: false, error: `${t.title.toLowerCase()} failed (${msg.slice(0, 220)})` });
       await this.o.onRunEnd?.(pid, run, false);
     } finally {
@@ -184,6 +187,7 @@ export class Worker {
     await publish(run.chat, { type: 'run', run: { id: runId, n: run.n, status: s.failed ? 'failed' : 'done' } });
     const still = await pq<{ id: string }>(pid, P.activeRuns);
     if (!still.length) await markActive(pid, false);
+    void keepSynapse(pid, run.chat, runId);
     await brainRun({ type: 'end', user: await ownerOf(pid).catch(() => ''), project: pid, run: runId, chat: run.chat, ok: !s.failed });
     await this.o.onRunEnd?.(pid, run, !s.failed);
   }

@@ -6,5 +6,7 @@ export { publish, history, follow, blocking, sendCommand, hit, redis } from './b
 export { signUp, signIn, signOut, sessionUser, createProject, listProjects, owns, createChat, AuthError, SESSION_DAYS } from './accounts';
 export { newId } from './ids';
 export { say, userSay } from './live';
+export { synapseSnapshot, followSynapse } from './synapse';
+export type { SynSnapshot, SynEvent } from './synapse-shape';
 export { projectDir, runDir } from './ctx';
 export { setModel, modelInfo, clearModel, byokMode, PROVIDER_CHOICES, providerChoices, type ModelInfo } from './keys';

@@ -3,12 +3,12 @@
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { craft, sys, user, project, styles, media, voice, library, launch, types, why, whyCraft, type Q } from '../src/queries';
+import { craft, sys, user, project, styles, media, voice, library, launch, types, why, whyCraft, synapse, type Q } from '../src/queries';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const block = (q: Q) => `### \`${q.name}\` ${q.ro ? '(read-only)' : '(write)'}\n\n${q.about}\n\n\`\`\`cypher\n${q.cypher}\n\`\`\`\n`;
 const section = (title: string, qs: Q[]) => `## ${title}\n\n${qs.map(block).join('\n')}`;
-const groups = [craft, sys, user, project, styles, media, library, launch, types, why, whyCraft].map(g => Object.values(g));
+const groups = [craft, sys, user, project, styles, media, library, launch, types, why, whyCraft, synapse].map(g => Object.values(g));
 
 const md = `# Every Cypher query the engine runs
 
@@ -55,7 +55,8 @@ ${section('craft: the library (every asset a film or an edit can cast)', groups[
 ${section('craft: the Launch style (its library, where each part came from, what films used)', groups[7]!)}
 ${section('craft: the type registry (the seven types, their looks and library slices)', groups[8]!)}
 ${section('proj_<pid>: why this edit? (each film decision and the shortest path back to its cause)', groups[9]!)}
-${section('craft: where a library asset came from (for the why path)', groups[10]!)}`;
+${section('craft: where a library asset came from (for the why path)', groups[10]!)}
+${section('proj_<pid>: the synapse (how a run used the memory: agents, named queries, rows; never query text or values)', groups[11]!)}`;
 
 const voiced = `
 
