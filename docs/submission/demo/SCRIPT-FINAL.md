@@ -1,5 +1,8 @@
 # Moovi demo film: final script (read-aloud)
 
+**Format (Ishaan): landscape only, 1920×1080 (16:9).** Every piece is built and checked at 16:9, including
+references that arrive in 9:16 or 10:7 (D1's live picture is 1080×756, so its pieces are rebuilt at 16:9 for the film).
+
 About 3:00. Hook A and the safe time-stamped line (switch either if you prefer). The on-screen proof per beat is in
 SCRIPT.md.
 
