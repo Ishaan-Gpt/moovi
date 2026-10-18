@@ -368,7 +368,7 @@ export function ticks(list: Card[]): number[] {
 export interface Scene { face?: { x: number; y: number; w: number; h: number } | null; person?: CanvasImageSource | null }
 
 /** The anchor of a stack card, read once when the card starts (so the block never jumps while it holds). */
-type Anchor = { cx: number; cy: number; span: number; face: { x: number; y: number; w: number; h: number } | null };
+type Anchor = { cx: number; cy: number; span: number; face: { x: number; y: number; w: number; h: number } | null; wmax?: number };
 const ANCHORS = new Map<string, Anchor>();
 
 /**
@@ -489,23 +489,27 @@ function drawPoster(ctx: CanvasRenderingContext2D, p: PremiumPreset, c: Card, t:
   const sans = p.tiers[2] ?? script;
   const r = p.enter;
 
-  // the anchor, once per card: centred on the face, the key from the forehead to below the shoulders (v2, approved look)
+  // the anchor, once per card: centred on the speaker, below the face
   const id = `poster|${c.t0}|${W}x${H}`;
   let an = ANCHORS.get(id);
   if (!an) {
     const f = scene.face ?? null;
     an = f
-      ? { cx: (f.x + f.w / 2) * W, cy: (f.y + f.h * 0.55) * H, span: f.h * H * 1.25, face: f }
-      : { cx: W / 2, cy: p.y * H, span: H * 0.42, face: null };
+      // like Caption 3 (the look Ishaan approved for text behind the speaker): the key is wider than the shoulders
+      // (3.2 face widths) and centred at the neck, so both ends of the word show beside the body and only the neck and
+      // shoulders pass in front of it, where the cut-out is solid; across the face, every hole in the matte shows
+      ? { cx: (f.x + f.w / 2) * W, cy: (f.y + f.h) * H - 0.08 * f.h * H, span: f.h * H * 0.95, face: f, wmax: Math.min(W - 2 * m, f.w * W * 3.2) }
+      : { cx: W / 2, cy: p.y * H, span: H * 0.42, face: null, wmax: W * 0.62 };
     if (ANCHORS.size > 500) ANCHORS.clear();
     ANCHORS.set(id, an);
   }
 
-  // the key: its cap height spans the anchor (shrunk if it would run past the frame)
+  // the key: as wide as the shoulders span (its height capped at about a face), never past the frame
   const keyWords = c.key;
   const keyText = cased(key, keyWords.map(w => w.text).join(' '));
   let kpx = font(ctx, key, S);
-  const k0 = Math.max(0.5, an.span / (kpx * cap));
+  const kw1 = ctx.measureText(keyText).width * (key.wide ?? 1);
+  const k0 = Math.max(0.3, Math.min(an.span / (kpx * cap), (an.wmax ?? W - 2 * m) / Math.max(1, kw1)));
   kpx = font(ctx, key, S, k0);
   const kw0 = ctx.measureText(keyText).width * (key.wide ?? 1);
   const kfit = Math.min(1, (W - 2 * m) / kw0, (H - 2 * m) / (kpx * cap));

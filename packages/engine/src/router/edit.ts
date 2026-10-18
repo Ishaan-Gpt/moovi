@@ -125,7 +125,7 @@ export const editReel: Handler = async ctx => {
   const dir = join(ctx.dir, 'edit');
   // probe, look, hear, plan, and the voice clean-up started beside the preview: one function, the bench runs it too
   const plan = await planEdit({ path: u.path, dir, name: u.name, signal: ctx.signal, onStage: step, onDone: done, onNote: text => ctx.activity('note', text),
-    style: 'auto', brief: inp.brief ?? '', requireWords: !NO_WORDS.test(inp.brief ?? ''), ...(inp.caption ? { caption: inp.caption } : {}), ...(inp.names?.length ? { names: inp.names } : {}), asks: inp.brief ?? '', footage: (process.env.MOOVI_EDIT_FOOTAGE ?? 'on') !== 'off' }).finally(() => lines.end());
+    style: 'auto', brief: inp.brief ?? '', requireWords: !NO_WORDS.test(inp.brief ?? ''), ...(inp.caption ? { caption: inp.caption } : {}), ...(inp.names?.length ? { names: inp.names } : {}), asks: inp.brief ?? '', footage: process.env.MOOVI_EDIT_FOOTAGE === 'on' }).finally(() => lines.end());
   void plan.restore.then(r => r && ctx.activity('note', r.restored
     ? `cleaned and upscaled your clip from ${r.from.w}x${r.from.h} to ${r.to.w}x${r.to.h}${r.graded ? ', graded' : ''} (${r.seconds} s)`
     : `graded your clip (${r.seconds} s)`));
@@ -156,7 +156,7 @@ export const editReel: Handler = async ctx => {
   let fxVersion: number | null = null;
   // one film (edit wiring step 3): when the director wrote a beat spec, the delivered MP4 is the preview page itself,
   // captured frame by frame (edit/film.ts), over the soundtrack the preview then plays too (mix.m4a: voice, bed, sounds)
-  if (plan.beats && plan.beats.picks.length && (process.env.MOOVI_EDIT_FILM ?? 'on') !== 'off') {
+  if (plan.beats && plan.beats.picks.length && process.env.MOOVI_EDIT_FILM === 'on') {
     const names = [...new Set(plan.beats.picks.map(p => p.id.replace(/^[a-z0-9]+:(reel-|edit-|x1-\d+-|s1-)?/, '').replace(/-/g, ' ')))];
     await ctx.say(`Your edit has ${plan.beats.picks.length} moments from the library (${names.join(', ')}), in the preview above. The finished video with the same moments follows in a few minutes.`, 'note', undefined, 'moovi');
     try {

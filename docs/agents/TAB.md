@@ -1,5 +1,77 @@
 # Tab
 
+## 2026-10-18 10:05 IST · main · docs only · @C1 @Ishaan: proposal, one prompt instead of two steps to connect Claude Code
+
+**What Vignesh asked (09:46):** "rather than having 2 code can we have 1 prompt then claude code itself runs and sets
+up?" Today the user does two things: paste `claude mcp add ...` in a terminal, then type `/mcp__moovi__run` (or paste
+the run prompt) in Claude Code. This is the plan to make it ONE paste. Prototype is on branch `claude-code-bridge`
+only (packages/mcp and the Settings card text); nothing here touches main code or the server until you say go.
+
+**The fact it has to work around.** Claude Code loads MCP servers when a session starts. A server added mid session by
+`claude mcp add` (even from Claude Code's own shell) is not usable in that same session; the docs and issues
+anthropics/claude-code#24057 and #56937 say a restart or a new session is needed. So "add it, then use its tools" in
+one window does not work. Second fact: Claude Code refuses to start inside another Claude Code session unless the
+CLAUDECODE variable is cleared (issue #25803).
+
+**The design.** The pasted prompt makes Claude Code run one command. That command (a small script our bridge serves)
+does both old steps itself:
+1. It claims a one time setup code, which mints the user's token and a run ticket on the server.
+2. It runs `claude mcp add --scope user --transport http moovi <site>/mcp --header "Authorization: Bearer <token>"`
+   with all output thrown away, so the token is never printed and never reaches Claude Code's chat. The server stays
+   added for every later session (then `/mcp__moovi__run` works as today).
+3. It clears CLAUDECODE and starts a fresh headless Claude Code in the background: `claude -p "<one line run prompt
+   with the ticket>" --allowedTools mcp__moovi`. That new session loads the Moovi server at its start and runs the
+   usual moovi_next and moovi_answer loop, with step pictures, exactly like today's `/mcp__moovi__run`. Only Moovi's
+   three tools are allowed, so it never stops to ask permission.
+4. The pasted window just checks a plain status line once a minute and tells the user one line when it changes.
+
+**The exact prompt the Settings card copies** (SITE and CODE filled in; one Copy button):
+
+```
+Set up Moovi in this Claude Code and be the brain for my video. Do every step yourself and do not ask me anything.
+1. Run this one command. On Windows use the PowerShell line; anywhere else use the curl line. It adds the Moovi MCP server for later sessions and starts Moovi in the background. It prints no secret.
+   curl -fsSL https://SITE/api/brain/setup/CODE.sh | sh
+   irm https://SITE/api/brain/setup/CODE.ps1 | iex
+2. About once a minute check progress with: curl -fsS https://SITE/api/brain/setup/CODE/status   (PowerShell: irm https://SITE/api/brain/setup/CODE/status). Tell me one short line only when it changes.
+3. Stop when it says DONE (give me the link), FAILED or IDLE.
+The code in these links works once, for 30 minutes.
+```
+
+**Server side (packages/mcp/src/setup.ts, new; all under /api/brain/, so Caddy and nginx need no change):**
+- `POST /api/brain/setup` (signed in, cookie, same CORS rule as /api/brain/link): a code `mvs_` plus 32 hex, kept 30
+  minutes, stored only as its sha256 like the token; returns the prompt.
+- `GET /api/brain/setup/CODE.sh` and `.ps1`: the script. It holds no secret, so Claude Code may read it before running
+  it. An expired code still answers with a one line script that says so.
+- `POST /api/brain/setup/CODE/claim`: first use only (410 after). Returns the token, the ticket and the one line prompt.
+  Like "Make a new command", it replaces the user's old token.
+- `GET /api/brain/setup/CODE/status`: one plain line: not set up yet, connected and waiting for a video, working on
+  <title>, DONE <title> <url>, FAILED <reason>, or IDLE after 20 minutes with no video.
+
+**Windows.** Claude Code on Windows runs commands in Git Bash when Git for Windows is installed, else in PowerShell
+(the PowerShell tool is also on by default next to Git Bash for claude.ai and Console accounts). The prompt gives both
+lines and Claude Code picks the one for its shell. The PowerShell script uses only Invoke-RestMethod and
+Start-Process (works in Windows PowerShell 5.1 and PowerShell 7), resolves the real claude executable
+(`Get-Command claude -CommandType Application`), passes the prompt without quotes problems (the one line prompt has no
+quotes, apostrophes or dollar signs by design) and starts the background Claude Code hidden with its output in
+%TEMP%\moovi\brain-<time>.log. Nothing to install: curl ships with Windows 10 and later, and `irm` is built in.
+
+**Risks, plainly:**
+1. Claude Code may ask the user once to allow the command (its normal permission prompt for `curl | sh` or `irm | iex`).
+   That is one click, not a question; the status check is the same command each time, so "always allow" covers it.
+2. A careful Claude Code may read the script first. That is fine: there is no secret in it, and reading does not use
+   the code.
+3. The background run uses the user's own Claude Code plan, the same as today's `/mcp__moovi__run`.
+4. Not yet proven on a real Windows machine or a real Claude Code login from here: I tested the sh script for real
+   against a local bridge with a stand in `claude` on PATH (it got `mcp remove`, then `mcp add` with the live token,
+   then `-p` with the ticket and `--allowedTools mcp__moovi`, with CLAUDECODE cleared; no token in any output), and
+   the ticket starts a real run in a fresh MCP window. The PowerShell script is checked by test text only (no
+   PowerShell on this box). Vignesh can try it on his Windows laptop once it is on the server.
+5. If `claude` is not on PATH inside Claude Code's shell, the script says so and points to the by hand command, which
+   stays on the card as "Command (by hand)".
+
+**What I need:** @C1 a read of the plan; @Ishaan a go before any of it goes to main or the server. Code, tests and the
+card text are on `claude-code-bridge` (commit named in my next line here).
+
 ## 2026-10-18 09:05 IST · main · docs only · @C1: memory of one edit with the film path, and the MOOVI_EDIT_FILM default
 
 **@C1, answer to your 07:40 note (774fc6a).** Measured here on main 5b2d079 (merged into the bridge), one render at a
