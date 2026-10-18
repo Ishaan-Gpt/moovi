@@ -21,7 +21,7 @@ import { tierFor } from '../skill-prompt';
 import { modelScope } from '../runtime';
 
 /** The compact (menu) path as one call with the full spec's result shape: the picks, then the library for this video. */
-async function directedFromMenu(dir: string, words: { word: string; t: number; end: number }[], seconds: number, brief: string, projectDir: string, signal?: AbortSignal, o: { model?: boolean; skipLanes?: ('claude-code' | 'key' | 'server')[] } = {}): Promise<{ value: Record<string, unknown> | null; problems: string[][] }> {
+async function directedFromMenu(dir: string, words: { word: string; t: number; end: number }[], seconds: number, brief: string, projectDir: string, signal?: AbortSignal, o: { model?: boolean; footage?: boolean; skipLanes?: ('claude-code' | 'key' | 'server')[] } = {}): Promise<{ value: Record<string, unknown> | null; problems: string[][] }> {
   const ss = sentencesOfWords(words.map(w => ({ word: w.word, t: w.t, end: w.end })));
   // two clips never get the same film: the project's last film's device sequence is not taken again
   const lastFile = join(projectDir, 'edit-last-film.json');
@@ -30,9 +30,20 @@ async function directedFromMenu(dir: string, words: { word: string; t: number; e
   const r = o.model === false ? { value: null, problems: [['no model call']] } as Awaited<ReturnType<typeof directFromMenu>>
     : await directFromMenu({ sentences: ss, brief, previous, ...(o.skipLanes ? { skipLanes: o.skipLanes } : {}), ...(signal ? { signal } : {}), log: s => console.log(`[edit] ${s}`) }).catch(e => ({ value: null, problems: [[`no answer: ${String((e as Error).message ?? e).slice(0, 120)}`]], tokens: 0 }) as unknown as Awaited<ReturnType<typeof directFromMenu>>);
   // the owner's checklist is made whole by code from the menu when the model missed part of it (or failed)
-  const menu = loadMenu(), a = completeCoverage(r.value?.answer ?? null, ss, menu, r.value?.bad ?? new Set()), events = [...JSON.stringify(menu).matchAll(/\{sfx:(\w+)\}/g)].map(m => m[1]!);
-  try { writeFileSync(lastFile, JSON.stringify({ devices: deviceSequence(a) })); } catch { /* the next film just has no memory of this one */ }
-  const [sounds, music, footage] = await Promise.all([resolveSounds(events, words.length), resolveMusic(dir, ss.map(s => s.text), a.mood ?? '', seconds, signal), resolveFootage(dir, a.beats.filter(b => b.footage), signal)]);
+  const menu = loadMenu(), events = [...JSON.stringify(menu).matchAll(/\{sfx:(\w+)\}/g)].map(m => m[1]!);
+  let a = completeCoverage(r.value?.answer ?? null, ss, menu, r.value?.bad ?? new Set());
+  // footage: none for the instant first preview (it never waits on the footage finder); a desk-print whose clip was not
+  // found is cast again by the completion without the desk, so another full-screen device (compare, letter tiles) fills it
+  const [sounds, music] = await Promise.all([resolveSounds(events, words.length), resolveMusic(dir, ss.map(s => s.text), a.mood ?? '', seconds, signal)]);
+  let footage = o.footage === false ? {} : await resolveFootage(dir, a.beats.filter(b => b.footage), signal);
+  const missed = a.beats.filter(b => b.footage && !footage[b.i]).map(b => b.i);
+  if (missed.length) {
+    const noDesk = { ...menu, devices: menu.devices.filter(d => !d.places) };
+    a = completeCoverage(a, ss, noDesk, new Set([...(r.value?.bad ?? []), ...missed]));
+    if (o.footage !== false) footage = { ...footage, ...(await resolveFootage(dir, a.beats.filter(b => b.footage && !footage[b.i]), signal)) };
+  }
+  // the instant preview is not a film of its own: only a directed film is remembered
+  if (o.model !== false) try { writeFileSync(lastFile, JSON.stringify({ devices: deviceSequence(a) })); } catch { /* the next film just has no memory of this one */ }
   return { value: specFromPicks(a, ss, menu, { sounds, music, footage, look: lookFromFootage(dir) }), problems: r.problems };
 }
 
@@ -189,7 +200,7 @@ export const editReel: Handler = async ctx => {
     const kept = words.filter(w => !((edl as { removed?: { src_in: number; src_out: number }[] }).removed ?? []).some(r => w.t >= r.src_in - 1e-3 && w.t < r.src_out - 1e-3));
     // the first preview is already the whole edit: Edit mastery's checklist completion from the menu (no model call yet),
     // never captions only; the skeleton only if even that cannot be built
-    try { const first = await directedFromMenu(dir, kept, plan.source.duration, inp.brief ?? '', ctx.projectDir, ctx.signal, { model: false }); writeSpec(dir, first.value ?? skeletonSpec(dir)); }
+    try { const first = await directedFromMenu(dir, kept, plan.source.duration, inp.brief ?? '', ctx.projectDir, ctx.signal, { model: false, footage: false }); writeSpec(dir, first.value ?? skeletonSpec(dir)); }
     catch (e) { console.warn(`[edit] first spec: ${String((e as Error).message ?? e).slice(0, 160)}`); writeSpec(dir, skeletonSpec(dir)); }
     // the model writes the spec from Edit mastery's recipe, beside the preview; it replaces the skeleton only when the
     // player can draw it as written (edit/mastery-direct.ts); the MP4 waits for the answer
