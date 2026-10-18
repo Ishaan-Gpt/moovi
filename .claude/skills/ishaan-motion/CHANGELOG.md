@@ -146,3 +146,6 @@
 
 ## 1.16.2 (2026-10-18)
 - Owner: the capable model designs premium motion graphics itself (the player's `art` device: SVG/HTML + CSS on the edit's clock).
+
+## 1.16.3 (2026-10-18)
+- Owner on the demo film's ref D1 (2/10, "copy it exactly ... the sphere became a weird idk what"): backtracking.md "Copy it exactly" (formation first, 10 fps measuring, the reference's pacing and sound pattern, same frame and time); lessons.md line.

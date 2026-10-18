@@ -29,3 +29,19 @@ The goal is to copy the craft (structure, timing, motion, colour logic) and none
 - Never reuse the author's name, their clients' marks or their illustrations. Logos become stylised stand-ins,
   and real media the original used becomes a labelled placeholder slot until the owner supplies their own.
 - Be honest about tier C. Offer puppet rigs (layered PNGs on pivots) or supplied clips; never fake it badly.
+
+## Copy it exactly (owner, 2026-10-18, demo film ref D1: "2/10 copy it exactly without missing the camera pacing sfx style everything the cinematography.. what was supposed to be a sphere became a weird idk what")
+When the owner sends a reference to absorb, the first build is an **exact copy**, not an interpretation. Re-skinning
+(our cards, our words, our cast) is allowed only on top of the reference's own structure.
+- **Formation first.** Name the shape the elements make (a sphere of cards, a ring, a wall, a stack, a grid) and its
+  numbers (count, radius, spacing, how it turns) before anything else. A sphere stays a sphere: never scatter its
+  members into a loose cloud.
+- **Measure at 10 fps, not 2.** Sample every 0.1 s around each move, and log per shot: framing (what fills the frame,
+  where the subject sits), camera (push, pull, orbit, tilt, speed curve), the elements' paths and timings, the type
+  (font class, size as a share of frame height, how each word arrives), the light and grade, and every transition.
+- **Pacing is the reference's.** Shot lengths, word arrival times and move durations are copied from the measurements,
+  never retimed by taste.
+- **Sound style is the reference's.** List every audible event (music hits, whooshes, risers, impacts, silence) and
+  copy where and how dense they are; swap only the sound files (the owner's Style 1 pack), never the pattern.
+- **Same frame, same time.** Build in the reference's frame (crop letterboxing away and match the live picture's
+  aspect) and check with `?grid=` stills beside the reference at the same timestamps before showing it.
