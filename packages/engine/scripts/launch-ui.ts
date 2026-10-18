@@ -2,10 +2,10 @@
 // computed colours, rendered fonts, logo, real images, nav, headings, the call to action, a hero screenshot), writes
 // data.json beside the look's player (packages/library/src/kits/launch-ui/player.html), serves it with byte ranges and
 // writes a board of settled stills. The palette ramp is built in the player from the site's own colours (palette gate).
-//   tsx scripts/launch-ui.ts <https://site> [--port 4377] [--out data/freeform/<host>] [--no-serve]
+//   tsx scripts/launch-ui.ts <https://site> [--port 4377] [--out data/freeform/<host>] [--no-serve] [--data-only]
 import { createReadStream, copyFileSync, mkdirSync, statSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
-import { extname, join, normalize } from 'node:path';
+import { basename, extname, join, normalize } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { chromium } from 'playwright-core';
 import { config, REPO } from '../src/config';
@@ -97,10 +97,12 @@ const cards = [...new Set(site.heads.map(h => short(h, 5)))].filter(h => h.toLow
 const nav = (site.nav.length >= 3 ? site.nav : ['All', ...cards.slice(0, 3).map(c => short(c, 1))]).slice(0, 4);
 const tagline = (() => { const h = site.h1 && site.h1.split(' ').length <= 7 ? site.h1 : short(site.desc || site.h1 || name, 6); return h.replace(/\.$/, ''); })();
 const gridTitle = cards.find(c => c.split(' ').length <= 4) ?? `${name}.`;
-const data = { name, host, url, tagline, gridTitle, sub: (site.desc || '').split(/(?<=\.)\s/)[0]!.slice(0, 110), cta: site.cta || 'Get started', nav, cards: cards.length ? cards : [name], query: short(cards[0] ?? name, 1).toLowerCase(), colours: site.colours, fonts, images, logo, hero: 'img/hero.jpg', made: new Date().toISOString() };
+const data = { name, host, url, tagline, gridTitle, sub: (site.desc || '').split(/(?<=\.)\s/)[0]!.slice(0, 110), cta: site.cta || 'Get started', nav, cards: cards.length ? cards : [name], query: short(cards[0] ?? name, 1).toLowerCase(), colours: site.colours, fonts, images, logo, hero: 'img/hero.jpg', shots: busy.map(x => `img/${basename(x.f)}`), made: new Date().toISOString() };
 writeFileSync(join(out, 'data.json'), JSON.stringify(data, null, 1));
 copyFileSync(join(REPO, 'packages/library/src/kits/launch-ui/player.html'), join(out, 'index.html'));
 lap(`data.json written: "${tagline}" · cards ${cards.slice(0, 4).join(' / ')}`);
+// the studio's Launch (src/launch/skill.ts) only needs the site read: no player, no server, no board
+if (args.includes('--data-only')) process.exit(0);
 
 // serve with byte ranges (reuse a server already on the port), then the stills board from the live page
 const root = join(out, '..'), TYPES: Record<string, string> = { '.html': 'text/html; charset=utf-8', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.mp4': 'video/mp4', '.wav': 'audio/wav' };
