@@ -81,7 +81,7 @@ export interface PlanInput {
   /** the reel effects library picked for this clip's words (edit/effects/auto.ts, effects.json; default true; off when the director ran: the registry holds the effects) */
   effects?: boolean;
   /** the director (edit/beatspec.ts): one registry pick per sentence written as the beat spec on edl.spec (default true;
-   *  MOOVI_EDIT_BEATS=0 turns it off). When it runs it replaces autoMoves, the D2.5 inserts and the reel effects film. */
+   *  off by default until Edit mastery's player is wired in, decision 17; MOOVI_EDIT_BEATS=1 turns it on). When it runs it replaces autoMoves, the D2.5 inserts and the reel effects film. */
   beats?: boolean;
   /** real footage cut-aways (edit/broll.ts): the director may cast them and their clips are fetched after the first
    *  preview (network: the footage finder). Default off; the studio's edit job turns it on. */
@@ -304,7 +304,7 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
   // (the graph's editCast) → the beat spec on edl.spec, its cuts, X1 moves and sounds lowered onto the EDL. It casts
   // the X1 moves, the inserts' number and list cards and the reel effects itself, so those three steps stand down.
   let beats: Planned['beats'] = null;
-  if (!rough && !sc && !isD22(style) && o.beats !== false && process.env.MOOVI_EDIT_BEATS !== '0' && words.length >= 4) {
+  if (!rough && !sc && !isD22(style) && (o.beats === true || process.env.MOOVI_EDIT_BEATS === '1') && words.length >= 4) {
     const before = JSON.stringify(edl);
     try {
       const kept = words.filter(w => srcToEdit(edl.shots, w.t) !== null);
