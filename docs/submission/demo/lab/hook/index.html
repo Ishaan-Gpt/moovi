@@ -5,9 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Moovi Hook</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bodoni+Moda:opsz,wght@6..96,400&family=Instrument+Serif:ital@0;1&family=Tinos:ital@1&family=Antonio:wght@300&family=Archivo+Black&family=Inter+Tight:wght@500;800&display=block">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Poppins:wght@800&family=Permanent+Marker&family=Gochi+Hand&family=Barlow+Condensed:wght@300&family=Bodoni+Moda:opsz,wght@6..96,400&family=Instrument+Serif:ital@0;1&family=Tinos:ital@1&family=Antonio:wght@300&family=Archivo+Black&family=Inter+Tight:wght@500;800&display=block">
 <script type="importmap">{ "imports": { "three": "/node_modules/.pnpm/three@0.170.0/node_modules/three/build/three.module.js" } }</script>
 <style>
+  @font-face { font-family: InstrumentSerif; src: url(../r4/fonts/instrument-serif-latin-400-italic.woff2) format("woff2"); font-style: italic; }
+  @font-face { font-family: InterTight; src: url(../r4/fonts/inter-tight-latin-wght-normal.woff2) format("woff2"); font-weight: 100 900; }
   :root { --bg: #0d1013; --ink: #eef3f6; --dim: #8b969d; --line: #232a30; }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font: 14px/1.4 "Inter Tight", system-ui, sans-serif; }
@@ -20,8 +22,12 @@
 </head>
 <body>
 <div class="wrap"><canvas id="c" width="1920" height="1080"></canvas></div>
-<div class="bar"><button id="play">Play</button><input id="seek" type="range" min="0" max="6.4" step="0.01" value="0"><span id="t">0.00 / 6.4</span>
+<div class="bar"><button id="play">Play</button><input id="seek" type="range" min="0" max="14" step="0.01" value="0"><span id="t">0.00 / 6.4</span>
 <label>speed <select id="rate"><option value="1">1×</option><option value="0.5">0.5×</option><option value="0.25">0.25×</option></select></label></div>
+<script src="/packages/library/src/kits/motion/core.js"></script>
+<script src="/packages/library/src/kits/motion/type.js"></script>
+<script src="/packages/library/src/kits/level-ladder/world.js"></script>
+<script src="../r4/r4.js"></script>
 <script type="module" src="hook.js"></script>
 </body>
 </html>
