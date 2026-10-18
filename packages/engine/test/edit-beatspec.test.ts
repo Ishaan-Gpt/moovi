@@ -45,9 +45,9 @@ test('director writes the beat spec (edit.md format): word anchors, layers per d
   assert.ok(a.sfx.length >= picks.length && a.sfx.every(s => s.at.w && s.g > 0));
 });
 
-test('a chat keyword overrides the pick: "add a crash zoom on \'agentic\'", "orbit on the hook" is refused (not drawn yet)', async () => {
-  const asks = parseAsks("add a crash zoom on 'agentic'. orbit on the hook", R);
-  assert.deepEqual(asks.map(a => a.entry), ['camera:crash-zoom-in', 'effect:reel-orbit']);
+test('a chat keyword overrides the pick: "add a crash zoom on \'agentic\'", "tilt shift on the hook" is refused (needs depth, not drawn)', async () => {
+  const asks = parseAsks("add a crash zoom on 'agentic'. tilt shift on the hook", R);
+  assert.deepEqual(asks.map(a => a.entry), ['camera:crash-zoom-in', 'camera:tilt-shift']);
   const r = await directBeats(take, { caster: registryCaster(R), asks, registry: R });
   const p = r.picks.find(x => x.i === 1)!;
   assert.equal(p.id, 'camera:crash-zoom-in');
@@ -55,7 +55,7 @@ test('a chat keyword overrides the pick: "add a crash zoom on \'agentic\'", "orb
   const cam = r.spec.beats[1]!.layers[0]!;
   assert.equal(cam.move, 'crash-zoom-in');
   assert.ok(Array.isArray(cam.keys) && (cam.keys as number[][]).length > 2);
-  assert.ok(r.missed.some(m => /orbit|Orbit/.test(m.why)), JSON.stringify(r.missed));
+  assert.ok(r.missed.some(m => /tilt/i.test(m.why)), JSON.stringify(r.missed));
 });
 
 test('camera keys follow the camera layer curve and start at rest', () => {

@@ -186,7 +186,8 @@ export async function castBeats(reads: SentenceRead[], caster: Caster, o: CastOp
   for (const a of o.asks ?? []) {
     const i = a.sentence !== undefined ? reads.at(a.sentence)?.i
       : a.on ? reads.find(s => s.words.some(w => clean(w.word) === clean(a.on!)) || s.text.toLowerCase().includes(a.on!.toLowerCase()))?.i
-      : a.fn ? reads.find(s => s.fn === a.fn)?.i : reads[0]?.i;
+      // "the hook" is the opening line whatever its function (it may read as who, number, ...)
+      : a.fn ? (reads.find(s => s.fn === a.fn) ?? (a.fn === 'hook' ? reads[0] : undefined))?.i : reads[0]?.i;
     if (i === undefined) { missed.push({ i: -1, why: `${a.entry}: no sentence matches "${a.on ?? a.fn ?? a.sentence}"` }); continue; }
     forced.set(i, a);
   }
@@ -235,7 +236,7 @@ export interface Anchor { w: string; after?: number; n?: number; dt?: number; en
 export interface SpecLayer { t: string; [k: string]: unknown }
 export interface SpecBeat { from: Anchor; i: number; fn: EditFn; hero: string; pick: string | null; layers: SpecLayer[] }
 export interface BeatSpec { version: 1; beats: SpecBeat[]; sfx: { at: Anchor; k: SfxKey; g: number }[]; picks: { i: number; id: string; why: string }[] }
-export interface SpecOpts { brandMark?: string | null; /** source seconds of two contrasting stills for `sides` and `compare` */ stills?: number[] }
+export interface SpecOpts { brandMark?: string | null; /** source seconds of two contrasting stills for `sides` and `compare` */ stills?: number[]; /** the clip's spoken span (source seconds), for stills across it */ span?: [number, number] }
 
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
 /** a word anchor: the first match of the word at or after the sentence's start (source seconds) */
@@ -248,6 +249,9 @@ export function camKeys(move: string, dur?: number, rate = 15): number[][] {
   const call = { move, ...(dur ? { duration: dur } : {}) }, d = resolveCall(call).duration, n = Math.max(2, Math.ceil(d * rate));
   return Array.from({ length: n + 1 }, (_, k) => { const t = d * k / n, f = frame2d(cameraTrack([call], t)); return [r3(t), r3(f.scale || 1), r3(f.cx), r3(f.cy), r3(f.roll)]; });
 }
+
+/** n stills spread across the spoken span (the clip's own moments, for orbit and the timeline) */
+const across = (o: SpecOpts, n: number) => { const [a, b] = o.span ?? [0, 10]; return Array.from({ length: n }, (_, k) => r3(a + (b - a) * (0.08 + 0.84 * k / Math.max(1, n - 1)))); };
 
 /** One pick → its layers and sounds. Positions are the mastery player's (1080 x 1920 design px); text moves clear of faces at draw time. */
 function layersOf(p: BeatPick, s: SentenceRead, o: SpecOpts): { layers: SpecLayer[]; sfx: { at: Anchor; k: SfxKey }[] } {
@@ -263,6 +267,16 @@ function layersOf(p: BeatPick, s: SentenceRead, o: SpecOpts): { layers: SpecLaye
   if (dev.startsWith('cut.')) return { layers: [{ t: 'cut', type: dev.slice(4), at: first, dur: p.meta.min }], sfx: snd(first) };
   if (dev.startsWith('x1.')) return { layers: [{ t: 'x1', n: dev.slice(3), at: first, dur: Math.min(p.meta.max, Math.max(p.meta.min, s.t1 - s.t0)) }], sfx: [] };
   switch (dev) {
+    case 'orbit': return { layers: [{ t: 'orbit', stills: across(o, 5), at: first }], sfx: snd(first) };
+    case 'freeze': {
+      const keys = s.words.filter(w => clean(w.word).length > 3 && !STOP.has(clean(w.word)) && w !== h).slice(0, 1);
+      return { layers: [{ t: 'freeze', still: r3(h.t), at: hA, labels: [{ text: s.hero }, ...keys.map(w => ({ text: w.word.replace(/[^\p{L}\p{N}%₹$'-]/gu, '') }))] }], sfx: snd(hA) };
+    }
+    case 'strike': {
+      const items = listItems(s.text).slice(0, 3), tags = items.length >= 2 ? items : s.words.filter((w, k) => k > 0 && /^[A-Z]/.test(w.word) && w.word !== 'I').slice(0, 3).map(w => w.word.replace(/[^\p{L}\p{N}'-]/gu, ''));
+      return { layers: [{ t: 'strike', tags, at: first, y: 300 }], sfx: tags.map(() => ({ at: first, k: 'pop' as SfxKey })) };
+    }
+    case 'timeline': return { layers: [{ t: 'timeline', stills: across(o, 4), at: first, y: 1480 }], sfx: snd(first) };
     case 'leak': return { layers: [{ t: 'leak', at: first }], sfx: snd(first) };
     case 'wipe': return { layers: [{ t: 'wipe', src: o.brandMark, at: first, dur: 0.45 }], sfx: snd(first) };
     case 'stat': {
@@ -300,6 +314,7 @@ function layersOf(p: BeatPick, s: SentenceRead, o: SpecOpts): { layers: SpecLaye
 /** The beat spec from the reads and the picks. Pure: the same reads and picks give the same spec. */
 export function beatSpecOf(reads: SentenceRead[], picks: BeatPick[], o: SpecOpts = {}): BeatSpec {
   const byI = new Map(picks.map(p => [p.i, p])), beats: SpecBeat[] = [], sfx: BeatSpec['sfx'] = [];
+  if (!o.span && reads.length) o = { ...o, span: [reads[0]!.t0, reads.at(-1)!.t1] };
   for (const s of reads) {
     const p = byI.get(s.i), l = p ? layersOf(p, s, o) : { layers: [], sfx: [] };
     beats.push({ from: anchor(s.words[0]!, s), i: s.i, fn: s.fn, hero: s.hero, pick: p?.id ?? null, layers: l.layers });

@@ -50,7 +50,16 @@ test('edit registry in the graph: editCast ranks a verb match first, skips recen
     assert.equal((await cast('cta', ['comment']))[0]?.id, 'effect:reel-comment-cta');
     assert.equal((await cast('how', ['type']))[0]?.id, 'effect:edit-input');
     assert.ok(!(await cast('number', ['grow'], ['insert:s1-stat-reveal'])).some(r => r.id === 'insert:s1-stat-reveal'), 'recent is skipped');
-    assert.ok(!(await cast('hook', ['everyone'])).some(r => r.id === 'effect:reel-orbit'), 'orbit is not drawn by the one player yet');
+    assert.ok(!(await cast('show', ['small', 'miniature'])).some(r => r.id === 'camera:tilt-shift'), 'tilt-shift needs depth: not drawn, never cast');
+    assert.equal((await cast('hook', ['everyone']))[0]?.id, 'effect:reel-orbit');
     assert.ok(JSON.parse((await cast('list', []))[0]!.edit).face, 'the entry carries its face rule');
   } finally { await closeMemory(); }
+});
+
+test('edit registry: every reel effect is drawn by the one player now, and every non-generative camera move', () => {
+  for (const id of FX_IDS) { const e = findEntry(`fx:${id}`, R)!; assert.ok(e.built, `${id} drawn`); }
+  const cams = R.filter(e => e.id.startsWith('camera:'));
+  assert.ok(cams.filter(e => e.built).length >= 45, `${cams.filter(e => e.built).length} camera moves drawn`);
+  // a 3D move projected on a flat clip is only cast when asked or directed
+  assert.equal(findEntry('camera:dolly-zoom-in', R)?.auto, false);
 });

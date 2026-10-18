@@ -282,6 +282,7 @@ $('s').oninput = async e => { const was = playing; stop(); const t = +e.target.v
 if (CAPTURE) {
   // one output frame from its captured picture (film/f<n>.jpg in the edit folder), drawn exactly as playback draws it
   window.__frame = async (t, file) => { if (cur.getAttribute('src') !== '/v/' + file) { cur.src = '/v/' + file; await cur.decode().catch(() => null); } draw(t); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); };
+  if (BT) await BT.ready;
   window.__ready = true; return;
 }
 window.__render = async t => { stop(); await place(t); if (TPL) await TPL.ready(t); draw(t); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); };
@@ -294,6 +295,7 @@ if (LAYER) {
   window.__overKeys = ts => ts.map(t => { drawCaptions(t); drawInserts(t); const k = drawFx(t), c = cap.innerHTML, i = ins.innerHTML, y = drawStyle(t); return c || i || k || y ? cap.className + c + '|' + i + '|' + k + '|' + y : ''; });
   window.__ready = true; return;
 }
+if (BT) await BT.ready;
 await place(STILL ? +Q.get('t') : 0); draw(STILL ? +Q.get('t') : 0);
 window.__ready = true;
 })().catch(e => { document.body.insertAdjacentHTML('beforeend', '<pre style="color:#f66;padding:16px;position:absolute;top:0;white-space:pre-wrap">' + String(e && e.stack || e) + '</pre>'); window.__error = String(e); });

@@ -69,7 +69,7 @@ const HAND: EditEntry[] = [
   { id: 'edit:cam-form', name: 'the speaker shrinks to a card or corner', device: 'cam.form', layer: 'cam', fns: ['how', 'show', 'what'], verbs: ['show', 'see', 'look', 'watch'], face: 'frames', sfx: 'whoosh', min: 1.2, max: 6, aka: ['card', 'split', 'corner', 'pip'], built: true, auto: true },
   { id: 'effect:reel-phone-mockup', name: 'phone mockup (the clip inside a phone)', device: 'cam.phone', layer: 'cam', fns: ['show', 'what', 'proof'], verbs: ['post', 'upload', 'scroll', 'app', 'phone', 'share', 'reel'], face: 'frames', sfx: FX_SFX[fx('phone-mockup').sfx]!, min: fx('phone-mockup').min, max: fx('phone-mockup').max, aka: ['x1:06', 'fx:phone-mockup', 'phone mockup', 'phone'], built: true, auto: true },
   { id: 'effect:reel-pull-back', name: 'pull-back reveal (the clip becomes a window)', device: 'cam.pullback', layer: 'cam', fns: ['what', 'show', 'transition'], verbs: ['reveal', 'build', 'launch', 'open', 'introduce', 'made'], face: 'frames', sfx: FX_SFX[fx('pull-back').sfx]!, min: fx('pull-back').min, max: fx('pull-back').max, aka: ['x1:11', 'fx:pull-back', 'transition:pull-out-reveal', 'pull back', 'pull-back'], built: true, auto: true },
-  { id: 'effect:reel-orbit', name: 'orbit (cards circle the head, behind and in front)', device: 'fx.orbit', layer: 'graphic', fns: ['hook', 'proof'], verbs: ['everyone', 'everything', 'all', 'world'], face: 'behind', sfx: FX_SFX[fx('orbit').sfx]!, min: fx('orbit').min, max: fx('orbit').max, aka: ['x1:01', 'fx:orbit', 'orbit'], built: false, auto: true, needs: ['person-mask'] },
+  { id: 'effect:reel-orbit', name: 'orbit (cards circle the head, behind and in front)', device: 'orbit', layer: 'graphic', fns: ['hook', 'proof'], verbs: ['everyone', 'everything', 'all', 'world'], face: 'clear', sfx: FX_SFX[fx('orbit').sfx]!, min: fx('orbit').min, max: fx('orbit').max, aka: ['x1:01', 'fx:orbit', 'orbit'], built: true, auto: true },
   // ── cuts ──
   { id: 'transition:visual-zoom-through', name: 'zoom-through cut', device: 'cut.zoom_through', layer: 'cut', fns: ['transition'], verbs: ['go', 'next', 'move', 'jump', 'into'], face: 'any', sfx: 'whoosh', min: 0.25, max: 0.45, aka: ['x1:09', 'zoom through', 'zoom-through'], built: true, auto: true },
   { id: 'effect:x1-13-paper-cut', name: 'paper cut', device: 'cut.paper_tear', layer: 'cut', fns: ['transition'], verbs: ['tear', 'break', 'rip', 'cut'], face: 'any', sfx: 'snap', min: 0.5, max: 0.8, aka: ['x1:13', 'paper cut', 'paper tear'], built: true, auto: true },
@@ -95,10 +95,10 @@ const HAND: EditEntry[] = [
   { id: 'edit:mg', name: 'a full-screen motion graphic (letter tiles, the hero lit)', device: 'mg', layer: 'world', fns: ['what', 'hook', 'claim'], verbs: ['is', 'means', 'stands', 'called'], face: 'any', sfx: 'whoosh', min: 1.4, max: 4, aka: ['motion graphic', 'mg', 'tiles'], built: true, auto: true },
   { id: 'edit:desk', name: 'one tabletop world, real clips printed and taped', device: 'desk', layer: 'world', fns: ['show', 'proof', 'what'], verbs: ['drop', 'print', 'make', 'film', 'collect', 'pick'], face: 'any', sfx: 'drop', min: 2, max: 6, aka: ['desk', 'tabletop', 'prints'], built: true, auto: false, needs: ['footage'] },
   { id: 'edit:world', name: 'the brand\'s world (its mark arrives and acts)', device: 'world', layer: 'world', fns: ['what'], verbs: ['introduce', 'meet', 'called', 'built', 'launch'], face: 'any', sfx: 'whoosh', min: 1.6, max: 5, aka: ['brand world', 'world'], built: true, auto: false, needs: ['brand-object'] },
-  // ── listed, not drawn yet (step 4 and em7) ──
-  { id: 'effect:reel-freeze-label', name: 'freeze and label', device: 'fx.freeze-label', layer: 'text', fns: ['what', 'show'], verbs: ['this', 'here', 'notice'], face: 'clear', sfx: 'click', min: 1, max: 3, aka: ['fx:freeze-label', 'freeze label', 'freeze'], built: false, auto: true },
-  { id: 'effect:reel-strike-tags', name: 'strike tags (name tags struck through)', device: 'fx.strike-tags', layer: 'text', fns: ['compare', 'list'], verbs: ['not', 'forget', 'stop', 'instead', 'no'], face: 'clear', sfx: 'pop', min: 1.4, max: 5, aka: ['fx:strike-tags', 'strike tags', 'icon strike', 'strike'], built: false, auto: true, needs: ['items'] },
-  { id: 'effect:reel-timeline-ui', name: 'editor timeline, the playhead scrubs', device: 'fx.timeline-ui', layer: 'graphic', fns: ['how', 'show'], verbs: ['edit', 'cut', 'trim', 'timeline', 'scrub'], face: 'clear', sfx: 'whoosh', min: 1.4, max: 5, aka: ['fx:timeline-ui', 'timeline', 'nle timeline'], built: false, auto: true },
+  // ── the four reel effects that were only in the effects film, now beat devices ──
+  { id: 'effect:reel-freeze-label', name: 'freeze and label', device: 'freeze', layer: 'text', fns: ['what', 'show'], verbs: ['this', 'here', 'notice'], face: 'clear', sfx: 'click', min: 1, max: 3, aka: ['fx:freeze-label', 'freeze label', 'freeze'], built: true, auto: true },
+  { id: 'effect:reel-strike-tags', name: 'strike tags (name tags struck through)', device: 'strike', layer: 'text', fns: ['compare', 'list'], verbs: ['not', 'forget', 'stop', 'instead', 'no'], face: 'clear', sfx: 'pop', min: 1.4, max: 5, aka: ['fx:strike-tags', 'strike tags', 'icon strike', 'strike'], built: true, auto: true, needs: ['items'] },
+  { id: 'effect:reel-timeline-ui', name: 'editor timeline, the playhead scrubs', device: 'timeline', layer: 'graphic', fns: ['how', 'show'], verbs: ['edit', 'trim', 'timeline', 'scrub', 'render'], face: 'clear', sfx: 'whoosh', min: 1.4, max: 5, aka: ['fx:timeline-ui', 'timeline', 'nle timeline'], built: true, auto: true },
 ];
 
 /** a footage camera move's functions and verbs, by its family (camera.md: what each move says) */
@@ -124,19 +124,27 @@ const CAM_FAMILY: Record<string, [EditFn[], string[]]> = {
   'speed-ramp': [['transition', 'hook'], ['fast', 'speed', 'quick', 'rush']],
   'tilt-shift': [['show'], ['small', 'tiny', 'miniature', 'world']],
   static: [['who'], ['still', 'wait']],
+  // the camera layer's 3D moves (scope coded), projected onto the flat clip: cast only when asked or directed
+  'dolly-zoom': [['claim', 'hook'], ['realise', 'shock', 'suddenly']], dolly: [['show', 'claim'], ['closer', 'into', 'away']],
+  slider: [['show'], ['across', 'past']], 'push-past': [['transition'], ['past', 'through']], arc: [['show', 'what'], ['around', 'side']],
+  orbit: [['what', 'show'], ['around', 'every']], crane: [['show', 'what'], ['above', 'rise']], drone: [['show', 'what'], ['above', 'over', 'city']],
+  'infinite-zoom': [['transition'], ['deeper', 'inside', 'endless']], 'earth-zoom-out': [['what', 'transition'], ['world', 'everywhere', 'global']],
+  'pass-through': [['transition'], ['through', 'into']], 'rack-focus': [['show'], ['focus', 'notice']],
 };
 /** the families the one player's cam device plays today (edit/beats-draw.ts camMove) */
-export const CAM_DRAWN = new Set(['crash-zoom', 'fast-zoom', 'zoom', 'punch', 'pulse', 'shake', 'whip-pan', 'pan', 'tilt', 'truck', 'pedestal', 'handheld', 'drift', 'dive', 'reframe', 'ken-burns', 'roll', 'roll-settle', 'speed-ramp']);
+export const CAM_DRAWN = new Set(['static', 'crash-zoom', 'fast-zoom', 'zoom', 'punch', 'pulse', 'shake', 'whip-pan', 'pan', 'tilt', 'truck', 'pedestal', 'handheld', 'drift', 'dive', 'reframe', 'ken-burns', 'roll', 'roll-settle', 'speed-ramp',
+  'dolly-zoom', 'dolly', 'slider', 'push-past', 'arc', 'orbit', 'crane', 'drone', 'infinite-zoom', 'earth-zoom-out', 'pass-through']);
 const CAM_SFX: Record<string, SfxKey | null> = { 'crash-zoom': 'hit', 'fast-zoom': 'whoosh', punch: 'hit', pulse: 'hit', shake: 'hit', 'whip-pan': 'whoosh', roll: 'whoosh', 'speed-ramp': 'riser' };
 
-/** The footage-safe camera moves (scope `edit`, 33 of 64) as entries; the punch-in is the hand entry above. */
+/** Every camera move the clip can take (scope `edit` and `coded`; `gen` is prompt-only) as entries; the punch-in is the hand entry above. A coded (3D) move is
+ *  drawn by its 2D projection and cast only when asked or directed (auto false); tilt-shift and rack focus need depth, so stay listed. */
 export function cameraEntries(): EditEntry[] {
   const hand = new Set(HAND.map(e => e.id));
-  return CAMERA_MOVES.filter(m => m.scope === 'edit' && !hand.has(`camera:${m.id}`)).map(m => {
+  return CAMERA_MOVES.filter(m => m.scope !== 'gen' && !hand.has(`camera:${m.id}`)).map(m => {
     const [fns, verbs] = CAM_FAMILY[m.family] ?? [['show'], []];
     const fast = /crash|fast|whip|punch|pulse|shake|roll-|speed/.test(m.family);
     return { id: `camera:${m.id}`, name: m.name, device: `cam.move:${m.id}`, layer: 'cam' as const, fns, verbs, face: 'frames' as const, sfx: CAM_SFX[m.family] ?? null,
-      min: fast ? 0.25 : 1, max: fast ? 1.2 : 6, aka: [m.name.toLowerCase(), ...m.aliases], built: CAM_DRAWN.has(m.family), auto: m.family !== 'static' && m.family !== 'shake', rank: 1 };
+      min: fast ? 0.25 : 1, max: fast ? 1.2 : 6, aka: [m.name.toLowerCase(), ...m.aliases], built: CAM_DRAWN.has(m.family), auto: m.scope === 'edit' && m.family !== 'static' && m.family !== 'shake', rank: 1 };
   });
 }
 

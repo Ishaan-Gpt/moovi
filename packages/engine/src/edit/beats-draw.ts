@@ -54,7 +54,9 @@ var MOOVI_BEATS = function (E, o) {
   var FACES = E.faces || [], SRCW = E.source.w, SRCH = E.source.h, FACEBOXES = [];
   var faceAt = function (s) { if (!FACES.length) return { x: .5, y: .42, w: .3, h: .2 }; var k = 0; while (k + 1 < FACES.length && FACES[k + 1].src_t <= s) k++; var a = FACES[k], b = FACES[k + 1] || a, u = b === a ? 0 : clamp((s - a.src_t) / (b.src_t - a.src_t));
     return { x: lerp(a.x + a.w / 2, b.x + b.w / 2, u), y: lerp(a.y + a.h / 2, b.y + b.h / 2, u), w: a.w, h: a.h }; };
-  var DECK = null, SRC_T = 0;
+  var DECK = null, SRC_T = 0, DECKFACE = null;
+  /** the face as drawn now: the beat's own picture if it drew one, else the decks' (1080 x 1920 px) */
+  var faceNow = function () { return FACEBOXES.length ? FACEBOXES[FACEBOXES.length - 1] : DECKFACE; };
   /** the picture inside rect r, face-centred, cover-filled, zoom z with the face at height Y; roll in degrees */
   function drawVideo(r, z, Y, radius, dim, c, roll, look, dx, dy) {
     c = c || ctx; var V = DECK; if (!V || (V.readyState !== undefined && V.readyState < 2)) return;
@@ -140,6 +142,36 @@ var MOOVI_BEATS = function (E, o) {
       draw: function (L, t, b, St) { var a = at(L.at), k = win(t, a - .2, a + .45); if (k <= 0 || k >= 1) return; show(St.d, { opacity: Math.sin(k * Math.PI).toFixed(3) }); St.d.firstElementChild.style.transform = 'translateX(' + (-60 + 120 * eio(k)).toFixed(1) + '%)'; } },
     wipe: { build: function (L) { return { d: el('<img src="' + esc(L.src) + '" style="width:100%;height:100%;object-fit:contain">', 'width:700px;height:700px;top:600px') }; },
       draw: function (L, t, b, St) { var a = at(L.at), k = win(t, a - (L.dur || .3), a); if (k > 0 && k < 1) show(St.d, { left: lerp(-700, 1500, eio(k)) + 'px', transform: 'rotate(' + (k * 280) + 'deg)', filter: 'blur(' + (Math.sin(k * Math.PI) * 6).toFixed(1) + 'px)' }); } },
+    // ── the four reel effects that were only in the effects film (edit/effects/runtime.ts), redrawn for the one player ──
+    /** orbit: the clip's own stills circle the head; a card fades out as it crosses the face (it reads as passing behind it) */
+    orbit: { build: function (L) { return { cards: L.stills.map(function (s) { return el('<div style="width:230px;height:400px;border-radius:22px;overflow:hidden;border:5px solid #fff;box-shadow:0 24px 50px rgba(0,0,0,.45)"><img src="' + still(s) + '" style="width:100%;height:100%;object-fit:cover"></div>', 'left:0;top:0'); }) }; },
+      draw: function (L, t, b, St) { var a0 = at(L.at), lt = t - a0; if (lt < 0) return; var n = St.cards.length, k = eo(lt / .4) * (1 - eio(win(t, b.t1 - .4, b.t1))), spin = 1.9 * lt;
+        var f = faceNow() || { x0: 400, x1: 680, y0: 520, y1: 900 }, cx = (f.x0 + f.x1) / 2, cy = (f.y0 + f.y1) / 2 + 30, rx = 440 * (.85 + .15 * k);
+        St.cards.forEach(function (d, i) { var a = spin + i * 2 * Math.PI / n, x = cx + Math.sin(a) * rx, y = cy - Math.cos(a) * 70 * k + Math.sin(a) * 40, z = Math.cos(a), sc = .78 + .22 * (z + 1) / 2;
+          // a card whose middle crosses the face is hidden there: it reads as passing behind the head (no card ever sits on the face)
+          var over = x > f.x0 - 40 && x < f.x1 + 40 && y + 200 * sc > f.y0 && y - 200 * sc < f.y1, o = k * (over ? 0 : z >= 0 ? 1 : .55);
+          show(d, { opacity: o.toFixed(3), transform: 'translate(' + (x - 115).toFixed(0) + 'px,' + (y - 200).toFixed(0) + 'px) scale(' + sc.toFixed(3) + ') rotateY(' + (Math.sin(a) * 28).toFixed(1) + 'deg)', zIndex: z >= 0 ? '2' : '1' }); }); } },
+    /** freeze and label: the picture holds its frame on the word, a flash, labels draw on with leader lines to the face */
+    freeze: { picture: true, build: function (L) { return { svg: el('<svg width="1080" height="1920" viewBox="0 0 1080 1920" style="position:absolute;left:0;top:0">' + L.labels.map(function () { return '<path fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/><circle r="11" fill="var(--accent,#fff)"/>'; }).join('') + '</svg>', 'left:0;top:0'), tags: L.labels.map(function (l) { return el('<div style="padding:16px 30px;border-radius:999px;background:#fff;color:#111;font:800 44px \'Inter Tight\',sans-serif;box-shadow:0 14px 34px rgba(0,0,0,.35);white-space:nowrap">' + esc(l.text) + '</div>', '', true); }), im: (function () { var i = new Image(); i.src = still(L.still); return i; })() }; },
+      draw: function (L, t, b, St) { var a0 = at(L.at), lt = t - a0;
+        if (lt < 0) { DEVICES.cam.draw({ z: 1.04 }, t, b); return; }
+        if (St.im.complete && St.im.naturalWidth) { var keep = DECK; DECK = St.im; drawVideo({ x: 0, y: 0, w: 1080, h: 1920 }, 1.06, .36, 0, 0, ctx); DECK = keep; }
+        ctx.fillStyle = 'rgba(255,255,255,' + (.55 * (1 - clamp(lt / .14))).toFixed(3) + ')'; ctx.fillRect(0, 0, 1080, 1920);
+        var f = faceNow() || { x0: 400, x1: 680, y0: 520, y1: 900 }, cx = (f.x0 + f.x1) / 2, cy = (f.y0 + f.y1) / 2, r = (f.x1 - f.x0) / 2, paths = St.svg.querySelectorAll('path'), dots = St.svg.querySelectorAll('circle');
+        show(St.svg);
+        L.labels.forEach(function (l, i) { var k = eo((lt - .12 - i * .32) / .35), left = i % 2 === 0, ax = cx + (left ? -r * .6 : r * .7), ay = cy + (left ? -r * .3 : r * 1.1), lx = left ? 90 : 990, ly = left ? f.y0 - 120 : f.y1 + 160;
+          var len = Math.hypot(lx - ax, ly - ay) + 200, pa = paths[i]; pa.setAttribute('d', 'M' + ax + ',' + ay + ' L' + lerp(ax, lx, .55) + ',' + ly + ' L' + lx + ',' + ly); pa.style.strokeDasharray = len; pa.style.strokeDashoffset = (len * (1 - k)).toFixed(1);
+          dots[i].setAttribute('cx', ax); dots[i].setAttribute('cy', ay); dots[i].style.opacity = clamp(k * 3);
+          var d = St.tags[i]; show(d); show(d, { left: (left ? lx : Math.max(40, Math.min(lx, 1040) - d.offsetWidth)).toFixed(0) + 'px', top: (ly - 40).toFixed(0) + 'px', opacity: clamp(k * 2), transform: 'scale(' + (.7 + .3 * spring(lt - .3 - i * .32)).toFixed(3) + ')' }); }); } },
+    /** strike tags: the named things pop in one by one, then a line strikes each through (the sentence's "not these") */
+    strike: { build: function (L) { return { d: el('<div style="width:1080px;display:flex;flex-direction:column;align-items:center;gap:26px">' + L.tags.map(function (s) { return '<div class="tg" style="position:relative;padding:20px 44px;border-radius:999px;background:#141414;border:2px solid rgba(255,255,255,.2);color:#fff;font:800 56px \'Inter Tight\',sans-serif;box-shadow:0 18px 40px rgba(0,0,0,.45)">' + esc(s) + '<div class="ln" style="position:absolute;left:-14px;top:50%;height:9px;margin-top:-4px;border-radius:5px;background:var(--accent,#fff);width:0"></div></div>'; }).join('') + '</div>', 'left:0;top:' + (L.y == null ? 300 : L.y) + 'px', true) }; },
+      draw: function (L, t, b, St) { var lt = t - at(L.at); if (lt < 0) return; var dur = Math.max(1.2, b.t1 - at(L.at)), n = L.tags.length, popEach = Math.min(.35, dur * .45 / n), strikeAt = Math.max(dur * .55, popEach * n + .2); show(St.d);
+        St.d.querySelectorAll('.tg').forEach(function (g, i) { var s = spring(lt - i * popEach), st = eo((lt - strikeAt - i * .16) / .22); g.style.opacity = clamp(s * 2); g.style.transform = 'scale(' + (.5 + .5 * s).toFixed(3) + ') rotate(' + (i % 2 ? 3 : -3) + 'deg)'; g.querySelector('.ln').style.width = 'calc(' + (st * 100).toFixed(1) + '% + ' + (st * 28).toFixed(0) + 'px)'; g.style.filter = st > .99 ? 'brightness(.6)' : ''; }); } },
+    /** an editor timeline slides up from the bottom, its playhead scrubbing across the clip's own shots */
+    timeline: { build: function (L) { var bars = ''; for (var i = 0; i < 48; i++) bars += '<div style="width:12px;border-radius:3px;background:color-mix(in srgb,var(--accent,#fff) 75%,transparent);height:' + (14 + ((i * 37) % 46)) + 'px"></div>';
+        var clips = (L.stills || []).map(function (s, i) { return '<div style="flex:1;border-radius:14px;overflow:hidden;border:2px solid ' + (i % 2 ? 'rgba(255,255,255,.2)' : 'var(--accent,#fff)') + '"><img src="' + still(s) + '" style="width:100%;height:100%;object-fit:cover"></div>'; }).join('');
+        return { d: el('<div style="position:relative;width:1000px;height:420px;padding:28px 30px;box-sizing:border-box;border-radius:30px;background:rgba(14,14,16,.82);backdrop-filter:blur(14px);box-shadow:0 30px 70px rgba(0,0,0,.5)"><div style="display:flex;gap:8px;height:120px;margin-bottom:18px">' + clips + '</div><div style="display:flex;gap:8px;height:56px;margin-bottom:18px"><div style="flex:2;border-radius:12px;background:rgba(255,255,255,.12)"></div><div style="flex:1;border-radius:12px;background:var(--accent,#fff);opacity:.85"></div><div style="flex:3;border-radius:12px;background:rgba(255,255,255,.12)"></div></div><div style="display:flex;align-items:center;gap:5px;height:80px">' + bars + '</div><div class="ph" style="position:absolute;top:18px;bottom:18px;width:6px;border-radius:3px;background:var(--accent,#fff)"></div></div>', 'left:40px;top:' + (L.y == null ? 1380 : L.y) + 'px') }; },
+      draw: function (L, t, b, St) { var a0 = at(L.at), lt = t - a0; if (lt < 0) return; var k = spring(lt), o = eio(win(t, b.t1 - .3, b.t1)); show(St.d, { transform: 'translateY(' + ((1 - k) * 520 + o * 520).toFixed(1) + 'px)' }); St.d.querySelector('.ph').style.left = (30 + eio(win(t, a0 + .2, b.t1 - .2)) * 930).toFixed(1) + 'px'; } },
     // lowered onto the EDL by the job (cuts, X1 inserts): the page's own layers draw them
     cut: null, x1: null,
   };
@@ -150,12 +182,15 @@ var MOOVI_BEATS = function (E, o) {
   var beatAt = function (t) { var r = BEATS[0]; for (var i = 0; i < BEATS.length; i++) if (t >= BEATS[i].t0 - 1e-3) r = BEATS[i]; return r; };
   var lastKey = '';
 
+  // every picture the devices show (the clip's stills), loaded before the page says it is ready: a captured frame never misses one
+  var pics = [].slice.call(ov.querySelectorAll('img')); BEATS.forEach(function (b) { b.state.forEach(function (st) { if (st && st.im) pics.push(st.im); }); });
+  var ready = Promise.all(pics.map(function (im) { return im.decode ? im.decode().catch(function () {}) : null; }));
   return {
-    beats: BEATS,
+    beats: BEATS, ready: ready,
     /** draw output time t; deck = the element showing the clip (a <video> or a captured frame <img>), src = its source second.
      *  Returns whether the beat drew the picture (the decks are covered) and whether a text device is up (the caption hides). */
     draw: function (t, deck, src, faceBox) {
-      DECK = deck; SRC_T = src; FACEBOXES.length = 0;
+      DECK = deck; SRC_T = src; FACEBOXES.length = 0; DECKFACE = faceBox ? { x0: faceBox.x0 * 1080, x1: faceBox.x1 * 1080, y0: faceBox.y0 * 1920, y1: faceBox.y1 * 1920 } : null;
       ctx.clearRect(0, 0, 1080, 1920); ctxT.clearRect(0, 0, 1080, 1920); for (var i = 0; i < ov.children.length; i++) ov.children[i].style.display = 'none';
       var b = beatAt(t), pic = false;
       if (b && t < END + .05) b.live.forEach(function (L, i) { var D = DEVICES[L.t]; if (D.picture) pic = true; D.draw(L, t, b, b.state[i]); });
