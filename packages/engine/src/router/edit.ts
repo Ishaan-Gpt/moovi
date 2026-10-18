@@ -16,6 +16,19 @@ import { fxMusic } from '../edit/effects/music';
 import { filmMix, renderFilm, useMix } from '../edit/film';
 import { prepareClip, renderMasteryFilm, skeletonSpec, worldCutouts, writeSpec } from '../edit/mastery';
 import { directMasterySpec } from '../edit/mastery-direct';
+import { directFromMenu, loadMenu, resolveFootage, resolveMusic, resolveSounds, sentencesOfWords, specFromPicks } from '../edit/mastery-menu';
+import { tierFor } from '../skill-prompt';
+import { modelScope } from '../runtime';
+
+/** The compact (menu) path as one call with the full spec's result shape: the picks, then the library for this video. */
+async function directedFromMenu(dir: string, words: { word: string; t: number; end: number }[], seconds: number, brief: string, signal?: AbortSignal): Promise<{ value: Record<string, unknown> | null; problems: string[][] }> {
+  const ss = sentencesOfWords(words.map(w => ({ word: w.word, t: w.t, end: w.end })));
+  const r = await directFromMenu({ sentences: ss, brief, ...(signal ? { signal } : {}), log: s => console.log(`[edit] ${s}`) });
+  if (!r.value) return { value: null, problems: r.problems };
+  const menu = loadMenu(), a = r.value.answer, events = [...JSON.stringify(menu).matchAll(/\{sfx:(\w+)\}/g)].map(m => m[1]!);
+  const [sounds, music, footage] = await Promise.all([resolveSounds(events, words.length), resolveMusic(dir, ss.map(s => s.text), a.mood ?? '', seconds, signal), resolveFootage(dir, a.beats.filter(b => b.footage), signal)]);
+  return { value: specFromPicks(a, ss, menu, { sounds, music, footage }, r.value.bad), problems: r.problems };
+}
 
 import { activity, stageLines } from '../live';
 import { startRun } from '../runs';
@@ -171,7 +184,10 @@ export const editReel: Handler = async ctx => {
     // the model writes the spec from Edit mastery's recipe, beside the preview; it replaces the skeleton only when the
     // player can draw it as written (edit/mastery-direct.ts); the MP4 waits for the answer
     const kept = words.filter(w => !((edl as { removed?: { src_in: number; src_out: number }[] }).removed ?? []).some(r => w.t >= r.src_in - 1e-3 && w.t < r.src_out - 1e-3));
-    directed = directMasterySpec({ words: kept.map(w => ({ word: w.word, t: w.t, end: w.end })), faces: edl.faces ?? [], duration: plan.source.duration, brief: inp.brief ?? '', files: worldCutouts(), ...(ctx.signal ? { signal: ctx.signal } : {}), log: s => console.log(`[edit] ${s}`) })
+    // decision 20: a linked Claude Code writes the whole spec from the full skill (and invents); the server model and every
+    // user API key direct from Edit mastery's menu with the compact skill, and code fills only the menu's slots
+    directed = (tierFor(modelScope()?.provider) === 'compact' ? directedFromMenu(dir, kept, plan.source.duration, inp.brief ?? '', ctx.signal) : directMasterySpec({ words: kept.map(w => ({ word: w.word, t: w.t, end: w.end })), faces: edl.faces ?? [], duration: plan.source.duration, brief: inp.brief ?? '', files: worldCutouts(), ...(ctx.signal ? { signal: ctx.signal } : {}), log: s => console.log(`[edit] ${s}`) })
+)
       .then(async r => { if (r.value) { writeSpec(dir, r.value); await ctx.activity('note', 'the edit is directed: devices on its sentences'); } else console.log(`[edit] spec: the skeleton (${r.problems.flat().slice(0, 2).join('; ')})`); })
       .catch(e => console.warn(`[edit] spec: ${String((e as Error).message ?? e).slice(0, 160)}`));
     graded = plan.restore.catch(() => null).then(r => r ? prepareClip(dir).then(() => undefined) : undefined).catch(e => console.warn(`[edit] graded cut: ${String((e as Error).message ?? e).slice(0, 160)}`));

@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { REPO } from '../config';
 import { askChecked, estimateTokens, runtime, type Checked, type History } from '../runtime';
 import { PLAYER_DIR } from './mastery';
+import { skillPrompt } from '../skill-prompt';
 
 /**
  * The spec for Edit mastery's player written by a model (Edit mastery, 2026-10-18: "with a model, the brain writes the
@@ -21,12 +22,11 @@ const section = (text: string, from: RegExp, to: RegExp) => { const a = text.sea
 
 /** Edit mastery's own words for this step, from the repo now (so a change there is the next edit's). */
 export function masteryText(): { recipe: string; format: string; devices: string[] } {
-  const fund = readFileSync(join(REPO, '.claude', 'skills', 'ishaan-motion', 'references', 'edit-fundamentals.md'), 'utf8');
   const log = readFileSync(join(REPO, 'docs', 'agents', 'mastery', 'edit.md'), 'utf8');
   const player = readFileSync(join(PLAYER_DIR, 'player.html'), 'utf8');
   const devices = [...player.matchAll(/^ {2}(\w+): \{ (?:picture: true, )?build/gm)].map(m => m[1]!);
-  // the skill's whole edit reference (the repo copy, so a skill push is the next deploy's), and the spec's grammar
-  return { recipe: fund.trim(), format: section(log, /^## The beat spec/m, /^## /m), devices };
+  // the full tier of the skill (skill-prompt.ts: SKILL.md and the whole edit reference, the repo copy), and the spec's grammar
+  return { recipe: skillPrompt('edit', 'full').text, format: section(log, /^## The beat spec/m, /^## /m), devices };
 }
 
 export interface SpecInput { /** the names a src may use (the world's cut-outs, files in the edit folder) */ files?: Set<string>; words: { word: string; t: number; end: number }[]; faces?: { src_t: number; x: number; y: number; w: number; h: number }[]; duration: number; brief?: string }
