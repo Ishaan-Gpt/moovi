@@ -1,4 +1,5 @@
 # Changelog
+- 2.1.8 (2026-10-18): components.md a live graph of agents and calls is nodes and lines (hub in the middle, stores outside, pulses on bowed filaments, grows as used), never swimlanes; one layout once picked (Ishaan, Moovi synapse view).
 - 2.1.7 (2026-10-18): components.md logo lockup: word plus mark beside it, matching face, no plate; never forced into a letter (Ishaan, Moovi).
 - 2.1.6 (2026-10-18): components.md waits, hand-offs and results: never ask twice, the brand mark as every loader (stepped, no spin), logo = favicon, no header plates over the hero, results alone in glass (Ishaan, Moovi).
 - 2.1.5 (2026-10-18): components.md words on a live set: names at rest, a line only while working, never label a stand-in on screen (Ishaan, Moovi office).

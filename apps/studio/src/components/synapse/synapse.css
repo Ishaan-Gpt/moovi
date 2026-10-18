@@ -19,10 +19,6 @@
 .syn__live i, .syn__golive i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: syn-beat 1.2s var(--ease) infinite; }
 @keyframes syn-beat { 0%, 100% { box-shadow: 0 0 0 0 rgb(43 103 198 / .45); } 50% { box-shadow: 0 0 0 5px rgb(43 103 198 / 0); } }
 
-.syn__switch { display: inline-flex; padding: 3px; border-radius: 12px; gap: 2px; }
-.syn__switch button { all: unset; cursor: pointer; padding: 6px 12px; border-radius: 9px; font-size: 13px; font-weight: 600; color: var(--ink-2); transition: background .25s var(--ease), color .25s var(--ease); }
-.syn__switch button.is-on { background: var(--paper); color: var(--ink); box-shadow: 0 0 0 1px var(--line) inset, 0 6px 14px -10px rgb(43 103 198 / .6); }
-.syn__switch button:focus-visible { outline: 2px solid var(--accent); }
 .syn__runs { display: inline-flex; align-items: center; gap: 8px; padding: 4px 6px 4px 12px; border-radius: 12px; color: var(--ink-2); }
 .syn__runs select { border: 0; background: transparent; font: inherit; font-size: 13px; font-weight: 600; color: var(--ink); padding: 4px; }
 

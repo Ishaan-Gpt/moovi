@@ -42,6 +42,7 @@ Write every component yourself. These are proven patterns; adapt their shape to 
 - **Glass lanes**: horizontal glass tubes for comparisons.
 - **Seals/stamps** as status markers (filled seal = good, hollow ring = pending, dashed = never).
 - If a chart library is used, restyle everything: palette, gridlines at low alpha, glass tooltip, gradient area fill.
+- **A live graph of who called what** (agents, stores, calls; Ishaan, Moovi synapse view, 2026-10-18): draw it as **nodes and lines**, not swimlanes or a timeline. The orchestrator in the middle, the workers round it, the stores as big jelly blobs outside with each thing asked budding on their rim; every call a pulse with a short tail along a gently bowed filament (never through the middle node), thicker the more it is used; things pop in when first used so the graph grows; unused workers rest faint; hover or click lights a node's own lines and dims the rest. Time lives in a scrubber under it, not on an axis. Once he picks a layout, ship that one only (no layout toggle).
 
 ## Lists and rows
 - Glass list with white/60 dividers; row hover lightens; leading glyph well; serif title + muted subtitle; trailing dials, relative date (computed after mount), open arrow, and a lid-lifting delete.

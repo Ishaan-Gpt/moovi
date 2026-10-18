@@ -2,10 +2,9 @@ import { AGENT_IDS, AGENT_NAMES, type AgentId } from '@moovi/engine/events';
 import type { MemKind, SynDecision, SynEvent, SynSnapshot } from '@moovi/engine/synapse-shape';
 
 /**
- * The synapse view's model: from a run's events (graph calls and agent steps) to what is on screen at time T, in one of
- * two layouts. Pure: no DOM. World units are a 1000 × 700 board; the view's camera pans and zooms over it.
+ * The synapse view's model: from a run's events (graph calls and agent steps) to what is on screen at time T, drawn as
+ * nodes and lines (Ishaan's pick over swimlanes, 2026-10-18). Pure: no DOM. World units are a 1000 × 700 board; the view's camera pans and zooms over it.
  */
-export type Layout = 'hubs' | 'lanes';
 export const W = 1000, H = 700;
 
 /** Memory names and what each holds (fixed copy; the graph's real name never reaches the browser). */
@@ -36,16 +35,13 @@ export interface Node {
   label: string; agent?: AgentId; mem?: MemKind; query?: string; decision?: number;
   /** calls so far (agents, queries) */ n: number;
   /** last time something happened here (ms), for the flare */ hot: number;
+  /** first call (queries) or when it was made (decisions), for the pop-in */ first?: number;
 }
 export interface Edge { from: string; to: string; n: number; hot: number; mem: MemKind }
 export interface Pulse { from: string; to: string; p: number; mem: MemKind; write: boolean; err: boolean }
-export interface Dot { x: number; y: number; ev: SynEvent; i: number }
-export interface Span { agent: AgentId; x0: number; x1: number; y: number; label: string; open: boolean }
 
 export interface Frame {
   nodes: Node[]; edges: Edge[]; pulses: Pulse[];
-  /** lanes: one dot per call, spans of work, the memory rails */
-  dots: Dot[]; spans: Span[]; rails: { mem: MemKind; y: number }[]; lanes: { agent: AgentId; y: number }[];
   /** the timeline */ t0: number; t1: number; T: number;
   counts: { calls: number; rows: number; writes: number; mems: number; queries: number };
   active: Set<AgentId>;
@@ -68,7 +64,7 @@ function memsOf(events: SynEvent[]): MemKind[] {
 }
 
 /** Everything on screen at time T (events must be sorted by t). */
-export function frame(snap: SynSnapshot, events: SynEvent[], T: number, layout: Layout, live: boolean): Frame {
+export function frame(snap: SynSnapshot, events: SynEvent[], T: number, live: boolean): Frame {
   const { t0, t1 } = span(events, live);
   const upTo = events.filter(e => e.t <= T);
   const mems = memsOf(events);
@@ -79,25 +75,25 @@ export function frame(snap: SynSnapshot, events: SynEvent[], T: number, layout: 
   for (const e of upTo) if (e.k === 's') { if (e.x === 'start') active.add(e.a); else if (e.x === 'done' || e.x === 'fail') active.delete(e.a); }
   for (const e of upTo) if (e.k === 'q' && T - e.t < 2500) active.add(e.a);
   const base = { t0, t1, T, counts, active };
-  return layout === 'hubs' ? hubs(snap, events, upTo, mems, T, base) : lanes(events, upTo, mems, T, base);
+  return hubs(snap, events, upTo, mems, T, base);
 }
 
-/* ───────── layout A: hubs (Moovi in the middle, the crew round him, the memories outside, queries budding on them) ───────── */
+/* ───────── nodes and lines: Moovi in the middle, the crew round him, the memories outside, queries budding on them ───────── */
 
 const MEM_AT: Record<MemKind, [number, number]> = {
-  project: [820, 360], you: [180, 360], craft: [500, 610], styles: [500, 92], sys: [170, 110], other: [830, 110],
+  project: [872, 350], you: [128, 350], craft: [500, 640], styles: [500, 62], sys: [138, 96], other: [862, 96],
 };
 
-function hubs(snap: SynSnapshot, all: SynEvent[], upTo: SynEvent[], mems: MemKind[], T: number, base: Omit<Frame, 'nodes' | 'edges' | 'pulses' | 'dots' | 'spans' | 'rails' | 'lanes'>): Frame {
+function hubs(snap: SynSnapshot, all: SynEvent[], upTo: SynEvent[], mems: MemKind[], T: number, base: Omit<Frame, 'nodes' | 'edges' | 'pulses'>): Frame {
   const nodes: Node[] = [];
   const byId = new Map<string, Node>();
   const add = (n: Node) => { nodes.push(n); byId.set(n.id, n); return n; };
   // the crew: Moovi in the middle, the seven on a ring
   const crew = AGENT_IDS.filter(a => a !== 'moovi');
-  add({ id: 'a:moovi', kind: 'agent', agent: 'moovi', x: 500, y: 360, r: 34, label: 'Moovi', n: 0, hot: 0 });
+  add({ id: 'a:moovi', kind: 'agent', agent: 'moovi', x: 500, y: 350, r: 36, label: 'Moovi', n: 0, hot: 0 });
   crew.forEach((a, i) => {
     const ang = -Math.PI / 2 + (i + .5) * (Math.PI * 2 / crew.length);
-    add({ id: `a:${a}`, kind: 'agent', agent: a, x: 500 + Math.cos(ang) * 158, y: 360 + Math.sin(ang) * 128, r: 21, label: AGENT_NAMES[a], n: 0, hot: 0 });
+    add({ id: `a:${a}`, kind: 'agent', agent: a, x: 500 + Math.cos(ang) * 205, y: 350 + Math.sin(ang) * 158, r: 22, label: AGENT_NAMES[a], n: 0, hot: 0 });
   });
   // the memories, and the queries the whole run calls budding round each (stable: every query has its place from t0)
   const qOf = new Map<MemKind, string[]>();
@@ -105,13 +101,13 @@ function hubs(snap: SynSnapshot, all: SynEvent[], upTo: SynEvent[], mems: MemKin
   for (const m of mems) {
     const qs = (qOf.get(m) ?? []).slice().sort();
     const [mx, my] = MEM_AT[m];
-    const r = Math.min(70, 34 + Math.sqrt(qs.length) * 7);
+    const r = Math.min(66, 32 + Math.sqrt(qs.length) * 6.5);
     add({ id: `m:${m}`, kind: 'mem', mem: m, x: mx, y: my, r, label: MEM[m].name, n: 0, hot: 0 });
     // beads on the rim, facing the crew first; a second ring when there are many
-    const face = Math.atan2(360 - my, 500 - mx);
+    const face = Math.atan2(350 - my, 500 - mx);
     qs.forEach((q, i) => {
       const ring = i < 14 ? 0 : 1, k = ring ? i - 14 : i, per = ring ? Math.max(1, qs.length - 14) : Math.min(14, qs.length);
-      const spread = Math.min(Math.PI * 1.7, per * .36);
+      const spread = Math.min(Math.PI * 1.75, per * .44);
       const ang = face + (per === 1 ? 0 : -spread / 2 + (k / (per - 1)) * spread);
       const rr = r + 15 + ring * 22;
       add({ id: `q:${m}:${q}`, kind: 'query', mem: m, query: q, x: mx + Math.cos(ang) * rr, y: my + Math.sin(ang) * rr, r: 6, label: q, n: 0, hot: 0 });
@@ -121,11 +117,13 @@ function hubs(snap: SynSnapshot, all: SynEvent[], upTo: SynEvent[], mems: MemKin
   snap.decisions.forEach((d, i) => {
     if (d.t !== null && d.t > T) return;
     const a = byId.get(`a:${d.agent}`)!;
-    const out = Math.atan2(a.y - 360, a.x - 500) || 0;
+    const out = Math.atan2(a.y - 350, a.x - 500) || 0;
     const mine = snap.decisions.slice(0, i).filter(x => x.agent === d.agent).length;
-    const ang = out + (mine - 1) * .42;
+    // never below the agent: its name and count sit there
+    let ang = out + (mine - 1) * .42;
+    if (Math.sin(ang) > .2) ang = -ang;
     const rr = a.r + 20 + (mine > 2 ? 16 : 0);
-    add({ id: `d:${i}`, kind: 'decision', decision: i, agent: d.agent, x: a.x + Math.cos(ang) * rr, y: a.y + Math.sin(ang) * rr, r: 5.5, label: d.choice, n: 0, hot: d.t ?? 0 });
+    add({ id: `d:${i}`, kind: 'decision', decision: i, agent: d.agent, x: a.x + Math.cos(ang) * rr, y: a.y + Math.sin(ang) * rr, r: 5.5, label: d.choice, n: 0, hot: d.t ?? 0, first: d.t ?? 0 });
   });
   // edges and pulses from the calls so far
   const edges = new Map<string, Edge>();
@@ -136,13 +134,13 @@ function hubs(snap: SynSnapshot, all: SynEvent[], upTo: SynEvent[], mems: MemKin
     if (e.k === 's') { if (e.x === 'start' && e.a !== 'moovi') hand(edges, pulses, 'a:moovi', a.id, e, T); continue; }
     const qn = byId.get(`q:${e.g}:${e.q}`), mn = byId.get(`m:${e.g}`);
     if (!qn || !mn) continue;
-    a.n++; a.hot = Math.max(a.hot, e.t); qn.n++; qn.hot = Math.max(qn.hot, e.t); mn.n++; mn.hot = Math.max(mn.hot, e.t);
+    a.n++; a.hot = Math.max(a.hot, e.t); if (!qn.n) qn.first = e.t; qn.n++; qn.hot = Math.max(qn.hot, e.t); mn.n++; mn.hot = Math.max(mn.hot, e.t);
     const key = `${a.id}>${qn.id}`;
     const ed = edges.get(key) ?? { from: a.id, to: qn.id, n: 0, hot: 0, mem: e.g! };
     ed.n++; ed.hot = e.t; edges.set(key, ed);
     if (T - e.t < PULSE_MS) pulses.push({ from: a.id, to: qn.id, p: (T - e.t) / PULSE_MS, mem: e.g!, write: !!e.w, err: !!e.e });
   }
-  return { ...base, nodes, edges: [...edges.values()], pulses, dots: [], spans: [], rails: [], lanes: [] };
+  return { ...base, nodes, edges: [...edges.values()], pulses };
 }
 
 /** Moovi hands work to an agent: a faint edge and a pulse from the middle. */
@@ -151,40 +149,6 @@ function hand(edges: Map<string, Edge>, pulses: Pulse[], from: string, to: strin
   const ed = edges.get(key) ?? { from, to, n: 0, hot: 0, mem: 'project' as MemKind };
   ed.n++; ed.hot = e.t; edges.set(key, ed);
   if (T - e.t < PULSE_MS) pulses.push({ from, to, p: (T - e.t) / PULSE_MS, mem: 'project', write: false, err: false });
-}
-
-/* ───────── layout B: lanes (one row per agent, time left to right, the memories as rails below) ───────── */
-
-export const LANE_X0 = 150, LANE_X1 = 960;
-
-function lanes(all: SynEvent[], upTo: SynEvent[], mems: MemKind[], T: number, base: Omit<Frame, 'nodes' | 'edges' | 'pulses' | 'dots' | 'spans' | 'rails' | 'lanes'>): Frame {
-  const { t0, t1 } = base;
-  const x = (t: number) => LANE_X0 + ((t - t0) / Math.max(1, t1 - t0)) * (LANE_X1 - LANE_X0);
-  const laneY = (i: number) => 70 + i * 54;
-  const lanes = AGENT_IDS.map((agent, i) => ({ agent, y: laneY(i) }));
-  const yOf = new Map(lanes.map(l => [l.agent, l.y]));
-  const railTop = laneY(AGENT_IDS.length) + 14;
-  const rails = mems.map((mem, i) => ({ mem, y: railTop + i * 22 }));
-  const railY = new Map(rails.map(r => [r.mem, r.y]));
-  const dots: Dot[] = [];
-  const spans: Span[] = [];
-  const open = new Map<AgentId, { t: number; label: string }>();
-  upTo.forEach((e, i) => {
-    if (e.k === 'q') { dots.push({ x: x(e.t), y: yOf.get(e.a)!, ev: e, i }); return; }
-    if (e.x === 'start') { if (!open.has(e.a)) open.set(e.a, { t: e.t, label: e.s ?? '' }); }
-    else if (e.x === 'done' || e.x === 'fail') { const o = open.get(e.a); if (o) { spans.push({ agent: e.a, x0: x(o.t), x1: x(e.t), y: yOf.get(e.a)!, label: o.label, open: false }); open.delete(e.a); } }
-  });
-  for (const [a, o] of open) spans.push({ agent: a, x0: x(o.t), x1: x(T), y: yOf.get(a)!, label: o.label, open: true });
-  // a call that just happened drops a pulse from its dot to its memory's rail
-  const pulses: Pulse[] = [];
-  const nodes: Node[] = [];
-  for (const d of dots) if (T - d.ev.t < PULSE_MS) {
-    const id = `p${d.i}`;
-    nodes.push({ id: `${id}a`, kind: 'agent', x: d.x, y: d.y, r: 0, label: '', n: 0, hot: 0 }, { id: `${id}b`, kind: 'mem', x: d.x, y: railY.get(d.ev.g!) ?? railTop, r: 0, label: '', n: 0, hot: 0 });
-    pulses.push({ from: `${id}a`, to: `${id}b`, p: (T - d.ev.t) / PULSE_MS, mem: d.ev.g!, write: !!d.ev.w, err: !!d.ev.e });
-  }
-  void all;
-  return { ...base, nodes, edges: [], pulses, dots, spans, rails, lanes };
 }
 
 /* ───────── cards ───────── */
