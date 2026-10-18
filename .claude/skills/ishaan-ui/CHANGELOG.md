@@ -1,4 +1,5 @@
 # Changelog
+- 2.1.4 (2026-10-18): 3d.md in a product UI: frame for the free area beside panels, ship the phone version in the same pass, gooey furniture (Ishaan, Moovi office).
 - 2.1.3 (2026-10-18): components.md hero prompt box: a few distinct modes are visible chips on the box, never a menu; each says what it needs (Ishaan, Moovi landing).
 - 2.1.2 (2026-10-18): motion.md soft fields, blur-in type, focus transitions (from the Launch films).
 - 2.1.1 (2026-10-18): motion.md "smooth as butter": speed is a curve, never a step; no toggled filters; measure in rAF playback; camera by moment in ishaan-motion references/camera.md.

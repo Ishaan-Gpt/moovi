@@ -2,6 +2,7 @@ import { vertexShader } from '../moovi/shaders';
 import { QUALITY, initialTier, lowerTier, type QualityName } from '../moovi/quality';
 import { lerp3, mul, rotX, rotY, rotZ, type Vec3 } from '../moovi/math';
 import { CREW_N, worldFragment, type WorldVariant } from './worldShader';
+import { DESK_N, HOT_N } from './officeGraph';
 import { HALO_R, HALO_T, HALO_TILT, HALO_Y } from '../halo';
 
 /**
@@ -31,6 +32,19 @@ export interface WorldScene {
    */
   /** `gap` (world units, 0 = one centred word) parts the word around him: "mo" to his left, "ovi" to his right */
   word: { x: number; y: number; z: number; s: number; gap: number; merge: number };
+  /** The studio's office (only drawn by a world made with `office: true`). */
+  office?: OfficeScene;
+}
+
+/**
+ * The office: a jelly desk for each of the eight, a channel on the floor from each desk into the FalkorDB sphere at
+ * the centre, and the sphere itself. `glow` (0..1) and `tone` (0 idle, 1 working, 2 done, 3 waiting) show what a
+ * desk is doing; `hot` lists graph nodes just written to (`amount` fades 1 → 0).
+ */
+export interface OfficeScene {
+  desks: { x: number; y: number; z: number; yaw: number; w: number; glow: number; tone: number; on: number }[];
+  graph: { x: number; y: number; z: number; r: number; activity: number; stage?: number };
+  hot: { node: number; amount: number }[];
 }
 
 export function defaultScene(): WorldScene {
@@ -54,24 +68,28 @@ export interface MooviWorldOptions {
   scale?: number;
   onFrame?: (world: MooviWorld) => void;
   onStats?: (s: { fps: number; quality: QualityName; scale: number; width: number; height: number }) => void;
+  /** The studio's office: desks, floor channels and the FalkorDB sphere (see `scene.office`). */
+  office?: boolean;
 }
 
 const UNIFORMS = ['uRes', 'uTime', 'uCamPos', 'uCamTa', 'uFocal', 'uMPos', 'uMScale', 'uMRot', 'uBoundM', 'uBody', 'uSq',
   'uShL', 'uShR', 'uHandL', 'uHandR', 'uHaloPos', 'uHaloRot', 'uHaloRT', 'uBead', 'uBridge', 'uBubble',
   'uMorph', 'uMorphW', 'uPlayPos', 'uPlayRot', 'uLook', 'uEyeH', 'uCrew', 'uCrewB', 'uSplitK', 'uOrb', 'uOrbGlow', 'uFloor',
-  'uLetter', 'uLetterB', 'uWordFrom', 'uWB0', 'uWB1', 'uScreen', 'uTaps'] as const;
+  'uLetter', 'uLetterB', 'uWordFrom', 'uWB0', 'uWB1', 'uScreen', 'uTaps', 'uDesk', 'uDeskB', 'uGraph', 'uGraphB', 'uHot'] as const;
 type U = (typeof UNIFORMS)[number];
 interface Prog { program: WebGLProgram; u: Record<U, WebGLUniformLocation | null> }
 interface Pending { key: string; program: WebGLProgram; vs: WebGLShader; fs: WebGLShader }
 type Act = 'greet' | 'celebrate' | 'squint' | 'think' | 'frame';
 
-const key = (v: WorldVariant) => `${+v.morph}${+v.memory}${+v.word}`;
+const key = (v: WorldVariant) => `${+v.morph}${+v.memory}${+v.word}${+!!v.office}`;
 /** Compiled in this order (the base first: it is all the first frame needs; the letters next: the hero shows them). */
 const VARIANTS: WorldVariant[] = [
   { morph: false, memory: false, word: false }, { morph: false, memory: false, word: true },
   { morph: true, memory: false, word: false }, { morph: false, memory: true, word: false },
 ];
 const BASE = key(VARIANTS[0]!);
+/** The office world compiles only its own program. */
+const OFFICE_VARIANTS: WorldVariant[] = [{ morph: false, memory: false, word: false, office: true }];
 
 /** The letters of "moovi": centre x in x-heights, half extents (for bounds), and the order they leave his back. */
 const LETTERS = [
@@ -138,6 +156,9 @@ export class MooviWorld {
   private last = 0;
   private avg = 16;
   private slow = 0;
+  private variants: WorldVariant[] = VARIANTS;
+  private baseKey = BASE;
+  private gspin = 0;
   private frames = 0;
   private spin = 0;
   private nextBlink = 2;
@@ -175,6 +196,7 @@ export class MooviWorld {
     this.baseScale = opts.scale ?? .72;
     this.onFrame = opts.onFrame;
     this.onStats = opts.onStats;
+    if (opts.office) { this.variants = OFFICE_VARIANTS; this.baseKey = key(OFFICE_VARIANTS[0]!); }
     const gl = canvas.getContext('webgl2', { alpha: true, premultipliedAlpha: true, antialias: false, powerPreference: 'high-performance' });
     if (!gl) throw new Error('Moovi needs WebGL2');
     this.gl = gl;
@@ -306,7 +328,7 @@ export class MooviWorld {
     // the base program and the letters (the opening shot shows them) now, side by side: background compiles run on
     // separate driver threads, so two at once finish far sooner than one after the other (measured: 9.5 s vs 14.5 s
     // cold on D3D11), and the base is barely slowed. The screen and the memory ring follow once the base is in.
-    this.startCompile(VARIANTS.slice(0, 2));
+    this.startCompile(this.variants.slice(0, 2));
     this.vao = gl.createVertexArray();
     gl.bindVertexArray(this.vao);
     gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
@@ -328,7 +350,7 @@ export class MooviWorld {
     for (const p of this.pending) { gl.deleteProgram(p.program); gl.deleteShader(p.vs); gl.deleteShader(p.fs); }
     this.pending = [];
     this.swapping = true;
-    this.startCompile(VARIANTS);
+    this.startCompile(this.variants);
   }
 
   /** Start compiling and linking, without asking for the status (asking is what blocks). */
@@ -360,9 +382,9 @@ export class MooviWorld {
       const old = this.programs.get(p.key);
       if (old) gl.deleteProgram(old.program);   // a lower tier replacing the one drawn so far
       this.programs.set(p.key, { program: p.program, u });
-      if (p.key === BASE && !this.swapping) {
+      if (p.key === this.baseKey && !this.swapping) {
         this.markReady();
-        this.startCompile(VARIANTS.slice(2));
+        this.startCompile(this.variants.slice(2));
         if (!this.parallel) this.poll();
       }
       this.compiled[p.key] = Math.round(performance.now() - this.t0);
@@ -491,8 +513,8 @@ export class MooviWorld {
     const word = this.letters(t);
     this.poll();
     // a shape whose program is still compiling falls back to the base (he's himself until it's ready)
-    const want = key({ morph: morphing, memory: memory && !morphing, word: word.on && !morphing && !memory });
-    const p = this.programs.get(want) ?? this.programs.get(BASE);
+    const want = this.variants === OFFICE_VARIANTS ? this.baseKey : key({ morph: morphing, memory: memory && !morphing, word: word.on && !morphing && !memory });
+    const p = this.programs.get(want) ?? this.programs.get(this.baseKey);
     if (!p) { gl.clear(gl.COLOR_BUFFER_BIT); return; }
     const u = p.u;
     gl.useProgram(p.program);
@@ -539,6 +561,16 @@ export class MooviWorld {
     gl.uniform3f(u.uFloor, sc.floor.y, sc.floor.on, sc.floor.strength);
     gl.uniform4fv(u.uLetter, word.letter); gl.uniform4fv(u.uLetterB, word.shape);
     gl.uniform3f(u.uWordFrom, ...word.from); gl.uniform3f(u.uWB0, ...word.b0); gl.uniform3f(u.uWB1, ...word.b1);
+    const of = sc.office;
+    if (of && u.uDesk) {
+      const desk = new Float32Array(DESK_N * 4), deskB = new Float32Array(DESK_N * 4), hot = new Float32Array(HOT_N * 4).fill(-1);
+      of.desks.slice(0, DESK_N).forEach((d, i) => { desk.set([d.x, d.y, d.z, d.yaw], i * 4); deskB.set([d.glow, d.tone, d.w, d.on], i * 4); });
+      of.hot.slice(0, HOT_N).forEach((h, i) => hot.set([h.node, h.amount, 0, 0], i * 4));
+      this.gspin += dt * (.10 + .45 * of.graph.activity) * (this.reduce ? 0 : 1);
+      gl.uniform4fv(u.uDesk, desk); gl.uniform4fv(u.uDeskB, deskB); gl.uniform4fv(u.uHot, hot);
+      gl.uniform4f(u.uGraph, of.graph.x, of.graph.y, of.graph.z, of.graph.r);
+      gl.uniform4f(u.uGraphB, this.gspin, of.graph.activity, of.graph.stage ?? 4.5, 0);
+    }
     if (!this.benchmarking) gl.clear(gl.COLOR_BUFFER_BIT);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }

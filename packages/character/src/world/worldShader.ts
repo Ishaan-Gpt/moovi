@@ -1,10 +1,12 @@
 import type { QualityTier } from '../moovi/quality';
 import { haloGlsl } from '../halo';
+import { DESK_N, HOT_N, graphGlsl } from './officeGraph';
 
 /** How many crew blobs the world holds (Moovi's seven specialists). */
 export const CREW_N = 7;
 
-export interface WorldVariant { morph: boolean; memory: boolean; word: boolean }
+/** `office`: the studio's office — jelly desks, data channels on the floor and the FalkorDB sphere at the centre. */
+export interface WorldVariant { morph: boolean; memory: boolean; word: boolean; office?: boolean }
 
 /**
  * Moovi's world as one signed-distance field, rendered full-screen with a free camera:
@@ -25,6 +27,9 @@ precision highp float;
 #define MEMORY ${v.memory ? 1 : 0}
 #define WORD ${v.word ? 1 : 0}
 #define CREW_N ${CREW_N}
+#define OFFICE ${v.office ? 1 : 0}
+#define DESK_N ${DESK_N}
+#define HOT_N ${HOT_N}
 
 uniform vec2 uRes; uniform float uTime;
 uniform int uTaps; // the normal's 4 taps, as a uniform so its loop isn't unrolled into 4 copies of the scene (much faster to compile)
@@ -40,6 +45,13 @@ uniform vec4 uCrew[CREW_N]; uniform vec4 uCrewB[CREW_N]; uniform float uSplitK;
 uniform vec4 uOrb; uniform float uOrbGlow;
 uniform vec3 uFloor; // y, on, strength
 uniform vec4 uLetter[5]; uniform vec4 uLetterB[5]; uniform vec3 uWordFrom, uWB0, uWB1; // letters: centre+size, (shape, strand); strand root; bounds
+#if OFFICE
+uniform vec4 uDesk[DESK_N];   // desk: x, top y, z, yaw (its front faces the sphere)
+uniform vec4 uDeskB[DESK_N];  // desk: glow 0..1, tone (0 idle, 1 working, 2 done, 3 waiting), half width, on
+uniform vec4 uGraph;          // the FalkorDB sphere: centre, radius
+uniform vec4 uGraphB;         // spin, activity 0..1, stage radius, -
+uniform vec4 uHot[HOT_N];     // nodes just written to: index, amount 0..1, desk it came from, -
+#endif
 out vec4 outColor;
 
 const vec3 ICE_WHITE = vec3(0.969, 0.980, 0.992);
@@ -195,13 +207,50 @@ float crewD(int i, vec3 pw){
   return smin(d, f, r*.2);
 }
 
+#if OFFICE
+${graphGlsl}
+// ── the office: a jelly desk per crew member, poured from one stem onto the floor ──
+vec3 deskSpace(int i, vec3 pw){
+  vec4 D = uDesk[i];
+  vec3 q = pw - D.xyz;
+  vec2 F = vec2(sin(D.w), cos(D.w)), R = vec2(F.y, -F.x);
+  return vec3(dot(q.xz, R), q.y, dot(q.xz, F));
+}
+float deskD(int i, vec3 pw){
+  vec4 D = uDesk[i];
+  vec3 q = deskSpace(i, pw);
+  float w = uDeskB[i].z;
+  float top = sdRoundBox(q, vec3(w, .055, .30), .055);
+  if (top < .08) top += .005*sin(q.x*6. + uTime*1.6 + D.w*3.)*sin(q.z*7. + uTime*1.3);
+  float fy = uFloor.x - D.y;
+  float stem = sdCapsule(q, vec3(0., -.05, -.05), vec3(0., fy + .06, -.05), .075);
+  float foot = sdEllipsoid(q - vec3(0., fy + .015, -.05), vec3(.30, .045, .24));
+  return smin(top, smin(stem, foot, .16), .18);
+}
+// the sphere's stand: a jelly stem from the floor into a cradle ring that holds the glass ball
+float pedestalD(vec3 pw){
+  vec3 q = pw - uGraph.xyz;
+  float r = uGraph.w, fy = uFloor.x - uGraph.y;
+  float stem = sdCapsule(q, vec3(0., fy + .05, 0.), vec3(0., -r*.82, 0.), .11 + .02*sin(uTime*1.8 + q.y*5.));
+  float cradle = sdTorus(q - vec3(0., -r*.72, 0.), vec2(r*.66, .055));
+  float foot = sdEllipsoid(q - vec3(0., fy + .015, 0.), vec3(.55, .05, .55));
+  return smin(smin(stem, cradle, .14), foot, .2);
+}
+vec3 pedestalBound(){ return vec3(uGraph.x, (uFloor.x + uGraph.y - uGraph.w*.7)*.5, uGraph.z); }
+vec3 toneOf(float t){ return t < .5 ? ICE : t < 1.5 ? DEEP : t < 2.5 ? MINT : LILAC; }
+mat3 graphRot(){
+  float a = uGraphB.x, c = cos(a), s = sin(a), ct = cos(.32), st = sin(.32);
+  return mat3(c, 0., -s, 0., 1., 0., s, 0., c)*mat3(1., 0., 0., 0., ct, st, 0., -st, ct);
+}
+#endif
+
 /*
  * Compile time matters as much as frame time here: D3D's compiler (via ANGLE on Windows) inlines every call, so each
  * place that evaluates the scene adds a full copy of it. The scene is evaluated in exactly three places (the march,
  * the normal, the thickness samples), the normal's four taps run in a loop, and the march records which body it hit
  * instead of evaluating the scene again to find out.
  */
-int gOwner = -1;   // the body nearest the last mapScene() point: -1 Moovi, -2 his letters, 0..CREW_N-1 crew
+int gOwner = -1;   // the body nearest the last mapScene() point: -1 Moovi, -2 his letters, 0..CREW_N-1 crew, -10-i desk i
 float mapScene(vec3 pw, bool letters){
   float d = mooviD(pw);
   int own = -1;
@@ -218,6 +267,20 @@ float mapScene(vec3 pw, bool letters){
     if (dc < best) { best = dc; gOwner = i; }
     d = smin(d, dc, uSplitK);
   }
+#if OFFICE
+  // desks are separate pieces of jelly: a hard union, so nobody melts into the furniture
+  for (int i = 0; i < DESK_N; i++) {
+    if (uDeskB[i].w < .5) continue;
+    vec4 D = uDesk[i];
+    if (length(pw - vec3(D.x, mix(D.y, uFloor.x, .45), D.z)) - max(uDeskB[i].z + .4, .9) > d) continue;
+    float dd = deskD(i, pw);
+    if (dd < d) { d = dd; gOwner = -10 - i; }
+  }
+  if (length(pw - pedestalBound()) - (uGraph.w*.8 + .7) < d) {
+    float pd = pedestalD(pw);
+    if (pd < d) { d = pd; gOwner = -9; }
+  }
+#endif
   return d;
 }
 float mapWorld(vec3 pw){ return mapScene(pw, true); }
@@ -293,6 +356,16 @@ void main(){
     s = sphereHit(ro, rd, uCrew[i].xyz, uCrew[i].w*1.5 + uSplitK, e);
     if (e > 0.) { t0 = min(t0, s); t1 = max(t1, e); }
   }
+#if OFFICE
+  for (int i = 0; i < DESK_N; i++) {
+    if (uDeskB[i].w < .5) continue;
+    vec4 D = uDesk[i];
+    s = sphereHit(ro, rd, vec3(D.x, mix(D.y, uFloor.x, .45), D.z), max(uDeskB[i].z + .45, .95), e);
+    if (e > 0.) { t0 = min(t0, s); t1 = max(t1, e); }
+  }
+  s = sphereHit(ro, rd, pedestalBound(), uGraph.w*.8 + .75, e);
+  if (e > 0.) { t0 = min(t0, s); t1 = max(t1, e); }
+#endif
 #if WORD
   {
     vec3 inv = 1./rd, ba = (uWB0 - ro)*inv, bb = (uWB1 - ro)*inv;
@@ -324,8 +397,81 @@ void main(){
       vec2 c = (fp.xz - uCrew[i].xz)/uCrew[i].w;
       occ += exp(-dot(c, c)*1.6)*.32*smoothstep(1.6, 0., (uCrew[i].y - uFloor.x)/uCrew[i].w - .9);
     }
+#if OFFICE
+    for (int i = 0; i < DESK_N; i++) {
+      if (uDeskB[i].w < .5) continue;
+      vec3 dq = deskSpace(i, fp);
+      vec2 c = vec2(dq.x/(uDeskB[i].z + .25), (dq.z + .02)/.5);
+      occ += exp(-dot(c, c)*1.8)*.30;
+    }
+#endif
     occ = clamp(occ*uFloor.z, 0., 1.);
     col = vec3(.80, .86, .95); alpha = occ*.6;
+#if OFFICE
+    {
+      // the stage: the room stands on one wide disc of jelly, glossy at its rim, slow ripples across it; its side
+      // shows along the front edge
+      float Rp = uGraphB.z;
+      vec2 sg = fp.xz - uGraph.xz;
+      float sr = length(sg), spx = tf*1.5/(uRes.y*uFocal);
+      float onTop = 1. - smoothstep(Rp - spx*1.5, Rp + spx*1.5, sr);
+      float rimK = smoothstep(Rp - .55, Rp - .02, sr);
+      float ripple = .5 + .5*sin(sr*5.5 - uTime*.9 + sin(atan(sg.y, sg.x)*3. + uTime*.4)*.6);
+      vec3 stc = mix(MILK, ICE, .25 + .45*smoothstep(0., Rp, sr)) + vec3(.06)*ripple*(1. - rimK) + vec3(.35)*pow(rimK, 6.);
+      float sta = (.42 + .10*ripple + .38*rimK)*onTop;
+      // the disc's side: where the ray passes below the top edge, inside the stage's cylinder
+      vec2 so = ro.xz - uGraph.xz, sd = rd.xz;
+      float qa = dot(sd, sd), qb = dot(so, sd), qc = dot(so, so) - Rp*Rp, disc = qb*qb - qa*qc;
+      if (onTop < .5 && disc > 0.) {
+        float ts = (-qb - sqrt(disc))/qa;
+        float sy = ro.y + rd.y*ts;
+        float depth = .26;
+        if (ts > 0. && sy < uFloor.x && sy > uFloor.x - depth) {
+          float k = (uFloor.x - sy)/depth;
+          stc = mix(mix(ICE_WHITE, ICE, .6), DEEP*.35 + ICE*.65, k) + vec3(.4)*(1. - smoothstep(0., .12, k));
+          sta = .88 - .3*k*k;
+        }
+      }
+      // the shadows sit on the stage
+      vec3 cS = stc*sta; float aS = sta;
+      cS = cS*(1. - alpha) + col*alpha; aS = aS*(1. - alpha) + alpha;
+      col = cS/max(aS, 1e-4); alpha = aS;
+    }
+    {
+      // the room's floor: faint rings round the sphere, its soft shadow, and a channel from every desk into it that
+      // lights up and carries pulses while that desk is working
+      vec2 g = fp.xz - uGraph.xz;
+      float gr = length(g);
+      float px = tf*1.5/(uRes.y*uFocal);
+      float lines = 0.;
+      for (int k = 1; k <= 3; k++) { float rr = uGraph.w*(1.15 + .62*float(k)); lines += (1. - smoothstep(0., px*1.4, abs(gr - rr)))*(.22 - .05*float(k)); }
+      float sh = exp(-gr*gr/(uGraph.w*uGraph.w*1.1))*.28;
+      vec3 lc = vec3(0.); float la = 0.;
+      for (int i = 0; i < DESK_N; i++) {
+        if (uDeskB[i].w < .5) continue;
+        vec2 a = uGraph.xz + normalize(uDesk[i].xz - uGraph.xz)*uGraph.w*1.12, b = uDesk[i].xz;
+        vec2 ba = b - a, pa = fp.xz - a;
+        float h = clamp(dot(pa, ba)/dot(ba, ba), 0., 1.);
+        float dl = length(pa - ba*h);
+        float glow = uDeskB[i].x;
+        float wline = .012 + .01*glow;
+        float core = 1. - smoothstep(wline, wline + px*1.5, dl);
+        // pulses run from the desk into the sphere while it works
+        float pulse = pow(max(0., sin((h*3.5 + uTime*1.6)*TAU*.5)), 12.)*glow;
+        float halo = exp(-dl*dl/(.02 + .05*glow))*.35*glow;
+        float ca = core*(.28 + .55*glow + .6*pulse) + halo;
+        lc += mix(ICE, toneOf(uDeskB[i].y), .35 + .65*glow)*ca; la += ca;
+      }
+      la = min(la, 1.);
+      lc = la > 0. ? lc/max(la, 1e-3) : ICE;
+      float ra = clamp(lines, 0., 1.);
+      // over the contact shadows: shadow tint, rings, channels
+      vec3 c0 = col*alpha + vec3(.72, .80, .92)*sh*(1. - alpha); float a0 = alpha + sh*(1. - alpha);
+      c0 += (DEEP*.5 + ICE*.5)*ra*.5*(1. - a0); a0 += ra*.5*(1. - a0);
+      c0 = c0*(1. - la) + lc*la; a0 = a0*(1. - la) + la;
+      col = c0/max(a0, 1e-4); alpha = a0;
+    }
+#endif
   }
 
   if (hit) {
@@ -353,11 +499,13 @@ void main(){
       prev = S[i]; dPrev = dj;
     }
 
-    int owner = max(hitOwner, -1);   // the letters are Moovi
+    int desk = hitOwner <= -10 ? -10 - hitOwner : -1;
+    bool ped = hitOwner == -9;
+    int owner = desk >= 0 || ped ? -5 : max(hitOwner, -1);   // the letters are Moovi; -5: furniture
     // eyes: march the refracted ray to the embedded eye; the closest approach gives an antialiased edge
     float eye = 0.; vec3 ec = vec3(0.);
     float px = t*1.5/(uRes.y*uFocal);   // one pixel's footprint at the hit, world units
-    if (owner < 0) {
+    if (owner == -1) {
       vec3 pl = uMRot*(p - uMPos)/uMScale;
       vec3 rl = uMRot*rdIn;
       vec3 ep = mEyeSpace(pl);
@@ -377,7 +525,7 @@ void main(){
           eye = cov; ti = mix(ti, bt*uMScale, cov);
         }
       }
-    } else {
+    } else if (owner >= 0) {
       float r = uCrew[owner].w;
       vec3 q = crewSpace(owner, p)/r;
       if (abs(abs(q.x) - .33) < .26 && q.z > .45 && abs(q.y - .06) < .3) {
@@ -408,6 +556,26 @@ void main(){
     }
     vec3 body = ICE_WHITE*trans*(1. - scat) + milk*scat*(.80 + .20*wrap);
     if (eye > 0.) body = mix(body, ec*mix(vec3(1.), trans, .5), .90*eye);
+#if OFFICE
+    if (desk >= 0) {
+      // frosted milk jelly; its front lip (toward the sphere) glows in the desk's state colour while it works
+      vec3 dq = deskSpace(desk, p);
+      vec4 B = uDeskB[desk];
+      vec3 tc = toneOf(B.y);
+      body = mix(body, MILK*(.86 + .14*wrap), .35);
+      float lip = smoothstep(.24, .34, dq.z)*smoothstep(-.06, .02, dq.y)*smoothstep(B.z + .08, B.z - .12, abs(dq.x));
+      float topGlow = smoothstep(.0, .06, dq.y)*(1. - smoothstep(.1, .34, abs(dq.z - .05)));
+      float breathe = .75 + .25*sin(uTime*3. + float(desk));
+      body = mix(body, tc*(.55 + .45*breathe) + vec3(.18), clamp(lip*(.10 + .85*B.x), 0., .9));
+      body += tc*topGlow*.12*B.x;
+    }
+    if (ped) {
+      // the stand glows a little from inside while the crew writes to the graph
+      body = mix(body, MILK*(.86 + .14*wrap), .3);
+      float up = smoothstep(uFloor.x, uGraph.y - uGraph.w*.7, p.y);
+      body += DEEP*(.06 + .22*uGraphB.y*(.6 + .4*sin(uTime*3. - p.y*6.)))*up;
+    }
+#endif
 #if MEMORY
     if (owner < 0) {
       vec3 hp = haloSpace(uMRot*(p - uMPos)/uMScale);
@@ -425,6 +593,86 @@ void main(){
 #endif
     alpha = 1.;
   }
+
+#if OFFICE
+  // the FalkorDB sphere: a glass ball holding the graph. Drawn analytically (not marched): a frosted rim, nodes as
+  // antialiased dots with a glow, edges as thin glowing lines; a node just written to flares and lights its edges.
+  if (uGraph.w > .001) {
+    float ge; float gt = sphereHit(ro, rd, uGraph.xyz, uGraph.w, ge);
+    if (ge > 0. && (!hit || max(gt, 0.) < t)) {
+      float tn = max(gt, 0.), tx = hit ? min(ge, t) : ge;
+      vec3 gp = ro + rd*tn, gn = normalize(gp - uGraph.xyz);
+      float fres = pow(1. - clamp(dot(gn, -rd), 0., 1.), 2.4);
+      float act = uGraphB.y;
+      mat3 R = graphRot();
+      float gpx = tn*1.5/(uRes.y*uFocal);
+      vec3 gc = vec3(0.); float ga = 0.;
+      // edges first (behind the dots)
+      float hotE = 0.;
+      for (int k = 0; k < G_E; k++) {
+        vec3 a = uGraph.xyz + R*G_NODE[G_EDGE[k].x]*uGraph.w*.8, b = uGraph.xyz + R*G_NODE[G_EDGE[k].y]*uGraph.w*.8;
+        vec3 ba = b - a, w0 = ro - a;
+        float bd = dot(rd, ba), cc = dot(ba, ba), dd = dot(rd, w0), ee = dot(ba, w0);
+        float den = max(cc - bd*bd, 1e-5);
+        float sk = clamp((ee - bd*dd)/den, 0., 1.);
+        float tk = sk*bd - dd;
+        if (tk < tn - .05 || tk > tx + .05) continue;
+        float dl = length(ro + rd*tk - a - ba*sk);
+        float heat = 0.;
+        for (int j = 0; j < HOT_N; j++) { int hi = int(uHot[j].x + .5); if (hi == G_EDGE[k].x || hi == G_EDGE[k].y) heat = max(heat, uHot[j].y); }
+        float lw = gpx*.9 + .004*uGraph.w;
+        float line = (1. - smoothstep(lw*.5, lw*1.6, dl))*(.30 + .25*act + .6*heat);
+        // a spark travels along a hot edge
+        line += heat*pow(max(0., 1. - abs(fract(sk - uTime*1.2) - .5)*6.), 3.)*(1. - smoothstep(lw, lw*3., dl));
+        gc += mix(ICE, DEEP, .55 + .45*heat)*line*(1. - ga); ga += line*(1. - ga);
+      }
+      for (int k = 0; k < G_N; k++) {
+        vec3 P = uGraph.xyz + R*G_NODE[k]*uGraph.w*.8;
+        float tc = dot(P - ro, rd);
+        if (tc < tn - .1 || tc > tx + .1) continue;
+        float dn = length(ro + rd*tc - P);
+        float heat = 0.;
+        for (int j = 0; j < HOT_N; j++) if (int(uHot[j].x + .5) == k) heat = max(heat, uHot[j].y);
+        float r = uGraph.w*(k == 0 ? .075 : .042)*(1. + .7*heat);
+        float dot1 = 1. - smoothstep(r - gpx, r + gpx, dn);
+        float glow = exp(-dn*dn/(r*r*(5. + 10.*heat)))*(.35 + .9*heat + .2*act);
+        vec3 nc = mix(DEEP, vec3(1.), .25 + .6*heat);
+        float na = clamp(dot1 + glow*(1. - dot1), 0., 1.);
+        gc = gc*(1. - na) + (nc*dot1 + DEEP*glow*(1. - dot1))*1.0; ga = na + ga*(1. - na);
+      }
+      // the glass: a frosted rim, a soft inner light that breathes with the crew's activity
+      float rim = fres*.55 + .05;
+      vec3 glass = mix(ICE, MILK, .5) + vec3(pow(max(dot(reflect(-L, gn), -rd), 0.), 80.))*1.2;
+      float inner = exp(-pow(length(cross(uGraph.xyz - ro, rd))/uGraph.w, 2.)*2.)*(.06 + .14*act);
+      vec3 lay = gc + glass*rim*(1. - ga) + DEEP*inner*(1. - ga);
+      float la = clamp(ga + rim*(1. - ga) + inner*(1. - ga), 0., 1.);
+      vec3 under = col*alpha;
+      vec3 outc = lay + under*(1. - la); float outa = la + alpha*(1. - la);
+      col = outc/max(outa, 1e-4); alpha = outa;
+    }
+  }
+#endif
+
+#if OFFICE
+  // jelly bubbles drifting up through the room (analytic soap spheres, a handful, depth-tested)
+  for (int k = 0; k < 6; k++) {
+    float fk = float(k);
+    float per = 14. + fk*2.3, ph = fract(uTime/per + fk*.37);
+    float ang = fk*1.9 + .6;
+    vec3 bc = vec3(uGraph.x + cos(ang)*(1.8 + .5*sin(fk*3.1)) + .25*sin(uTime*.7 + fk), uFloor.x + ph*3.6, uGraph.z + sin(ang)*(1.6 + .4*cos(fk*2.)) );
+    float br = (.05 + .035*fract(fk*.618))*smoothstep(0., .08, ph)*(1. - smoothstep(.85, 1., ph));
+    float bt = dot(bc - ro, rd);
+    if (br < .002 || bt < 0. || (hit && bt > t)) continue;
+    float bd = length(ro + rd*bt - bc);
+    if (bd > br) continue;
+    float nz = sqrt(1. - bd*bd/(br*br));
+    float bf = pow(1. - nz, 2.);
+    vec3 bcol = mix(MILK, mix(LILAC, MINT, .5 + .5*sin(fk + bf*6.)), .5) + vec3(pow(nz, 30.))*.0;
+    float ba = .06 + .55*bf;
+    bcol += vec3(1.)*(1. - smoothstep(.0, .25, length((ro + rd*bt - bc)/br - vec3(-.35, .4, 0.))))*.8;
+    col = (bcol*ba + col*alpha*(1. - ba))/max(ba + alpha*(1. - ba), 1e-4); alpha = ba + alpha*(1. - ba);
+  }
+#endif
 
   // the task bead: an analytic glowing sphere, depth-tested against the jelly
   if (uOrb.w > .001) {
