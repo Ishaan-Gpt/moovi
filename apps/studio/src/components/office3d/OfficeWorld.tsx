@@ -16,6 +16,8 @@ interface Props {
   onStats?: (s: { fps: number; quality: string; scale: number }) => void;
   /** drawn instead where the browser has no WebGL2 (the 2D set) */
   fallback?: ReactNode;
+  /** the sphere's Enter button: open the live FalkorDB graph of this video (the synapse view) */
+  onEnterGraph?: () => void;
 }
 
 const FLY_MS = 1700;
@@ -38,7 +40,7 @@ const look = (st: Status | undefined, now: number) => {
  * agent works; work handed on travels as a bead from one desk into the graph (a node flares where it lands) and out
  * to the next desk. Above each head only a name and one short line, as on the 2D set. Same props as the 2D Stage.
  */
-export function OfficeWorld({ status, flights, onLanded, inset = 0, above = 0, below = 0, mooviState, visit = null, onStats, fallback = null }: Props) {
+export function OfficeWorld({ status, flights, onLanded, inset = 0, above = 0, below = 0, mooviState, visit = null, onStats, fallback = null, onEnterGraph }: Props) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const tags = useRef<Partial<Record<AgentId, HTMLDivElement | null>>>({});
   const gtag = useRef<HTMLDivElement>(null);
@@ -202,6 +204,7 @@ export function OfficeWorld({ status, flights, onLanded, inset = 0, above = 0, b
         })}
         <div ref={gtag} className="o3-graph">
           <b>FalkorDB</b>
+          {onEnterGraph && <button className="o3-graph__enter" onClick={onEnterGraph} aria-label="Enter the FalkorDB graph of this video">Enter<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M4 8h7.5M8.5 4.5 12 8l-3.5 3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg></button>}
         </div>
       </div>
       {!ok && fallback}

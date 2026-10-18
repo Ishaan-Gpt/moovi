@@ -29,7 +29,7 @@ export interface SynEvent {
 
 export interface SynTask { id: string; kind: string; agent: AgentId; status: string; ms: number | null }
 export interface SynCause { label: 'Rule' | 'Reference' | 'Asset' | 'Feedback'; id: string }
-export interface SynDecision { kind: string; agent: AgentId; choice: string; why: string; causes: SynCause[] }
+export interface SynDecision { kind: string; agent: AgentId; choice: string; why: string; t: number | null; causes: SynCause[] }
 export interface SynQuery { name: string; g: MemKind; about: string; write: boolean }
 export interface SynRun { id: string; n: number; status: string; kind: string; at: number | null }
 export interface SynSnapshot {
@@ -114,7 +114,7 @@ export function shapeDecision(r: Record<string, unknown>): SynDecision {
     const id = lab === 'Feedback' ? 'your note' : safeId(c.id);
     return id ? [{ label: lab, id }] : [];
   });
-  return { kind: word(r.kind, 'decision'), agent: agentOf(typeof r.agent === 'string' ? r.agent : null), choice: label(r.choice, 64) ?? 'a choice', why: label(r.why, 80) ?? '', causes };
+  return { kind: word(r.kind, 'decision'), agent: agentOf(typeof r.agent === 'string' ? r.agent : null), choice: label(r.choice, 64) ?? 'a choice', why: label(r.why, 80) ?? '', t: num(r.at), causes };
 }
 
 export const shapeRun = (r: Record<string, unknown>): SynRun => ({

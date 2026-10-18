@@ -1,0 +1,86 @@
+/* Inside the FalkorDB sphere: the synapse view. The office's icy room, opened up; brand tokens only (base.css). */
+.syn { position: fixed; inset: 0; z-index: 60; overflow: hidden; isolation: isolate; color: var(--ink);
+  animation: syn-in .5s var(--ease) both; }
+.syn__room { position: absolute; inset: 0; z-index: -1;
+  background:
+    radial-gradient(48% 40% at 50% 52%, rgb(207 230 247 / .7) 0%, rgb(207 230 247 / 0) 72%),
+    radial-gradient(80% 50% at 50% 0%, var(--paper) 0%, rgb(247 250 253 / 0) 70%),
+    linear-gradient(180deg, var(--bg) 0%, var(--ice-soft) 100%); }
+.syn__board { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; }
+@keyframes syn-in { from { opacity: 0; transform: scale(1.04); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+
+.syn__top { position: absolute; left: 20px; right: 20px; top: 16px; display: flex; align-items: center; gap: 10px; pointer-events: none; }
+.syn__top > * { pointer-events: auto; }
+.syn__title { margin-right: auto; }
+.syn__title h2 { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -.02em; line-height: 1.05; }
+.syn__title h2 em { font-family: var(--serif); font-style: italic; font-weight: 400; color: var(--accent); }
+.syn__title p { margin: 4px 0 0; color: var(--ink-2); }
+.syn__live { display: inline-flex; align-items: center; gap: 5px; color: var(--accent); font-weight: 500; }
+.syn__live i, .syn__golive i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: syn-beat 1.2s var(--ease) infinite; }
+@keyframes syn-beat { 0%, 100% { box-shadow: 0 0 0 0 rgb(43 103 198 / .45); } 50% { box-shadow: 0 0 0 5px rgb(43 103 198 / 0); } }
+
+.syn__switch { display: inline-flex; padding: 3px; border-radius: 12px; gap: 2px; }
+.syn__switch button { all: unset; cursor: pointer; padding: 6px 12px; border-radius: 9px; font-size: 13px; font-weight: 600; color: var(--ink-2); transition: background .25s var(--ease), color .25s var(--ease); }
+.syn__switch button.is-on { background: var(--paper); color: var(--ink); box-shadow: 0 0 0 1px var(--line) inset, 0 6px 14px -10px rgb(43 103 198 / .6); }
+.syn__switch button:focus-visible { outline: 2px solid var(--accent); }
+.syn__runs { display: inline-flex; align-items: center; gap: 8px; padding: 4px 6px 4px 12px; border-radius: 12px; color: var(--ink-2); }
+.syn__runs select { border: 0; background: transparent; font: inherit; font-size: 13px; font-weight: 600; color: var(--ink); padding: 4px; }
+
+.syn__counts { position: absolute; left: 20px; top: 92px; margin: 0; display: grid; gap: 6px; color: var(--ink-2); pointer-events: none; }
+.syn__counts div { display: flex; align-items: baseline; gap: 8px; }
+.syn__counts dd { margin: 0; font-size: 18px; color: var(--ink); font-feature-settings: "tnum"; min-width: 3ch; }
+.syn__counts dt { order: 2; }
+
+.syn__legend { position: absolute; left: 20px; bottom: 92px; margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.syn__legend button { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); padding: 3px 6px; border-radius: 8px; }
+.syn__legend button:hover { color: var(--ink); background: rgb(255 255 255 / .6); }
+.syn__legend i { width: 12px; height: 12px; border-radius: 50%; }
+
+.syn__time { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); width: min(720px, calc(100% - 32px)); display: flex; align-items: center; gap: 12px; padding: 8px 14px 8px 8px; border-radius: 16px; }
+.syn__play { all: unset; cursor: pointer; flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 12px; color: #fff; background: var(--accent);
+  box-shadow: 0 1px 0 rgb(255 255 255 / .28) inset, 0 10px 24px -14px rgb(43 103 198 / .9); transition: transform .3s var(--jelly); }
+.syn__play:active { transform: scale(.92); }
+.syn__time input[type=range] { flex: 1; accent-color: var(--accent); }
+.syn__clock { color: var(--ink-2); white-space: nowrap; }
+.syn__golive { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 8px; color: var(--ink-2); }
+.syn__golive.is-on { color: var(--accent); }
+.syn__golive:not(.is-on) i { animation: none; background: #C3D3E2; }
+
+.syn__empty { position: absolute; left: 50%; top: 50%; transform: translate(-50%, 40px); margin: 0; padding: 10px 16px; border-radius: 12px; background: rgb(255 255 255 / .8); color: var(--ink-2); font-size: 14px; box-shadow: 0 0 0 1px var(--line) inset; }
+
+.syn-card { position: absolute; right: 20px; top: 76px; width: min(320px, calc(100% - 40px)); max-height: calc(100% - 180px); overflow: auto; padding: 18px 18px 16px; border-radius: 20px;
+  animation: syn-card .35s var(--ease) both; }
+@keyframes syn-card { from { opacity: 0; transform: translateY(8px); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
+.syn-card__x { all: unset; cursor: pointer; position: absolute; right: 12px; top: 12px; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 9px; color: var(--ink-2); }
+.syn-card__x:hover { background: rgb(255 255 255 / .8); color: var(--ink); }
+.syn-card__kicker { margin: 0 0 4px; color: var(--ink-2); }
+.syn-card h3 { margin: 0 28px 10px 0; font-size: 20px; font-weight: 700; letter-spacing: -.015em; line-height: 1.15; overflow-wrap: anywhere; }
+.syn-card h3.mono { font-size: 16px; font-weight: 500; }
+.syn-card__about { margin: 0 0 12px; color: var(--ink-2); font-size: 13.5px; }
+.syn-card__stats { display: flex; gap: 18px; margin: 4px 0 12px; }
+.syn-card__stats div { display: grid; }
+.syn-card__stats dd { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.02em; font-feature-settings: "tnum"; }
+.syn-card__stats dt { color: var(--ink-2); }
+.syn-card__sec h4 { margin: 12px 0 6px; font-size: 12px; font-weight: 700; color: var(--frost); }
+.syn-card__sec ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; }
+.syn-card__sec li { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13.5px; min-height: 26px; }
+.syn-card__sec li > span.mono { color: var(--ink-2); }
+.syn-card__sec button { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border-radius: 7px; padding: 2px 4px; margin-left: -4px; overflow-wrap: anywhere; }
+.syn-card__sec button:hover { background: rgb(207 230 247 / .5); }
+.syn-card__sec button.mono { font-size: 12px; }
+.syn-card__dot { flex: none; width: 10px; height: 10px; border-radius: 50%; }
+.syn-card__chip { font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--lilac); color: var(--frost); }
+.syn-card__note { margin: 14px 0 0; font-size: 12px; color: var(--ink-2); }
+.syn-card__note--bad { color: var(--signal); }
+.syn-card__more { margin-top: 12px; }
+
+@media (max-width: 760px) {
+  .syn__top { left: 12px; right: 12px; flex-wrap: wrap; }
+  .syn__title h2 { font-size: 21px; }
+  .syn__close span { display: none; }
+  .syn__counts { top: 108px; left: 12px; }
+  .syn__counts dd { font-size: 15px; }
+  .syn__legend { display: none; }
+  .syn-card { left: 12px; right: 12px; width: auto; top: auto; bottom: 84px; max-height: 46%; }
+}
+@media (prefers-reduced-motion: reduce) { .syn, .syn-card { animation: none; } .syn__live i, .syn__golive i { animation: none; } }

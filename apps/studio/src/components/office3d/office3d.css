@@ -27,6 +27,12 @@
 @keyframes o3-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgb(43 103 198 / .45); } 50% { box-shadow: 0 0 0 5px rgb(43 103 198 / 0); } }
 
 .o3-graph { position: absolute; left: 0; top: 0; display: grid; justify-items: center; gap: 2px; padding-bottom: 6px; will-change: transform; }
+.o3-graph__enter { all: unset; pointer-events: auto; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 12px 0 14px; margin-top: 4px; border-radius: 999px;
+  font-size: 12.5px; font-weight: 700; color: var(--accent); background: rgb(247 250 253 / .92);
+  box-shadow: 0 0 0 1px var(--ice) inset, 0 10px 22px -12px rgb(43 103 198 / .6); transition: transform .35s var(--jelly), box-shadow .3s var(--ease); }
+.o3-graph__enter:hover { transform: translateY(-1px) scale(1.04); box-shadow: 0 0 0 1px var(--accent) inset, 0 14px 26px -12px rgb(43 103 198 / .7); }
+.o3-graph__enter:active { transform: scale(.95); }
+.o3-graph__enter:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .o3-graph b { font-family: var(--font-serif); font-style: italic; font-weight: 400; font-size: 22px; line-height: 1; color: var(--accent); letter-spacing: -.01em; }
 
 @media (max-width: 760px) {

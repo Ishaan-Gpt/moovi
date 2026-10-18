@@ -12,6 +12,7 @@ import { Stage } from './Stage';
 import { OfficeWorld } from '../office3d/OfficeWorld';
 import { useSimulatedCrew } from '../office3d/simulate';
 import { useChat, type Video } from './useChat';
+import { SynapseView } from '../synapse/SynapseView';
 
 export interface OfficeChat { id: string; title: string; status: string; videoStatus: string; version: number; duration: number | null; format: string | null; live: number[] }
 
@@ -44,6 +45,7 @@ export function Office({ pid, project, chat, messages, chats, startNew }: {
   const [visit, setVisit] = useState<AgentId | null>(null);
   const [pulse, setPulse] = useState<MooviState | null>(null);
   const [everConnected, setEverConnected] = useState(false);
+  const [graph, setGraph] = useState(false);
 
   // per-viewer conveniences: the chat's open state is remembered; the layout follows the window
   useEffect(() => {
@@ -132,7 +134,7 @@ export function Office({ pid, project, chat, messages, chats, startNew }: {
     <div className={`office ${brief ? 'is-briefing' : ''}`}>
       <div className="office__world" aria-hidden={brief || undefined}>
         {/* the 3D office plays its own run until it is wired to the crew's events; the 2D set draws where WebGL2 can't */}
-        <OfficeWorld {...crew} inset={inset} above={wide ? 0 : 56} below={wide ? 0 : (chatOpen && !brief ? sheet : 72) + (dockOn ? 78 : 0)} visit={visit}
+        <OfficeWorld {...crew} inset={inset} above={wide ? 0 : 56} below={wide ? 0 : (chatOpen && !brief ? sheet : 72) + (dockOn ? 78 : 0)} visit={visit} onEnterGraph={() => setGraph(true)}
           fallback={<Stage status={state.status} flights={state.flights} onLanded={onLanded} inset={inset} above={wide ? 0 : 56}
             below={wide ? 0 : (chatOpen && !brief ? sheet : 72) + (dockOn ? 78 : 0)}
             mooviState={mooviState} visit={visit} compact={!wide} />} />
@@ -159,6 +161,8 @@ export function Office({ pid, project, chat, messages, chats, startNew }: {
           duration={shown === versions ? video?.duration : undefined} format={video?.format ?? chat.format ?? undefined} minimised={docked} live={state.live.includes(Math.min(shown, versions))}
           onVersion={setShown} onClose={() => setShown(null)} onMinimise={() => setDocked(d => !d)} onTweak={tweak} />
       )}
+
+      {graph && <SynapseView source={{ pid, cid }} onClose={() => setGraph(false)} />}
 
       <BriefOverlay open={brief} canClose={state.messages.length > 0 || !!state.run} previous={previous} onClose={() => setBrief(false)} onSubmit={startBrief} />
     </div>
