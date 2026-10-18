@@ -39,6 +39,19 @@ open until DONE (on Windows the background run may end with it). Tests: `package
 script against a local bridge with a stand in `claude`: twice in a row, spaces in paths, no curl, wget only, no claude,
 expired code, a dying background run, no token in output or logs). Design and risks: docs/agents/TAB.md, 2026-10-18 10:05 IST.
 
+Since decision 19 (three presets) the video itself is started on the website: pick **Edit**, **Launch video** or
+**Showreel** on the first screen, then give it the clip, link or text it asks for. The bridge never starts a run and
+needs no preset of its own; a brief with no preset is refused by the router before any step reaches Claude Code, and
+the pasted window then ends at IDLE. The prompt's first line now says "make my video" (not "edit my video") so it fits
+all three presets.
+
+Since decision 20 a linked Claude Code writes the whole Edit spec (the beats Edit mastery's player draws) from the full
+ishaan-motion skill: that step (`direct:edit-spec`) now reaches Claude Code like the other brain steps, with the skill's
+SKILL.md and edit reference in its system text (about 12k tokens), and falls back to the key after 2 minutes unanswered.
+The same skill files are also listed as read only MCP resources (`moovi://skill/ishaan-motion/...`), so Claude Code
+can open Launch and Showreel references from its resource picker. Tests: `packages/mcp/test/edit-spec.test.ts`,
+`packages/mcp/test/skill.test.ts`.
+
 ## 1. One time setup
 
 In the repo, on `main` (the bridge is merged there):
@@ -135,11 +148,9 @@ not running or the token was replaced.
    `/mcp__moovi__run` (that is what we have been calling `/moovi:run`). Press Enter.
 3. Claude Code calls `moovi_next` and waits (it may ask you to allow the Moovi tools; choose allow for this session or
    always).
-4. On the website, in a project chat, upload a short talking clip and send a brief, for example
-   `Edit my clip into a clean short with captions.`
-   On a screen without the type cards (no "Edit my video" tile), the Edit path is: click **Moovi picks**, attach the
-   clip with **+** at the bottom left, type the brief, press the arrow. Do not pick Editorial (it needs a pasted
-   script) or Clip Moment (it needs stock footage, not your clip).
+4. On the website, start a new video and pick **Edit** on the first screen (decision 19: Edit, Launch video or
+   Showreel; a brief with no preset is refused). Upload a short talking clip, choose the part to edit if asked, and
+   send a brief, for example `Edit my clip into a clean short with captions.`
 
 ## 7. What you should see
 

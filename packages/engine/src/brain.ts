@@ -5,6 +5,9 @@ export { DIRECT_FILM_VERSION, FILM_BRIEFS, filmMenus, directFilmSchema, directFi
 export * from './router/direct-film';
 /** the edit builder, so a bridge test can show the same direction gives a byte-identical EDL (bridge item 21) */
 export { buildEdl, type BuildInput } from './edit/build';
+/** decision 20: the Edit spec a linked Claude Code writes, and the ishaan-motion skill it reads (served read only by the MCP server) */
+export { DIRECT_SPEC_AGENT } from './edit/mastery-direct';
+export { SKILL_DIR, skillPrompt, tierFor, type SkillTier, type SkillType } from './skill-prompt';
 
 import { scope as liveScope } from './live';
 /** The run the current task belongs to (task ids are `<run>:<key>`), for the bridge's job id; null outside a task. */

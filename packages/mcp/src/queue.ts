@@ -13,7 +13,7 @@ export const MEMO_VERSION = 'brain-memo/1';
 export type StepState = 'queued' | 'picked' | 'answered' | 'expired' | 'cancelled';
 export interface ThinkStep {
   id: string; user: string; job: string;
-  /** a BRAIN_AGENTS name: direct:edit, direct:film, direct:look */
+  /** a BRAIN_AGENTS name: direct:edit, direct:edit-spec, direct:film, direct:look */
   agent: string;
   system: string; prompt: string;
   /** the answer's JSON Schema */

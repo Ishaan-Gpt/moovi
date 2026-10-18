@@ -13,3 +13,4 @@ export { bridgeApp, falkorStore, type BridgeApp } from './app';
 export * from './board';
 export * from './notices';
 export * from './setup';
+export * from './skill';

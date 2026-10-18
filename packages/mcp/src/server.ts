@@ -28,6 +28,7 @@ export const OTHER_WINDOW_WAIT_MS = ANSWER_HOLD_MS + 60_000;
 export const TOKEN_CHECK_MS = 400;
 import { longPoll, WAIT_MAX_MS } from './poll';
 import type { ThinkStep } from './queue';
+import { registerSkill } from './skill';
 
 export const SERVER_INFO = { name: 'moovi', version: '0.2.0' } as const;
 export const INSTRUCTIONS = 'Moovi makes videos on its own server. Use these tools only after the user types /mcp__moovi__run; they never need files or commands on this machine.';
@@ -235,6 +236,9 @@ export function buildMcp(hub: BrainHub, ctx: SessionCtx): McpServer {
     await hub.gate.useTicket(user, session, ticket);
     return { description: 'Moovi: be the brain for one video', messages: [{ role: 'user', content: { type: 'text', text: runPrompt(ticket) } }] };
   });
+
+  // decision 20: the ishaan-motion skill, read only (skill.ts); the Edit spec step carries the same text already
+  registerSkill(mcp);
 
   mcp.registerTool('moovi_status', {
     title: 'Moovi status',
