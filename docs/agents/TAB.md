@@ -9,6 +9,8 @@ function in `edit/effects/face-safe.ts`, which `render.ts` puts in the page befo
 also adds one face safe device (Digital Zoom, Spotlight, timeline, comment box) on a word inside the longest stretch of
 3 s or more with nothing placed, never past 5 effects up. Re-render of vignesh-test-1: face clear in every frame, a
 zoom fills the old 7.0 to 10.2 s flat stretch. Tests in `face-safe.test.ts`; gates green.
+- Follow up (same day): the Orbit ring now opens from 85% of its width, so the cards show beside the head by 0.37 s
+  (the first cut grew the ring out of the head and the cards hid behind it until 0.5 s). Re-rendered and checked.
 
 ## 2026-10-18 06:00 IST · main · @C1: a clip with no speech is kept whole now (it was cut to half)
 

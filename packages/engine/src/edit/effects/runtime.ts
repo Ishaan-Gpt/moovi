@@ -103,8 +103,10 @@ export function effectsRuntime(D: FxRuntimeData) {
           ${labels[i] ? `<div style="position:absolute;left:0;right:0;bottom:0;padding:16px 14px;background:linear-gradient(transparent,rgba(0,0,0,.85));color:#fff;font-weight:800;font-size:30px">${esc(labels[i])}</div>` : ''}</div>`));
         const B2 = Array.from({ length: n }, (_, i) => mk(back, i)), F2 = Array.from({ length: n }, (_, i) => mk(front, i));
         return { e, hide, needsCut: true, draw: (t) => {
-          const lt = t - e.t0, k = life(t, e, 0.55, 0.4), spin = (p.speed ?? 1.9) * lt + (p.phase ?? 0);
-          const rx = 440 * k, rz = 330 * k, cy = F.cy + 30, op = clamp(k * 1.4);
+          const lt = t - e.t0, k = life(t, e, 0.4, 0.4), spin = (p.speed ?? 1.9) * lt + (p.phase ?? 0);
+          // the ring opens from 85% of its width, not from the face: a ring that grows out of the head spends its first
+          // frames hidden behind it, and the hook is the first 0.4 s (r6a: cards first showed at 0.5 s, not 0.37 s)
+          const rx = 440 * (0.85 + 0.15 * k), rz = 330 * k, cy = F.cy + 30, op = clamp(k * 1.4);
           for (let i = 0; i < n; i++) {
             const a = spin + i * 2 * Math.PI / n, x = F.cx + Math.sin(a) * rx, z = Math.cos(a) * rz, y = cy - Math.cos(a) * 70 * k + Math.sin(a) * 40;
             const tf = `translate3d(${(x - 115).toFixed(1)}px,${(y - 200).toFixed(1)}px,${z.toFixed(1)}px) rotateY(${(Math.sin(a) * 28).toFixed(1)}deg)`;
