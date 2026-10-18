@@ -18,6 +18,7 @@ picks the theme by id and writes the lines; one theme renderer draws every beat 
 | v2d | Sassoon dock | real-footage, with the arc | ~120 s, 5 of 8 beats found no free clip | waiting |
 
 | v3 | moovi-three.vercel.app (a brand) | editorial, brand arc | 47.5 s to preview | **cool** (Ishaan): keep the brand arc + creative-director writer |
+| v4 | bluebottlecoffee.com | real-footage, brand arc | ~90 s | waiting (2 clip-less beats now borrow clips: no black frame, checked on the plate) |
 
 ## Taste learned
 - **Ishaan (2026-10-18): every Showreel script follows hook -> problem -> solution -> .. -> cta** (his writer-agent
