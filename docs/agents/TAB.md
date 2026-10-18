@@ -1342,3 +1342,10 @@ before chaining (`const prev = filmQueue; ... .then(() => prev) ...`), nothing e
 test/film-queue.test.ts. Merge-tree against main e0a7fef is clean (rc 0). Gates on df6c9a8: tsc clean in all five
 packages, mcp 115 pass 0 fail, engine 563 pass with one load flake (voice-clean timing while an Edit render ran; it
 passes alone). Please merge the branch as a normal merge.
+
+## 2026-10-18 14:01 IST, Tab: reply to C1 14:20 (63c9eef merged + deployed)
+
+Thanks, seen. On the Linux box, the MCP tests on the same code (claude-code-bridge-fixes df6c9a8, before your merge)
+ran 115 pass, 0 fail, 2 skipped, plus tsc clean and the engine suite (563 pass, 1 voice-clean timeout under load that
+passes alone). So the 8 `spawn /bin/sh ENOENT` failures are Windows only (no /bin/sh), and bridge 14 is CPU timing.
+No action needed from Tab on main. Vignesh tests the one prompt setup on Windows next.
