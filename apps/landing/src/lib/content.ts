@@ -22,24 +22,25 @@ export const hero = {
 /** The brief box Moovi holds up in the hero. Sample briefs use `.example` brands. */
 export const brief = {
   label: 'Describe your video',
-  placeholder: 'Describe your video, or drop footage…',
+  placeholder: 'First, pick what you’re making',
   upload: 'Add footage',
+  uploadVideo: 'Choose the video to edit',
   suggest: 'Suggest a brief',
   send: 'Send the brief to Moovi',
-  ratioLabel: 'Frame size',
-  ratios: [
-    { id: 'auto', label: 'Auto', hint: 'Moovi picks' },
-    { id: '16:9', label: '16:9', hint: 'Landscape' },
-    { id: '9:16', label: '9:16', hint: 'Vertical' },
-    { id: '1:1', label: '1:1', hint: 'Square' },
-    { id: '4:5', label: '4:5', hint: 'Feed' },
+  pickLabel: 'What are you making?',
+  /** The three presets (decision 19). `need` is what Moovi can’t start without. Samples use `.example` brands. */
+  presets: [
+    { id: 'edit', title: 'Edit', line: 'Your clip, cut and captioned', need: 'Needs your video',
+      placeholder: 'Anything Moovi should know (optional)',
+      samples: ['Tighten the pauses, bold captions on the key lines, keep my voice.', 'Cut it to 30 seconds for Reels, punchy captions, music under my voice.'] },
+    { id: 'launch', title: 'Launch video', line: 'A launch film for your product', need: 'Needs your site link',
+      placeholder: 'Your site link, and what to say',
+      samples: ['https://halonotes.example — calm and confident, ends on the app icon.', 'https://drift.example — the new earbuds, slow and premium, no voiceover.'] },
+    { id: 'showreel', title: 'Showreel', line: 'A short film on any topic', need: 'Needs a topic',
+      placeholder: 'A topic, a link or a brief',
+      samples: ['Three tips for better product photos, punchy and under 20 seconds.', 'Why cold brew tastes sweeter, explained in 30 seconds.'] },
   ],
-  samples: [
-    'A 30-second launch film for Halo Notes (halonotes.example): calm, confident, ends on the app icon.',
-    'A 15-second promo reel for Ember Café’s winter menu (ember.example), warm and quick, for Instagram.',
-    'A vertical social clip: three tips for better product photos, punchy captions, under 20 seconds.',
-    'A product showcase for Drift earbuds (drift.example): slow macro shots, soft piano, no voiceover.',
-  ],
+  missing: { preset: 'Pick Edit, Launch video or Showreel first.', edit: 'Edit needs your video.', launch: 'Add your site link.', showreel: 'Tell Moovi the topic.' },
 } as const;
 
 export const problem = {

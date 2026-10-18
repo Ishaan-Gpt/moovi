@@ -81,23 +81,28 @@ html[data-nowebgl] .hero2__word { display: flex; }
 .brief__bar { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
 .brief__tool { width: 40px; height: 40px; display: grid; place-items: center; border: 0; border-radius: 13px; background: var(--ce-ice-soft); color: var(--accent); transition: background .2s var(--ease), transform .3s var(--ease-jelly); }
 .brief__tool:hover { background: var(--ce-ice); transform: rotate(-8deg) scale(1.06); }
-.brief__ratio { position: relative; margin-left: auto; }
-.brief__pick { height: 40px; display: inline-flex; align-items: center; gap: 7px; padding: 0 10px 0 12px; border: 0; border-radius: 13px; background: none; color: var(--ink-2); font-size: 15px; font-weight: 500; transition: background .2s var(--ease), color .2s var(--ease); }
-.brief__pick:hover, .brief__pick[aria-expanded="true"] { background: var(--ce-ice-soft); color: var(--ink); }
-.brief__chev { transition: rotate .3s var(--ease); }
-.brief__pick[aria-expanded="true"] .brief__chev { rotate: 180deg; }
-.brief__menu { position: absolute; right: 0; bottom: calc(100% + 10px); z-index: 2; min-width: 196px; margin: 0; padding: 6px; list-style: none; border-radius: 16px; background: #fff;
-  box-shadow: 0 0 0 1px var(--line), 0 24px 44px -22px color-mix(in oklab, var(--ce-frost-mid) 45%, transparent); animation: brief-menu .28s var(--ease-jelly); transform-origin: 100% 100%; }
-@keyframes brief-menu { from { opacity: 0; scale: .92; translate: 0 6px; } }
-.brief__menu li { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 9px 12px; border-radius: 10px; font-size: 15px; font-weight: 500; cursor: pointer; outline: none; }
-.brief__menu li em { font-style: normal; font-size: 13px; font-weight: 400; color: var(--ink-2); }
-.brief__menu li:hover, .brief__menu li:focus-visible { background: var(--ce-ice-white); }
-.brief__menu li[aria-selected="true"] { background: var(--ce-ice-soft); color: var(--accent); }
 .brief__send { width: 46px; height: 46px; display: grid; place-items: center; border: 0; border-radius: 50%; color: var(--accent); background: var(--ce-ice-soft);
   transition: background .25s var(--ease), color .25s var(--ease), transform .35s var(--ease-jelly), box-shadow .25s var(--ease); }
 .brief__send[data-ready] { color: #fff; background: radial-gradient(120% 120% at 30% 20%, color-mix(in oklab, var(--ce-frost-mid) 60%, var(--ce-surface)), var(--ce-glacier) 72%); box-shadow: 0 12px 24px -10px color-mix(in oklab, var(--ce-frost-mid) 75%, transparent), inset 0 1px 0 rgb(255 255 255 / .4); }
 .brief__send:hover { transform: translateY(-2px) scale(1.05); }
 .brief__send:disabled { transform: scale(.92); }
+/* the three presets as chips on the box, all visible at once; the line beside the sparkle says what
+   the chosen one can't start without, and ticks when it has it */
+.brief__presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin: 0 0 10px; padding: 4px; border-radius: 16px; background: var(--ce-ice-white); transition: box-shadow .25s var(--ease); }
+.brief__presets[data-miss] { box-shadow: 0 0 0 1.5px var(--accent); }
+.brief__preset { display: grid; grid-template-columns: auto 1fr; column-gap: 9px; row-gap: 1px; align-items: center; padding: 9px 12px; border: 0; border-radius: 12px; background: none; text-align: left; color: var(--accent); cursor: pointer;
+  transition: background .2s var(--ease), box-shadow .2s var(--ease), transform .3s var(--ease-jelly); }
+.brief__preset svg { grid-row: span 2; }
+.brief__preset-t { font-size: 15px; font-weight: 600; letter-spacing: -.01em; color: var(--ink); }
+.brief__preset-l { font-size: 12.5px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.brief__preset:hover { background: color-mix(in oklab, var(--ce-ice-soft) 60%, transparent); }
+.brief__preset:active { transform: scale(.97); }
+.brief__preset[aria-checked="true"] { background: #fff; box-shadow: inset 0 0 0 1.5px var(--accent), 0 10px 20px -14px color-mix(in oklab, var(--ce-frost-mid) 70%, transparent); }
+.brief__need { flex: 1; min-width: 0; margin: 0 0 0 4px; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.brief__need[data-ok] { color: var(--accent); }
+.brief__need[data-miss] { color: var(--ink); font-weight: 500; }
+.brief__drop[data-want] { animation: brief-want 1.8s var(--ease) infinite; }
+@keyframes brief-want { 0%, 100% { translate: 0 0; } 40% { translate: 0 -4px; box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 35%, transparent); } }
 
 /* 2 · the problem */
 /* what plays on Moovi while he is a screen: WorldStage gives it a base width (1280px landscape, 640px portrait), sets
@@ -231,6 +236,10 @@ html[data-nowebgl] .hero2__word { display: flex; }
   .brief__text { min-height: 40px; }
   .brief__drop { left: 26px; top: -24px; width: 54px; height: 48px; }
   .brief__shell { border-width: 7px; border-radius: 28px; }
+  .brief__preset { grid-template-columns: 1fr; justify-items: center; gap: 3px; padding: 8px 4px; text-align: center; }
+  .brief__preset svg { grid-row: auto; }
+  .brief__preset-t { font-size: 13.5px; white-space: nowrap; }
+  .brief__preset-l { display: none; }
   .hero2__hi { top: 16svh; font-size: 17vw; }
   .hero2__job { left: var(--pad); top: calc(16svh + 34vw); font-size: 11vw; }
   .pb__verdict { left: var(--pad); right: var(--pad); top: 22svh; font-size: 30px; }

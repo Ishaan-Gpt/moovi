@@ -1,28 +1,33 @@
 'use client';
-import { useEffect, useId, useRef, useState, type DragEvent, type FormEvent, type KeyboardEvent } from 'react';
-import { IconUpload, IconSpark, IconRatio, IconChevron, IconSend, IconClose } from '@/components/brand/icons';
+import { useEffect, useId, useRef, useState, type DragEvent, type FormEvent, type KeyboardEvent, type ReactNode } from 'react';
+import { IconUpload, IconSpark, IconSend, IconClose, IconScissors, IconPlay, IconClapper, IconCheck } from '@/components/brand/icons';
 import { brief } from '@/lib/content';
 import { getWorld, ui } from '@/lib/world';
 
-type Ratio = (typeof brief.ratios)[number]['id'];
+type Preset = (typeof brief.presets)[number]['id'];
+type Missing = keyof typeof brief.missing;
+
+/** The same link test as the studio's brief box, so a brief that passes here passes there. */
+const LINK = /https?:\/\/\S+|\b[a-z0-9-]+\.(?:com|io|ai|app|dev|co|org|net|so|xyz|in)\b/i;
+const ICONS: Record<Preset, (p: { width: number; height: number }) => ReactNode> = { edit: IconScissors, launch: IconPlay, showreel: IconClapper };
 
 /**
- * The brief box Moovi holds up in the hero. Type what the video is for, drop footage on it, pick a frame size,
- * send. Sending keeps the brief (the text in session storage, the files in IndexedDB, both on this origin) and opens
- * the studio, which asks you to sign in first and then hands the brief to the crew.
+ * The brief box Moovi holds up in the hero. You pick what you're making first (Edit, Launch video or Showreel:
+ * decision 19, no generic prompt), and the box asks for what that preset can't start without: Edit a video, Launch
+ * a site link, Showreel a topic. Sending keeps the brief (words and preset in session storage, files in IndexedDB,
+ * both on this origin) and opens the studio, which asks you to sign in first and then hands the brief to the crew.
  * Its surface registers with the stage (`ui.grip`): Moovi's hands grip its two ends and paint over them.
  */
 export function PromptBox() {
   const shell = useRef<HTMLDivElement>(null);
   const area = useRef<HTMLTextAreaElement>(null);
   const file = useRef<HTMLInputElement>(null);
-  const menu = useRef<HTMLDivElement>(null);
   const [text, setText] = useState('');
   const [files, setFiles] = useState<File[]>([]);
-  const [ratio, setRatio] = useState<Ratio>('auto');
-  const [open, setOpen] = useState(false);
+  const [preset, setPreset] = useState<Preset | null>(null);
   const [drag, setDrag] = useState(false);
   const [nudge, setNudge] = useState(0);
+  const [miss, setMiss] = useState<Missing | null>(null);
   const [sending, setSending] = useState(false);
   const typing = useRef(0);
   const sample = useRef(0);
@@ -32,16 +37,6 @@ export function PromptBox() {
     ui.grip = shell.current;
     return () => { if (ui.grip === shell.current) ui.grip = null; };
   }, []);
-
-  // close the frame-size menu on an outside click or Escape
-  useEffect(() => {
-    if (!open) return;
-    const away = (e: PointerEvent) => { if (!menu.current?.contains(e.target as Node)) setOpen(false); };
-    const esc = (e: globalThis.KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
-    window.addEventListener('pointerdown', away);
-    window.addEventListener('keydown', esc);
-    return () => { window.removeEventListener('pointerdown', away); window.removeEventListener('keydown', esc); };
-  }, [open]);
 
   useEffect(() => () => window.clearInterval(typing.current), []);
 
@@ -53,15 +48,31 @@ export function PromptBox() {
     el.style.height = `${Math.min(el.scrollHeight, 168)}px`;
   }, [text]);
 
-  const addFiles = (list: FileList | null) => {
-    if (!list?.length) return;
-    const ok = Array.from(list).filter(f => f.type.startsWith('video/') || f.type.startsWith('image/') || f.type.startsWith('audio/'));
-    setFiles(prev => [...prev, ...ok].slice(0, 6));
+  const choose = (p: Preset) => {
+    setPreset(p);
+    setMiss(null);
+    sample.current = 0;
+    // Edit keeps one video: the clip to edit
+    if (p === 'edit') setFiles(fs => { const v = fs.find(f => f.type.startsWith('video/')); return v ? [v, ...fs.filter(f => f !== v && !f.type.startsWith('video/'))] : fs; });
+    requestAnimationFrame(() => area.current?.focus());
   };
 
-  /** Sparkle: write one of the sample briefs in, a few characters at a time. */
+  const addFiles = (list: FileList | null) => {
+    if (!list?.length) return;
+    const all = Array.from(list);
+    const want = preset === 'edit' ? /^video\// : /^(video|image|audio)\//;
+    const ok = all.filter(f => want.test(f.type));
+    // a video dropped before a preset is picked: Edit is the likely one (it can still be changed)
+    if (!preset && ok.some(f => f.type.startsWith('video/'))) setPreset('edit');
+    setFiles(prev => (preset === 'edit' ? [...ok.filter(f => f.type.startsWith('video/')).slice(0, 1), ...prev.filter(f => !f.type.startsWith('video/'))] : [...prev, ...ok]).slice(0, 6));
+    setMiss(null);
+  };
+
+  /** Sparkle: write one of the chosen preset's sample briefs in, a few characters at a time. */
   const suggest = () => {
-    const next = brief.samples[sample.current++ % brief.samples.length]!;
+    if (!preset) { flag('preset'); return; }
+    const list = brief.presets.find(p => p.id === preset)!.samples;
+    const next = list[sample.current++ % list.length]!;
     window.clearInterval(typing.current);
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) { setText(next); return; }
     let i = 0;
@@ -73,21 +84,29 @@ export function PromptBox() {
     getWorld()?.act('think', 900);
   };
 
+  const video = files.find(f => f.type.startsWith('video/'));
+  const has: Record<Preset, boolean> = { edit: !!video, launch: LINK.test(text), showreel: !!text.trim() };
+  const ready = !!preset && has[preset];
+
+  function flag(m: Missing) {
+    setMiss(m);
+    setNudge(n => n + 1);
+    getWorld()?.act('squint', 900);
+    if (m === 'edit') file.current?.click();
+    else if (m !== 'preset') area.current?.focus();
+  }
+
   const submit = (e?: FormEvent) => {
     e?.preventDefault();
     if (sending) return;
-    const prompt = text.trim();
-    if (!prompt && !files.length) {
-      setNudge(n => n + 1);
-      getWorld()?.act('squint', 900);
-      area.current?.focus();
-      return;
-    }
+    if (!preset) { flag('preset'); return; }
+    if (!has[preset]) { flag(preset); return; }
     setSending(true);
-    try { sessionStorage.setItem('moovi:brief', JSON.stringify({ prompt, ratio })); } catch { /* private mode: the brief just isn't kept */ }
+    try { sessionStorage.setItem('moovi:brief', JSON.stringify({ prompt: text.trim(), ratio: 'auto', preset })); } catch { /* private mode: the brief just isn't kept */ }
     getWorld()?.act('celebrate', 1200);
+    const send = preset === 'edit' && video ? [video, ...files.filter(f => f !== video)] : files;
     // the studio is its own zone under /studio: a full navigation, once the files are safely stored
-    void Promise.all([keepFiles(files), new Promise(r => window.setTimeout(r, 700))]).finally(() => window.location.assign('/studio/start'));
+    void Promise.all([keepFiles(send), new Promise(r => window.setTimeout(r, 700))]).finally(() => window.location.assign('/studio/start'));
   };
 
   const onKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -100,24 +119,38 @@ export function PromptBox() {
     setDrag(over);
   };
 
-  const current = brief.ratios.find(r => r.id === ratio)!;
-  const ready = !!text.trim() || files.length > 0;
+  const current = preset ? brief.presets.find(p => p.id === preset)! : null;
 
   return (
-    <form className="brief" aria-label={brief.label} onSubmit={submit} data-drag={drag || undefined}
+    <form className="brief" aria-label={brief.label} onSubmit={submit} data-drag={drag || undefined} data-preset={preset ?? undefined}
       onDragOver={e => onDrag(e, true)} onDragEnter={e => onDrag(e, true)} onDragLeave={() => setDrag(false)}
       onDrop={e => { onDrag(e, false); addFiles(e.dataTransfer.files); }}>
       <div className="brief__shadow" aria-hidden="true" />
       <div className="brief__shell" ref={shell} aria-hidden="true" />
       <div key={nudge} className={`brief__body ${nudge ? 'is-nudged' : ''}`}>
-        <button type="button" className="brief__drop" onClick={() => file.current?.click()} aria-label={brief.upload}>
+        <button type="button" className="brief__drop" onClick={() => file.current?.click()} aria-label={preset === 'edit' ? brief.uploadVideo : brief.upload}
+          data-want={preset === 'edit' && !video ? '' : undefined}>
           <IconUpload width={22} height={22} />
         </button>
-        <input ref={file} type="file" accept="video/*,image/*,audio/*" multiple hidden onChange={e => { addFiles(e.target.files); e.target.value = ''; }} />
+        <input ref={file} type="file" accept={preset === 'edit' ? 'video/*' : 'video/*,image/*,audio/*'} multiple={preset !== 'edit'} hidden
+          onChange={e => { addFiles(e.target.files); e.target.value = ''; }} />
+
+        <div className="brief__presets" role="radiogroup" aria-label={brief.pickLabel} data-miss={miss === 'preset' || undefined}>
+          {brief.presets.map(p => {
+            const I = ICONS[p.id];
+            return (
+              <button key={p.id} type="button" role="radio" aria-checked={preset === p.id} className="brief__preset" onClick={() => choose(p.id)}>
+                <I width={18} height={18} />
+                <span className="brief__preset-t">{p.title}</span>
+                <span className="brief__preset-l">{p.line}</span>
+              </button>
+            );
+          })}
+        </div>
 
         <label className="sr-only" htmlFor={`${listId}-text`}>{brief.label}</label>
-        <textarea id={`${listId}-text`} ref={area} className="brief__text" rows={1} value={text} placeholder={brief.placeholder}
-          onChange={e => { window.clearInterval(typing.current); setText(e.target.value); }} onKeyDown={onKey} />
+        <textarea id={`${listId}-text`} ref={area} className="brief__text" rows={1} value={text} placeholder={current?.placeholder ?? brief.placeholder}
+          onChange={e => { window.clearInterval(typing.current); setText(e.target.value); if (miss && miss !== 'preset') setMiss(null); }} onKeyDown={onKey} />
 
         {files.length > 0 && (
           <ul className="brief__files">
@@ -134,24 +167,9 @@ export function PromptBox() {
           <button type="button" className="brief__tool" onClick={suggest} aria-label={brief.suggest} title={brief.suggest}>
             <IconSpark width={18} height={18} />
           </button>
-          <div className="brief__ratio" ref={menu}>
-            <button type="button" className="brief__pick" aria-haspopup="listbox" aria-expanded={open} aria-controls={`${listId}-ratios`} onClick={() => setOpen(o => !o)}>
-              <IconRatio width={18} height={18} />
-              <span>{current.label}</span>
-              <IconChevron width={16} height={16} className="brief__chev" />
-            </button>
-            {open && (
-              <ul id={`${listId}-ratios`} role="listbox" aria-label={brief.ratioLabel} className="brief__menu">
-                {brief.ratios.map(r => (
-                  <li key={r.id} role="option" aria-selected={r.id === ratio} tabIndex={0}
-                    onClick={() => { setRatio(r.id); setOpen(false); }}
-                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setRatio(r.id); setOpen(false); } }}>
-                    <span>{r.label}</span><em>{r.hint}</em>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+          <p className="brief__need" role="status" data-ok={ready || undefined} data-miss={miss || undefined}>
+            {miss ? brief.missing[miss] : current ? <>{ready && <IconCheck width={15} height={15} />}{current.need}</> : null}
+          </p>
           <button type="submit" className="brief__send" aria-label={brief.send} data-ready={ready || undefined} disabled={sending}>
             <IconSend width={20} height={20} />
           </button>
