@@ -42,3 +42,4 @@
 }
 @media (prefers-reduced-motion: reduce) { .o3-tag--working .o3-tag__line i { animation: none; } }
 
+.o3__wait { position: absolute; right: 0; display: grid; place-items: center; pointer-events: none; }

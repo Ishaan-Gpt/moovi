@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { MooviWorld, type MooviState, type OfficeScene } from '@moovi/character';
+import { HaloLoader } from '@moovi/ui';
 import { AGENT_NAMES, type AgentId } from '@moovi/engine/events';
 import type { Flight, Status } from '../office/useChat';
 import { CREW_R, CREW_SLOTS, DESK_TOP, FLOOR, GRAPH, MOOVI_S, NODE_OF, ORDER, PLACES, TINT, placeOf } from './room3d';
@@ -45,6 +46,8 @@ export function OfficeWorld({ status, flights, onLanded, inset = 0, above = 0, b
   const tags = useRef<Partial<Record<AgentId, HTMLDivElement | null>>>({});
   const gtag = useRef<HTMLDivElement>(null);
   const [ok, setOk] = useState(true);
+  // the room's shader compiles in the background (seconds on some machines): the halo waits in its place
+  const [drawn, setDrawn] = useState(false);
   const live = useRef({ status, flights, onLanded, inset, above, below, mooviState, visit, onStats });
   live.current = { status, flights, onLanded, inset, above, below, mooviState, visit, onStats };
 
@@ -180,7 +183,7 @@ export function OfficeWorld({ status, flights, onLanded, inset = 0, above = 0, b
       hot: [],
     };
     sc.office = office;
-    world.ready.catch(() => setOk(false));
+    world.ready.then(() => setDrawn(true), () => setOk(false));
     return () => world.dispose();
   }, []);
 
@@ -207,6 +210,7 @@ export function OfficeWorld({ status, flights, onLanded, inset = 0, above = 0, b
           {onEnterGraph && <button className="o3-graph__enter" onClick={onEnterGraph} aria-label="Enter the FalkorDB graph of this video">Enter<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M4 8h7.5M8.5 4.5 12 8l-3.5 3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg></button>}
         </div>
       </div>
+      {ok && !drawn && <div className="o3__wait" style={{ left: inset, top: above, bottom: below }}><HaloLoader size={72} base="/studio" /></div>}
       {!ok && fallback}
     </div>
   );

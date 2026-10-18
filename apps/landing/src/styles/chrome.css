@@ -135,3 +135,8 @@ html:not([data-intro="done"]) .scroll-cue { opacity: 0; }
 @media (prefers-reduced-motion: reduce) {
   .icon-scroll-bead { animation: none; }
 }
+
+/* into the studio: the halo covers the page at once and stays until the studio answers */
+.hop { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; background: rgb(247 250 253 / .82); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); animation: hop-in .35s var(--ease) both; }
+.hop__glow { display: grid; place-items: center; width: 160px; height: 160px; border-radius: 50%; background: radial-gradient(closest-side, rgb(207 230 247 / .8), rgb(207 230 247 / 0)); }
+@keyframes hop-in { from { opacity: 0; } }

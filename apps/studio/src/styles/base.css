@@ -100,5 +100,45 @@ svg, img, video, canvas { display: block; max-width: 100%; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
 
-/* a route on its way: the halo alone, centred on the page colour */
-.route-wait { position: fixed; inset: 0; display: grid; place-items: center; background: var(--bg); }
+
+/* a route on its way: its own shape in soft ice blocks, the halo stepping at its centre (components/wait/Skeleton) */
+.sk__b { display: block; border-radius: 12px; background: linear-gradient(100deg, rgb(207 230 247 / .5) 30%, rgb(247 250 253 / .9) 50%, rgb(207 230 247 / .5) 70%) 0 0 / 300% 100%;
+  animation: sk-shine 1.8s var(--ease) infinite; }
+@keyframes sk-shine { from { background-position: 100% 0; } to { background-position: 0 0; } }
+.sk__grow { flex: 1; }
+.sk__float { position: fixed; left: 50%; top: 50%; translate: -50% -50%; pointer-events: none; }
+.sk.dash .sk__float { left: calc(50% + 124px); }
+.sk__rail { gap: 14px; }
+.sk__b--mark { width: 120px; height: 30px; border-radius: 10px; }
+.sk__b--nav { height: 38px; }
+.sk__b--h1 { width: min(420px, 70%); height: 52px; border-radius: 14px; }
+.sk__b--lede { width: min(520px, 90%); height: 16px; border-radius: 8px; }
+.sk__b--card { width: 100%; aspect-ratio: 4 / 5; border-radius: var(--r-lg); }
+.sk__form { display: grid; gap: 18px; max-width: 760px; }
+.sk__b--panel { height: 260px; border-radius: var(--r-xl); }
+.sk__b--low { height: 150px; }
+.sk--bare { position: fixed; inset: 0; display: grid; place-items: center; background: var(--bg); }
+.sk--office { position: fixed; inset: 0; background: var(--bg); }
+.sk__room { position: absolute; inset: 0; background: radial-gradient(55% 45% at 62% 58%, rgb(207 230 247 / .55), rgb(207 230 247 / 0) 70%), linear-gradient(180deg, var(--bg), var(--ice-soft)); }
+.sk__chat { position: absolute; left: 16px; top: 16px; bottom: 16px; width: min(400px, calc(100vw - 32px)); border-radius: var(--r-xl); display: flex; flex-direction: column; gap: 12px; padding: 22px; }
+.sk__b--title { width: 60%; height: 26px; }
+.sk__b--line { width: 90%; height: 14px; border-radius: 7px; }
+.sk__b--short { width: 55%; }
+.sk__b--input { height: 54px; border-radius: 18px; }
+.sk__stage { position: absolute; left: 432px; right: 0; top: 0; bottom: 0; display: grid; place-items: center; }
+.sk--door { position: fixed; inset: 0; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(360px, .9fr); background: var(--bg); }
+.sk__door-art { background: radial-gradient(60% 60% at 50% 55%, rgb(207 230 247 / .7), rgb(207 230 247 / 0) 70%), var(--ice-soft); }
+.sk__door-side { display: grid; place-items: center; padding: 24px; }
+.sk__card { width: min(400px, 100%); padding: 22px; border-radius: var(--r-xl); display: grid; gap: 14px; }
+.sk__b--field { height: 48px; }
+.sk__b--btn { height: 48px; width: 50%; border-radius: 999px; }
+.sk--door .sk__float { left: 27.5%; }
+@media (max-width: 760px) {
+  .sk.dash .sk__float { left: 50%; }
+  .sk__chat { left: 8px; right: 8px; top: auto; bottom: 8px; width: auto; height: min(62svh, 560px); }
+  .sk__stage { left: 0; bottom: min(62svh, 560px); }
+  .sk--door { grid-template-columns: 1fr; }
+  .sk__door-art { display: none; }
+  .sk--door .sk__float { left: 50%; top: 22%; }
+}
+@media (prefers-reduced-motion: reduce) { .sk__b { animation: none; } }

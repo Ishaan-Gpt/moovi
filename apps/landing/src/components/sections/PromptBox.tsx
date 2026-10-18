@@ -3,6 +3,7 @@ import { useEffect, useId, useRef, useState, type DragEvent, type FormEvent, typ
 import { IconUpload, IconSpark, IconSend, IconClose, IconScissors, IconPlay, IconClapper, IconCheck } from '@/components/brand/icons';
 import { brief } from '@/lib/content';
 import { getWorld, ui } from '@/lib/world';
+import { goStudio } from '@/components/motion/StudioHop';
 
 type Preset = (typeof brief.presets)[number]['id'];
 type Missing = keyof typeof brief.missing;
@@ -106,7 +107,7 @@ export function PromptBox() {
     getWorld()?.act('celebrate', 1200);
     const send = preset === 'edit' && video ? [video, ...files.filter(f => f !== video)] : files;
     // the studio is its own zone under /studio: a full navigation, once the files are safely stored
-    void Promise.all([keepFiles(send), new Promise(r => window.setTimeout(r, 700))]).finally(() => window.location.assign('/studio/start'));
+    void Promise.all([keepFiles(send), new Promise(r => window.setTimeout(r, 700))]).finally(() => goStudio('/studio/start'));
   };
 
   const onKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {

@@ -1,10 +1,6 @@
-import { HaloLoader } from '@moovi/ui';
+import { Skeleton } from '@/components/wait/Skeleton';
 
-/** Every route change in the studio waits on the halo, and only the halo. */
+/** The projects page (and any route without its own) waits as its own shape, with the halo. */
 export default function Loading() {
-  return (
-    <main className="route-wait">
-      <HaloLoader size={72} base="/studio" />
-    </main>
-  );
+  return <Skeleton kind="dash" />;
 }

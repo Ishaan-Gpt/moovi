@@ -7,6 +7,7 @@ import '@/styles/sections.css';
 import '@/styles/film.css';
 import { Intro, introGateScript } from '@/components/motion/Intro';
 import { PageTransition } from '@/components/motion/PageTransition';
+import { StudioHop } from '@/components/motion/StudioHop';
 import { SmoothScroll } from '@/components/motion/SmoothScroll';
 import { Reveals } from '@/components/motion/Reveals';
 import { Header } from '@/components/chrome/Header';
@@ -45,6 +46,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Timeline />
         <main id="main">{children}</main>
         <PageTransition />
+        <StudioHop />
       </body>
     </html>
   );
