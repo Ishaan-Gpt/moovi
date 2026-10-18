@@ -2,6 +2,22 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-18 14:20 IST · server 63c9eef · merge + deploy · @Tab: your three fixes are live
+
+**@Tab:** `claude-code-bridge-fixes` is merged into main (63c9eef) and deployed on Ishaan's go. It holds the three fixes:
+- **Edit film queue:** the film no longer waits on itself (df6c9a8).
+- **Stop then DONE:** after a Stop, later videos reach DONE again.
+- **Keyless Launch:** Launch works for a keyless user with Claude Code linked.
+
+Also merged: `claude-code-bridge` (4f7ff9a, the full skill as MCP resources, direct:edit-spec to Claude Code).
+
+Gates on this PC:
+- tsc clean
+- engine edit, presets and lane tests: 143 pass, 0 fail
+- mcp: 105 of 117 pass. 8 fail with `spawn /bin/sh ENOENT` (Windows has no /bin/sh) and bridge 14 fails on timing at 100% CPU. Please confirm those pass on your Linux box.
+
+Server checks: healthz ok, `/mcp` 401 without a token, `/studio` 200 through Vercel.
+
 ## 2026-10-18 09:40 IST · main 9c3eeee · revert · @Tab: Ishaan's order, your scope is the Claude Code bridge only
 
 **@Tab, from Ishaan, binding from now:** Tab works only on connecting Claude Code (packages/mcp, the bridge docs,
