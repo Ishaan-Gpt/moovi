@@ -1,32 +1,31 @@
-# Moovi demo film: beat skeleton (draft 1, for Ishaan's script)
+# Moovi demo film: script v1 (Ishaan's raw script, refined)
 
-Ishaan's plan (2026-10-18): a cinematic film covering the problem, the solution, what Moovi is, the technical side,
-both tracks with proof, the graph as the core (live data, Cypher, algorithms, the disconnect), the one pipeline, the
-decision tree and the library. Each beat gets its own reference reel (Instagram/YouTube). It's built first with the
-drawn character, then Ishaan shoots the same shots and his clips replace the stand-ins. The website demo runs in a
-corner (picture-in-picture) while he explains.
+About 3:00, 16:9, Ishaan on camera with his voice throughout (drawn stand-in first, his own shots later), the website
+demo in a corner. About 420 spoken words, so the music gets room to breathe. The words are Ishaan's; this version
+tightens them and fills the technical middle with facts we can stand behind. `[CHECK]` marks a claim to confirm.
 
-The words are Ishaan's. This file only fixes the order, the time and the proof that must be on screen.
-16:9, 1080p, target **about 3:00**.
-
-| # | Beat | Time | What it must prove on screen (real, not drawn) | Reference grammar (suggested) |
+| # | Beat | Time | Spoken (Ishaan) | On screen (proof) |
 |---|---|---|---|---|
-| 0 | Cold open | 0:00–0:08 | a real Moovi film playing; the name "Moovi" lands by second 3 | D1.1 card sphere: Moovi's real films orbit Ishaan |
-| 1 | Problem | 0:08–0:25 | an edit is hundreds of small decisions; AI editors are black boxes that forget you | D1.2 words standing in depth as the camera flies past |
-| 2 | What Moovi is | 0:25–0:45 | "an AI video employee you hire": 3 presets (Edit, Launch video, Showreel), the 8-agent crew at their desks in the 3D office | D1.3 dive into a film card → into the website |
-| 3 | Live demo | 0:45–1:15 | landing → preset → upload with the part picker → crew working → live preview → change by chat (website in the corner, full screen on the key moments) | picture-in-picture over Ishaan talking; need a ref |
-| 4 | The two tracks | 1:15–1:30 | Track 01 (agents act on connected data, explainable results) and Track 02 (memory per user, shared state between the crew), each named and mapped to a Moovi feature | R4 type cards in a selection box; need a ref |
-| 5 | The graph is the core | 1:30–2:05 | 4 graphs on one FalkorDB (`craft`, `sys`, `user_<uid>`, `proj_<pid>`); 248 named Cypher queries; the library (~950 assets, 2151 craft nodes on the server); **live data**: nodes and edges appear as a film is made (Decision → BECAUSE → Feedback); the `whyThis` shortest-path query on screen; `algo.pageRank` and `algo.SPpaths` | need a ref (a data-flow / node-graph reel) |
-| 6 | Pull the plug | 2:05–2:20 | `docker stop falkordb` → the job stops with "Moovi's memory is offline"; start it → it carries on (decision 13) | D1.6 negative flash on the cut |
-| 7 | One pipeline, the decision tree | 2:20–2:40 | `docs/PIPELINE.html`: the brain choice (Claude Code over MCP, or your own key), preset, type, look, cast from the library, the ishaan-motion skill read at run time | need a ref |
-| 8 | Breadth + CTA | 2:40–3:00 | films montage (Edit, Launch for Resend and Linear, Showreel themes); any model, your key or Claude Code; live link, repo, Graph Hacks × FalkorDB | D1.7 tall words behind the head |
+| 1 | Hook | 0:00–0:12 | **"Building a SaaS is dead in 2026."** … "Not the product. The product is a commodity now. Building it is twenty percent. The other eighty is getting it seen, and that means content. Most founders can't make it. Or just don't want to." | a Moovi film behind him; the name "Moovi" lands by 0:03 |
+| 2 | The wave | 0:12–0:30 | "We had AI video generators. Now there's a new wave: videos written in code. Every frame is code, every cut is a decision you can read. After vibe coding comes **vibe editing**. And we're riding it." | code turning into a frame |
+| 3 | Meet Moovi | 0:30–0:50 | "This is Moovi, your video production team. A director, Moovi, and a crew of seven agents: Editor, Researcher, Writer, Sound, Designer, Lens and Keeper. Three presets. A **Launch video** to start your brand. A **Showreel** to promote it. And **Edit**, when you want to show your face, cut like a professional editor would." | the 8 desks in the 3D office; the 3 preset cards |
+| 4 | Demo | 0:50–1:20 | "Pick a preset. Drop your clip, and choose the part you want edited. Now watch the crew work, each at its own desk. You get a live preview, not a slow render: captions, sound, motion. Don't like something? Just say it. *Make the captions bigger.*" | website in the corner, full screen on upload, the office, the preview, the chat edit |
+| 5 | The graph is the core | 1:20–2:05 | "Moovi's memory is FalkorDB. Not a side database: the core. Four graphs on one instance: the craft library, accounts, one graph per user, one per project. Every read is one of **248 named Cypher queries**, tagged with the agent that ran it. As a film is made, watch it write: every decision, linked *because* to the rule or the feedback behind it. So when you ask *why these captions?*, Moovi answers with a **shortest path**, from the decision back to what you told it two videos ago. **PageRank** finds what a style leans on too much; **shortest paths** plan the crew's route. That's **Track 1**: agents that act on connected data and explain themselves. And **Track 2**: memory per user, shared by the whole crew." | the live graph (nodes and edges appearing as a film runs), the `whyThis` query, the path lighting up, `algo.pageRank` / `algo.SPpaths`, both track names |
+| 6 | Pull the plug | 2:05–2:20 | "Still think the graph is optional? Let's stop it." … "Moovi stops. *Moovi's memory is offline.* No silent fallback. Start it again, and Moovi's back." `[CHECK: does a stopped job resume, or start again?]` | `docker stop falkordb` in a terminal; the studio's offline message; `docker start` |
+| 7 | Any brain | 2:20–2:32 | "Connect Claude Code over MCP and it becomes Moovi's brain. Or bring a free key: Groq, Gemini, OpenAI. Same pipeline. Same library." | the Use Claude Code card; the keys panel |
+| 8 | Taste | 2:32–2:52 | "So how are we different? We go deep on the one thing that matters most right now: **taste**. An ever-growing library in the graph: captions, effects, music beds, voices, camera moves, clips, about **950 pieces**. We feed it references, and it breaks them into fundamentals. One global skill, a skill per style, both getting sharper with every reference." | the library nodes; a reference breaking into its parts; the skill tree |
+| 9 | CTA | 2:52–3:00 | "Moovi. Your video production team. Built on FalkorDB." | live link, repo, Graph Hacks × FalkorDB |
 
-## Open questions for Ishaan
+## Hook options (pick one)
+- **A** "Building a SaaS is dead in 2026." (yours: the boldest, needs the "not the product" turn right after)
+- **B** "In 2026, anyone can build the product. Almost nobody can get it seen."
+- **C** "Your product isn't the problem. Your content is."
 
-1. **Your script:** paste it (rough is fine) and I'll fit it to these beats with timings.
-2. **One reference per beat:** beats 3, 4, 5 and 7 have none yet. Send links, or say "suggest" and I'll find 2 options each.
-3. **Live graph view (beat 5):** the studio has no graph view today. Options: (a) record the FalkorDB Browser while a film
-   runs, (b) build a motion-graphics graph driven by the real query log (every query is already timed and tagged with
-   the agent that ran it), (c) both: (b) in the film, (a) as a 2-second proof cut.
-4. **Voice:** you on camera, with your voice as the narration throughout? (Implied by your plan; confirm.)
-5. **Music:** one bed for the whole film, or a change at the graph section? I'll bring 3 product-safe options.
+## What changed from the raw script, and why
+- "Hicksfield" → "AI video generators": naming a company invites a comparison we don't need, and it's an ad for them.
+- The middle ("here I will show the website, the technicalities, the graph") is written out with real numbers:
+  4 graphs, 248 named queries, ~950 library assets, `whyThis`, `algo.pageRank`, `algo.SPpaths`, decision 13.
+- Both tracks are named out loud, since you asked to prove the alignment explicitly.
+- "skills improving with time" → "sharper with every reference": the skill improves through references and mastery
+  rounds, not on its own after each film.
+- "MCP for video maxing" is dropped: it reads as slang to judges. Your call if you want it back.
