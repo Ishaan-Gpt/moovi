@@ -6,6 +6,7 @@
 // `pnpm dev:engine` (MOOVI_BRIDGE_WORKER=0 serves the bridge alone). FalkorDB is required (DECISIONS.md 13).
 import { sessionUser } from '@moovi/engine';
 import { loadModel } from '@moovi/engine/keys';
+import { project as P, projectGraph, run as runQ } from '../../graph/src/index';
 import { BrainHub, bridgeApp, corsOrigins, falkorStore, memoryStore, sessionCookieAuth, type BrainStore } from '../src/index';
 
 const port = Number(process.env.MOOVI_BRIDGE_PORT ?? 3200), host = process.env.MOOVI_BRIDGE_HOST ?? '127.0.0.1';
@@ -20,7 +21,9 @@ try {
   console.warn('[bridge] MOOVI_GRAPH_OPTIONAL=1: steps and tokens live in memory and are lost on restart (local dev only)');
   store = memoryStore();
 }
-const hub = new BrainHub(store, { publicUrl: process.env.MOOVI_PUBLIC_URL ?? 'http://localhost:3000' });
+// the board asks the graph for a run's status, so a video stopped on the website ends for Claude Code too
+const runStatus = async (project: string, run: string) => (await runQ<{ status: string }>(projectGraph(project), P.run, { id: run }))[0]?.status ?? null;
+const hub = new BrainHub(store, { publicUrl: process.env.MOOVI_PUBLIC_URL ?? 'http://localhost:3000', runStatus });
 const fixed = process.env.MOOVI_BRIDGE_URL?.trim();
 // pages that may call /api/brain/* with the user's cookie: MOOVI_ORIGINS, and in local dev the studio on another
 // localhost port (its Settings card "Use Claude Code")
