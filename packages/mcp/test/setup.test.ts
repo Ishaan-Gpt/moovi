@@ -94,6 +94,18 @@ test('setup: claim works once, the token is the user\'s, and the ticket starts a
   assert.equal(await line(code), 'MOOVI: DONE My clip');
 });
 
+test('setup: an older finished video never reads as DONE; a clip already running at the paste counts', async () => {
+  await hub.board.start({ user: 'u5', job: 'old', title: 'Old clip' }); await hub.board.finish({ job: 'old', ok: true });
+  t += 1000;
+  await hub.board.start({ user: 'u5', job: 'up', title: 'Uploaded first' });
+  t += 1000;
+  const { code } = await makePrompt('u5');
+  await fetch(`${base}/api/brain/setup/${code}/claim`, { method: 'POST' });
+  assert.match(await line(code), /^MOOVI: working on Uploaded first/);
+  await hub.board.finish({ job: 'up', ok: false, error: 'the clip has no sound' });
+  assert.equal(await line(code), 'MOOVI: FAILED the clip has no sound');
+});
+
 test('setup: a run that never starts reads IDLE', async () => {
   const { code } = await makePrompt('u3');
   await fetch(`${base}/api/brain/setup/${code}/claim`, { method: 'POST' });

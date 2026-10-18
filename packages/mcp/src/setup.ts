@@ -12,7 +12,8 @@
  *   POST /api/brain/setup/<code>/claim    the script's call: first use only, mints the token and a run ticket
  *   GET  /api/brain/setup/<code>/status   one plain line (DONE/FAILED/IDLE at the end), for the pasted window
  *
- * The code is stored only as its sha256, like the token. Pure apart from the hub's store.
+ * The background Claude Code runs in a temp folder (no project hooks or CLAUDE.md in its way), with only Moovi's tools
+ * allowed. The code is stored only as its sha256, like the token. Pure apart from the hub's store.
  */
 import { createHash, randomBytes } from 'node:crypto';
 import { corsHeaders } from './api';
@@ -27,7 +28,8 @@ export const SETUP_STATUS_MS = 6 * 3600_000;
 export const SETUP_IDLE_MS = 20 * 60_000;
 const CODE_RE = /^mvs_[0-9a-f]{32}$/;
 const key = (code: string) => `ce:brain:setup:${createHash('sha256').update(code, 'utf8').digest('hex')}`;
-interface SetupRecord { user: string; createdAt: number; claimedAt: number | null }
+/** running: the videos already running at the claim (a clip uploaded before the paste); older finished ones never count */
+interface SetupRecord { user: string; createdAt: number; claimedAt: number | null; running?: string[] }
 
 /** The one line the background Claude Code is started with: no quotes or apostrophes, so every shell carries it as is. */
 export function childPrompt(ticket: string): string {
@@ -63,6 +65,7 @@ curl -fsS -X POST "$S/api/brain/setup/$C/claim" 2>/dev/null | {
   claude mcp remove moovi -s user >/dev/null 2>&1
   if ! claude mcp add --scope user --transport http moovi "$M" --header "Authorization: Bearer $TOK" >/dev/null 2>&1; then echo "MOOVI: claude mcp add failed."; exit 1; fi
   unset TOK CLAUDECODE CLAUDE_CODE_ENTRYPOINT
+  cd "$D" || exit 1
   nohup claude -p "$PROMPT" --allowedTools mcp__moovi >"$LOG" 2>&1 </dev/null &
   echo "MOOVI: connected (run $TICKET). Moovi is running in the background; log: $LOG"
   echo "MOOVI: progress: curl -fsS $S/api/brain/setup/$C/status"
@@ -89,7 +92,7 @@ Remove-Variable tok
 $env:CLAUDECODE = $null; $env:CLAUDE_CODE_ENTRYPOINT = $null
 $d = Join-Path $env:TEMP 'moovi'; New-Item -ItemType Directory -Force -Path $d | Out-Null
 $log = Join-Path $d ('brain-' + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + '.log')
-Start-Process -FilePath $cl.Source -ArgumentList @('-p', ('"' + $prompt + '"'), '--allowedTools', 'mcp__moovi') -WindowStyle Hidden -RedirectStandardOutput $log -RedirectStandardError ($log + '.err') | Out-Null
+Start-Process -FilePath $cl.Source -WorkingDirectory $d -ArgumentList @('-p', ('"' + $prompt + '"'), '--allowedTools', 'mcp__moovi') -WindowStyle Hidden -RedirectStandardOutput $log -RedirectStandardError ($log + '.err') | Out-Null
 "MOOVI: connected (run $ticket). Moovi is running in the background; log: $log"
 "MOOVI: progress: irm $S/api/brain/setup/$C/status"
 `;
@@ -131,6 +134,7 @@ export function setupApi(o: SetupApiOptions) {
     const r = await read(code);
     if (!r || r.claimedAt !== null) return plain('MOOVI: this setup code was already used or has expired.', 410);
     r.claimedAt = hub.now();
+    r.running = (await hub.board.running(r.user)).map(j => j.job);
     await hub.store.set(key(code), JSON.stringify(r), SETUP_STATUS_MS);
     const { token } = await hub.tokens.mint(r.user, 'Claude Code (one prompt)');
     const ticket = await hub.gate.mintTicket(r.user);
@@ -141,7 +145,7 @@ export function setupApi(o: SetupApiOptions) {
     const r = await read(code);
     if (!r) return plain('MOOVI: unknown or expired setup code.', 404);
     if (r.claimedAt === null) return plain('MOOVI: not set up yet: run the command from the prompt first.');
-    const jobs = (await hub.board.recent(r.user)).filter(j => j.startedAt >= r.claimedAt! - 60 * 60_000).sort((a, b) => a.startedAt - b.startedAt);
+    const jobs = (await hub.board.recent(r.user)).filter(j => j.startedAt >= r.claimedAt! || (r.running ?? []).includes(j.job)).sort((a, b) => a.startedAt - b.startedAt);
     await hub.presence.prime(r.user);
     const cc = hub.presence.state(r.user);
     const last = jobs.at(-1);
