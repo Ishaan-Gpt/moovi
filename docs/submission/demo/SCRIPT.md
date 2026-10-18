@@ -22,7 +22,7 @@ tightens them and fills the technical middle with facts we can stand behind. `[C
 - **Agent harness:** the scaffolding around a model that makes it an agent: the loop, the tools, state and memory,
   checks and retries. Moovi has all of it: the crew's lanes, the tools, repair turns and the fallback to the other tier
   (docs/MODELS.md), the task board and memory in FalkorDB, and Lens checking every film. So the claim is true.
-- **"Temporal graph":** decisions, feedback and films carry a time (, ), and  reads the latest.
+- **"Temporal graph":** decisions, feedback and films carry a time (`d.at`, `f.at`), and `whyThis` reads the latest.
   That makes the graph time-aware, but it isn't a temporal graph in the strict sense (facts with valid-from/valid-to
   that the database queries by time). Options:
   (1) the safe line in beat 5: "every decision, time-stamped… the graph remembers what you said, and when";
