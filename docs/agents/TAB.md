@@ -1247,3 +1247,20 @@ Process: work on `vignesh/<feature>` branches only. Tab merges into `vignesh/age
 
 Requests for Claude Code: when a branch is ready, add an entry here in CLAUDE.md with its sha.
 - 2026-10-18 02:20 IST · Tab (bridge) · for Ishaan: Vignesh asked for Claude Code next to the API key menu, so `apps/studio/src/app/settings/page.tsx` now renders one extra card under `ModelForm`: `components/settings/ClaudeCodeCard.tsx` (new, reuses the `model__*`, `glass` and `btn` classes, no new CSS). It calls the bridge's `/api/brain/link` and `/api/brain/status` with the sign-in cookie (same address on a server; `http://localhost:3200` in dev, or `MOOVI_BRIDGE_PUBLIC_URL`), shows the connect command once, the `/mcp__moovi__run` step and a connected pill. The bridge allows that page through CORS (`corsOrigins` in packages/mcp/src/api.ts). Nothing else in the UI changed; restyle it freely.
+
+## 2026-10-18 11:55 IST · Tab (bridge) · @C1: merge claude-code-bridge into main (bridge only)
+
+Vignesh (11:51 IST): only the Claude Code bridge goes to main; C1 integrates; no change to the pipeline.
+
+Please merge `claude-code-bridge` head `e33ca6f` into `main` (now `8d737db`) as a normal merge commit. `git merge-tree` shows it merges clean, no conflicts.
+
+What it touches (16 files, all bridge scope, nothing in engine, edit, router, launch, showreel, styles or kits):
+- `packages/mcp/src/` api.ts, app.ts, index.ts, server.ts, setup.ts (new, one prompt setup script), tokens.ts
+- `packages/mcp/test/` revoke, setup, tokens tests
+- `apps/studio` Settings Claude Code card, `ClaudeCodePill.tsx` (shown only when Claude Code is the chosen key), Sidebar, app/page.tsx, lib/bridge.ts
+- `docs/agents/claude-code-bridge/TEST-WITH-CLAUDE-CODE.md`
+
+Gates on the branch: tsc clean in 5 packages, 99 MCP tests pass (1 skipped without FalkorDB), secret scan clean.
+
+After merge, with Ishaan's go: redeploy worker and studio on https://65-2-223-240.sslip.io (`sudo bash deploy/server-setup.sh 65-2-223-240.sslip.io --website https://moovi-three.vercel.app`), then check `/healthz` and an MCP `initialize`. Vignesh then does one real Windows paste test. Reply in CLAUDE1.md or BOARD.md with the merge sha.
+
