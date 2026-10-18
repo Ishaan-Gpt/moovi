@@ -28,10 +28,14 @@
   "{items}": "two or three of the speaker's own short items from a list in the sentence (text array)",
   "{sfx:<event>}": "a sound for that event from the library (assetsForEvent, per video, not the last one used); the code puts the file in spec.sounds under that event key and writes the key here. Events: whoosh, hit, pop, drop, click, chime, typing, paper, riser, snap",
   "{music:<mood>}": "a bed from the library matched to the clip's mood (spec.music.file); gain 0.06-0.08, start 2",
-  "{footage:<query>}": "a real clip from the footage finder (src/footage) for what the sentence names, else a span of the clip itself that shows it; never a drawn stand-in"
+  "{footage:<query>}": "a real clip from the footage finder (src/footage) for what the sentence names, else a span of the clip itself that shows it; never a drawn stand-in",
+  "{doodle}": "the paths of one desk-print doodle, by meaning (see desk-print.doodles)"
  },
  "captions": {
-  "allowed": ["1.1", "1.2"],
+  "allowed": [
+   "1.1",
+   "1.2"
+  ],
   "default": "1.1",
   "accent": "video",
   "pending": "2, 3 and 4 join this list when the player draws them through spec.caption.preset (Edit mastery is adding it; 3 and 4 need the person matte)"
@@ -41,82 +45,478 @@
   {
    "id": "speaker",
    "use": "a sentence that carries itself; the default between devices",
-   "layers": [{ "t": "cam", "z": 1.04, "Y": 0.34 }]
+   "layers": [
+    {
+     "t": "cam",
+     "z": 1.04,
+     "Y": 0.34
+    }
+   ]
   },
   {
    "id": "punch",
    "use": "one stressed word that lands the sentence (a claim, a surprise, a verdict)",
-   "layers": [{ "t": "cam", "z": 1.06, "Y": 0.34, "punch": "{hero}", "by": 1.07 }],
-   "sfx": [{ "at": "{hero}", "k": "{sfx:hit}", "g": 0.45 }]
+   "layers": [
+    {
+     "t": "cam",
+     "z": 1.06,
+     "Y": 0.34,
+     "punch": "{hero}",
+     "by": 1.07
+    }
+   ],
+   "sfx": [
+    {
+     "at": "{hero}",
+     "k": "{sfx:hit}",
+     "g": 0.45
+    }
+   ]
   },
   {
    "id": "name-tag",
    "use": "a person or a place is named and is on screen",
-   "layers": [{ "t": "cam", "z": 1.04, "Y": 0.34 }, { "t": "tag", "name": "{name}", "role": "{role}", "at": "{hero}", "hold": 1.8, "x": 80, "y": 230 }],
-   "sfx": [{ "at": "{hero}", "k": "{sfx:whoosh}", "g": 0.3 }]
+   "layers": [
+    {
+     "t": "cam",
+     "z": 1.04,
+     "Y": 0.34
+    },
+    {
+     "t": "tag",
+     "name": "{name}",
+     "role": "{role}",
+     "at": "{hero}",
+     "hold": 1.8,
+     "x": 80,
+     "y": 230
+    }
+   ],
+   "sfx": [
+    {
+     "at": "{hero}",
+     "k": "{sfx:whoosh}",
+     "g": 0.3
+    }
+   ]
   },
   {
    "id": "number-split",
    "use": "the sentence does maths or one number becomes another (half of, from X to Y)",
-   "layers": [{ "t": "cam", "form": "corner-br", "z": 1.04 }, { "t": "stat", "from": "{number}", "to": "{next}", "label": "{unit}", "splitAt": "{hero}", "toAt": "{hero2}", "y": 400 }],
-   "sfx": [{ "at": "{hero}", "k": "{sfx:hit}", "g": 0.55 }, { "at": "{hero2}", "k": "{sfx:pop}", "g": 0.45 }]
+   "layers": [
+    {
+     "t": "cam",
+     "form": "corner-br",
+     "z": 1.04
+    },
+    {
+     "t": "stat",
+     "from": "{number}",
+     "to": "{next}",
+     "label": "{unit}",
+     "splitAt": "{hero}",
+     "toAt": "{hero2}",
+     "y": 400
+    }
+   ],
+   "sfx": [
+    {
+     "at": "{hero}",
+     "k": "{sfx:hit}",
+     "g": 0.55
+    },
+    {
+     "at": "{hero2}",
+     "k": "{sfx:pop}",
+     "g": 0.45
+    }
+   ]
   },
   {
    "id": "filter-carousel",
    "use": "the sentence is about a filter, a look or choosing one option of several",
-   "layers": [{ "t": "cam", "z": 1.06, "Y": 0.34 }, { "t": "filters", "at": "{hero}", "y": 1120 }],
-   "sfx": [{ "at": "{line}", "k": "{sfx:whoosh}", "g": 0.35 }]
+   "layers": [
+    {
+     "t": "cam",
+     "z": 1.06,
+     "Y": 0.34
+    },
+    {
+     "t": "filters",
+     "at": "{hero}",
+     "y": 1120
+    }
+   ],
+   "sfx": [
+    {
+     "at": "{line}",
+     "k": "{sfx:whoosh}",
+     "g": 0.35
+    }
+   ]
   },
   {
    "id": "look-flip",
    "use": "the sentence describes the picture changing (dreamy, filtered, dramatic) and the change can be shown",
-   "layers": [{ "t": "cam", "form": "card", "ground": "room", "z": 1.04, "looks": [{ "at": "{line}", "f": "saturate(1.45) brightness(1.12) contrast(.88) blur(1.2px)" }, { "at": "{last}", "f": "contrast(1.05)" }] }],
-   "sfx": [{ "at": "{line}", "k": "{sfx:whoosh}", "g": 0.35 }]
+   "layers": [
+    {
+     "t": "cam",
+     "form": "card",
+     "ground": "room",
+     "z": 1.04,
+     "looks": [
+      {
+       "at": "{line}",
+       "f": "saturate(1.45) brightness(1.12) contrast(.88) blur(1.2px)"
+      },
+      {
+       "at": "{last}",
+       "f": "contrast(1.05)"
+      }
+     ]
+    }
+   ],
+   "sfx": [
+    {
+     "at": "{line}",
+     "k": "{sfx:whoosh}",
+     "g": 0.35
+    }
+   ]
   },
   {
    "id": "compare",
    "use": "before against after, raw against a named version, this against that",
-   "layers": [{ "t": "cam", "form": "split", "z": 1.04 }, { "t": "compare", "still": "{still}", "labels": ["{phrase}", "{name}"], "look": "sepia(.35) saturate(1.7) hue-rotate(-12deg) brightness(1.08) contrast(1.1)", "at": "{line}", "at2": "{hero}", "y": 90 }],
-   "sfx": [{ "at": "{line}", "k": "{sfx:whoosh}", "g": 0.4 }, { "at": "{hero}", "k": "{sfx:pop}", "g": 0.4 }]
+   "layers": [
+    {
+     "t": "cam",
+     "form": "split",
+     "z": 1.04
+    },
+    {
+     "t": "compare",
+     "still": "{still}",
+     "labels": [
+      "{phrase}",
+      "{name}"
+     ],
+     "look": "sepia(.35) saturate(1.7) hue-rotate(-12deg) brightness(1.08) contrast(1.1)",
+     "at": "{line}",
+     "at2": "{hero}",
+     "y": 90
+    }
+   ],
+   "sfx": [
+    {
+     "at": "{line}",
+     "k": "{sfx:whoosh}",
+     "g": 0.4
+    },
+    {
+     "at": "{hero}",
+     "k": "{sfx:pop}",
+     "g": 0.4
+    }
+   ]
   },
   {
    "id": "letter-tiles",
    "use": "the sentence spells letters, initials or a short code",
-   "layers": [{ "t": "cam", "form": "split", "z": 1.04 }, { "t": "mg", "chars": "{chars}", "gap": 250, "area": [0, 0, 1080, 960], "row": 0.52, "dimOthers": true, "lit": [{ "ch": "{chars[0]}", "at": "{line}" }] }],
-   "sfx": [{ "at": "{line}", "k": "{sfx:whoosh}", "g": 0.4 }]
+   "layers": [
+    {
+     "t": "cam",
+     "form": "split",
+     "z": 1.04
+    },
+    {
+     "t": "mg",
+     "chars": "{chars}",
+     "gap": 250,
+     "area": [
+      0,
+      0,
+      1080,
+      960
+     ],
+     "row": 0.52,
+     "dimOthers": true,
+     "lit": [
+      {
+       "ch": "{chars[0]}",
+       "at": "{line}"
+      }
+     ]
+    }
+   ],
+   "sfx": [
+    {
+     "at": "{line}",
+     "k": "{sfx:whoosh}",
+     "g": 0.4
+    }
+   ]
   },
   {
    "id": "badges",
    "use": "a list of two or three short items said one after another",
-   "layers": [{ "t": "cam", "z": 1.06, "Y": 0.36 }, { "t": "burn", "items": [{ "kind": "badge", "text": "{items[0]}", "at": "{line}", "x": 220, "y": 1420, "r": -8 }, { "kind": "badge", "text": "{items[1]}", "at": "{hero}", "x": 465, "y": 1450, "r": 4 }, { "kind": "badge", "text": "{items[2]}", "at": "{hero2}", "x": 710, "y": 1420, "r": 8 }] }],
-   "sfx": [{ "at": "{line}", "k": "{sfx:pop}", "g": 0.4 }, { "at": "{hero}", "k": "{sfx:pop}", "g": 0.4 }]
+   "layers": [
+    {
+     "t": "cam",
+     "z": 1.06,
+     "Y": 0.36
+    },
+    {
+     "t": "burn",
+     "items": [
+      {
+       "kind": "badge",
+       "text": "{items[0]}",
+       "at": "{line}",
+       "x": 220,
+       "y": 1420,
+       "r": -8
+      },
+      {
+       "kind": "badge",
+       "text": "{items[1]}",
+       "at": "{hero}",
+       "x": 465,
+       "y": 1450,
+       "r": 4
+      },
+      {
+       "kind": "badge",
+       "text": "{items[2]}",
+       "at": "{hero2}",
+       "x": 710,
+       "y": 1420,
+       "r": 8
+      }
+     ]
+    }
+   ],
+   "sfx": [
+    {
+     "at": "{line}",
+     "k": "{sfx:pop}",
+     "g": 0.4
+    },
+    {
+     "at": "{hero}",
+     "k": "{sfx:pop}",
+     "g": 0.4
+    }
+   ]
   },
   {
    "id": "glass-widgets",
    "use": "the speaker states one or two short states or feelings about themselves (ready, excited, done)",
-   "layers": [{ "t": "cam", "z": 1.04, "Y": 0.34 }, { "t": "burn", "items": [{ "kind": "glass", "text": "{phrase}", "icon": "M5 12l5 5 9-10", "at": "{hero}", "x": 80, "y": 150, "r": -5 }] }],
-   "sfx": [{ "at": "{hero}", "k": "{sfx:pop}", "g": 0.45 }]
+   "layers": [
+    {
+     "t": "cam",
+     "z": 1.04,
+     "Y": 0.34
+    },
+    {
+     "t": "burn",
+     "items": [
+      {
+       "kind": "glass",
+       "text": "{phrase}",
+       "icon": "M5 12l5 5 9-10",
+       "at": "{hero}",
+       "x": 80,
+       "y": 150,
+       "r": -5
+      }
+     ]
+    }
+   ],
+   "sfx": [
+    {
+     "at": "{hero}",
+     "k": "{sfx:pop}",
+     "g": 0.45
+    }
+   ]
   },
   {
    "id": "desk-print",
    "use": "the sentence names a thing, place or activity real footage can show (at most three per film, each its own beat)",
-   "desk_item": { "src": "{footage:<query>}", "at": "{line}", "doodle": "one or two short marker strokes that underline, point or tick (paths in the place's doodle box)", "label": "{phrase}" },
+   "desk_item": {
+    "src": "{footage:<query>}",
+    "at": "{line}",
+    "doodle": "{doodle}",
+    "label": "{phrase}"
+   },
    "places": [
-    { "x": 180, "y": 300, "w": 660, "h": 440, "r": -4, "dx": 120, "dy": 890, "dw": 640, "dh": 130, "lx": 140, "ly": 790, "lr": -4, "focus": [510, 730, 1.3] },
-    { "x": 980, "y": 1320, "w": 660, "h": 440, "r": 5, "dx": 940, "dy": 1900, "dw": 460, "dh": 300, "lx": 930, "ly": 1790, "lr": 4, "focus": [1310, 1780, 1.3] },
-    { "x": 220, "y": 2150, "w": 660, "h": 440, "r": -3, "dx": 160, "dy": 2760, "dw": 260, "dh": 240, "lx": 170, "ly": 2640, "lr": -5, "focus": [550, 2565, 1.3] }
+    {
+     "x": 180,
+     "y": 300,
+     "w": 660,
+     "h": 440,
+     "r": -4,
+     "lx": 140,
+     "ly": 790,
+     "lr": -4,
+     "dx": 140,
+     "dy": 900,
+     "dw": 300,
+     "dh": 240,
+     "focus": [
+      510,
+      730,
+      1.3
+     ]
+    },
+    {
+     "x": 980,
+     "y": 1320,
+     "w": 660,
+     "h": 440,
+     "r": 5,
+     "lx": 930,
+     "ly": 1790,
+     "lr": 4,
+     "dx": 940,
+     "dy": 1900,
+     "dw": 300,
+     "dh": 240,
+     "focus": [
+      1310,
+      1780,
+      1.3
+     ]
+    },
+    {
+     "x": 220,
+     "y": 2150,
+     "w": 660,
+     "h": 440,
+     "r": -3,
+     "lx": 170,
+     "ly": 2640,
+     "lr": -5,
+     "dx": 170,
+     "dy": 2760,
+     "dw": 300,
+     "dh": 240,
+     "focus": [
+      550,
+      2565,
+      1.3
+     ]
+    }
    ],
-   "desk": { "w": 1800, "h": 3400 },
-   "layers": [{ "t": "desk", "focus": "{place.focus}", "pip": true }],
-   "sfx": [{ "at": "{line}", "k": "{sfx:whoosh}", "g": 0.4 }, { "at": "{line}+0.45", "k": "{sfx:drop}", "g": 0.5 }],
-   "after": "the next beat is the speaker with a leak"
+   "desk": {
+    "w": 1800,
+    "h": 3400
+   },
+   "layers": [
+    {
+     "t": "desk",
+     "focus": "{place.focus}",
+     "pip": true
+    }
+   ],
+   "sfx": [
+    {
+     "at": "{line}",
+     "k": "{sfx:whoosh}",
+     "g": 0.4
+    },
+    {
+     "at": "{line}+0.45",
+     "k": "{sfx:drop}",
+     "g": 0.5
+    }
+   ],
+   "after": "the next beat is the speaker with a leak",
+   "label_max_chars": 16,
+   "doodles": {
+    "_": "{doodle} is one of these, picked by what the sentence means; every path fits the place's 300x240 doodle box (dx, dy), clear of the pip. From v10 (two-way, question, cube) and the lab vlog (underline, tick, bolt, heart).",
+    "underline": {
+     "use": "the label names the thing in the print; points at it",
+     "paths": [
+      "M10 150 C 90 190, 200 190, 285 120",
+      "M285 120 l -46 4 M285 120 l -18 42"
+     ]
+    },
+    "tick": {
+     "use": "done, ready, yes, it works",
+     "paths": [
+      "M40 130 l 70 80 l 150 -180"
+     ]
+    },
+    "bolt": {
+     "use": "energy, hype, speed, power",
+     "paths": [
+      "M180 10 L 110 130 h 70 l -40 105"
+     ]
+    },
+    "heart": {
+     "use": "love, thanks, the team, people the speaker cares about",
+     "paths": [
+      "M150 220 C 40 150, 30 70, 90 45 C 120 35, 145 60, 150 80 C 155 60, 180 35, 210 45 C 270 70, 260 150, 150 220"
+     ]
+    },
+    "question": {
+     "use": "a question, a doubt, not knowing how",
+     "paths": [
+      "M90 70 C 90 10, 210 10, 210 75 C 210 125, 150 130, 150 180",
+      "M150 222 l 0 3"
+     ]
+    },
+    "two-way": {
+     "use": "back and forth, exchange, interaction between two sides",
+     "paths": [
+      "M20 60 C 100 20, 200 20, 280 60",
+      "M280 60 l -40 -4 M280 60 l -24 30",
+      "M280 170 C 200 210, 100 210, 20 170",
+      "M20 170 l 40 4 M20 170 l 24 -30"
+     ]
+    },
+    "cube": {
+     "use": "3D, building, an object, a product",
+     "paths": [
+      "M60 90 h110 v110 h-110 Z",
+      "M120 30 h110 v110 h-110 Z",
+      "M60 90 L120 30 M170 90 L230 30 M170 200 L230 140 M60 200 L120 140"
+     ]
+    },
+    "circle": {
+     "use": "this one, highlight, the key thing in the print",
+     "paths": [
+      "M150 30 C 260 30, 290 120, 240 180 C 190 230, 70 225, 30 160 C -5 100, 50 30, 160 40"
+     ]
+    }
+   }
   },
   {
    "id": "leak",
    "use": "only as the return to the speaker after a desk-print or a full-screen device; at most three per film",
-   "layers": [{ "t": "leak", "at": "{line}" }],
-   "sfx": [{ "at": "{line}", "k": "{sfx:whoosh}", "g": 0.35 }]
+   "layers": [
+    {
+     "t": "leak",
+     "at": "{line}"
+    }
+   ],
+   "sfx": [
+    {
+     "at": "{line}",
+     "k": "{sfx:whoosh}",
+     "g": 0.35
+    }
+   ]
   }
  ],
- "end": { "sfx": [{ "at": "{last}", "k": "{sfx:chime}", "g": 0.45 }] }
+ "end": {
+  "sfx": [
+   {
+    "at": "{last}",
+    "k": "{sfx:chime}",
+    "g": 0.45
+   }
+  ]
+ }
 }
