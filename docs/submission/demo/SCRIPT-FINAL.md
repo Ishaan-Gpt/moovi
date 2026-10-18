@@ -4,9 +4,12 @@ About 3:00. Hook A and the safe time-stamped line (switch either if you prefer).
 SCRIPT.md.
 
 **1 · Hook (0:00–0:12)**
-Building a SaaS is dead in 2026.
-Not the product. The product is a commodity now. Building it is twenty percent. The other eighty is getting it seen,
-and that means content. Most founders can't make it. Or just don't want to.
+Building a SaaS is dead in 2026… (beat, silence)
+…if you can't get it seen.
+The product is a commodity now.
+Building it is twenty percent. Getting it seen is the other eighty.
+And getting seen means content.
+Most founders can't make it. Or just don't want to.
 
 **2 · The wave (0:12–0:30)**
 We had AI video generators. Now there's a new wave: videos written in code. Every frame is code, every cut is a
