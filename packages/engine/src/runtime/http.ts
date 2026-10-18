@@ -3,6 +3,7 @@ import { config } from '../config';
 import { coerce, describeShape, extractJson } from './coerce';
 import { keyOf, pickModel, PRESETS, type JsonMode, type Provider, type Wire } from './providers';
 import { callTool, jsonSchema, resultText, type Tool, type ToolResult } from './tool';
+import { LOGICAL_MODELS } from './lane';
 import type { AgentRequest, AgentResult, CompleteRequest, Runtime } from './types';
 
 /**
@@ -73,11 +74,14 @@ export function httpRuntime(opts: { provider?: Provider; key?: string; baseUrl?:
   /** retired id → the live model that plays its tier (kept for the whole process) */
   const alias = new Map<string, string>();
   const tiers = opts.models ?? config.models;
-  const tierOf = (m: string): 'director' | 'crew' | 'fast' => (m === tiers.fast ? 'fast' : m === tiers.director ? 'director' : 'crew');
+  const tierOf = (m: string): 'director' | 'crew' | 'fast' => LOGICAL_MODELS[m] ?? (m === tiers.fast ? 'fast' : m === tiers.director ? 'director' : 'crew');
+  /** 'brain' and the tier names become this runtime's own model id: a step run straight on this runtime (a script, a
+   * local run with no lane) sent 'brain' to the provider and got "model: brain" not found (direct:film ui, 2026-10-18) */
+  const named = (m: string) => { const t = LOGICAL_MODELS[m], id = t ? tiers[t] : undefined; return id && !LOGICAL_MODELS[id] && id !== 'server' ? id : m; };
 
   /** One model turn, paced and retried, with automatic downgrades (tools → emulated, schema → object → none). */
   async function turn(model0: string, system: string, msgs: Msg[], tools: Tool[], json: JsonMode | null, schema: Record<string, unknown> | undefined, signal: AbortSignal): Promise<Reply> {
-    let model = alias.get(model0) ?? model0;
+    let model = alias.get(model0) ?? named(model0);
     let cap = capOf(model);
     for (let guard = 0; guard < 5; guard++) {
       const emulate = tools.length > 0 && cap.tools === 'emulated';

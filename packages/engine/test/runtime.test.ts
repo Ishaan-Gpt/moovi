@@ -54,3 +54,14 @@ test('a budget of turns stops the loop', async () => {
   const r = await rt.run({ agent: 'test', system: 's', prompt: 'p', tools: tools(log), model: 'm', maxTurns: 2, deadlineMs: 5000 });
   assert.equal(r.stopped, 'turns');
 });
+
+test('a logical model name reaches the provider as this runtime\'s own model id (a script with no lane)', async () => {
+  const sent: string[] = [];
+  const f = (async (_u: string, init?: RequestInit) => {
+    sent.push(JSON.parse(String(init?.body)).model);
+    return new Response(JSON.stringify({ content: [{ type: 'text', text: '{"ok":true}' }], stop_reason: 'end_turn' }), { status: 200 });
+  }) as unknown as typeof fetch;
+  const rt = httpRuntime({ provider: 'anthropic', key: 'k', baseUrl: 'http://mock', fetch: f, models: { director: 'big-1', crew: 'mid-1', fast: 'small-1' } });
+  for (const m of ['brain', 'crew', 'fast', 'some-model-id']) await rt.complete!({ agent: 'test', system: 's', prompt: 'p', model: m, deadlineMs: 5000 });
+  assert.deepEqual(sent, ['big-1', 'mid-1', 'small-1', 'some-model-id']);
+});
