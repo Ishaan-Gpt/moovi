@@ -112,3 +112,9 @@
 
 ## 1.13.2 (2026-10-18)
 - Lesson: smooth captions in rAF (sprite cache, matte in a worker, measured fps).
+
+## 1.13.5 (2026-10-18)
+- Lesson: glossy display type (deep fill, bevel rims, solid extrusion, firm shadow); small words need a firm shadow.
+
+## 1.13.6 (2026-10-18)
+- Edit: the speaker form is picked per beat from the measured face size (window over about 0.62 of the frame width, else full); widget icons are real SVG strokes.

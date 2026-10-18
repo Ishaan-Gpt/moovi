@@ -57,7 +57,7 @@
      "t": "cam",
      "z": 1.04,
      "Y": 0.42,
-     "form": "window"
+     "form": "auto"
     },
     {
      "t": "tag",
@@ -86,7 +86,7 @@
       "w": "grinding"
      },
      "by": 1.07,
-     "form": "window"
+     "form": "auto"
     }
    ]
   },
@@ -100,7 +100,7 @@
      "t": "cam",
      "z": 1.04,
      "Y": 0.42,
-     "form": "window"
+     "form": "auto"
     },
     {
      "t": "tag",
@@ -124,7 +124,7 @@
      "t": "cam",
      "z": 1.06,
      "Y": 0.42,
-     "form": "window"
+     "form": "auto"
     },
     {
      "t": "burn",
@@ -136,8 +136,8 @@
        "at": {
         "w": "prepped"
        },
-       "x": 80,
-       "y": 150,
+       "x": 60,
+       "y": 130,
        "r": -5
       },
       {
@@ -147,7 +147,7 @@
        "at": {
         "w": "hyped"
        },
-       "x": 560,
+       "x": 470,
        "y": 290,
        "r": 5
       }
@@ -168,7 +168,7 @@
       "w": "goes"
      },
      "by": 1.07,
-     "form": "window"
+     "form": "auto"
     }
    ]
   },
@@ -183,7 +183,7 @@
      "z": 1.04,
      "Y": 0.42,
      "push": 0.02,
-     "form": "window"
+     "form": "auto"
     },
     {
      "t": "leak",
