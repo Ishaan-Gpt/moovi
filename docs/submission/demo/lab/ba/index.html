@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Before After</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;800;900&display=block">
+<style>
+  html, body { margin: 0; height: 100%; background: #111; }
+  .wrap { display: flex; justify-content: center; padding: 12px; height: calc(100% - 24px); }
+  canvas { height: 100%; aspect-ratio: 9 / 16; display: block; }
+  video { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap"><canvas id="c" width="1080" height="1920"></canvas></div>
+<video id="raw" src="/data/demo/edit/t1/raw-cut6.mp4" muted playsinline preload="auto"></video>
+<video id="ed" src="/data/demo/out/t1-engineer-goat.mp4" muted playsinline preload="auto"></video>
+<script>
+// "Before / After" (instagram.com/p/DaFaIEGIFvx, measured at full size): white ground; the Before card (raw, black and
+// white, 442×786 at 64,354, r 24) sits behind and left; the After card (the edit, 644×1150 at 354,168, r 28) in front;
+// a small black tag on each card's top edge; the name big below and one line under it. Both cards play in sync
+// (the raw is cut on the edit's own jump cuts).
+'use strict';
+const cv = document.getElementById('c'), g = cv.getContext('2d'), raw = document.getElementById('raw'), ed = document.getElementById('ed');
+const END = 6.0;
+async function seek(v, t) { if (!v.duration) await new Promise(r => v.onloadedmetadata = r); const tt = Math.min(v.duration - 0.04, t); if (Math.abs(v.currentTime - tt) < 0.004 && v.readyState >= 2) return; await new Promise(r => { const d = () => { v.removeEventListener('seeked', d); r(); }; v.addEventListener('seeked', d); v.currentTime = tt; }); }
+function card(v, x, y, w, h, r, grey, shadow) {
+  g.save();
+  if (shadow) { g.shadowColor = 'rgba(0,0,0,0.18)'; g.shadowBlur = 30; g.shadowOffsetY = 10; g.fillStyle = '#000'; g.beginPath(); g.roundRect(x, y, w, h, r); g.fill(); g.shadowColor = 'transparent'; }
+  g.beginPath(); g.roundRect(x, y, w, h, r); g.clip();
+  const s = Math.max(w / v.videoWidth, h / v.videoHeight), dw = v.videoWidth * s, dh = v.videoHeight * s;
+  if (grey) g.filter = 'grayscale(1) contrast(1.05)';
+  g.drawImage(v, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh); g.filter = 'none';
+  g.restore();
+}
+function tag(text, x, y, w, h) { g.save(); g.fillStyle = '#0c0c0c'; g.beginPath(); g.roundRect(x, y, w, h, 12); g.fill(); g.fillStyle = '#fff'; g.font = '500 30px "Inter Tight"'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(text, x + w / 2, y + h / 2 + 1); g.restore(); }
+function frame() {
+  g.fillStyle = '#fdfdfd'; g.fillRect(0, 0, 1080, 1920);
+  card(raw, 64, 354, 442, 786, 24, true, false);
+  card(ed, 354, 168, 644, 1150, 28, false, true);
+  tag('Before', 110, 332, 126, 52); tag('After', 412, 136, 138, 56);
+  g.fillStyle = '#3a3a3a'; g.textAlign = 'center'; g.font = '900 136px "Inter Tight"'; g.fillText('MOOVI', 540, 1540);
+  g.font = '500 54px "Inter Tight"'; const a = 'your AI video “', b = 'editor', c = '”', wa = g.measureText(a).width, wc = g.measureText(c).width; g.font = '800 54px "Inter Tight"'; const wb = g.measureText(b).width;
+  let x = 540 - (wa + wb + wc) / 2; g.textAlign = 'left'; g.font = '500 54px "Inter Tight"'; g.fillText(a, x, 1620); x += wa; g.font = '800 54px "Inter Tight"'; g.fillText(b, x, 1620); x += wb; g.font = '500 54px "Inter Tight"'; g.fillText(c, x, 1620);
+}
+window.BA = { END, CUES: [], AUDIO: '/data/demo/out/t1-engineer-goat.mp4', frame: async t => { await Promise.all([seek(raw, t), seek(ed, t)]); frame(); } };
+Promise.all([document.fonts.load('900 80px "Inter Tight"'), document.fonts.load('500 30px "Inter Tight"')]).then(() => window.BA.frame(0));
+</script>
+</body>
+</html>
