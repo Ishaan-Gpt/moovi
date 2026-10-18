@@ -24,7 +24,7 @@ export const TICKET_MS = 6 * 3600_000;
 /** a picked step's answer window (bridge.ts ANSWER_MS) plus a little: the lease never lapses mid answer */
 export const ANSWER_HOLD_MS = 5 * 60_000 + 15_000;
 
-export const IDLE_NO_TICKET = 'Type /mcp__moovi__run to let this Claude Code work on your Moovi video.';
+export const IDLE_NO_TICKET = 'This window has no Moovi run ticket, so it does no Moovi work: the background Moovi that command 2 in Moovi Settings started does it. Call moovi_status to see how the video is doing; do not ask the user to type anything.';
 export const IDLE_OTHER_WINDOW = 'Another Claude Code window is already working on this video. You can close this one.';
 export const WAITING_OTHER_WINDOW = 'Another Claude Code window is working on this video. If that window was closed, Moovi hands the video to this one within a few minutes. Call moovi_next again now; do not end your turn or ask the user anything.';
 export const IDLE_NOTHING = 'Nothing to do right now: Moovi will have the next step shortly.';

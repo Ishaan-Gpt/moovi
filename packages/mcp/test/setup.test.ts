@@ -122,7 +122,7 @@ test('setup: claim works once, the token is the user\'s, and the ticket starts a
   await c.close();
   assert.match(await line(code), /^MOOVI: connected; waiting for a video/);
   await hub.board.start({ user: 'u2', job: 'j1', title: 'My clip' });
-  assert.equal(await line(code), 'MOOVI: working on My clip.');
+  assert.match(await line(code), /^MOOVI: connected; working on My clip\./);
   await hub.board.finish({ job: 'j1', ok: true });
   assert.equal(await line(code), 'MOOVI: DONE My clip');
 });
@@ -134,7 +134,7 @@ test('setup: an older finished video never reads as DONE; a clip already running
   t += 1000;
   const { code } = await makePrompt('u5');
   await fetch(`${base}/api/brain/setup/${code}/claim`, { method: 'POST' });
-  assert.match(await line(code), /^MOOVI: working on Uploaded first/);
+  assert.match(await line(code), /^MOOVI: (connected|connecting); working on Uploaded first/);
   await hub.board.finish({ job: 'up', ok: false, error: 'the clip has no sound' });
   assert.equal(await line(code), 'MOOVI: FAILED the clip has no sound');
 });
@@ -210,19 +210,19 @@ test('status: every state, from the wrapper report and from silence (FAILED, not
   assert.match(await line(c), /^MOOVI: IDLE: the background Claude Code stopped before a video started/);
   // crashed mid video: FAILED at once, with the way to pick it up
   c = await claim('s4'); hub.presence.touch('s4'); await hub.board.start({ user: 's4', job: 'k4', title: 'Clip four' }); await exit(c, 137);
-  assert.equal(await line(c), 'MOOVI: FAILED: the background Claude Code stopped (exit 137) while Clip four was still running. Open Claude Code and type /mcp__moovi__run to pick the video up.');
+  assert.equal(await line(c), 'MOOVI: FAILED: the background Claude Code stopped (exit 137) while Clip four was still running. Run command 2 from Moovi Settings again.');
   assert.equal((await exit(c, 0)).status, 200); assert.match(await line(c), /exit 137/, 'the first report wins');
   // clean exit as the video finishes: a grace, then DONE (or FAILED if the finish never lands)
   c = await claim('s5'); hub.presence.touch('s5'); await hub.board.start({ user: 's5', job: 'k5', title: 'Clip five' }); await exit(c, 0);
-  assert.equal(await line(c), 'MOOVI: working on Clip five.');
+  assert.match(await line(c), /^MOOVI: connected; working on Clip five\./);
   await hub.board.finish({ job: 'k5', ok: true }); assert.equal(await line(c), 'MOOVI: DONE Clip five');
   c = await claim('s6'); hub.presence.touch('s6'); await hub.board.start({ user: 's6', job: 'k6', title: 'Clip six' }); await exit(c, 0);
   t += SETUP_EXIT_GRACE_MS + 1;
   assert.match(await line(c), /^MOOVI: FAILED: the background Claude Code stopped \(exit 0\) while Clip six/);
   // killed with no report (closed laptop, killed process): quiet past SETUP_QUIET_MS while the video runs
   c = await claim('s7'); hub.presence.touch('s7'); await hub.board.start({ user: 's7', job: 'k7', title: 'Clip seven' });
-  t += SETUP_QUIET_MS - 1000; assert.equal(await line(c), 'MOOVI: working on Clip seven.');
-  t += 2000; assert.match(await line(c), /^MOOVI: FAILED: the background Claude Code went quiet while Clip seven was running/);
+  t += SETUP_QUIET_MS - 1000; assert.match(await line(c), /^MOOVI: quiet for \d+ s; working on Clip seven\./, 'not "connected" once it stopped calling');
+  t += 2000; assert.match(await line(c), /^MOOVI: FAILED: the background Claude Code stopped calling Moovi \d+ s ago while Clip seven was running/);
   // the exit report is for a claimed code only, POST only
   const { code: fresh } = await makePrompt('s8');
   assert.equal((await exit(fresh, 1)).status, 404);
