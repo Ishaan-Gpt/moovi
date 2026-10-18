@@ -161,3 +161,6 @@
 
 ## 1.16.7 (2026-10-18)
 - Owner (demo beat 2, 3/10): a film made 'from my clone' reuses the clone's own code, grade, type and stems re-timed to the new lines; never a fresh lookalike (lessons.md).
+
+## 1.16.6 (2026-10-18)
+- Owner (Meet Moovi beat): product films from the product's own code and real captured UI only (no other films, no invented or placeholder UI); the hero morphs through every transition; Apple-grade camera keys, whips with motion blur, segment-to-window UI morphs (lessons.md).
