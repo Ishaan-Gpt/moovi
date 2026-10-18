@@ -119,3 +119,6 @@
 
 ## 1.13.7 (2026-10-18)
 - Removed the edit `window` form rule and its automatic picker (1.13.6 and the lab-vlog note): Claude's own invention, never the owner's taste; the owner rated the edit it produced 1/10.
+
+## 1.13.9 (2026-10-18)
+- Rule: caption cards at least 1.2 s on screen, hold up to 1 s after the last word.
