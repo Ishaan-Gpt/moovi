@@ -128,3 +128,11 @@ test('lane 7: decision 20, the Edit spec reaches a linked Claude Code; the menu 
   assert.equal(pickLane('direct:edit-spec', F({ claudeCode: 'linked', hasKey: false, server: false, byok: 'required' })).lane, 'wait');
   assert.equal(pickLane('direct:edit-spec', F({ claudeCode: 'off', hasKey: true, server: false, byok: 'required' })).lane, 'key');
 });
+
+test('lane: a request can skip lanes (the full Edit spec never goes to a key or the server model, where it is too large)', async () => {
+  const log: string[] = [];
+  const rt = laneRuntime({ facts: () => F({ claudeCode: 'off', hasKey: true, server: true, byok: 'optional' }), key: fake('key', log), server: fake('server', log) });
+  await assert.rejects(rt.complete!({ ...creq('direct:edit-spec'), skipLanes: ['key', 'server'] }), NoModelForAgent);
+  assert.deepEqual(log, [], 'the full prompt never reached Groq');
+  assert.equal(await rt.complete!({ ...creq('direct:edit-menu') }), '{"from":"key"}');
+});

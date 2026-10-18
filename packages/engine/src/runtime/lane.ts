@@ -117,8 +117,11 @@ export function concreteModel(lane: Lane, m: string, models: LaneRuntimeOptions[
 /** A Runtime that sends each call down the lane `pickLane` names, moving on when Claude Code does not pick a step up. */
 export function laneRuntime(o: LaneRuntimeOptions): Runtime {
   const of = (lane: Lane) => (lane === 'claude-code' ? o.brain : lane === 'key' ? o.key : lane === 'server' ? o.server : null) ?? null;
-  const route = async <T>(agent: string, go: (rt: Runtime, lane: Lane) => Promise<T>): Promise<T> => {
+  const route = async <T>(agent: string, go: (rt: Runtime, lane: Lane) => Promise<T>, skip: Lane[] = []): Promise<T> => {
     let f = o.facts();
+    if (skip.includes('claude-code')) f = { ...f, claudeCode: 'off' };
+    if (skip.includes('key')) f = { ...f, hasKey: false };
+    if (skip.includes('server')) f = { ...f, server: false };
     for (let hop = 0; hop < LANE_ORDER.length + 1; hop++) {
       let { lane, why } = pickLane(agent, f);
       if ((lane === 'claude-code' || lane === 'key' || lane === 'server') && !of(lane)) {
@@ -145,6 +148,6 @@ export function laneRuntime(o: LaneRuntimeOptions): Runtime {
     name: 'lanes',
     vision: !!(o.brain?.vision || o.key?.vision || o.server?.vision),
     run: (req: AgentRequest): Promise<AgentResult> => route(req.agent, (rt, lane) => rt.run({ ...req, model: concreteModel(lane, req.model, o.models) })),
-    complete: (req: CompleteRequest): Promise<string> => route(req.agent, (rt, lane) => (rt.complete ? rt.complete({ ...req, model: concreteModel(lane, req.model, o.models) }) : Promise.reject(new Error(`${rt.name} has no single-answer call`)))),
+    complete: (req: CompleteRequest): Promise<string> => route(req.agent, (rt, lane) => (rt.complete ? rt.complete({ ...req, model: concreteModel(lane, req.model, o.models) }) : Promise.reject(new Error(`${rt.name} has no single-answer call`))), req.skipLanes as Lane[] | undefined),
   };
 }

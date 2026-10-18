@@ -272,14 +272,14 @@ export async function resolveFootage(dir: string, picks: Pick[], signal?: AbortS
 const PickShape = { caption: z.string().optional(), mood: z.string().optional(), beats: z.array(z.object({ i: z.number(), device: z.string() }).passthrough()) };
 
 /** Ask, check, one repair re-ask with the exact errors; then the picks that pass (the rest play as the speaker). */
-export async function directFromMenu(i: { sentences: Sentence[]; brief?: string; /** the last film's device sequence (rejected if repeated) */ previous?: string[]; signal?: AbortSignal; log?: (s: string) => void }): Promise<Checked<{ answer: MenuAnswer; bad: Set<number> } | null> & { tokens: number }> {
+export async function directFromMenu(i: { sentences: Sentence[]; brief?: string; /** the last film's device sequence (rejected if repeated) */ previous?: string[]; /** lanes not to use (the compact step after Claude Code did not answer) */ skipLanes?: ('claude-code' | 'key' | 'server')[]; signal?: AbortSignal; log?: (s: string) => void }): Promise<Checked<{ answer: MenuAnswer; bad: Set<number> } | null> & { tokens: number }> {
   const menu = loadMenu(), step = menuStep(i.sentences, menu, i.brief ?? '');
   let last: { answer: MenuAnswer; bad: Set<number> } | null = null;
   const r = await askChecked<{ answer: MenuAnswer; bad: Set<number> } | null>({
     label: MENU_AGENT, ...(i.log ? { log: i.log } : {}),
     ask: async (history?: History) => {
       const rt = runtime(); if (!rt.complete) throw new Error(`${rt.name} has no single-answer call`);
-      return rt.complete({ agent: MENU_AGENT, system: step.system, prompt: step.prompt, schema: PickShape, model: 'brain', deadlineMs: 120_000, ...(history ? { history } : {}), ...(i.signal ? { signal: i.signal } : {}) });
+      return rt.complete({ agent: MENU_AGENT, system: step.system, prompt: step.prompt, schema: PickShape, model: 'brain', deadlineMs: 120_000, ...(i.skipLanes ? { skipLanes: i.skipLanes } : {}), ...(history ? { history } : {}), ...(i.signal ? { signal: i.signal } : {}) });
     },
     read: raw => {
       let a: MenuAnswer;

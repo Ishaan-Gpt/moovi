@@ -77,15 +77,30 @@ export function checkMasterySpec(spec: Record<string, unknown>, i: { words: { wo
 }
 
 /** Ask for the spec (one call, at most one re-ask with the problems). Null = the skeleton. */
-export async function directMasterySpec(i: SpecInput & { signal?: AbortSignal; log?: (s: string) => void }): Promise<Checked<Record<string, unknown> | null>> {
+/** how long the full step waits for Claude Code before the edit moves on (Claude 1: about 90 s; was 300 s plus a re-ask) */
+export const SPEC_WAIT_MS = 90_000;
+
+export async function directMasterySpec(i: SpecInput & { signal?: AbortSignal; log?: (s: string) => void; waitMs?: number }): Promise<Checked<Record<string, unknown> | null>> {
+  let noAnswer: string | null = null;
   if (i.words.length < 4) return { value: null, source: 'default', problems: [['too few words']], tries: 0, note: 'the skeleton' };
   const step = masterySpecStep(i);
   return askChecked<Record<string, unknown> | null>({
     label: DIRECT_SPEC_AGENT, ...(i.log ? { log: i.log } : {}),
     ask: async (history?: History) => {
+      // no answer in time (Claude Code picked the step up and went quiet): no re-ask, the edit moves on to the menu step
+      if (noAnswer) throw new Error(noAnswer);
       const rt = runtime();
       if (!rt.complete) throw new Error(`${rt.name} has no single-answer call`);
-      return rt.complete({ agent: DIRECT_SPEC_AGENT, system: step.system, prompt: step.prompt, schema: SpecShape, model: 'brain', deadlineMs: 180_000, ...(history ? { history } : {}), ...(i.signal ? { signal: i.signal } : {}) });
+      // the full tier only fits Claude Code: a key or the server model gets the compact menu step instead (the router's next step)
+      const ac = new AbortController(), timer = setTimeout(() => ac.abort(), i.waitMs ?? SPEC_WAIT_MS);
+      i.signal?.addEventListener('abort', () => ac.abort(), { once: true });
+      try {
+        return await Promise.race([
+          rt.complete({ agent: DIRECT_SPEC_AGENT, system: step.system, prompt: step.prompt, schema: SpecShape, model: 'brain', deadlineMs: i.waitMs ?? SPEC_WAIT_MS, skipLanes: ['key', 'server'], ...(history ? { history } : {}), signal: ac.signal }),
+          new Promise<never>((_, rej) => ac.signal.addEventListener('abort', () => rej(new Error(`no answer within ${Math.round((i.waitMs ?? SPEC_WAIT_MS) / 1000)} s`)), { once: true })),
+        ]);
+      } catch (e) { noAnswer = String((e as Error).message ?? e).slice(0, 160); throw e; }
+      finally { clearTimeout(timer); }
     },
     read: raw => {
       let spec: Record<string, unknown>;

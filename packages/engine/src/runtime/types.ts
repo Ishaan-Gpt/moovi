@@ -46,6 +46,9 @@ export interface CompleteRequest {
   /** later turns of this exchange (a repair loop: the answer, then what was wrong with it) */
   history?: { role: 'user' | 'assistant'; text: string }[];
   signal?: AbortSignal;
+  /** lanes this request must not go to (a step whose prompt is built for the other lanes, e.g. the compact Edit menu
+   *  after Claude Code did not answer); the lane switch treats them as absent */
+  skipLanes?: ('claude-code' | 'key' | 'server')[];
 }
 
 export interface Runtime {

@@ -21,12 +21,14 @@ import { tierFor } from '../skill-prompt';
 import { modelScope } from '../runtime';
 
 /** The compact (menu) path as one call with the full spec's result shape: the picks, then the library for this video. */
-async function directedFromMenu(dir: string, words: { word: string; t: number; end: number }[], seconds: number, brief: string, projectDir: string, signal?: AbortSignal): Promise<{ value: Record<string, unknown> | null; problems: string[][] }> {
+async function directedFromMenu(dir: string, words: { word: string; t: number; end: number }[], seconds: number, brief: string, projectDir: string, signal?: AbortSignal, o: { model?: boolean; skipLanes?: ('claude-code' | 'key' | 'server')[] } = {}): Promise<{ value: Record<string, unknown> | null; problems: string[][] }> {
   const ss = sentencesOfWords(words.map(w => ({ word: w.word, t: w.t, end: w.end })));
   // two clips never get the same film: the project's last film's device sequence is not taken again
   const lastFile = join(projectDir, 'edit-last-film.json');
   let previous: string[] = []; try { previous = (JSON.parse(readFileSync(lastFile, 'utf8')) as { devices: string[] }).devices ?? []; } catch { previous = []; }
-  const r = await directFromMenu({ sentences: ss, brief, previous, ...(signal ? { signal } : {}), log: s => console.log(`[edit] ${s}`) });
+  // model false: no call at all (the first preview, or every lane failed): Edit mastery's checklist completion alone
+  const r = o.model === false ? { value: null, problems: [['no model call']] } as Awaited<ReturnType<typeof directFromMenu>>
+    : await directFromMenu({ sentences: ss, brief, previous, ...(o.skipLanes ? { skipLanes: o.skipLanes } : {}), ...(signal ? { signal } : {}), log: s => console.log(`[edit] ${s}`) }).catch(e => ({ value: null, problems: [[`no answer: ${String((e as Error).message ?? e).slice(0, 120)}`]], tokens: 0 }) as unknown as Awaited<ReturnType<typeof directFromMenu>>);
   // the owner's checklist is made whole by code from the menu when the model missed part of it (or failed)
   const menu = loadMenu(), a = completeCoverage(r.value?.answer ?? null, ss, menu, r.value?.bad ?? new Set()), events = [...JSON.stringify(menu).matchAll(/\{sfx:(\w+)\}/g)].map(m => m[1]!);
   try { writeFileSync(lastFile, JSON.stringify({ devices: deviceSequence(a) })); } catch { /* the next film just has no memory of this one */ }
@@ -184,14 +186,19 @@ export const editReel: Handler = async ctx => {
     const p0 = Date.now();
     // the preview plays now from the upload's own picture; the graded cut swaps in when the restore ends (the MP4 waits for it)
     await prepareClip(dir, join(dir, plan.source.file));
-    writeSpec(dir, skeletonSpec(dir));
+    const kept = words.filter(w => !((edl as { removed?: { src_in: number; src_out: number }[] }).removed ?? []).some(r => w.t >= r.src_in - 1e-3 && w.t < r.src_out - 1e-3));
+    // the first preview is already the whole edit: Edit mastery's checklist completion from the menu (no model call yet),
+    // never captions only; the skeleton only if even that cannot be built
+    try { const first = await directedFromMenu(dir, kept, plan.source.duration, inp.brief ?? '', ctx.projectDir, ctx.signal, { model: false }); writeSpec(dir, first.value ?? skeletonSpec(dir)); }
+    catch (e) { console.warn(`[edit] first spec: ${String((e as Error).message ?? e).slice(0, 160)}`); writeSpec(dir, skeletonSpec(dir)); }
     // the model writes the spec from Edit mastery's recipe, beside the preview; it replaces the skeleton only when the
     // player can draw it as written (edit/mastery-direct.ts); the MP4 waits for the answer
-    const kept = words.filter(w => !((edl as { removed?: { src_in: number; src_out: number }[] }).removed ?? []).some(r => w.t >= r.src_in - 1e-3 && w.t < r.src_out - 1e-3));
     // decision 20: a linked Claude Code writes the whole spec from the full skill (and invents); the server model and every
     // user API key direct from Edit mastery's menu with the compact skill, and code fills only the menu's slots
-    directed = (tierFor(modelScope()?.provider) === 'compact' ? directedFromMenu(dir, kept, plan.source.duration, inp.brief ?? '', ctx.projectDir, ctx.signal) : directMasterySpec({ words: kept.map(w => ({ word: w.word, t: w.t, end: w.end })), faces: edl.faces ?? [], duration: plan.source.duration, brief: inp.brief ?? '', files: worldCutouts(), ...(ctx.signal ? { signal: ctx.signal } : {}), log: s => console.log(`[edit] ${s}`) })
-)
+    const menuStep = (skip?: ('claude-code' | 'key' | 'server')[]) => directedFromMenu(dir, kept, plan.source.duration, inp.brief ?? '', ctx.projectDir, ctx.signal, skip ? { skipLanes: skip } : {});
+    // a full-tier answer that did not come (or did not pass) moves on to the compact menu step on a key or the server model
+    directed = (tierFor(modelScope()?.provider) === 'compact' ? menuStep() : directMasterySpec({ words: kept.map(w => ({ word: w.word, t: w.t, end: w.end })), faces: edl.faces ?? [], duration: plan.source.duration, brief: inp.brief ?? '', files: worldCutouts(), ...(ctx.signal ? { signal: ctx.signal } : {}), log: s => console.log(`[edit] ${s}`) })
+).then(r => r.value ? r : (console.log(`[edit] spec: Claude Code gave none (${r.problems.flat().slice(0, 1).join('')}); the menu step on a key or the server model`), menuStep(['claude-code'])))
       .then(async r => { if (r.value) { writeSpec(dir, r.value); await ctx.activity('note', 'the edit is directed: devices on its sentences'); } else console.log(`[edit] spec: the skeleton (${r.problems.flat().slice(0, 2).join('; ')})`); })
       .catch(e => console.warn(`[edit] spec: ${String((e as Error).message ?? e).slice(0, 160)}`));
     graded = plan.restore.catch(() => null).then(r => r ? prepareClip(dir).then(() => undefined) : undefined).catch(e => console.warn(`[edit] graded cut: ${String((e as Error).message ?? e).slice(0, 160)}`));
