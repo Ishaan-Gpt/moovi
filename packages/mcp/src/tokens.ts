@@ -30,6 +30,9 @@ export class TokenStore {
     const v = await this.store.get(KEY.link(user)); return v ? JSON.parse(v) as { hash: string; id: string } : null;
   }
 
+  /** true while this token id is still the user's current one (not removed, not replaced by a newer one) */
+  async isCurrent(user: string, id: string): Promise<boolean> { return (await this.current(user))?.id === id; }
+
   /** A new token for the user (the old one stops working). The token itself is returned once and never stored. */
   async mint(user: string, label = 'Claude Code'): Promise<{ token: string; record: TokenRecord }> {
     if (!user) throw new Error('mint needs a user');

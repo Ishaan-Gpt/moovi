@@ -85,7 +85,10 @@ export function brainApi(o: BrainApiOptions) {
     const cc = o.hub.presence.state(user), key = o.hasKey?.(user) ?? false;
     const online = s.linked && cc === 'online';
     const lane = online ? 'bridge' : key ? 'key' : s.linked ? 'waiting' : 'none';
-    return json({ ...s, online, claude_code: s.linked ? cc : 'off', lane, notice: s.linked ? null : NOTICE.notConnected, jobs: await jobNotices(o.hub, user, s.linked, s.linked ? cc : 'off', key) });
+    const jobs = await jobNotices(o.hub, user, s.linked, s.linked ? cc : 'off', key);
+    // the studio's small pill (Vignesh, Oct 18): shown only to a user who picked Claude Code (linked, no key of their own)
+    const pill = !s.linked || key ? null : online ? 'connected' : jobs.length ? 'waiting' : 'not_connected';
+    return json({ ...s, online, claude_code: s.linked ? cc : 'off', lane, has_key: key, pill, notice: s.linked ? null : NOTICE.notConnected, jobs });
   }
 
   /** route by path: .../api/brain/link and .../api/brain/status (any base path), null for anything else */

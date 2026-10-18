@@ -63,6 +63,27 @@ test('bridge 15: /api/brain/link and /api/brain/status (web handlers)', async ()
   assert.equal(await hub.tokens.verify(j.token), null);
 });
 
+test('studio pill (Vignesh Oct 18): /api/brain/status says connected, waiting or not connected, only for a Claude Code user, never the token', async () => {
+  let t = 1_000_000;
+  const hub = new BrainHub(undefined, () => t);
+  const keyed = new Set(['k1']);
+  const api = brainApi({ hub, userOf: async req => req.headers.get('x-user'), mcpUrl: () => 'https://moovi.example/mcp', hasKey: u => keyed.has(u) });
+  const pill = async (u: string) => (await (await api.handle(new Request('http://h/api/brain/status', { headers: { 'x-user': u } })))!.json()) as { pill: string | null; has_key: boolean };
+  assert.equal((await pill('u9')).pill, null, 'never linked: no pill');
+  const { token } = await hub.tokens.mint('u9', 'x');
+  assert.equal((await pill('u9')).pill, 'not_connected');
+  hub.presence.touch('u9');
+  assert.equal((await pill('u9')).pill, 'connected');
+  t += 91_000;
+  assert.equal((await pill('u9')).pill, 'not_connected', 'no call for 90 s: not connected');
+  await hub.board.start({ user: 'u9', job: 'v1', title: 'Clip' });
+  assert.equal((await pill('u9')).pill, 'waiting', 'a video waits for Claude Code');
+  await hub.tokens.mint('k1', 'x');
+  assert.deepEqual(await pill('k1'), { ...(await pill('k1')), pill: null, has_key: true }, 'a user on their own key sees no pill');
+  const raw = await (await api.handle(new Request('http://h/api/brain/status', { headers: { 'x-user': 'u9' } })))!.text();
+  assert.ok(!raw.includes(token) && !raw.includes(token.slice(4)), 'the token never reaches the browser');
+});
+
 test('bridge 15: the session cookie decides the user; cross-site writes are refused', async () => {
   const auth = sessionCookieAuth({ lookup: async t => (t === 'sess-1' ? { id: 'u1' } : null) });
   const req = (h: Record<string, string>) => new Request('http://moovi.example/api/brain/link', { method: 'POST', headers: { host: 'moovi.example', ...h } });

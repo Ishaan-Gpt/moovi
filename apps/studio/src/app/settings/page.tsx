@@ -2,15 +2,12 @@ import type { Metadata } from 'next';
 import { byokMode, modelInfo, providerChoices } from '@moovi/engine';
 import { requireUser } from '@/lib/session';
 import { Sidebar } from '@/components/dash/Sidebar';
+import { bridgeBase } from '@/lib/bridge';
 import { ModelForm } from '@/components/settings/ModelForm';
 import { ClaudeCodeCard } from '@/components/settings/ClaudeCodeCard';
 
 export const metadata: Metadata = { title: 'Your model' };
 export const dynamic = 'force-dynamic';
-
-/** The bridge's address for the browser: MOOVI_BRIDGE_PUBLIC_URL, else this site's own /studio on a server (the proxy
- * sends /studio/api/brain/* to the bridge, so it also works through a site that rewrites /studio here), else the dev bridge. */
-const bridgeBase = () => (process.env.MOOVI_BRIDGE_PUBLIC_URL?.trim().replace(/\/+$/, '') ?? (process.env.NODE_ENV === 'production' ? '/studio' : 'http://localhost:3200'));
 
 const safeNext = (n: string | undefined) => (n && /^\/studio(\/|$|\?)/.test(n) && !n.startsWith('//') && !n.startsWith('/studio/settings') ? n : '/studio');
 
@@ -20,7 +17,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
   const { welcome, next } = await searchParams;
   return (
     <div className="dash">
-      <Sidebar user={user} current="model" />
+      <Sidebar user={user} current="model" bridge={bridgeBase()} />
       <main className="dash__main">
         <header className="dash__head">
           <h1 className="dash__title">{welcome ? <>One thing first: <em className="serif">your model</em></> : <>Your <em className="serif">model</em></>}</h1>

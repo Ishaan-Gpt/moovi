@@ -26,6 +26,19 @@ with no model key of their own:
 Hearing the clip needs no key since Oct 18: with no `GROQ_API_KEY` or `OPENAI_API_KEY`, Moovi runs Whisper on your own
 machine (about 5 s for a 20 s clip). A Groq or OpenAI key is optional: faster on long clips and more accurate.
 
+## 0a. One prompt setup (branch claude-code-bridge, prototype, waits on Ishaan's go)
+
+Instead of the command plus `/mcp__moovi__run`: in Moovi Settings press "Copy my setup prompt" (or `/connect`, "Make my
+setup prompt") and paste it into Claude Code. Claude Code runs one line (`curl -fsSL .../<code>.sh | sh` everywhere;
+on Windows Git Bash the script hands over to PowerShell itself; a shell with no sh uses the PowerShell line). The script
+(`packages/mcp/src/setup.ts`) adds the Moovi server for later sessions without printing the token, then starts a
+background `claude -p` under a small wrapper that tells the server when it stops. The pasted window runs the progress
+command the script prints until DONE, FAILED or IDLE. FAILED also covers a background Claude Code that dies, never
+connects (3 min) or goes quiet mid video (4.5 min). The code works once, for 30 minutes. Keep the Claude Code window
+open until DONE (on Windows the background run may end with it). Tests: `packages/mcp/test/setup.test.ts` (the real sh
+script against a local bridge with a stand in `claude`: twice in a row, spaces in paths, no curl, wget only, no claude,
+expired code, a dying background run, no token in output or logs). Design and risks: docs/agents/TAB.md, 2026-10-18 10:05 IST.
+
 ## 1. One time setup
 
 In the repo, on `main` (the bridge is merged there):

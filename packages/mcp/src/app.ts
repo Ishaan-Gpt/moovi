@@ -5,7 +5,8 @@
  */
 import type { Server } from 'node:http';
 import { createClient } from 'redis';
-import { brainApi, sessionCookieAuth, type BrainApiOptions } from './api';
+import { brainApi, publicOrigin, sessionCookieAuth, type BrainApiOptions } from './api';
+import { setupApi } from './setup';
 import { bridgeHttp, mcpHandler, webRoute, type McpHandler } from './http';
 import type { BrainHub } from './hub';
 import { buildMcp } from './server';
@@ -16,12 +17,14 @@ export interface BridgeApp { http: Server; mcp: McpHandler; close: () => Promise
 export function bridgeApp(hub: BrainHub, o: { userOf: BrainApiOptions['userOf']; mcpUrl?: BrainApiOptions['mcpUrl']; hasKey?: (user: string) => boolean; cors?: BrainApiOptions['cors']; log?: (line: string) => void }): BridgeApp {
   const mcp = mcpHandler({ verify: t => hub.tokens.verify(t), build: ctx => buildMcp(hub, ctx), ...(o.log ? { log: o.log } : {}) });
   const api = brainApi({ hub, userOf: o.userOf, ...(o.mcpUrl ? { mcpUrl: o.mcpUrl } : {}), ...(o.hasKey ? { hasKey: o.hasKey } : {}), ...(o.cors ? { cors: o.cors } : {}) });
+  // the one prompt setup (setup.ts): POST /api/brain/setup gives the prompt, its links serve the script and the status
+  const setup = setupApi({ hub, userOf: o.userOf, origin: publicOrigin, mcpUrl: o.mcpUrl ?? (req => `${publicOrigin(req)}/mcp`), ...(o.cors ? { cors: o.cors } : {}) });
   const page = webRoute(async req => {
     const p = new URL(req.url).pathname.replace(/\/+$/, '');
     if (req.method !== 'GET' || (!p.endsWith('/connect') && !p.endsWith('/api/brain/connect'))) return null;
     return new Response(CONNECT_PAGE, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });
   });
-  const http = bridgeHttp({ mcp, routes: [webRoute(r => api.handle(r)), page] });
+  const http = bridgeHttp({ mcp, routes: [webRoute(r => api.handle(r)), webRoute(r => setup.handle(r)), page] });
   return { http, mcp, close: async () => { await mcp.close(); await new Promise<void>(res => http.close(() => res())); } };
 }
 
@@ -39,13 +42,14 @@ const CONNECT_PAGE = `<!doctype html><html><head><meta charset="utf-8"><meta nam
 <style>body{font:16px/1.5 system-ui,sans-serif;max-width:720px;margin:40px auto;padding:0 16px;color:#111}code,pre{background:#f3f3f3;border-radius:6px}pre{padding:12px;white-space:pre-wrap;word-break:break-all}button{font:inherit;padding:8px 14px;border-radius:8px;border:1px solid #111;background:#111;color:#fff;cursor:pointer}.muted{color:#666}</style></head>
 <body><h1>Connect Claude Code to Moovi</h1>
 <p class="muted">Sign in to Moovi in this browser first. A new token replaces the old one.</p>
-<p><button id="go">Make my connect command</button> <button id="off" style="background:#fff;color:#111">Disconnect</button></p>
+<p><button id="sp">Make my setup prompt</button> <button id="go" style="background:#fff;color:#111">Make my connect command</button> <button id="off" style="background:#fff;color:#111">Disconnect</button></p>
 <div id="out"></div><p id="st" class="muted"></p>
 <script>
 const out=document.getElementById('out'),st=document.getElementById('st'),base=location.pathname.replace(/\\/(api\\/brain\\/)?connect\\/?$/,'');
 async function status(){const r=await fetch(base+'/api/brain/status');if(!r.ok){st.textContent='Not signed in to Moovi in this browser.';return}const s=await r.json();st.textContent=s.linked?('Linked (token ending '+s.token_last4+'), Claude Code '+(s.online?'online':'offline')):'Not linked yet.'}
 document.getElementById('go').onclick=async()=>{const r=await fetch(base+'/api/brain/link',{method:'POST',headers:{'content-type':'application/json'},body:'{}'});const j=await r.json();if(!r.ok){out.textContent=j.error||'Could not make a token';return}
 out.innerHTML='<p>1. Run this once in a terminal (it works from every folder):</p><pre></pre><p>2. In Claude Code type <code>/mcp__moovi__run</code>, then start your video on the Moovi website.</p><p class="muted">This command is shown once. Keep it private: it lets a Claude Code work on your videos.</p>';out.querySelector('pre').textContent=j.command;status()};
+document.getElementById('sp').onclick=async()=>{const r=await fetch(base+'/api/brain/setup',{method:'POST'});const j=await r.json();if(!r.ok){out.textContent=j.error||'Could not make a prompt';return}out.innerHTML='<p>Paste this into Claude Code. It connects itself and keeps going until the video is done (works once, for 30 minutes):</p><pre></pre>';out.querySelector('pre').textContent=j.prompt;status()};
 document.getElementById('off').onclick=async()=>{await fetch(base+'/api/brain/link',{method:'DELETE'});out.textContent='Disconnected.';status()};
 status();
 </script></body></html>`;

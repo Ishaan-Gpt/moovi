@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { listProjects } from '@moovi/engine';
 import { requireUser } from '@/lib/session';
 import { Sidebar } from '@/components/dash/Sidebar';
+import { bridgeBase } from '@/lib/bridge';
 import { ProjectGrid } from '@/components/dash/ProjectGrid';
 
 export const metadata: Metadata = { title: 'Projects' };
@@ -12,7 +13,7 @@ export default async function Dashboard() {
   const projects = await listProjects(user.id).catch(() => []);
   return (
     <div className="dash">
-      <Sidebar user={user} />
+      <Sidebar user={user} bridge={bridgeBase()} />
       <main className="dash__main">
         <header className="dash__head">
           <h1 className="dash__title">Your <em className="serif">projects</em></h1>
