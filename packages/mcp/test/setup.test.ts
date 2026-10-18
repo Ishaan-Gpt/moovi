@@ -275,3 +275,67 @@ test('script: with wget only (no curl) the same flow works', { skip: !spawnSync(
   assert.match(r.stdout, /progress command: wget -qO- /);
   assert.ok(await until(async () => /exit 2/.test(await line(code))), 'the wrapper reported through wget too');
 });
+
+// ---- the PowerShell script, run for real by pwsh when one is on this machine (MOOVI_PWSH names it). Linux pwsh takes
+// the non Windows branch of Start-Process (redirected, no window style); the Windows branch is the same call with
+// -WindowStyle Hidden and no redirects, which pwsh on Linux cannot run.
+const PWSH = process.env.MOOVI_PWSH || (spawnSync('sh', ['-c', 'command -v pwsh']).stdout.toString().trim() || '');
+function runPs(cmd: string, env: NodeJS.ProcessEnv): Promise<{ status: number | null; stdout: string; stderr: string }> {
+  return new Promise(res => {
+    const p = spawn(PWSH, ['-NoProfile', '-NonInteractive', '-Command', cmd], { env: { ...env, POWERSHELL_TELEMETRY_OPTOUT: '1', POWERSHELL_UPDATECHECK: 'Off' }, stdio: ['ignore', 'pipe', 'pipe'] });
+    let stdout = '', stderr = '';
+    p.stdout.on('data', d => { stdout += d; }); p.stderr.on('data', d => { stderr += d; });
+    const k = setTimeout(() => p.kill('SIGKILL'), 60_000);
+    p.on('close', status => { clearTimeout(k); res({ status, stdout, stderr }); });
+  });
+}
+
+test('ps1: the real PowerShell script under pwsh, exactly as the prompt runs it (irm | iex): twice, spaces, a dying run, expired, no claude', { skip: !PWSH && 'no pwsh on this machine (set MOOVI_PWSH)' }, async () => {
+  const home = join(dir, 'Jane Doe ps'); mkdirSync(home, { recursive: true });
+  const tmp = join(home, 'Temp Files'); mkdirSync(tmp, { recursive: true });
+  const f = fakeClaude(home);
+  const env = { ...process.env, HOME: home, TMPDIR: tmp, PATH: `${f.bin}:${process.env.PATH}` };
+  const tokens: string[] = [];
+  for (const round of [1, 2]) {
+    const { code } = await makePrompt('ps');
+    const r = await runPs(`irm ${base}/api/brain/setup/${code}.ps1 | iex`, env);
+    assert.equal(r.status, 0, r.stdout + r.stderr);
+    assert.equal(r.stderr.trim(), '', 'no PowerShell errors');
+    assert.match(r.stdout, /^MOOVI: connected \(run rt_[0-9a-f]+\)\. Moovi now runs in the background\. Log: .*Jane Doe ps\/Temp Files\/moovi\/brain-\d+\.log$/m);
+    assert.match(r.stdout, new RegExp(`^MOOVI: progress command: curl -fsS ${base}/api/brain/setup/${code}/status$`, 'm'));
+    assert.doesNotMatch(r.stdout + r.stderr, /mvk_/, 'the token is never printed');
+    const st = readFileSync(f.state, 'utf8').trim().split('\n');
+    assert.equal(st.length, 1, 'one moovi entry after each run (the old one removed first)');
+    tokens.push(/Bearer (mvk_\S+)/.exec(st[0]!)![1]!);
+    assert.ok(await until(() => readFileSync(f.calls, 'utf8').split('\n').filter(l => l.startsWith('P|')).length === round, 15_000), 'the background claude -p started');
+    assert.ok(await until(async () => /^MOOVI: (IDLE|connecting)/.test(await line(code)) && (await fetch(`${base}/api/brain/setup/${code}/exit?code=9`, { method: 'POST' })).ok, 15_000));
+  }
+  assert.equal(await hub.tokens.verify(tokens[0]!), null);
+  assert.equal((await hub.tokens.verify(tokens[1]!))?.user, 'ps');
+  const calls = readFileSync(f.calls, 'utf8').split('\n');
+  assert.deepEqual(calls.slice(0, 2), ['C|mcp remove moovi -s local', 'C|mcp remove moovi -s user']);
+  const p = calls.find(l => l.startsWith('P|'))!.split('|');
+  assert.match(p[1]!, /^You are the Moovi brain for one video\. Call the moovi_next tool with ticket set to rt_/, 'the prompt arrives as one argument through -EncodedCommand');
+  assert.deepEqual([p[2], p[3]], ['--allowedTools', 'mcp__moovi']);
+  assert.match(p[4]!, /PWD=.*Jane Doe ps\/Temp Files\/moovi$/);
+  const logs2 = readdirSync(join(tmp, 'moovi')).map(n => readFileSync(join(tmp, 'moovi', n), 'utf8')).join('\n');
+  for (const tk of tokens) assert.ok(!logs2.includes(tk.slice(4)), 'no token in the log files');
+  // the background run dies at once: the wrapper's exit report turns the status FAILED
+  const { code: dc } = await makePrompt('ps2');
+  const r = await runPs(`irm ${base}/api/brain/setup/${dc}.ps1 | iex`, { ...env, FAKE_EXIT: '3' });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.ok(await until(async () => /^MOOVI: FAILED: the background Claude Code stopped \(exit 3\)/.test(await line(dc)), 20_000), await line(dc));
+  // used twice, expired, no claude: one clear line each
+  assert.match((await runPs(`irm ${base}/api/brain/setup/${dc}.ps1 | iex`, env)).stdout, /^MOOVI: FAILED: this setup code was already used or has expired/);
+  const { code: ec } = await makePrompt('ps3');
+  const late = await (await fetch(`${base}/api/brain/setup/${ec}.ps1`)).text();
+  t += SETUP_MS + 1;
+  writeFileSync(join(home, 'late.ps1'), late);
+  assert.match((await runPs(`& '${join(home, 'late.ps1')}'`, env)).stdout, /^MOOVI: FAILED: this setup code was already used or has expired/);
+  const ex = await runPs(`irm ${base}/api/brain/setup/${ec}.ps1 | iex`, env);
+  assert.match(ex.stdout, /^MOOVI: this setup link has expired/, ex.stdout + ex.stderr);
+  const { code: nc } = await makePrompt('ps4');
+  const none = await runPs(`irm ${base}/api/brain/setup/${nc}.ps1 | iex`, { ...env, PATH: process.env.PATH!.split(':').filter(d => !existsSync(join(d, 'claude'))).join(':'), HOME: join(dir, 'nobody') });
+  assert.match(none.stdout, /^MOOVI: FAILED: the claude command was not found in this shell/);
+  assert.match(await line(nc), /^MOOVI: not set up yet/);
+});

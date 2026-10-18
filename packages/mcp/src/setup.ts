@@ -279,8 +279,10 @@ export function setupApi(o: SetupApiOptions) {
     if (what === '/exit') return req.method === 'POST' ? exit(code, req) : plain('POST', 405);
     if (req.method !== 'GET') return plain('GET', 405);
     if (what === '/status') return status(code);
-    // an expired link still answers 200 with a one line script, so `curl -f ... | sh` and `irm | iex` say why
-    if (!(await read(code))) return plain(what === '.ps1' ? "'MOOVI: this setup link has expired. Copy a fresh prompt from Moovi Settings.'\n" : 'echo "MOOVI: this setup link has expired. Copy a fresh prompt from Moovi Settings."\n');
+    // an expired link still answers 200 with a one line script, so `curl -f ... | sh` and `irm | iex` say why. The
+    // PowerShell line is a command, not a bare 'string': irm reads a bare quoted line as JSON and iex then runs its words
+    // (found running pwsh 7.4.6, 2026-10-18)
+    if (!(await read(code))) return plain(what === '.ps1' ? "Write-Output 'MOOVI: this setup link has expired. Copy a fresh prompt from Moovi Settings.'\n" : 'echo "MOOVI: this setup link has expired. Copy a fresh prompt from Moovi Settings."\n');
     const origin = o.origin(req), mcp = o.mcpUrl(req);
     return what === '.sh' ? plain(setupSh(origin, code, mcp), 200, 'text/x-shellscript; charset=utf-8') : plain(setupPs1(origin, code, mcp));
   }
