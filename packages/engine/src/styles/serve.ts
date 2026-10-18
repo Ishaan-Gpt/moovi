@@ -8,6 +8,7 @@ import { ICONS } from '../s5/icons';
 import { PAGE as DV_PAGE } from '../darkvox/player';
 import { PAGE as AN_PAGE } from '../anatomy/player';
 import { PAGE as EDIT_PAGE } from '../edit/page';
+import { masteryFile } from '../edit/mastery';
 import { PAGE_OF as LAUNCH_PAGE } from '../launch/player';
 import type { PlayerKind, StyleId } from './index';
 
@@ -53,6 +54,7 @@ function page(ref: PreviewRef): string {
     case 'anatomy-player': return AN_PAGE;
     case 'launch-player': return LAUNCH_PAGE();
     case 'edit-player': return EDIT_PAGE;
+    case 'edit-mastery': return '';
     case 'mp4': return '<!doctype html><p>This version is a finished MP4.</p>';
   }
 }
@@ -62,6 +64,8 @@ function page(ref: PreviewRef): string {
  * the host adds to the page (the studio's own colours around the stage).
  */
 export function previewFile(ref: PreviewRef, path: string, base: string, skin = ''): Served {
+  // Edit mastery's player (edit/mastery.ts): served unchanged; its relative paths need no rebase
+  if (ref.player === 'edit-mastery') return masteryFile(ref.dir, path);
   const u = `/${path.replace(/^\/+/, '')}`;
   if (u === '/' || u === '/index.html') {
     let html = rebase(page(ref), base);

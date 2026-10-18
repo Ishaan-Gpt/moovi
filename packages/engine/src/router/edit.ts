@@ -14,10 +14,17 @@ import type { FxEvent } from '../edit/effects/plan';
 import { fxLines } from '../edit/effects/auto';
 import { fxMusic } from '../edit/effects/music';
 import { filmMix, renderFilm, useMix } from '../edit/film';
+import { prepareClip, renderMasteryFilm, skeletonSpec, writeSpec } from '../edit/mastery';
+
 import { activity, stageLines } from '../live';
 import { startRun } from '../runs';
 import { liveRefFile, type LiveRef } from '../styles/serve';
 import { assetCauses, noteDecision, wordsCause, type Cause } from '../why';
+
+/** Edit mastery's player is the Edit type (decision 17); MOOVI_EDIT_PLAYER=old brings back the old edit page. */
+const mastery = () => (process.env.MOOVI_EDIT_PLAYER ?? 'mastery') !== 'old';
+/** one player film at a time on the server (2 GB): each waits for the one before it */
+let filmQueue: Promise<unknown> = Promise.resolve();
 
 /**
  * Your own clip in, an edit playing live out: an upload with no style picked is EDITED (not sent to the crew, which
@@ -124,8 +131,11 @@ export const editReel: Handler = async ctx => {
   await ctx.say(`I’ll edit ${u.name}: cut the pauses, punch in on each new thought and caption every word. It plays live as soon as the plan is ready.`, 'note', undefined, 'moovi');
   const dir = join(ctx.dir, 'edit');
   // probe, look, hear, plan, and the voice clean-up started beside the preview: one function, the bench runs it too
+  const M = mastery();
+  let graded: Promise<void> = Promise.resolve();
+  // the player path needs the hearing, the cuts, the faces and the graded picture; the old page's casting steps stay off
   const plan = await planEdit({ path: u.path, dir, name: u.name, signal: ctx.signal, onStage: step, onDone: done, onNote: text => ctx.activity('note', text),
-    style: 'auto', brief: inp.brief ?? '', requireWords: !NO_WORDS.test(inp.brief ?? ''), ...(inp.caption ? { caption: inp.caption } : {}), ...(inp.names?.length ? { names: inp.names } : {}), asks: inp.brief ?? '', footage: process.env.MOOVI_EDIT_FOOTAGE === 'on' }).finally(() => lines.end());
+    ...(M ? { library: false, inserts: false, effects: false, beats: false, moves: [], check: false } : { style: 'auto' }), brief: inp.brief ?? '', requireWords: !NO_WORDS.test(inp.brief ?? ''), ...(inp.caption ? { caption: inp.caption } : {}), ...(inp.names?.length ? { names: inp.names } : {}), asks: inp.brief ?? '', footage: process.env.MOOVI_EDIT_FOOTAGE === 'on' }).finally(() => lines.end());
   void plan.restore.then(r => r && ctx.activity('note', r.restored
     ? `cleaned and upscaled your clip from ${r.from.w}x${r.from.h} to ${r.to.w}x${r.to.h}${r.graded ? ', graded' : ''} (${r.seconds} s)`
     : `graded your clip (${r.seconds} s)`));
@@ -133,11 +143,21 @@ export const editReel: Handler = async ctx => {
   await recordEditWhy(ctx, plan, inp);
   const t = { duration: plan.duration };
 
+  // Edit mastery's player: the clip cut and graded the way its build-cut.mjs does, the spec (no model: the skeleton), served unchanged
+  if (M) {
+    await step('player', 'preparing the edit');
+    const p0 = Date.now();
+    // the preview plays now from the upload's own picture; the graded cut swaps in when the restore ends (the MP4 waits for it)
+    await prepareClip(dir, join(dir, plan.source.file));
+    writeSpec(dir, skeletonSpec(dir));
+    graded = plan.restore.catch(() => null).then(r => r ? prepareClip(dir).then(() => undefined) : undefined).catch(e => console.warn(`[edit] graded cut: ${String((e as Error).message ?? e).slice(0, 160)}`));
+    done('player', (Date.now() - p0) / 1000);
+  }
   // it plays now: the edit preview player through the studio's preview route, like the live styles
   const [c] = await ctx.q<{ version: number | null }>(P.chat, { id: ctx.chat });
   const version = (c?.version ?? 0) + 1, id = `edit-${ctx.run.id.slice(-6)}`;
   const seconds = +((Date.now() - t0) / 1000).toFixed(1);
-  const ref: LiveRef = { style: 'edit', player: 'edit-player', dir, id, run: ctx.run.id, timings: { ...lap, to_preview: seconds }, duration: t.duration };
+  const ref: LiveRef = { style: 'edit', player: M ? 'edit-mastery' : 'edit-player', dir, id, run: ctx.run.id, timings: { ...lap, to_preview: seconds }, duration: t.duration };
   const vdir = join(ctx.projectDir, 'videos', ctx.chat); mkdirSync(vdir, { recursive: true });
   writeFileSync(liveRefFile(ctx.projectDir, ctx.chat, version), JSON.stringify(ref, null, 1));
   let poster: string | null = null;
@@ -154,9 +174,22 @@ export const editReel: Handler = async ctx => {
   // plan's cut with the effects and the captions drawn over it (edit/effects/onedit.ts) becomes the delivered version,
   // so the studio and the Claude Code bridge both get one finished video with the effects in it
   let fxVersion: number | null = null;
+  // the delivered MP4 is recorded from that same player (its own sounds), one film at a time
+  if (M) {
+    const v2 = version + 1, file = join(vdir, `v${v2}.mp4`);
+    const job = graded.then(() => filmQueue).then(() => renderMasteryFilm(dir, file));
+    filmQueue = job.catch(() => undefined);
+    try {
+      const r = await job;
+      await ctx.q(P.setVideo, { id: ctx.run.video, status: 'ready', path: file, poster, duration: +t.duration.toFixed(2), version: v2, style: 'edit+player', format: 'vertical', at: Date.now() });
+      await publish(ctx.chat, { type: 'video', video: { id: ctx.run.video, status: 'ready', version: v2, duration: +t.duration.toFixed(2), format: 'vertical' } });
+      await ctx.say(`Here’s your finished edit, the same film as the preview (recorded in ${r.seconds.toFixed(0)} s).`, 'video', { video: ctx.run.video, version: v2, duration: +t.duration.toFixed(2), format: 'vertical', run: ctx.run.id, style: 'edit+player' }, 'moovi');
+      fxVersion = v2;
+    } catch (e) { const why = fxReason(e); console.warn(`[edit] player film: ${why}`); await ctx.say(`The finished video did not render this time (${why}); the live edit above stands.`, 'note', undefined, 'moovi'); }
+  }
   // one film (edit wiring step 3): when the director wrote a beat spec, the delivered MP4 is the preview page itself,
   // captured frame by frame (edit/film.ts), over the soundtrack the preview then plays too (mix.m4a: voice, bed, sounds)
-  if (plan.beats && plan.beats.picks.length && process.env.MOOVI_EDIT_FILM === 'on') {
+  if (!M && plan.beats && plan.beats.picks.length && process.env.MOOVI_EDIT_FILM === 'on') {
     const names = [...new Set(plan.beats.picks.map(p => p.id.replace(/^[a-z0-9]+:(reel-|edit-|x1-\d+-|s1-)?/, '').replace(/-/g, ' ')))];
     await ctx.say(`Your edit has ${plan.beats.picks.length} moments from the library (${names.join(', ')}), in the preview above. The finished video with the same moments follows in a few minutes.`, 'note', undefined, 'moovi');
     try {
@@ -177,7 +210,7 @@ export const editReel: Handler = async ctx => {
       await ctx.say(`The finished video did not render this time (${why}); the live edit above stands.`, 'note', undefined, 'moovi');
     }
   }
-  const fx = plan.beats ? { go: false, why: 'the director cast the effects into the beat spec (one film)' } : fxFilmFor(plan);
+  const fx = M ? { go: false, why: 'the player records the film' } : plan.beats ? { go: false, why: 'the director cast the effects into the beat spec (one film)' } : fxFilmFor(plan);
   if (fx.go && plan.effects) {
     const names = [...new Set(plan.effects.events.map(e => FX[e.fx].label))];
     await ctx.say(`Adding ${names.length} effects from the library to your edit (${names.join(', ')}). The finished video follows in a few minutes; the live preview above is yours meanwhile.`, 'note', undefined, 'moovi');
