@@ -153,7 +153,7 @@ The music carries the piece (on a talking head, the voice does: SFX quieter stil
 
 ## Keep improving this skill
 
-**Use this skill on every video job (generate, edit, clone, review); it is meant to grow.** After every reference or review: log what the owner preferred in `references/lessons.md`, fold new grammar into the right reference file (talking heads: `references/talking-head.md`; product launch films: `references/launch.md`; camera by moment: `references/camera.md`), bump `VERSION` and add a `CHANGELOG.md` line. Never let a session end with a lesson only in its own notes.
+**Use this skill on every video job (generate, edit, clone, review); it is meant to grow.** After every reference or review: log what the owner preferred in `references/lessons.md`, fold new grammar into the right reference file (talking heads: `references/talking-head.md`; product launch films: `references/launch.md`; showreels (themes, lock, writing laws): `references/showreel.md`; camera by moment: `references/camera.md`), bump `VERSION` and add a `CHANGELOG.md` line. Never let a session end with a lesson only in its own notes.
 
 When a review note teaches something new (for example "UI comes in too fast"), add it to `references/lessons.md` with the date, the symptom, the cause, the fix and a measured number if there is one. Bump `VERSION` and add a line to `CHANGELOG.md`.
 
