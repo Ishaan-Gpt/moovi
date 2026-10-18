@@ -41,3 +41,6 @@ apps/studio/public/me/
 
 # TypeScript incremental build caches
 *.tsbuildinfo
+
+# the AI usage log stays local (Ishaan, 2026-10-18)
+AI_USAGE.md
