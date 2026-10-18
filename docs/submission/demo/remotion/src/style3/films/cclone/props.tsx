@@ -238,9 +238,10 @@ const City: React.FC<{ y0: number; seed: number }> = ({ y0, seed }) => (
     ))}
   </>
 );
-const SEARCH = "how to make a transformers movie";
+const SEARCH_DEFAULT = "how to make a transformers movie";
+const searchText = () => ((globalThis as { CC_SEARCH?: string }).CC_SEARCH ?? SEARCH_DEFAULT); // the demo film retypes the bar
 const Penthouse: React.FC<{ t: number; snacks?: boolean; typed?: boolean }> = ({ t, snacks, typed }) => {
-  const n = typed ? Math.round(pr(t, 19.05, 20.6, E.lin) * SEARCH.length) : SEARCH.length;
+  const n = typed ? Math.round(pr(t, 19.05, 20.6, E.lin) * searchText().length) : searchText().length;
   return (
     <AbsoluteFill>
       <City y0={760} seed={61} />
@@ -254,7 +255,7 @@ const Penthouse: React.FC<{ t: number; snacks?: boolean; typed?: boolean }> = ({
       <div style={abs(395, 1022, 110, 72, { background: "linear-gradient(135deg,#E8ECEE,#9AA4A8)", opacity: 0.7 })} />
       <div style={abs(500, 1260, 160, 30, { background: "#D8DCD8", transform: "rotate(30deg)", borderRadius: 4, opacity: 0.85 })} />
       <div style={abs(230, 980, 640, 54, { borderRadius: 27, background: "rgba(40,36,24,0.85)", border: "2px solid rgba(255,214,120,0.6)", display: "flex", alignItems: "center", paddingLeft: 26, color: "#F2D27A", fontFamily: "C-Sans", fontSize: 26 })}>
-        {SEARCH.slice(0, n)}
+        {searchText().slice(0, n)}
       </div>
       {snacks && Array.from({ length: 8 }, (_, i) => (
         <div key={i} style={abs(100 + rand(i * 3) * 820, 560 + rand(i * 5) * 520 - (t - 22) * 60, 60 + rand(i) * 40, 80 + rand(i * 7) * 40, { opacity: 0.75,

@@ -158,3 +158,6 @@
 
 ## 1.16.6 (2026-10-18)
 - Owner (demo beat 2): a 3D reference is rebuilt in 3D, never flattened to 2D; only headline type may be a 2D overlay (lessons.md).
+
+## 1.16.7 (2026-10-18)
+- Owner (demo beat 2, 3/10): a film made 'from my clone' reuses the clone's own code, grade, type and stems re-timed to the new lines; never a fresh lookalike (lessons.md).
