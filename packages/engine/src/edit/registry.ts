@@ -172,6 +172,13 @@ export function editRegistry(ui: Parameters<typeof uiEntries>[0] = []): EditEntr
   return out.filter(e => !seen.has(e.id) && !!seen.add(e.id));
 }
 
+/**
+ * What a model is offered to pick from (the bridge's EDIT REGISTRY menu): every drawn device, and the camera moves the
+ * director casts unasked. Coded 3D moves and the UI rows (variants of a device) stay out to keep the step small; a
+ * person still reaches them by name in chat (parseAsks).
+ */
+export const menuEntries = (r = editRegistry()) => r.filter(e => e.built && !e.id.startsWith('ui:') && (e.auto || !e.id.startsWith('camera:')));
+
 /** The FX ids the registry covers (every reel effect has one entry, directly or through `aka`). */
 export const FX_IN_REGISTRY = (r = editRegistry()) => FX_IDS.filter(id => r.some(e => e.aka.includes(`fx:${id}`)));
 
