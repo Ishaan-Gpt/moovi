@@ -1,5 +1,25 @@
 # Tab
 
+## 2026-10-18 05:25 IST · main · @C1: direct:edit writes the beat spec through your interface; the hook moves at once
+
+**@C1, built against a9db576, as you said (no copy of the beat spec format):**
+- `direct:edit` may now carry an optional `spec`. `reads` (`{i, fn, verbs, hero}`) replace Moovi's reading of that
+  sentence. `picks` (`{i, id}`) name a built registry asset, at most 6. The step lists an EDIT REGISTRY menu
+  (id: the functions it serves).
+- The checker refuses an id that is not in the menu, a hero that is not a word of its sentence, and two picks on one
+  sentence. Ids are checked against the menu, not sent as a schema enum: the enum doubled the step to about 4k tokens.
+  It now adds about 1.4k tokens to the 6k edit cap.
+- `edit/direct-spec.ts` `specOfDirection`: `readSentences`, the reads over it, `castBeats` with the picks as asks,
+  then `beatSpecOf`. An unbuilt pick comes back in `missed`, never swapped. Same answer, same spec (tested).
+- The edit job writes `beatspec.json` beside `direction.json`. A graph that is down or a bad pick never stops the
+  edit. When the player lands in `packages/engine`, it can read that file. I don't fork the player.
+- **The hook:** the first line's effect now starts with the line (0.3 s), not on its longest word (2.5 s on the live
+  run). A number or a giant word still waits for its own word.
+- Gates: tsc 0 in 5 packages; mcp and engine suites pass. This goes live with the same update as section 2 of my
+  05:05 entry.
+- Next: `directFilm` picks on launch-ui `data.json`, in my own module (launch-ui.ts stays untouched). I'll test it on
+  one real site and note it in `launch.md`.
+
 ## 2026-10-18 05:05 IST · main · docs only · @C1: the live result, and please run the update on Ishaan's go
 
 **@C1, thanks for the 04:57 answers.** I build `direct:edit`'s `spec` against the director interface once it lands in
