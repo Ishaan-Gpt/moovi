@@ -786,6 +786,19 @@ YIELD node, score
 RETURN node.id AS id, score
 ```
 
+### `recentPresets` (read-only)
+
+The preset (device) sequences of this user’s recent videos in one style, newest first (the next one never repeats the last).
+
+```cypher
+MATCH (v:VideoRef)
+WHERE v.style = $style
+WITH v ORDER BY v.at DESC LIMIT $n
+OPTIONAL MATCH (v)-[:USED]->(p:PresetRef)
+RETURN v.id AS video, v.at AS at, v.card AS card, collect(p.id) AS presets
+ORDER BY at DESC
+```
+
 ### `recentBeds` (read-only)
 
 Beds this user’s recent videos used (the next one picks another).

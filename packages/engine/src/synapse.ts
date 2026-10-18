@@ -32,7 +32,7 @@ const ROLES: Partial<Record<AgentId, string[]>> = {
   lens: ['lawsAndChecks', 'openIssues', 'raiseIssue', 'resolveIssue', 'scoreScene', 'weakScenes', 'overUsed', 'recentFilms', 'styleStats', 'unshippable', 'assetCredits', 'licenceMix'],
   keeper: ['recordDecision', 'decide', 'recordVideo', 'recordAssets', 'recordSequence', 'rememberFilm', 'launchFilmParts', 'writeLesson', 'supersedeLesson', 'lessonsFor', 'lessonsOnTopic',
     'lessonTimeline', 'setPreference', 'preferences', 'recordFeedback', 'linkFeedbackScene', 'noteFeedback', 'noteFeedbackScene', 'feedbackOnRun', 'rejectedStyles', 'rejectedShots',
-    'rewrittenLines', 'captionNotes', 'styleTaste', 'feedbackTrail', 'overUse', 'anglesUsed', 'assetUsed', 'whyThis', 'decisionsOfRun', 'filmArc', 'filmSite', 'filmStory'],
+    'rewrittenLines', 'captionNotes', 'styleTaste', 'feedbackTrail', 'overUse', 'anglesUsed', 'recentPresets', 'assetUsed', 'whyThis', 'decisionsOfRun', 'filmArc', 'filmSite', 'filmStory'],
   writer: ['writeClaim', 'truthGuard', 'judgeClaim', 'supersedeClaims', 'claims', 'factSearch', 'facts', 'skillFor'],
   researcher: ['writeSources', 'writeFacts', 'writePage', 'writeShots', 'factOnPage', 'runShots', 'factProof', 'claimEvidence', 'writeClips', 'useClip', 'clipSeen', 'clipCredits', 'clipRejects', 'writeAsset', 'showPlace', 'placesInRun', 'placeUsage'],
 };

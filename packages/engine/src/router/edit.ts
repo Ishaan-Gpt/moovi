@@ -18,17 +18,17 @@ import { lookFromFootage, prepareClip, renderMasteryFilm, skeletonSpec, worldCut
 import { directMasterySpec } from '../edit/mastery-direct';
 import { completeCoverage, deviceSequence, directFromMenu, loadMenu, resolveFootage, resolveMusic, resolveSounds, sentencesOfWords, specFromPicks } from '../edit/mastery-menu';
 import { tierFor } from '../skill-prompt';
+import { briefWithMemory, readEditMemory, rememberEdit, specDevices, type EditMemory } from '../edit/memory';
 import { modelScope } from '../runtime';
 
 /** The compact (menu) path as one call with the full spec's result shape: the picks, then the library for this video. */
-async function directedFromMenu(dir: string, words: { word: string; t: number; end: number }[], seconds: number, brief: string, projectDir: string, signal?: AbortSignal, o: { model?: boolean; footage?: boolean; skipLanes?: ('claude-code' | 'key' | 'server')[] } = {}): Promise<{ value: Record<string, unknown> | null; problems: string[][] }> {
+async function directedFromMenu(dir: string, words: { word: string; t: number; end: number }[], seconds: number, brief: string, memory: EditMemory, signal?: AbortSignal, o: { model?: boolean; footage?: boolean; skipLanes?: ('claude-code' | 'key' | 'server')[] } = {}): Promise<{ value: Record<string, unknown> | null; problems: string[][]; devices: string[] }> {
   const ss = sentencesOfWords(words.map(w => ({ word: w.word, t: w.t, end: w.end })));
-  // two clips never get the same film: the project's last film's device sequence is not taken again
-  const lastFile = join(projectDir, 'edit-last-film.json');
-  let previous: string[] = []; try { previous = (JSON.parse(readFileSync(lastFile, 'utf8')) as { devices: string[] }).devices ?? []; } catch { previous = []; }
+  // two clips never get the same film: the user's last edit's device sequence (Keeper, in their graph) is not taken again
+  const previous = memory.previous;
   // model false: no call at all (the first preview, or every lane failed): Edit mastery's checklist completion alone
   const r = o.model === false ? { value: null, problems: [['no model call']] } as Awaited<ReturnType<typeof directFromMenu>>
-    : await directFromMenu({ sentences: ss, brief, previous, ...(o.skipLanes ? { skipLanes: o.skipLanes } : {}), ...(signal ? { signal } : {}), log: s => console.log(`[edit] ${s}`) }).catch(e => ({ value: null, problems: [[`no answer: ${String((e as Error).message ?? e).slice(0, 120)}`]], tokens: 0 }) as unknown as Awaited<ReturnType<typeof directFromMenu>>);
+    : await directFromMenu({ sentences: ss, brief: briefWithMemory(brief, memory), previous, ...(o.skipLanes ? { skipLanes: o.skipLanes } : {}), ...(signal ? { signal } : {}), log: s => console.log(`[edit] ${s}`) }).catch(e => ({ value: null, problems: [[`no answer: ${String((e as Error).message ?? e).slice(0, 120)}`]], tokens: 0 }) as unknown as Awaited<ReturnType<typeof directFromMenu>>);
   // the owner's checklist is made whole by code from the menu when the model missed part of it (or failed)
   const menu = loadMenu(), events = [...JSON.stringify(menu).matchAll(/\{sfx:(\w+)\}/g)].map(m => m[1]!);
   let a = completeCoverage(r.value?.answer ?? null, ss, menu, r.value?.bad ?? new Set());
@@ -42,9 +42,7 @@ async function directedFromMenu(dir: string, words: { word: string; t: number; e
     a = completeCoverage(a, ss, noDesk, new Set([...(r.value?.bad ?? []), ...missed]));
     if (o.footage !== false) footage = { ...footage, ...(await resolveFootage(dir, a.beats.filter(b => b.footage && !footage[b.i]), signal)) };
   }
-  // the instant preview is not a film of its own: only a directed film is remembered
-  if (o.model !== false) try { writeFileSync(lastFile, JSON.stringify({ devices: deviceSequence(a) })); } catch { /* the next film just has no memory of this one */ }
-  return { value: specFromPicks(a, ss, menu, { sounds, music, footage, look: lookFromFootage(dir) }), problems: r.problems };
+  return { value: specFromPicks(a, ss, menu, { sounds, music, footage, look: lookFromFootage(dir) }), problems: r.problems, devices: deviceSequence(a) };
 }
 
 import { activity, stageLines } from '../live';
@@ -198,19 +196,36 @@ export const editReel: Handler = async ctx => {
     // the preview plays now from the upload's own picture; the graded cut swaps in when the restore ends (the MP4 waits for it)
     await prepareClip(dir, join(dir, plan.source.file));
     const kept = words.filter(w => !((edl as { removed?: { src_in: number; src_out: number }[] }).removed ?? []).some(r => w.t >= r.src_in - 1e-3 && w.t < r.src_out - 1e-3));
+    // Keeper reads this user's memory first (lessons, caption and sound notes, preferences, the last edit): the model reads it
+    void activity(ctx.chat, 'keeper', ctx.task.id, 'start', 'reading what you taught me', { scope: 'memory' });
+    const memory = await readEditMemory((q, p) => ctx.uq(q, p));
+    void activity(ctx.chat, 'keeper', ctx.task.id, 'done', `memory: ${memory.notes.length} note${memory.notes.length === 1 ? '' : 's'}${memory.previous.length ? ', the last edit' : ''}`, { scope: 'memory' });
     // the first preview is already the whole edit: Edit mastery's checklist completion from the menu (no model call yet),
     // never captions only; the skeleton only if even that cannot be built
-    try { const first = await directedFromMenu(dir, kept, plan.source.duration, inp.brief ?? '', ctx.projectDir, ctx.signal, { model: false, footage: false }); writeSpec(dir, first.value ?? skeletonSpec(dir)); }
+    try { const first = await directedFromMenu(dir, kept, plan.source.duration, inp.brief ?? '', memory, ctx.signal, { model: false, footage: false }); writeSpec(dir, first.value ?? skeletonSpec(dir)); }
     catch (e) { console.warn(`[edit] first spec: ${String((e as Error).message ?? e).slice(0, 160)}`); writeSpec(dir, skeletonSpec(dir)); }
     // the model writes the spec from Edit mastery's recipe, beside the preview; it replaces the skeleton only when the
     // player can draw it as written (edit/mastery-direct.ts); the MP4 waits for the answer
     // decision 20: a linked Claude Code writes the whole spec from the full skill (and invents); the server model and every
     // user API key direct from Edit mastery's menu with the compact skill, and code fills only the menu's slots
-    const menuStep = (skip?: ('claude-code' | 'key' | 'server')[]) => directedFromMenu(dir, kept, plan.source.duration, inp.brief ?? '', ctx.projectDir, ctx.signal, skip ? { skipLanes: skip } : {});
+    void activity(ctx.chat, 'designer', ctx.task.id, 'start', 'casting devices on the sentences', { scope: 'direct' });
+    const menuStep = (skip?: ('claude-code' | 'key' | 'server')[]) => directedFromMenu(dir, kept, plan.source.duration, inp.brief ?? '', memory, ctx.signal, skip ? { skipLanes: skip } : {});
     // a full-tier answer that did not come (or did not pass) moves on to the compact menu step on a key or the server model
-    directed = (tierFor(modelScope()?.provider) === 'compact' ? menuStep() : directMasterySpec({ words: kept.map(w => ({ word: w.word, t: w.t, end: w.end })), faces: edl.faces ?? [], duration: plan.source.duration, brief: inp.brief ?? '', files: worldCutouts(), ...(ctx.signal ? { signal: ctx.signal } : {}), log: s => console.log(`[edit] ${s}`) })
+    directed = (tierFor(modelScope()?.provider) === 'compact' ? menuStep() : directMasterySpec({ words: kept.map(w => ({ word: w.word, t: w.t, end: w.end })), faces: edl.faces ?? [], duration: plan.source.duration, brief: briefWithMemory(inp.brief ?? '', memory), files: worldCutouts(), ...(ctx.signal ? { signal: ctx.signal } : {}), log: s => console.log(`[edit] ${s}`) })
 ).then(r => r.value ? r : (console.log(`[edit] spec: Claude Code gave none (${r.problems.flat().slice(0, 1).join('')}); the menu step on a key or the server model`), menuStep(['claude-code'])))
-      .then(async r => { if (r.value) { writeSpec(dir, r.value); await ctx.activity('note', 'the edit is directed: devices on its sentences'); } else console.log(`[edit] spec: the skeleton (${r.problems.flat().slice(0, 2).join('; ')})`); })
+      .then(async r => {
+        const fixes = r.problems.flat().length;
+        void activity(ctx.chat, 'lens', ctx.task.id, 'done', r.value ? (fixes ? `spec checked: ${fixes} problem${fixes === 1 ? '' : 's'} repaired` : 'spec checked: plays as written') : 'spec checked: none passed, the skeleton', { scope: 'check' });
+        if (!r.value) { console.log(`[edit] spec: the skeleton (${r.problems.flat().slice(0, 2).join('; ')})`); return; }
+        writeSpec(dir, r.value); await ctx.activity('note', 'the edit is directed: devices on its sentences');
+        const devices = 'devices' in r && Array.isArray(r.devices) ? r.devices as string[] : specDevices(r.value);
+        void activity(ctx.chat, 'designer', ctx.task.id, 'done', `cast: ${devices.join(', ')}`, { scope: 'direct' });
+        // Keeper files this edit's choices in the user's graph (the next edit reads them)
+        void activity(ctx.chat, 'keeper', ctx.task.id, 'start', 'remembering this edit', { scope: 'remember' });
+        const cap = (r.value.caption as { preset?: string } | undefined)?.preset ?? null;
+        await rememberEdit((q, p) => ctx.uq(q, p), { video: ctx.run.video, project: ctx.pid, title: u.name, devices, caption: cap });
+        void activity(ctx.chat, 'keeper', ctx.task.id, 'done', 'remembered: devices, caption', { scope: 'remember' });
+      })
       .catch(e => console.warn(`[edit] spec: ${String((e as Error).message ?? e).slice(0, 160)}`));
     graded = plan.restore.catch(() => null).then(r => r ? prepareClip(dir).then(() => { console.log(`[edit] ${ctx.task.id} graded cut ready`); }) : undefined).catch(e => console.warn(`[edit] graded cut: ${String((e as Error).message ?? e).slice(0, 160)}`));
     done('player', (Date.now() - p0) / 1000);

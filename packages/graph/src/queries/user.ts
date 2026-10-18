@@ -93,6 +93,14 @@ CALL algo.pageRank('PresetRef', 'NEXT_USED')
 YIELD node, score
 RETURN node.id AS id, score`),
 
+  recentPresets: q('recentPresets', true, 'The preset (device) sequences of this user’s recent videos in one style, newest first (the next one never repeats the last).', `
+MATCH (v:VideoRef)
+WHERE v.style = $style
+WITH v ORDER BY v.at DESC LIMIT $n
+OPTIONAL MATCH (v)-[:USED]->(p:PresetRef)
+RETURN v.id AS video, v.at AS at, v.card AS card, collect(p.id) AS presets
+ORDER BY at DESC`),
+
   recentBeds: q('recentBeds', true, 'Beds this user’s recent videos used (the next one picks another).', `
 MATCH (v:VideoRef)
 WHERE v.bed IS NOT NULL
