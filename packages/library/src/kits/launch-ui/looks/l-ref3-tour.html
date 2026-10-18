@@ -1,0 +1,332 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Resend · Introducing (v14)</title>
+<base href="./assets/">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=block" rel="stylesheet">
+<style>
+html,body{margin:0;height:100%;background:#0B0A09;overflow:hidden;font-family:Inter,system-ui,sans-serif;color:#ddd}
+#wrap{position:absolute;inset:0 0 52px 0;display:grid;place-items:center}
+canvas{display:block;max-width:100%;max-height:100%;aspect-ratio:16/9;background:#0B0A09}
+#bar{position:absolute;left:0;right:0;bottom:0;height:52px;display:flex;gap:12px;align-items:center;padding:0 16px;box-sizing:border-box}
+button{border:0;border-radius:999px;background:#EFEBE5;color:#0B0A09;padding:8px 18px;font:600 13px Inter;cursor:pointer}
+input{flex:1} video{display:none}
+</style></head><body>
+<div id="wrap"><canvas id="cv" width="1920" height="1080"></canvas></div>
+<div id="bar"><button id="pl">Play</button><input id="sk" type="range" min="0" max="3200" value="0"><span id="tc">0.00</span></div>
+<script>
+/* RESEND · v12 — a shot-for-shot rebuild of ref 3 (Commas Studios, instagram.com/p/Dd_YP9Wo8c-) in Resend's brand.
+   Ref 3's structure, pacing and camera, beat for beat: stipple ribbons → "Introducing" → the brand name; on black the
+   mark drops and the name types beside it; the camera pulls back and the black was a phone's screen over a real
+   landscape; a card lifts out ("Send"), the camera pans down onto its numbers ("Track"), a giant word sharpens
+   ("Reach"); the real dashboard over the brand's own art, a sidebar click, a grid that loads blur → sharp, push-ins;
+   "Know your audience." with the real Audiences card over a night plate that turns to day; the light world
+   ("Broadcast to everyone.", the editor, "Ship it from your code.", a monitor in a field); the 3D mark between the two
+   halves of the line; black, the mark, the name typed, a long hold. Every UI is Resend's REAL product screen from its
+   own site; every plate is a real moving clip (Mixkit); palette from Resend's CSS (stone ramp). 120 BPM, 32 s. */
+const W = 1920, H = 1080, DUR = 32, B = 0.5;
+const cv = document.getElementById('cv'); let X = cv.getContext('2d');
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v)), lerp = (a, b, k) => a + (b - a) * k, sc = (t, a, b) => clamp((t - a) / (b - a));
+function bez(x1, y1, x2, y2) { return k => { if (k <= 0) return 0; if (k >= 1) return 1; let u = k; for (let i = 0; i < 8; i++) { const x = 3 * (1 - u) ** 2 * u * x1 + 3 * (1 - u) * u * u * x2 + u ** 3 - k, dx = 3 * (1 - u) ** 2 * x1 + 6 * (1 - u) * u * (x2 - x1) + 3 * u * u * (1 - x2); if (Math.abs(dx) < 1e-6) break; u = clamp(u - x / dx); } return 3 * (1 - u) ** 2 * u * y1 + 3 * (1 - u) * u * u * y2 + u ** 3; }; }
+const E = { out: bez(0.16, 1, 0.3, 1), io: bez(0.65, 0, 0.35, 1), soft: bez(0.4, 0, 0.2, 1), in: k => k * k * k, outBack: bez(0.34, 1.32, 0.64, 1) };
+const spring = k => k >= 1 ? 1 : 1 - Math.exp(-6.5 * k) * Math.cos(9.5 * k);
+const logS = (S0, k) => Math.pow(S0, 1 - clamp(k));
+const hash = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+// the premium speed ramp as an EASING: rest → ≈2× → ≈0.5× → ≈2× → rest (@moovi/library/camera EASES['speed-ramp'])
+const RAMP = (() => { const n = 512, v = u => Math.sin(Math.PI * u) ** 2 * (0.15 + 0.85 * Math.sin(2 * Math.PI * u) ** 2), acc = [0]; for (let i = 1; i <= n; i++) acc.push(acc[i - 1] + v((i - 0.5) / n) / n); return acc.map(a => a / acc[n]); })();
+const ramp = u => { if (u <= 0) return 0; if (u >= 1) return 1; const f = u * 512, i = Math.floor(f); return RAMP[i] + (RAMP[i + 1] - RAMP[i]) * (f - i); };
+// Resend's palette, read from its CSS: one warm stone ramp, no hue
+const ST = { 950: '#0B0A09', 900: '#12110F', 850: '#191816', 800: '#22201E', 700: '#2E2B28', 600: '#464442', 500: '#6C6A67', 400: '#8C8A86', 300: '#A3A09B', 200: '#C7C2BC', 100: '#E3DED7', 50: '#EFEBE5' };
+const rgba = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
+const font = (px, w = 600, f = 'Inter', it = '') => `${it}${w} ${px}px "${f}"`;
+function txt(s, x, y, o = {}) { X.save(); X.font = font(o.px || 24, o.w || 500, o.f || 'Inter', o.it || ''); X.fillStyle = o.c || ST[950]; X.textAlign = o.align || 'left'; X.globalAlpha *= o.a ?? 1; try { X.letterSpacing = (o.ls ?? 0) + 'px'; } catch (e) {} X.fillText(s, x, y); X.restore(); }
+function tw(s, px, w = 500, f = 'Inter', ls = 0) { X.save(); X.font = font(px, w, f); try { X.letterSpacing = ls + 'px'; } catch (e) {} const m = X.measureText(s).width; X.restore(); return m; }
+function rr(x, y, w, h, r) { X.beginPath(); X.roundRect(x, y, w, h, r); }
+function cover(im, x, y, w, h, fx = 0.5, fy = 0.5) { const iw = im.videoWidth || im.naturalWidth || im.width, ih = im.videoHeight || im.naturalHeight || im.height; if (!iw) return; const r = Math.max(w / iw, h / ih), dw = iw * r, dh = ih * r; X.drawImage(im, x + (w - dw) * fx, y + (h - dh) * fy, dw, dh); }
+
+// ── assets: the brand's real screens and renders, real moving plates, the logo ──
+const IM = {}, VD = {};
+const imgs = { logo: 'img/logo.png', metrics: 'real/screenshot-metrics.png', analytics: 'real/screenshot-zoom-analytics.png', audience: 'real/screenshot-zoom-audience.png', bheader: 'real/broadcast-email-header.png', aiEditor: 'real/ai-email-editor-cover.jpg', templates: 'real/introducing-templates.jpg', multiplayer: 'real/multiplayer-editor.jpg', headless: 'real/headless-dashboard-initiative.jpg', cubeP: 'real/cube-f.jpg', reactP: 'real/3d-react-f.jpg', bcastP: 'real/3d-broadcast-f.jpg', ctrlP: 'real/3d-control-f.jpg', valleyP: 'plates/valley.jpg', nightP: 'plates/night.jpg', fieldP: 'plates/field.jpg', skyP: 'plates/sky.jpg', m8: 'media/m8.jpg', m1: 'media/m1.jpg', m3: 'media/m3.jpg', m5: 'media/m5.jpg', m9: 'media/m9.jpg', m11: 'media/m11.jpg' };
+for (const [k, s] of Object.entries(imgs)) { const im = new Image(); im.src = s; IM[k] = im; }
+const vids = { valley: 'plates/valley.mp4', night: 'plates/night.mp4', field: 'plates/field.mp4', sky: 'plates/sky.mp4', cube: 'real/cube.mp4', react: 'real/3d-react.mp4', bcast: 'real/3d-broadcast.mp4', ctrl: 'real/3d-control.mp4' };
+for (const [k, s] of Object.entries(vids)) { const v = document.createElement('video'); v.src = s; v.muted = true; v.loop = true; v.playsInline = true; v.preload = 'auto'; document.body.appendChild(v); VD[k] = v; }
+let PLAYING = false;
+// a moving plate while playing (synced to the film's clock), its poster frame for stills
+function plate(name, t, t0, x, y, w, h, fx, fy) { const v = VD[name]; if (PLAYING && v && v.readyState >= 2) { const want = Math.max(0, t - t0 + 1) % (v.duration || 10); if (v.paused) { v.currentTime = want; v.play().catch(() => {}); } cover(v, x, y, w, h, fx, fy); } else cover(IM[name + 'P'] || IM[name], x, y, w, h, fx, fy); }
+function pauseIdle(active) { for (const [k, v] of Object.entries(VD)) if (!active.includes(k) && !v.paused) v.pause(); }
+
+// ── sprites (baked once; blur by downsampling, never a per-frame filter) ──
+const SPR = new Map(), BL = [0, 1, 2, 3, 4, 6, 8, 10, 13, 16];
+function sprite(key, w, h, pad, draw) { let c = SPR.get(key); if (c) return c; c = document.createElement('canvas'); c.width = Math.ceil(w + pad * 2); c.height = Math.ceil(h + pad * 2); c.pad = pad; c.bw = w; c.bh = h; c.blurs = {}; const keep = X; X = c.getContext('2d'); try { X.translate(pad, pad); draw(); } finally { X = keep; } SPR.set(key, c); return c; }
+function blurOf(c, px) { const l = BL.reduce((m, b) => Math.abs(b - px) < Math.abs(m - px) ? b : m, 0); if (!l) return c; if (c.blurs[l]) return c.blurs[l]; const k = 1 / (1 + l * 0.42), a = document.createElement('canvas'); a.width = Math.max(2, Math.round(c.width * k)); a.height = Math.max(2, Math.round(c.height * k)); const g = a.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(c, 0, 0, a.width, a.height); const b2 = document.createElement('canvas'); b2.width = Math.max(2, Math.round(a.width * 0.7)); b2.height = Math.max(2, Math.round(a.height * 0.7)); const gb = b2.getContext('2d'); gb.imageSmoothingQuality = 'high'; gb.drawImage(a, 0, 0, b2.width, b2.height); c.blurs[l] = b2; return b2; }
+function put(c, x, y, w, h, o = {}) { const sx = w / c.bw, sy = h / c.bh, img = blurOf(c, (o.blur || 0) / Math.max(0.05, sx)); X.save(); X.globalAlpha *= o.a ?? 1; X.drawImage(img.bmp || img, x - c.pad * sx, y - c.pad * sy, c.width * sx, c.height * sy); X.restore(); }
+const wordSpr = (s, px, wt, f, col, ls) => sprite(`w:${s}|${px}|${wt}|${f}|${col}|${ls}`, tw(s, px, wt, f, ls) + 6, px * 1.35, 24, () => txt(s, 3, px * 1.02, { px, w: wt, f, c: col, ls }));
+const shadowSpr = (w, h, r, a) => sprite(`sh:${w}x${h}x${r}x${a}`, w, h, 120, () => { X.shadowColor = `rgba(11,10,9,${a})`; X.shadowBlur = 90; X.shadowOffsetY = 40; rr(0, 0, w, h, r); X.fillStyle = ST[950]; X.fill(); });
+// image as a framed window (with a baked shadow), drawn at any size
+function windowImg(im, x, y, w, h, r = 22, o = {}) { put(shadowSpr(800, Math.round(800 * h / w), Math.round(r * 800 / w), o.sa ?? 0.5), x, y, w, h); X.save(); rr(x, y, w, h, r); X.clip(); X.fillStyle = ST[950]; X.fillRect(x, y, w, h); if (o.crop) { const [cx, cy, cw, ch] = o.crop, iw = im.naturalWidth, ih = im.naturalHeight; X.drawImage(im, cx * iw, cy * ih, cw * iw, ch * ih, x, y, w, h); } else cover(im, x, y, w, h); X.restore(); X.save(); rr(x + 0.5, y + 0.5, w - 1, h - 1, r); X.strokeStyle = o.edge || 'rgba(239,235,229,0.16)'; X.lineWidth = 1.5; X.stroke(); X.restore(); }
+function mark(x, y, s) { const im = IM.logo; X.save(); rr(x, y, s, s, s * 0.26); X.clip(); X.fillStyle = '#fff'; X.fillRect(x, y, s, s); if (im.naturalWidth) X.drawImage(im, x - s * 0.04, y - s * 0.04, s * 1.08, s * 1.08); X.restore(); }
+function cursor(x, y, press = 0) { X.save(); X.translate(x, y); X.scale(1 - press * 0.14, 1 - press * 0.14); X.beginPath(); X.moveTo(0, 0); X.lineTo(0, 40); X.lineTo(10, 30); X.lineTo(18, 47); X.lineTo(25, 44); X.lineTo(18, 28); X.lineTo(31, 28); X.closePath(); X.fillStyle = 'rgba(11,10,9,0.25)'; X.translate(2, 4); X.fill(); X.translate(-2, -4); X.fillStyle = ST[50]; X.fill(); X.strokeStyle = ST[950]; X.lineWidth = 2.2; X.stroke(); X.restore(); }
+const press = (t, at) => clamp(1 - Math.abs(t - at) / 0.08);
+
+// ── type: word-by-word lines and letter-by-letter names, from sprites ──
+function line(s, x, y, px, t, t0, o = {}) { // centred, words rise 10 px out of a blur; the line re-flows as it grows
+  const ws = s.split(' '), col = o.c || ST[950], gap = px * 0.27, dts = ws.map((w, i) => t0 + i * (o.step ?? 0.12));
+  const shown = ws.filter((_, i) => t >= dts[i]).length; if (!shown) return;
+  const sp = ws.map(w => wordSpr(w, px, o.w || 500, o.f || 'Inter', col, -px * 0.02)), widths = sp.map(c => c.bw - 6);
+  const total = widths.slice(0, shown).reduce((a, b) => a + b, 0) + gap * (shown - 1), full = widths.reduce((a, b) => a + b, 0) + gap * (ws.length - 1);
+  const out = o.out ? E.in(sc(t, o.out, o.out + 0.3)) : 0; let cx = (o.left ? x : x - lerp(total, full, 0.35) / 2);
+  ws.forEach((w, i) => { const k = E.out(sc(t, dts[i], dts[i] + 0.45)); if (k > 0) put(sp[i], cx - 3, y - px * 1.02 + (1 - k) * 10 - out * 8, sp[i].bw, sp[i].bh, { a: clamp(k * 2) * (1 - out), blur: (1 - k) * 7 + out * 10 }); cx += widths[i] + gap; });
+}
+function typed(s, x, y, px, t, t0, o = {}) { const n = Math.floor(clamp((t - t0) / (o.dur ?? 0.5)) * s.length); if (n <= 0) return; const part = s.slice(0, n), c = wordSpr(part, px, o.w || 600, 'Inter', o.c || ST[50], -px * 0.02); put(c, x - 3, y - px * 1.02, c.bw, c.bh, { a: o.a ?? 1 }); }
+
+// ── worlds ──
+function world(light, t) { X.fillStyle = light ? '#FBFAF8' : ST[950]; X.fillRect(0, 0, W, H); const g = X.createRadialGradient(W / 2, H * 1.18, 0, W / 2, H * 1.18, H * 0.95); g.addColorStop(0, light ? rgba(ST[200], 0.85) : rgba(ST[600], 0.55)); g.addColorStop(0.55, light ? rgba(ST[100], 0.35) : rgba(ST[700], 0.18)); g.addColorStop(1, rgba(light ? '#FBFAF8' : ST[950], 0)); X.fillStyle = g; X.fillRect(0, 0, W, H); }
+
+// ── S1–S2 · 0–2.1 · stipple swaths sweep in; "Introducing" resolves; the name with a dot ──
+const DOTS = [...Array(4200).keys()].map(i => ({ s: i % 3, u: hash(i * 1.37), v: hash(i * 7.11), z: hash(i * 3.9) }));
+function stipple(t) {
+  const sweep = E.io(sc(t, 0, 0.85)), settle = E.io(sc(t, 0.7, 1.4)), out = E.in(sc(t, 1.8, 2.1)), ink = sc(t, 1.05, 1.5);
+  for (const d of DOTS) { const band = [-0.55, 0, 0.55][d.s], len = 0.55 + 0.25 * d.s, x0 = lerp(-0.6, 0.12, sweep) + d.s * 0.05, u = d.u;
+    const x = W * (x0 + u * len * (0.85 + 0.15 * settle)) + out * (d.z - 0.2) * 700, yy = H / 2 + band * 210 * (1 - settle * 0.35) - Math.sin(u * 3 + d.s) * 40 * (1 - settle * 0.5) + (d.v - 0.5) * 120 * (1 - Math.abs(u - 0.5)) * (1 - settle * 0.3);
+    const a = (0.15 + 0.5 * (1 - Math.abs(d.v - 0.5) * 2)) * clamp((sweep * 1.4 - u) * 3) * (1 - out); if (a < 0.03) continue; X.fillStyle = ink > 0 && d.z < ink * 0.9 ? ST[950] : ST[400]; X.globalAlpha = a; const r = 1.2 + d.z * 1.6; X.fillRect(x - r, yy - r, r * 2, r * 2); }
+  X.globalAlpha = 1;
+  if (t < 1.1) { const k = sc(t, 0.25, 0.95), c = wordSpr('Introducing', 84, 500, 'Inter', ST[950], -1.5), w = c.bw; X.save(); X.beginPath(); X.rect(W / 2 - w / 2 - 10, 0, (w + 20) * E.soft(k), H); X.clip(); put(c, W / 2 - w / 2, H / 2 - 50, w, c.bh, { a: 1 - E.in(sc(t, 0.95, 1.1)) }); X.restore(); }
+  else { const k = sc(t, 1.1, 1.55), c = wordSpr('Resend', 92, 600, 'Inter', ST[950], -2.5), w = c.bw; X.save(); X.beginPath(); X.rect(W / 2 - w / 2 - 10, 0, (w + 20) * E.soft(k), H); X.clip(); put(c, W / 2 - w / 2, H / 2 - 56, w, c.bh, { a: 1 - out }); X.restore(); const dk = spring(sc(t, 1.55, 1.85)); if (dk > 0) { X.beginPath(); X.arc(W / 2 + w / 2 + 14, H / 2 + 30, 11 * dk * (1 - out), 0, 7); X.fillStyle = ST[950]; X.fill(); } }
+}
+// ── S3–S4 · 2.1–5.2 · on black the mark drops, the name types; the camera pulls back: the black was the phone's screen ──
+function phoneBody(cx, cy, s, screen) { const w = 440 * s, h = 900 * s; put(shadowSpr(440, 900, 74, 0.55), cx - w / 2, cy - h / 2, w, h); rr(cx - w / 2, cy - h / 2, w, h, 74 * s); X.fillStyle = ST[800]; X.fill(); X.strokeStyle = 'rgba(239,235,229,0.25)'; X.lineWidth = 3 * s; X.stroke(); X.save(); rr(cx - w / 2 + 11 * s, cy - h / 2 + 11 * s, w - 22 * s, h - 22 * s, 64 * s); X.clip(); screen(cx - w / 2 + 11 * s, cy - h / 2 + 11 * s, w - 22 * s, h - 22 * s, s); X.restore(); rr(cx - 62 * s, cy - h / 2 + 26 * s, 124 * s, 34 * s, 17 * s); X.fillStyle = ST[950]; X.fill(); }
+const ROWS = [['m8', 'Welcome aboard, Sam.', 'now'], ['m1', 'Your receipt', '9:12'], ['m3', 'Your order shipped', '8:40'], ['m5', 'Weekly digest', 'Tue'], ['m11', 'Product update', 'Mon']];
+function inbox(x, y, w, h, s, t, a) {
+  X.fillStyle = ST[950]; X.fillRect(x, y, w, h); const g = X.createRadialGradient(x + w / 2, y + h, 0, x + w / 2, y + h, h * 0.6); g.addColorStop(0, rgba(ST[600], 0.5)); g.addColorStop(1, rgba(ST[950], 0)); X.fillStyle = g; X.fillRect(x, y, w, h);
+  if (a < 0.01) return;
+  X.save(); X.globalAlpha = a; txt('9:41', x + 36 * s, y + 52 * s, { px: 20 * s, w: 600, c: ST[50] }); mark(x + 30 * s, y + 86 * s, 40 * s); txt('Resend', x + 82 * s, y + 116 * s, { px: 26 * s, w: 700, c: ST[50], ls: -0.6 * s });
+  rr(x + w - 150 * s, y + 90 * s, 118 * s, 36 * s, 18 * s); X.strokeStyle = ST[300]; X.lineWidth = 2 * s; X.stroke(); txt('Emails', x + w - 91 * s, y + 114 * s, { px: 16 * s, w: 600, c: ST[200], align: 'center' });
+  txt('Inbox', x + 30 * s, y + 186 * s, { px: 34 * s, w: 700, c: ST[50], ls: -0.8 * s });
+  ROWS.forEach(([m, b, c2], k) => { const ry = y + 214 * s + k * 146 * s; rr(x + 22 * s, ry, w - 44 * s, 132 * s, 18 * s); X.fillStyle = k ? ST[900] : ST[850]; X.fill(); X.save(); rr(x + 36 * s, ry + 16 * s, 100 * s, 100 * s, 12 * s); X.clip(); cover(IM[m], x + 36 * s, ry + 16 * s, 100 * s, 100 * s); X.restore(); txt('Acme', x + 152 * s, ry + 48 * s, { px: 20 * s, w: 700, c: ST[50] }); txt(b, x + 152 * s, ry + 80 * s, { px: 18 * s, w: 500, c: ST[200] }); txt(c2, x + w - 40 * s, ry + 48 * s, { px: 15 * s, w: 500, c: ST[400], align: 'right' }); });
+  X.restore();
+}
+function brandPhone(t) {
+  const pull = ramp(sc(t, 3.25, 5.0)), S0 = 6.4, ps = 0.98 * Math.pow(S0, 1 - pull), ps0 = 0.98 * S0, cx = lerp(W / 2, W / 2, pull), cy = lerp(H / 2 + 138 * ps0, H / 2 + 60, pull) + Math.sin(t * 0.8) * 4;
+  if (pull > 0.001) plate('valley', t, 3.25, -W * 0.05, -H * 0.05, W * 1.1 * (1 + (1 - pull) * 0.25), H * 1.1 * (1 + (1 - pull) * 0.25), 0.5, 0.5);
+  phoneBody(cx, cy, ps, (x, y, w, h, s) => {
+    inbox(x, y, w, h, s, t, E.out(sc(pull, 0.55, 0.95)));
+    const fade = 1 - E.in(sc(pull, 0.35, 0.75)); if (fade <= 0) return;
+    const k = spring(sc(t, 2.15, 2.55)), lx = x + w / 2, ly = y + 300 * s, slide = E.io(sc(t, 2.5, 3.0)), mx = lerp(lx, lx - 120 * s, slide);
+    X.save(); X.globalAlpha = fade; X.translate(mx, ly - (1 - Math.min(k, 1)) * 60 * s); X.scale(Math.min(k, 1.06), Math.min(k, 1.06)); mark(-24 * s, -24 * s, 48 * s); X.restore();
+    X.save(); X.globalAlpha = fade; typed('Resend', mx + 36 * s, ly + 16 * s, 44 * s, t, 2.55, { dur: 0.45, w: 700, c: ST[50] }); X.restore();
+  });
+}
+// ── S5–S7 · 5.2–8.4 · a card lifts out ("Send"); the camera pans down onto real numbers ("Track"); a giant word sharpens ("Reach") ──
+function sendTrack(t) {
+  world(false, t);
+  const lift = E.out(sc(t, 5.15, 5.7)), pan = ramp(sc(t, 6.2, 7.25)), out = E.in(sc(t, 7.25, 7.5));
+  X.save(); X.globalAlpha = 1 - out; X.translate(0, -pan * 520 - out * 300);
+  line('Send', W / 2, 250, 64, t, 5.35, { w: 500, c: ST[50] });
+  // the welcome email card, lifted out of the inbox (real photo inside)
+  const cw = 900, ch = 470, x = W / 2 - cw / 2, y = 320 + (1 - lift) * 120, s = 1 + (t - 5.2) * 0.012;
+  X.save(); X.translate(W / 2, y + ch / 2); X.scale(s, s); X.translate(-W / 2, -(y + ch / 2));
+  put(shadowSpr(900, 470, 30, 0.6), x, y, cw, ch); rr(x, y, cw, ch, 30); X.fillStyle = ST[900]; X.fill(); X.strokeStyle = 'rgba(239,235,229,0.15)'; X.lineWidth = 2; X.stroke();
+  mark(x + 36, y + 32, 48); txt('Acme', x + 100, y + 56, { px: 24, w: 700, c: ST[50] }); txt('Welcome aboard, Sam. Here is everything you need to get started.', x + 100, y + 86, { px: 19, w: 500, c: ST[300] });
+  X.save(); rr(x + 36, y + 120, cw - 72, 300, 18); X.clip(); cover(IM.m8, x + 36, y + 120, cw - 72, 300); X.restore();
+  X.restore();
+  // below it, the real analytics screen (the camera pans down onto it)
+  windowImg(IM.analytics, W / 2 - 760, 900, 1520, 1520 * 616 / 1444, 26, { sa: 0.6 });
+  const tk = E.out(sc(t, 6.6, 7.0)); if (tk > 0) { const c = wordSpr('Track', 64, 500, 'Inter', ST[50], -1.3); put(c, 160, 1420 - 64, c.bw, c.bh, { a: tk, blur: (1 - tk) * 8 }); }
+  X.restore();
+  if (out > 0 || t > 7.3) { const k = E.out(sc(t, 7.35, 8.1)), c = wordSpr('Reach', 300, 700, 'Inter', ST[50], -9); put(c, W / 2 - c.bw / 2, H / 2 - 190, c.bw, c.bh, { a: clamp(k * 1.5), blur: (1 - k) * 16 }); }
+}
+// ── S8–S9 · 8.4–12.6 · the real dashboard over Resend's own art; a sidebar click; a grid that loads blur → sharp; push-ins ──
+const GRID = ['aiEditor', 'templates', 'multiplayer', 'headless', 'reactP', 'bcastP'];
+function dashboard(t) {
+  X.fillStyle = ST[950]; X.fillRect(0, 0, W, H); cover(IM.multiplayer, -700 - (t - 8.4) * 14, -900, W * 1.9, H * 2.4, 0.5, 1);
+  X.fillStyle = 'rgba(11,10,9,0.25)'; X.fillRect(0, 0, W, H);
+  const enter = E.out(sc(t, 8.35, 8.9)), zoom = ramp(sc(t, 8.7, 10.0)), toGrid = ramp(sc(t, 10.1, 10.9)), push = ramp(sc(t, 11.2, 12.6));
+  const dw = 1500, dh = dw * 1367 / 2560, base = { x: W / 2 - dw / 2, y: H / 2 - dh / 2 + (1 - enter) * 300 };
+  // camera: from the whole window into the sidebar (where the cursor clicks), then the grid fills the window, then a push into two cards
+  const Za = Math.pow(3.4, zoom), Zb = Math.pow(1.85, push), Z = Math.exp(lerp(Math.log(Za), Math.log(Zb), toGrid));
+  const fa = { x: lerp(W / 2, base.x + dw * 0.067, zoom), y: lerp(H / 2, base.y + dh * 0.171, zoom) }, fb = { x: lerp(W / 2, W * 0.36, push), y: lerp(H / 2, H * 0.42, push) }, fx = lerp(fa.x, fb.x, toGrid), fy = lerp(fa.y, fb.y, toGrid);
+  X.save(); X.translate(W / 2, H / 2); X.scale(Z, Z); X.translate(-fx, -fy);
+  windowImg(IM.metrics, base.x, base.y, dw, dh, 18, { sa: 0.65 });
+  // the hover/click highlight on "Broadcasts" in the real sidebar
+  const hv = E.out(sc(t, 9.55, 9.75)), ck = press(t, 9.95); if (hv > 0 && toGrid < 1) { const hx = base.x + dw * 0.011, hy = base.y + dh * 0.157, hw = dw * 0.112, hh = dh * 0.028; rr(hx, hy, hw, hh, 6); X.fillStyle = `rgba(239,235,229,${0.14 * hv + ck * 0.1})`; X.fill(); }
+  // the grid: the window's content becomes the Broadcasts grid, images load blur → sharp
+  if (toGrid > 0) { X.save(); rr(base.x, base.y, dw, dh, 18); X.clip(); const gA = E.out(sc(toGrid, 0.02, 0.14)); X.fillStyle = rgba(ST[950], gA); X.fillRect(base.x + dw * 0.135, base.y, dw * 0.865, dh);
+    X.globalAlpha = gA; txt('Broadcasts', base.x + dw * 0.165, base.y + dh * 0.085, { px: 22, w: 600, c: ST[50] });
+    GRID.forEach((g, i) => { const c = i % 3, r = Math.floor(i / 3), gw = dw * 0.255, gh = gw * 0.56, gx = base.x + dw * 0.165 + c * (gw + dw * 0.02), gy = base.y + dh * 0.13 + r * (gh + dh * 0.12);
+      const ld = sc(t, 10.55 + i * 0.12, 11.1 + i * 0.12); rr(gx, gy, gw, gh, 10); X.save(); X.clip(); X.fillStyle = ST[800]; X.fillRect(gx, gy, gw, gh);
+      { const sp = sprite(`grid:${g}`, 420, 236, 0, () => cover(IM[g], 0, 0, 420, 236)); if (ld > 0) put(sp, gx, gy, gw, gh, { blur: (1 - E.out(ld)) * 14, a: clamp(0.45 + ld * 3) }); else put(sp, gx, gy, gw, gh, { blur: 16, a: 0.45 * gA }); } X.restore();
+      txt(['AI Email Editor', 'Introducing Templates', 'Multiplayer Editor', 'Headless Dashboard', 'React Email', 'Broadcasts'][i], gx + 4, gy + gh + 26, { px: 15, w: 600, c: ST[50] }); txt('Sent · 2 days ago', gx + 4, gy + gh + 48, { px: 12, w: 500, c: ST[400] }); });
+    X.restore(); }
+  X.restore();
+  if (t > 9.2 && t < 10.2) { const k = E.io(sc(t, 9.2, 9.85)); cursor(lerp(W * 0.72, W * 0.5 + 30, k), lerp(H * 0.95, H * 0.5 + 4, k) - Math.sin(k * Math.PI) * 60, ck); }
+}
+// frosted glass: the frame behind it, downsampled twice (a blur with no filter), a tint, a rim, a top sheen
+const GA = document.createElement('canvas'), GB = document.createElement('canvas'); GA.width = 480; GA.height = 270; GB.width = 120; GB.height = 68;
+function glass(x, y, w, h, r, light = 0.5) {
+  const a = GA.getContext('2d'), b = GB.getContext('2d'), sw = Math.min(GA.width, w / 4), sh = Math.min(GA.height, h / 4), tw2 = Math.max(4, w / 16), th2 = Math.max(4, h / 16);
+  a.drawImage(cv, x, y, w, h, 0, 0, sw, sh); b.drawImage(GA, 0, 0, sw, sh, 0, 0, tw2, th2);
+  put(shadowSpr(800, Math.round(800 * h / w), Math.round(r * 800 / w), 0.45), x, y, w, h);
+  X.save(); rr(x, y, w, h, r); X.clip(); X.imageSmoothingEnabled = true; X.drawImage(GB, 0, 0, tw2, th2, x - 6, y - 6, w + 12, h + 12);
+  X.fillStyle = `rgba(239,235,229,${0.08 + 0.1 * light})`; X.fillRect(x, y, w, h); const sh2 = X.createLinearGradient(0, y, 0, y + h * 0.5); sh2.addColorStop(0, 'rgba(255,255,255,0.18)'); sh2.addColorStop(1, 'rgba(255,255,255,0)'); X.fillStyle = sh2; X.fillRect(x, y, w, h * 0.5); X.restore();
+  X.save(); rr(x + 0.75, y + 0.75, w - 1.5, h - 1.5, r); X.strokeStyle = 'rgba(255,255,255,0.38)'; X.lineWidth = 1.5; X.stroke(); X.restore(); }
+// the sky carried into the light world (ref 3): the day plate fades up into the paper from the bottom
+function skyBand(t, a = 1) { const y0 = H * 0.5; X.save(); X.beginPath(); X.rect(0, y0, W, H - y0); X.clip(); X.globalAlpha = a; plate('sky', t, 14.6, 0, y0, W, H - y0 + 120, 0.5, 0.2); X.globalAlpha = 1;
+  const g = X.createLinearGradient(0, y0, 0, H); g.addColorStop(0, 'rgba(251,250,248,1)'); g.addColorStop(0.35, 'rgba(251,250,248,0.88)'); g.addColorStop(0.75, 'rgba(251,250,248,0.4)'); g.addColorStop(1, 'rgba(251,250,248,0.12)'); X.fillStyle = g; X.fillRect(0, y0, W, H - y0); X.restore(); }
+// ── S10–S11 · 12.6–15.6 · "Know your audience."; the real Audiences card over night, which turns to day ──
+function audience(t) {
+  world(false, t);
+  if (t < 13.5) { line('Know your audience.', W / 2, H / 2 + 20, 72, t, 12.7, { c: ST[50], out: 13.3 }); return; }
+  const day = E.io(sc(t, 14.7, 15.4)), enter = E.out(sc(t, 13.45, 14.0)), grow = ramp(sc(t, 13.5, 15.6));
+  plate('night', t, 13.45, -W * 0.03, -H * 0.03, W * 1.06, H * 1.06);
+  if (day > 0) { X.save(); X.globalAlpha = day; const ds = 1.06 + (1 - day) * 0.05; plate('sky', t, 14.6, W / 2 - W * ds / 2, H / 2 - H * ds / 2, W * ds, H * ds); X.restore(); }
+  const cw = lerp(1240, 1400, grow), chh = cw * 616 / 1444, x = W / 2 - cw / 2, y = H / 2 - chh / 2 + (1 - enter) * 240;
+  glass(x - 30, y - 30, cw + 60, chh + 60, 40, 0.5 + 0.5 * day); windowImg(IM.audience, x, y, cw, chh, 26, { sa: 0.35, edge: 'rgba(239,235,229,0.22)' });
+  const ck = press(t, 14.55); if (t > 13.9 && t < 15.2) { const k = E.io(sc(t, 13.9, 14.45)); cursor(lerp(W * 0.8, x + cw * 0.27, k), lerp(H * 0.95, y + chh * 0.17, k), ck); }
+}
+// ── S12–S16 · 15.6–24.4 · the light world: Broadcast, the editor, Ship it from your code, a monitor in a field, the name ──
+let DRAGAT = null, DRAGDRAW = null;
+function lightWorld(t) {
+  world(true, t); if (t < 21.5) skyBand(t, t < 17.2 ? 1 : 0.85);
+  if (t < 17.2) { line('Broadcast to everyone.', W / 2, H / 2 + 20, 72, t, 15.75, { out: 16.95 }); return; }
+  if (t < 20.2) { // the editor: the real broadcast header in a light window, then a push into the AI editor cover
+    const e = E.out(sc(t, 17.15, 17.7)), p = ramp(sc(t, 17.6, 20.2)), Z = lerp(1, 1.6, p), fx = lerp(W / 2, W * 0.55, p), fy = lerp(H / 2, H * 0.6, p);
+    X.save(); X.translate(W / 2, H / 2); X.scale(Z, Z); X.translate(-fx, -fy);
+    const wx = 260, wy = 140 + (1 - e) * 300, ww = W - 520, wh = 800; put(shadowSpr(800, 456, 12, 0.2), wx, wy, ww, wh); rr(wx, wy, ww, wh, 22); X.fillStyle = '#FFFFFF'; X.fill(); X.strokeStyle = ST[200]; X.lineWidth = 1.5; X.stroke();
+    X.save(); rr(wx, wy, ww, wh, 22); X.clip(); X.fillStyle = ST[50]; X.fillRect(wx, wy, 240, wh); ['Emails', 'Broadcasts', 'Audiences', 'Templates', 'Domains', 'Logs'].forEach((n, i) => { if (i === 1) { rr(wx + 14, wy + 96 + i * 50 - 28, 212, 40, 10); X.fillStyle = ST[100]; X.fill(); } txt(n, wx + 32, wy + 96 + i * 50, { px: 18, w: i === 1 ? 650 : 500, c: i === 1 ? ST[950] : ST[500] }); });
+    mark(wx + 24, wy + 24, 36); txt('Resend', wx + 70, wy + 50, { px: 22, w: 700 });
+    txt('Weekly update', wx + 290, wy + 70, { px: 30, w: 700, ls: -0.6 }); txt('Draft · To: Newsletter subscribers', wx + 290, wy + 104, { px: 17, w: 500, c: ST[500] });
+    X.save(); rr(wx + 290, wy + 140, ww - 340, (ww - 340) * 388 / 1200, 12); X.clip(); cover(IM.bheader, wx + 290, wy + 140, ww - 340, (ww - 340) * 388 / 1200); X.restore();
+    const iy = wy + 160 + (ww - 340) * 388 / 1200, sw = (ww - 340) * 0.55, shh = sw * 945 / 1800, sx = wx + 290, drag = E.io(sc(t, 18.0, 18.85)), drop = E.out(sc(t, 18.85, 19.25)), over = sc(t, 18.55, 18.85);
+    rr(sx, iy, sw, shh, 12); X.fillStyle = rgba(ST[100], 0.6 + over * 0.4); X.fill(); X.save(); X.setLineDash([10, 8]); X.strokeStyle = over > 0 ? ST[500] : ST[300]; X.lineWidth = 2; X.stroke(); X.restore();
+    if (drop < 1) { txt('Drop an image', sx + sw / 2, iy + shh / 2 + 8, { px: 20, w: 500, c: ST[500], align: 'center', a: 1 - drop }); }
+    { const lift = 1 - drop, px = lerp(wx + ww + 160, sx, drag), py = lerp(iy + 260, iy, drag), sk2 = lerp(0.62, 1, Math.max(drag * 0.6, drop)) * (1 + lift * 0.04 * (drag >= 1 ? 1 : 0)), dw2 = sw * sk2, dh2 = shh * sk2;
+      if (t >= 17.9) DRAGDRAW = () => { put(shadowSpr(800, 420, 12, 0.35 * lift + 0.08), px, py + lift * 18, dw2, dh2); X.save(); rr(px, py, dw2, dh2, 12); X.clip(); cover(IM.aiEditor, px, py, dw2, dh2); X.restore(); };
+      DRAGAT = { x: (px + dw2 * 0.55 - fx) * Z + W / 2, y: (py + dh2 * 0.55 - fy) * Z + H / 2 }; }
+    for (let k = 0; k < 5; k++) { X.fillStyle = ST[100]; X.fillRect(wx + 290 + (ww - 340) * 0.6, iy + 10 + k * 34, (ww - 340) * (0.36 - k * 0.04), 12); }
+    X.restore(); if (DRAGDRAW) DRAGDRAW(); DRAGDRAW = null; X.restore();
+    if (t > 17.6 && t < 19.7 && DRAGAT) { const k = E.io(sc(t, 17.6, 18.0)), d = sc(t, 18.85, 19.6); cursor(lerp(W * 1.02, DRAGAT.x, k) + E.out(d) * 140, lerp(H * 0.9, DRAGAT.y, k) + E.out(d) * 90, t < 18.85 && t > 17.95 ? 0.6 : press(t, 17.97)); }
+    return;
+  }
+  if (t < 21.5) { line('Ship it from your code.', W / 2, H / 2 + 20, 72, t, 20.3, { out: 21.25 }); return; }
+  if (t < 23.0) { // a monitor in a field, the real dashboard on it
+    const e = E.out(sc(t, 21.45, 22.0)), p = 1 + (t - 21.5) * 0.02; plate('field', t, 21.45, -W * 0.03, -H * 0.03, W * 1.06, H * 1.06);
+    X.save(); X.translate(W / 2, H / 2); X.scale(p, p); X.translate(-W / 2, -H / 2); const mw = 1100, mh = 640, mx = W / 2 - mw / 2, my = 170 + (1 - e) * 200;
+    put(shadowSpr(800, 465, 20, 0.5), mx, my, mw, mh); rr(mx, my, mw, mh, 20); X.fillStyle = ST[900]; X.fill(); X.save(); rr(mx + 18, my + 18, mw - 36, mh - 36, 10); X.clip(); cover(IM.metrics, mx + 18, my + 18, mw - 36, mh - 36, 0.0, 0.0); X.restore();
+    X.fillStyle = ST[800]; X.fillRect(W / 2 - 40, my + mh, 80, 120); X.restore(); return;
+  }
+  // the name, letter by letter, on the light world
+  const c = wordSpr('Resend', 110, 600, 'Inter', ST[950], -3), n = Math.floor(clamp((t - 23.05) / 0.55) * 6), part = 'Resend'.slice(0, n); if (n > 0) { const pc = wordSpr(part, 110, 600, 'Inter', ST[950], -3); put(pc, W / 2 - c.bw / 2, H / 2 - 90, pc.bw, pc.bh); }
+}
+// ── S17 · 24.4–26.0 · the brand's 3D render between the two halves of the line ──
+function glassMark(t) {
+  world(true, t);
+  for (let i = 0; i < 26; i++) for (let j = 0; j < 15; j++) { const a = 0.05 * hash(i * 31 + j * 7) * (0.5 + 0.5 * Math.sin(t * 2 + i * 0.4 + j)); X.fillStyle = rgba(ST[600], a); X.fillRect(i * 76 + 10, j * 76 + 10, 56, 56); }
+  const k = E.out(sc(t, 24.35, 24.9)), s = lerp(1.6, 1, k), sz = 640 * s, cx = W / 2, cy = H / 2;
+  const gl = X.createRadialGradient(cx, cy + sz * 0.1, 0, cx, cy + sz * 0.1, sz * 0.7); gl.addColorStop(0, rgba(ST[200], 0.9 * k)); gl.addColorStop(1, rgba(ST[100], 0)); X.fillStyle = gl; X.fillRect(cx - sz, cy - sz, sz * 2, sz * 2);
+  X.save(); X.globalCompositeOperation = 'difference'; const v = VD.cube; if (PLAYING && v.readyState >= 2) cover(v, cx - sz / 2, cy - sz / 2, sz, sz); else cover(IM.cubeP, cx - sz / 2, cy - sz / 2, sz, sz); X.restore();
+  const tk = E.out(sc(t, 24.75, 25.2)); line('Email for', W / 2 - 400, H / 2 + 12, 30, t, 24.75, { c: ST[700], w: 500 }); line('developers.', W / 2 + 410, H / 2 + 12, 30, t, 24.9, { c: ST[700], w: 500 });
+}
+// ── S18 · 26.0–32 · black: the mark, the name typed beside it, a long hold, fade ──
+function endBlack(t) {
+  X.fillStyle = ST[950]; X.fillRect(0, 0, W, H);
+  const fade = 1 - E.in(sc(t, 30.8, 31.9)), k = spring(sc(t, 26.05, 26.45)), slide = E.io(sc(t, 26.45, 26.95)), cx = W / 2, mx = lerp(cx, cx - 190, slide), y = H / 2;
+  X.save(); X.globalAlpha = fade; X.translate(mx, y); X.scale(Math.min(k, 1.06), Math.min(k, 1.06)); mark(-34, -34, 68); X.restore();
+  X.save(); X.globalAlpha = fade; typed('Resend', mx + 52, y + 26, 72, t, 26.55, { dur: 0.5, w: 700, c: ST[50] }); X.restore();
+  const lk = E.out(sc(t, 27.4, 27.9)); if (lk > 0) { X.save(); X.globalAlpha = fade * lk; line('Email for developers.', W / 2, y + 120, 30, t, 27.4, { c: ST[400] }); X.restore(); }
+}
+// ── the frame ──
+const nz = document.createElement('canvas'); nz.width = nz.height = 256; { const g = nz.getContext('2d'), d = g.createImageData(256, 256); let sd = 7; for (let i = 0; i < d.data.length; i += 4) { sd = (sd * 16807) % 2147483647; const v = (sd / 2147483647) * 255; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; } g.putImageData(d, 0, 0); }
+let GRAIN = null; const PREROLL = [['valley', 3.25], ['night', 13.45], ['sky', 14.6], ['field', 21.45], ['cube', 24.35]];
+function render(t) {
+  X.setTransform(1, 0, 0, 1, 0, 0); X.globalAlpha = 1; X.filter = 'none';
+  const cs = 1 + (t % 8) * 0.0015; X.save(); X.translate(W / 2, H / 2); X.scale(cs, cs); X.translate(-W / 2, -H / 2);
+  let active = [];
+  if (t < 2.1) { world(true, t); stipple(t); }
+  else if (t < 5.2) { X.fillStyle = ST[950]; X.fillRect(0, 0, W, H); brandPhone(t); active = ['valley']; }
+  else if (t < 8.4) sendTrack(t);
+  else if (t < 12.6) dashboard(t);
+  else if (t < 15.6) { audience(t); active = ['night', 'sky']; }
+  else if (t < 24.4) { lightWorld(t); active = ['field']; }
+  else if (t < 26.0) { glassMark(t); active = ['cube']; if (PLAYING && VD.cube.paused && VD.cube.readyState >= 2) VD.cube.play().catch(() => {}); }
+  else endBlack(t);
+  X.restore(); if (PLAYING) { for (const [k, t0] of PREROLL) if (t > t0 - 1.0 && t < t0) { const v = VD[k]; active.push(k); if (v.paused && v.readyState >= 2) { v.currentTime = 0; v.play().catch(() => {}); } } }
+  if (!GRAIN) GRAIN = X.createPattern(nz, 'repeat'); const light = t < 2.1 || (t >= 15.6 && t < 26.0);
+  X.save(); X.globalAlpha = 0.045; X.globalCompositeOperation = light ? 'multiply' : 'screen'; const f = Math.floor(t * 30); X.translate(-Math.floor(hash(f) * 256), -Math.floor(hash(f + 7) * 256)); X.fillStyle = GRAIN; X.fillRect(0, 0, W + 256, H + 256); X.restore();
+}
+
+// ── sound: a real bed (Mixkit "Golden Storm", Mixkit free licence, 127.6 BPM) whose drop lands ON the pull-back, and the
+// owner's Style 1 sound pack (engine/assets/sfx-style1) placed by its own map.json event rules: card-in = woosh on arrival
+// + a soft land, word = a typing slice + a click, cascade = every 2nd item fading, max 2 punches, min gap 60 ms by
+// priority, risers END on the cut, no ducking. The film is cut on a 120 BPM grid; it plays at 127.6/120 so every cut
+// lands on the track's beat (K = audio seconds per film second).
+const BPM = 127.6, K = 120 / BPM, BEAT = 60 / BPM, DROP = 15.05, OFF = DROP - 3.25 * K;
+// every cut on the bed's beat: film time → audio time is piecewise linear between the cuts, each cut snapped to the
+// beat (floor or ceil, whichever keeps the shot's speed nearest 1×; ±15 % at most), so the speed only changes ON a cut
+const KN = [0, 2.1, 3.25, 5.2, 7.4, 8.4, 10.4, 12.6, 13.5, 15.6, 17.2, 20.2, 21.5, 23, 24.4, 26, 32], AK = [0];
+for (let i = 1; i < KN.length; i++) { const a = KN[i] * K, b0 = 3.25 * K, n = (a - b0) / BEAT, prev = AK[i - 1], d = (KN[i] - KN[i - 1]) * K;
+  if (i === KN.length - 1) { AK.push(a); break; } const c = [Math.floor(n), Math.ceil(n)].map(m => b0 + m * BEAT).filter(x => x > prev + 0.1); AK.push(c.sort((x, y) => Math.abs((x - prev) / d - 1) - Math.abs((y - prev) / d - 1))[0] ?? a); }
+const pw = (xs, ys, v) => { if (v <= xs[0]) return ys[0] + (v - xs[0]) * (ys[1] - ys[0]) / (xs[1] - xs[0]); for (let i = 1; i < xs.length; i++) if (v <= xs[i]) return ys[i - 1] + (v - xs[i - 1]) * (ys[i] - ys[i - 1]) / (xs[i] - xs[i - 1]); const n = xs.length - 1; return ys[n] + (v - xs[n]) * (ys[n] - ys[n - 1]) / (xs[n] - xs[n - 1]); };
+const toA = f => pw(KN, AK, f), toF = a => pw(AK, KN, a), DUR_A = toA(DUR);
+const SND = { typing: 'typing.mp3', click: 'kenney.click.wav', mouse: 'fs.ui.mouse-2-button-fast-click.wav', pop: 'ui.pop.wav', 'pop-4': 'fs.ui.pop-4.wav', 'pop-9': 'fs.ui.pop-9.wav', drop: 'fs.foley.water-drop.wav', 'drop-splash': 'fs.foley.water-drop-splash.wav', 'woosh-short': 'woosh-short.wav', 'woosh-tight': 'woosh-tight.wav', 'air-cut': 'fs.whoosh.swosh-whoosh-air-cut.wav', 'soft-hit': 'fs.impact.soft-hit.wav', punch: 'fs.impact.punch2.wav', riser: 'riser.mp3', 'riser-short': 'riser-short.wav', 'ui-riser': 'ui-riser.mp3', chime: 'tonal.chime.wav', notify: 'tonal.notify.wav', snap: 'finger-snap-tight.wav' };
+const ALIGN = { mouse: 'peak', 'drop-splash': 'peak', 'woosh-short': 'peak', 'woosh-tight': 'peak', 'air-cut': 'peak', punch: 'peak', snap: 'peak', riser: 'end', 'riser-short': 'end' };
+const EV = { word: ['typing', -18, ['click', -27]], 'key-word': ['snap', -24], pop: ['pop-4', -25], cascade: ['pop-9', -29], 'card-in': ['woosh-short', -25, ['soft-hit', -32]], 'slide-out': ['woosh-tight', -30], scene: ['air-cut', -25], 'hard-hit': ['punch', -21], stat: ['chime', -27], notify: ['notify', -30], accent: ['drop', -27], 'click-ui': ['mouse', -27], 'ui-reveal': ['ui-riser', -32], build: ['riser', -30], 'build-short': ['riser-short', -30], cta: ['drop-splash', -28], thud: ['soft-hit', -22] };
+const PRI = ['hard-hit', 'scene', 'card-in', 'key-word', 'stat', 'cta', 'pop', 'notify', 'click-ui', 'accent', 'word', 'cascade', 'slide-out', 'ui-reveal', 'build', 'build-short', 'thud'];
+const words = (t0, n, step = 0.12) => [...Array(n).keys()].map(i => ['word', t0 + i * step]);
+const letters = (t0, n, step) => [...Array(n).keys()].map(i => ['word', t0 + i * step]);
+const CUES = [['ui-reveal', 0.0], ...words(0.3, 1), ['pop', 1.56], ...words(1.12, 1), ['slide-out', 1.85], ['pop', 2.15], ...letters(2.55, 6, 0.075), ['build', 3.25],
+  ['hard-hit', 3.25], ['scene', 3.3], ['card-in', 5.3], ...words(5.35, 1), ['scene', 6.45], ...words(6.6, 1), ['slide-out', 7.3], ['hard-hit', 7.4],
+  ['card-in', 8.6], ['click-ui', 9.95], ['scene', 10.35], ...[...Array(6).keys()].map(i => ['cascade', 10.55 + i * 0.12]), ['ui-reveal', 11.2],
+  ...words(12.7, 3), ['slide-out', 13.3], ['card-in', 13.75], ['click-ui', 14.55], ['ui-reveal', 14.7], ['stat', 15.05],
+  ['scene', 15.6], ...words(15.75, 3), ['slide-out', 16.95], ['card-in', 17.45], ['click-ui', 17.97], ['thud', 18.9], ['accent', 18.95],
+  ['scene', 20.2], ...words(20.3, 5), ['slide-out', 21.25], ['card-in', 21.75], ['slide-out', 22.95], ...letters(23.05, 6, 0.092),
+  ['build-short', 24.4], ['scene', 24.4], ['stat', 24.45], ...words(24.75, 1), ...words(24.9, 1), ['slide-out', 25.85], ['pop', 26.05], ...letters(26.55, 6, 0.083), ...words(27.4, 3), ['cta', 27.45]];
+const dbg = (b) => { const d = b.getChannelData(0); let pk = 0, pi = 0, e = 0, n = 0; for (let i = 0; i < d.length; i++) { const a = Math.abs(d[i]); if (a > pk) { pk = a; pi = i; } } const a0 = Math.max(0, pi - b.sampleRate * 0.05), a1 = Math.min(d.length, pi + b.sampleRate * 0.15); for (let i = a0; i < a1; i++) { e += d[i] * d[i]; n++; } return { rms: 10 * Math.log10(e / Math.max(1, n) + 1e-12), peakAt: pi / b.sampleRate }; };
+function onsets(b) { const d = b.getChannelData(0), win = Math.round(b.sampleRate * 0.01), en = []; for (let i = 0; i + win < d.length; i += win) { let e = 0; for (let j = 0; j < win; j++) e += d[i + j] * d[i + j]; en.push(e / win); } const out = []; let last = -1; for (let k = 3; k < en.length; k++) { const avg = (en[k - 1] + en[k - 2] + en[k - 3]) / 3 + 1e-7; if (en[k] > avg * 4 && en[k] > 1e-4 && k - last > 6) { out.push(k * 0.01); last = k; } } return out; }
+async function score() {
+  const SR = 44100, ac = new OfflineAudioContext(2, Math.ceil(SR * DUR_A), SR);
+  const load = async f => ac.decodeAudioData(await (await fetch('snd/' + f)).arrayBuffer());
+  const bufs = {}; await Promise.all(Object.entries(SND).map(async ([k, f]) => { bufs[k] = await load(f); }));
+  const bed = await load('bed.m4a'), meta = {}; for (const [k, b] of Object.entries(bufs)) meta[k] = dbg(b); const typeOn = onsets(bufs.typing);
+  const lim = ac.createDynamicsCompressor(); lim.threshold.value = -10; lim.knee.value = 2; lim.ratio.value = 12; lim.attack.value = 0.001; lim.release.value = 0.1; const clip = ac.createWaveShaper(), cu = new Float32Array(2048); for (let i = 0; i < 2048; i++) { const x = i / 1023.5 - 1; cu[i] = Math.tanh(x * 1.2) / Math.tanh(1.2) * 0.89; } clip.curve = cu; const pre = ac.createGain(); pre.gain.value = 0.62; lim.connect(pre); pre.connect(clip); clip.connect(ac.destination);
+  const fx = ac.createGain(); fx.gain.value = 2.0; fx.connect(lim); // the SFX stem +6 dB (owner rule)
+  const room = ac.createConvolver(), ir = ac.createBuffer(2, SR * 0.6, SR); for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); let sd = 9 + c; for (let i = 0; i < d.length; i++) { sd = (sd * 16807) % 2147483647; d[i] = (sd / 1073741823.5 - 1) * Math.pow(1 - i / d.length, 4); } } room.buffer = ir; const wet = ac.createGain(); wet.gain.value = 0.12; fx.connect(room); room.connect(wet); wet.connect(lim);
+  // the bed: enters on the film's first frame mid-build, its drop on the pull-back; the filter closes for the break, reopens on the end mark, fades
+  const bs = ac.createBufferSource(); bs.buffer = bed; const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 0.7; const bg = ac.createGain();
+  const F = toA; lp.frequency.setValueAtTime(18000, 0); lp.frequency.setValueAtTime(18000, F(24.2)); lp.frequency.exponentialRampToValueAtTime(520, F(24.75)); lp.frequency.setValueAtTime(520, F(25.95)); lp.frequency.exponentialRampToValueAtTime(18000, F(26.1));
+  bg.gain.setValueAtTime(0.0001, 0); bg.gain.exponentialRampToValueAtTime(0.42, 0.35); bg.gain.setValueAtTime(0.42, F(29.0)); bg.gain.linearRampToValueAtTime(0.0001, F(31.6));
+  bs.connect(lp); lp.connect(bg); bg.connect(lim); bs.start(0, OFF);
+  // the cues, thinned by the owner's min gap (60 ms) in priority order, at most 2 punches
+  const cues = CUES.map(([e, t]) => ({ e, t: F(t) })).sort((a, b) => PRI.indexOf(a.e) - PRI.indexOf(b.e)), kept = []; let punches = 0;
+  for (const c of cues) { if (c.e === 'hard-hit' && ++punches > 2) continue; if (kept.some(k => Math.abs(k.t - c.t) < 0.06 && k.e !== 'build' && c.e !== 'build')) continue; kept.push(c); }
+  let ci = 0, sd = 3; const jit = () => { sd = (sd * 16807) % 2147483647; return (sd / 2147483647 - 0.5) * 2; };
+  const playS = (name, t, db, o = {}) => { const b = bufs[name], m = meta[name]; if (!b) return; const s = ac.createBufferSource(), g = ac.createGain(); s.buffer = b; s.playbackRate.value = o.rate ?? 1;
+    const lin = Math.pow(10, (db + jit() * 1 - m.rms) / 20), al = ALIGN[name]; let start = t, off = o.off ?? 0, dur = o.len;
+    if (al === 'peak') start = t - m.peakAt; if (al === 'end') start = t - b.duration; if (start < 0) { off -= start; start = 0; }
+    g.gain.value = Math.min(lin, 4); s.connect(g); g.connect(fx); if (dur) { g.gain.setValueAtTime(g.gain.value, start + dur * 0.8); g.gain.linearRampToValueAtTime(0, start + dur); } s.start(start, off, dur ? dur + 0.01 : undefined); };
+  for (const c of kept.sort((a, b) => a.t - b.t)) { const [snd, db, then] = EV[c.e];
+    if (snd === 'typing') { const o = typeOn[(ci++ * 7) % typeOn.length] ?? 0; playS('typing', c.t, db, { off: o, len: 0.06 }); }
+    else if (c.e === 'cascade') { const i = Math.round((toF(c.t) - 10.55) / 0.12); if (i % 2) continue; playS(snd, c.t, db - i * 1.0, { rate: 1 + i * 0.04 }); }
+    else playS(snd, c.t, db);
+    if (then) playS(then[0], c.t, then[1]); }
+  // a granular shimmer under the stipple, kept from the synth (no sample does this)
+  for (let i = 0; i < 36; i++) { const o = ac.createOscillator(), g = ac.createGain(), t = F(0.04 + i * 0.024); o.frequency.value = 2400 + hash(i) * 1400; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.012, t + 0.002); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05); o.connect(g); g.connect(fx); o.start(t); o.stop(t + 0.06); }
+  return ac.startRendering();
+}
+// ── the player: the audio is the clock; videos play in sync while playing, posters for stills ──
+const qs = new URLSearchParams(location.search), sk = document.getElementById('sk'), tc = document.getElementById('tc'), pl = document.getElementById('pl');
+let SCORE = null, actx = null, buf = null, src = null, t0 = 0, at = 0;
+window.__render = t => render(t);
+(async () => {
+  await Promise.all([document.fonts.load('600 100px Inter'), document.fonts.load('500 100px Inter'), document.fonts.load('700 100px Inter'), document.fonts.load('400 30px "JetBrains Mono"')]).catch(() => null); await document.fonts.ready;
+  await Promise.all(Object.values(IM).map(im => im.decode().catch(() => null)));
+  for (let w = 0; w < DUR; w += 0.25) render(w); for (const c of [...SPR.values()]) for (const l of BL) blurOf(c, l);
+  await Promise.all([...SPR.values()].flatMap(c => [c, ...Object.values(c.blurs)]).map(async d => { d.bmp = await createImageBitmap(d); }));
+  render(Number(qs.get('t') ?? 0)); window.__ready = true; SCORE = score().then(b => (buf = b)).catch(e => console.warn('score', e));
+})();
+function play() { if (!actx) actx = new AudioContext(); const go = () => { src = actx.createBufferSource(); src.buffer = buf; src.connect(actx.destination); src.start(0, at); t0 = actx.currentTime - at; for (const v of Object.values(VD)) v.play().catch(() => {}); PLAYING = true; pl.textContent = 'Pause'; loop(); }; if (buf) go(); else { pl.textContent = '…'; (SCORE || score()).then(b => { buf = buf || b; go(); }); } }
+function pause() { if (src) src.stop(); PLAYING = false; at = actx.currentTime - t0; pl.textContent = 'Play'; for (const v of Object.values(VD)) v.pause(); }
+function loop() { if (!PLAYING) return; at = actx.currentTime - t0; if (at >= DUR_A) { pause(); at = 0; } const ft = toF(at); render(ft); sk.value = Math.round(ft * 100); tc.textContent = ft.toFixed(2); requestAnimationFrame(loop); }
+pl.onclick = () => (PLAYING ? pause() : play());
+sk.oninput = () => { const was = PLAYING; if (was) pause(); at = toA(sk.value / 100); render(sk.value / 100); tc.textContent = (sk.value / 100).toFixed(2); if (was) play(); };
+addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); PLAYING ? pause() : play(); } });
+</script></body></html>

@@ -175,3 +175,37 @@ parseAsks("add a crash zoom on 'crore'. orbit on the hook"): Ask[]   // a chat k
   pan from the laptop to the megaphone (`kind: "ink"`, dashed lines now draw on through a mask).
 - Corner leaves are sharp, the nearest pencils most blurred (per-prop `blur`), as in em5.
 - Perf this round is not trustworthy: the PC was at 100% CPU from other sessions (v10 itself failed to load in time).
+- Ishaan on v12: "better" (2026-10-18).
+
+## 2026-10-18: v13 (the speaker inside the world; the world sounds itself)
+- `pip: "print"`: during desk beats the speaker plays inside a taped photo print on the desk (drops in on the first
+  visit with the same physics and shadow), instead of a ringed UI window; em5's world has no UI box. The face box is
+  still projected, so text keeps clear of it.
+- The desk generates its own foley from the kit (rule 0.3, a sound on every arrival): card-shuffle paper on each print
+  landing, a soft hit on each cut-out landing, marker scratch under every ink stroke, a paper swipe for each corner prop,
+  a click when the bulb switches on. `desk.sound: false` turns it off; the spec keeps only whooshes, the punch hit and
+  the chime.
+- Perf (same round, PC at 100% CPU from other sessions): v12 26 fps, v13 40–49 fps; video stalls appear before the
+  world in every version this round, so they are load, not the desk.
+- Ishaan on v13: "better, keep going toward em5" (2026-10-18).
+
+## 2026-10-18: v14 (em5's focus pulls and warm light)
+- The world enters soft and racks sharp (0.42 s, `E.out`), on top of the whip blur; the speaker comes back soft and racks
+  sharp after a desk beat (`b.afterDesk`), with the leak over it. em5 cuts world ↔ speaker on focus, not on a hard cut.
+- Warm window light: a second gobo layer tints only the lit panes toward sun (soft-light); the shade is lighter and
+  warmer, so the paper reads cream like em5's, not grey.
+- The dashed trail has a hand-drawn loop (em5's curly arrow).
+- Perf (same round, PC at 21–54% CPU): v13 31 fps, p95 62 ms; v14 30 fps, p95 67 ms; worst frozen video clock 55 ms.
+  Slower than v11 (35–37 fps): the rack backdrop blur, whip blur and the blended light layers cost frames.
+
+## Lab vlog v3 (2026-10-18): back to v10's grammar
+- Ishaan rated the lab vlog's `window` form edit 1/10. The window form (and the auto picker) were Claude's own
+  invention, so both are removed from the player and the skill (1.13.7). The 9/10 bar is v10 (em5's grammar, 83a8565).
+- v3 runs that grammar on the vlog: the speaker full frame and graded, punches on "grinding" and "goes", three desk
+  beats with real prints that land (Mixkit soldering and typing footage, his own lab shot), self-drawing doodles,
+  handwritten labels in his words ("electronics lab", "hyped in", "wonderful team"), the speaker in a pip, light leaks
+  back to him; Keshav named live. Paper and ink from the footage (the lab's sage-cream wall, his plaid's blue-grey).
+- Player: a face that fills the frame puts text in the edge band with more free room (below the chin), never on the
+  face; v10-style string doodles no longer crash the v13 desk code.
+- Open: a 1.6 s video-clock freeze in headless perf on this player (the v10 interview too; v10's own player 289 ms),
+  not yet isolated.

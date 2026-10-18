@@ -15,8 +15,6 @@ const isKey = (w: string) => /\d/.test(w) || w.replace(/[^\p{L}]/gu, '').length 
 
 export function roughEdl(source: PlayerEdl['source'], words: Word[], o: RoughOpts): PlayerEdl {
   const pauseMax = o.pauseMax ?? 0.4, pauseKeep = o.pauseKeep ?? 0.18, holdMax = o.holdMax ?? 2.6, punch = o.punch ?? 1.12;
-  // the air kept before a word and after it never drops under the builder's pads (build.ts DEFAULT_LAWS pad_in, pad_out)
-  const airIn = Math.max(pauseKeep / 2, 0.1), airOut = Math.max(pauseKeep / 2, 0.15);
   // whisper sometimes returns a word with zero length (Test 1: "Movie" at 5.42 s); give it a short span up to the
   // next word instead of dropping it, so every spoken word is captioned
   const sorted = words.filter(w => w.t < source.duration && w.end >= w.t).sort((a, b) => a.t - b.t);
@@ -25,13 +23,13 @@ export function roughEdl(source: PlayerEdl['source'], words: Word[], o: RoughOpt
   const keep: [number, number][] = [];
   if (!ws.length) keep.push([0, source.duration]);
   else {
-    let a = Math.max(0, ws[0]!.t - airIn), b = ws[0]!.end;
+    let a = Math.max(0, ws[0]!.t - pauseKeep / 2), b = ws[0]!.end;
     for (let i = 1; i < ws.length; i++) {
       const w = ws[i]!;
-      if (w.t - b > Math.max(pauseMax, airIn + airOut + 0.05)) { keep.push([a, Math.min(source.duration, b + airOut)]); a = Math.max(0, w.t - airIn); }
+      if (w.t - b > pauseMax) { keep.push([a, Math.min(source.duration, b + pauseKeep / 2)]); a = Math.max(0, w.t - pauseKeep / 2); }
       b = Math.max(b, w.end);
     }
-    keep.push([a, Math.min(source.duration, b + airOut)]);
+    keep.push([a, Math.min(source.duration, b + pauseKeep / 2)]);
   }
   // shot boundaries in source time: every keep range starts one; a sentence start or holdMax starts another
   const starts = new Set<number>(keep.map(k => k[0]));

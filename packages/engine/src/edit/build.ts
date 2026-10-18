@@ -18,10 +18,8 @@ import { pickLook, type CaptionLook } from './looks';
  *  5. words with roles (key words, numbers, names), sentence ids, and beat tags (given by the one model call, else
  *     by rule); `removed[]`, `cuts[]` and `metrics` with the rule behind every decision.
  */
-export interface Laws { pause_max: number; pause_keep: number; hold_max: number; snap_ms: number; punch: number; push: number; min_shot: number; /** a heard pause (the cleaned voice under the silence line) longer than this is trimmed to pause_keep: under pause_max, so the air left plus a word's soft edge stays under R9's 0.4 s hole */ quiet_max: number; /** air always kept before a kept word's start (s): no cut lands closer, so a soft onset is never chopped */ pad_in: number; /** air always kept after a kept word's end (s): a soft tail (an s, an f, a falling vowel) is never chopped */ pad_out: number }
-export const DEFAULT_LAWS: Laws = { pause_max: 0.4, pause_keep: 0.18, hold_max: 2.6, snap_ms: 100, punch: 1.12, push: 1.04, min_shot: 0.6, quiet_max: 0.32, pad_in: 0.1, pad_out: 0.15 };
-/** How far from a word edge a cut still counts as on the word (ms): a cut sits pad_in before a start or pad_out after an end on purpose, plus up to 0.1 s where the heard quiet trimmed a soft edge and the air guard gave it back, plus 20 ms. Pure. */
-export const onWordMs = (L: Pick<Laws, 'snap_ms' | 'pad_in' | 'pad_out'> = DEFAULT_LAWS) => Math.max(L.snap_ms, Math.round(1000 * (Math.max(L.pad_in, L.pad_out) + 0.1)) + 20);
+export interface Laws { pause_max: number; pause_keep: number; hold_max: number; snap_ms: number; punch: number; push: number; min_shot: number; /** a heard pause (the cleaned voice under the silence line) longer than this is trimmed to pause_keep: under pause_max, so the air left plus a word's soft edge stays under R9's 0.4 s hole */ quiet_max: number }
+export const DEFAULT_LAWS: Laws = { pause_max: 0.4, pause_keep: 0.18, hold_max: 2.6, snap_ms: 100, punch: 1.12, push: 1.04, min_shot: 0.6, quiet_max: 0.32 };
 export const RULES_VERSION = 'r4-2026-10-16';
 
 export interface Face { src_t: number; x: number; y: number; w: number; h: number; conf?: number }
@@ -172,45 +170,6 @@ export function snapHoles(holes: { a: number; b: number }[], kept: Word[]): void
 }
 
 /**
- * Keep air around every kept word (Vignesh, Oct 18: "cut off voice"): a hole may not come within `padIn` s of a kept
- * word's start or `padOut` s of its end. A hole after a word starts at end + padOut at the earliest, one before a word
- * ends at start - padIn at the latest; a hole squeezed to nothing is left for the caller to drop. Word timings run
- * tens of ms off the real sound (a soft onset before the start, a tail after the end), and a cut exactly on the edge
- * chopped them. Runs after snapHoles, so no edge is inside a word. Mutates `holes`.
- */
-export function padHoles(holes: { a: number; b: number }[], kept: Word[], padIn = DEFAULT_LAWS.pad_in, padOut = DEFAULT_LAWS.pad_out): void {
-  for (const h of holes) {
-    for (const w of kept) {
-      const lo = w.t - padIn, hi = w.end + padOut;
-      if (h.b <= lo + 1e-6 || h.a >= hi - 1e-6) continue;
-      if ((h.a + h.b) / 2 >= (w.t + w.end) / 2) h.a = Math.max(h.a, hi); else h.b = Math.min(h.b, lo);
-    }
-  }
-}
-
-/**
- * A word's span widened to the sound around it: the recogniser often starts a word late and ends it early (Ishaan's
- * clip, Oct 18: "Hello" heard from 1.16 s, its sound from 1.00 s, so the take opened on a chopped "H"). Where a pause
- * (the loudness or the heard silence) ends at most `reach` s before the word's start, the sound starts there; where
- * one starts at most `reach` s after the word's end, the sound ends there. Pure.
- */
-export function soundGuard(w: Word, pauses: [number, number][], reach = 0.35): Word {
-  let t = w.t, end = w.end;
-  const ends = pauses.map(p => p[1]).filter(p1 => p1 <= w.t + 1e-3 && p1 >= w.t - reach);
-  if (ends.length) t = Math.min(t, Math.max(...ends));
-  const starts = pauses.map(p => p[0]).filter(p0 => p0 >= w.end - 1e-3 && p0 <= w.end + reach);
-  if (starts.length) end = Math.max(end, Math.min(...starts));
-  return t === w.t && end === w.end ? w : { ...w, t, end };
-}
-
-/** Kept words that a set of kept source ranges clips: any part of the word, padded by `padIn` before and `padOut` after, falls outside every range (the check the tests and the e2e run). Pure. */
-export function clippedWords(kept: Word[], ranges: { a: number; b: number }[], padIn = 0, padOut = 0): Word[] {
-  const rs = [...ranges].sort((x, y) => x.a - y.a), merged: { a: number; b: number }[] = [];
-  for (const r of rs) { const l = merged.at(-1); if (l && r.a <= l.b + 1e-3) l.b = Math.max(l.b, r.b); else merged.push({ ...r }); }
-  return kept.filter(w => !merged.some(r => r.a <= w.t - padIn + 1e-3 && r.b >= w.end + padOut - 1e-3));
-}
-
-/**
  * Where the face sits in the OUTPUT frame once the player has cropped on it (the same sums as Claude 1's
  * EDIT.cropAt: object-fit cover, object-position on the face centre, the face a little above the middle), so a
  * punch-in scales around the face and not around the frame centre.
@@ -229,13 +188,7 @@ export function buildEdl(i: BuildInput): Edl {
   const L: Laws = { ...DEFAULT_LAWS, ...(i.laws ?? {}) }, src = i.source, dur = src.duration;
   const out = i.style?.output ?? { w: 1080, h: 1920, fps: 30, aspect: '9:16' };
   const qs = (i.quiet ?? []).filter(([a, b]) => b > a);
-  const pre = spreadZeroWords(i.words).filter(w => w.end > w.t && w.t < dur && w.word.trim()).map(w => ({ ...w, end: Math.min(w.end, dur) }));
-  const fitted = fitWords(pre, qs, L.quiet_max);
-  // the air guard (padHoles) trusts a fitted edge only so far: a word the heard quiet trimmed keeps up to 0.1 s of its
-  // heard span back (a soft tail or onset sits under the silence line), never more than the hearing gave it
-  const loud = [...(i.pauses ?? []), ...qs].filter(([a, b]) => b > a);
-  const guardOf = new Map(fitted.map((w, k) => [w, soundGuard({ ...w, t: Math.max(Math.min(pre[k]!.t, w.t), w.t - 0.1), end: Math.min(Math.max(pre[k]!.end, w.end), w.end + 0.1) }, loud)] as const));
-  const ws = [...fitted].sort((a, b) => a.t - b.t);
+  const ws = fitWords(spreadZeroWords(i.words).filter(w => w.end > w.t && w.t < dur && w.word.trim()).map(w => ({ ...w, end: Math.min(w.end, dur) })), qs, L.quiet_max).sort((a, b) => a.t - b.t);
   const ps = (i.pauses ?? []).filter(([a, b]) => b > a);
   const removed: EdlRemoved[] = [];
 
@@ -244,16 +197,9 @@ export function buildEdl(i: BuildInput): Edl {
   // a take that opens on "and" / "so" starts on the next word
   const first = ws.filter(w => w.t >= take.a - 0.01 && !FILLERS.has(bare(w.word)));
   let openerCut: Word | null = null;
-  if (first.length > 3 && OPENERS.has(bare(first[0]!.word)) && first[1]!.t - first[0]!.t < 0.8) { openerCut = first[0]!; take.a = Math.max(take.a, first[1]!.t - Math.max(L.pause_keep / 2, L.pad_in)); }
+  if (first.length > 3 && OPENERS.has(bare(first[0]!.word)) && first[1]!.t - first[0]!.t < 0.8) { openerCut = first[0]!; take.a = Math.max(take.a, first[1]!.t - L.pause_keep / 2); }
   // the take opens a breath before its first word (R4's pause trim at the head too)
-  if (first[0] && !openerCut) {
-    // pad_in of air before the first word's real onset, never reaching back into the set-up talk before it
-    const prevEnd = ws.filter(w => w.end <= first[0]!.t + 1e-3 && w !== first[0]).at(-1)?.end;
-    take.a = Math.max(prevEnd !== undefined ? prevEnd + 0.05 : 0, (guardOf.get(first[0])?.t ?? first[0].t) - Math.max(L.pause_keep / 2, L.pad_in));
-  }
-  // and never closes on a word's tail
-  const lastKept = ws.filter(w => w.t < take.b && !FILLERS.has(bare(w.word))).at(-1);
-  if (lastKept && lastKept.end - lastKept.t <= 1.2) take.b = Math.min(dur, Math.max(take.b, lastKept.end + L.pad_out));
+  if (first[0] && !openerCut) take.a = Math.max(take.a, first[0].t - L.pause_keep / 2);
   const preEnd = openerCut ? Math.max(0, openerCut.t - L.pause_keep / 2) : take.a;
   if (preEnd > 0.02) {
     const slate = /slate/.test(take.why) || ws.some(w => w.end <= preEnd && CUES.has(bare(w.word)));
@@ -269,7 +215,6 @@ export function buildEdl(i: BuildInput): Edl {
   // pause to cut. A real 8 s clip with a tone that the clean-up voice pass read as quiet after 3.8 s came out 3.89 s.
   const holes = ws.length ? holesOf(ws, ps, take, L, qs, retakes) : [];
   snapHoles(holes, keptWords);
-  padHoles(holes, keptWords.map(w => guardOf.get(w) ?? w), L.pad_in, L.pad_out);
   const segs: { a: number; b: number }[] = []; let cur = take.a;
   for (const h of holes) { if (h.b - h.a <= 0.04) continue; if (h.a > cur) segs.push({ a: cur, b: h.a }); cur = Math.max(cur, h.b); }
   if (take.b > cur) segs.push({ a: cur, b: take.b });
@@ -378,7 +323,6 @@ export function buildEdl(i: BuildInput): Edl {
     ...(faces.length ? { faces } : {}),
     ...(look ? { caption_look: look } : {}),
   };
-  // a cut sits pad_out after a word's end (or pad_in before its start) on purpose, so on-word means within that air plus 20 ms
-  edl.metrics = metricsOf(edl, onWordMs(L));
+  edl.metrics = metricsOf(edl, L.snap_ms);
   return edl;
 }

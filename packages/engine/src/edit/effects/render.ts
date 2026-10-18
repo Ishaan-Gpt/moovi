@@ -14,7 +14,6 @@ import { config } from '../../config';
 import { FX, type FxId } from './catalog';
 import { captionChunks, captionHidden, captionY, duckExpr, giantWordSize, resolveFxParams, sourceTime, statCardTop, type FxEvent, type FxWord } from './plan';
 import { effectsRuntime, type FxRuntimeData } from './runtime';
-import { fxPagePrelude } from './face-safe';
 
 export const FX_W = 1080, FX_H = 1920;
 /** the sound each effect lands with: files in the engine's sfx folder (CC0, see its CREDITS) */
@@ -253,7 +252,7 @@ export async function renderFxFilm(f: FxFilm): Promise<{ out: string; frames: nu
     const page = await browser.newPage({ viewport: { width: FX_W, height: FX_H }, deviceScaleFactor: 1 });
     page.setDefaultTimeout(120_000);
     await page.goto(fileUrl(html));
-    await page.evaluate(`${fxPagePrelude()}(${effectsRuntime.toString()})(${JSON.stringify(data)}); ${geo.feather ? `document.getElementById('base').style.maskImage='linear-gradient(to bottom, transparent 0, black 160px)';document.getElementById('cut').style.maskImage='linear-gradient(to bottom, transparent 0, black 160px)';` : ''} window.__fx.ready`);
+    await page.evaluate(`var __name = function (f) { return f; };\n(${effectsRuntime.toString()})(${JSON.stringify(data)}); ${geo.feather ? `document.getElementById('base').style.maskImage='linear-gradient(to bottom, transparent 0, black 160px)';document.getElementById('cut').style.maskImage='linear-gradient(to bottom, transparent 0, black 160px)';` : ''} window.__fx.ready`);
     const ff = spawn(config.ffmpeg, ['-nostdin', '-v', 'error', '-y', '-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'mjpeg', '-i', '-', '-c:v', 'libx264', '-preset', 'medium', '-crf', '19', '-pix_fmt', 'yuv420p', '-r', String(fps), '-movflags', '+faststart', vfile], { stdio: ['pipe', 'ignore', 'pipe'] });
     let ffErr = ''; ff.stderr.on('data', d => { ffErr += d; });
     const done = new Promise<void>((res, rej) => ff.on('close', c => c === 0 ? res() : rej(new Error('ffmpeg encode: ' + ffErr.slice(-400)))));

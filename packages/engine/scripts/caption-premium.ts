@@ -51,6 +51,9 @@ nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 nav button{background:none;border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:999px;cursor:pointer}
 nav button[aria-pressed=true]{border-color:var(--ice);color:var(--ice)}
 .stage{position:relative;width:100%;aspect-ratio:848/478;background:#000;border-radius:8px;overflow:hidden}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;margin-top:20px}
+#grid figure{margin:0}#grid canvas{width:100%;aspect-ratio:848/478;display:block;border-radius:6px;background:#000}
+#grid figcaption{color:var(--dim);font-size:13px;padding:6px 2px}h2{font-size:15px;font-weight:600;margin:28px 0 0}
 .stage video,.stage canvas{position:absolute;inset:0;width:100%;height:100%}.stage canvas{pointer-events:none}
 #still{display:none}
 </style></head><body><main>
@@ -58,6 +61,7 @@ nav button[aria-pressed=true]{border-color:var(--ice);color:var(--ice)}
 <nav id="nav"></nav>
 <nav id="acc"><button id="fromVideo">Accent from video</button><input id="pick" type="color" aria-label="Accent"></nav>
 <div class="stage" id="stage"><video id="v" src="../agents/ishaan-test/ishaan-test.mp4" playsinline loop controls></video><canvas id="c"></canvas></div>
+<h2>Every preset at once (the same clip, in sync)</h2><div id="grid"></div>
 <canvas id="still"></canvas>
 </main><script type="module">
 ${js('theme.ts')}
@@ -67,14 +71,14 @@ const WORDS = ${JSON.stringify(words)};
 const v = document.getElementById('v'), c = document.getElementById('c'), ctx = c.getContext('2d');
 // ?clip=<url>: the same captions over another clip (a reference, to compare like for like)
 const clipQ = new URLSearchParams(location.search).get('clip'); if (clipQ) v.src = clipQ;
-const make = (vr, a) => vr === '3' ? premiumCaption3() : vr === '2' ? premiumCaption2(a) : premiumCaption1(vr, a);
-const refAccent = vr => vr === '3' ? REF_ACCENT_3 : vr === '2' ? REF_ACCENT_2 : REF_ACCENTS[vr];
+const make = (vr, a) => vr === '4' ? premiumCaption4(a) : vr === '3' ? premiumCaption3() : vr === '2' ? premiumCaption2(a) : premiumCaption1(vr, a);
+const refAccent = vr => vr === '4' ? REF_ACCENT_4 : vr === '3' ? REF_ACCENT_3 : vr === '2' ? REF_ACCENT_2 : REF_ACCENTS[vr];
 let variant = '1.1', accent = REF_ACCENTS['1.1'], preset = make(variant, accent), list = cards(WORDS, preset.maxWords, preset.tailMax);
 const nav = document.getElementById('nav'), pick = document.getElementById('pick');
 const set = () => { preset = make(variant, accent); list = cards(WORDS, preset.maxWords, preset.tailMax); pick.value = accent.toLowerCase(); };
-for (const vr of ['1.1', '1.2', '2', '3']) {
+for (const vr of ['1.1', '1.2', '2', '3', '4']) {
   const b = document.createElement('button'); b.textContent = 'Premium Caption ' + vr; b.setAttribute('aria-pressed', String(vr === variant));
-  b.onclick = () => { if ([REF_ACCENTS['1.1'], REF_ACCENTS['1.2'], REF_ACCENT_2, REF_ACCENT_3].includes(accent)) accent = refAccent(vr); variant = vr; set(); [...nav.querySelectorAll('.vr')].forEach(x => x.setAttribute('aria-pressed', String(x === b))); };
+  b.onclick = () => { if ([REF_ACCENTS['1.1'], REF_ACCENTS['1.2'], REF_ACCENT_2, REF_ACCENT_3, REF_ACCENT_4].includes(accent)) accent = refAccent(vr); variant = vr; set(); [...nav.querySelectorAll('.vr')].forEach(x => x.setAttribute('aria-pressed', String(x === b))); };
   b.className = 'vr'; nav.append(b);
 }
 // the video's own accent: the strongest saturated hue across a few frames
@@ -88,7 +92,7 @@ async function videoAccent(at = [2, 6, 10, 14]) {
 document.getElementById('fromVideo').onclick = async () => { accent = (await videoAccent()) || accent; set(); };
 pick.oninput = () => { accent = pick.value.toUpperCase(); set(); };
 const acc = document.getElementById('acc');
-for (const [label, a] of [['Ref green', REF_ACCENTS['1.1']], ['Ref red', REF_ACCENTS['1.2']], ['Ref gold', REF_ACCENT_2], ['Ref ice', REF_ACCENT_3]]) {
+for (const [label, a] of [['Ref green', REF_ACCENTS['1.1']], ['Ref red', REF_ACCENTS['1.2']], ['Ref gold', REF_ACCENT_2], ['Ref ice', REF_ACCENT_3], ['Ref red 4', REF_ACCENT_4]]) {
   const b = document.createElement('button'); b.textContent = label; b.onclick = () => { accent = a; set(); }; acc.append(b);
 }
 set();
@@ -213,7 +217,27 @@ function faceAt() {
   }
   return faceBox;
 }
-const sceneAt = (p, W, H, sync = false) => ({ face: p.layout === 'stack' ? faceAt() : null, person: needsPerson(p) ? personAt(W, H, sync) : null });
+const sceneAt = (p, W, H, sync = false) => ({ face: p.layout === 'stack' || p.layout === 'poster' ? faceAt() : null, person: needsPerson(p) ? personAt(W, H, sync) : null });
+// every preset at once, each on its own canvas from the same playing video, so all of them can be seen and read
+const grid = document.getElementById('grid');
+const cells = ['1.1', '1.2', '2', '3', '4'].map(vr => {
+  const fig = document.createElement('figure'), cv = document.createElement('canvas'), cap = document.createElement('figcaption');
+  cap.textContent = 'Premium Caption ' + vr; fig.append(cv, cap); grid.append(fig);
+  const p = make(vr, refAccent(vr));
+  return { vr, cv, g: cv.getContext('2d'), p, l: cards(WORDS, p.maxWords, p.tailMax) };
+});
+function drawGrid(t) {
+  if (navigator.webdriver) return; // stills and measurements drive the page headless: the grid is for people
+  if (v.readyState < 2) return;
+  const face = faceAt(), person = personAt(c.width, c.height, false);
+  for (const cell of cells) {
+    const rr = cell.cv.getBoundingClientRect(), d = devicePixelRatio || 1;
+    if (!rr.width) continue;
+    if (cell.cv.width !== Math.round(rr.width * d)) { cell.cv.width = Math.round(rr.width * d); cell.cv.height = Math.round(rr.height * d); }
+    cell.g.drawImage(v, 0, 0, cell.cv.width, cell.cv.height);
+    drawCaption(cell.g, cell.p, cell.l, t, cell.cv.width, cell.cv.height, { face: cell.p.layout === 'stack' || cell.p.layout === 'poster' ? face : null, person: needsPerson(cell.p) ? person : null });
+  }
+}
 function frame() {
   const r = c.getBoundingClientRect(), d = devicePixelRatio || 1;
   if (c.width !== Math.round(r.width * d)) { c.width = Math.round(r.width * d); c.height = Math.round(r.height * d); }
@@ -222,6 +246,7 @@ function frame() {
   const t0 = performance.now(), sc = sceneAt(preset, c.width, c.height), t1 = performance.now();
   drawCaption(ctx, preset, list, v.currentTime, c.width, c.height, sc);
   const t2 = performance.now(); const pf = (window.capProf ??= { scene: 0, draw: 0, n: 0 }); pf.scene += t1 - t0; pf.draw += t2 - t1; pf.n++;
+  drawGrid(v.currentTime);
   requestAnimationFrame(frame);
 }
 Promise.all(PREMIUM_PRESETS.flatMap(p => p.tiers.filter(Boolean).map(t => document.fonts.load((t.italic ? 'italic ' : '') + t.weight + ' ' + (t.stretch || 'normal') + ' 40px "' + t.font + '"')))).finally(() => requestAnimationFrame(frame));

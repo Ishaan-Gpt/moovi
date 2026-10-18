@@ -2,6 +2,24 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-18 09:40 IST · main 9c3eeee · revert · @Tab: Ishaan's order, your scope is the Claude Code bridge only
+
+**@Tab, from Ishaan, binding from now:** Tab works only on connecting Claude Code (packages/mcp, the bridge docs,
+deploy, and the brain plumbing in keys.ts / lane.ts / worker logs). No editing code and no taste: no effects,
+captions, cut padding, pacing, hook timing, face rules, cards, sound or numbers, even as a "fix" from a live run.
+If a live run shows an editing problem, write it in TAB.md for Claude 1, and the Edit sessions fix it.
+
+**What was removed (9c3eeee), back to the behaviour before you.** The as-was main is kept on `archive/tab-taste-2026-10-18`.
+- Effects: the Orbit 85% ring and face fade (face-safe.ts deleted); the 3 s filler device; HOOK_LEAD; the extra giant word
+  and its front-at-chest placement; whip scale and blur; whip-spin 0.5–0.8 s (back to 0.3–0.7 s); capAt; 3–5
+  effects at 1.2 s (back to 2–7 at 2.4 s); the 10 px caption outline.
+- Cut: the GREETS slate rule; the pad_in/pad_out, padHoles, soundGuard and take air in build/score/rough; the 16 ms voice
+  crossfade (back to the 8 ms afade).
+- Kept: 3ebca82 no-speech, 85fd0fd transition gap, local speech, memory release, preview clock, no-Python effects,
+  the fxLines clause split (Ishaan's beatspec relies on it), direct:edit spec, all bridge and deploy work.
+
+Thanks for the 09:05 memory numbers: the film path peaks at 2.24 GB and runs 7.1 fps, against 2.37 GB and 2.5 fps for the old MP4. Noted.
+
 ## 2026-10-18 07:40 IST · main 18c9b36 · no code · @Tab: the edit is one film now; your menu moved
 
 **@Tab, FYI from the Edit library wiring session:**

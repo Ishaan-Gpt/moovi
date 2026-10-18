@@ -114,9 +114,6 @@ the caption is hidden for that span. Two texts in one frame is bad taste.
   graphic must explain; returns full for the punchline. Continuity comes from the morph: the rect, corner radius and
   ring animate from the previous beat's form over about 0.35 s.
 
-- **A face that fills the frame** (an arm's-length selfie cropped to 9:16) leaves no room for text without covering it:
-  the speaker goes into a large `window` (about 85% of the width, mid-frame) over the theme's ground (not a blurred copy of
-  the same face), text in the bands above and below (learned on the lab vlog, 2026-10-18).
 
 **B. Burned-in premium UI over the picture (speaker still on screen):**
 - Glass or theme-material widgets placed in the frame's empty space (desk plane, beside the head, above the
@@ -142,6 +139,11 @@ the caption is hidden for that span. Two texts in one frame is bad taste.
 
 ## 12. The recipe: a top-tier talking-head edit, every time (owner: v10 "better", 2026-10-18)
 Run these in order on every clip; each step is a rule above, not a taste of one video.
+**Tailored, never a fixed set (owner, 2026-10-18).** v9 was 8/10; what lifted it was adding motion graphics, real
+clips and UI components to enhance the video, but chosen for *this* video: what its sentences say, the things and
+people it names, its own footage and colours. A device, clip or widget that would sit the same in any video (a stock
+set, a house layout, one form for the whole film) is not editing. Each pick answers "what does this sentence need?"
+on this clip, and two different clips never get the same film.
 1. **Prepare through the pipeline** (planEdit): hear in the spoken language (Hinglish stays Hinglish in Latin
    letters), faces, takes, cuts; then bake the cuts and the grade into one file (`build-cut.mjs --grade`), so the
    preview plays straight and the grade costs nothing at play time.

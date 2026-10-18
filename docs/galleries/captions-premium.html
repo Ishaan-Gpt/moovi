@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8"><title>Premium captions</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Russo+One&family=Poppins:wght@800&family=Plus+Jakarta+Sans:ital,wght@1,500;1,600&family=Antonio:wght@500&display=block">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Russo+One&family=Poppins:wght@800&family=Plus+Jakarta+Sans:ital,wght@1,500;1,600&family=Antonio:wght@500&family=League+Gothic&family=Sacramento&family=Poppins:wght@600&display=block">
 <style>
 @font-face{font-family:'Montserrat';font-style:normal;font-weight:100 900;font-display:block;src:url(../../packages/engine/assets/renderer/fonts/montserrat-latin-wght-normal.woff2) format('woff2')}
 :root{--bg:#0B0D10;--ink:#F7FAFD;--dim:#8A96A3;--line:#1F2630;--ice:#CFE6F7}
@@ -11,6 +11,9 @@ nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 nav button{background:none;border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:999px;cursor:pointer}
 nav button[aria-pressed=true]{border-color:var(--ice);color:var(--ice)}
 .stage{position:relative;width:100%;aspect-ratio:848/478;background:#000;border-radius:8px;overflow:hidden}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;margin-top:20px}
+#grid figure{margin:0}#grid canvas{width:100%;aspect-ratio:848/478;display:block;border-radius:6px;background:#000}
+#grid figcaption{color:var(--dim);font-size:13px;padding:6px 2px}h2{font-size:15px;font-weight:600;margin:28px 0 0}
 .stage video,.stage canvas{position:absolute;inset:0;width:100%;height:100%}.stage canvas{pointer-events:none}
 #still{display:none}
 </style></head><body><main>
@@ -18,6 +21,7 @@ nav button[aria-pressed=true]{border-color:var(--ice);color:var(--ice)}
 <nav id="nav"></nav>
 <nav id="acc"><button id="fromVideo">Accent from video</button><input id="pick" type="color" aria-label="Accent"></nav>
 <div class="stage" id="stage"><video id="v" src="../agents/ishaan-test/ishaan-test.mp4" playsinline loop controls></video><canvas id="c"></canvas></div>
+<h2>Every preset at once (the same clip, in sync)</h2><div id="grid"></div>
 <canvas id="still"></canvas>
 </main><script type="module">
 /**
@@ -92,6 +96,17 @@ function metalKey(accent) {
     const deep = fromHsl([(h + 352) % 360, Math.max(s, 0.75), 0.46]);
     // subtle: the top light only lifts the accent a little (the ref reads as gold, not as white fading to gold)
     return [hex(mix(mid, WHITE, 0.38)), hex(mix(mid, WHITE, 0.14)), hex(mid), hex(deep)];
+}
+/** A glossy display word (Premium Caption 4's red): a lit top, the accent, a deep base, and the shades of its 3D block. */
+function glossKey(accent) {
+    const [h, s] = toHsl(rgb(accent));
+    // deep and saturated (the ref's red reads as lacquer, not salmon): a small lift at the top, a dark base
+    const mid = fromHsl([h, Math.max(s, 0.88), 0.44]);
+    return {
+        fill: [hex(mix(mid, WHITE, 0.1)), hex(mid), hex(fromHsl([h, Math.max(s, 0.9), 0.34]))],
+        side: hex(fromHsl([h, Math.max(s, 0.85), 0.22])),
+        dark: hex(fromHsl([h, Math.max(s, 0.7), 0.1])),
+    };
 }
 
 /**
@@ -241,7 +256,54 @@ function premiumCaption3() {
         },
     };
 }
-const PREMIUM_PRESETS = [premiumCaption1('1.1'), premiumCaption1('1.2'), premiumCaption2(), premiumCaption3()];
+/** The swatch of reference 4 (red), for previews; the product takes the accent from the video like the others. */
+const REF_ACCENT_4 = '#D42020';
+/**
+ * Premium Caption 4 (ref reel Dd1Mf7xzsbm, "3 different COUNTRIES", "Here's what NOBODY about working tells you"): a
+ * poster card. The key word giant in League Gothic narrowed to a very tall set, a glossy accent ramp on a 3D block with a
+ * drop shadow, standing behind the speaker from the forehead to below the shoulders, its letters rising one after
+ * another out of a motion trail. The words before it a small white Sacramento script on its top-left corner, written
+ * on; after it a white Poppins line over the chest, then the closing words in script under it, right-aligned.
+ */
+function premiumCaption4(accent = REF_ACCENT_4) {
+    const g = glossKey(accent);
+    // the small words must read on any background: a firm dark shadow under thin script and the sans line
+    const strong = { color: 'rgba(0,0,0,0.7)', blur: 0.022, dy: 0.006 };
+    return {
+        id: 'premium-4',
+        name: 'Premium Caption 4',
+        ref: 'reel Dd1Mf7xzsbm (0-3 s, 18-19 s)',
+        fonts: ['League+Gothic', 'Sacramento', 'Poppins:wght@600'],
+        layout: 'poster',
+        tiers: [
+            { font: 'Sacramento', weight: 400, casing: 'none', size: 0.095, tracking: 0, fill: '#FFFFFF', shadow: strong, round: 0.02 },
+            {
+                font: 'League Gothic', weight: 400, wide: 0.62, size: 0.3, tracking: 0.01, fill: g.fill, behind: true,
+                extrude: { depth: 0.05, color: g.side, dark: g.dark, steps: 12 },
+                bevel: { size: 0.018, light: '#FFD0C8', dark: '#3A0006', lightA: 0.55, darkA: 0.6 },
+                sheen: 0.12,
+                // a firm, dark drop shadow: the word stands off any wall (the ref separates it from a busy background)
+                shadow: { color: 'rgba(0,0,0,0.68)', blur: 0.04, dy: 0.02 },
+            },
+            { font: 'Poppins', weight: 600, casing: 'none', size: 0.05, tracking: -0.01, fill: '#FFFFFF', shadow: strong },
+        ],
+        y: 0.5,
+        gap: 0.01,
+        maxWords: 5,
+        tailMax: 3,
+        enter: { scaleFrom: 1, decay: 0, freq: 0, blur: 0, blurS: 0.22, fadeS: 0.06, flash: 0, flashS: 0.3, drift: -0.01, rise: 0.6, stagger: 0.035, writeS: 0.45 },
+        captionseasy: {
+            look: 34,
+            set: {
+                fontId: 'Poppins', fontWeight: 600, casing: 'none', letterSpacing: 0, lineHeight: 1,
+                'fill.color': '#FFFFFF', 'active.color': accent, 'hero.scale': 4, 'hero.fontId': 'League Gothic',
+                'shadow.enabled': true, 'shadow.color': 'rgba(0,0,0,0.5)', 'glow.enabled': false,
+                'position.y': 0.5, maxWordsPerCard: 5, 'entrance.type': 'rise',
+            },
+        },
+    };
+}
+const PREMIUM_PRESETS = [premiumCaption1('1.1'), premiumCaption1('1.2'), premiumCaption2(), premiumCaption3(), premiumCaption4()];
 
 const STOP = new Set(('a an the and or but so to of in on at for is are am was be it i we you he she they my your our ' +
     'this that with as by from now just then very really can will do does basically which after before into them get also').split(' '));
@@ -302,9 +364,38 @@ function cards(words, maxWords, tailMax = 0) {
             p = p.slice(cut);
         }
     }
-    // a card holds until the next one starts (at most 0.9 s past its last word)
-    out.forEach((c, i) => { const n = out[i + 1]; c.t1 = n ? Math.min(n.t0, c.t1 + 0.9) : c.t1 + 0.6; });
+    // readable time (Ishaan, 2026-10-18: "the minimum appear time was off, appearing too fast and leaving too fast"): a
+    // card that would be up for less than MIN_CARD joins its neighbour when the voice runs on (the stronger key leads the
+    // merged card), then every card holds until the next one starts, up to HOLD past its last word, never less than MIN_CARD
+    const all = (c) => [...c.lead, ...c.key, ...c.tail];
+    const span = (c, n) => (n ? Math.min(n.t0, c.t1 + HOLD) : c.t1 + HOLD) - c.t0;
+    for (let i = 0; i < out.length; i++) {
+        const c = out[i], n = out[i + 1], prev = out[i - 1];
+        if (span(c, n) >= MIN_CARD)
+            continue;
+        const intoNext = n && n.t0 - c.t1 < 0.6 && all(c).length + all(n).length <= maxWords + 3;
+        const intoPrev = !intoNext && prev && c.t0 - prev.t1 < 0.6 && all(prev).length + all(c).length <= maxWords + 3;
+        if (!intoNext && !intoPrev)
+            continue;
+        const [a, b] = intoNext ? [c, n] : [prev, c];
+        out.splice(intoNext ? i : i - 1, 2, merged(a, b, tailMax));
+        i = Math.max(-1, i - 2);
+    }
+    out.forEach((c, i) => { const n = out[i + 1]; c.t1 = Math.max(c.t0 + MIN_CARD, n ? Math.min(n.t0, c.t1 + HOLD) : c.t1 + HOLD); if (n)
+        c.t1 = Math.min(c.t1, n.t0); });
     return out;
+}
+/** shortest time a card stays up, and how long it holds after its last word when the voice pauses */
+const MIN_CARD = 1.2, HOLD = 1.0;
+/** Two neighbouring cards as one: the stronger key stays the key, the words before it lead, the words after it trail. */
+function merged(a, b, tailMax) {
+    const ws = [...a.lead, ...a.key, ...a.tail, ...b.lead, ...b.key, ...b.tail];
+    const keyOf = (c) => c.key.reduce((s, w, i) => s + weight(w, i), 0) / Math.max(1, c.key.length);
+    const key = keyOf(a) >= keyOf(b) ? a.key : b.key;
+    const k0 = ws.indexOf(key[0]), k1 = k0 + key.length;
+    // two tiers end on the key: the words after it ride in the key line
+    const tail = tailMax > 0 ? ws.slice(k1) : [];
+    return { lead: ws.slice(0, k0), key: tailMax > 0 ? key : ws.slice(k0), tail, t0: ws[0].t, t1: ws[ws.length - 1].end };
 }
 /**
  * Captions never show punctuation (Ishaan, 2026-10-18): only letters, digits and the symbols that carry meaning
@@ -450,6 +541,31 @@ function paintWord(ctx, tier, text, x, y, px, S, alpha, glowGain = 1) {
     ctx.restore();
 }
 /** The word's face (edge, fill, inner sheen) at full opacity, drawn once into its sprite. */
+/**
+ * The bevel: a lit rim on the top-left of each letter and a dark rim on the bottom-right (the letter minus itself
+ * shifted), softened a little, so a flat fill reads as a glossy, cut letter (Premium Caption 4's red).
+ */
+function bevel(c, tier, text, x, y, px) {
+    const b = tier.bevel;
+    if (!b)
+        return;
+    const d = Math.max(1, b.size * px);
+    const pad = Math.ceil(px * 0.3 + d);
+    const w = Math.ceil(c.measureText(text).width) + pad * 2, h = Math.ceil(px * 1.4) + pad * 2;
+    for (const [dx, col, a] of [[d, b.light, b.lightA], [-d, b.dark, b.darkA]]) {
+        const layer = new OffscreenCanvas(w, h), o = layer.getContext('2d');
+        setFace(o);
+        o.fillStyle = col;
+        o.fillText(text, pad, pad + px);
+        o.globalCompositeOperation = 'destination-out';
+        o.fillText(text, pad + dx, pad + px + dx);
+        c.save();
+        c.globalAlpha = a;
+        c.filter = `blur(${d * 0.4}px)`;
+        c.drawImage(layer, x - pad, y - px - pad);
+        c.restore();
+    }
+}
 function paintFace(ctx, tier, text, x, y, px, S) {
     const alpha = 1;
     ctx.save();
@@ -462,10 +578,21 @@ function paintFace(ctx, tier, text, x, y, px, S) {
         ctx.lineWidth = tier.edge.width * S / 1080;
         ctx.strokeText(text, x, y);
     }
+    if (tier.extrude) {
+        // 3D: the letters repeated down and to the right in darkening shades under the face (the reel's glossy red block)
+        // one copy per pixel of depth, so the block reads solid (sparse copies showed as stripes)
+        const ex = tier.extrude, n = Math.max(ex.steps ?? 10, Math.ceil(ex.depth * px));
+        for (let i = n; i >= 1; i--) {
+            const k = i / n;
+            ctx.fillStyle = k > 0.45 ? ex.dark : ex.color;
+            ctx.fillText(text, x + ex.depth * px * k * 0.35, y + ex.depth * px * k);
+        }
+    }
     if (!tier.sheen) {
         ctx.fillStyle = fillStyle(ctx, tier, y, px);
         round(ctx, tier, text, x, y, px);
         ctx.fillText(text, x, y);
+        bevel(ctx, tier, text, x, y, px);
         ctx.restore();
         return;
     }
@@ -548,6 +675,8 @@ function drawCaption(ctx, p, list, t, W, H, scene = {}) {
         return;
     if (p.layout === 'stack')
         return drawStack(ctx, p, c, t, W, H, scene);
+    if (p.layout === 'poster')
+        return drawPoster(ctx, p, c, t, W, H, scene);
     const S = Math.min(W, H);
     const [t1, t2] = p.tiers;
     const h1 = c.lead.length ? t1.size * S : 0;
@@ -684,6 +813,153 @@ function drawStack(ctx, p, c, t, W, H, scene) {
     ctx.restore();
 }
 /**
+ * The poster (Premium Caption 4, ref reel Dd1Mf7xzsbm): the key word is a giant, very tall condensed word standing
+ * behind the speaker from the forehead to below the shoulders ("COUNTRIES", "NOBODY"), its letters rising one after
+ * another out of a vertical motion trail. The words before it are a small handwritten script tucked on its top-left
+ * corner and written on left to right; the words after it are a white sans line over the chest, then the last words in
+ * script, right-aligned under the key. Tiers: [script, key, sans]. Text never covers the face.
+ */
+function drawPoster(ctx, p, c, t, W, H, scene) {
+    const S = Math.min(W, H);
+    const m = 0.04 * S;
+    const [script, key] = p.tiers;
+    const sans = p.tiers[2] ?? script;
+    const r = p.enter;
+    // the anchor, once per card: centred on the face, the key from the forehead to below the shoulders (v2, approved look)
+    const id = `poster|${c.t0}|${W}x${H}`;
+    let an = ANCHORS.get(id);
+    if (!an) {
+        const f = scene.face ?? null;
+        an = f
+            ? { cx: (f.x + f.w / 2) * W, cy: (f.y + f.h * 0.55) * H, span: f.h * H * 1.25, face: f }
+            : { cx: W / 2, cy: p.y * H, span: H * 0.42, face: null };
+        if (ANCHORS.size > 500)
+            ANCHORS.clear();
+        ANCHORS.set(id, an);
+    }
+    // the key: its cap height spans the anchor (shrunk if it would run past the frame)
+    const keyWords = c.key;
+    const keyText = cased(key, keyWords.map(w => w.text).join(' '));
+    let kpx = font(ctx, key, S);
+    const k0 = Math.max(0.5, an.span / (kpx * cap));
+    kpx = font(ctx, key, S, k0);
+    const kw0 = ctx.measureText(keyText).width * (key.wide ?? 1);
+    const kfit = Math.min(1, (W - 2 * m) / kw0, (H - 2 * m) / (kpx * cap));
+    if (kfit < 1)
+        kpx = font(ctx, key, S, k0 * kfit);
+    const kScale = k0 * Math.min(1, kfit);
+    const keyCap = kpx * cap, keyW = ctx.measureText(keyText).width * (key.wide ?? 1);
+    const keyLeft = Math.min(Math.max(an.cx - keyW / 2, m), W - m - keyW);
+    const keyTop = Math.min(Math.max(an.cy - keyCap / 2, m), H - m - keyCap);
+    const keyBase = keyTop + keyCap;
+    // the words around it
+    // after the key: the first half in white sans over the chest, the rest as closing script ("about working" / "tells you")
+    const tail = c.tail;
+    const sansWords = tail.slice(0, tail.length >= 2 ? Math.ceil(tail.length / 2) : tail.length);
+    const closing = tail.slice(sansWords.length);
+    const drift = 1 + r.drift * (t - c.t0);
+    ctx.save();
+    ctx.translate(an.cx, an.cy);
+    ctx.scale(drift, drift);
+    ctx.translate(-an.cx, -an.cy);
+    // 1. the key, behind the speaker: letter by letter out of a vertical trail
+    if (keyWords.length && t >= keyWords[0].t) {
+        font(ctx, key, S, kScale);
+        const e = t - keyWords[0].t;
+        const kw = key.wide ?? 1;
+        let x = keyLeft;
+        const chars = [...keyText];
+        chars.forEach((ch, i) => {
+            const cw = ctx.measureText(ch).width * kw;
+            const le = e - i * r.stagger;
+            if (le > 0) {
+                const k = fromRest(le / r.blurS);
+                const dy = (1 - k) * keyCap * (r.rise ?? 0.6);
+                ctx.save();
+                ctx.translate(x, 0);
+                ctx.scale(kw, 1);
+                // the motion trail: faint copies below the letter while it travels, gone when it lands
+                if (k < 1)
+                    for (const [o, a] of [[0.18, 0.25], [0.36, 0.12]])
+                        paintWord(ctx, key, ch, 0, keyBase + dy + o * keyCap * (1 - k), kpx, S, a * (1 - k) * clamp(le / r.fadeS));
+                paintWord(ctx, key, ch, 0, keyBase + dy, kpx, S, clamp(le / r.fadeS));
+                ctx.restore();
+            }
+            x += cw;
+        });
+    }
+    // the speaker over it
+    if (scene.person && keyWords.length && t >= keyWords[0].t) {
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.drawImage(scene.person, 0, 0, W, H);
+        ctx.restore();
+    }
+    // 2. the script lead, tucked on the key's top-left corner, written on left to right
+    const writeOn = (ws, x, base, alignRight) => {
+        if (!ws.length)
+            return;
+        const px = font(ctx, script, S);
+        const text = cased(script, ws.map(w => w.text).join(' '));
+        const tw = ctx.measureText(text).width;
+        const e = t - ws[0].t;
+        if (e < 0)
+            return;
+        const x0 = alignRight ? x - tw : x;
+        const k = fromRest(e / (r.writeS ?? 0.45));
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(x0 - px * 0.3, base - px * 1.4, (tw + px * 0.6) * k, px * 2.2);
+        ctx.clip();
+        paintWord(ctx, script, text, x0, base, px, S, 1);
+        ctx.restore();
+    };
+    if (c.lead.length) {
+        const spx = font(ctx, script, S);
+        let lx = keyLeft + keyW * 0.02;
+        const f = an.face;
+        const lb = keyTop + spx * 0.55;
+        const lw = ctx.measureText(cased(script, c.lead.map(w => w.text).join(' '))).width;
+        // never into the face: move the script left of it when it would reach it
+        // never into the face: move the script left of it when it would reach it
+        if (f && lx + lw > f.x * W - m && lb > f.y * H - m && lb - spx < (f.y + f.h) * H + m)
+            lx = Math.max(m, f.x * W - m - lw);
+        writeOn(c.lead, lx, lb, false);
+    }
+    // 3. the sans line over the chest (in front), then the closing script, right-aligned under the key
+    if (sansWords.length) {
+        const px = font(ctx, sans, S);
+        const text = cased(sans, sansWords.map(w => w.text).join(' '));
+        const tw = ctx.measureText(text).width;
+        let x = an.cx - tw / 2;
+        // over the chest, never on the face: at least a margin under the face box
+        const faceBottom = an.face ? (an.face.y + an.face.h) * H + m + px * cap : 0;
+        const base = Math.min(Math.max(keyBase - keyCap * 0.12, faceBottom), H - m);
+        let wx = x;
+        for (const w of sansWords) {
+            font(ctx, sans, S);
+            const s = cased(sans, w.text), ww = ctx.measureText(s).width;
+            const e = t - w.t;
+            if (e >= 0) {
+                const k = fromRest(e / 0.25);
+                ctx.save();
+                if (k < 1)
+                    ctx.filter = `blur(${(1 - k) * 0.01 * S}px)`;
+                paintWord(ctx, sans, s, wx, base + (1 - k) * 0.02 * S, px, S, clamp(e / 0.12));
+                ctx.restore();
+            }
+            wx += ww + ctx.measureText(' ').width;
+        }
+        x = wx;
+    }
+    if (closing.length) {
+        const spx = font(ctx, script, S);
+        const fb = an.face ? (an.face.y + an.face.h) * H + m + spx * 0.9 : 0;
+        writeOn(closing, keyLeft + keyW, Math.min(Math.max(keyBase + spx * 0.9, fb), H - m), true);
+    }
+    ctx.restore();
+}
+/**
  * The shiny negative (Premium Caption 3's highlight): inside the letters the frame is inverted (difference with
  * white), so the background decides the colour, then saturation and brightness are pushed to the bright side, so the
  * word reads as a shiny, transparent light blue, orange or green depending on what is behind it, with the video's
@@ -740,14 +1016,14 @@ const WORDS = [{"text":"Hello","t":0.94,"end":1.12},{"text":"guys,","t":1.12,"en
 const v = document.getElementById('v'), c = document.getElementById('c'), ctx = c.getContext('2d');
 // ?clip=<url>: the same captions over another clip (a reference, to compare like for like)
 const clipQ = new URLSearchParams(location.search).get('clip'); if (clipQ) v.src = clipQ;
-const make = (vr, a) => vr === '3' ? premiumCaption3() : vr === '2' ? premiumCaption2(a) : premiumCaption1(vr, a);
-const refAccent = vr => vr === '3' ? REF_ACCENT_3 : vr === '2' ? REF_ACCENT_2 : REF_ACCENTS[vr];
+const make = (vr, a) => vr === '4' ? premiumCaption4(a) : vr === '3' ? premiumCaption3() : vr === '2' ? premiumCaption2(a) : premiumCaption1(vr, a);
+const refAccent = vr => vr === '4' ? REF_ACCENT_4 : vr === '3' ? REF_ACCENT_3 : vr === '2' ? REF_ACCENT_2 : REF_ACCENTS[vr];
 let variant = '1.1', accent = REF_ACCENTS['1.1'], preset = make(variant, accent), list = cards(WORDS, preset.maxWords, preset.tailMax);
 const nav = document.getElementById('nav'), pick = document.getElementById('pick');
 const set = () => { preset = make(variant, accent); list = cards(WORDS, preset.maxWords, preset.tailMax); pick.value = accent.toLowerCase(); };
-for (const vr of ['1.1', '1.2', '2', '3']) {
+for (const vr of ['1.1', '1.2', '2', '3', '4']) {
   const b = document.createElement('button'); b.textContent = 'Premium Caption ' + vr; b.setAttribute('aria-pressed', String(vr === variant));
-  b.onclick = () => { if ([REF_ACCENTS['1.1'], REF_ACCENTS['1.2'], REF_ACCENT_2, REF_ACCENT_3].includes(accent)) accent = refAccent(vr); variant = vr; set(); [...nav.querySelectorAll('.vr')].forEach(x => x.setAttribute('aria-pressed', String(x === b))); };
+  b.onclick = () => { if ([REF_ACCENTS['1.1'], REF_ACCENTS['1.2'], REF_ACCENT_2, REF_ACCENT_3, REF_ACCENT_4].includes(accent)) accent = refAccent(vr); variant = vr; set(); [...nav.querySelectorAll('.vr')].forEach(x => x.setAttribute('aria-pressed', String(x === b))); };
   b.className = 'vr'; nav.append(b);
 }
 // the video's own accent: the strongest saturated hue across a few frames
@@ -761,7 +1037,7 @@ async function videoAccent(at = [2, 6, 10, 14]) {
 document.getElementById('fromVideo').onclick = async () => { accent = (await videoAccent()) || accent; set(); };
 pick.oninput = () => { accent = pick.value.toUpperCase(); set(); };
 const acc = document.getElementById('acc');
-for (const [label, a] of [['Ref green', REF_ACCENTS['1.1']], ['Ref red', REF_ACCENTS['1.2']], ['Ref gold', REF_ACCENT_2], ['Ref ice', REF_ACCENT_3]]) {
+for (const [label, a] of [['Ref green', REF_ACCENTS['1.1']], ['Ref red', REF_ACCENTS['1.2']], ['Ref gold', REF_ACCENT_2], ['Ref ice', REF_ACCENT_3], ['Ref red 4', REF_ACCENT_4]]) {
   const b = document.createElement('button'); b.textContent = label; b.onclick = () => { accent = a; set(); }; acc.append(b);
 }
 set();
@@ -886,7 +1162,27 @@ function faceAt() {
   }
   return faceBox;
 }
-const sceneAt = (p, W, H, sync = false) => ({ face: p.layout === 'stack' ? faceAt() : null, person: needsPerson(p) ? personAt(W, H, sync) : null });
+const sceneAt = (p, W, H, sync = false) => ({ face: p.layout === 'stack' || p.layout === 'poster' ? faceAt() : null, person: needsPerson(p) ? personAt(W, H, sync) : null });
+// every preset at once, each on its own canvas from the same playing video, so all of them can be seen and read
+const grid = document.getElementById('grid');
+const cells = ['1.1', '1.2', '2', '3', '4'].map(vr => {
+  const fig = document.createElement('figure'), cv = document.createElement('canvas'), cap = document.createElement('figcaption');
+  cap.textContent = 'Premium Caption ' + vr; fig.append(cv, cap); grid.append(fig);
+  const p = make(vr, refAccent(vr));
+  return { vr, cv, g: cv.getContext('2d'), p, l: cards(WORDS, p.maxWords, p.tailMax) };
+});
+function drawGrid(t) {
+  if (navigator.webdriver) return; // stills and measurements drive the page headless: the grid is for people
+  if (v.readyState < 2) return;
+  const face = faceAt(), person = personAt(c.width, c.height, false);
+  for (const cell of cells) {
+    const rr = cell.cv.getBoundingClientRect(), d = devicePixelRatio || 1;
+    if (!rr.width) continue;
+    if (cell.cv.width !== Math.round(rr.width * d)) { cell.cv.width = Math.round(rr.width * d); cell.cv.height = Math.round(rr.height * d); }
+    cell.g.drawImage(v, 0, 0, cell.cv.width, cell.cv.height);
+    drawCaption(cell.g, cell.p, cell.l, t, cell.cv.width, cell.cv.height, { face: cell.p.layout === 'stack' || cell.p.layout === 'poster' ? face : null, person: needsPerson(cell.p) ? person : null });
+  }
+}
 function frame() {
   const r = c.getBoundingClientRect(), d = devicePixelRatio || 1;
   if (c.width !== Math.round(r.width * d)) { c.width = Math.round(r.width * d); c.height = Math.round(r.height * d); }
@@ -895,6 +1191,7 @@ function frame() {
   const t0 = performance.now(), sc = sceneAt(preset, c.width, c.height), t1 = performance.now();
   drawCaption(ctx, preset, list, v.currentTime, c.width, c.height, sc);
   const t2 = performance.now(); const pf = (window.capProf ??= { scene: 0, draw: 0, n: 0 }); pf.scene += t1 - t0; pf.draw += t2 - t1; pf.n++;
+  drawGrid(v.currentTime);
   requestAnimationFrame(frame);
 }
 Promise.all(PREMIUM_PRESETS.flatMap(p => p.tiers.filter(Boolean).map(t => document.fonts.load((t.italic ? 'italic ' : '') + t.weight + ' ' + (t.stretch || 'normal') + ' 40px "' + t.font + '"')))).finally(() => requestAnimationFrame(frame));

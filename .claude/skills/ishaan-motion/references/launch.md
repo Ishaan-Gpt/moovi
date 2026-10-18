@@ -127,3 +127,50 @@ rebuild. The procedure:
    before it loads sharp; type slides at the reference's size (72 px at 1080); a 3D object on a light world is
    composited (difference/invert), never shown in its black render tile. Keep every clip decoding from Play; a clip
    that starts or seeks mid-film stalls a frame.
+7. **"Push hard" (owner on f13, 2026-10-18) means the finish layers, not new scenes (f14):** a real music bed from
+   the library (product-safe, e.g. Mixkit) with its drop on the film's big reveal; the owner's Style 1 sound pack
+   placed by `assets/sfx-style1/map.json` events (card-in, word, cascade, scene, max 2 punches, 60 ms min gap,
+   risers end on the cut, no ducking), never synth beeps; every cut snapped to the bed's beat by a piecewise time
+   warp (speed changes only on a cut, within ±15 %); glass cards are the frame behind them downsampled twice (no
+   filter), with a tint, a rim and a top sheen; the day sky carried into the light world as a soft band under the
+   type (ref 3). Peaks under -1 dBFS; render the score while the page loads so Play starts at once.
+   The bed choice is Ishaan's: f14 used "Golden Storm"; offer the alternatives (Rising Sun, Close Up) with it.
+
+## Reference intake for a Launch rebuild (the procedure behind f12–f15)
+1. `yt-dlp -f "bv*+ba/b" --merge-output-format mp4 -o ref.mp4 <url>` into its own folder; `ffprobe` for length, size
+   and fps; `ffmpeg -af volumedetect` for loudness.
+2. Sheets at 3 fps: `ffmpeg -i ref.mp4 -vf "fps=3,scale=320:-1,tile=6x6" -frames:v 2 sheet_%d.jpg` (12 s a sheet).
+   Read them and write the shot table (time, shot, camera, type, transition, sound) before any code.
+3. Map it shot for shot onto the brand (its words, its real screens, its palette). Keep the reference's length and
+   pacing. Where a shot needs a real photo or clip, ask the footage finder (`scripts/launch-media.ts`); when nothing
+   real passes, build the shot as a real 3D scene (three.js) in the brand's palette before falling back to drawn art.
+4. Build on the last good film's engine (sprites, the sound engine, the beat warp, glass, fields); swap only scenes.
+5. Stills at the reference's times, side by side with its sheet; fix the gaps; rAF playback per section; then the
+   labelled storyboard and the playable link.
+
+## Look L-REF-3 "Product tour" (ref 3 Commas, f12–f14, the owner's "better, push it further")
+The code: `packages/library/src/kits/launch-ui/looks/l-ref3-tour.html` (Resend v14). A 30 s tour in two worlds:
+- stipple ribbons condense into "Introducing" → the name with a dot pop → on black the mark drops and the name types
+  → a speed-ramp pull-back (6.4× → 1×, log space) shows the black was a phone's screen over a real valley clip;
+- a card lifts out ("Send"), a speed-ramp pan down onto the real analytics screen ("Track"), one giant word ("Reach");
+- the real dashboard over the brand's own art: a speed-ramp dive until the sidebar fills the frame (3.4×), a cursor
+  clicks, a log-space pull-back into a grid whose tiles load blur → sharp;
+- "Know your audience." → the real Audiences card in frosted glass over a night clip that turns to day;
+- the light world with the day sky as a band under the type: "Broadcast to everyone." → a light editor where the
+  cursor drags a cover into a dashed drop zone → "Ship it from your code." → a monitor in a field → the name;
+- the brand's 3D render composited on the light world between the two halves of the line → black, the mark, the name.
+Sound: a real bed with its drop on the pull-back, the owner's pack by `map.json`, every cut on the beat.
+
+## Look L-REF-4 "Calm one-hue" (ref 4 Notely, f15)
+The code: `packages/library/src/kits/launch-ui/looks/l-ref4-calm.html` (Resend v15). 21 s, slow and quiet:
+- **One material, one hue's tints** (for a monochrome brand, its neutral ramp): soft fields, not backgrounds.
+- **3D for the problem:** a three.js stack of the brand's real emails/pages falls and lands fanned with soft
+  shadows, a slow dolly and orbit, two small lines on the left ("Too many emails." / "Too many tools." in a lighter
+  tint); then a three.js desk (laptop, lamp, cup, a low sun) whose screen types the question over giant ghost words.
+- **Tiny type** (34–40 px at 1080) that drifts in word by word from the right out of a blur.
+- **Focus pulls as transitions:** a soft-edged dark blob sweeps the light field ("meet" → the name); a light burst,
+  the real dashboard in glass pulls into focus, holds, defocuses into a moving field.
+- **A word cycler** ("Send your receipts / updates / launches"), a closing line, "All with", and the name resolving
+  out of scrambled letters as the mark springs in.
+Sound: a calm bed (Mixkit "Close Up") with its lift on the dashboard reveal, words at -24 (the owner's word rule,
+quieter for a calm film), cuts on the beat.

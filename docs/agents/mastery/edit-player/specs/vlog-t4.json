@@ -1,42 +1,21 @@
 {
- "name": "Lab vlog take 4 \u00b7 the recipe (edit-fundamentals \u00a712)",
+ "name": "Lab vlog take 4 · v10's grammar (em5)",
  "clip": "../../edit-t4/take4/base/",
- "why": "a walk-through vlog: no abstract middle, so no full-screen world; the speaker carries it with tags on the place and the person, a punch on the stressed words, his own 'prepped / hyped' as glass widgets beside his head, a light leak into his palm over the lens; palette from the footage (cool lab whites, his blue plaid), caption accent read from the video; the selfie fills a 9:16 frame, so the speaker sits in a large window over the blurred room, text above and below it",
+ "why": "v10's grammar on a walk-through vlog: the speaker full frame and graded, one tabletop world the camera pans across with real printed clips that land (licensed soldering and typing footage, and his own lab shot), a doodle that draws itself and a handwritten label in his own words, light leaks back to the speaker; Keshav is named live. Palette from the footage: the lab's sage-cream wall for the paper, his plaid's blue-grey for the ink.",
  "palette": {
-  "page": "#111418",
-  "panel": "#171b20",
-  "panel-ink": "#E6ECF2",
-  "tag": "rgba(10,14,20,.72)",
-  "accent-soft": "#CFE0EE",
-  "mat": "rgba(255,255,255,.06)",
-  "mat-hi": "rgba(255,255,255,.18)",
-  "mat-edge": "rgba(255,255,255,.28)",
-  "mat-ink": "#FFFFFF"
+  "page": "#1A1C17",
+  "panel": "#22241E",
+  "panel-ink": "#ECE8D6",
+  "paper": "#E8E3CC",
+  "paper-hi": "#F3EFDF",
+  "paper-lo": "#D3CCAE",
+  "ink": "#23343C",
+  "tag": "rgba(16,18,14,.72)",
+  "accent-soft": "#DCD6BC"
  },
  "theme": {
-  "fall": "rgba(6,8,12,.45)",
-  "ring": "rgba(255,255,255,.75)",
-  "ground": [
-   [
-    0,
-    "#2B3542"
-   ],
-   [
-    0.5,
-    "#161C24"
-   ],
-   [
-    1,
-    "#0A0D12"
-   ]
-  ],
-  "grid": "rgba(200,220,240,.04)",
-  "bloom": [
-   540,
-   820,
-   820,
-   "rgba(150,190,230,.16)"
-  ]
+  "fall": "rgba(10,10,6,.42)",
+  "ring": "rgba(255,255,255,.75)"
  },
  "caption": {
   "variant": "1.1",
@@ -45,7 +24,86 @@
  "music": {
   "file": "music/bed.mp3",
   "start": 2,
-  "gain": 0.07
+  "gain": 0.06
+ },
+ "desk": {
+  "w": 1800,
+  "h": 3400,
+  "items": [
+   {
+    "src": "../../refs/t4/footage/board.mp4",
+    "at": {
+     "w": "the",
+     "dt": 0.1
+    },
+    "x": 180,
+    "y": 300,
+    "w": 660,
+    "h": 440,
+    "r": -4,
+    "dx": 120,
+    "dy": 890,
+    "dw": 640,
+    "dh": 130,
+    "doodle": [
+     "M10 40 C 200 95, 420 95, 610 30",
+     "M610 30 l -50 6 M610 30 l -22 44"
+    ],
+    "label": "electronics lab",
+    "lx": 140,
+    "ly": 790,
+    "lr": -4
+   },
+   {
+    "src": "../../refs/t4/footage/code.mp4",
+    "at": {
+     "w": "so",
+     "after": 11,
+     "dt": 0.1
+    },
+    "x": 980,
+    "y": 1320,
+    "w": 660,
+    "h": 440,
+    "r": 5,
+    "dx": 940,
+    "dy": 1900,
+    "dw": 460,
+    "dh": 300,
+    "doodle": [
+     "M20 150 l 60 70 l 130 -170",
+     "M330 20 L 270 160 h 60 l -40 130"
+    ],
+    "label": "hyped in",
+    "lx": 930,
+    "ly": 1790,
+    "lr": 4
+   },
+   {
+    "src": "../../refs/t4/footage/lab.mp4",
+    "at": {
+     "w": "all",
+     "after": 17,
+     "dt": 0.1
+    },
+    "x": 220,
+    "y": 2150,
+    "w": 660,
+    "h": 440,
+    "r": -3,
+    "dx": 160,
+    "dy": 2760,
+    "dw": 260,
+    "dh": 240,
+    "doodle": [
+     "M120 220 C 20 150, 10 70, 70 45 C 100 35, 118 60, 120 80 C 122 60, 140 35, 170 45 C 230 70, 220 150, 120 220"
+    ],
+    "label": "wonderful team",
+    "lx": 170,
+    "ly": 2640,
+    "lr": -5
+   }
+  ]
  },
  "beats": [
   {
@@ -55,20 +113,24 @@
    "layers": [
     {
      "t": "cam",
-     "z": 1.04,
-     "Y": 0.42,
-     "form": "window"
-    },
+     "z": 1.0,
+     "Y": 0.4
+    }
+   ]
+  },
+  {
+   "from": {
+    "w": "the"
+   },
+   "layers": [
     {
-     "t": "tag",
-     "name": "Electronics Lab",
-     "role": "RV",
-     "at": {
-      "w": "electronics"
-     },
-     "hold": 2.2,
-     "x": 80,
-     "y": 230
+     "t": "desk",
+     "focus": [
+      510,
+      730,
+      1.3
+     ],
+     "pip": true
     }
    ]
   },
@@ -80,13 +142,19 @@
    "layers": [
     {
      "t": "cam",
-     "z": 1.08,
-     "Y": 0.42,
+     "z": 1.0,
+     "Y": 0.4,
      "punch": {
       "w": "grinding"
      },
-     "by": 1.07,
-     "form": "window"
+     "by": 1.05
+    },
+    {
+     "t": "leak",
+     "at": {
+      "w": "here",
+      "after": 4.9
+     }
     }
    ]
   },
@@ -98,9 +166,8 @@
    "layers": [
     {
      "t": "cam",
-     "z": 1.04,
-     "Y": 0.42,
-     "form": "window"
+     "z": 1.0,
+     "Y": 0.4
     },
     {
      "t": "tag",
@@ -121,37 +188,13 @@
    },
    "layers": [
     {
-     "t": "cam",
-     "z": 1.06,
-     "Y": 0.42,
-     "form": "window"
-    },
-    {
-     "t": "burn",
-     "items": [
-      {
-       "kind": "glass",
-       "text": "prepped up",
-       "icon": "M5 12l5 5 9-10",
-       "at": {
-        "w": "prepped"
-       },
-       "x": 80,
-       "y": 150,
-       "r": -5
-      },
-      {
-       "kind": "glass",
-       "text": "hyped in",
-       "icon": "M13 2L4 14h7l-1 8 9-12h-7z",
-       "at": {
-        "w": "hyped"
-       },
-       "x": 560,
-       "y": 290,
-       "r": 5
-      }
-     ]
+     "t": "desk",
+     "focus": [
+      1310,
+      1780,
+      1.3
+     ],
+     "pip": true
     }
    ]
   },
@@ -162,13 +205,18 @@
    "layers": [
     {
      "t": "cam",
-     "z": 1.1,
-     "Y": 0.42,
+     "z": 1.0,
+     "Y": 0.4,
      "punch": {
       "w": "goes"
      },
-     "by": 1.07,
-     "form": "window"
+     "by": 1.05
+    },
+    {
+     "t": "leak",
+     "at": {
+      "w": "let's"
+     }
     }
    ]
   },
@@ -179,11 +227,25 @@
    },
    "layers": [
     {
+     "t": "desk",
+     "focus": [
+      550,
+      2565,
+      1.3
+     ],
+     "pip": true
+    }
+   ]
+  },
+  {
+   "from": {
+    "w": "catch"
+   },
+   "layers": [
+    {
      "t": "cam",
-     "z": 1.04,
-     "Y": 0.42,
-     "push": 0.02,
-     "form": "window"
+     "z": 1.0,
+     "Y": 0.4
     },
     {
      "t": "leak",
@@ -197,7 +259,23 @@
  "sfx": [
   {
    "at": {
-    "w": "electronics"
+    "w": "the"
+   },
+   "k": "whoosh",
+   "g": 0.4
+  },
+  {
+   "at": {
+    "w": "the",
+    "dt": 0.45
+   },
+   "k": "drop",
+   "g": 0.5
+  },
+  {
+   "at": {
+    "w": "here",
+    "after": 4.9
    },
    "k": "whoosh",
    "g": 0.35
@@ -214,21 +292,38 @@
     "w": "keshav"
    },
    "k": "whoosh",
-   "g": 0.35
+   "g": 0.3
   },
   {
    "at": {
-    "w": "prepped"
+    "w": "so",
+    "after": 11
    },
-   "k": "pop",
-   "g": 0.45
+   "k": "whoosh",
+   "g": 0.4
+  },
+  {
+   "at": {
+    "w": "so",
+    "after": 11,
+    "dt": 0.45
+   },
+   "k": "drop",
+   "g": 0.5
   },
   {
    "at": {
     "w": "hyped"
    },
-   "k": "pop",
+   "k": "click",
    "g": 0.45
+  },
+  {
+   "at": {
+    "w": "let's"
+   },
+   "k": "whoosh",
+   "g": 0.35
   },
   {
    "at": {
@@ -239,10 +334,27 @@
   },
   {
    "at": {
-    "w": "catch"
+    "w": "all",
+    "after": 17
    },
    "k": "whoosh",
    "g": 0.4
+  },
+  {
+   "at": {
+    "w": "all",
+    "after": 17,
+    "dt": 0.45
+   },
+   "k": "drop",
+   "g": 0.5
+  },
+  {
+   "at": {
+    "w": "catch"
+   },
+   "k": "whoosh",
+   "g": 0.35
   },
   {
    "at": {

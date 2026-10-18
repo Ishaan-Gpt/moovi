@@ -59,3 +59,15 @@
 | **Pull-out reveal** | Close on a few elements → camera pulls out to show hundreds → lines connect a few of them into a network |
 | **Leftover-element bridge** | Everything fades except one element (a connecting line), which becomes the next scene's first shape (an arrow) |
 | **Tracking camera on type** | Huge line typed from the left; the camera tracks right with it and earlier words slide off through an edge fade |
+
+## Learnt from the Launch references 3 and 4 (2026-10-18)
+- **One continuous camera per section** (ref 3): the camera dives into a real UI element until it fills the frame,
+  pulls back on the same log-space curve, pans down onto the next screen; hard cuts only between sections, on the beat.
+- **The black was a screen:** a pull-back reveals that the frame we were in was a device's screen in a real place.
+- **Drag and drop with the cursor:** the tile lifts with a growing shadow, the dashed drop zone darkens, the tile lands.
+- **Focus pull** (ref 4): the next layer arrives out of a blur and the old one defocuses away. **Dark sweep:** a
+  soft-edged blob of the next world grows from a corner. Ref 3's night → day under a glass card is a light change.
+  These are motivated by light or focus, never a dissolve between two unrelated pictures, which stays banned.
+- **Word cycler:** the line holds and its last word swaps out of a blur, three times. **Scrambled-letter logo:** the
+  letters cycle glyphs and lock left to right while the mark springs in.
+- **Tiny type** works in a calm film: 34–40 px at 1080, word by word, drifting in from the right out of a blur.

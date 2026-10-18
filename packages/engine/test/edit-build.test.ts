@@ -42,9 +42,9 @@ test('edit builder: pauses keep a breath, no gap over pause_max, cuts on word ed
   assert.ok(m.max_gap <= DEFAULT_LAWS.pause_max, JSON.stringify(m));
   assert.equal(m.cuts_on_word_pct, 100);
   assert.ok(m.max_hold <= DEFAULT_LAWS.hold_max + 1e-6, JSON.stringify(m));
-  // the filler hole leaves the word pads of air: pad_out (0.15 s) after "minutes." and pad_in (0.1 s) before "It"
+  // the filler hole leaves pause_keep of air: 0.09 s after "minutes." and 0.09 s before "It"
   const f = e.removed!.find(x => x.text === 'um')!;
-  assert.ok(Math.abs(f.src_in - 5.85) < 1e-6 && Math.abs(f.src_out - 7.3) < 1e-6, JSON.stringify(f));
+  assert.ok(Math.abs(f.src_in - 5.79) < 1e-6 && Math.abs(f.src_out - 7.31) < 1e-6, JSON.stringify(f));
 });
 
 test('edit builder: framings alternate full and punch-in, long shots get a slow push, every cut is named', () => {

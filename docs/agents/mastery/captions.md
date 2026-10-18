@@ -10,6 +10,10 @@ Not a product default yet: wiring into types comes later with Ishaan.
 ## Rules from Ishaan (every caption)
 
 - **Never punctuation on screen** (2026-10-18). Only letters, digits and % $ # & +.
+- **Readable time** (2026-10-18): a card stays up at least 1.2 s; a shorter card joins its neighbour when the voice
+  runs on, and every card holds up to 1 s after its last word (`MIN_CARD`, `HOLD` in draw.ts). Before: some cards
+  flashed for 0.24 to 0.6 s.
+- **Text never covers the face** (2026-10-18): beside or below it with a decent margin (face detector).
 - Every correction also lands in the `ishaan-motion` skill (lessons + talking-head.md) the same turn.
 - **Hinglish is shown as spoken, in Latin letters**, never translated: English words keep their English spelling,
   Hinglish keeps the spelling people type (crore, yaar), no diacritics (`edit/romanize.ts`; relayed by Edit mastery).
@@ -115,3 +119,22 @@ matte runs in a Web Worker on a 256 px copy of the frame (CPU delegate; the GPU 
 renderer composites the latest mask, and until the first mask arrives it segments on the page so a highlight is never
 drawn over the speaker. The face detector runs a few times a second, since a card's place is fixed when it starts.
 Entries leave rest and land at rest (`fromRest`: 1 - (1 - x^1.3)^3), per the owner rule "speed is a curve, never a step".
+
+## Premium Caption 4 (in review 2026-10-18)
+
+Ref: the reel https://www.instagram.com/p/Dd1Mf7xzsbm/ ("3 different COUNTRIES", "Here's what NOBODY about working tells
+you"; local copy `data/refs/captions/c05/`). A poster card: one key word giant in League Gothic narrowed to a very tall
+set, a deep glossy accent (`glossKey`, red `#D42020` was the ref) with bevel rims, a solid 3D block and a firm drop
+shadow, standing behind the speaker on the free side of the face (tucked behind by a quarter face width at most, so
+every letter reads), its letters rising one after another out of a motion trail. The words before it a white
+Sacramento script on its top-left corner, written on; after it a white Poppins line under the face, then the closing
+words in script, right-aligned.
+
+Ishaan's words: v1 (key centred on the face): "improve the latest font's style, effects and visibility". v2: "push;
+it feels you are forgetting old rules, I was not able to see and read all captions" → the key moved beside the face,
+one key word per card, the gallery now plays every preset at once on the same clip. Ishaan: "you made it worse, get
+ back to previous; when I said I am unable to read, I meant the minimum appear time: appearing too fast and leaving too
+ fast". Back to v2 placement (key centred behind the speaker); the timing fix applies to every preset.
+Then: "you made it worse, get back to previous; when I said I am unable to read, I meant the minimum appear time:
+appearing too fast and leaving too fast". Back to v2 placement (key centred behind the speaker); the readable-time fix
+applies to every preset.

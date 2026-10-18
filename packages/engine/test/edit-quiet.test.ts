@@ -59,10 +59,9 @@ test('buildEdl with heard pauses: the stretched pause is trimmed, cuts stay betw
   const e = buildEdl({ source, words, quiet, palette, style: { id: 'base' } });
   assert.deepEqual(validateEdl(e).problems.filter(p => !p.startsWith('version')), []);
   assert.deepEqual(EDIT.timeline(e).problems, []);
-  // without the heard pause nothing is cut there; with it the film is shorter by the pause less the air kept on both
-  // sides: each fitted edge gets up to 0.1 s of its heard span back (the air guard), then pad_out after and pad_in before
+  // without the heard pause nothing is cut there; with it the film is about 0.8 - pause_keep shorter
   const len = (x: typeof e) => x.shots.at(-1)!.t_out;
-  assert.ok(Math.abs((len(bare) - len(e)) - (0.8 - 0.2 - DEFAULT_LAWS.pad_in - DEFAULT_LAWS.pad_out)) < 0.02, `${len(bare)} vs ${len(e)}`);
+  assert.ok(Math.abs((len(bare) - len(e)) - (0.8 - DEFAULT_LAWS.pause_keep)) < 0.02, `${len(bare)} vs ${len(e)}`);
   assert.ok(e.removed!.some(r => r.reason === 'pause_trim' && r.src_in > 2.2 - 1e-6 && r.src_out < 3.0 + 1e-6));
   // the EDL's words carry the fitted edges, and every cut lands between them
   const w = e.words.find(x => x.text === 'striking')!;

@@ -30,6 +30,10 @@ amateur.**
 | Depth handover (busy layer to the next bridge element) | rack focus | 0.4–0.6 s | smooth | The old layer goes soft as the new one arrives. |
 | Product object, 3D | orbit / arc | 2–4 s | smooth | Slow; never combine with a whip. |
 | Cursor travel (a real hand) | (path, not a camera move) | 0.5–0.7 s | smooth in-out on an arc | Never the hard AE "ramp" bezier: it reads as a robot. |
+| Into one real UI element (a sidebar item, a card) | speed-ramp dive | 1.2–1.4 s | `speed-ramp`, log-space scale to 3–3.5× | Land the focus on the element the cursor then clicks; pull back on the same curve. |
+| The black was a screen | speed-ramp pull-back | 1.6–1.8 s | `speed-ramp`, log space (≈6× → 1×) | The plate behind scales with the camera; the bed's drop lands on it. |
+| A 3D stack or object (three.js) | dolly + small orbit | the whole shot | smooth | 10–15 % closer and 5–8° around over 3–4 s; never a whip. |
+| A calm still shot (ref 4) | slow push | the whole shot | smooth | 1–3 % only; the type and focus pulls carry it. |
 
 ## Bans
 - Camera shake on text that must be read. A move at an even 1× for its whole length. A speed curve with corners.
