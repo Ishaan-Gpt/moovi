@@ -42,14 +42,14 @@ const CONNECT_PAGE = `<!doctype html><html><head><meta charset="utf-8"><meta nam
 <style>body{font:16px/1.5 system-ui,sans-serif;max-width:720px;margin:40px auto;padding:0 16px;color:#111}code,pre{background:#f3f3f3;border-radius:6px}pre{padding:12px;white-space:pre-wrap;word-break:break-all}button{font:inherit;padding:8px 14px;border-radius:8px;border:1px solid #111;background:#111;color:#fff;cursor:pointer}.muted{color:#666}</style></head>
 <body><h1>Connect Claude Code to Moovi</h1>
 <p class="muted">Sign in to Moovi in this browser first. A new token replaces the old one.</p>
-<p><button id="sp">Make my setup prompt</button> <button id="go" style="background:#fff;color:#111">Make my connect command</button> <button id="off" style="background:#fff;color:#111">Disconnect</button></p>
+<p><button id="sp">Make my two commands</button> <button id="go" style="background:#fff;color:#111">Make my connect command</button> <button id="off" style="background:#fff;color:#111">Disconnect</button></p>
 <div id="out"></div><p id="st" class="muted"></p>
 <script>
 const out=document.getElementById('out'),st=document.getElementById('st'),base=location.pathname.replace(/\\/(api\\/brain\\/)?connect\\/?$/,'');
 async function status(){const r=await fetch(base+'/api/brain/status');if(!r.ok){st.textContent='Not signed in to Moovi in this browser.';return}const s=await r.json();st.textContent=s.linked?('Linked (token ending '+s.token_last4+'), Claude Code '+(s.online?'online':'offline')):'Not linked yet.'}
 document.getElementById('go').onclick=async()=>{const r=await fetch(base+'/api/brain/link',{method:'POST',headers:{'content-type':'application/json'},body:'{}'});const j=await r.json();if(!r.ok){out.textContent=j.error||'Could not make a token';return}
 out.innerHTML='<p>1. Run this once in a terminal (it works from every folder):</p><pre></pre><p>2. In Claude Code type <code>/mcp__moovi__run</code>, then start your video on the Moovi website.</p><p class="muted">This command is shown once. Keep it private: it lets a Claude Code work on your videos.</p>';out.querySelector('pre').textContent=j.command;status()};
-document.getElementById('sp').onclick=async()=>{const r=await fetch(base+'/api/brain/setup',{method:'POST'});const j=await r.json();if(!r.ok){out.textContent=j.error||'Could not make a prompt';return}out.innerHTML='<p>Paste this into Claude Code. It connects itself and keeps going until the video is done (works once, for 30 minutes):</p><pre></pre>';out.querySelector('pre').textContent=j.prompt;status()};
+document.getElementById('sp').onclick=async()=>{const r=await fetch(base+'/api/brain/setup',{method:'POST'});const j=await r.json();if(!r.ok){out.textContent=j.error||'Could not make a prompt';return}const c=j.commands,w=/windows/i.test(navigator.userAgent)?c.windows:c.unix;out.innerHTML='<p>Paste these into Claude Code, 1 then 2 (they work for 30 minutes):</p><p>1. Connect (once):</p><pre></pre><p>2. Start Moovi (after you upload a clip):</p><pre></pre>';const pre=out.querySelectorAll('pre');pre[0].textContent=w[0];pre[1].textContent=w[1];status()};
 document.getElementById('off').onclick=async()=>{await fetch(base+'/api/brain/link',{method:'DELETE'});out.textContent='Disconnected.';status()};
 status();
 </script></body></html>`;
