@@ -38,7 +38,8 @@ const sleep = (ms: number, signal?: AbortSignal) => new Promise<void>((res, rej)
   signal?.addEventListener('abort', on, { once: true });
 });
 
-/** the answer cap of a brain agent: direct:edit, direct:film, direct:look map to BRAIN_CAPS edit, film, look */
+/** the answer cap of a brain agent: direct:edit, direct:film, direct:look map to BRAIN_CAPS edit, film, look; direct:edit-spec
+ *  (decision 20, the whole Edit spec) has no cap here, moovi_answer's MAX_ANSWER_CHARS still holds */
 export const capOf = (agent: string): number | undefined => (BRAIN_CAPS as Record<string, { out: number } | undefined>)[agent.replace(/^direct:/, '')]?.out;
 
 const jsonSchemaOf = (shape: z.ZodRawShape | undefined) => (shape ? z.toJSONSchema(z.object(shape), { unrepresentable: 'any' }) as Record<string, unknown> : null);

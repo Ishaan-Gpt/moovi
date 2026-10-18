@@ -26,8 +26,13 @@ export const PICKUP_MS = 120_000;
  */
 export const WAIT_MS = 10 * 60_000;
 
-/** The only agents that may reach the user's Claude Code: the batched decision calls (plan 23.2). */
-export const BRAIN_AGENTS: ReadonlySet<string> = new Set(['direct:edit', 'direct:film', 'direct:look']);
+/**
+ * The only agents that may reach the user's Claude Code: the batched decision calls (plan 23.2), and since decision 20
+ * the Edit spec Edit mastery's player draws (edit/mastery-direct.ts, `direct:edit-spec`): a linked Claude Code writes it
+ * from the full ishaan-motion skill. Without it here that step went to the key or server lane even with Claude Code
+ * online. The menu step (`direct:edit-menu`) stays off: it is the compact tier for keys and the server model.
+ */
+export const BRAIN_AGENTS: ReadonlySet<string> = new Set(['direct:edit', 'direct:edit-spec', 'direct:film', 'direct:look']);
 export const isBrainAgent = (agent: string) => BRAIN_AGENTS.has(agent);
 
 export interface LaneFacts {

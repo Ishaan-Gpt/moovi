@@ -16,7 +16,7 @@ const creq = (agent: string) => ({ agent, system: 's', prompt: 'p', model: 'm', 
 test('lane 7: order and constants', () => {
   assert.deepEqual([...LANE_ORDER], ['claude-code', 'key', 'server']);
   assert.equal(PICKUP_MS, 120_000);
-  assert.deepEqual([...BRAIN_AGENTS].sort(), ['direct:edit', 'direct:film', 'direct:look']);
+  assert.deepEqual([...BRAIN_AGENTS].sort(), ['direct:edit', 'direct:edit-spec', 'direct:film', 'direct:look']);
 });
 
 test('lane 7: every combination picks a lane and never throws', () => {
@@ -119,4 +119,12 @@ test('lane 7: a step\'s "brain" reaches the key and server lanes as their own mo
   // a scope with placeholder models ('server') keeps the name rather than sending a placeholder
   await laneRuntime({ facts: () => F({ hasKey: true }), key: spy('key'), models: { key: { director: 'server', crew: 'server', fast: 'server' } } }).complete!(req('brain'));
   assert.deepEqual(seen, ['brain:brain', 'key:own-big', 'server:srv-big', 'key:own-small', 'key:claude-sonnet-x', 'key:brain']);
+});
+
+test('lane 7: decision 20, the Edit spec reaches a linked Claude Code; the menu step never does', () => {
+  const on = F({ claudeCode: 'online', hasKey: true, server: true, byok: 'optional' });
+  assert.equal(pickLane('direct:edit-spec', on).lane, 'claude-code');
+  assert.notEqual(pickLane('direct:edit-menu', on).lane, 'claude-code');
+  assert.equal(pickLane('direct:edit-spec', F({ claudeCode: 'linked', hasKey: false, server: false, byok: 'required' })).lane, 'wait');
+  assert.equal(pickLane('direct:edit-spec', F({ claudeCode: 'off', hasKey: true, server: false, byok: 'required' })).lane, 'key');
 });
