@@ -144,6 +144,12 @@ clips and UI components to enhance the video, but chosen for *this* video: what 
 people it names, its own footage and colours. A device, clip or widget that would sit the same in any video (a stock
 set, a house layout, one form for the whole film) is not editing. Each pick answers "what does this sentence need?"
 on this clip, and two different clips never get the same film.
+**Two tiers by model (owner, 2026-10-18).** A capable model (Claude) pushes creativity: it writes the whole spec
+from this skill and invents each graphic for the video. A small free model (Groq, 8k TPM) only directs: it picks per
+sentence from the library of graphics capable models already made and the owner approved
+(`docs/agents/mastery/edit-player/menu.json`: device, hero word, caption preset), and code fills the slots from the
+clip and the graph (the speaker's own words, the clip's stills, real footage, sfx and music per video). It never builds
+a graphic from scratch, so its films stay good.
 1. **Prepare through the pipeline** (planEdit): hear in the spoken language (Hinglish stays Hinglish in Latin
    letters), faces, takes, cuts; then bake the cuts and the grade into one file (`build-cut.mjs --grade`), so the
    preview plays straight and the grade costs nothing at play time.

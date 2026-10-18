@@ -133,3 +133,6 @@
 
 ## 1.14.1 (2026-10-18)
 - Rule: text behind the speaker is wider than the shoulders, centred at the neck, never across the face.
+
+## 1.15.1 (2026-10-18)
+- Owner rule: capable models invent each graphic; a small free model directs from the approved library menu (menu.json) and never builds from scratch.
