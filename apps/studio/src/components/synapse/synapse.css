@@ -26,9 +26,9 @@
 .syn__runs { display: inline-flex; align-items: center; gap: 8px; padding: 4px 6px 4px 12px; border-radius: 12px; color: var(--ink-2); }
 .syn__runs select { border: 0; background: transparent; font: inherit; font-size: 13px; font-weight: 600; color: var(--ink); padding: 4px; }
 
-.syn__counts { position: absolute; left: 20px; top: 92px; margin: 0; display: grid; gap: 6px; color: var(--ink-2); pointer-events: none; }
+.syn__counts { position: absolute; left: 20px; top: 74px; margin: 0; display: flex; gap: 16px; color: var(--ink-2); pointer-events: none; }
 .syn__counts div { display: flex; align-items: baseline; gap: 8px; }
-.syn__counts dd { margin: 0; font-size: 18px; color: var(--ink); font-feature-settings: "tnum"; min-width: 3ch; }
+.syn__counts dd { margin: 0; font-size: 15px; color: var(--ink); font-feature-settings: "tnum"; }
 .syn__counts dt { order: 2; }
 
 .syn__legend { position: absolute; left: 20px; bottom: 92px; margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
@@ -78,8 +78,7 @@
   .syn__top { left: 12px; right: 12px; flex-wrap: wrap; }
   .syn__title h2 { font-size: 21px; }
   .syn__close span { display: none; }
-  .syn__counts { top: 108px; left: 12px; }
-  .syn__counts dd { font-size: 15px; }
+  .syn__counts { top: 104px; left: 12px; gap: 12px; }
   .syn__legend { display: none; }
   .syn-card { left: 12px; right: 12px; width: auto; top: auto; bottom: 84px; max-height: 46%; }
 }

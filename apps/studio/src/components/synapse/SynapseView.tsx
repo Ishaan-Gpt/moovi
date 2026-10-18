@@ -211,9 +211,9 @@ function Board({ snap, events, T, layout, live, pick, onPick }: { snap: SynSnaps
       const T = p.live ? Math.max(p.T, Date.now()) : p.T;
       const f = frame(p.snap, p.events, T, p.layout, p.live);
       last.current = f;
-      const base = Math.min(cw / W, (ch - 150) / H) * .96;
+      const base = Math.min(cw / W, (ch - 176) / H) * .96;
       const k = base * cam.current.k;
-      const ox = cw / 2 - (W / 2) * k + cam.current.x, oy = 70 + (ch - 150) / 2 - (H / 2) * k + cam.current.y;
+      const ox = cw / 2 - (W / 2) * k + cam.current.x, oy = 96 + (ch - 176) / 2 - (H / 2) * k + cam.current.y;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, cw, ch);
       ctx.setTransform(dpr * k, 0, 0, dpr * k, dpr * ox, dpr * oy);
@@ -224,8 +224,8 @@ function Board({ snap, events, T, layout, live, pick, onPick }: { snap: SynSnaps
 
     // pan, zoom, pick
     const toWorld = (sx: number, sy: number) => {
-      const base = Math.min(cw / W, (ch - 150) / H) * .96, k = base * cam.current.k;
-      const ox = cw / 2 - (W / 2) * k + cam.current.x, oy = 70 + (ch - 150) / 2 - (H / 2) * k + cam.current.y;
+      const base = Math.min(cw / W, (ch - 176) / H) * .96, k = base * cam.current.k;
+      const ox = cw / 2 - (W / 2) * k + cam.current.x, oy = 96 + (ch - 176) / 2 - (H / 2) * k + cam.current.y;
       return { x: (sx - ox) / k, y: (sy - oy) / k, k };
     };
     const hit = (sx: number, sy: number): { id: string; pick: Pick } | null => {

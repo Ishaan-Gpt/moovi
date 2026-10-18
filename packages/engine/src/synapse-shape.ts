@@ -74,7 +74,7 @@ export const shortId = (s: unknown): string => String(s ?? '').replace(/[^A-Za-z
 const aboutLine = (s: unknown): string => {
   if (typeof s !== 'string') return '';
   const t = s.replace(/[\u0000-\u001f]+/g, ' ').trim();
-  return SECRETISH.test(t) || /https?:|[\\@]/.test(t) ? '' : t.slice(0, 220);
+  return SECRETISH.test(t) || /https?:|\\/.test(t) ? '' : t.slice(0, 220);
 };
 const num = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null);
 const word = (s: unknown, fallback: string): string => (typeof s === 'string' && /^[a-z][a-z0-9_\-]{0,31}$/i.test(s) ? s : fallback);
