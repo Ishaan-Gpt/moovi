@@ -160,9 +160,6 @@ export function captionChunks(words: FxWord[], o: { min?: number; max?: number; 
  * face band and out of the zone of the effect that is up, staying inside the platform safe area (8% to 84%).
  */
 export function captionY(t: number, events: FxEvent[], face: { y0: number; y1: number } | null, half = 0.035, base = 0.7): number {
-  // a framing effect that keeps the caption (the phone) puts it in its own clear band, above the frame
-  const framed = active(events, t).find(e => isFx(e.fx) && FX[e.fx].framesPicture && FX[e.fx].capAt !== undefined);
-  if (framed) return FX[framed.fx].capAt!;
   const bands: [number, number][] = [];
   if (face) bands.push([face.y0, face.y1]);
   for (const e of active(events, t)) { const z = FX[e.fx].zone; if (z) bands.push(z); }
@@ -179,12 +176,9 @@ export function captionY(t: number, events: FxEvent[], face: { y0: number; y1: n
 export const used = (events: FxEvent[]) => [...new Set([...events].sort(byStart).map(e => e.fx))];
 export const allFx = () => [...FX_IDS];
 
-/**
- * is the caption off at t: while an effect is its own text (giant word) or frames the picture with no room left for it
- * (the app window of pull-back). The phone keeps the caption, above the phone (FX capAt): every spoken word stays on screen.
- */
+/** is the caption off at t: while an effect frames the picture (phone, app window) or is its own text (giant word) */
 export function captionHidden(events: FxEvent[], t: number): boolean {
-  return active(events, t).some(e => isFx(e.fx) && ((!!FX[e.fx].framesPicture && FX[e.fx].capAt === undefined) || !!FX[e.fx].ownsText));
+  return active(events, t).some(e => isFx(e.fx) && (!!FX[e.fx].framesPicture || !!FX[e.fx].ownsText));
 }
 
 /**

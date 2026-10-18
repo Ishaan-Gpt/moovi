@@ -2,7 +2,6 @@ import { execFile } from 'node:child_process';
 import { existsSync, mkdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { joinGraph } from './xfade';
 import { config } from '../config';
 import { quietRuns } from './cut';
 
@@ -54,12 +53,15 @@ export async function loudness(file: string): Promise<{ lufs: number; tp: number
 export interface CleanVoice { file: string; seconds: number; denoise: 'arnndn' | 'afftdn'; before: { lufs: number }; after: { lufs: number; tp: number }; gain_db: number }
 
 /**
- * The cut, in the same ffmpeg pass as the clean: the kept source ranges joined in order with a short crossfade at
- * each real jump cut (no click, no chopped syllable). Pure: the filter graph for `keep` ranges (source seconds) feeding `chain`.
+ * The cut, in the same ffmpeg pass as the clean: each kept source range trimmed, an 8 ms fade at both ends (no click
+ * at a jump cut), joined in order. Pure: the filter graph for `keep` ranges (source seconds) feeding `chain`.
  */
 export function cutGraph(keep: { src_in: number; src_out: number }[], chain: string): string {
-  // a 16 ms crossfade at each real join, none inside a run continuous in the source (./xfade.ts): the same joins as the picture cut
-  return `${joinGraph(keep.map(k => ({ a: k.src_in, b: k.src_out })), { input: '[0:a]', label: 'cut', d: 0.016, prefix: 'k' })};[cut]${chain}[out]`;
+  const f = 0.008, parts = keep.map((k, i) => {
+    const d = Math.max(0, k.src_out - k.src_in);
+    return `[0:a]atrim=start=${k.src_in.toFixed(4)}:end=${k.src_out.toFixed(4)},asetpts=PTS-STARTPTS,afade=t=in:d=${f},afade=t=out:st=${Math.max(0, d - f).toFixed(4)}:d=${f}[k${i}]`;
+  });
+  return `${parts.join(';')};${keep.map((_, i) => `[k${i}]`).join('')}concat=n=${keep.length}:v=0:a=1[cut];[cut]${chain}[out]`;
 }
 
 /**

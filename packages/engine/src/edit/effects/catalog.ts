@@ -24,9 +24,6 @@ export interface FxSpec {
   kind: FxKind;
   /** a camera effect that puts the picture in a frame (phone, window) holds the overlay slot too */
   framesPicture?: boolean;
-  /** where the caption sits (centre, fraction of the frame height) while this framing effect is up, clear of the frame;
-   *  a framing effect without it hides the caption */
-  capAt?: number;
   /** the effect is its own text (a giant keyword): the caption steps aside while it is up */
   ownsText?: boolean;
   /** drawn behind the speaker (needs the person mask; without one it draws in front, smaller) */
@@ -51,13 +48,13 @@ export const FX: Record<FxId, FxSpec> = {
   'freeze-label': { id: 'freeze-label', label: 'Freeze and Label', kind: 'overlay', min: 1, max: 3, sfx: 'click', zone: [0.2, 0.6], does: 'the frame freezes and labels draw on with leader lines' },
   'before-after': { id: 'before-after', label: 'Before / After', kind: 'overlay', min: 1.4, max: 5, sfx: 'swoosh', zone: [0.08, 0.16], does: 'a wipe line splits the raw take from the edited one' },
   'comment-cta': { id: 'comment-cta', label: 'Comment CTA', kind: 'overlay', min: 1.6, max: 5, sfx: 'type', zone: [0.6, 0.86], does: 'a comment box types the keyword, a reply slides up' },
-  'phone-mockup': { id: 'phone-mockup', label: 'Phone Mockup', kind: 'camera', framesPicture: true, capAt: 0.115, min: 1.4, max: 5, sfx: 'whoosh', zone: [0.1, 0.9], does: 'the video shrinks into a phone that rotates in, in 3D' },
+  'phone-mockup': { id: 'phone-mockup', label: 'Phone Mockup', kind: 'camera', framesPicture: true, min: 1.4, max: 5, sfx: 'whoosh', zone: [0.1, 0.9], does: 'the video shrinks into a phone that rotates in, in 3D' },
   'giant-word': { id: 'giant-word', label: 'Giant Word', kind: 'overlay', behind: true, ownsText: true, min: 0.8, max: 4, sfx: 'pop', zone: [0.18, 0.42], does: 'one huge keyword behind the speaker, blurring in' },
   'pull-back': { id: 'pull-back', label: 'Pull Back Reveal', kind: 'camera', framesPicture: true, min: 1.6, max: 6, sfx: 'riser', zone: [0.05, 0.95], does: 'the camera pulls back and the video becomes a window in an app' },
   'stat-counter': { id: 'stat-counter', label: 'Stat Counter', kind: 'overlay', min: 1.2, max: 5, sfx: 'tick', zone: [0.12, 0.4], does: 'a big number rolls up with a bar' },
   'strike-tags': { id: 'strike-tags', label: 'Strike Tags', kind: 'overlay', min: 1.4, max: 5, sfx: 'pop', zone: [0.14, 0.44], does: 'name tags pop one by one, then get struck through' },
   'card-flip': { id: 'card-flip', label: 'Card Flip', kind: 'transition', min: 0.4, max: 0.8, sfx: 'swoosh', does: 'the whole picture flips like a card in 3D' },
-  'whip-spin': { id: 'whip-spin', label: 'Whip Spin', kind: 'transition', min: 0.5, max: 0.8, sfx: 'whoosh', does: 'a fast spin with motion blur between two moments' },
+  'whip-spin': { id: 'whip-spin', label: 'Whip Spin', kind: 'transition', min: 0.3, max: 0.7, sfx: 'whoosh', does: 'a fast spin with motion blur between two moments' },
   'timeline-ui': { id: 'timeline-ui', label: 'Timeline UI', kind: 'overlay', min: 1.4, max: 5, sfx: 'swoosh', zone: [0.66, 0.92], does: 'an editor timeline slides up and its playhead scrubs' },
 };
 

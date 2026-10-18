@@ -42,11 +42,6 @@ export function effectsRuntime(D: FxRuntimeData) {
   const frameUrl = (i: number) => D.frames + '/f' + pad5(Math.max(1, Math.min(D.count, i))) + '.jpg';
   const maskUrl = (i: number) => D.masks + '/m' + pad5(Math.max(1, Math.min(D.count, i))) + '.png';
   const F = D.face, B = D.box;
-  // ./face-safe.ts, put in the page first by render.ts (fxPagePrelude): how much a graphic is in the face's way, 0..1
-  const G = globalThis as any;
-  if (typeof G.fxFaceShield !== 'function' || typeof G.fxOrbitRect !== 'function') throw new Error('effects page: the face-safe helpers are missing (evaluate fxPagePrelude() first)');
-  const faceIn = (r: { x: number; y: number; w: number; h: number }) => G.fxFaceShield(F, D.faceBox, r) as number;
-  const fxOrbitRect = G.fxOrbitRect as (f: typeof F, x: number, y: number, z: number) => { x: number; y: number; w: number; h: number };
 
   const css = `${D.fonts}
   *{box-sizing:border-box} html,body{margin:0;width:${W}px;height:${H}px;overflow:hidden;background:${INK};font-family:I,sans-serif}
@@ -64,7 +59,7 @@ export function effectsRuntime(D: FxRuntimeData) {
   .glass{background:rgba(12,12,12,.72);border:2px solid rgba(255,255,255,.16);border-radius:34px;box-shadow:0 30px 70px rgba(0,0,0,.5),0 0 60px rgba(242,181,29,.18);backdrop-filter:blur(18px)}
   .pill{position:absolute;padding:14px 30px;border-radius:999px;font-weight:800;font-size:40px;letter-spacing:.02em}
   #cap{position:absolute;left:60px;right:60px;text-align:center;font-weight:900;font-size:84px;line-height:1.02;letter-spacing:-.01em;color:#fff;
-    -webkit-text-stroke:10px rgba(0,0,0,.9);paint-order:stroke fill;text-shadow:0 6px 24px rgba(0,0,0,.55),0 2px 4px rgba(0,0,0,.6);text-transform:lowercase}
+    text-shadow:0 6px 24px rgba(0,0,0,.55),0 2px 4px rgba(0,0,0,.6);text-transform:lowercase}
   #cap .k{color:${GOLD};display:inline-block;margin:0 .14em}
   #title{position:absolute;left:50%;top:120px;transform:translateX(-50%);padding:16px 34px;border-radius:999px;background:rgba(10,10,10,.78);
     border:2px solid rgba(255,216,74,.55);color:#fff;font-weight:800;font-size:40px;white-space:nowrap}
@@ -103,20 +98,14 @@ export function effectsRuntime(D: FxRuntimeData) {
           ${labels[i] ? `<div style="position:absolute;left:0;right:0;bottom:0;padding:16px 14px;background:linear-gradient(transparent,rgba(0,0,0,.85));color:#fff;font-weight:800;font-size:30px">${esc(labels[i])}</div>` : ''}</div>`));
         const B2 = Array.from({ length: n }, (_, i) => mk(back, i)), F2 = Array.from({ length: n }, (_, i) => mk(front, i));
         return { e, hide, needsCut: true, draw: (t) => {
-          const lt = t - e.t0, k = life(t, e, 0.4, 0.4), spin = (p.speed ?? 1.9) * lt + (p.phase ?? 0);
-          // the ring opens from 85% of its width, not from the face: a ring that grows out of the head spends its first
-          // frames hidden behind it, and the hook is the first 0.4 s (r6a: cards first showed at 0.5 s, not 0.37 s)
-          const rx = 440 * (0.85 + 0.15 * k), rz = 330 * k, cy = F.cy + 30, op = clamp(k * 1.4);
+          const lt = t - e.t0, k = life(t, e, 0.55, 0.4), spin = (p.speed ?? 1.9) * lt + (p.phase ?? 0);
+          const rx = 440 * k, rz = 330 * k, cy = F.cy + 30;
           for (let i = 0; i < n; i++) {
             const a = spin + i * 2 * Math.PI / n, x = F.cx + Math.sin(a) * rx, z = Math.cos(a) * rz, y = cy - Math.cos(a) * 70 * k + Math.sin(a) * 40;
             const tf = `translate3d(${(x - 115).toFixed(1)}px,${(y - 200).toFixed(1)}px,${z.toFixed(1)}px) rotateY(${(Math.sin(a) * 28).toFixed(1)}deg)`;
-            // the face stays clear (./face-safe.ts): a card coming round in front fades into the copy behind the
-            // speaker as it nears the face (the cutout hides it there, so it reads as passing behind the head); with
-            // no person mask nothing is in front of the back copy, so it fades out over the face instead
-            const w = faceIn(fxOrbitRect(F, x, y, z));
-            const inFront = Math.cos(a) >= 0, fo = inFront ? op * (1 - w) : 0, bo = (!inFront || w > 0) ? op * (D.masks ? 1 : 1 - w) : 0;
-            for (const [node, o] of [[F2[i]!, fo], [B2[i]!, bo]] as [HTMLElement, number][]) {
-              show(node, o > 0.01 && k > 0.01); node.style.transform = tf; node.style.opacity = String(o);
+            const inFront = Math.cos(a) >= 0;
+            for (const [node, on] of [[F2[i]!, inFront], [B2[i]!, !inFront]] as [HTMLElement, boolean][]) {
+              show(node, on && k > 0.01); node.style.transform = tf; node.style.opacity = String(clamp(k * 1.4));
             }
           }
         } };
@@ -241,17 +230,13 @@ export function effectsRuntime(D: FxRuntimeData) {
         const word = String(p.word ?? 'WOW'), setup = p.setup ? String(p.setup) : '';
         const size = p.size ?? Math.max(90, Math.min(520, Math.floor(900 / (Math.max(2, word.length) * 0.954))));
         // the keyword sits BEHIND the speaker; the small setup line sits in FRONT, just above it, so the head never hides it
-        // behind the head only when the word is wide enough to show beside it; on a close-up (the head about as wide as
-        // the word, measured 2026-10-18 on Vignesh's selfie: MOOVI fully hidden, captions off, 0.8 s of nothing) it
-        // goes in FRONT at chest height, the caption's own slot, so it never covers the face
-        const wordW = Math.max(2, [...word].length) * 0.9 * size * 1.06, ahead = wordW - 2.3 * F.r < 240;
-        const n = keep(el(ahead ? front : back, `<div class="abs" style="width:${W}px;text-align:center;transform-style:flat">
-          <div class="gw" style="font-weight:900;font-size:${size}px;line-height:.9;letter-spacing:-.03em;color:${GOLD};text-shadow:${ahead ? '0 6px 0 rgba(0,0,0,.55),0 10px 40px rgba(0,0,0,.6)' : '0 12px 50px rgba(0,0,0,.35)'};text-transform:uppercase">${esc(word)}</div></div>`));
+        const n = keep(el(back, `<div class="abs" style="width:${W}px;text-align:center;transform-style:flat">
+          <div class="gw" style="font-weight:900;font-size:${size}px;line-height:.9;letter-spacing:-.03em;color:${GOLD};text-shadow:0 12px 50px rgba(0,0,0,.35);text-transform:uppercase">${esc(word)}</div></div>`));
         const su = setup ? keep(el(front, `<div class="abs" style="width:${W}px;text-align:center;font-weight:800;font-size:64px;color:#fff;text-shadow:0 6px 20px rgba(0,0,0,.55)">${esc(setup)}</div>`)) : null;
         const gw = n.querySelector('.gw') as HTMLElement;
-        return { e, hide, needsCut: !ahead, draw: (t) => {
+        return { e, hide, needsCut: true, draw: (t) => {
           show(n, true); const k = eOut(prog(t, e.t0, 0.32)), o = eIn(prog(t, e.t1 - 0.25, 0.25));
-          const top = ahead ? Math.min(H * 0.8 - size, Math.max(F.cy + F.r * 1.35, H * 0.55)) : Math.max(180, F.cy - F.r * 0.75 - size * 0.5);
+          const top = Math.max(180, F.cy - F.r * 0.75 - size * 0.5);
           n.style.top = top + 'px';
           gw.style.filter = `blur(${((1 - k) * 22).toFixed(1)}px)`; gw.style.transform = `scale(${(1.18 - 0.18 * k + 0.03 * (t - e.t0)).toFixed(3)})`;
           n.style.opacity = String(k * (1 - o));
@@ -314,7 +299,7 @@ export function effectsRuntime(D: FxRuntimeData) {
       }
       case 'whip-spin': {
         return { e, hide, draw: () => undefined, cam: (t, c) => {
-          const x = prog(t, e.t0, dur); c.rotZ += eInOut(x) * 360 * (p.dir ?? 1); c.scale *= 1 + 0.4 * Math.sin(Math.PI * x); c.blur = Math.max(c.blur, 18 * Math.sin(Math.PI * x));
+          const x = prog(t, e.t0, dur); c.rotZ += eInOut(x) * 360 * (p.dir ?? 1); c.scale *= 1 + 0.25 * Math.sin(Math.PI * x); c.blur = Math.max(c.blur, 9 * Math.sin(Math.PI * x));
         } };
       }
       case 'phone-mockup': {

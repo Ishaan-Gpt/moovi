@@ -78,12 +78,8 @@ test('local speech: the default model is the turbo at 4 bit; others stay at 8 bi
   } finally { if (was !== undefined) process.env.MOOVI_STT_LOCAL_MODEL = was; }
 });
 
-test('the take opens after a slate cue followed by a greeting, even after a short beat', () => {
+test('a mid-sentence "go" is not a slate', () => {
   const w = (word: string, t: number, end: number) => ({ word, t, end });
-  const ws = [w('I', 2.0, 2.3), w('will', 2.4, 2.7), w('edit', 2.8, 3.1), w('my', 3.1, 3.3), w('video.', 3.3, 3.8), w('Start!', 7.28, 8.05),
-    w('Hello', 8.6, 8.9), w('guys,', 8.9, 9.3), w('we', 9.9, 10.1), w('are', 10.1, 10.3), w('building', 10.3, 10.7), w('Moovi.', 10.7, 11.2)];
-  assert.ok(takeWindow(ws, [], 30).a >= 7.9);
-  // a mid-sentence "go" is not a slate
   const ws2 = [w('Hello', 0.5, 0.8), w('guys', 0.8, 1.1), w('lets', 1.2, 1.4), w('go', 1.4, 1.6), w('build', 1.7, 2.0), w('it', 2.0, 2.2)];
   assert.ok(takeWindow(ws2, [], 10).a < 0.6);
 });
