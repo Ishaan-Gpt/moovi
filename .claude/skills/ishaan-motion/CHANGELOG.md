@@ -122,3 +122,6 @@
 
 ## 1.13.9 (2026-10-18)
 - Rule: caption cards at least 1.2 s on screen, hold up to 1 s after the last word.
+
+## 1.13.10 (2026-10-18)
+- Owner rule: the edit's motion graphics, clips and UI components are tailored to each video, never a fixed set.

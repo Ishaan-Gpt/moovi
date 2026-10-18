@@ -334,6 +334,8 @@ const deskSfx = !SPEC.desk || SPEC.desk.sound === false ? [] : [
   ...(SPEC.desk.props || []).map(pp => [at(pp.at) + .05, 'swipe', .16])];
 DESK.first = Math.min(...BEATS.filter(b => b.layers.some(L => L.t === 'desk')).map(b => b.t0));
 SFX = [...ticks(list).filter(s => !quiet(s)).map((s, i) => [s, 'typing', .55, (i * .37) % 2.2, .06]), ...deskSfx, ...(SPEC.sfx || []).map(x => [at(x.at), x.k, x.g ?? .4])];
+// the product captures its MP4 from this player and mixes these exact sounds (ticks, desk foley, the bed ramp)
+window.__sfx = () => ({ sfx: SFX, sounds: SOUNDS, music: { file: SPEC.music?.file || 'music/bed.mp3', start: SPEC.music?.start ?? 2, gain: SPEC.music?.gain ?? .08 }, start: START, end: END });
 await document.fonts.load('80px "Russo One"').catch(() => {});
 // warm the desk world once (decode every cut-out, the gobo and the prints) so its first visit does not stall
 for (const b of BEATS.filter(b => b.layers.some(L => L.t === 'desk'))) { frame(b.t0 + 1.2); await new Promise(r => setTimeout(r, 60)); }
