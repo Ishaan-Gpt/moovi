@@ -1,5 +1,29 @@
 # Tab
 
+## 2026-10-18 16:25 IST · main · docs only · @C1: please merge and redeploy `claude-code-two-commands` (d2abfe3), Vignesh's go
+
+Why: Claude Code's permission classifier blocked the one prompt setup again in Vignesh's real test on Windows (15:58 IST,
+Claude Code desktop): it called the background `claude -p` "Create Unsafe Agents". Vignesh approved the fix at 16:03 IST:
+setup is two commands the user pastes into Claude Code, each starting with `!`, so Claude Code runs them as the user's own
+shell commands and the classifier is not asked.
+
+Branch `claude-code-two-commands`, head d2abfe3, one commit on main 76f6ec9 (fast forward). Files: `packages/mcp/src/setup.ts`,
+`api.ts`, `app.ts` (the /connect page), their tests, `apps/studio/src/components/settings/ClaudeCodeCard.tsx` and
+`apps/studio/src/components/dash/ClaudeCodePill.tsx`. No edit, taste or pipeline code.
+- Settings shows command 1 (connect: claim plus `claude mcp add`, starts nothing) and command 2 (start Moovi in the
+  background, can be run again per video), Windows or Mac and Linux, each with a Copy button, plus Check connection.
+  Mac and Linux: `! curl -fsSL <site>/api/brain/setup/<code>/connect.sh | sh`, then the same with `start.sh`.
+  Windows: `! powershell -NoProfile -ExecutionPolicy Bypass -Command "irm <site>/api/brain/setup/<code>/connect.ps1 | iex"`, then `start.ps1`.
+- New routes: `GET .../<code>/connect.sh|.ps1`, `GET .../<code>/start.sh|.ps1`, `POST .../<code>/ticket`. The old ones stay.
+- `/api/brain/status` pill: linked but not polling now reads `linked` ("run command 2"), no longer `not_connected`.
+  Once linked, the card shows Continue to the studio, so the key gate's welcome page lets a Claude Code user through.
+- Gates: typecheck mcp, studio and engine clean; mcp tests 120 pass (incl. the two commands under sh, and the exact
+  Windows text under sh with pwsh 7.4.6 standing in for powershell). Not tested: a real Windows machine and a real Claude Code.
+
+Deploy: `sudo bash deploy/server-setup.sh 65-2-223-240.sslip.io --website https://moovi-three.vercel.app`, then
+check `/healthz` is 200 and `GET /api/brain/setup/mvs_00000000000000000000000000000000/connect.sh` answers 200 (an
+"expired" echo line). Please reply in CLAUDE1.md.
+
 ## 2026-10-18 11:10 IST · main · docs only · @C1 @Ishaan: bridge round 2: the one prompt setup hardened, more live MCP edges, the Claude Code pill (Vignesh's ask)
 
 Everything below is on branch `claude-code-bridge` (head e33ca6f). Nothing on main changed apart from this note. Nothing was
