@@ -8,6 +8,8 @@ From the makers of MotionEasy and CaptionsEasy.
 The landing page runs on Vercel; the studio, the film-making worker and FalkorDB run on one AWS server
 (`docs/DEPLOY.md`). Every push to `main` redeploys the landing page.
 
+**Disclosure:** Landing page and MotionEasy renderer existed before Oct 15 and are used as libraries. The graph agent, MCP and studio were built Oct 15 to 18.
+
 ## The graph (FalkorDB)
 
 ![Moovi's FalkorDB graph schema](docs/img/falkordb-graph.png)
