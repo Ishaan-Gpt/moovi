@@ -23,8 +23,8 @@ import { modelScope } from '../runtime';
 
 type Tag = (agent: 'designer' | 'sound' | 'lens' | 'keeper', kind: 'start' | 'done', text: string, scope: string) => void;
 
-/** The compact (menu) path as one call with the full spec's result shape: the picks, then the library for this video. */
-async function directedFromMenu(dir: string, words: { word: string; t: number; end: number }[], seconds: number, brief: string, memory: EditMemory, signal?: AbortSignal, o: { model?: boolean; footage?: boolean; skipLanes?: ('claude-code' | 'key' | 'server')[]; /** a stage under the agent that does it (the synapse view) */ tag?: Tag } = {}): Promise<{ value: Record<string, unknown> | null; problems: string[][]; devices: string[] }> {
+/** The compact (menu) path as one call with the full spec's result shape: the picks, then the library for this video (scripts/edit-mastery.ts runs it too). */
+export async function directedFromMenu(dir: string, words: { word: string; t: number; end: number }[], seconds: number, brief: string, memory: EditMemory, signal?: AbortSignal, o: { model?: boolean; footage?: boolean; skipLanes?: ('claude-code' | 'key' | 'server')[]; /** a stage under the agent that does it (the synapse view) */ tag?: Tag } = {}): Promise<{ value: Record<string, unknown> | null; problems: string[][]; devices: string[] }> {
   const tag: Tag = o.tag ?? (() => undefined);
   const ss = sentencesOfWords(words.map(w => ({ word: w.word, t: w.t, end: w.end })));
   // two clips never get the same film: the user's last edit's device sequence (Keeper, in their graph) is not taken again

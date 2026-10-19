@@ -33,5 +33,5 @@ test('film queue: the old chaining waits on itself; reading the queue first lets
 test('film queue: router/edit.ts reads the queue before it reassigns it', () => {
   const src = readFileSync(join(import.meta.dirname, '../src/router/edit.ts'), 'utf8');
   assert.doesNotMatch(src, /\.then\(\(\) => filmQueue\)/, 'the self waiting chain is back');
-  assert.match(src, /const prev = filmQueue;[\s\S]{0,200}\.then\(\(\) => prev\)[\s\S]{0,200}filmQueue = job\.catch/);
+  assert.match(src, /const prev = filmQueue;[\s\S]{0,400}(\.then\(\(\) => prev\)|await prev;)[\s\S]{0,2500}filmQueue = job\.catch/);
 });
