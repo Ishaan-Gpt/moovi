@@ -62,3 +62,34 @@ test('an upload\'s picked part (trim in/out) is what the edit edits; a bad span 
   assert.deepEqual(trimSpan({ out: 12 }), { in: 0, out: 12 });
   for (const bad of [undefined, { in: 5, out: 5.2 }, { in: -1, out: 4 }, { in: 3 }, { in: 9, out: 2 }]) assert.equal(trimSpan(bad as never), null);
 });
+
+test('the checklist completion takes back a surplus device when no sentence is free (a short clip\'s second punch makes room for the form change)', async () => {
+  const { completeCoverage, loadMenu, sentencesOfWords } = await import('../src/edit/mastery-menu');
+  // the parity clip's five sentences (server vs local, 2026-10-19), timed one word every 0.3 s with a pause between sentences
+  const lines = ['Hello guys, I am Ishaan and we are introducing Moovi.', 'Now, Moovi is an agentic video editor which basically converts', 'your raw clips into finished after effects style animations and you can upload them', 'to Instagram to get really good results.', 'So lock in and watch Moovi rock.'];
+  let t = 0; const words = lines.flatMap(l => { const ws = l.split(' ').map(word => { const w = { word, t, end: t + 0.25 }; t += 0.3; return w; }); t += 0.6; return ws; });
+  const ss = sentencesOfWords(words); assert.equal(ss.length, 5);
+  const menu = loadMenu(), cats = (a: { beats: { device: string }[] }) => menu.coverage!.picked.filter(c => a.beats.some(b => c.devices.includes(b.device))).map(c => c.id);
+  const a = completeCoverage({ beats: [{ i: 1, device: 'punch', hero: 'agentic' }, { i: 2, device: 'glass-widgets', hero: 'animations', phrase: 'style animations' }, { i: 3, device: 'punch', hero: 'results' }] } as never, ss, menu);
+  for (const id of ['burn', 'camera', 'form']) assert.ok(cats(a).includes(id), `${id} in ${a.beats.map(b => b.device).join(' ')}`);
+  assert.equal(a.beats.filter(b => b.device === 'punch').length, 1);
+  assert.equal(a.beats[0]!.device, 'speaker'); // the opening sentence stays on the speaker (no away device first)
+  // a film that already has everything keeps the model's picks
+  const full = { beats: [{ i: 1, device: 'number-split', hero: 'agentic' }, { i: 2, device: 'glass-widgets', hero: 'animations', phrase: 'style animations' }, { i: 3, device: 'punch', hero: 'results' }] };
+  assert.deepEqual(completeCoverage(full as never, ss, menu).beats.map(b => b.device), ['speaker', 'number-split', 'glass-widgets', 'punch', 'speaker']);
+});
+
+test('a menu answer numbered one sentence off is moved to the sentences that say its words (never when it is already right)', async () => {
+  const { realignPicks, loadMenu, sentencesOfWords } = await import('../src/edit/mastery-menu');
+  const lines = ['Hello guys, I am Ishaan and we are introducing Moovi.', 'Now, Moovi is an agentic video editor which basically converts', 'your raw clips into finished after effects style animations and you can upload them', 'to Instagram to get really good results.', 'So lock in and watch Moovi rock.'];
+  let t = 0; const ss = sentencesOfWords(lines.flatMap(l => { const ws = l.split(' ').map(word => { const w = { word, t, end: t + 0.25 }; t += 0.3; return w; }); t += 0.6; return ws; }));
+  const menu = loadMenu();
+  // the server run of 2026-10-19: every beat one sentence late
+  const late = { beats: [{ i: 1, device: 'punch', hero: 'introducing' }, { i: 2, device: 'glass-widgets', hero: 'agentic', phrase: 'agentic video' }, { i: 4, device: 'punch', hero: 'results' }] };
+  const r = realignPicks(late as never, ss, menu);
+  assert.equal(r.shift, -1); assert.deepEqual(r.answer.beats.map(b => b.i), [0, 1, 3]);
+  // early by one (a local run): moved forward
+  assert.equal(realignPicks({ beats: [{ i: 1, device: 'punch', hero: 'raw' }, { i: 3, device: 'punch', hero: 'rock' }] } as never, ss, menu).shift, 1);
+  const right = { beats: [{ i: 0, device: 'speaker' }, { i: 1, device: 'punch', hero: 'agentic' }, { i: 3, device: 'punch', hero: 'results' }] };
+  assert.deepEqual(realignPicks(right as never, ss, menu), { answer: right, shift: 0 });
+});

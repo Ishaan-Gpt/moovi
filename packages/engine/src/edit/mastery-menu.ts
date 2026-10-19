@@ -77,6 +77,21 @@ const FULL_SCREEN = new Set(['split', 'card', 'corner-br', 'corner-tl', 'corner-
 const awayFromSpeaker = (d: MenuDevice) => !!d.places || d.layers.some(l => l.t === 'mg' || l.t === 'desk' || FULL_SCREEN.has(String(l.form ?? '')));
 
 /** Check the picks against the menu, the rules and the sentences: plain problems per beat (empty = all fine). Pure. */
+/**
+ * The answer numbered one sentence off (a small model counts from 1, or skips the first): when moving every beat by
+ * one sentence puts strictly more of its slot words in the sentence that says them, the whole answer moves. The words
+ * decide, never the device. Pure.
+ */
+export function realignPicks(a: MenuAnswer, sentences: Sentence[], menu: Menu): { answer: MenuAnswer; shift: number } {
+  const byId = new Map(menu.devices.map(d => [d.id, d])), byI = new Map(sentences.map(s => [s.i, s]));
+  const wordsOf = (b: Pick) => { const d = byId.get(b.device); if (!d) return []; return slotsOf(d).filter(k => !['still', 'footage', 'role', 'doodle', 'next'].includes(k)).flatMap(k => { const v = (b as unknown as Record<string, unknown>)[k]; return Array.isArray(v) ? v.map(String) : v === undefined || v === null || v === '' ? [] : [String(v)]; }); };
+  const said = (s: Sentence | undefined, text: string) => { if (!s) return false; const w = new Set(s.words.map(x => norm(x.word))); const t = text.split(/\s+/).filter(Boolean); return t.length > 0 && t.every(x => w.has(norm(x))); };
+  const fit = (shift: number) => (a.beats ?? []).filter(b => { const ws = wordsOf(b); return ws.length > 0 && ws.every(t => said(byI.get(b.i + shift), t)); }).length;
+  const base = fit(0), best = [-1, 1].map(k => ({ k, n: fit(k) })).sort((x, y) => y.n - x.n)[0]!;
+  if (!Array.isArray(a.beats) || best.n <= base) return { answer: a, shift: 0 };
+  return { answer: { ...a, beats: a.beats.map(b => ({ ...b, i: b.i + best.k })).filter(b => byI.has(b.i)) }, shift: best.k };
+}
+
 export function checkPicks(a: MenuAnswer, sentences: Sentence[], menu: Menu, previous: string[] = []): { problems: string[]; bad: Set<number> } {
   const problems: string[] = [], bad = new Set<number>(), byId = new Map(menu.devices.map(d => [d.id, d]));
   const said = (s: Sentence, text: string) => { const w = new Set(s.words.map(x => norm(x.word))); return text.split(/\s+/).filter(Boolean).every(t => w.has(norm(t))); };
@@ -136,11 +151,16 @@ export function completeCoverage(a: MenuAnswer | null, sentences: Sentence[], me
     fullscreen: s => { const h = heroOf(s), q = s.words.map(w => w.word.replace(/[^\p{L}\p{N}'-]/gu, '')).filter(w => w && !STOP.has(norm(w))).slice(0, 5).join(' '); return h && h.length <= 16 && q ? { i: s.i, device: 'desk-print', hero: h, phrase: h, footage: q, doodle: 'underline' } : null; },
     camera: s => { const h = heroOf(s); return h ? { i: s.i, device: 'punch', hero: h } : null; },
   };
+  const wantOf = (c: { min?: number }) => (sentences.length < 6 ? 1 : c.min ?? 1);
+  // no free sentence left: a device the checklist has more of than it needs (a second punch on a short clip) gives its place up
+  const spare = (k: number) => { const d = beats[k]!.device; return d !== 'speaker' && k < n - 1 && menu.coverage!.picked.every(c => !c.devices.includes(d) || used().filter(u => c.devices.includes(u)).length > wantOf(c)); };
   for (const c of menu.coverage.picked) {
-    const want = sentences.length < 6 ? 1 : c.min ?? 1;
+    const want = wantOf(c);
     while (used().filter(u => c.devices.includes(u)).length < want) {
       const away = c.id === 'fullscreen' || c.id === 'form';
-      const k = [...beats.keys()].sort((x, y) => (sentences[y]!.t1 - sentences[y]!.t0) - (sentences[x]!.t1 - sentences[x]!.t0)).find(j => free(j, away) && !(away && (beats[j - 1] && awayFromSpeaker(byId.get(beats[j - 1]!.device)!))));
+      const longest = [...beats.keys()].sort((x, y) => (sentences[y]!.t1 - sentences[y]!.t0) - (sentences[x]!.t1 - sentences[x]!.t0));
+      const fits = (j: number) => !(away && (j === 0 || (beats[j - 1] && awayFromSpeaker(byId.get(beats[j - 1]!.device)!)) || (beats[j + 1] && awayFromSpeaker(byId.get(beats[j + 1]!.device)!))));
+      const k = longest.find(j => free(j, away) && !(away && (beats[j - 1] && awayFromSpeaker(byId.get(beats[j - 1]!.device)!)))) ?? longest.find(j => spare(j) && fits(j));
       const pick = k === undefined ? null : fillers[c.id]?.(sentences[k]!) ?? null;
       if (k === undefined || !pick) break;
       beats[k] = pick;
@@ -305,6 +325,7 @@ export async function directFromMenu(i: { sentences: Sentence[]; brief?: string;
       let a: MenuAnswer;
       try { a = (raw && typeof raw === 'object' ? raw : JSON.parse(String(raw).replace(/^```(json)?|```$/g, '').trim())) as MenuAnswer; } catch { return { ok: false, problems: ['not one JSON object'] }; }
       if (!Array.isArray(a.beats)) return { ok: false, problems: ['"beats" must be a list, one beat per sentence'] };
+      const re = realignPicks(a, i.sentences, menu); if (re.shift) { a = re.answer; i.log?.(`${MENU_AGENT}: the answer was numbered one sentence off (${re.shift > 0 ? '+' : ''}${re.shift}); moved to the sentences that say its words`); }
       const c = checkPicks(a, i.sentences, menu, i.previous ?? []); last = { answer: a, bad: c.bad };
       return c.problems.length ? { ok: false, problems: c.problems } : { ok: true, value: { answer: a, bad: c.bad } };
     },
