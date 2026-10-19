@@ -12,6 +12,9 @@ test('skillPrompt: both tiers are the skill\'s own text; every compact heading s
   }
   assert.equal(tierFor('claude-code-bridge'), 'full');
   for (const p of ['groq', 'openai', 'anthropic', undefined]) assert.equal(tierFor(p), 'compact');
+  // writers that never reach Claude Code run on the key or the server model: compact even in a Claude Code job (live 413)
+  assert.equal(tierFor('claude-code-bridge', 'direct:edit-spec'), 'full');
+  for (const a of ['launch:film', 'showreel:write', 'direct:edit-menu']) assert.equal(tierFor('claude-code-bridge', a), 'compact', a);
 });
 
 const W = (word: string, t: number) => ({ word, t, end: t + 0.3 });

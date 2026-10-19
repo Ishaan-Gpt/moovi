@@ -126,7 +126,7 @@ export async function showreel(input: ShowreelInput, h: Hooks = {}): Promise<Sho
   if (!input.brief?.trim() && !input.url) throw new Error('Showreel needs your brand: paste its link or describe it');
   const { themes, arc } = readSkill();
   // decision 20: the skill as a prompt hierarchy (full for a linked Claude Code, compact for the server model and API keys)
-  const tier: SkillTier = tierFor(modelScope()?.provider), skill = skillPrompt('showreel', tier);
+  const tier: SkillTier = tierFor(modelScope()?.provider, 'showreel:write'), skill = skillPrompt('showreel', tier);
   const forced = input.theme ? themes.find(t => t.id === input.theme || t.name.toLowerCase() === input.theme!.toLowerCase())?.id : undefined;
   if (input.theme && !forced) throw new Error(`no Showreel theme "${input.theme}" (themes: ${themes.map(t => t.name).join(', ')})`);
   const log = (s: string) => h.log?.(s), signal = input.signal ?? h.signal;

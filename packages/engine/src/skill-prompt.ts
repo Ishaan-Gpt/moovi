@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { REPO } from './config';
-import { estimateTokens } from './runtime';
+import { estimateTokens, isBrainAgent } from './runtime';
 
 /**
  * The ishaan-motion skill as a writer's instructions (decision 20, Ishaan: "keep original for claude connection.. but for
@@ -50,5 +50,9 @@ export function skillPrompt(type: SkillType, tier: SkillTier): { text: string; t
   return { text, tokens: estimateTokens(text), sources: parts.map(p => p.src) };
 }
 
-/** The tier for a lane: a linked Claude Code writes from the full skill; the server model and user API keys from the compact one. */
-export const tierFor = (provider: string | undefined | null): SkillTier => (provider ?? '').toLowerCase() === 'claude-code-bridge' ? 'full' : 'compact';
+/** The tier for a lane: a linked Claude Code writes from the full skill; the server model and user API keys from the compact one.
+ *  With `agent`, the call's own lane decides: an agent that is not a brain agent (launch:film, showreel:write) never reaches
+ *  Claude Code, so it always runs on the key or the server model and gets the compact tier even in a Claude Code job (live,
+ *  2026-10-18: Launch with Claude Code linked sent the full tier to Groq, 11,706 tokens for an 8,000 TPM limit, HTTP 413). */
+export const tierFor = (provider: string | undefined | null, agent?: string): SkillTier =>
+  (provider ?? '').toLowerCase() === 'claude-code-bridge' && (agent === undefined || isBrainAgent(agent)) ? 'full' : 'compact';

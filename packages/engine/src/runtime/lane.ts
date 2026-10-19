@@ -57,7 +57,7 @@ export function pickLane(agent: string, f: LaneFacts): { lane: Lane; why: string
       if (f.claudeCode === 'online') return { lane: 'claude-code', why: 'your Claude Code is connected and online' };
       if (f.hasKey) return { lane: 'key', why: f.claudeCode === 'linked' ? 'your Claude Code is offline; using your key' : 'using your key' };
       if (f.server && f.byok === 'optional') return { lane: 'server', why: 'no Claude Code online and no key; using Moovi\'s model' };
-      if (f.claudeCode === 'linked') return { lane: 'wait', why: 'waiting for your Claude Code: type /mcp__moovi__run' };
+      if (f.claudeCode === 'linked') return { lane: 'wait', why: 'waiting for your Claude Code: run command 2 from Moovi Settings' };
       return { lane: 'none', why: 'connect Claude Code or add a model key' };
     }
     if (f.hasKey) return { lane: 'key', why: 'detail work on your key' };
@@ -77,7 +77,7 @@ export function brainMode(f: LaneFacts): 'creative' | 'precise' | 'server' | 'wa
 /** The bridge throws this when nobody picked the step up in time; the switch then tries the next lane. */
 export class BrainNotPickedUp extends Error { constructor(agent: string, ms: number) { super(`${agent}: Claude Code did not pick the step up within ${Math.round(ms / 1000)} s`); this.name = 'BrainNotPickedUp'; } }
 /** No lane can take a brain call now, but Claude Code is linked: the job parks until it is online. */
-export class BrainWaiting extends Error { constructor(agent: string) { super(`${agent}: waiting for your Claude Code (type /mcp__moovi__run)`); this.name = 'BrainWaiting'; } }
+export class BrainWaiting extends Error { constructor(agent: string) { super(`${agent}: waiting for your Claude Code (run command 2 from Moovi Settings)`); this.name = 'BrainWaiting'; } }
 /** No lane at all: the caller's own fallback (rules) runs, or the job asks the user to connect. */
 export class NoModelForAgent extends Error { constructor(agent: string, why: string) { super(`${agent}: ${why}`); this.name = 'NoModelForAgent'; } }
 

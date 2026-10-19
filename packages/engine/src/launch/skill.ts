@@ -157,7 +157,7 @@ export async function run(o: RunInput, h: Hooks = {}): Promise<RunResult> {
   lap('site', s); h.progress?.(`read ${site.name}: ${site.cards.length} headings, ${site.images.length} pictures, ${site.colours.length} colours`);
 
   s = Date.now(); C.begin('write');
-  const tier = tierFor(modelScope()?.provider), beds = await castMenu(BEDS()), ids = beds.map(t => t.id), step = writerStep(site, beds, tier), quotes = skillQuotes();
+  const tier = tierFor(modelScope()?.provider, 'launch:film'), beds = await castMenu(BEDS()), ids = beds.map(t => t.id), step = writerStep(site, beds, tier), quotes = skillQuotes();
   log(`writer: the skill's ${tier} prompt (decision 20)`);
   const words = await ask({ agent: 'launch:film', tier: 'crew', deadlineMs: 60_000, signal: o.signal, system: step.system, prompt: step.prompt, schema: FILM_WORDS,
     validate: a => checkWords(a as FilmWords, ids, host === 'resend.com' ? [] : quotes) }) as FilmWords;
