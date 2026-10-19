@@ -19,6 +19,10 @@ interface Props {
   fallback?: ReactNode;
   /** the sphere's Enter button: open the live FalkorDB graph of this video (the synapse view) */
   onEnterGraph?: () => void;
+  /** something opaque covers the whole office (the graph view): stop drawing until it closes */
+  paused?: boolean;
+  /** the office is blurred behind the brief box: it keeps moving, drawn at a lower resolution */
+  soft?: boolean;
 }
 
 const FLY_MS = 1700;
@@ -41,13 +45,14 @@ const look = (st: Status | undefined, now: number) => {
  * agent works; work handed on travels as a bead from one desk into the graph (a node flares where it lands) and out
  * to the next desk. Above each head only a name and one short line, as on the 2D set. Same props as the 2D Stage.
  */
-export function OfficeWorld({ status, flights, onLanded, inset = 0, above = 0, below = 0, mooviState, visit = null, onStats, fallback = null, onEnterGraph }: Props) {
+export function OfficeWorld({ status, flights, onLanded, inset = 0, above = 0, below = 0, mooviState, visit = null, onStats, fallback = null, onEnterGraph, paused = false, soft = false }: Props) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const tags = useRef<Partial<Record<AgentId, HTMLDivElement | null>>>({});
   const gtag = useRef<HTMLDivElement>(null);
   const [ok, setOk] = useState(true);
   // the room's shader compiles in the background (seconds on some machines): the halo waits in its place
   const [drawn, setDrawn] = useState(false);
+  const worldRef = useRef<MooviWorld | null>(null);
   const live = useRef({ status, flights, onLanded, inset, above, below, mooviState, visit, onStats });
   live.current = { status, flights, onLanded, inset, above, below, mooviState, visit, onStats };
 
@@ -60,6 +65,12 @@ export function OfficeWorld({ status, flights, onLanded, inset = 0, above = 0, b
     let last = performance.now();
     let activity = 0;
     const mv = { think: 0, direct: 0, celebrate: 0, squint: 0, lean: 0, lookX: 0 };
+    // each tag's width, kept by a ResizeObserver: reading offsetWidth in the frame, after the last tag's transform was
+    // written, forced a style and layout pass per tag per frame
+    const tagW = new Map<Element, number>();
+    const ro = new ResizeObserver(es => { for (const e of es) tagW.set(e.target, (e.target as HTMLElement).offsetWidth); });
+    for (const id of ORDER) { const el = tags.current[id]; if (el) ro.observe(el); }
+    const tagZ = new Map<Element, string>();
 
     // a phone draws fewer pixels at a lower tier (30 fps cap, DPR 1): the room is soft jelly, it reads the same
     const phone = matchMedia('(pointer: coarse)').matches || window.innerWidth < 760;
@@ -73,7 +84,7 @@ export function OfficeWorld({ status, flights, onLanded, inset = 0, above = 0, b
         const t = now / 1000;
 
         // camera: three-quarter from the open side of the horseshoe; a portrait screen looks down more steeply
-        const el = canvas.current!, cw = el.clientWidth, ch = el.clientHeight, aspect = cw / Math.max(1, ch);
+        const { w: cw, h: ch } = w.view, aspect = cw / Math.max(1, ch);
         const freeW = Math.max(200, cw - L.inset), freeH = Math.max(160, ch - L.above - L.below);
         // a tall free area (a phone with the chat folded away) looks down more steeply, so the round stage fills it
         const portrait = freeW / freeH < .9;
@@ -156,10 +167,11 @@ export function OfficeWorld({ status, flights, onLanded, inset = 0, above = 0, b
           const head: Vec3 = id === 'moovi' ? [p.seat.x, p.seat.y + MOOVI_S * 2.15, p.seat.z] : [p.seat.x, p.seat.y + CREW_R * 1.25, p.seat.z];
           const q = w.project(head);
           // a tag near the edge slides in rather than crop
-          const hw = el2.offsetWidth / 2 + 6;
+          const hw = (tagW.get(el2) ?? 0) / 2 + 6;
           q.x = Math.min(cw - hw, Math.max(hw, q.x));
           el2.style.transform = `translate3d(${q.x.toFixed(1)}px, ${q.y.toFixed(1)}px, 0) translate(-50%, -100%)`;
-          el2.style.zIndex = String(Math.round(1000 - q.z * 10));
+          const z = String(Math.round(1000 - q.z * 10));
+          if (tagZ.get(el2) !== z) { tagZ.set(el2, z); el2.style.zIndex = z; }
         }
         if (gtag.current) {
           // on the stage in front of the sphere's stand
@@ -184,8 +196,22 @@ export function OfficeWorld({ status, flights, onLanded, inset = 0, above = 0, b
     };
     sc.office = office;
     world.ready.then(() => setDrawn(true), () => setOk(false));
-    return () => world.dispose();
+    worldRef.current = world;
+    return () => { ro.disconnect(); worldRef.current = null; world.dispose(); };
   }, []);
+  // the graph view fades in over the office (.5 s): keep drawing under the fade, then stop
+  useEffect(() => {
+    if (!paused) { worldRef.current?.pause(false); return; }
+    const t = setTimeout(() => worldRef.current?.pause(true), 600);
+    return () => clearTimeout(t);
+  }, [paused]);
+  // under the brief box's 14 px blur the set is drawn at half resolution: the blur hides it, the GPU does a quarter
+  // (only once the .6 s blur is mostly in, so the change never shows; back to full at once when it lifts)
+  useEffect(() => {
+    if (!soft) { worldRef.current?.soften(1); return; }
+    const t = setTimeout(() => worldRef.current?.soften(.5), 450);
+    return () => clearTimeout(t);
+  }, [soft]);
 
   return (
     <div className="o3" aria-label="The office: your crew at work">

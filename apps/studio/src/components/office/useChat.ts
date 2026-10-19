@@ -26,9 +26,10 @@ export interface OfficeState {
   connected: boolean;
 }
 
-type Action = { type: 'event'; e: Stamped; live: boolean } | { type: 'connected'; on: boolean } | { type: 'local'; message: ChatMessage } | { type: 'land'; id: string };
+type Action = { type: 'event'; e: Stamped; live: boolean } | { type: 'events'; batch: { e: Stamped; live: boolean }[] } | { type: 'connected'; on: boolean } | { type: 'local'; message: ChatMessage } | { type: 'land'; id: string };
 
 function reduce(s: OfficeState, a: Action): OfficeState {
+  if (a.type === 'events') return a.batch.reduce((st, x) => reduce(st, { type: 'event', e: x.e, live: x.live }), s);
   if (a.type === 'connected') return { ...s, connected: a.on };
   if (a.type === 'land') return { ...s, flights: s.flights.filter(f => f.id !== a.id) };
   if (a.type === 'local') return s.messages.some(m => m.id === a.message.id) ? s : { ...s, messages: [...s.messages, a.message] };
@@ -63,6 +64,10 @@ export function useChat(pid: string, cid: string, init: { messages: ChatMessage[
     // replay the stream (statuses, activity) without treating old events as live, then follow it
     const t0 = Date.now();
     let live = false, last = '', heard = Date.now(), es: EventSource | null = null;
+    // events are handed to React in batches, at most one render per 50 ms: a reconnect or a busy run replays hundreds
+    // at once, and one render of the whole office per event froze slow devices for seconds
+    let queue: { e: Stamped; live: boolean }[] = [], flush: ReturnType<typeof setTimeout> | null = null;
+    const drain = () => { flush = null; const batch = queue; queue = []; if (batch.length) dispatch({ type: 'events', batch }); };
     const settle = setTimeout(() => { live = true; replayed.current = true; }, 900);
     const connect = () => {
       es?.close();
@@ -73,7 +78,8 @@ export function useChat(pid: string, cid: string, init: { messages: ChatMessage[
         heard = Date.now();
         const e = JSON.parse((ev as MessageEvent<string>).data) as Stamped;
         last = e.seq;
-        dispatch({ type: 'event', e, live: live || e.at > t0 });
+        queue.push({ e, live: live || e.at > t0 });
+        flush ??= setTimeout(drain, 50);
       });
       es.addEventListener('ping', () => { heard = Date.now(); });
       es.onopen = () => { heard = Date.now(); dispatch({ type: 'connected', on: true }); };
@@ -85,7 +91,7 @@ export function useChat(pid: string, cid: string, init: { messages: ChatMessage[
     const watch = setInterval(() => { if (stale()) connect(); }, 10_000);
     const onShow = () => { if (document.visibilityState === 'visible' && stale()) connect(); };
     document.addEventListener('visibilitychange', onShow);
-    return () => { clearTimeout(settle); clearInterval(watch); document.removeEventListener('visibilitychange', onShow); es?.close(); };
+    return () => { if (flush) clearTimeout(flush); clearTimeout(settle); clearInterval(watch); document.removeEventListener('visibilitychange', onShow); es?.close(); };
   }, [pid, cid]);
   return { state, dispatch };
 }

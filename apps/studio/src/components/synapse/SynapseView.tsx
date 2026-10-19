@@ -183,6 +183,8 @@ function Board({ snap, events, T, live, pick, onPick }: { snap: SynSnapshot; eve
   const props = useRef({ snap, events, T, live, pick });
   props.current = { snap, events, T, live, pick };
   const last = useRef<Frame | null>(null);
+  // what the last drawn frame was made of: a finished run that nobody touches is a still picture, drawn once
+  const drawn = useRef<{ snap: SynSnapshot; events: SynEvent[]; T: number; pick: Pick | null; hover: string | null; x: number; y: number; k: number; cw: number; ch: number } | null>(null);
 
 
   useEffect(() => {
@@ -190,12 +192,16 @@ function Board({ snap, events, T, live, pick, onPick }: { snap: SynSnapshot; eve
     const ctx = c.getContext('2d')!;
     readFonts();
     let raf = 0, cw = 0, ch = 0, dpr = 1;
-    const size = () => { dpr = Math.min(2, window.devicePixelRatio || 1); cw = c.clientWidth; ch = c.clientHeight; c.width = Math.round(cw * dpr); c.height = Math.round(ch * dpr); };
+    const size = () => { dpr = Math.min(2, window.devicePixelRatio || 1); cw = c.clientWidth; ch = c.clientHeight; c.width = Math.round(cw * dpr); c.height = Math.round(ch * dpr); drawn.current = null; };
     size();
     const ro = new ResizeObserver(size); ro.observe(c);
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const draw = () => {
-      const p = props.current;
+      raf = requestAnimationFrame(draw);
+      const p = props.current, cm = cam.current, d = drawn.current;
+      if (!p.live && d && d.snap === p.snap && d.events === p.events && d.T === p.T && d.pick === p.pick && d.hover === hover.current
+        && d.x === cm.x && d.y === cm.y && d.k === cm.k && d.cw === cw && d.ch === ch) return;
+      drawn.current = { snap: p.snap, events: p.events, T: p.T, pick: p.pick, hover: hover.current, x: cm.x, y: cm.y, k: cm.k, cw, ch };
       // while live the playhead is now, so pulses keep moving between events
       const T = p.live ? Math.max(p.T, Date.now()) : p.T;
       const f = frame(p.snap, p.events, T, p.live);
@@ -207,7 +213,6 @@ function Board({ snap, events, T, live, pick, onPick }: { snap: SynSnapshot; eve
       ctx.clearRect(0, 0, cw, ch);
       ctx.setTransform(dpr * k, 0, 0, dpr * k, dpr * ox, dpr * oy);
       drawHubs(ctx, f, T, k, hover.current, p.pick, reduce);
-      raf = requestAnimationFrame(draw);
     };
     raf = requestAnimationFrame(draw);
 
@@ -284,24 +289,59 @@ function pickOf(n: Node): Pick {
 const isPicked = (n: Node, p: Pick | null) => !!p && ((p.kind === 'agent' && n.agent === p.agent && n.kind === 'agent') || (p.kind === 'mem' && n.kind === 'mem' && n.mem === p.mem)
   || (p.kind === 'query' && n.kind === 'query' && n.mem === p.mem && n.query === p.query) || (p.kind === 'decision' && n.kind === 'decision' && n.decision === p.i));
 
-/** The jelly look of the office: a lit top-left, the body colour, a cooler rim. */
-function jelly(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, fill: string, rim: string, glow = 0) {
-  if (glow > 0) {
-    const g = ctx.createRadialGradient(x, y, r * .8, x, y, r * 1.9);
-    g.addColorStop(0, `rgba(43,103,198,${.22 * glow})`); g.addColorStop(1, 'rgba(43,103,198,0)');
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r * 1.9, 0, Math.PI * 2); ctx.fill();
+/**
+ * The jelly look of the office: a lit top-left, the body colour, a cooler rim. Each body (and its glow) is drawn once
+ * per colour and size into a sprite and stamped from there: building two radial gradients per node per frame was most
+ * of the board's cost on a slow device (measured at 4x CPU). The sprite is the same gradients, so the look is the same.
+ */
+const sprites = new Map<string, HTMLCanvasElement>();
+/** device pixels per board unit for this frame (set by drawHubs) */
+let PX = 1;
+const bucket = (px: number) => Math.min(512, Math.max(8, 2 ** Math.ceil(Math.log2(px))));
+function sprite(key: string, size: number, paint: (g: CanvasRenderingContext2D, R: number) => void) {
+  const k = `${key}|${size}`;
+  let c = sprites.get(k);
+  if (!c) {
+    c = document.createElement('canvas'); c.width = c.height = size;
+    paint(c.getContext('2d')!, size / 2);
+    if (sprites.size > 400) sprites.clear();
+    sprites.set(k, c);
   }
-  const g = ctx.createRadialGradient(x - r * .38, y - r * .45, r * .08, x, y, r);
-  g.addColorStop(0, '#FFFFFF'); g.addColorStop(.42, fill); g.addColorStop(1, rim);
-  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
-  // the gloss
-  ctx.fillStyle = 'rgba(255,255,255,.55)';
-  ctx.beginPath(); ctx.ellipse(x - r * .32, y - r * .48, r * .34, r * .18, -.5, 0, Math.PI * 2); ctx.fill();
+  return c;
 }
+function jelly(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, fill: string, rim: string, glow = 0) {
+  const R = bucket(r * PX);
+  if (glow > 0) {
+    // the glow ring at twice its old alpha, stamped at half the glow (glow runs up to ~2), so the result is the same
+    const halo = sprite('glow', Math.ceil(R * 1.9) * 2, (g, h) => {
+      const gr = g.createRadialGradient(h, h, h / 1.9 * .8, h, h, h);
+      gr.addColorStop(0, 'rgba(43,103,198,.44)'); gr.addColorStop(1, 'rgba(43,103,198,0)');
+      g.fillStyle = gr; g.beginPath(); g.arc(h, h, h, 0, Math.PI * 2); g.fill();
+    });
+    const a = ctx.globalAlpha;
+    ctx.globalAlpha = a * Math.min(1, glow / 2);
+    ctx.drawImage(halo, x - r * 1.9, y - r * 1.9, r * 3.8, r * 3.8);
+    ctx.globalAlpha = a;
+  }
+  const body = sprite(`${fill}${rim}`, R * 2, (g, h) => {
+    const gr = g.createRadialGradient(h - h * .38, h - h * .45, h * .08, h, h, h);
+    gr.addColorStop(0, '#FFFFFF'); gr.addColorStop(.42, fill); gr.addColorStop(1, rim);
+    g.fillStyle = gr; g.beginPath(); g.arc(h, h, h, 0, Math.PI * 2); g.fill();
+    // the gloss
+    g.fillStyle = 'rgba(255,255,255,.55)';
+    g.beginPath(); g.ellipse(h - h * .32, h - h * .48, h * .34, h * .18, -.5, 0, Math.PI * 2); g.fill();
+  });
+  ctx.drawImage(body, x - r, y - r, r * 2, r * 2);
+}
+const mixed = new Map<string, string>();
 const mix = (hex: string, to: string, t: number) => {
+  const key = `${hex}${to}${t}`, hit = mixed.get(key);
+  if (hit) return hit;
   const a = parseInt(hex.slice(1), 16), b = parseInt(to.slice(1), 16);
   const ch = (s: number) => Math.round(((a >> s) & 255) * (1 - t) + ((b >> s) & 255) * t);
-  return `rgb(${ch(16)},${ch(8)},${ch(0)})`;
+  const out = `rgb(${ch(16)},${ch(8)},${ch(0)})`;
+  mixed.set(key, out);
+  return out;
 };
 /** A filament bows gently to one side (never through Moovi in the middle); the same pair always bows the same way. */
 const ctrl = (a: Node, b: Node) => {
@@ -315,6 +355,7 @@ const easeIO = (x: number) => (x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2,
 const pop = (x: number) => (x >= 1 ? 1 : 1 + 2.2 * Math.pow(x - 1, 3) + 1.2 * Math.pow(x - 1, 2));
 
 function drawHubs(ctx: CanvasRenderingContext2D, f: Frame, T: number, k: number, hover: string | null, pick: Pick | null, reduce: boolean) {
+  PX = ctx.getTransform().a;
   const by = new Map(f.nodes.map(n => [n.id, n]));
   // what is in focus: the picked or hovered node and everything it touches
   const focusId = hover ?? (pick ? pickId(pick) : null);
@@ -370,6 +411,8 @@ function drawHubs(ctx: CanvasRenderingContext2D, f: Frame, T: number, k: number,
     ctx.fillText(`${n.n} call${n.n === 1 ? '' : 's'}`, n.x, n.y + 9);
     ctx.globalAlpha = 1;
   }
+  const crowded = new Map<MemKind, number>();
+  for (const q of f.nodes) if (q.kind === 'query' && q.n) crowded.set(q.mem!, (crowded.get(q.mem!) ?? 0) + 1);
   for (const n of f.nodes) if (n.kind === 'query' && n.n) {
     const g = grown(n), s = Math.min(1, g);
     const m = by.get(`m:${n.mem}`)!;
@@ -379,7 +422,7 @@ function drawHubs(ctx: CanvasRenderingContext2D, f: Frame, T: number, k: number,
     ctx.globalAlpha = dim(n.id);
     jelly(ctx, x, y, r, MEM_FILL[n.mem!], mix(MEM_FILL[n.mem!], MEM_INK[n.mem!], .45), flare + (isPicked(n, pick) || hover === n.id ? .7 : 0));
     // names read once you zoom a little; a crowded memory names only its busiest, the hovered and the fresh
-    const crowd = f.nodes.filter(q => q.kind === 'query' && q.mem === n.mem && q.n).length;
+    const crowd = crowded.get(n.mem!) ?? 0;
     if (k > 1.15 || crowd <= 8 || n.n >= 3 || hover === n.id || isPicked(n, pick) || flare > 0) {
       const out = Math.atan2(n.y - m.y, n.x - m.x);
       ctx.font = `500 10px ${FM}`; ctx.fillStyle = flare > 0 ? ACCENT : MUTED;

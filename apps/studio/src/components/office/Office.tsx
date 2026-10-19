@@ -144,7 +144,7 @@ export function Office({ pid, project, chat, messages, chats, startNew }: {
     <div className={`office ${brief ? 'is-briefing' : ''}`}>
       <div className="office__world" aria-hidden={brief || undefined}>
         {/* the 3D office plays its own run until it is wired to the crew's events; the 2D set draws where WebGL2 can't */}
-        <OfficeWorld {...crew} inset={inset} above={wide ? 0 : 56} below={wide ? 0 : (chatOpen && !brief ? sheet : 72) + (dockOn ? 78 : 0)} visit={visit} onEnterGraph={() => setGraph(true)}
+        <OfficeWorld {...crew} inset={inset} above={wide ? 0 : 56} below={wide ? 0 : (chatOpen && !brief ? sheet : 72) + (dockOn ? 78 : 0)} visit={visit} onEnterGraph={() => setGraph(true)} paused={graph} soft={brief || (shown !== null && versions > 0 && !docked)}
           fallback={<Stage status={state.status} flights={state.flights} onLanded={onLanded} inset={inset} above={wide ? 0 : 56}
             below={wide ? 0 : (chatOpen && !brief ? sheet : 72) + (dockOn ? 78 : 0)}
             mooviState={mooviState} visit={visit} compact={!wide} />} />
