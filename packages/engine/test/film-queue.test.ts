@@ -30,8 +30,13 @@ test('film queue: the old chaining waits on itself; reading the queue first lets
   assert.deepEqual(order, ['first', 'second'], 'one film at a time, in order');
 });
 
-test('film queue: router/edit.ts reads the queue before it reassigns it', () => {
+// Oct 19: the in-process queue is gone. The Edit task spawns its film as its own task (the `film` resource, one slot),
+// so neither a self-waiting chain nor a film held inside the Edit task (which kept the one cpu slot 17-22 min) can come back
+test('film queue: router/edit.ts spawns the film as its own task and never awaits it inside the Edit task', () => {
   const src = readFileSync(join(import.meta.dirname, '../src/router/edit.ts'), 'utf8');
-  assert.doesNotMatch(src, /\.then\(\(\) => filmQueue\)/, 'the self waiting chain is back');
-  assert.match(src, /const prev = filmQueue;[\s\S]{0,400}(\.then\(\(\) => prev\)|await prev;)[\s\S]{0,2500}filmQueue = job\.catch/);
+  assert.doesNotMatch(src, /filmQueue/, 'the in-process film queue is back');
+  assert.match(src, /kind: EDIT_FILM_KIND, agent: 'editor', resource: 'film'/);
+  assert.match(src, /spawn: film/);
+  const reel = src.slice(src.indexOf('export const editReel'), src.indexOf('export const editFilm'));
+  assert.doesNotMatch(reel, /renderMasteryFilm\(/, 'the Edit task records the film itself again');
 });

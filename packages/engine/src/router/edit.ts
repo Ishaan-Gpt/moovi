@@ -20,6 +20,8 @@ import { completeCoverage, deviceSequence, directFromMenu, libraryRanks, loadMen
 import { tierFor } from '../skill-prompt';
 import { briefWithMemory, readEditMemory, rememberEdit, specDevices, type EditMemory } from '../edit/memory';
 import { modelScope } from '../runtime';
+import { othersBusy, whenOthersIdle } from '../busy';
+import type { TaskSpec } from '../scheduler';
 
 type Tag = (agent: 'designer' | 'sound' | 'lens' | 'keeper', kind: 'start' | 'done', text: string, scope: string) => void;
 
@@ -61,8 +63,13 @@ import { assetCauses, noteDecision, wordsCause, type Cause } from '../why';
 
 /** Edit mastery's player is the Edit type (decision 17); MOOVI_EDIT_PLAYER=old brings back the old edit page. */
 const mastery = () => (process.env.MOOVI_EDIT_PLAYER ?? 'mastery') !== 'old';
-/** one player film at a time on the server (2 GB): each waits for the one before it */
-let filmQueue: Promise<unknown> = Promise.resolve();
+/**
+ * The delivered MP4 is its own task (EDIT_FILM_KIND) on the `film` resource, one at a time (2 GB server): the Edit task
+ * ends when its preview plays, so the next upload starts at once instead of waiting 5 to 22 minutes behind someone's
+ * film (measured 2026-10-18). What the film waits for (the graded cut, the direction) stays here by edit folder.
+ */
+export const EDIT_FILM_KIND = 'edit-film';
+const filmWaits = new Map<string, Promise<unknown>>();
 
 /**
  * Your own clip in, an edit playing live out: an upload with no style picked is EDITED (not sent to the crew, which
@@ -259,35 +266,17 @@ export const editReel: Handler = async ctx => {
   await publish(ctx.chat, { type: 'video', video: { id: ctx.run.video, status: 'ready', version, duration: t.duration, format: 'vertical', live: true } });
   await publish(ctx.chat, { type: 'status', agent: 'editor', state: 'done', text: 'done', task: `${ctx.task.id}:editor` }).catch(() => undefined);
   const cut = pr.duration - t.duration;
-  await ctx.say(`Here’s your edit, playing live: ${t.duration.toFixed(1)} s from ${pr.duration.toFixed(1)} s (${cut.toFixed(1)} s of pauses cut), ${edl.shots.length} shots, ${words.length} words captioned. Ready ${seconds.toFixed(1)} s after you sent it.`, 'video', { video: ctx.run.video, version, duration: t.duration, format: 'vertical', run: ctx.run.id, live: true, style: 'edit' }, 'moovi');
+  await ctx.say(`Here’s your edit, playing live: ${t.duration.toFixed(1)} s from ${pr.duration.toFixed(1)} s (${cut.toFixed(1)} s of pauses cut), ${edl.shots.length} shots, ${words.length} words captioned. Ready ${seconds.toFixed(1)} s after you sent it.${M ? ' The MP4 to download is being recorded now; it appears here when it’s done.' : ''}`, 'video', { video: ctx.run.video, version, duration: t.duration, format: 'vertical', run: ctx.run.id, live: true, style: 'edit' }, 'moovi');
   // the reel effects library, picked from what the clip says (edit/effects/auto.ts), baked into the edit itself: the
   // plan's cut with the effects and the captions drawn over it (edit/effects/onedit.ts) becomes the delivered version,
   // so the studio and the Claude Code bridge both get one finished video with the effects in it
   let fxVersion: number | null = null;
-  // the delivered MP4 is recorded from that same player (its own sounds), one film at a time
+  // the delivered MP4 is recorded from that same player (its own sounds) by its own task, after the graded cut and the direction
+  const film: TaskSpec[] = [];
   if (M) {
-    const v2 = version + 1, file = join(vdir, `v${v2}.mp4`);
-    // read the queue now: by the time the .then runs, filmQueue is this job itself, and a job that waits on itself never ends
-    const prev = filmQueue;
-    // every stage says itself until the film is done (a long render is never silent): the wait, then the capture's progress
-    const w0 = Date.now();
-    await step('film-wait', 'finishing the graded picture and the direction');
-    const job = Promise.all([graded, directed]).then(async () => { done('film-wait', (Date.now() - w0) / 1000); await prev; })
-      .then(async () => {
-        await step('film', 'recording the finished video');
-        const f0 = Date.now(); let shown = -1;
-        const r = await renderMasteryFilm(dir, file, { onFrame: (k, n) => { const pct = Math.floor(k / n * 10) * 10; if (pct > shown) { shown = pct; const sec = ((Date.now() - f0) / 1000).toFixed(0); console.log(`[edit] ${ctx.task.id} film ${pct}% (${k}/${n} frames, ${sec} s)`); if (pct % 20 === 0) void ctx.activity('note', `recording the finished video: ${pct}% (${sec} s)`); } } });
-        done('film', (Date.now() - f0) / 1000);
-        return r;
-      });
-    filmQueue = job.catch(() => undefined);
-    try {
-      const r = await job;
-      await ctx.q(P.setVideo, { id: ctx.run.video, status: 'ready', path: file, poster, duration: +t.duration.toFixed(2), version: v2, style: 'edit+player', format: 'vertical', at: Date.now() });
-      await publish(ctx.chat, { type: 'video', video: { id: ctx.run.video, status: 'ready', version: v2, duration: +t.duration.toFixed(2), format: 'vertical' } });
-      await ctx.say(`Here’s your finished edit, the same film as the preview (recorded in ${r.seconds.toFixed(0)} s).`, 'video', { video: ctx.run.video, version: v2, duration: +t.duration.toFixed(2), format: 'vertical', run: ctx.run.id, style: 'edit+player' }, 'moovi');
-      fxVersion = v2;
-    } catch (e) { const why = fxReason(e); console.warn(`[edit] player film: ${why}`); await ctx.say(`The finished video did not render this time (${why}); the live edit above stands.`, 'note', undefined, 'moovi'); }
+    filmWaits.set(dir, Promise.all([graded, directed]));
+    film.push({ key: 'edit-film', kind: EDIT_FILM_KIND, agent: 'editor', resource: 'film', title: 'Record the finished video', max: 2, optional: true,
+      input: { dir, version, poster, duration: +t.duration.toFixed(2) } satisfies FilmInput });
   }
   // one film (edit wiring step 3): when the director wrote a beat spec, the delivered MP4 is the preview page itself,
   // captured frame by frame (edit/film.ts), over the soundtrack the preview then plays too (mix.m4a: voice, bed, sounds)
@@ -352,5 +341,41 @@ export const editReel: Handler = async ctx => {
   }
   const vids = await ctx.q<{ video: string }>(P.videos), chats = await ctx.q<{ id: string }>(P.chats);
   await runQ(SYS, S.touchProject, { id: ctx.pid, name: null, chats: chats.length, videos: vids.length, poster, at: Date.now() });
-  return { output: { dir, version, timings: ref.timings, duration: t.duration, shots: edl.shots.length, words: words.length, style: plan.style, moves: plan.moves, effects: plan.effects?.events.map(e => e.fx) ?? [], fx: fx.why, fxVersion }, note: `edit ready in ${seconds.toFixed(1)} s` };
+  return { output: { dir, version, timings: ref.timings, duration: t.duration, shots: edl.shots.length, words: words.length, style: plan.style, moves: plan.moves, effects: plan.effects?.events.map(e => e.fx) ?? [], fx: fx.why, fxVersion }, note: `edit ready in ${seconds.toFixed(1)} s`, ...(film.length ? { spawn: film } : {}) };
+};
+
+interface FilmInput { dir: string; version: number; poster: string | null; duration: number }
+
+/**
+ * The Edit's MP4 (EDIT_FILM_KIND): recorded from the player the preview plays (renderMasteryFilm), as the next version.
+ * The run stays open until it is in, so the studio shows the job still working and Claude Code's bridge waits for it.
+ * It yields to every other task in this worker (busy.ts); after a restart it records from the edit folder as it is on disk.
+ * A film that fails says so and the live edit stands (the task is optional: the run still ends done).
+ */
+export const editFilm: Handler = async ctx => {
+  const inp = ctx.input<FilmInput>();
+  const w0 = Date.now();
+  await filmWaits.get(inp.dir)?.catch(() => undefined); filmWaits.delete(inp.dir);
+  console.log(`[edit] ${ctx.task.id} film-wait ${((Date.now() - w0) / 1000).toFixed(1)} s`);
+  const vdir = join(ctx.projectDir, 'videos', ctx.chat); mkdirSync(vdir, { recursive: true });
+  const v2 = inp.version + 1, file = join(vdir, `v${v2}.mp4`), f0 = Date.now();
+  let shown = -1;
+  try {
+    const r = await renderMasteryFilm(inp.dir, file, {
+      ...(ctx.signal ? { signal: ctx.signal } : {}), busy: () => othersBusy('film'), idle: () => whenOthersIdle('film', ctx.signal),
+      onPause: on => console.log(`[edit] ${ctx.task.id} film ${on ? 'paused: another job is running' : 'resumed'}`),
+      onFrame: (k, n) => { const pct = Math.floor(k / n * 10) * 10; if (pct > shown) { shown = pct; const sec = ((Date.now() - f0) / 1000).toFixed(0); console.log(`[edit] ${ctx.task.id} film ${pct}% (${k}/${n} frames, ${sec} s)`); if (pct % 20 === 0) void ctx.activity('note', `recording the finished video: ${pct}% (${sec} s)`); } },
+    });
+    console.log(`[edit] ${ctx.task.id} film ${r.seconds.toFixed(1)} s (${r.frames} frames, ${r.paused.toFixed(1)} s paused for other jobs)`);
+    await ctx.q(P.setVideo, { id: ctx.run.video, status: 'ready', path: file, poster: inp.poster, duration: inp.duration, version: v2, style: 'edit+player', format: 'vertical', at: Date.now() });
+    await publish(ctx.chat, { type: 'video', video: { id: ctx.run.video, status: 'ready', version: v2, duration: inp.duration, format: 'vertical' } });
+    await ctx.say(`Here’s your finished edit, the same film as the preview (recorded in ${r.seconds.toFixed(0)} s).`, 'video', { video: ctx.run.video, version: v2, duration: inp.duration, format: 'vertical', run: ctx.run.id, style: 'edit+player' }, 'moovi');
+    return { output: { version: v2, frames: r.frames, seconds: r.seconds, paused: r.paused }, note: `film recorded in ${r.seconds.toFixed(0)} s` };
+  } catch (e) {
+    if (ctx.signal?.aborted) throw e;
+    const why = fxReason(e);
+    console.warn(`[edit] player film: ${why}`);
+    await ctx.say(`The finished video did not render this time (${why}); the live edit above stands.`, 'note', undefined, 'moovi');
+    return { output: { failed: true, error: why }, note: 'film skipped' };
+  }
 };

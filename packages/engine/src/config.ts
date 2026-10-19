@@ -79,6 +79,8 @@ export const config = {
     chrome: num('MOOVI_SLOTS_CHROME', 3),
     voice: 1,
     audio: num('MOOVI_SLOTS_AUDIO', 1),
+    // the Edit MP4 recorded from its player (router/edit.ts): one at a time, beside the job slots, never holding a user's job
+    film: num('MOOVI_SLOTS_FILM', 1),
   },
   /** a task's lease: a worker that stops heartbeating loses it after this long */
   leaseMs: num('MOOVI_LEASE_MS', 90_000),

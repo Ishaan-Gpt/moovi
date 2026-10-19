@@ -137,9 +137,10 @@ export function lookFromFootage(dir: string): { palette: Record<string, string>;
 }
 
 /** Serve the player for one edit folder on a local port (the capture, local previews); resolves the player's URL. */
-export async function serveMastery(dir: string, o: { port?: number } = {}): Promise<{ url: string; close: () => void }> {
+export async function serveMastery(dir: string, o: { port?: number; /** a published path served from another file (the capture's all-intra cut) */ swap?: Record<string, string> } = {}): Promise<{ url: string; close: () => void }> {
   const server = createServer((req, res) => {
-    const r = masteryFile(dir, decodeURIComponent((req.url ?? '/').slice(1)));
+    const path = decodeURIComponent((req.url ?? '/').slice(1)), alt = o.swap?.[path.split('?')[0]!];
+    const r: Served = alt ? { status: 200, type: MIME[extname(alt).toLowerCase()] ?? 'application/octet-stream', file: alt, size: statSync(alt).size } : masteryFile(dir, path);
     if (r.status === 404) { res.writeHead(404).end(); return; }
     if ('body' in r) { res.writeHead(200, { 'content-type': r.type, 'cache-control': 'no-store' }); res.end(r.body); return; }
     const m = req.headers.range?.match(/bytes=(\d*)-(\d*)/);
@@ -172,19 +173,39 @@ export function skeletonSpec(dir: string): Record<string, unknown> {
  * The MP4 from the player itself: every output frame of cut.mp4 drawn by the player's own `window.__seek` (the player's UI
  * hidden, the stage at 1080 x 1920), and the soundtrack the player plays: cut.mp4's voice, every sound in
  * `window.__sfx()` at its gain, offset and length, and the bed from its start with the player's own end ramp.
+ *
+ * Speed (measured on the 2 vCPU server, 2026-10-19, a 17 s edit of 523 frames): 1.07 s a frame as first written (seek
+ * 0.54 s, screenshot 0.53 s, both CPUs full), so 9 to 20 minutes a film. Two changes that leave what the player draws as
+ * it was: its requestAnimationFrame loop stops once it is ready (the loop redrew the whole stage every vsync between
+ * captures, half the CPU), and the capture seeks an all-intra copy of cut.mp4 (a seek decoded up to 15 frames from the
+ * last keyframe; now one). 0.37 s a frame. `busy`/`idle` (busy.ts): while another task runs the capture waits between
+ * frames; after 3 s its browser closes (its memory goes back to that job) and reopens at the same frame.
  */
-export async function renderMasteryFilm(dir: string, out: string, o: { fps?: number; onFrame?: (i: number, n: number) => void } = {}): Promise<{ out: string; frames: number; seconds: number }> {
+export async function renderMasteryFilm(dir: string, out: string, o: { fps?: number; onFrame?: (i: number, n: number) => void; signal?: AbortSignal; busy?: () => boolean; idle?: () => Promise<void>; onPause?: (paused: boolean) => void } = {}): Promise<{ out: string; frames: number; seconds: number; paused: number }> {
   const { chromium } = await import('playwright-core');
   const t0 = Date.now(), fps = o.fps ?? 30;
   const map = (JSON.parse(readFileSync(join(dir, 'cut.json'), 'utf8')) as { map: [number, number, number][] }).map;
   const toSrc = (x: number) => { let m = map[0]!; for (const k of map) if (x >= k[2] - 1e-3) m = k; return Math.min(m[1], m[0] + (x - m[2])); };
   const toOut = (s: number) => { for (const k of map) { if (s < k[0]) return k[2]; if (s <= k[1]) return k[2] + (s - k[0]); } const l = map.at(-1)!; return l[2] + (l[1] - l[0]); };
-  const srv = await serveMastery(dir);
-  const b = await chromium.launch({ headless: true, ...(config.chrome.path ? { executablePath: config.chrome.path } : { channel: config.chrome.channel }) });
-  try {
+  const stopped = () => { if (o.signal?.aborted) throw new Error('stopped'); };
+  // the capture's own copy of the cut, every frame a keyframe (the preview keeps the light cut.mp4); without it, cut.mp4
+  const intra = join(dir, '.cut-intra.mp4');
+  const hasIntra = await new Promise<boolean>(res => execFile(config.ffmpeg, ['-v', 'error', '-y', '-i', join(dir, 'cut.mp4'), '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '14', '-g', '1', '-pix_fmt', 'yuv420p', '-threads', '2', '-c:a', 'copy', '-movflags', '+faststart', intra], { timeout: 600_000 }, e => res(!e && existsSync(intra))));
+  stopped();
+  const srv = await serveMastery(dir, hasIntra ? { swap: { 'v/cut.mp4': intra } } : {});
+  type Browser = Awaited<ReturnType<typeof chromium.launch>>;
+  const live: { b: Browser | null; enc: ReturnType<typeof spawn> | null } = { b: null, enc: null };
+  let paused = 0;
+  const open = async () => {
+    const b = live.b = await chromium.launch({ headless: true, ...(config.chrome.path ? { executablePath: config.chrome.path } : { channel: config.chrome.channel }) });
     const page = await b.newPage({ viewport: { width: 1080, height: 1920 } });
     await page.goto(srv.url); await page.waitForFunction('window.__ready', null, { timeout: 120_000 });
-    await page.evaluate(`(() => { for (const id of ['gate', 'bar']) { const e = document.getElementById(id); if (e) e.style.display = 'none'; } const s = document.getElementById('stage'); s.style.transform = 'none'; s.style.borderRadius = '0'; })()`);
+    // the UI hidden, and the player's frame loop ends at its next tick: from here every frame is drawn by __seek alone
+    await page.evaluate(`(() => { for (const id of ['gate', 'bar']) { const e = document.getElementById(id); if (e) e.style.display = 'none'; } const s = document.getElementById('stage'); s.style.transform = 'none'; s.style.borderRadius = '0'; window.requestAnimationFrame = () => 0; })()`);
+    return page;
+  };
+  try {
+    let page = await open();
     const snd = await page.evaluate('window.__sfx()') as { sfx: [number, string, number, number?, number?][]; sounds: Record<string, string>; music: { file: string; start: number; gain: number }; start: number; end: number };
     const a = toOut(snd.start), z = toOut(snd.end), N = Math.max(1, Math.round((z - a) * fps));
     // the soundtrack: voice from cut.mp4, each sound, the bed (gain x (1 + .7 x ramp over the last 3 s), as the player sets it)
@@ -199,18 +220,29 @@ export async function renderMasteryFilm(dir: string, out: string, o: { fps?: num
       parts.push(`[${n}:a]aresample=48000,aformat=channel_layouts=stereo,atrim=${(off ?? 0).toFixed(3)}${dur ? `:${((off ?? 0) + dur).toFixed(3)}` : ''},asetpts=PTS-STARTPTS,volume=${g},adelay=${ms}|${ms}[s${n}]`); mix.push(`[s${n}]`); n++;
     }
     parts.push(`${mix.join('')}amix=inputs=${mix.length}:normalize=0:duration=first[a]`);
-    const enc = spawn(config.ffmpeg, ['-v', 'error', '-y', '-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'mjpeg', '-i', '-', ...inputs, '-filter_complex', parts.join(';'), '-map', '0:v', '-map', '[a]',
+    const enc = live.enc = spawn(config.ffmpeg, ['-v', 'error', '-y', '-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'mjpeg', '-i', '-', ...inputs, '-filter_complex', parts.join(';'), '-map', '0:v', '-map', '[a]',
       '-t', (N / fps).toFixed(4), '-r', String(fps), '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '19', '-pix_fmt', 'yuv420p', '-threads', '2', '-c:a', 'aac', '-b:a', '192k', '-movflags', '+faststart', out], { stdio: ['pipe', 'ignore', 'pipe'] });
-    let err = ''; enc.stderr.on('data', d => { err += d; if (err.length > 8000) err = err.slice(-4000); });
+    let err = ''; enc.stderr!.on('data', d => { err += d; if (err.length > 8000) err = err.slice(-4000); });
     const done = new Promise<void>((res, rej) => { enc.on('error', rej); enc.on('close', c => c === 0 ? res() : rej(new Error(`film: ffmpeg exit ${c}: ${err.slice(-400)}`))); });
-    const stage = page.locator('#stage');
     for (let j = 0; j < N; j++) {
+      stopped();
+      if (o.busy?.() && o.idle) {
+        // another job runs: wait; past 3 s close the browser until it ends (ffmpeg waits on its pipe), then reopen here
+        const p0 = Date.now(); o.onPause?.(true);
+        const idle = o.idle(); idle.catch(() => undefined);
+        if (!await Promise.race([idle.then(() => true), new Promise<boolean>(r => setTimeout(() => r(false), 3000))])) { await live.b?.close(); live.b = null; await idle; page = await open(); }
+        await idle; paused += Date.now() - p0; o.onPause?.(false);
+      }
       await page.evaluate(`window.__seek(${toSrc(a + (j + 0.5) / fps).toFixed(4)})`);
-      const shot = await stage.screenshot({ type: 'jpeg', quality: 92 });
-      if (!enc.stdin.write(shot)) await new Promise(r => enc.stdin.once('drain', r));
+      const shot = await page.locator('#stage').screenshot({ type: 'jpeg', quality: 92 });
+      if (!enc.stdin!.write(shot)) await new Promise(r => enc.stdin!.once('drain', r));
       o.onFrame?.(j + 1, N);
     }
-    enc.stdin.end(); await done;
-    return { out, frames: N, seconds: +((Date.now() - t0) / 1000).toFixed(1) };
-  } finally { await b.close(); srv.close(); }
+    enc.stdin!.end(); await done; live.enc = null;
+    return { out, frames: N, seconds: +((Date.now() - t0) / 1000).toFixed(1), paused: +(paused / 1000).toFixed(1) };
+  } finally {
+    await live.b?.close(); srv.close();
+    live.enc?.kill('SIGKILL');
+    rmSync(intra, { force: true });
+  }
 }

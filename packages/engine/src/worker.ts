@@ -1,5 +1,6 @@
 import { hostname } from 'node:os';
 import { brainRun, byokMode, NeedsModelKey, primeBrainScope, scopeFor } from './keys';
+import { taskRunning } from './busy';
 import { withModel } from './runtime';
 import { project as P, projectGraph, read } from '@moovi/graph';
 import { group, head } from './heads';
@@ -112,6 +113,8 @@ export class Worker {
     await status(run.chat, agent, id, 'working', head(t.kind, t.scope), group(t.kind));
     await activity(run.chat, agent, id, 'start', t.title, { scope: t.scope ?? undefined });
     await publish(run.chat, { type: 'task', task: { id, kind: t.kind, agent: t.agent, scope: t.scope, title: t.title, status: 'running', attempts: t.attempts } });
+    // counted while it runs: the background Edit MP4 yields to every other task (busy.ts)
+    taskRunning(t.resource, true);
     try {
       const handler = this.o.handlers[t.kind];
       if (!handler) throw new Error(`No handler for task kind "${t.kind}"`);
@@ -173,6 +176,7 @@ export class Worker {
       await this.o.onRunEnd?.(pid, run, false);
     } finally {
       clearInterval(beat);
+      taskRunning(t.resource, false);
       live.get(runId)?.delete(abort);
       if (!live.get(runId)?.size) live.delete(runId);
     }
