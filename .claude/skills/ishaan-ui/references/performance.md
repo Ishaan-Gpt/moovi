@@ -45,6 +45,17 @@ Give every lazy thing a placeholder that has the final size (aspect-ratio boxes,
 - Pause what isn't visible: rAF loops, canvases, videos and CSS loops stop when offscreen or when `document.hidden`.
 - Respect `prefers-reduced-motion`: render final states; no scrubbed transforms, no loops.
 
+### 4b. No hangs on weak devices (Ishaan, 2026-10-19: "it is hanging a lot and very slow on some devices")
+Found on the Moovi landing and studio, measured with 4x CPU throttling on an integrated GPU. Each one is invisible on a fast laptop:
+- **Never read layout in a frame loop after anything wrote styles.** `window.scrollY`, `clientWidth`, `offsetWidth`, `offsetParent`, `getBoundingClientRect` in a rAF/ticker callback that runs after another loop's DOM writes forces a full style and layout pass every frame (one `scrollY` read in the scroll director cost 2.8 s of main thread in 20 s). Keep the scroll position from `scroll` events, sizes from a `ResizeObserver`, and read in the scroll event (the page is clean then), write in the frame.
+- **Pause CSS loops far off screen.** Every infinite CSS animation of a non-composited property (SVG paths, background-position, opacity on many spans) re-styles its element every frame even when nobody can see it. One `IntersectionObserver` marks sections `data-away` (rootMargin 50%); `[data-away] * { animation-play-state: paused }`.
+- **A canvas covered by something opaque stops drawing**; one behind a blur draws at half resolution (the blur hides it), switched only after the blur has faded in. A canvas off screen or in a hidden tab pauses on its own.
+- **Never rebuild a layer's innerHTML every frame**, least of all one holding an SVG filter (feTurbulence grain is CPU-rasterised on every rebuild). Patch only the pieces whose markup changed.
+- **Batch streamed events**: a reconnect replays hundreds of events; hand them to React at most every 50 ms, not one render each.
+- **One ScrollTrigger.refresh** for all chapters that build together (one each was a 1.4 s long task at 4x).
+- **WebGL hygiene**: probe WebGL2 support once per page and release the probe context; release a renderer's context when its canvas leaves the page (browsers keep ~16).
+- Measure on 4x CPU and a phone viewport before shipping anything that moves (headless Chrome + CDP `Emulation.setCPUThrottlingRate`, rAF frame times, long tasks, `Performance.getMetrics` for style/layout ms per second, an invalidation-tracking trace for what dirties style).
+
 ## 5. Heavy visuals (WebGL, canvas, SVG filters)
 See `3d.md` for the full pattern. In short: lazy-load after LCP; quality tiers by device; render below native resolution (0.6–0.8× DPR) because soft visuals don't need full res; adaptive resolution when frames run long; pause offscreen and in hidden tabs; handle context loss; a static fallback without WebGL.
 

@@ -1,4 +1,5 @@
 # Changelog
+- 2.1.9 (2026-10-19): performance.md 4b no hangs on weak devices: no layout reads in frame loops after writes, pause off-screen CSS loops, stop a covered canvas and soften a blurred one, patch layers instead of innerHTML every frame, batch streamed events, one ScrollTrigger refresh, WebGL context hygiene, measure at 4x CPU; motion-kit director keeps scroll from events (Ishaan, Moovi).
 - 2.1.8 (2026-10-18): components.md a live graph of agents and calls is nodes and lines (hub in the middle, stores outside, pulses on bowed filaments, grows as used), never swimlanes; one layout once picked (Ishaan, Moovi synapse view).
 - 2.1.7 (2026-10-18): components.md logo lockup: word plus mark beside it, matching face, no plate; never forced into a letter (Ishaan, Moovi).
 - 2.1.6 (2026-10-18): components.md waits, hand-offs and results: never ask twice, the brand mark as every loader (stepped, no spin), logo = favicon, no header plates over the hero, results alone in glass (Ishaan, Moovi).
