@@ -88,3 +88,14 @@ test('synapse credit: a call goes to the agent whose role the query serves, else
   assert.equal(creditOf('setVideo', editTask), 'editor');
   assert.equal(creditOf('setVideo', { agent: 'moovi', stage: 'lens' }), 'lens');
 });
+
+test('synapse credit: work beside the task (the Edit direction) tags its stage in a copy; the task keeps its own credit', async () => {
+  const { branch, inScope, scope } = await import('../src/live');
+  await inScope({ project: 'p', chat: 'c', agent: 'editor', task: 't' }, async () => {
+    const side = branch(async () => { scope.getStore()!.stage = 'designer'; await new Promise(r => setTimeout(r, 5)); return creditOf('setVideo', scope.getStore()!); });
+    // the preview's own calls, made while the direction is still working, stay the Editor's
+    assert.equal(creditOf('setVideo', scope.getStore()!), 'editor');
+    assert.equal(await side, 'designer');
+    assert.equal(scope.getStore()!.stage, undefined);
+  });
+});

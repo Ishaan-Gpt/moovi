@@ -54,7 +54,7 @@ export async function directedFromMenu(dir: string, words: { word: string; t: nu
   return { value: specFromPicks(a, ss, menu, { sounds, music, footage, look: lookFromFootage(dir) }), problems: r.problems, devices: deviceSequence(a) };
 }
 
-import { activity, stageLines } from '../live';
+import { activity, branch, stageLines } from '../live';
 import { startRun } from '../runs';
 import { liveRefFile, type LiveRef } from '../styles/serve';
 import { assetCauses, noteDecision, wordsCause, type Cause } from '../why';
@@ -207,9 +207,12 @@ export const editReel: Handler = async ctx => {
     const kept = words.filter(w => !((edl as { removed?: { src_in: number; src_out: number }[] }).removed ?? []).some(r => w.t >= r.src_in - 1e-3 && w.t < r.src_out - 1e-3));
     const tag: Tag = (agent, kind, text, scope) => void activity(ctx.chat, agent, ctx.task.id, kind, text, { scope });
     // Keeper reads this user's memory first (lessons, caption and sound notes, preferences, the last edit): the model reads it
-    void activity(ctx.chat, 'keeper', ctx.task.id, 'start', 'reading what you taught me', { scope: 'memory' });
-    const memory = await readEditMemory((q, p) => ctx.uq(q, p));
-    void activity(ctx.chat, 'keeper', ctx.task.id, 'done', `memory: ${memory.notes.length} note${memory.notes.length === 1 ? '' : 's'}${memory.previous.length ? ', the last edit' : ''}`, { scope: 'memory' });
+    const memory = await branch(async () => {
+      void activity(ctx.chat, 'keeper', ctx.task.id, 'start', 'reading what you taught me', { scope: 'memory' });
+      const m = await readEditMemory((q, p) => ctx.uq(q, p));
+      void activity(ctx.chat, 'keeper', ctx.task.id, 'done', `memory: ${m.notes.length} note${m.notes.length === 1 ? '' : 's'}${m.previous.length ? ', the last edit' : ''}`, { scope: 'memory' });
+      return m;
+    });
     // the first preview is already the whole edit: Edit mastery's checklist completion from the menu (no model call yet),
     // never captions only; the skeleton only if even that cannot be built
     try { const first = await directedFromMenu(dir, kept, plan.source.duration, inp.brief ?? '', memory, ctx.signal, { model: false, footage: false }); writeSpec(dir, first.value ?? skeletonSpec(dir)); }
@@ -218,10 +221,10 @@ export const editReel: Handler = async ctx => {
     // player can draw it as written (edit/mastery-direct.ts); the MP4 waits for the answer
     // decision 20: a linked Claude Code writes the whole spec from the full skill (and invents); the server model and every
     // user API key direct from Edit mastery's menu with the compact skill, and code fills only the menu's slots
-    void activity(ctx.chat, 'designer', ctx.task.id, 'start', 'casting devices on the sentences', { scope: 'direct' });
     const menuStep = (skip?: ('claude-code' | 'key' | 'server')[]) => directedFromMenu(dir, kept, plan.source.duration, inp.brief ?? '', memory, ctx.signal, { ...(skip ? { skipLanes: skip } : {}), tag });
-    // a full-tier answer that did not come (or did not pass) moves on to the compact menu step on a key or the server model
-    directed = (tierFor(modelScope()?.provider) === 'compact' ? menuStep() : directMasterySpec({ words: kept.map(w => ({ word: w.word, t: w.t, end: w.end })), faces: edl.faces ?? [], duration: plan.source.duration, brief: briefWithMemory(inp.brief ?? '', memory), files: worldCutouts(), ...(ctx.signal ? { signal: ctx.signal } : {}), log: s => console.log(`[edit] ${s}`) })
+    // a full-tier answer that did not come (or did not pass) moves on to the compact menu step on a key or the server model;
+    // the direction runs beside the preview in its own scope (its Designer, Lens and Keeper tags never take the Editor's calls)
+    directed = branch(() => { void activity(ctx.chat, 'designer', ctx.task.id, 'start', 'casting devices on the sentences', { scope: 'direct' }); return (tierFor(modelScope()?.provider) === 'compact' ? menuStep() : directMasterySpec({ words: kept.map(w => ({ word: w.word, t: w.t, end: w.end })), faces: edl.faces ?? [], duration: plan.source.duration, brief: briefWithMemory(inp.brief ?? '', memory), files: worldCutouts(), ...(ctx.signal ? { signal: ctx.signal } : {}), log: s => console.log(`[edit] ${s}`) })
 ).then(r => r.value ? r : (console.log(`[edit] spec: Claude Code gave none (${r.problems.flat().slice(0, 1).join('')}); the menu step on a key or the server model`), menuStep(['claude-code'])))
       .then(async r => {
         const fixes = r.problems.flat().length;
@@ -236,7 +239,7 @@ export const editReel: Handler = async ctx => {
         await rememberEdit((q, p) => ctx.uq(q, p), { video: ctx.run.video, project: ctx.pid, title: u.name, devices, caption: cap });
         void activity(ctx.chat, 'keeper', ctx.task.id, 'done', 'remembered: devices, caption', { scope: 'remember' });
       })
-      .catch(e => console.warn(`[edit] spec: ${String((e as Error).message ?? e).slice(0, 160)}`));
+      .catch(e => console.warn(`[edit] spec: ${String((e as Error).message ?? e).slice(0, 160)}`)); });
     graded = plan.restore.catch(() => null).then(r => r ? prepareClip(dir).then(() => { console.log(`[edit] ${ctx.task.id} graded cut ready`); }) : undefined).catch(e => console.warn(`[edit] graded cut: ${String((e as Error).message ?? e).slice(0, 160)}`));
     done('player', (Date.now() - p0) / 1000);
   }
