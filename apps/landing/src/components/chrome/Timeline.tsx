@@ -17,16 +17,20 @@ export function Timeline() {
   const read = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    let raf = 0;
+    // read in the scroll event (the page is clean then), write in the frame: reading in the frame, after the world
+    // has written its tags, would force a layout on every scrolled frame
+    let raf = 0, p = 0;
+    const measure = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+    };
     const update = () => {
       raf = 0;
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      const p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
       if (head.current) head.current.style.transform = `translateY(${(p * 100).toFixed(3)}cqh)`;
       if (read.current) read.current.textContent = tc(p * RUNTIME_FRAMES);
     };
-    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
-    update();
+    const onScroll = () => { measure(); if (!raf) raf = requestAnimationFrame(update); };
+    measure(); update();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
     return () => { window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); cancelAnimationFrame(raf); };

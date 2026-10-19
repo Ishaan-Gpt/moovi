@@ -34,6 +34,16 @@ function primeDom(tl: gsap.core.Timeline) {
 }
 
 /**
+ * Every chapter builds when the world arrives, all in the same moment: one refresh for all of them, not one each
+ * (each refresh re-measures every trigger on the page; measured: a 1.4 s long task at 4x CPU with one per chapter).
+ */
+let refreshing = 0;
+function refreshSoon() {
+  if (refreshing) return;
+  refreshing = requestAnimationFrame(() => { refreshing = 0; ScrollTrigger.refresh(); });
+}
+
+/**
  * `tl` is scrubbed by this chapter's scroll and holds the DOM. `stage` holds shared state (the scene, `ui`,
  * page colour) and is played by the director, so chapters never fight over it.
  */
@@ -68,7 +78,7 @@ export function Chapter({ id, name, vh, className, back, front, build, flow = fa
         primeDom(tl);
         off = addReel(tl.scrollTrigger!, stage);
       }, el);
-      ScrollTrigger.refresh();
+      refreshSoon();
     });
     return () => { alive = false; off?.(); ctx?.revert(); };
   }, [name, build, flow, rev]);

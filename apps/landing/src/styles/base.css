@@ -76,3 +76,6 @@ input, textarea { font: inherit; color: inherit; }
   /* the WebGL world and everything pinned to it, plus the chrome that only means something on screen */
   .intro, .sheet, .world, .tags, .aurora, .timeline, .scroll-cue { display: none !important; }
 }
+
+/* a section far off screen (Reveals) pauses its loops; they carry on from where they were when it comes back */
+[data-away], [data-away] * { animation-play-state: paused !important; }

@@ -25,17 +25,18 @@ export function Header() {
   useEffect(() => {
     if (!home) { setScrolled(true); return; }
     // active = the last nav section whose top has passed the middle of the screen
-    let raf = 0;
-    const update = () => {
-      raf = 0;
-      setScrolled(window.scrollY > window.innerHeight * 0.55);
+    // measured in the scroll event, while the page is clean (in a frame, after the world's writes, the reads would
+    // force a layout); applied at most once a frame
+    let raf = 0, scrolled = false, current: string = nav[0].id;
+    const measure = () => {
+      scrolled = window.scrollY > window.innerHeight * 0.55;
       const mid = window.innerHeight / 2;
-      let current: string = nav[0].id;
+      current = nav[0].id;
       for (const n of nav) { const el = document.getElementById(n.id); if (el && el.getBoundingClientRect().top <= mid) current = n.id; }
-      setActive(current);
     };
-    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
-    update();
+    const update = () => { raf = 0; setScrolled(scrolled); setActive(current); };
+    const onScroll = () => { measure(); if (!raf) raf = requestAnimationFrame(update); };
+    measure(); update();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => { window.removeEventListener('scroll', onScroll); cancelAnimationFrame(raf); };
   }, [home]);

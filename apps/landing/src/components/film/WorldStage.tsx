@@ -59,7 +59,9 @@ export function WorldStage() {
         let lastWave = 0;
         let holes = false;
         let onScreen = false;
-    let screenH = 0;
+        let screenH = 0, screenW = 0;
+        // looked up once: a query per tag per frame adds up on a slow phone
+        const subs: (HTMLElement | null)[] = [];
 
         const world = new MooviWorld(canvas.current!, {
           scale: .72,
@@ -76,13 +78,14 @@ export function WorldStage() {
               const p = w.project([c.x, c.y + c.r * 1.25, c.z]);
               el.style.opacity = String(vis);
               el.style.transform = `translate3d(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px, 0) translate(-50%, -100%)`;
-              const sub = el.querySelector<HTMLElement>('.tag__sub');
+              const sub = subs[i] ??= el.querySelector<HTMLElement>('.tag__sub');
               const text = narrow && !solo ? '' : ui.sub[i] ?? '';
               if (sub && sub.textContent !== text) sub.textContent = text;
             });
             if (aurora.current) aurora.current.style.opacity = String(ui.aurora);
             // the memory graph lives inside the halo: a 1000px box, centred and scaled to the ring's inner edge
-            if (ui.halo && ui.halo.offsetParent) {
+            // (only near its chapter: offsetParent, asked every frame, forced a layout every frame)
+            if (ui.halo && !ui.halo.closest('[data-away]')) {
               const h = w.halo();
               ui.halo.style.transform = `translate3d(${(h.x - 500).toFixed(1)}px, ${(h.y - 500).toFixed(1)}px, 0) scale(${(h.r * 1.66 / 1000).toFixed(4)})`;
             }
@@ -94,7 +97,8 @@ export function WorldStage() {
               const box = ui.grip;
               const dock = box.closest<HTMLElement>('[data-dock]');
               const a = w.project([m.x, m.y - .08 * m.s, m.z + 1.05 * m.s]);
-              if (dock) { dock.dataset.docked = ''; dock.style.transform = `translate3d(${a.x.toFixed(1)}px, ${a.y.toFixed(1)}px, 0)`; }
+              // set once: rewriting the attribute every frame re-matches its styles every frame
+              if (dock) { if (!('docked' in dock.dataset)) dock.dataset.docked = ''; dock.style.transform = `translate3d(${a.x.toFixed(1)}px, ${a.y.toFixed(1)}px, 0)`; }
               const r = box.getBoundingClientRect();
               const hands = w.hands();
               const cy = r.top + r.height * .5, inset = hands[0]!.r * .5;
@@ -121,7 +125,8 @@ export function WorldStage() {
                 // a base width (narrower for portrait screens, so content reads at phone size); the height follows the
                 // screen's aspect ratio, and everything inside is sized in container units
                 const asp = w.screenAspect(), bw = asp >= 1 ? 1280 : 640, h = Math.round(bw / asp);
-                if (screenH !== h || el.offsetWidth !== bw) { el.style.width = `${bw}px`; el.style.height = `${h}px`; screenH = h; }
+                // compared with what was last set (reading offsetWidth here would force a layout every frame)
+                if (screenH !== h || screenW !== bw) { el.style.width = `${bw}px`; el.style.height = `${h}px`; screenH = h; screenW = bw; }
                 el.style.transform = quad(bw, h, w.screen());
                 el.style.opacity = String(Math.min(1, Math.max(0, (k - .8) / .2)));
                 el.style.visibility = 'visible';

@@ -103,6 +103,7 @@ html[data-intro="done"] .intro { display: none; }
 /* ───────────── scroll cue ───────────── */
 .scroll-cue { position: fixed; left: 50%; bottom: calc(var(--pad) * .9); z-index: 6; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; color: var(--ink); transition: opacity .5s var(--ease), transform .5s var(--ease); pointer-events: none; }
 .scroll-cue.is-hidden { opacity: 0; transform: translate(-50%, 10px); }
+.scroll-cue.is-hidden .icon-scroll-bead { animation-play-state: paused; }
 .icon-scroll-bead { animation: cue-bead 1.8s var(--ease) infinite; }
 @keyframes cue-bead { 0% { transform: translateY(0); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateY(7px); opacity: 0; } }
 html:not([data-intro="done"]) .scroll-cue { opacity: 0; }

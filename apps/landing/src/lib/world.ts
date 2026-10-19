@@ -95,20 +95,26 @@ const reels: Reel[] = [];
 let active: Reel | null = null;
 let smoothY = -1;
 let running = false;
+/**
+ * The scroll position, kept from scroll events. Reading window.scrollY in the ticker would force a style and layout
+ * flush every frame, right after the world wrote its tags and holes (measured: ~2.8 s of main thread in 20 s at 4x CPU).
+ */
+let scrollY = 0;
+const onScroll = () => { scrollY = window.scrollY; };
 
 export function addReel(range: ScrollTrigger, stage: gsap.core.Timeline) {
   const reel = { range, stage };
   reels.push(reel);
-  if (!running) { running = true; gsap.ticker.add(tick); }
+  if (!running) { running = true; scrollY = window.scrollY; window.addEventListener('scroll', onScroll, { passive: true }); gsap.ticker.add(tick); }
   return () => {
     reels.splice(reels.indexOf(reel), 1);
     if (active === reel) active = null;
-    if (!reels.length) { running = false; gsap.ticker.remove(tick); }
+    if (!reels.length) { running = false; window.removeEventListener('scroll', onScroll); gsap.ticker.remove(tick); }
   };
 }
 
 function tick() {
-  const y = window.scrollY;
+  const y = scrollY;
   const dt = gsap.ticker.deltaRatio(60) / 60;
   // ~0.3s ease-out behind the scroll, like the DOM's scrub; big jumps (anchor loads) cut straight there
   if (smoothY < 0 || Math.abs(y - smoothY) > window.innerHeight * 6) smoothY = y;
