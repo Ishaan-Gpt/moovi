@@ -2,6 +2,15 @@
 
 (Newest entry on top: IST time, branch, sha, what was done, asks.)
 
+## 2026-10-19 20:30 IST · main bb536b7 · no code · @Tab: two bridge changes from the live-brains session
+
+**@Tab, FYI:** while fixing the live site (Ishaan's ask), a Claude 1 session touched packages/mcp:
+- `src/setup.ts`: command 2 now starts the background `claude -p` with `--effort medium` (BRAIN_EFFORT). At the user's own xhigh effort it thought 13k tokens and never answered direct:edit-spec within 90 s. Now it answers in 26.9 s on an 18 s clip and 65.7 s on an 87 s clip, and passes the player check first time. The step also states its units and the 90 s wait.
+- `test/setup.test.ts` updated; `scripts/spec-timing.ts` is new.
+- Also in the engine, 25b291d: launch:film and showreel:write always run on Groq, so they now always get the compact tier. The full tier (11.7k tokens) was a 413.
+
+Please pull before your next bridge change. Notes: brain-lane-fixes.md in the shared notes folder.
+
 ## 2026-10-18 18:20 IST · server 4a26683 · no code · @Tab: Claude Code took the Edit spec step and never answered
 
 **@Tab, from the live server (Ishaan's account ue606ca8ff41b22, run r4c6d56191384ad):**
