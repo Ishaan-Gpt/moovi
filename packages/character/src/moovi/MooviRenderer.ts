@@ -2,6 +2,7 @@ import { HALO_TILT, HALO_Y, HaloTick } from '../halo';
 import { fragmentShader, vertexShader } from './shaders';
 import { QUALITY, initialTier, lowerTier, type QualityName } from './quality';
 import { STATE_BLEND, ZERO, type Blend, type MooviState } from './states';
+import { releaseContext, webgl2Supported } from '../gl';
 import { lerp, lerp3, mul, rotX, rotY, rotZ, type Vec3 } from './math';
 
 export interface MooviOptions {
@@ -31,15 +32,13 @@ const MIN_SCALE = 0.6;
  * adapts resolution (then tier) to keep frames on budget, and survives WebGL context loss.
  */
 export class MooviRenderer {
-  static isSupported(): boolean {
-    if (typeof document === 'undefined') return false;
-    try { return !!document.createElement('canvas').getContext('webgl2'); } catch { return false; }
-  }
+  static isSupported(): boolean { return webgl2Supported(); }
 
   private gl: WebGL2RenderingContext;
   /** two compiled variants: the morph one only runs while he is (or is becoming) a play button */
   private programs: { base: Program; morph: Program } | null = null;
   private vao: WebGLVertexArrayObject | null = null;
+  private buffer: WebGLBuffer | null = null;
   private qualityName: QualityName;
   private readonly auto: boolean;
   private readonly transparent: boolean;
@@ -126,13 +125,15 @@ export class MooviRenderer {
     cancelAnimationFrame(this.raf);
     this.cleanups.forEach(fn => fn());
     this.releaseGL();
+    releaseContext(this.canvas, this.gl);
   }
 
   private releaseGL() {
     const { gl } = this;
     if (this.programs) { gl.deleteProgram(this.programs.base.program); gl.deleteProgram(this.programs.morph.program); }
     if (this.vao) gl.deleteVertexArray(this.vao);
-    this.programs = null; this.vao = null;
+    if (this.buffer) gl.deleteBuffer(this.buffer);
+    this.programs = null; this.vao = null; this.buffer = null;
   }
 
   private active(): Program {
@@ -169,7 +170,8 @@ export class MooviRenderer {
     // one full-screen triangle; attribute 0 is pinned in the vertex shader so both programs share this VAO
     this.vao = gl.createVertexArray();
     gl.bindVertexArray(this.vao);
-    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    this.buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
     gl.enableVertexAttribArray(0);
     gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);

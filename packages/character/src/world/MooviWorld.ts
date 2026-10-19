@@ -4,6 +4,7 @@ import { lerp3, mul, rotX, rotY, rotZ, type Vec3 } from '../moovi/math';
 import { CREW_N, worldFragment, type WorldVariant } from './worldShader';
 import { DESK_N, HOT_N } from './officeGraph';
 import { HALO_R, HALO_T, HALO_TILT, HALO_Y, HaloTick } from '../halo';
+import { releaseContext, webgl2Supported } from '../gl';
 
 /**
  * Everything the world shows, as plain numbers, so a scroll timeline (GSAP) can tween any of it.
@@ -113,9 +114,7 @@ const inOut = (x: number) => (x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 
  * to screen pixels so DOM labels can follow the characters.
  */
 export class MooviWorld {
-  static isSupported() {
-    try { return !!document.createElement('canvas').getContext('webgl2'); } catch { return false; }
-  }
+  static isSupported() { return webgl2Supported(); }
 
   readonly scene: WorldScene = defaultScene();
   private gl: WebGL2RenderingContext;
@@ -145,12 +144,21 @@ export class MooviWorld {
     return this.arrival(key({ morph: shape === 'morph', memory: shape === 'memory', word: shape === 'word' })).done;
   }
   private vao: WebGLVertexArrayObject | null = null;
+  private buffer: WebGLBuffer | null = null;
   private quality: QualityName;
   private auto: boolean;
   private baseScale: number;
   private scale = 1;
+  /** the canvas's CSS size, measured on resize */
+  private cssW = 1;
+  private cssH = 1;
+  /** a temporary resolution factor (soften()) */
+  private soft = 1;
   private raf = 0;
   private running = true;
+  /** off screen (IntersectionObserver), or paused by the page (e.g. covered by a full-screen view) */
+  private onScreen = true;
+  private paused = false;
   private disposed = false;
   private t0 = performance.now();
   private last = 0;
@@ -206,8 +214,29 @@ export class MooviWorld {
     this.raf = requestAnimationFrame(this.loop);
   }
 
+  /**
+   * Stop drawing while something opaque covers the world (a full-screen view over it); `false` picks up where it was.
+   * Hidden tabs and an off-screen canvas pause on their own.
+   */
+  pause(on: boolean) { this.paused = on; this.wake(); }
+
+  /**
+   * Draw at a fraction of the usual resolution for a while (1 = as usual), e.g. while the page blurs the world: the
+   * blur hides the difference and the GPU does far less.
+   */
+  soften(k: number) { if (k !== this.soft) { this.soft = k; this.rescale(); } }
+
+  private wake() {
+    if (this.disposed) return;
+    cancelAnimationFrame(this.raf);
+    if (this.running && this.onScreen && !this.paused) { this.last = 0; this.raf = requestAnimationFrame(this.loop); }
+  }
+
   /** A short action layered over whatever the timeline says: a wave, a cheer, a squint. */
   act(a: Act, ms = 1400) { this.acts[a].until = performance.now() + ms; }
+
+  /** The canvas's CSS size as last measured (read this in onFrame instead of clientWidth, which forces a layout). */
+  get view(): { w: number; h: number } { return { w: this.cssW, h: this.cssH }; }
 
   /** World point → canvas CSS pixels (and whether it is in front of the camera). */
   project(p: Vec3): { x: number; y: number; z: number } {
@@ -216,7 +245,7 @@ export class MooviWorld {
     const z = d[0] * ww[0] + d[1] * ww[1] + d[2] * ww[2];
     const x = d[0] * uu[0] + d[1] * uu[1] + d[2] * uu[2];
     const y = d[0] * vv[0] + d[1] * vv[1] + d[2] * vv[2];
-    const h = this.canvas.clientHeight, w = this.canvas.clientWidth;
+    const h = this.cssH, w = this.cssW;
     return { x: w / 2 + (x / z) * focal * h, y: h / 2 - (y / z) * focal * h, z };
   }
 
@@ -245,7 +274,7 @@ export class MooviWorld {
   /** Canvas CSS pixels → the world point at camera depth `z` (the inverse of project()). */
   unproject(x: number, y: number, z: number): Vec3 {
     const { ro, uu, vv, ww, focal } = this.basis;
-    const h = this.canvas.clientHeight, w = this.canvas.clientWidth;
+    const h = this.cssH, w = this.cssW;
     const a = (x - w / 2) / (focal * h) * z, b = -(y - h / 2) / (focal * h) * z;
     return [0, 1, 2].map(i => ro[i]! + ww[i]! * z + uu[i]! * a + vv[i]! * b) as Vec3;
   }
@@ -285,7 +314,7 @@ export class MooviWorld {
 
   /** Effective focal length: narrow screens see a wider slice of the world so the cast still fits. */
   private focalFor(f: number) {
-    const aspect = this.canvas.clientWidth / Math.max(1, this.canvas.clientHeight);
+    const aspect = this.cssW / Math.max(1, this.cssH);
     return f * Math.min(1, Math.pow(aspect / (16 / 9), .55));
   }
 
@@ -315,6 +344,9 @@ export class MooviWorld {
     this.cleanups.forEach(f => f());
     for (const p of this.programs.values()) this.gl.deleteProgram(p.program);
     for (const p of this.pending) this.gl.deleteProgram(p.program);
+    if (this.vao) this.gl.deleteVertexArray(this.vao);
+    if (this.buffer) this.gl.deleteBuffer(this.buffer);
+    releaseContext(this.canvas, this.gl);
   }
 
   // ─────────── setup ───────────
@@ -330,9 +362,12 @@ export class MooviWorld {
     // separate driver threads, so two at once finish far sooner than one after the other (measured: 9.5 s vs 14.5 s
     // cold on D3D11), and the base is barely slowed. The screen and the memory ring follow once the base is in.
     this.startCompile(this.variants.slice(0, 2));
+    if (this.vao) gl.deleteVertexArray(this.vao);
+    if (this.buffer) gl.deleteBuffer(this.buffer);
     this.vao = gl.createVertexArray();
     gl.bindVertexArray(this.vao);
-    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    this.buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
     gl.enableVertexAttribArray(0);
     gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
@@ -347,7 +382,7 @@ export class MooviWorld {
    */
   private dropTier(l: QualityName) {
     const gl = this.gl;
-    this.quality = l; this.scale = 1; this.resize();
+    this.quality = l; this.scale = 1; this.rescale();
     for (const p of this.pending) { gl.deleteProgram(p.program); gl.deleteShader(p.vs); gl.deleteShader(p.fs); }
     this.pending = [];
     this.swapping = true;
@@ -397,32 +432,41 @@ export class MooviWorld {
   private listen() {
     const ro = new ResizeObserver(() => this.resize());
     ro.observe(this.canvas);
-    const vis = () => { this.running = !document.hidden; if (this.running) { cancelAnimationFrame(this.raf); this.raf = requestAnimationFrame(this.loop); } };
+    const vis = () => { this.running = !document.hidden; this.wake(); };
     document.addEventListener('visibilitychange', vis);
+    const io = new IntersectionObserver(([e]) => { this.onScreen = !!e?.isIntersecting; this.wake(); });
+    io.observe(this.canvas);
     const move = (e: PointerEvent) => {
       this.pointer = [(e.clientX / window.innerWidth) * 2 - 1, -((e.clientY / window.innerHeight) * 2 - 1)];
     };
     window.addEventListener('pointermove', move, { passive: true });
     const lost = (e: Event) => { e.preventDefault(); cancelAnimationFrame(this.raf); };
-    const restored = () => { this.init(); this.raf = requestAnimationFrame(this.loop); };
+    const restored = () => { this.init(); this.wake(); };
     this.canvas.addEventListener('webglcontextlost', lost);
     this.canvas.addEventListener('webglcontextrestored', restored);
     this.cleanups.push(() => {
-      ro.disconnect(); document.removeEventListener('visibilitychange', vis); window.removeEventListener('pointermove', move);
+      ro.disconnect(); io.disconnect(); document.removeEventListener('visibilitychange', vis); window.removeEventListener('pointermove', move);
       this.canvas.removeEventListener('webglcontextlost', lost); this.canvas.removeEventListener('webglcontextrestored', restored);
     });
   }
 
+  /** Measure the canvas (only here: on resize, never per frame, where a read after the page's writes forces a layout). */
   private resize() {
+    this.cssW = this.canvas.clientWidth; this.cssH = this.canvas.clientHeight;
+    this.rescale();
+  }
+
+  /** Set the drawing-buffer size from the last measured CSS size. */
+  private rescale() {
     const q = QUALITY[this.quality];
-    const dpr = Math.min(window.devicePixelRatio || 1, q.maxDpr) * this.baseScale * this.scale;
-    const w = Math.max(1, Math.round(this.canvas.clientWidth * dpr)), h = Math.max(1, Math.round(this.canvas.clientHeight * dpr));
+    const dpr = Math.min(window.devicePixelRatio || 1, q.maxDpr) * this.baseScale * this.scale * this.soft;
+    const w = Math.max(1, Math.round(this.cssW * dpr)), h = Math.max(1, Math.round(this.cssH * dpr));
     if (this.canvas.width !== w || this.canvas.height !== h) { this.canvas.width = w; this.canvas.height = h; this.gl.viewport(0, 0, w, h); }
   }
 
   // ─────────── frame ───────────
   private loop = (now: number) => {
-    if (this.disposed || !this.running) return;
+    if (this.disposed || !this.running || !this.onScreen || this.paused) return;
     this.raf = requestAnimationFrame(this.loop);
     const q = QUALITY[this.quality];
     if (now - this.last < 1000 / q.fps - 2) return;
@@ -433,7 +477,7 @@ export class MooviWorld {
     if (this.avg > (1000 / q.fps) * 1.35 && !this.pending.length) this.slow++; else this.slow = Math.max(0, this.slow - 1);
     if (this.slow > 40) {
       this.slow = 0;
-      if (this.scale > .65) { this.scale *= .88; this.resize(); }
+      if (this.scale > .65) { this.scale *= .88; this.rescale(); }
       else if (this.auto) { const l = lowerTier(this.quality); if (l) this.dropTier(l); }
     }
     if (this.onStats && ++this.frames % 30 === 0) this.onStats({ fps: Math.round(1000 / this.avg), quality: this.quality, scale: +(this.baseScale * this.scale).toFixed(2), width: this.canvas.width, height: this.canvas.height });
@@ -482,7 +526,7 @@ export class MooviWorld {
     // camera (the screen morph can pull it square onto his face until the screen fills the viewport)
     const c = sc.cam;
     const focal = this.focalFor(c.focal);
-    const aspect = this.canvas.clientWidth / Math.max(1, this.canvas.clientHeight);
+    const aspect = this.cssW / Math.max(1, this.cssH);
     this.screenDims = screenSize(aspect);
     let ro: Vec3 = [c.x, c.y, c.z], ta: Vec3 = [c.tx, c.ty, c.tz];
     const fill = sc.morph.fill;
