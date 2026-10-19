@@ -146,14 +146,12 @@ if [ -n "$WEBSITE" ]; then
 else
   setkey MOOVI_ORIGINS "https://$SITE"
 fi
-# no API key needed: users who connect Claude Code (Settings, Use Claude Code) have their brain there. Under
-# MOOVI_BYOK=required the website still sends a keyless user to Settings (apps/studio/src/lib/session.ts reads only the
-# saved key), so the server runs with optional: a user with neither a key nor Claude Code is told so when a video starts.
-if grep -q '^MOOVI_BYOK=required' .env; then say "MOOVI_BYOK=required changed to optional (Claude Code users have no key)"; fi
-setkey MOOVI_BYOK optional
+addkey() { grep -q "^$1=" .env || echo "$1=$2" >> .env; } # addkey KEY VALUE: only when .env has no KEY yet
+# every user brings a model key or links Claude Code (the owner's rule): a keyless user linked to Claude Code is let
+# through (apps/studio/src/lib/session.ts, claudeCodeLinked). A value already in .env is kept on every deploy.
+addkey MOOVI_BYOK required
 # a small server: one video at a time, the small speech model (77 MB, about 300 MB of memory) instead of the large one
 # (760 MB download, about 1.5 GB of memory), and a heap cap for the website build. Values already in .env are kept.
-addkey() { grep -q "^$1=" .env || echo "$1=$2" >> .env; }
 if [ "$LOW_MEM" -eq 1 ]; then
   addkey MOOVI_STT_LOCAL_MODEL onnx-community/whisper-base_timestamped
   addkey MOOVI_SLOTS_RENDER 1
@@ -169,8 +167,10 @@ fi
 export COMPOSE_PARALLEL_LIMIT=1
 if [ "$LOW_MEM" -eq 1 ]; then docker compose stop worker studio >/dev/null 2>&1 || true; fi
 docker compose build studio
+# the long-running services by name: a bare `up -d` also starts the one-shot seed, which then races the seed below on
+# dropping the craft graph ("graph was deleted or replaced while the query was running"); the library is seeded once, below
 if [ "$CADDY" -eq 1 ]; then
-  docker compose up -d
+  docker compose up -d falkordb studio worker caddy
   # a running Caddy keeps the Caddyfile it started with (a bind mount of a file a git pull replaced): recreate it so
   # the routes of this checkout (/mcp, /healthz, /connect) are live. Its certificates live in a volume and stay.
   docker compose up -d --force-recreate --no-deps caddy
