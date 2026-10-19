@@ -402,6 +402,11 @@ await document.fonts.load('80px "Russo One"').catch(() => {});
 for (const b of BEATS.filter(b => b.layers.some(L => L.t === 'desk'))) { frame(b.t0 + 1.2); await new Promise(r => setTimeout(r, 60)); }
 for (const v of ov.querySelectorAll('.desk video')) { v.play().then(() => v.pause()).catch(() => {}); }
 V.currentTime = toOut(START); await new Promise(r => V.addEventListener('seeked', r, { once: true }));
-window.__seek = async t => { V.currentTime = toOut(t); await new Promise(r => V.addEventListener('seeked', r, { once: true })); frame(t); };
+// a capture draws frame by frame: each desk print's footage on screen is seeked to its own time (t from its print's
+// word, looped) instead of playing on the wall clock between captures; the live preview still plays it
+const deskSeek = async t => { await Promise.all([...DESKV].map(v => { const i = +v.closest('.it').dataset.i, it = (SPEC.desk.items || [])[i] || {}, d = v.duration;
+  v.pause(); if (!(d > 0)) return; const want = Math.max(0, t - at(it.at)) % d; if (Math.abs(v.currentTime - want) < .004) return;
+  return new Promise(r => { v.addEventListener('seeked', r, { once: true }); setTimeout(r, 3000); v.currentTime = want; }); })); };
+window.__seek = async t => { V.currentTime = toOut(t); await new Promise(r => V.addEventListener('seeked', r, { once: true })); frame(t); if (DESKV.size) await deskSeek(t); };
 window.__ready = true; $('gate').textContent = 'tap to play ▶'; loop();
 </script></body></html>
