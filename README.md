@@ -15,7 +15,7 @@ From the makers of MotionEasy and CaptionsEasy.
 | **Hackathon** | Graph Hacks: Context for AI Agents, by WeMakeDevs x FalkorDB |
 | **Tracks entered** | Track 01: Agents That Act on Connected Data · Track 02: Agent Memory and Coordination |
 | **Graph database** | FalkorDB 6.0.2 (Docker), the only memory Moovi has |
-| **Build blog** | [docs/submission/BLOG.md](docs/submission/BLOG.md): how the graph is wired and 17 things that broke |
+| **Build blog** | [Moovi: 700+ commits, 3 days, one FalkorDB graph](https://dev.to/ishaan_gupta_6c0f9dd08855/moovi-700-commits-3-days-one-falkordb-graph-274j) on Dev.to (repo copy: [docs/submission/BLOG.md](docs/submission/BLOG.md)): how the graph is wired and 17 things that broke |
 
 The landing page runs on Vercel; the studio, the film-making worker and FalkorDB run on one AWS server
 (`docs/DEPLOY.md`). Every push to `main` redeploys the landing page.
