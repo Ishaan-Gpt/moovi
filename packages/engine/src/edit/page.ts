@@ -165,18 +165,27 @@ function styleInsert(x, t) {
   const fo = EDIT.faceOutAt(E, t), mh = 0.1, my = [0.36, 0.22, 0.64].find(y => !fo || y + mh < fo.y0 - 0.01 || y - mh > fo.y1 + 0.01) ?? 0.64;
   return '<div class="m-num" style="top:' + (my * 100).toFixed(1) + '%;opacity:' + (Math.min(p, q) * fl).toFixed(2) + ';transform:translate(-50%,-50%) scale(' + s + ')"><b' + (fsz ? ' style="font-size:' + fsz + 'px"' : '') + '>' + L + '</b></div>';
 }
+// The style layer changes piece by piece: rewriting all of it every frame re-made (and re-rasterised) the full-frame
+// SVG grain each frame though it only changes 4 times a second. Only a piece whose markup changed is replaced.
+function patch(host, parts) {
+  const kids = host.children;
+  if (kids.length !== parts.length) { host.innerHTML = parts.join(''); host.__parts = parts; return; }
+  const was = host.__parts || [];
+  for (let i = 0; i < parts.length; i++) if (was[i] !== parts[i]) { const tpl = document.createElement('template'); tpl.innerHTML = parts[i]; if (tpl.content.childNodes.length === 1) kids[i].replaceWith(tpl.content); else { host.innerHTML = parts.join(''); break; } }
+  host.__parts = parts;
+}
 function drawStyle(t) {
   if (!STYLED) return '';
-  let h = '';
+  const parts = [], add = x => { parts.push(x); };
   for (const o of (E.overlays || [])) {
     if (t < o.t0 || t >= o.t1) continue;
     const p = Math.max(0, Math.min(1, (t - o.t0) / 0.3, (o.t1 - t) / 0.3));
     if (o.kind === 'sunburst') {
       const f = EDIT.framingAt(E, t), cx = (f.cx * W).toFixed(0), cy = (Math.min(0.45, f.cy) * H).toFixed(0);
-      h += '<div class="sb" style="left:' + cx + 'px;top:' + cy + 'px;opacity:' + (0.5 * p).toFixed(2) + ';transform:translate(-50%,-50%) rotate(' + ((t - o.t0) * 10).toFixed(1) + 'deg)"></div>';
+      add('<div class="sb" style="left:' + cx + 'px;top:' + cy + 'px;opacity:' + (0.5 * p).toFixed(2) + ';transform:translate(-50%,-50%) rotate(' + ((t - o.t0) * 10).toFixed(1) + 'deg)"></div>');
     } else if (o.kind === 'grain') {
       const s = Math.floor(t * 4) % 6, a = ((o.params && o.params.amount) || 0.06);
-      h += '<svg class="gr" width="' + W + '" height="' + H + '"><filter id="gn' + s + '"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="' + (s + 1) + '"/><feColorMatrix values="0.33 0.33 0.33 0 0 0.33 0.33 0.33 0 0 0.33 0.33 0.33 0 0 0 0 0 0 ' + a + '"/></filter><rect width="100%" height="100%" filter="url(#gn' + s + ')"/></svg>';
+      add('<svg class="gr" width="' + W + '" height="' + H + '"><filter id="gn' + s + '"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="' + (s + 1) + '"/><feColorMatrix values="0.33 0.33 0.33 0 0 0.33 0.33 0.33 0 0 0.33 0.33 0.33 0 0 0 0 0 0 ' + a + '"/></filter><rect width="100%" height="100%" filter="url(#gn' + s + ')"/></svg>');
     } else if (o.kind === 'doodle') {
       // a hand-drawn mark under the caption, boiling: redrawn every 2 frames at 30 fps (R4 Handmade)
       const k = Math.floor(t * 15), cy = cap.offsetTop + cap.offsetHeight / 2 + 34, w = Math.min(W * 0.62, Math.max(W * 0.3, cap.offsetWidth * 0.8)), x0 = (W - w) / 2, d = p;
@@ -184,18 +193,18 @@ function drawStyle(t) {
       const path = o.params && o.params.mark === 'arrow'
         ? 'M' + (x0 - 60) + ',' + (cy + 70 + +j(1)) + ' C' + (x0 - 20) + ',' + (cy + 20 + +j(2)) + ' ' + (x0 + 10) + ',' + (cy + 10 + +j(3)) + ' ' + (x0 + 50) + ',' + (cy - 6 + +j(4)) + ' M' + (x0 + 22) + ',' + (cy - 20 + +j(5)) + ' L' + (x0 + 52) + ',' + (cy - 6) + ' L' + (x0 + 30) + ',' + (cy + 20 + +j(6))
         : 'M' + x0 + ',' + (cy + +j(1)) + ' C' + (x0 + w * 0.3) + ',' + (cy + 12 + +j(2)) + ' ' + (x0 + w * 0.6) + ',' + (cy - 10 + +j(3)) + ' ' + (x0 + w) + ',' + (cy + 4 + +j(4));
-      h += '<svg class="dd" width="' + W + '" height="' + H + '"><path d="' + path + '" pathLength="1" style="stroke-dasharray:1;stroke-dashoffset:' + (1 - Math.min(1, d * 2.2)).toFixed(3) + '"/></svg>';
+      add('<svg class="dd" width="' + W + '" height="' + H + '"><path d="' + path + '" pathLength="1" style="stroke-dasharray:1;stroke-dashoffset:' + (1 - Math.min(1, d * 2.2)).toFixed(3) + '"/></svg>');
     }
   }
-  for (const x of (E.inserts || [])) if (t >= x.t0 && t < x.t1) h += styleInsert(x, t);
+  for (const x of (E.inserts || [])) if (t >= x.t0 && t < x.t1) add(styleInsert(x, t));
   const en = E.end;
   if (en && t >= en.t0) {
     const p = EDIT.easeOut((t - en.t0) / 0.35).toFixed(3);
-    if (en.kind === 'name') h += '<div class="e-name" style="opacity:' + p + ';transform:translate(-50%,' + ((1 - p) * 60).toFixed(0) + 'px)"><b>' + esc(en.title) + '</b></div>';
-    else if (en.kind === 'cta_comment') h += '<div class="e-cta" style="opacity:' + p + ';transform:translate(-50%,-50%) rotate(-4deg) scale(' + (0.8 + 0.2 * p).toFixed(3) + ')"><i>' + esc(en.title) + '</i><b>' + esc(en.line) + '</b></div>';
-    else h += '<div class="e-logo" style="opacity:' + p + '"><b>' + esc(en.title) + '</b></div>';
+    if (en.kind === 'name') add('<div class="e-name" style="opacity:' + p + ';transform:translate(-50%,' + ((1 - p) * 60).toFixed(0) + 'px)"><b>' + esc(en.title) + '</b></div>');
+    else if (en.kind === 'cta_comment') add('<div class="e-cta" style="opacity:' + p + ';transform:translate(-50%,-50%) rotate(-4deg) scale(' + (0.8 + 0.2 * p).toFixed(3) + ')"><i>' + esc(en.title) + '</i><b>' + esc(en.line) + '</b></div>');
+    else add('<div class="e-logo" style="opacity:' + p + '"><b>' + esc(en.title) + '</b></div>');
   }
-  STY.innerHTML = h; return h;
+  patch(STY, parts); return parts.join('');
 }
 // the library's sounds (E.sfx, cast by edit/cast.ts from the graph) played as the output clock passes them
 // the finished soundtrack (edit/job.ts: voice, bed and the Style 1 stem mixed on the output clock) plays instead of the clip's sound
