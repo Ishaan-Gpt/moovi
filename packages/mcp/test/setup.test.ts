@@ -9,6 +9,7 @@ import type { AddressInfo } from 'node:net';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { BrainHub, bridgeApp, childPrompt, memoryStore, SETUP_CONNECT_MS, SETUP_EXIT_GRACE_MS, SETUP_IDLE_MS, SETUP_MS, SETUP_QUIET_MS, type BrainStore } from '../src/index';
+import { BRAIN_EFFORT } from '../src/setup';
 
 // the one prompt setup (setup.ts): one pasted prompt, Claude Code runs one command, the script adds the server and starts a background Claude Code
 let t = 1_000_000;
@@ -53,7 +54,7 @@ test('setup: sign in first; the prompt is plain commands only (no piped remote s
   assert.ok(prompt.includes(`curl -sS -X POST ${u}/claim.json`), 'step 1: a plain claim call');
   assert.ok(prompt.includes(`Invoke-RestMethod -Method Post -Uri ${u}/claim.json`));
   assert.ok(prompt.includes(`claude mcp add --scope user --transport http moovi ${base}/mcp --header "Authorization: Bearer TOKEN"`), 'step 2: literal URL and header');
-  assert.ok(prompt.includes(`claude -p "${childPrompt('TICKET')}" --allowedTools mcp__moovi`), 'step 3: the same background run the scripts start');
+  assert.ok(prompt.includes(`claude -p "${childPrompt('TICKET')}" --allowedTools mcp__moovi --effort ${BRAIN_EFFORT}`), 'step 3: the same background run the scripts start');
   assert.ok(prompt.includes(`curl -sS -X POST "${u}/exit?code=$?"`), 'the exit is reported, so a crash reads FAILED');
   assert.ok(prompt.includes(`curl -sS ${u}/status`));
   assert.match(prompt, /ask me nothing/);
@@ -169,7 +170,7 @@ test('setup: the real sh script against this server, with a stand in claude on P
   assert.equal((await hub.tokens.verify(add[2]!))?.user, 'u4', 'the token claude mcp add got is the live one');
   const p = got.find(l => l.startsWith('P|'))!.split('|');
   assert.match(p[1]!, /^You are the Moovi brain for one video\. Call the moovi_next tool with ticket set to rt_/);
-  assert.deepEqual([p[2], p[3], p[4]], ['--allowedTools', 'mcp__moovi', 'CC=unset'], 'only Moovi tools, and the nested session guard is cleared');
+  assert.deepEqual(p.slice(2, 7), ['--allowedTools', 'mcp__moovi', '--effort', BRAIN_EFFORT, 'CC=unset'], 'only Moovi tools at the brain effort, and the nested session guard is cleared');
   const again = await runSh(sh, { ...process.env, PATH: `${bin}:${process.env.PATH}`, TMPDIR: dir });
   assert.match(again.stdout, /already used or has expired/, 'running it twice is harmless');
 });
@@ -392,7 +393,7 @@ test('ps1: the real PowerShell script under pwsh, exactly as the prompt runs it 
   assert.deepEqual(calls.slice(0, 2), ['C|mcp remove moovi -s local', 'C|mcp remove moovi -s user']);
   const p = calls.find(l => l.startsWith('P|'))!.split('|');
   assert.match(p[1]!, /^You are the Moovi brain for one video\. Call the moovi_next tool with ticket set to rt_/, 'the prompt arrives as one argument through -EncodedCommand');
-  assert.deepEqual([p[2], p[3]], ['--allowedTools', 'mcp__moovi']);
+  assert.deepEqual(p.slice(2, 6), ['--allowedTools', 'mcp__moovi', '--effort', BRAIN_EFFORT]);
   assert.match(p.at(-1)!, /PWD=.*Jane Doe ps\/Temp Files\/moovi$/);
   const logs2 = readdirSync(join(tmp, 'moovi')).map(n => readFileSync(join(tmp, 'moovi', n), 'utf8')).join('\n');
   for (const tk of tokens) assert.ok(!logs2.includes(tk.slice(4)), 'no token in the log files');
@@ -446,7 +447,7 @@ test('prompt: its POSIX commands, run as written in sh, connect Moovi and start 
     assert.equal(started.status, 0, 'the start line exits cleanly after the background run ends');
     const p = readFileSync(f.calls, 'utf8').split('\n').find(l => l.startsWith('P|'))!;
     assert.equal(p.split('|')[1], childPrompt(j.ticket), 'the background run got the ticket, as one argument');
-    assert.equal(p.split('|')[2], '--allowedTools'); assert.equal(p.split('|')[3], 'mcp__moovi');
+    assert.deepEqual(p.split('|').slice(2, 6), ['--allowedTools', 'mcp__moovi', '--effort', BRAIN_EFFORT]);
     assert.match(p, /PWD=.*Temp Files$/, 'it ran in the temp folder, spaces and all');
     assert.ok(existsSync(join(tmp, 'moovi-brain.log')));
     assert.match(p, /\|CC=none\|/, 'started outside the pasting Claude Code session (CLAUDECODE unset)');

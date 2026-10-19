@@ -37,6 +37,10 @@ export function masterySpecStep(i: SpecInput) {
   const system = [
     'You write the beat spec for one talking-head edit. Follow ONLY the recipe and the format below (Edit mastery\'s own); tailor every device, clip and UI piece to this video\'s own sentences, names and footage. Never a fixed set, never one form for the whole film, never the window form or form "auto".',
     'Answer with one JSON object: the spec, without "clip" (the server sets it). Every time is a word anchor { "w": "<word as said, lowercase>", "after": <seconds before it> }; never a typed second for an event.',
+    // what checkMasterySpec refuses, said up front: both live answers (2026-10-19) wrote 0..1 fractions and were sent back
+    'Units: x, y, w and h are 1080 x 1920 design px (never 0 to 1 fractions); cam z is a zoom from 1 to 2; a src names only a file under FILES.',
+    // the step's whole wait (SPEC_WAIT_MS): a background Claude Code at its user's own effort thought 13k tokens (280 s) first
+    `Moovi waits ${Math.round(SPEC_WAIT_MS / 1000)} s for this answer, then edits without it: think briefly, then write the spec directly.`,
     `Devices the player draws: ${m.devices.join(', ')}.`,
     m.recipe, m.format,
   ].join('\n\n');
@@ -48,7 +52,7 @@ export function masterySpecStep(i: SpecInput) {
 }
 
 const anchor = z.union([z.number(), z.object({ w: z.string(), after: z.union([z.number(), z.any()]).optional(), n: z.number().optional(), dt: z.number().optional(), end: z.boolean().optional() }).passthrough()]);
-const SpecShape = { beats: z.array(z.object({ from: anchor, layers: z.array(z.object({ t: z.string() }).passthrough()) }).passthrough()), sfx: z.array(z.object({ at: anchor, k: z.string(), g: z.number().optional() }).passthrough()).optional() };
+export const SpecShape = { beats: z.array(z.object({ from: anchor, layers: z.array(z.object({ t: z.string() }).passthrough()) }).passthrough()), sfx: z.array(z.object({ at: anchor, k: z.string(), g: z.number().optional() }).passthrough()).optional() };
 
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
 /** Check an answer against the player and the clip: problems as plain lines (empty = playable as written). Pure. */

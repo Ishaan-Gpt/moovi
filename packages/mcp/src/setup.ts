@@ -49,6 +49,11 @@ const key = (code: string) => `ce:brain:setup:${createHash('sha256').update(code
  *  exit: what the background Claude Code's wrapper reported when it stopped. */
 interface SetupRecord { user: string; createdAt: number; claimedAt: number | null; running?: string[]; exit?: { code: number; at: number }; startedAt?: number }
 
+/** The background Claude Code's effort, whatever its user set for their own sessions (measured 2026-10-19 on the
+ *  direct:edit-spec step, a real `claude -p`, Opus at the user's own xhigh: 13k thinking tokens and no answer in 400 s on
+ *  an 18 s clip; at medium 38 s, and 66 s with 21 beats on an 87 s clip, inside the step's 90 s). */
+export const BRAIN_EFFORT = 'medium';
+
 /** The one line the background Claude Code is started with: no quotes, apostrophes or shell signs, so every shell
  *  (sh, PowerShell, cmd behind a claude.cmd shim) carries it as is. */
 export function childPrompt(ticket: string): string {
@@ -76,8 +81,8 @@ export function setupPrompt(origin: string, code: string, mcpUrl = `${origin}/mc
     '   claude mcp remove moovi -s user',
     `   claude mcp add --scope user --transport http moovi ${mcpUrl} --header "Authorization: Bearer TOKEN"`,
     '3. Start Moovi as a background command (it runs for several minutes). Put the ticket from step 1 in place of TICKET:',
-    `   cd "\${TMPDIR:-/tmp}" && env -u CLAUDECODE -u CLAUDE_CODE_ENTRYPOINT claude -p "${child}" --allowedTools mcp__moovi > moovi-brain.log 2>&1 < /dev/null; curl -sS -X POST "${base}/exit?code=$?"`,
-    `   (PowerShell: $env:CLAUDECODE = $null; $env:CLAUDE_CODE_ENTRYPOINT = $null; Start-Process -WindowStyle Hidden -WorkingDirectory $env:TEMP -FilePath (Get-Command claude -CommandType Application | Select-Object -First 1).Source -ArgumentList '-p "${child}" --allowedTools mcp__moovi')`,
+    `   cd "\${TMPDIR:-/tmp}" && env -u CLAUDECODE -u CLAUDE_CODE_ENTRYPOINT claude -p "${child}" --allowedTools mcp__moovi --effort ${BRAIN_EFFORT} > moovi-brain.log 2>&1 < /dev/null; curl -sS -X POST "${base}/exit?code=$?"`,
+    `   (PowerShell: $env:CLAUDECODE = $null; $env:CLAUDE_CODE_ENTRYPOINT = $null; Start-Process -WindowStyle Hidden -WorkingDirectory $env:TEMP -FilePath (Get-Command claude -CommandType Application | Select-Object -First 1).Source -ArgumentList '-p "${child}" --allowedTools mcp__moovi --effort ${BRAIN_EFFORT}')`,
     `4. About once a minute run: curl -sS ${base}/status   (PowerShell: Invoke-RestMethod ${base}/status). Tell me in one short line when it changes.`,
     '5. Stop at DONE (give me the link), FAILED or IDLE.',
     'If a step is blocked, show me that exact command so I can run it myself, then carry on.',
@@ -170,7 +175,7 @@ export MOOVI_CL="$CL" MOOVI_P="$PROMPT" MOOVI_LOG="$LOG" MOOVI_X="$U/exit"
 # a new session, so the background run outlives this shell's process group (setsid on Linux, perl on macOS)
 if command -v setsid >/dev/null 2>&1; then SID=setsid; elif command -v perl >/dev/null 2>&1; then SID="perl -MPOSIX -e POSIX::setsid();exec(@ARGV)"; else SID=; fi
 # the wrapper: the background Claude Code, then one call that says it stopped and how
-cd "$D" && nohup $SID sh -c '"$MOOVI_CL" -p "$MOOVI_P" --allowedTools mcp__moovi >"$MOOVI_LOG" 2>&1 </dev/null; rc=$?; if command -v curl >/dev/null 2>&1; then curl -fsS -X POST "$MOOVI_X?code=$rc" >/dev/null 2>&1; else wget -q -O /dev/null --post-data= "$MOOVI_X?code=$rc" >/dev/null 2>&1; fi' >/dev/null 2>&1 </dev/null &
+cd "$D" && nohup $SID sh -c '"$MOOVI_CL" -p "$MOOVI_P" --allowedTools mcp__moovi --effort ${BRAIN_EFFORT} >"$MOOVI_LOG" 2>&1 </dev/null; rc=$?; if command -v curl >/dev/null 2>&1; then curl -fsS -X POST "$MOOVI_X?code=$rc" >/dev/null 2>&1; else wget -q -O /dev/null --post-data= "$MOOVI_X?code=$rc" >/dev/null 2>&1; fi' >/dev/null 2>&1 </dev/null &
 echo "MOOVI: connected (run $TICKET). Moovi now runs in the background. Log: $LOG"
 echo "MOOVI: progress command: $PROGRESS"
 `}`;
@@ -227,7 +232,7 @@ $d = Join-Path ([IO.Path]::GetTempPath()) 'moovi'; New-Item -ItemType Directory 
 $log = Join-Path $d ('brain-' + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + '.log')
 $q = { param($s) "'" + ($s -replace "'", "''") + "'" }
 $w = "Set-Location -LiteralPath $(& $q $d)" + [Environment]::NewLine +
-  "& $(& $q $cl) -p $(& $q $prompt) --allowedTools mcp__moovi 2>&1 | Out-File -LiteralPath $(& $q $log) -Encoding utf8" + [Environment]::NewLine +
+  "& $(& $q $cl) -p $(& $q $prompt) --allowedTools mcp__moovi --effort ${BRAIN_EFFORT} 2>&1 | Out-File -LiteralPath $(& $q $log) -Encoding utf8" + [Environment]::NewLine +
   "\`$c = \`$LASTEXITCODE; try { Invoke-WebRequest -UseBasicParsing -Method Post -Uri ($(& $q "$U/exit?code=") + \`$c) | Out-Null } catch {}"
 $enc = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($w))
 $sp = @{ FilePath = (Get-Process -Id $PID).Path; ArgumentList = @('-NoProfile', '-NonInteractive', '-EncodedCommand', $enc); WorkingDirectory = $d }
