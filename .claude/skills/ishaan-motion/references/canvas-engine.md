@@ -126,3 +126,8 @@ back clipped to the card (a blur with no filter), then a tint, a rim and a top s
 - **Hidden preview pane:** rAF does not fire when the pane is off screen (audio keeps running). Verify the clock by
   stubbing rAF and calling `loop(performance.now())` twice a second apart; render stills with headless Chrome
   (playwright-core in the engine, `renderAt(t)` → JPEG) instead of pane screenshots.
+- **The MP4 from a live preview, with the preview's exact sound:** `window.mixWav()` re-runs the same `sched(0)` on an
+  `OfflineAudioContext` (start offset 0, not the live +0.05 s) and returns a 16-bit WAV; frames come from `renderAt(t)`
+  (every clip seeked, so frames are exact) as JPEG q .94 via playwright-core, then
+  `ffmpeg -framerate 30 -i f%05d.jpg -i mix.wav -c:v libx264 -crf 16 -pix_fmt yuv420p -af loudnorm=I=-14:TP=-1`.
+  About 0.5 s a frame with four video seeks (CaptionsEasy keynote, 2026-10-21).

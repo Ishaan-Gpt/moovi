@@ -176,9 +176,9 @@ function sB(g,t,lt,d){
     if(out>0){g.save();g.globalAlpha=out;
       const st=['plain','plain','karaoke','plain','box','plain','serif'];
       const ws=LN[2].map((w,i)=>{const sty=st[i]||'plain';const big=sty==='serif';
-        return {s:w.word.replace('.',''),t:w.t-.04,font:big?fnt(150,400,SERIF,1):fnt(100,800),col:big?C.grn:C.cream,
+        return {s:w.word.replace('.',''),t:w.t-.04,font:big?fnt(132,400,SERIF,1):fnt(88,800),col:big?C.grn:C.cream,
           draw:(q,s,x,y,font,col,p)=>styled(q,sty,s,x,y,font,col,p,t,w)}});
-      flow(g,ws,W/2,H/2+40,t,{size:100,gap:.55});g.restore()}
+      flow(g,ws,W/2,H/2+40,t,{size:88,gap:.5});g.restore()}
     // the reveal
     const ip=ph(t,Wd(3,0).t-.05,.6);
     if(ip>0){const fade=1-ph(lt,d-.55,.3);g.save();g.globalAlpha=fade;word(g,'Introducing',W/2,H/2-150,fnt(52,500),C.fog,ip,{al:'c'});g.restore()}
@@ -187,10 +187,10 @@ function sB(g,t,lt,d){
   },W/2,H/2);
 }
 function styled(g,sty,s,x,y,font,col,p,t,w){
-  if(sty==='box'){const k=spring(t-w.t,11,.45);const wd=tw(s,font);if(p>0){g.save();g.translate(x+wd/2,y-40);g.scale(k*1.0,k);g.rotate(-.025);g.fillStyle=C.grn;rr(g,-wd/2-30,-64,wd+60,110,22);g.fill();g.restore()}
+  if(sty==='box'){const k=spring(t-w.t,12,.78);const wd=tw(s,font);if(p>0){g.save();g.translate(x+wd/2,y-40);g.scale(k*1.0,k);g.rotate(-.025);g.fillStyle=C.grn;rr(g,-wd/2-16,-62,wd+32,106,20);g.fill();g.restore()}
     word(g,s,x,y,font,C.ink,p);return}
   if(sty==='karaoke'){word(g,s,x,y,font,'#5d6e64',p);const f=eio(ph(t,w.t,Math.max(.25,w.end-w.t)));if(f>0){const wd=tw(s,font);g.save();g.beginPath();g.rect(x-10,y-160,(wd+20)*f,220);g.clip();word(g,s,x,y,font,C.grn,1);g.restore()}return}
-  if(sty==='serif'){const k=lerp(1.5,1,outBack(ph(t,w.t,.5)));const wd=tw(s,font);g.save();g.translate(x+wd/2,y-50);g.scale(k,k);g.translate(-x-wd/2,-y+50);word(g,s,x,y,font,col,p,{glow:'rgba(52,211,153,.55)'});g.restore();return}
+  if(sty==='serif'){const k=lerp(1.5,1,outBack(ph(t,w.t,.5)));const wd=tw(s,font);g.save();g.translate(x+wd/2,y);g.scale(k,k);g.translate(-x-wd/2,-y);word(g,s,x,y,font,col,p,{glow:'rgba(52,211,153,.55)',rise:0});g.restore();return}
   word(g,s,x,y,font,col,p);
 }
 
@@ -227,7 +227,7 @@ function sC(g,t,lt,d){
   // the window rises around the logo, the logo shrinks into its header (the bridge)
   const rise=out(ph(lt,0,1.1));
   const dive=ramp(ph(t,l6-.55,1.0));               // into the video, full-bleed
-  const push=1+.06*(lt/d);
+  const push=(1+.04*(lt/d))*lerp(1,1.3,soft(ph(lt,.8,1.2)));const zin=soft(ph(lt,.8,1.2));
   const win={x:310,y:44+(1-rise)*900,w:1300,h:900};
   const zone={x:win.x+(win.w-880)/2,y:win.y+316,w:880,h:540};
   // drag: the clip card flies in on a speed ramp and drops on "video"
@@ -243,7 +243,8 @@ function sC(g,t,lt,d){
   const fx=zone.x+zone.w/2,fy=zone.y+zone.h/2-40;
   // the dive: scale so the video fills the frame
   const vs=Math.max(W/vid.w,H/vid.h)/push,dS=Math.pow(vs,dive);
-  g.save();g.translate(W/2,H/2);g.scale(push*dS,push*dS);g.translate(-lerp(W/2,vid.x+vid.w/2,dive),-lerp(H/2,vid.y+vid.h/2,dive));
+  const fx0=lerp(W/2,zone.x+zone.w/2,zin),fy0=lerp(H/2,zone.y+zone.h/2-60,zin);
+  g.save();g.translate(W/2,H/2);g.scale(push*dS,push*dS);g.translate(-lerp(fx0,vid.x+vid.w/2,dive),-lerp(fy0,vid.y+vid.h/2,dive));
   studio(g,win.x,win.y,win.w,win.h,{zone,over:over+(t>dropT?(1-dropped)*.6:0),zoneUI:1-cl(dropped*2),logo:lt>.6,
     inner:q=>{
       if(t<dropT){ // card in flight with the cursor holding it
@@ -264,6 +265,8 @@ function sC(g,t,lt,d){
           q.restore()}
       }
     }});
+  // cursor carries the card, lets go and leaves (inside the camera, so it rides the zoom)
+  if(t>dragA&&t<dropT+.5&&dive<.05){const cx=lerp(ccx+card.w*.18,ccx+card.w*.18+260,out(dropped)),cy=ccy+card.h*.12+out(dropped)*200;cursor(g,cx,cy,cl(1-Math.abs(t-dropT)/.18));ripple(g,ccx,ccy,ph(t,dropT,.5))}
   g.restore();
   // the iris back into the light, born from the logo
   const ir=ph(lt,0,.6);if(ir<1){const r=Math.pow(2400,ramp(ir));g.save();g.beginPath();g.rect(0,0,W,H);g.moveTo(W/2+r,H/2+20);g.arc(W/2,H/2+20,r,0,Math.PI*2,true);g.fillStyle=C.lac;g.fill('evenodd');g.restore()}
@@ -271,8 +274,6 @@ function sC(g,t,lt,d){
   const lg=ramp(ph(lt,0,.85));if(lg<1){const hx=lerp(W/2,win.x+56+tw('Captions',fnt(26,600))/2+8,lg),hy=lerp(H/2+60,win.y+122,lg);
     const sz=lerp(170,26,lg);g.save();g.globalAlpha=1;logo(g,hx,hy,sz,1,{col:lg>.35?C.ink:C.cream})
     g.restore()}
-  // cursor carries the card, then rests
-  if(t>dragA&&t<dropT+.5&&dive<.05){const cx=lerp(ccx+card.w*.18,ccx+card.w*.18+260,out(dropped)),cy=ccy+card.h*.12+out(dropped)*200;cursor(g,cx*push,cy,cl(1-Math.abs(t-dropT)/.18));ripple(g,ccx,ccy,ph(t,dropT,.5))}
   // the line under the window: kept short, in porcelain, out of the way of the UI
   const lines=[[4,1],[5,1]];lines.forEach(([k])=>{const on=t>L(k)-.25&&t<(k===4?L(5)-.35:L(6)-.4);if(!on)return;
     const ws=LN[k].map((w,i,a)=>({s:w.word,t:w.t-.04,font:i===a.length-1?fnt(62,400,SERIF,1):null,col:i===a.length-1?C.deep:C.gra}));
@@ -325,17 +326,17 @@ function sD(g,t,lt,d){
       }});
     }
     // the look picker rail under the big word
-    const rp=ph(t,l7-.1,.6)*(1-ph(t,ex-.35,.3));if(rp>0){g.save();g.globalAlpha=eo(rp);const rx=150,ry=716,cw=184,gp=14;
-      g.fillStyle='#ffffff';shadow(g,rx-10,ry-10,4*cw+3*gp+20,96,.18,.35);rr(g,rx-10,ry-10,4*cw+3*gp+20,96,48);g.fill();
+    const rp=ph(t,l7-.1,.6)*(1-ph(t,ex-.35,.3));if(rp>0){g.save();g.globalAlpha=eo(rp);const rx=96,ry=700,cw=214,gp=14;
+      g.fillStyle='#ffffff';shadow(g,rx-10,ry-10,4*cw+3*gp+20,108,.18,.35);rr(g,rx-10,ry-10,4*cw+3*gp+20,108,54);g.fill();
       const pos=look<0?0:look,prev=Math.max(0,pos-1);const lt8=look<0?0:ph(t,Wd(8,look).t-.08,.32);const th=lerp(prev,pos,look<=0?1:outBack(lt8));
-      g.fillStyle=C.ink;rr(g,rx+th*(cw+gp),ry,cw,76,38);g.fill();
-      LOOKS.forEach((s,i)=>{const on=Math.abs(th-i)<.5;word(g,s,rx+i*(cw+gp)+cw/2,ry+49,fnt(30,800),on?C.cream:C.gra2,1,{al:'c'})});
+      g.fillStyle=C.ink;rr(g,rx+th*(cw+gp),ry,cw,88,44);g.fill();
+      LOOKS.forEach((s,i)=>{const on=Math.abs(th-i)<.5;word(g,s,rx+i*(cw+gp)+cw/2,ry+57,fnt(36,800),on?C.cream:C.gra2,1,{al:'c'})});
       // the cursor clicks each look on its word
-      if(t<ex-.1){const ci=Math.max(0,look);const tx=rx+ci*(cw+gp)+cw*.62,ty=ry+50;const prevx=rx+Math.max(0,ci-1)*(cw+gp)+cw*.62;const mv=look<=0?out(ph(t,l7,.8)):out(ph(t,Wd(8,look).t-.36,.3));
+      if(t<ex-.1){const ci=Math.max(0,look);const tx=rx+ci*(cw+gp)+cw*.62,ty=ry+58;const prevx=rx+Math.max(0,ci-1)*(cw+gp)+cw*.62;const mv=look<=0?out(ph(t,l7,.8)):out(ph(t,Wd(8,look).t-.36,.3));
         const cx=look<0||look===0?lerp(560,tx,mv):lerp(prevx,tx,mv),cy=look<=0?lerp(900,ty,mv):ty;const pr=look<0?0:cl(1-Math.abs(t-(Wd(8,look).t-.06))/.12);cursor(g,cx,cy,pr);if(look>=0)ripple(g,tx,ty,ph(t,Wd(8,look).t-.06,.5))}
       g.restore()}
     // the big word: "Pick a look." then each look name in its own look
-    const bx=545,by=520;
+    const bx=545,by=500;
     if(look<0){flow(g,LN[7].map((w,i)=>({s:w.word,t:w.t-.04,font:i===2?fnt(150,400,SERIF,1):null,col:i===2?C.deep:C.gra})),bx,by,t,{size:132,w:800})}
     else if(t<ex-.15){bigLook(g,look,bx,by,t-Wd(8,look).t,t)}
     // export
@@ -400,8 +401,8 @@ function sE(g,t,lt,d){
     g.fillStyle='rgba(16,22,19,.25)';g.fillRect(lx-356,ly-226,712,422);g.restore();
     const bgrad=g.createLinearGradient(0,ly+220,0,ly+250);bgrad.addColorStop(0,'#5a6b62');bgrad.addColorStop(1,'#2a332e');g.fillStyle=bgrad;rr(g,lx-470,ly+220,940,30,15);g.fill();
     // the cloud above, outlined, never reached
-    const cp=ph(lt,.3,.6);g.save();g.globalAlpha=.85*eo(cp)*(1-.5*dome);g.strokeStyle=C.fog;g.lineWidth=4;g.setLineDash([12,10]);
-    const cx=lx,cy=130;g.beginPath();g.arc(cx-70,cy+20,46,Math.PI*.6,Math.PI*1.55);g.arc(cx,cy-10,66,Math.PI*1.1,Math.PI*1.95);g.arc(cx+76,cy+22,44,Math.PI*1.45,Math.PI*.4);g.closePath();g.stroke();g.restore();
+    const cp=ph(lt,.3,.6);g.save();g.globalAlpha=.85*eo(cp)*(1-.5*dome);g.strokeStyle=C.fog;g.lineWidth=5;
+    const cx=lx,cy=130;g.beginPath();g.arc(cx-70,cy+20,46,Math.PI*.6,Math.PI*1.55);g.arc(cx,cy-10,66,Math.PI*1.1,Math.PI*1.95);g.arc(cx+76,cy+22,44,Math.PI*1.45,Math.PI*.4);g.closePath();g.stroke();g.globalAlpha=eo(cp);const sk=eo(ph(t,up+.25,.35));if(sk>0){g.strokeStyle=C.cream;g.lineWidth=6;g.lineCap='round';g.beginPath();g.moveTo(cx-120,cy+70);g.lineTo(cx-120+240*sk,cy+70-150*sk);g.stroke()}g.restore();
     // the upload arrow rises, meets the glass, settles back home
     const a=ph(t,up-.35,1.3);if(a>0&&a<1){const yy=ly-260-Math.sin(Math.PI*cl(a/.82))*150;const al=a<.9?1:1-(a-.9)/.1;
       g.save();g.globalAlpha=al;g.strokeStyle=C.grn;g.lineWidth=7;g.lineCap='round';g.beginPath();g.moveTo(lx,yy+40);g.lineTo(lx,yy-30);g.moveTo(lx-22,yy-8);g.lineTo(lx,yy-30);g.lineTo(lx+22,yy-8);g.stroke();g.restore()}
@@ -500,7 +501,7 @@ let NOTES=[];
 function graph(){bus={};bus.out=ac.createGain();bus.out.gain.value=.95;const comp=ac.createDynamicsCompressor();comp.threshold.value=-10;comp.ratio.value=8;comp.attack.value=.003;comp.release.value=.2;bus.out.connect(comp);comp.connect(ac.destination);
   bus.mus=ac.createGain();bus.mus.gain.value=.9;bus.mus.connect(bus.out);bus.sfx=ac.createGain();bus.sfx.gain.value=.8;bus.sfx.connect(bus.out);bus.vo=ac.createGain();bus.vo.gain.value=1;bus.vo.connect(bus.out)}
 let acBase=0,tBase=0;
-function sched(from){if(bus)bus.out.disconnect();graph();const now=ac.currentTime+.05;acBase=now;tBase=from;
+function sched(from){if(bus)bus.out.disconnect();graph();const now=ac.currentTime+(ac instanceof OfflineAudioContext?0:.05);acBase=now;tBase=from;
   if(buf.vo){const s=ac.createBufferSource();s.buffer=buf.vo;s.connect(bus.vo);if(from<O)s.start(now+O-from);else s.start(now,from-O)}
   CUES.forEach(c=>{if(c.t<from-.02||!buf[c.n])return;const s=ac.createBufferSource();s.buffer=buf[c.n];s.playbackRate.value=c.r;const g=ac.createGain();g.gain.value=c.g;s.connect(g);g.connect(bus.sfx);s.start(now+c.t-from)});
   NOTES.forEach(n=>{if(n.t<from-.01)return;playNote(n,now+n.t-from)});
@@ -516,6 +517,16 @@ pp.onclick=()=>{if(playing){playing=false;pp.textContent='Play';if(ac)ac.suspend
 sk.oninput=()=>{t=sk.value/1000*T;if(withSound&&playing)sched(t)};
 // stills for review: renderAt(t) seeks every clip first, so the frame is exact
 window.renderAt=async t0=>{playing=false;t=t0;frame(t0);const ps=[];for(const n of usedNow){const v=V[n];if(!v)continue;ps.push(new Promise(r=>{const w=clipT(n,t0);if(Math.abs(v.currentTime-w)<.02)return r();v.onseeked=()=>r();v.currentTime=w;setTimeout(r,1500)}))}await Promise.all(ps);frame(t0);return cv.toDataURL('image/jpeg',.82)};
+// the MP4's sound: the same graph and cues, rendered offline, returned as a 16-bit WAV in base64
+window.mixWav=async()=>{const sr=48000,off=new OfflineAudioContext(2,Math.ceil(T*sr),sr);const live=ac;ac=off;
+  const dec=async u=>{try{return await off.decodeAudioData(await (await fetch(u)).arrayBuffer())}catch{return null}};
+  buf.vo=await dec('media/vo.wav');await Promise.all(SFX.map(async n=>buf[n]=await dec('media/'+n+'.wav')));
+  sched(0);const r=await off.startRendering();ac=live;
+  const n=r.length,ch=[r.getChannelData(0),r.getChannelData(1)],b=new DataView(new ArrayBuffer(44+n*4));
+  const w=(o,s)=>{for(let i=0;i<s.length;i++)b.setUint8(o+i,s.charCodeAt(i))};
+  w(0,'RIFF');b.setUint32(4,36+n*4,true);w(8,'WAVEfmt ');b.setUint32(16,16,true);b.setUint16(20,1,true);b.setUint16(22,2,true);b.setUint32(24,sr,true);b.setUint32(28,sr*4,true);b.setUint16(32,4,true);b.setUint16(34,16,true);w(36,'data');b.setUint32(40,n*4,true);
+  for(let i=0;i<n;i++)for(let c=0;c<2;c++)b.setInt16(44+i*4+c*2,Math.max(-1,Math.min(1,ch[c][i]))*32767,true);
+  const u8=new Uint8Array(b.buffer);let s='';for(let i=0;i<u8.length;i+=32768)s+=String.fromCharCode.apply(null,u8.subarray(i,i+32768));return btoa(s)};
 window.sweep=(fps=20)=>{const errs=[];let worst=0;for(let tt=0;tt<T;tt+=1/fps){const a=performance.now();try{frame(tt)}catch(e){errs.push([tt.toFixed(2),e.message])}worst=Math.max(worst,performance.now()-a)}return {errs:errs.slice(0,10),n:errs.length,worst:+worst.toFixed(1)}};
 async function boot(){
   const [w]=await Promise.all([fetch('media/words.json').then(r=>r.json()),document.fonts.load(fnt(40,800)),document.fonts.load(fnt(40,600)),document.fonts.load(fnt(40,500)),document.fonts.load(fnt(40,400,SERIF,1))]);

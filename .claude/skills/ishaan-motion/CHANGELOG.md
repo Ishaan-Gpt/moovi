@@ -1,4 +1,5 @@
 ﻿# Changelog
+- 1.17.9 (2026-10-21): canvas-engine.md: the MP4 export of a live preview with its exact sound (offline mix via the same scheduler, seeked frames, ffmpeg at -14 LUFS).
 - 1.17.8 (2026-10-21): CaptionsEasy keynote film shipped at 7.2 (blind, vs 4.8 same round); Ishaan locked its celadon palette, Andrew voice and synth bed. launch.md look L-KEY-1 "Keynote cut", palette.md worked example, canvas-engine.md bugs (scene-local time, alpha multiply, even-odd iris, hidden-pane rAF), ratchet.md scoreboard row and debts, lessons.md.
 - 1.17.7 (2026-10-20): Ishaan decisions after the measured taste spec: real pages/apps/marks on screen; literal first, one metaphor max; reference pacing (no frozen holds); sound by A/B of two previews. In references/showreel-youtube-automation.md.
 - 1.17.6 (2026-10-20): Ishaan: "references 9/10, you 1/10, you did not extract their taste": taste is measured per dimension from 4 fps frames, 30 fps bursts and audio, verified by a skeptic, and compared frame by frame before a rebuild. In references/showreel-youtube-automation.md.
