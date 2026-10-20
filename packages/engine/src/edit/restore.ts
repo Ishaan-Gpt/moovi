@@ -60,7 +60,10 @@ export function restoreChain(s: { w: number; h: number; bpp: number }, short = 1
     ...(weak ? ['deblock=filter=strong:block=8', `hqdn3d=${starved ? '2:1.5:5:4' : '1.5:1.5:4:3'}`] : []),
     ...(weak && up ? [landscape ? `scale=-2:${short}:flags=lanczos` : `scale=${short}:-2:flags=lanczos`] : []),
     ...(weak ? ['gradfun=strength=1.2:radius=16'] : []),
-    ...(grade ? gradeChain(grade).slice(0, 1) : []),
+    // back to yuv420p straight after the LUT: cas (and the vignette after it) then run on YUV instead of RGB. Measured on
+    // the server (2026-10-20, a 474x850 30 s upload): cas on RGB was 80 s of the 214 s pass; this way the filters take
+    // 112 s instead of 163 s, and the picture is 52.8 dB PSNR from the old one (the crf 18 encode itself is 42.9 dB)
+    ...(grade ? [gradeChain(grade)[0]!, 'format=yuv420p'] : []),
     `cas=strength=${sharpen.toFixed(2)}`,
     ...(grade ? gradeChain(grade).slice(1) : []),
   ].join(',');
@@ -84,7 +87,9 @@ export async function restoreVideo(src: string, out: string, p: { w: number; h: 
   const bpp = bitsPerPixel(statSync(src).size, p.duration, p.w, p.h, p.fps), from = { w: p.w, h: p.h, bpp: +bpp.toFixed(3) }, weak = needsRestore(from);
   if (!o.force && !weak && !o.grade) return null;
   const chain = restoreChain(from, 1080, o.grade), t0 = Date.now();
-  await ff(['-y', '-threads', String(o.threads ?? 2), '-i', src, '-vf', chain, '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '18', ...SEEKABLE(p.fps), '-pix_fmt', 'yuv420p', '-c:a', 'copy', '-movflags', '+faststart', out],
+  // superfast at crf 16: the same size and fidelity as veryfast at crf 18 (42.8 vs 42.9 dB PSNR to a lossless copy, worst
+  // frame 39.2 vs 35.3 dB), about 34 s less on the 30 s upload; hd.mp4 is an intermediate that build-cut encodes again
+  await ff(['-y', '-threads', String(o.threads ?? 2), '-i', src, '-vf', chain, '-c:v', 'libx264', '-preset', 'superfast', '-crf', '16', ...SEEKABLE(p.fps), '-pix_fmt', 'yuv420p', '-c:a', 'copy', '-movflags', '+faststart', out],
     Math.max(120_000, p.duration * 20_000));
   const up = weak && Math.min(p.w, p.h) < 1080, k = up ? 1080 / Math.min(p.w, p.h) : 1;
   const to = { w: Math.round(p.w * k / 2) * 2, h: Math.round(p.h * k / 2) * 2 };

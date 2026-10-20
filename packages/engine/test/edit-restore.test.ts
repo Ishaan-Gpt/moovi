@@ -43,7 +43,8 @@ test('the owner grade bakes in as its LUT plus ffmpeg spatial filters, on good c
   const g = ownerGrade('natural-punch');
   assert.ok(g, 'kits/motion/luts/natural-punch.cube is shipped');
   const c = restoreChain({ w: 1920, h: 1080, bpp: 0.15 }, 1080, g!);
-  assert.match(c, /^lut3d=file='.*natural-punch\.cube':interp=tetrahedral,cas=.*,vignette=angle=.*,noise=alls=\d+:allf=t$/);
+  // the LUT needs RGB; everything after it runs on yuv420p again (cas on RGB was the slowest filter of the pass)
+  assert.match(c, /^lut3d=file='.*natural-punch\.cube':interp=tetrahedral,format=yuv420p,cas=.*,vignette=angle=.*,noise=alls=\d+:allf=t$/);
   assert.doesNotMatch(c, /deblock|scale=/);
   const dir = mkdtempSync(join(tmpdir(), 'moovi-grade-')), src = join(dir, 'src.mp4');
   execFileSync(config.ffmpeg, ['-v', 'error', '-y', '-f', 'lavfi', '-i', 'testsrc2=size=1920x1080:rate=30:duration=1', '-c:v', 'libx264', '-crf', '10', '-pix_fmt', 'yuv420p', src]);
