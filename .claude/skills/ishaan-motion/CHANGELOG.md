@@ -1,15 +1,24 @@
-# Changelog
+﻿# Changelog
+- 1.17.8 (2026-10-21): CaptionsEasy keynote film shipped at 7.2 (blind, vs 4.8 same round); Ishaan locked its celadon palette, Andrew voice and synth bed. launch.md look L-KEY-1 "Keynote cut", palette.md worked example, canvas-engine.md bugs (scene-local time, alpha multiply, even-odd iris, hidden-pane rAF), ratchet.md scoreboard row and debts, lessons.md.
+- 1.17.7 (2026-10-20): Ishaan decisions after the measured taste spec: real pages/apps/marks on screen; literal first, one metaphor max; reference pacing (no frozen holds); sound by A/B of two previews. In references/showreel-youtube-automation.md.
+- 1.17.6 (2026-10-20): Ishaan: "references 9/10, you 1/10, you did not extract their taste": taste is measured per dimension from 4 fps frames, 30 fps bursts and audio, verified by a skeptic, and compared frame by frame before a rebuild. In references/showreel-youtube-automation.md.
+- 1.17.5 (2026-10-20): Ishaan 1/10 on the hand-built reel ("you fucked the good parts of the template too"): remove the hard-coded what, never the engine's craft; ask which old parts he liked before a rebuild. In references/showreel-youtube-automation.md.
+- 1.17.4 (2026-10-20): Ishaan verdict 3/10 on the API vs MCP reel: the look is derived from the reference WHYs not inherited from library/templates; one ink colour plus grey (no hard-coded multicolour text); a logo only if the subject has one; animation by meaning not one slide-in; min read/understand time sets animation speed; the explanation must teach; use all premium sfx; channel tagline "Your daily dose of AI". In references/showreel-youtube-automation.md.
+- 1.17.3 (2026-10-20): Style 1 topic reel verdict 2/10: a film shows ALL the approved script (a layout/QA step never drops text); hard-coded layout rules to be replaced by principles. In references/showreel-youtube-automation.md.
+- 1.17.2 (2026-10-20): Ishaan corrections on the Story track, in references/showreel-youtube-automation.md: brands are never forced on topic reels (no "Meet <Brand>" or domain line added by a doctor); scripts must hook (2-3 angle drafts, he picks); approve the script before any run; voice is taste (playable samples, he picks).
+- 1.17.1 (2026-10-20): Showreel sub-skill references/showreel-youtube-automation.md (YouTube/social automation, 10-minute story channels, measured-time honesty rule).
+- 1.17.0 (2026-10-20): Ishaan: "you took the what, not the why; four hours per reference; I need 10-15 min videos daily": references/why-not-what.md (the why card, principles not assets, variation test, 2-3 minute speed budget, shots not frames, parallel scenes).
 - 1.16.0 (2026-10-18): Ishaan on Showreel v2 (0/10: "supposed to be a brand showreel", "could not understand what any reel is about", black screens where clips failed): showreel.md "What a Showreel is" (a brand showreel, the writer as creative director, understood by second 3, watched, remembered), the arc rewritten around the brand (solution names it, cta says it), the never-a-black-frame law; taste.md Craft: never a black frame, a promo is understood by second 3.
 - 1.15.3 (2026-10-18): Showreel: a topic film's cta names no site, shop or studio (v2 invented lighthouse.org, WatchLab, Indigo Studio); the problem beat is a real problem, never a made-up disaster.
 - 1.15.2 (2026-10-18): Showreel script arc (Ishaan: "hook -> problem -> solution -> .. -> cta"): every Showreel script fills hook, problem, solution, climax, cta in order, read aloud; humanized writing laws; the old ban on a spoken CTA is removed; theme voices are tone only.
 - 1.15.0 (2026-10-18): Showreel branch references/showreel.md, read at runtime by the Showreel writer (packages/engine/src/showreel): the theme lock, the writing laws, four themes (night-stage, editorial, blueprint, real-footage) holding today's voices, pending Ishaan.
-- 1.14.0 (2026-10-18): Launch skillset absorbed to f15: launch.md reference intake, looks L-REF-3 "Product tour" and L-REF-4 "Calm one-hue"; canvas-engine 3D shots (three.js), soft fields, plates and glass; music-and-sound real bed, beat phase, beat warp, the owner pack by map.json; shots-and-transitions refs 3–4; camera.md rows (UI dive, screen pull-back, 3D dolly, calm push).
+- 1.14.0 (2026-10-18): Launch skillset absorbed to f15: launch.md reference intake, looks L-REF-3 "Product tour" and L-REF-4 "Calm one-hue"; canvas-engine 3D shots (three.js), soft fields, plates and glass; music-and-sound real bed, beat phase, beat warp, the owner pack by map.json; shots-and-transitions refs 3â€“4; camera.md rows (UI dive, screen pull-back, 3D dolly, calm push).
 - 1.13.8 (2026-10-18): launch.md item 7, the finish layers (real bed, owner sfx pack by map.json, cuts on the beat by a time warp, filter-free glass, sky band).
 - 1.13.4 (2026-10-18): launch.md shot-for-shot item 6 (owner on f12: "better, push it further"): the reference's own moves (deep dive into one real element, drag-and-drop, blur placeholders, type at reference size, 3D composited onto the light world), clips decode from Play.
 - 1.13.3 (2026-10-18): launch.md "When Ishaan sends a reference to match, rebuild it shot for shot" (Ishaan on f11: 2/10, "not at all the premium launch video i sent"): map the reference second by second, use the brand's REAL product screens and renders, real moving plates, one continuous camera per section.
-- 1.13.1 (2026-10-18): references/camera.md (which camera move where, durations, eases, the smooth-speed law); motion-feel "smooth as butter"; canvas-engine rAF measuring, filter-free blur variants, bitmaps; launch.md look L-UI-2 "One material" and the f7–f10 lessons.
+- 1.13.1 (2026-10-18): references/camera.md (which camera move where, durations, eases, the smooth-speed law); motion-feel "smooth as butter"; canvas-engine rAF measuring, filter-free blur variants, bitmaps; launch.md look L-UI-2 "One material" and the f7â€“f10 lessons.
 - 1.12.3 (2026-10-18): launch.md "smooth, filled, and ramped": sprite/blur-variant rendering rule with measured frame times, the media tools (footage finder + drawn art), the premium speed ramp (camera:speed-ramp).
-- 1.12.2 (2026-10-18): launch.md "a new grammar never costs the craft" (Ishaan on f7: premiumness 10 → 6); the f8 checklist.
+- 1.12.2 (2026-10-18): launch.md "a new grammar never costs the craft" (Ishaan on f7: premiumness 10 â†’ 6); the f8 checklist.
 - 1.12.1 (2026-10-18): Launch look L-UI-1 "Product UI" absorbed from Resend v6 (kits/launch-ui, scripts/launch-ui.ts: any site in under a minute).
 - 1.11.2 (2026-10-18): palette gate (read the site CSS first, every hex a ramp token, monochrome brands stay monochrome, content colours count); launch.md item 5.
 - 1.11.1 (2026-10-18): Launch branch references/launch.md (Ishaan's verdicts f1-f5: product UI as the film, chaos to order, bridge element, product-only beat, brand look from the live site).
@@ -19,25 +28,25 @@
   (58 components, 13 transitions, 13 prompt kits), the bloom-reel showreel backtrack and the motion-feel review notes.
 
 ## 1.1.0 (2026-10-07)
-- §0 five non-negotiables: know your limits and ask for assets; beyond-perfectionist rebuilds (the leap check);
+- Â§0 five non-negotiables: know your limits and ask for assets; beyond-perfectionist rebuilds (the leap check);
   micro-details only added, never skipped; best hybrid stack with install-and-integrate; pick the 4th/5th idea.
 - New references: ideation.md (5-idea drill), toolbox.md (per-shot engine choice, hybrid recipes, install log).
 - Research-story-reel learnings: word-by-word type, visualise the verb, two worlds, depth of field, new transitions,
   15-second breakdown cadence.
 
 ## 1.2.0 (2026-10-07)
-- After a 2/10 review: §11 default to the cinematic one-take, VO by default, physical ideas per beat.
+- After a 2/10 review: Â§11 default to the cinematic one-take, VO by default, physical ideas per beat.
 - toolbox.md: what works for 3D inside Remotion on this machine (custom post, glyph planes, advance-before-continueRender).
 
 ## 1.3.0 (2026-10-16)
-- §12 and references/talking-head.md: the talking-head / voice-led edit playbook (voice as the grid, layouts as data, camera on jump cuts, captions, big words, panels that act out their sentence, chapter cards from the poster), learned rebuilding reference R1.
+- Â§12 and references/talking-head.md: the talking-head / voice-led edit playbook (voice as the grid, layouts as data, camera on jump cuts, captions, big words, panels that act out their sentence, chapter cards from the poster), learned rebuilding reference R1.
 - Owner A/B on R1: the skill-guided clone beat a faithful rule-by-rule copy. The skill is now used on every video job and grows after every reference (see "Keep improving this skill").
 - New references/canvas-engine.md: the tested canvas-2D port of every helper (bisection bezier, closed-form springs,
   log pull, drift, velocity ghosts, word-by-word re-flow, slams, slot rolls, panel wipe/pixel/bars, DOF cards) plus the
   `?grid=` check sheet, sweep and determinism tools.
 - Rule 0.1: when working unattended, build labelled swappable stand-ins and put the asset wish-list in the report.
-- §4 voice-as-grid; §7 keeping a glowing-type look without glow-everywhere; §8 quieter SFX under a voice;
-  §9 browser preview builds; §10 live-preview finishing; §11 exception for talking-head rebuilds.
+- Â§4 voice-as-grid; Â§7 keeping a glowing-type look without glow-everywhere; Â§8 quieter SFX under a voice;
+  Â§9 browser preview builds; Â§10 live-preview finishing; Â§11 exception for talking-head rebuilds.
 - lessons.md: 8 build lessons from R1 (black reveals under panels, out-of-bounds camera keys, gradients on scaled text,
   behind-the-head placement, stacked lockups, Whisper stamps, the getImageData perf trap). checklist.md: talking-head
   and live-preview sections. New R1 transitions in shots-and-transitions.md; canvas row in toolbox.md; R1 case study.
@@ -75,7 +84,7 @@
 ## 1.10.0 (2026-10-18)
 - Rule 0.6, no silent defaults: every default (colour, font, ease, layout, saved style, pipeline rule) is questioned against alternatives.
 - New references/palette.md: the banned AI-default palettes, the 5-palette drill, OKLCH tint ramps, roles, contrast from ramps.
-- §10 storyboard board spec: frame plus a structured side panel, a timeline ribbon, the palette strip (owner: notes under frames read poorly).
+- Â§10 storyboard board spec: frame plus a structured side panel, a timeline ribbon, the palette strip (owner: notes under frames read poorly).
 
 ## 1.10.1 (2026-10-18)
 - Lessons: a moving piece is shown as a playable preview (range-capable server); every owner correction lands in the skills unasked.
@@ -87,7 +96,7 @@
 - Captions: never punctuation; the premium two-tier glow caption (Moovi 1.1 green / 1.2 red) spec in talking-head.md; lessons on bloom vs stacked shadows, decoding a font from a zoomed reference, one-cut fonts thickened by stroke, reading motion from a reel at 30 fps.
 
 ## 1.11.2 (2026-10-18)
-- Premium Caption 1 shipped as two variations whose colour comes from the video (one accent → fill ramp + bloom); 1.1 word spacing.
+- Premium Caption 1 shipped as two variations whose colour comes from the video (one accent â†’ fill ramp + bloom); 1.1 word spacing.
 
 ## 1.12.0 (2026-10-18)
 - edit-fundamentals.md: creator-reel devices decoded from em1 (cascade on springs, dim + product on top, the lit one in a row, the post frame, object wipe, comment pill ending), as brand-reskinnable fundamentals.
@@ -114,7 +123,7 @@
 - Premium Caption 3: the highlight spans the shoulders at neck height; the rest is arranged around it.
 
 ## 1.12.0 (2026-10-18)
-- edit-fundamentals §12, the recipe for a top-tier talking-head edit every time; §13 the motion-graphics gap.
+- edit-fundamentals Â§12, the recipe for a top-tier talking-head edit every time; Â§13 the motion-graphics gap.
 
 ## 1.13.2 (2026-10-18)
 - Lesson: smooth captions in rAF (sprite cache, matte in a worker, measured fps).
@@ -141,7 +150,7 @@
 - Owner rule: capable models invent each graphic; a small free model directs from the approved library menu (menu.json) and never builds from scratch.
 
 ## 1.16.1 (2026-10-18)
-- Owner: only his approved edit rules stay (the v1-v6 board-era sections and the retired looks' numbers are scrapped from edit-fundamentals §1-§9).
+- Owner: only his approved edit rules stay (the v1-v6 board-era sections and the retired looks' numbers are scrapped from edit-fundamentals Â§1-Â§9).
 - Owner rule: every edit shows the checklist (burn-in graphics, a form change, full-screen, camera, leaks, grade, palette from the footage, sfx on every arrival, music, smooth), at least 80-90%.
 
 ## 1.16.2 (2026-10-18)

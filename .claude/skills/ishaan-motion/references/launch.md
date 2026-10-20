@@ -174,3 +174,26 @@ The code: `packages/library/src/kits/launch-ui/looks/l-ref4-calm.html` (Resend v
   out of scrambled letters as the mark springs in.
 Sound: a calm bed (Mixkit "Close Up") with its lift on the dashboard reveal, words at -24 (the owner's word rule,
 quieter for a calm film), cuts on the beat.
+
+## Look L-KEY-1 "Keynote cut" (CaptionsEasy, 2026-10-21; Ishaan locked its palette, voice and bed)
+Film: `docs/launch/captionseasy-apple/` in the Moovi repo (README there holds the locked tokens). Blind judge: 7.2 vs
+the brand's earlier slide-style film 4.8 in the same round. The recipe, for a small free web tool with no reference:
+1. **One calm voice line per shot**, Apple-cadence (short, declarative, one hero word in serif italic), on a half-bar
+   grid; the film opens one second before the first word on the bed alone.
+2. **Seven scenes, each born from the last, never a cut to empty:** a phone wall that starts zoomed on one phone and
+   pulls out in log space (rack focus on the outer phones as "the world" is said) → an iris of the night grows out of
+   one phone's mute icon → the line itself wears the product's caption looks word by word → the logo reveal on one
+   bloom → the logo shrinks into the header of the product's REAL page (rebuilt from its live UI, its own cream/ink) →
+   a cursor drags a real clip in and drops it on the word "video" → dive into the clip full-bleed, where the captions
+   are timed to the voice's own word stamps and a timing ruler lights each word → recede into a phone, a look picker
+   clicked on each spoken look name → export, a fake watermark pixel-dissolves on "No watermark" → whip to a dark
+   on-device scene (an upload arrow meets a glass ceiling, a dome closes) → flash to "Free." slammed in log space, the
+   URL typing itself → a night wall rises into the end card.
+3. **The product performs its own claim:** for a captions tool the film's captions ARE the product (synced to the
+   narrator's stamps); for a privacy claim the data visibly never leaves.
+4. **The world is derived, the brand stays the mark:** a celadon porcelain ramp built from the brand's green (light
+   world) and green lacquer with one bloom (dark world); the brand's own cream and ink only on the logo and its real UI.
+5. **A synthesized bed when the library has no fitting mood** (WebAudio pad + glass arpeggio + soft pulse, sections
+   following the story: sparse hook, pulse from the logo, breakdown on the serious claim, long final chord).
+6. Judge debts still open: the Studio page's small UI text is illegible at full-window scale (zoom to the drop zone or
+   take the page 1.3x); the end card wants a product glimpse.

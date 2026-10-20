@@ -154,7 +154,7 @@ function sA(g,t,lt,d){
   blurred(g,rack*(1-pull)+1*pull,gg=>draw(gg,'far'));
   draw(g,'near');
   // the words sit on a soft porcelain wash
-  {const gr=g.createLinearGradient(0,820,0,940);gr.addColorStop(0,'rgba(239,244,238,0)');gr.addColorStop(1,'rgba(232,239,233,.94)');g.fillStyle=gr;g.fillRect(0,820,W,H-820)}
+  {const gr=g.createLinearGradient(0,820,0,940);gr.addColorStop(0,'rgba(239,244,238,0)');gr.addColorStop(.55,'rgba(236,242,236,.92)');gr.addColorStop(1,'rgba(232,239,233,1)');g.fillStyle=gr;g.fillRect(0,800,W,H-800)}
   const l0=LN[0].map((w,i)=>({s:w.word,t:w.t-.04,font:i===5?fnt(84,400,SERIF,1):null,col:i===5?C.deep:C.gra}));
   const out0=1-ph(t,l1-.55,.4);
   g.save();g.globalAlpha=out0;flow(g,l0,W/2,968,t,{size:76,w:600});g.restore();
@@ -178,7 +178,7 @@ function sB(g,t,lt,d){
       const ws=LN[2].map((w,i)=>{const sty=st[i]||'plain';const big=sty==='serif';
         return {s:w.word.replace('.',''),t:w.t-.04,font:big?fnt(150,400,SERIF,1):fnt(100,800),col:big?C.grn:C.cream,
           draw:(q,s,x,y,font,col,p)=>styled(q,sty,s,x,y,font,col,p,t,w)}});
-      flow(g,ws,W/2,H/2+40,t,{size:100,gap:.2});g.restore()}
+      flow(g,ws,W/2,H/2+40,t,{size:100,gap:.55});g.restore()}
     // the reveal
     const ip=ph(t,Wd(3,0).t-.05,.6);
     if(ip>0){const fade=1-ph(lt,d-.55,.3);g.save();g.globalAlpha=fade;word(g,'Introducing',W/2,H/2-150,fnt(52,500),C.fog,ip,{al:'c'});g.restore()}
@@ -187,7 +187,7 @@ function sB(g,t,lt,d){
   },W/2,H/2);
 }
 function styled(g,sty,s,x,y,font,col,p,t,w){
-  if(sty==='box'){const k=spring(t-w.t,11,.45);const wd=tw(s,font);if(p>0){g.save();g.translate(x+wd/2,y-40);g.scale(k*1.0,k);g.rotate(-.025);g.fillStyle=C.grn;rr(g,-wd/2-22,-62,wd+44,106,20);g.fill();g.restore()}
+  if(sty==='box'){const k=spring(t-w.t,11,.45);const wd=tw(s,font);if(p>0){g.save();g.translate(x+wd/2,y-40);g.scale(k*1.0,k);g.rotate(-.025);g.fillStyle=C.grn;rr(g,-wd/2-30,-64,wd+60,110,22);g.fill();g.restore()}
     word(g,s,x,y,font,C.ink,p);return}
   if(sty==='karaoke'){word(g,s,x,y,font,'#5d6e64',p);const f=eio(ph(t,w.t,Math.max(.25,w.end-w.t)));if(f>0){const wd=tw(s,font);g.save();g.beginPath();g.rect(x-10,y-160,(wd+20)*f,220);g.clip();word(g,s,x,y,font,C.grn,1);g.restore()}return}
   if(sty==='serif'){const k=lerp(1.5,1,outBack(ph(t,w.t,.5)));const wd=tw(s,font);g.save();g.translate(x+wd/2,y-50);g.scale(k,k);g.translate(-x-wd/2,-y+50);word(g,s,x,y,font,col,p,{glow:'rgba(52,211,153,.55)'});g.restore();return}
@@ -272,7 +272,7 @@ function sC(g,t,lt,d){
     const sz=lerp(170,26,lg);g.save();g.globalAlpha=1;logo(g,hx,hy,sz,1,{col:lg>.35?C.ink:C.cream})
     g.restore()}
   // cursor carries the card, then rests
-  if(t>dragA&&t<dropT+.9&&dive<.05){const cx=lerp(ccx+card.w*.18,ccx+card.w*.18+40,dropped),cy=ccy+card.h*.12+dropped*30;cursor(g,cx*push,cy,cl(1-Math.abs(t-dropT)/.18));ripple(g,ccx,ccy,ph(t,dropT,.5))}
+  if(t>dragA&&t<dropT+.5&&dive<.05){const cx=lerp(ccx+card.w*.18,ccx+card.w*.18+260,out(dropped)),cy=ccy+card.h*.12+out(dropped)*200;cursor(g,cx*push,cy,cl(1-Math.abs(t-dropT)/.18));ripple(g,ccx,ccy,ph(t,dropT,.5))}
   // the line under the window: kept short, in porcelain, out of the way of the UI
   const lines=[[4,1],[5,1]];lines.forEach(([k])=>{const on=t>L(k)-.25&&t<(k===4?L(5)-.35:L(6)-.4);if(!on)return;
     const ws=LN[k].map((w,i,a)=>({s:w.word,t:w.t-.04,font:i===a.length-1?fnt(62,400,SERIF,1):null,col:i===a.length-1?C.deep:C.gra}));
@@ -286,14 +286,14 @@ function captionsOn(g,vid,t,dive){
   let gi=0;for(let i=0;i<groups.length;i++)if(t>=ws[groups[i][0]].t-.06)gi=i;
   if(t<ws[0].t-.06)return;
   const sz=lerp(26,88,dive)*(vid.w/((W-400))*.9+.1)/(lerp(1,1,dive));
-  const size=Math.max(24,vid.w*.05),xr=vid.x+vid.w*.94,y=vid.y+vid.h*.3;  // up and right of her face, on the wall
+  const size=Math.max(24,vid.w*.05),xr=vid.x+vid.w*.95,y=vid.y+vid.h*.17;  // up and right of her face, on the wall
   const items=groups[gi].map(i=>({s:ws[i].word.replace(/[,.]/g,'').toUpperCase(),t:ws[i].t-.03,w:ws[i]}));
   const font=fnt(size,800);let tot=0;items.forEach((it,k)=>tot+=tw(it.s,font)+(k?size*.3:0));let xx=xr-tot;
   items.forEach(it=>{const wd=tw(it.s,font);if(t>=it.t){const act=t<it.w.end+.05||it===items.at(-1);const k=spring(t-it.t,13,.5);
     if(act){g.save();g.translate(xx+wd/2,y-size*.34);g.scale(k,k);g.rotate(-.02);g.fillStyle=C.grn;rr(g,-wd/2-size*.22,-size*.62,wd+size*.44,size*1.1,size*.2);g.fill();g.restore()}
     word(g,it.s,xx,y,font,act?C.ink:C.cream,ph(t,it.t,.18),{rise:size*.25})}xx+=wd+size*.3});
   // the timing ruler: every word a block on the clip's timeline, the playhead lands each one
-  const rp=ph(t,ws[0].t-.3,.4);if(rp>0){g.save();g.globalAlpha=eo(rp);const ry=vid.y+vid.h*.86,rx=vid.x+vid.w*.18,rw=vid.w*.64;
+  const rp=ph(t,ws[0].t-.3,.4);if(rp>0){g.save();g.globalAlpha=eo(rp);const ry=vid.y+vid.h*.88,rx=vid.x+vid.w*.08,rw=vid.w*.28;
     g.fillStyle='rgba(16,22,19,.55)';rr(g,rx-16,ry-22,rw+32,44,22);g.fill();const t0=ws[0].t-.2,t1=ws.at(-1).end+.3;
     ws.forEach(w=>{const a=(w.t-t0)/(t1-t0),b=(w.end-t0)/(t1-t0);const lit=t>=w.t;g.fillStyle=lit?C.grn:'rgba(239,244,238,.35)';rr(g,rx+a*rw,ry-8,Math.max(6,(b-a)*rw-6),16,8);g.fill()});
     const ph_=cl((t-t0)/(t1-t0));g.fillStyle=C.cream;g.fillRect(rx+ph_*rw-1.5,ry-18,3,36);g.restore()}
@@ -325,17 +325,17 @@ function sD(g,t,lt,d){
       }});
     }
     // the look picker rail under the big word
-    const rp=ph(t,l7-.1,.6)*(1-ph(t,ex-.35,.3));if(rp>0){g.save();g.globalAlpha=eo(rp);const rx=210,ry=720,cw=150,gp=12;
-      g.fillStyle='#ffffff';shadow(g,rx-10,ry-10,4*cw+3*gp+20,64+20,.18,.35);rr(g,rx-10,ry-10,4*cw+3*gp+20,84,42);g.fill();
+    const rp=ph(t,l7-.1,.6)*(1-ph(t,ex-.35,.3));if(rp>0){g.save();g.globalAlpha=eo(rp);const rx=150,ry=716,cw=184,gp=14;
+      g.fillStyle='#ffffff';shadow(g,rx-10,ry-10,4*cw+3*gp+20,96,.18,.35);rr(g,rx-10,ry-10,4*cw+3*gp+20,96,48);g.fill();
       const pos=look<0?0:look,prev=Math.max(0,pos-1);const lt8=look<0?0:ph(t,Wd(8,look).t-.08,.32);const th=lerp(prev,pos,look<=0?1:outBack(lt8));
-      g.fillStyle=C.ink;rr(g,rx+th*(cw+gp),ry,cw,64,32);g.fill();
-      LOOKS.forEach((s,i)=>{const on=Math.abs(th-i)<.5;word(g,s,rx+i*(cw+gp)+cw/2,ry+41,fnt(22,800),on?C.cream:C.gra2,1,{al:'c'})});
+      g.fillStyle=C.ink;rr(g,rx+th*(cw+gp),ry,cw,76,38);g.fill();
+      LOOKS.forEach((s,i)=>{const on=Math.abs(th-i)<.5;word(g,s,rx+i*(cw+gp)+cw/2,ry+49,fnt(30,800),on?C.cream:C.gra2,1,{al:'c'})});
       // the cursor clicks each look on its word
-      if(t<ex-.1){const ci=Math.max(0,look);const tx=rx+ci*(cw+gp)+cw*.62,ty=ry+44;const prevx=rx+Math.max(0,ci-1)*(cw+gp)+cw*.62;const mv=look<=0?out(ph(t,l7,.8)):out(ph(t,Wd(8,look).t-.36,.3));
+      if(t<ex-.1){const ci=Math.max(0,look);const tx=rx+ci*(cw+gp)+cw*.62,ty=ry+50;const prevx=rx+Math.max(0,ci-1)*(cw+gp)+cw*.62;const mv=look<=0?out(ph(t,l7,.8)):out(ph(t,Wd(8,look).t-.36,.3));
         const cx=look<0||look===0?lerp(560,tx,mv):lerp(prevx,tx,mv),cy=look<=0?lerp(900,ty,mv):ty;const pr=look<0?0:cl(1-Math.abs(t-(Wd(8,look).t-.06))/.12);cursor(g,cx,cy,pr);if(look>=0)ripple(g,tx,ty,ph(t,Wd(8,look).t-.06,.5))}
       g.restore()}
     // the big word: "Pick a look." then each look name in its own look
-    const bx=520,by=520;
+    const bx=545,by=520;
     if(look<0){flow(g,LN[7].map((w,i)=>({s:w.word,t:w.t-.04,font:i===2?fnt(150,400,SERIF,1):null,col:i===2?C.deep:C.gra})),bx,by,t,{size:132,w:800})}
     else if(t<ex-.15){bigLook(g,look,bx,by,t-Wd(8,look).t,t)}
     // export
@@ -393,14 +393,14 @@ function sE(g,t,lt,d){
   const wi=1-out(ph(lt,0,.55));
   g.save();g.translate(wi*W*.9,0);
   cam(g,lt,d,.05,()=>{
-    const lx=W/2,ly=640;
+    const lx=W/2,ly=600;
     // laptop: graphite with a rim of light, her video still on the screen
     g.fillStyle=C.gra;rr(g,lx-380,ly-250,760,470,26);g.fill();g.strokeStyle='#5f7368';g.lineWidth=2;rr(g,lx-380,ly-250,760,470,26);g.stroke();
     g.save();rr(g,lx-356,ly-226,712,422,12);g.clip();drawClip(g,'vlog',t,lx-356,ly-226,712,422,.42);
     g.fillStyle='rgba(16,22,19,.25)';g.fillRect(lx-356,ly-226,712,422);g.restore();
     const bgrad=g.createLinearGradient(0,ly+220,0,ly+250);bgrad.addColorStop(0,'#5a6b62');bgrad.addColorStop(1,'#2a332e');g.fillStyle=bgrad;rr(g,lx-470,ly+220,940,30,15);g.fill();
     // the cloud above, outlined, never reached
-    const cp=ph(lt,.3,.6);g.save();g.globalAlpha=.55*eo(cp)*(1-.6*dome);g.strokeStyle=C.fog;g.lineWidth=3;g.setLineDash([12,10]);
+    const cp=ph(lt,.3,.6);g.save();g.globalAlpha=.85*eo(cp)*(1-.5*dome);g.strokeStyle=C.fog;g.lineWidth=4;g.setLineDash([12,10]);
     const cx=lx,cy=130;g.beginPath();g.arc(cx-70,cy+20,46,Math.PI*.6,Math.PI*1.55);g.arc(cx,cy-10,66,Math.PI*1.1,Math.PI*1.95);g.arc(cx+76,cy+22,44,Math.PI*1.45,Math.PI*.4);g.closePath();g.stroke();g.restore();
     // the upload arrow rises, meets the glass, settles back home
     const a=ph(t,up-.35,1.3);if(a>0&&a<1){const yy=ly-260-Math.sin(Math.PI*cl(a/.82))*150;const al=a<.9?1:1-(a-.9)/.1;

@@ -113,3 +113,16 @@ gradient (opaque to 62 %, soft to the edge), and draw it over the first. A hard 
 Start every clip on Play and keep it decoding; a clip that starts or seeks mid-film stalls a frame. Plates never
 need frame sync; only stills seek (posters). Glass: copy the frame behind into a 1/4 canvas, then a 1/16 one, draw that
 back clipped to the card (a blur with no filter), then a tint, a rim and a top sheen.
+
+## Bugs that cost a round (CaptionsEasy keynote, 2026-10-21)
+- **Scene-local time.** A scene function gets the film time `t` and its own `lt`; every in-scene entry, exit and
+  transition (`ph(lt,0,…)`, `ph(lt,d-…,…)`) must read `lt`. Using `t` blanked three whole scenes (an exit overlay was
+  "already finished") and skipped a bridge. Words keyed to voice stamps read `t`.
+- **A word helper multiplies the parent alpha** (`g.globalAlpha *= …`), or a fading line under `save(); globalAlpha=x`
+  stays fully opaque and two lines overprint.
+- **A ring (iris) as an even-odd fill:** `rect(); moveTo(cx+r,cy); arc(cx,cy,r,0,2π,true); fill('evenodd')`. Without
+  the `moveTo` the arc joins the rect's corner and draws a wedge.
+- **Order:** an iris is drawn before the bridge element that rides on it (the logo), or it covers it.
+- **Hidden preview pane:** rAF does not fire when the pane is off screen (audio keeps running). Verify the clock by
+  stubbing rAF and calling `loop(performance.now())` twice a second apart; render stills with headless Chrome
+  (playwright-core in the engine, `renderAt(t)` → JPEG) instead of pane screenshots.

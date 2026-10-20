@@ -181,3 +181,7 @@ The full playbook is `references/talking-head.md`; **the method that decides wha
 - **Chapter cards come from the poster:** card n dives into object n of the hero poster and lights it; vary the entry
   (flash / rack / whip / dive).
 - **Under an incoming panel, keep drawing the outgoing shot.** A wipe or dissolve over nothing reveals black.
+
+**Reference = the why, not the what; and it must be fast (1.17.0, Ishaan 2026-10-20).** Read `references/why-not-what.md` before using any reference: extract the thought process and taste as transferable principles ("when X, do Y because Z"), never reuse its elements as a template; budget 2-3 minutes per reference analysis and per film, in shots not frames.
+
+**YouTube / social automation (sub-skill of Showreel):** `references/showreel-youtube-automation.md`, the step-by-step process for automated 10-minute channels (think, research, why cards, style, beat sheet, make, check, publish). Working files in the Moovi repo: `docs/agents/story/`.

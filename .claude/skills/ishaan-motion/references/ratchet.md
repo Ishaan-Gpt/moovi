@@ -30,6 +30,9 @@ side-by-side leap check were skipped to go faster, and a font was picked without
 | R4 rounds 1–6 | red-table | 4.2 → 5.4 → 6.2 → 6.4 | | | | | | vs L (the R3 shipped sheet) = 6.4 in the same judge round; 6.4 = equal, not shipped |
 | **R4 round 7 (shipped)** | red-table | **6.6** | 7 | 7 | 6 | 7 | 6 | above L 6.4 (same judge): tall word fills the frame, scribbles inside the margins, card group lower; then the caption moved under the card and the panel face filled |
 | **R5 round 1 (shipped)** | night-glass | **7.0** | 8 | 7 | 6 | 7 | 7 | vs R4's shipped sheet 4.8 **in the same round** (that judge scored R4 lower than R4's own judge did: calibration differs, only same-round comparisons count) |
+| **CaptionsEasy keynote (shipped)** | L-KEY-1 (launch) | **7.2** | 7 | 7 | 7 | 8 | 7 | vs the brand's earlier slide-style film 4.8 in the same round (7.0 before the judge's fixes); the first launch film on the board |
+
+CaptionsEasy keynote debts (judge): the Studio page's UI text is illegible at full-window scale (zoom ~1.3x into the drop zone) and the cursor passes her face; look chips ~1.8x more; 10 px between the "words" pill and "to", serif "move" on the sans baseline; the cloud as a solid struck stroke or gone; the hook's lower-row phones fainter under the line.
 
 R5 debts (judge): the settings scroll wants a hard vertical whip blur (40–60 px); the picker card ~20% larger with the crowd centred under its row; a ghost of the outgoing card at the frame edge on the first panel swap.
 

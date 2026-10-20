@@ -70,3 +70,10 @@ been written, but nothing forced it to be checked. Now, before any frame is buil
 4. **A monochrome brand stays monochrome.** Colour enters only through real photos and footage. Status dots, syntax
    colours, buttons and "hero" cards come from the ramp's steps (light end = good or active, dark end = off or failed).
 5. **Self-check on the board:** put the site capture beside our frames. If a colour in ours isn't in theirs, it's wrong.
+
+## Worked example: CaptionsEasy keynote (locked by Ishaan, 2026-10-21)
+Brand: cream `#FFFFEB`, ink `#1a1a1a`, green `#34d399`. Rejected: the site's own cream/ink as the world (a copy of the
+site, and cream is banned as a world); Apple aluminium greys (reads as Tailwind slate). Kept: **celadon porcelain**,
+the glaze colour of the brand's green pushed toward grey: porcelain `#EFF4EE` → `#DCE6DD`, mist `#C3D3C6`, sage
+`#7C9486`, graphite `#2E3833`; dark world lacquer `#101613` with one green bloom; accent `#34d399` (+ deep `#0D6B4C` for
+serif hero words on light) under 10%. The brand's cream and ink appear only on its logo and its real UI.
