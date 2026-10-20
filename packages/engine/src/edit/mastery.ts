@@ -1,7 +1,9 @@
 import { execFile, execFileSync, spawn } from 'node:child_process';
 import { copyFileSync, createReadStream, existsSync, linkSync, mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { createServer } from 'node:http';
 import { createRequire } from 'node:module';
+import { tmpdir } from 'node:os';
 import { delimiter, dirname, extname, join, normalize, resolve, sep } from 'node:path';
 import { config, REPO } from '../config';
 
@@ -64,6 +66,44 @@ export function writeSpec(dir: string, spec: Record<string, unknown>): void {
   writeFileSync(join(dir, 'spec.json'), JSON.stringify({ ...spec, clip: '../../../v/' }, null, 1));
 }
 
+/** Split a filter chain on its top-level commas (a quoted option value keeps its commas). Pure. */
+export function chainParts(chain: string): string[] {
+  const out: string[] = []; let cur = '', q = false;
+  for (const ch of chain) { if (ch === "'") q = !q; if (ch === ',' && !q) { out.push(cur); cur = ''; } else cur += ch; }
+  if (cur) out.push(cur);
+  return out.map(s => s.trim()).filter(Boolean);
+}
+/** The RGB colour filters a grade may open with; everything up to the first other filter is bakeable into one LUT */
+const RGB_COLOUR = new Set(['curves', 'colorbalance', 'colorchannelmixer', 'colorlevels', 'lut3d']);
+/** a path inside an ffmpeg filter graph: forward slashes, quoted, the drive colon escaped */
+const ffPath = (p: string) => `'${p.replace(/\\/g, '/').replace(/'/g, '').replace(/:/g, '\\:')}'`;
+
+/**
+ * The mastery grade (menu.json's auto.grade) with its opening RGB filters (curves, colorbalance) baked into one 64^3 LUT,
+ * computed by those same filters at 16 bits, and the rest (eq) kept as written. Measured on the server (2026-10-20, the
+ * 1080x1936 graded cut, 300 frames): 26.3 s as written (colorbalance alone 24.2 s), 19.2 s baked; the picture is 50.6 dB
+ * PSNR from the written grade (worst frame 50.0 dB), where the cut's own crf 17 encode is 47.5 dB. The LUT is cached by
+ * the grade's text, so a changed grade makes a new one. Returns the grade unchanged when nothing can be baked or ffmpeg fails.
+ */
+export function bakedGrade(grade: string, cache = join(tmpdir(), 'moovi-grade')): string {
+  const parts = chainParts(grade), k = parts.findIndex(p => !RGB_COLOUR.has(p.split('=')[0]!.trim()));
+  const rgb = parts.slice(0, k < 0 ? parts.length : k), rest = parts.slice(rgb.length);
+  if (!rgb.length) return grade;
+  const cube = join(cache, `${createHash('sha1').update(rgb.join(',')).digest('hex').slice(0, 16)}.cube`);
+  try {
+    if (!existsSync(cube)) {
+      // an identity hald (64 levels a channel, red fastest like a .cube) through the grade's RGB filters at 16 bits
+      const raw = execFileSync(config.ffmpeg, ['-v', 'error', '-f', 'lavfi', '-i', 'haldclutsrc=level=8', '-frames:v', '1', '-vf', `format=rgb48le,${rgb.join(',')},format=rgb48le`, '-f', 'rawvideo', '-pix_fmt', 'rgb48le', '-'], { maxBuffer: 8 << 20 }) as Buffer;
+      const n = 64, lines = [`LUT_3D_SIZE ${n}`];
+      if (raw.length !== n ** 3 * 6) return grade;
+      for (let i = 0; i < n ** 3; i++) lines.push([0, 2, 4].map(o => (raw.readUInt16LE(i * 6 + o) / 65535).toFixed(6)).join(' '));
+      mkdirSync(cache, { recursive: true });
+      const tmp = `${cube}.${process.pid}.tmp`; writeFileSync(tmp, lines.join('\n') + '\n'); renameSync(tmp, cube);
+    }
+    return [`lut3d=file=${ffPath(cube)}:interp=tetrahedral`, ...rest].join(',');
+  } catch (e) { console.warn(`[edit] grade LUT: ${String((e as Error).message ?? e).slice(0, 160)}`); return grade; }
+}
+
 /**
  * The clip as the player wants it: cut.mp4 + cut.json from the edit's own cuts, by the player's build-cut.mjs, made from
  * `picture` (the graded hd.mp4 once the restore has written it, else the upload itself) in a side folder and then moved
@@ -77,7 +117,7 @@ export async function prepareClip(dir: string, picture?: string): Promise<{ grad
   copyFileSync(join(dir, 'edl.json'), join(work, 'edl.json'));
   const env = { ...process.env, PATH: `${dirname(config.ffmpeg)}${delimiter}${process.env.PATH ?? ''}` };
   const grade = (() => { try { const g = (JSON.parse(readFileSync(join(PLAYER_DIR, 'menu.json'), 'utf8')) as { auto?: { grade?: string } }).auto?.grade ?? ''; return g.slice(g.indexOf('curves=') >= 0 ? g.indexOf('curves=') : g.length); } catch { return ''; } })();
-  await new Promise<void>((res, rej) => execFile(process.execPath, [join(PLAYER_DIR, 'build-cut.mjs'), work, ...(grade ? ['--grade', grade] : [])], { env, timeout: 600_000 }, err => err ? rej(err) : res()));
+  await new Promise<void>((res, rej) => execFile(process.execPath, [join(PLAYER_DIR, 'build-cut.mjs'), work, ...(grade ? ['--grade', bakedGrade(grade)] : [])], { env, timeout: 600_000 }, err => err ? rej(err) : res()));
   renameSync(join(work, 'cut.mp4'), join(dir, 'cut.mp4')); renameSync(join(work, 'cut.json'), join(dir, 'cut.json'));
   rmSync(work, { recursive: true, force: true });
   return { graded };

@@ -4,7 +4,8 @@ import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { othersBusy, taskRunning, whenOthersIdle } from '../src/busy';
-import { serveMastery } from '../src/edit/mastery';
+import { bakedGrade, chainParts, serveMastery } from '../src/edit/mastery';
+import { execFileSync } from 'node:child_process';
 import { config } from '../src/config';
 import { EDIT_FILM_KIND } from '../src/router/edit';
 import { HANDLERS as handlers } from '../src/tasks';
@@ -48,4 +49,21 @@ test('the capture can serve the player another file for the cut (its all-intra c
   } finally { s.close(); }
   const plain = await serveMastery(dir);
   try { assert.equal(await (await fetch(plain.url.replace(/a\/b\/c\/player\.html.*$/, '') + 'v/cut.mp4')).text(), 'light'); } finally { plain.close(); }
+});
+
+test('the mastery grade bakes its RGB opening (curves, colorbalance) into one LUT; eq stays as written', () => {
+  const g = "curves=master='0/0 0.6/0.57 1/0.9',colorbalance=bs=-0.04:bm=-0.03:bh=-0.04,eq=saturation=1.18";
+  assert.deepEqual(chainParts(g), ["curves=master='0/0 0.6/0.57 1/0.9'", 'colorbalance=bs=-0.04:bm=-0.03:bh=-0.04', 'eq=saturation=1.18']);
+  assert.deepEqual(chainParts("curves=r='0/0,1/1',eq=gamma=1"), ["curves=r='0/0,1/1'", 'eq=gamma=1']);
+  const cache = mkdtempSync(join(tmpdir(), 'moovi-grade-'));
+  const b = bakedGrade(g, cache);
+  assert.match(b, /^lut3d=file='.*\.cube':interp=tetrahedral,eq=saturation=1\.18$/);
+  assert.equal(bakedGrade('eq=saturation=1.2', cache), 'eq=saturation=1.2', 'nothing to bake');
+  // the picture: testsrc2's saturated bars are the hard case (44.8 dB in RGB); real footage measured 50.6 dB on the server,
+  // where the cut's own crf 17 encode is 47.5 dB
+  const run = (vf: string) => execFileSync(config.ffmpeg, ['-v', 'error', '-f', 'lavfi', '-i', 'testsrc2=size=320x240:rate=10:duration=1', '-vf', `${vf},format=rgb24`, '-f', 'rawvideo', '-'], { maxBuffer: 16 << 20 }) as Buffer;
+  const a = run(g), z = run(b);
+  let se = 0; for (let i = 0; i < a.length; i++) se += (a[i]! - z[i]!) ** 2;
+  const psnr = 10 * Math.log10(255 ** 2 / (se / a.length));
+  assert.ok(psnr > 42, `baked grade ${psnr.toFixed(1)} dB from the written one`);
 });
