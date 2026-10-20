@@ -5,7 +5,9 @@ import { ago, api, post } from '@/lib/client';
 interface P { id: string; name: string; at: number; updated: number; chats: number; videos: number; poster: string | null }
 
 /** The projects: a card each (its latest poster, name, what's in it, when), and the card that starts a new one. */
-export function ProjectGrid({ projects }: { projects: P[] }) {
+export function ProjectGrid({ projects: initial }: { projects: P[] }) {
+  const [projects, setProjects] = useState(initial);
+  const [removing, setRemoving] = useState<string | null>(null);
   const [now, setNow] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
@@ -15,6 +17,16 @@ export function ProjectGrid({ projects }: { projects: P[] }) {
     setBusy(true); setErr('');
     try { const r = await post<{ project: { id: string }; chat: { id: string } }>('/projects', {}); window.location.href = `/studio/p/${r.project.id}/c/${r.chat.id}`; }
     catch (e) { setErr((e as Error).message); setBusy(false); }
+  };
+  const remove = async (p: P) => {
+    if (removing || !window.confirm(`Delete "${p.name}"? It leaves your projects.`)) return;
+    setRemoving(p.id); setErr('');
+    try {
+      const r = await fetch(api(`/projects/${p.id}`), { method: 'DELETE' });
+      if (!r.ok) throw new Error(((await r.json().catch(() => ({}))) as { error?: string }).error ?? 'Could not delete the project.');
+      setProjects(ps => ps.filter(x => x.id !== p.id));
+    } catch (e) { setErr((e as Error).message); }
+    setRemoving(null);
   };
   return (
     <>
@@ -26,7 +38,7 @@ export function ProjectGrid({ projects }: { projects: P[] }) {
           </button>
         </li>
         {projects.map((p, i) => (
-          <li key={p.id} style={{ '--i': i } as React.CSSProperties}>
+          <li key={p.id} className="card-wrap" style={{ '--i': i } as React.CSSProperties}>
             <a className="card" href={`/studio/p/${p.id}`}>
               <span className="card__frame">
                 {p.poster
@@ -39,6 +51,9 @@ export function ProjectGrid({ projects }: { projects: P[] }) {
                 <span className="card__sub muted">{p.videos ? `${p.videos} video${p.videos > 1 ? 's' : ''}` : 'No video yet'} · {p.chats} chat{p.chats === 1 ? '' : 's'}{now ? ` · ${ago(p.updated, now)}` : ''}</span>
               </span>
             </a>
+            <button className="card__del" onClick={() => remove(p)} disabled={removing === p.id} aria-label={`Delete ${p.name}`} title="Delete project">
+              {removing === p.id ? <span className="spin" /> : <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" fill="none" /></svg>}
+            </button>
           </li>
         ))}
       </ul>

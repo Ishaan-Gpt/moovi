@@ -57,3 +57,10 @@
   .rail__name { display: none; }
   .rail__menu { left: auto; right: 0; bottom: auto; top: calc(100% + 8px); width: 240px; }
 }
+
+/* delete a project: a small frosted button on the card's corner, shown on hover or keyboard focus */
+.card-wrap { position: relative; }
+.card__del { position: absolute; top: 10px; right: 10px; z-index: 2; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; color: var(--ink-2); background: rgb(255 255 255 / .82); box-shadow: var(--lift); backdrop-filter: blur(8px); opacity: 0; transition: opacity .2s var(--ease), color .2s var(--ease), background-color .2s var(--ease); }
+.card-wrap:hover .card__del, .card__del:focus-visible, .card__del:disabled { opacity: 1; }
+.card__del:hover { color: var(--ink); background: #fff; }
+@media (hover: none) { .card__del { opacity: 1; } }

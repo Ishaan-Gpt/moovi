@@ -65,6 +65,13 @@ export async function createProject(user: string, name = 'Untitled project') {
 }
 export const listProjects = (user: string) => run<{ id: string; name: string; at: number; updated: number; chats: number; videos: number; poster: string | null }>(SYS, S.userProjects, { user });
 
+/** The owner deletes a project: it leaves the dashboard (closed), its graph is kept so it can be restored. */
+export async function deleteProject(user: string, pid: string) {
+  if (!(await owns(user, pid))) return false;
+  const [r] = await run<{ id: string }>(SYS, S.closeProject, { user, id: pid, at: Date.now() });
+  return !!r;
+}
+
 /** Does this user own this project? (every project request goes through this) */
 export async function owns(user: string, pid: string) {
   if (!/^p[0-9a-f]{14}$/.test(pid)) return false;

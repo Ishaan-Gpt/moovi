@@ -59,6 +59,11 @@ WHERE p.closed IS NULL OR p.closed = false
 RETURN p.id AS id, p.name AS name, p.at AS at, p.updated AS updated, p.chats AS chats, p.videos AS videos, p.poster AS poster
 ORDER BY p.updated DESC`),
 
+  closeProject: q('closeProject', false, 'The owner deletes a project from the dashboard: it is closed (hidden from userProjects); its graph stays, so it can be restored.', `
+MATCH (:User {id: $user})-[:OWNS]->(p:Project {id: $id})
+SET p.closed = true, p.closed_at = $at
+RETURN p.id AS id`),
+
   projectOwner: q('projectOwner', true, 'Who owns a project (every project request is checked against it).', `
 MATCH (u:User)-[:OWNS]->(p:Project {id: $id})
 RETURN u.id AS user, p.name AS name`),

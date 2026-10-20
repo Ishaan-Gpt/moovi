@@ -3,7 +3,7 @@ export * from './events';
 export * from './commands';
 export { pipelineOn } from './router/switch';
 export { publish, history, follow, blocking, sendCommand, hit, redis } from './bus';
-export { signUp, signIn, signOut, sessionUser, createProject, listProjects, owns, createChat, AuthError, SESSION_DAYS } from './accounts';
+export { signUp, signIn, signOut, sessionUser, createProject, deleteProject, listProjects, owns, createChat, AuthError, SESSION_DAYS } from './accounts';
 export { newId } from './ids';
 export { say, userSay } from './live';
 export { synapseSnapshot, followSynapse } from './synapse';

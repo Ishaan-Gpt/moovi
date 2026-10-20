@@ -609,6 +609,16 @@ RETURN p.id AS id, p.name AS name, p.at AS at, p.updated AS updated, p.chats AS 
 ORDER BY p.updated DESC
 ```
 
+### `closeProject` (write)
+
+The owner deletes a project from the dashboard: it is closed (hidden from userProjects); its graph stays, so it can be restored.
+
+```cypher
+MATCH (:User {id: $user})-[:OWNS]->(p:Project {id: $id})
+SET p.closed = true, p.closed_at = $at
+RETURN p.id AS id
+```
+
 ### `projectOwner` (read-only)
 
 Who owns a project (every project request is checked against it).
