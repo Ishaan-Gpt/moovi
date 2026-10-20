@@ -2,6 +2,8 @@
   "version": "0.0.1",
   "configurations": [
     { "name": "studio", "runtimeExecutable": "pnpm", "runtimeArgs": ["--filter", "@moovi/studio", "dev"], "port": 3100 },
-    { "name": "landing", "runtimeExecutable": "pnpm", "runtimeArgs": ["--filter", "@moovi/landing", "dev"], "port": 3000 }
+    { "name": "landing", "runtimeExecutable": "pnpm", "runtimeArgs": ["--filter", "@moovi/landing", "dev"], "port": 3000 },
+    { "name": "captionseasy-film", "runtimeExecutable": "python", "runtimeArgs": ["-m", "http.server", "4310", "--directory", "docs/launch/captionseasy"], "port": 4310 },
+    { "name": "captionseasy-keynote", "runtimeExecutable": "node", "runtimeArgs": ["docs/launch/serve-range.mjs", "docs/launch/captionseasy-apple", "4320"], "port": 4320 }
   ]
 }

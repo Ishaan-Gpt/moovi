@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>CaptionsEasy Keynote Film</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0c110e;--fg:#e9f0ea;--acc:#34d399}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:600 14px "Plus Jakarta Sans",system-ui,sans-serif;overflow:hidden}
+#wrap{position:fixed;inset:0 0 48px 0;display:flex;align-items:center;justify-content:center}
+canvas{width:min(100vw,calc((100vh - 48px)*16/9));aspect-ratio:16/9;display:block}
+#bar{position:fixed;left:0;right:0;bottom:0;height:48px;display:flex;gap:14px;align-items:center;padding:0 16px;background:var(--bg)}
+#bar button{all:unset;cursor:pointer;color:#0c110e;background:var(--acc);padding:7px 16px;border-radius:99px;font-weight:800}
+#bar input{flex:1;accent-color:var(--acc)}
+#tm{font-variant-numeric:tabular-nums;min-width:64px;text-align:right;opacity:.7}
+#go{position:fixed;inset:0;display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;background:#0c110ef0;cursor:pointer;z-index:5}
+#go b{font:italic 400 56px "Instrument Serif",Georgia,serif;color:var(--fg)}
+#go span{opacity:.6}
+</style></head><body>
+<div id="wrap"><canvas id="c" width="1920" height="1080"></canvas></div>
+<div id="bar"><button id="pp">Pause</button><input id="sk" type="range" min="0" max="1000" value="0"><span id="tm">0.0s</span></div>
+<div id="go"><b>Play with sound ▸</b><span id="ld">loading…</span></div>
+<script>
+// CaptionsEasy launch film, keynote cut. frame(t) draws everything; time comes from the audio clock.
+const W=1920,H=1080,O=1.0;           // O: voice offset, the film opens on a breath of music
+const C={por:'#EFF4EE',por2:'#DCE6DD',mist:'#C3D3C6',sage:'#7C9486',gra:'#2E3833',gra2:'#46534C',
+  lac:'#101613',lac2:'#18211C',grn:'#34d399',deep:'#0D6B4C',cream:'#FFFFEB',ink:'#1a1a1a',fog:'#A9BBAE'};
+const SANS='"Plus Jakarta Sans",system-ui,sans-serif',SERIF='"Instrument Serif",Georgia,serif';
+const cv=document.getElementById('c'),X=cv.getContext('2d');
+const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)), lerp=(a,b,t)=>a+(b-a)*t;
+const ph=(t,a,d)=>cl((t-a)/d);
+const eo=t=>1-Math.pow(1-cl(t),4), eo5=t=>1-Math.pow(1-cl(t),5);
+const eio=t=>{t=cl(t);return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2};
+function bez(x1,y1,x2,y2){return t=>{t=cl(t);let u=t;for(let i=0;i<8;i++){const x=3*(1-u)**2*u*x1+3*(1-u)*u*u*x2+u**3-t,dx=3*(1-u)**2*x1+6*(1-u)*u*(x2-x1)+3*u*u*(1-x2);if(Math.abs(dx)<1e-6)break;u=cl(u-x/dx)}return 3*(1-u)**2*u*y1+3*(1-u)*u*u*y2+u**3}}
+const ramp=bez(.86,0,.07,1), out=bez(.16,1,.3,1), outBack=bez(.34,1.32,.64,1), soft=bez(.45,0,.2,1);
+// the premium speed ramp: 2x for the first and last sixth, 0.5x through the middle
+const sramp=t=>{t=cl(t);const a=1/6,v1=2,v2=.5,area=v1*a*2+v2*(1-2*a);let s;if(t<a)s=v1*t;else if(t<1-a)s=v1*a+v2*(t-a);else s=v1*a+v2*(1-2*a)+v1*(t-1+a);return soft(cl(s/area))};
+const spring=(t,k=9,z=.42)=>{t=Math.max(0,t);return 1-Math.exp(-z*k*t)*Math.cos(k*Math.sqrt(1-z*z)*t)};
+function rnd(i){const s=Math.sin(i*127.1+311.7)*43758.5453;return s-Math.floor(s)}
+
+// ---------- sprites: text is baked once per (text,font,colour,blur), frames only drawImage
+const SP=new Map();
+function spr(s,font,col,blur=0,glow){
+  const k=s+'|'+font+'|'+col+'|'+blur+'|'+(glow||'');let c=SP.get(k);if(c)return c;
+  const m=document.createElement('canvas').getContext('2d');m.font=font;const mt=m.measureText(s);
+  const pad=Math.ceil(blur*3+(glow?60:8)),asc=Math.ceil(mt.actualBoundingBoxAscent||parseInt(font.match(/(\d+)px/)[1])*.8),dsc=Math.ceil(mt.actualBoundingBoxDescent||10);
+  c=document.createElement('canvas');c.width=Math.ceil(mt.width)+pad*2;c.height=asc+dsc+pad*2;
+  const g=c.getContext('2d');g.font=font;g.textBaseline='alphabetic';
+  if(blur)g.filter=`blur(${blur}px)`;
+  if(glow){g.save();g.filter=`blur(${22+blur}px)`;g.fillStyle=glow;g.globalAlpha=.9;g.fillText(s,pad,pad+asc);g.fillText(s,pad,pad+asc);g.restore();if(blur)g.filter=`blur(${blur}px)`}
+  g.fillStyle=col;g.fillText(s,pad,pad+asc);
+  c.ox=pad;c.oy=pad+asc;c.w=mt.width;SP.set(k,c);return c;
+}
+const BL=[0,2,5,9,15];
+function fnt(size,w=800,f=SANS,it){return `${it?'italic ':''}${w} ${size}px ${f}`}
+function tw(s,font){const c=spr(s,font,'#000');return c.w}
+// one word: p 0→1 rises, blurs in, fades in. al: 'l' | 'c' | 'r'
+function word(g,s,x,y,font,col,p=1,o={}){
+  if(p<=0)return;const bi=Math.min(BL.length-1,Math.round((1-eo(p))*(BL.length-1)));const c=spr(s,font,col,BL[bi],o.glow);
+  const w=c.w,ax=o.al==='c'?w/2:o.al==='r'?w:0;const sc=o.sc||1;
+  g.save();g.globalAlpha=g.globalAlpha*(o.a??1)*cl(p*1.6);g.translate(x,y+(1-eo(p))*(o.rise??22));if(sc!==1)g.scale(sc,sc);
+  g.drawImage(c,-ax-c.ox,-c.oy);g.restore();
+}
+// a centred line that re-flows as words arrive; ws:[{s,t,font,col,style}], returns layout for the caller
+function flow(g,ws,cx,y,t,o={}){
+  const gap=o.gap??0.28,sz=o.size;const items=ws.map(w=>{const font=w.font||fnt(sz,o.w||800,o.f||SANS,o.it);const p=ph(t,w.t,o.d??.42);return {...w,font,p,wd:tw(w.s,font)}});
+  const sp=tw(' ',items[0].font)*(1+gap);let tot=0;items.forEach((it,i)=>{const e=eo(it.p);tot+=it.wd*e+(i?sp*e:0)});
+  let x=cx-tot/2;const out=[];
+  items.forEach((it,i)=>{const e=eo(it.p);if(i)x+=sp*e;if(it.p>0){(it.draw||word)(g,it.s,x,y,it.font,it.col||o.col,it.p,{rise:o.rise,a:o.a,glow:it.glow});out.push({x,w:it.wd,it})}x+=it.wd*e});
+  return out;
+}
+
+// ---------- media
+const CLIPS=['vlog','cooking','dance','camera','podcast','phoneselfie','editing'];
+const V={},P={};let WORDS=[],LN=[];
+function loadImg(src){return new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=src})}
+const OFF={vlog:0,cooking:1.3,dance:.6,camera:2.1,podcast:.4,phoneselfie:3,editing:1.7};
+function clipT(n,t){const v=V[n];const d=(v&&v.duration)||6;return ((t+OFF[n])%(d-.08)+(d-.08))%(d-.08)}
+const usedNow=new Set();
+function clipSrc(n,t){usedNow.add(n);const v=V[n];if(v&&v.readyState>=2)return v;return P[n]}
+// cover-crop a 16:9 clip into a box; fx: focus 0..1 across the source width
+function drawClip(g,n,t,x,y,w,h,fx=.5,zoom=1){
+  const s=clipSrc(n,t);if(!s)return;const sw=s.videoWidth||s.width,sh=s.videoHeight||s.height;
+  const k=Math.max(w/sw,h/sh)*zoom,cw=w/k,ch=h/k;const sx=cl(sw*fx-cw/2,0,sw-cw),sy=(sh-ch)/2;
+  g.drawImage(s,sx,sy,cw,ch,x,y,w,h);
+}
+function rr(g,x,y,w,h,r){g.beginPath();g.roundRect(x,y,w,h,r)}
+// a soft drop shadow, baked once and stretched
+let SH;function shadow(g,x,y,w,h,a=.35,spread=1){
+  if(!SH){SH=document.createElement('canvas');SH.width=360;SH.height=360;const s=SH.getContext('2d');s.filter='blur(34px)';s.fillStyle='#0c1a12';s.beginPath();s.roundRect(90,90,180,180,40);s.fill()}
+  g.save();g.globalAlpha=a;const px=w*.5*spread,py=h*.5*spread;g.drawImage(SH,x-px,y-py+h*.06,w+px*2,h+py*2);g.restore();
+}
+// a phone slab with a clip on its screen
+function phone(g,cx,cy,h,clip,t,o={}){
+  const w=h*.4615,x=cx-w/2,y=cy-h/2,r=h*.13,b=h*.022;
+  if(!o.noShadow)shadow(g,x,y,w,h,o.sh??.42);
+  g.fillStyle=C.gra;rr(g,x,y,w,h,r);g.fill();
+  g.strokeStyle='#6f8378';g.lineWidth=Math.max(1,h*.004);rr(g,x+1,y+1,w-2,h-2,r);g.stroke();
+  g.save();rr(g,x+b,y+b,w-b*2,h-b*2,r-b);g.clip();
+  if(clip)drawClip(g,clip,t,x+b,y+b,w-b*2,h-b*2,o.fx??.5,o.zoom??1);
+  if(o.screen)o.screen(g,x+b,y+b,w-b*2,h-b*2);
+  g.restore();
+  g.fillStyle='#0b0f0d';rr(g,cx-w*.17,y+b+h*.018,w*.34,h*.034,h*.017);g.fill();
+  return {x:x+b,y:y+b,w:w-b*2,h:h-b*2};
+}
+// draw fn into a small canvas and stretch it back: cheap depth-of-field
+const BLC=document.createElement('canvas'),BG=BLC.getContext('2d');BLC.width=W;BLC.height=H;
+function blurred(g,k,fn){
+  if(k<=1.05){fn(g);return}
+  const w=Math.ceil(W/k),h=Math.ceil(H/k);BG.setTransform(1,0,0,1,0,0);BG.clearRect(0,0,w+2,h+2);
+  BG.setTransform(1/k,0,0,1/k,0,0);fn(BG);g.save();g.setTransform(1,0,0,1,0,0);g.imageSmoothingQuality='high';g.drawImage(BLC,0,0,w,h,0,0,W,H);g.restore();
+}
+// backgrounds, baked once
+const BGS={};function bgLight(g){if(!BGS.l){const c=document.createElement('canvas');c.width=W;c.height=H;const b=c.getContext('2d');const gr=b.createRadialGradient(W*.5,H*.42,80,W*.5,H*.5,W*.75);gr.addColorStop(0,'#F5F9F4');gr.addColorStop(.6,C.por);gr.addColorStop(1,C.por2);b.fillStyle=gr;b.fillRect(0,0,W,H);BGS.l=c}g.drawImage(BGS.l,0,0)}
+function bgDark(g,bloom=0,bx=W/2,by=H/2,br=700){g.fillStyle=C.lac;g.fillRect(0,0,W,H);
+  if(!BGS.b){const c=document.createElement('canvas');c.width=512;c.height=512;const b=c.getContext('2d');const gr=b.createRadialGradient(256,256,0,256,256,256);gr.addColorStop(0,'rgba(52,211,153,.55)');gr.addColorStop(.35,'rgba(30,140,100,.22)');gr.addColorStop(1,'rgba(16,22,19,0)');b.fillStyle=gr;b.fillRect(0,0,512,512);BGS.b=c}
+  if(bloom>0){g.save();g.globalAlpha=cl(bloom);g.globalCompositeOperation='screen';g.drawImage(BGS.b,bx-br,by-br,br*2,br*2);g.restore()}}
+// the camera: a push that is moving on frame 1 and still moving on the last frame
+function cam(g,lt,d,amt,fn,fx=W/2,fy=H/2){const k=1+amt*(.15+.85*lt/d);g.save();g.translate(fx,fy);g.scale(k,k);g.translate(-fx,-fy);fn();g.restore()}
+function cursor(g,x,y,press=0){g.save();g.translate(x,y);const s=1-press*.12;g.scale(s,s);g.shadowColor='rgba(10,30,20,.35)';g.shadowBlur=10;g.shadowOffsetY=4;
+  g.beginPath();g.moveTo(0,0);g.lineTo(0,40);g.lineTo(10,31);g.lineTo(17,47);g.lineTo(24,44);g.lineTo(17,28);g.lineTo(30,28);g.closePath();g.fillStyle=C.cream;g.fill();g.shadowColor='transparent';g.lineWidth=2.6;g.strokeStyle=C.ink;g.lineJoin='round';g.stroke();g.restore()}
+function ripple(g,x,y,p){if(p<=0||p>=1)return;g.save();g.globalAlpha=(1-p)*.8;g.strokeStyle=C.grn;g.lineWidth=4*(1-p)+1;g.beginPath();g.arc(x,y,10+eo(p)*46,0,7);g.stroke();g.restore()}
+function logo(g,cx,y,size,p=1,o={}){ // "Captions" sans + "Easy" serif italic green, as on the site
+  const f1=fnt(size,o.w||600),f2=fnt(size*1.08,400,SERIF,1);const w1=tw('Captions',f1),w2=tw('Easy',f2),tot=w1+w2+size*.02;
+  const x=o.al==='l'?cx:cx-tot/2;word(g,'Captions',x,y,f1,o.col||C.cream,p,{rise:o.rise,glow:o.glow1});word(g,'Easy',x+w1+size*.02,y,f2,C.grn,o.p2??p,{rise:o.rise,glow:o.glow2});return {x,w:tot};
+}
+
+// ---------- the script's timing (voice word stamps; every cut and slam reads them)
+const L=k=>LN[k][0].t, E=k=>LN[k].at(-1).end, Wd=(k,i)=>LN[k][i];
+let S=[];
+function scenes(){const c=k=>L(k)-.3;
+  S=[{f:sA,a:0,b:c(2)},{f:sB,a:c(2),b:c(4)},{f:sC,a:c(4),b:c(7)},{f:sD,a:c(7),b:c(10)},{f:sE,a:c(10),b:c(11)},{f:sF,a:c(11),b:c(12)},{f:sG,a:c(12),b:E(12)+4.6}]}
+let T=48;
+
+// ===== A: every video has something to say / the world on mute (light, one take that pulls out)
+const WALL={cols:7,rows:2,h:360,gap:44,y0:70};
+function wallPos(c,r){const w=WALL.h*.4615,tw_=WALL.cols*w+(WALL.cols-1)*WALL.gap;return {x:W/2-tw_/2+w/2+c*(w+WALL.gap),y:WALL.y0+WALL.h/2+r*(WALL.h+WALL.gap)}}
+const WCLIP=(c,r)=>c===3&&r===0?'cooking':c===2&&r===0?'dance':c===4&&r===0?'camera':CLIPS[(c*3+r*5+1)%CLIPS.length];
+function sA(g,t,lt,d){
+  bgLight(g);
+  const l1=L(1),pull=sramp(ph(t,l1-.35,2.6));
+  const tc=wallPos(3,0),s0=640/WALL.h,s=Math.pow(s0,1-pull);
+  const ax=lerp(tc.x,W/2,pull),ay=lerp(tc.y,WALL.y0+WALL.h+WALL.gap/2,pull),px=W/2,py=lerp(462,452,pull);
+  const drift=1+.035*(lt/d);
+  const muteT=LN[1].at(-1).t;
+  const rack=lerp(4.2,1,eio(ph(t,l1-.6,1.2))); // outer phones come into focus as "the world" arrives
+  const draw=(gg,which)=>{gg.save();gg.translate(px,py);gg.scale(s*drift,s*drift);gg.translate(-ax,-ay+(1-eo(ph(t,0,1.6)))*60/s);
+    for(let r=0;r<WALL.rows;r++)for(let c=0;c<WALL.cols;c++){const centre=r===0&&c>=2&&c<=4;if((which==='near')!==centre)continue;
+      const p=wallPos(c,r),j=rnd(c*7+r*3);const bob=Math.sin(t*.9+j*6)*4;
+      const sc=phone(gg,p.x,p.y+bob,WALL.h,WCLIP(c,r),t,{fx:.5,sh:.3,screen:(q,x,y,w,h)=>{
+        const m=ph(t,muteT-.05+j*.28,.45);if(m<=0)return;q.fillStyle=`rgba(239,244,238,${.32*eo(m)})`;q.fillRect(x,y,w,h);
+        const k=outBack(m),bx=x+w-36,by=y+40;q.save();q.translate(bx,by);q.scale(k,k);q.fillStyle='rgba(16,22,19,.78)';q.beginPath();q.arc(0,0,22,0,7);q.fill();
+        q.strokeStyle=C.cream;q.fillStyle=C.cream;q.lineWidth=2.4;q.beginPath();q.moveTo(-11,-5);q.lineTo(-5,-5);q.lineTo(2,-11);q.lineTo(2,11);q.lineTo(-5,5);q.lineTo(-11,5);q.closePath();q.fill();
+        q.beginPath();q.moveTo(6,-6);q.lineTo(14,6);q.moveTo(14,-6);q.lineTo(6,6);q.stroke();q.restore()}});
+    }gg.restore()};
+  blurred(g,rack*(1-pull)+1*pull,gg=>draw(gg,'far'));
+  draw(g,'near');
+  // the words sit on a soft porcelain wash
+  {const gr=g.createLinearGradient(0,820,0,940);gr.addColorStop(0,'rgba(239,244,238,0)');gr.addColorStop(1,'rgba(232,239,233,.94)');g.fillStyle=gr;g.fillRect(0,820,W,H-820)}
+  const l0=LN[0].map((w,i)=>({s:w.word,t:w.t-.04,font:i===5?fnt(84,400,SERIF,1):null,col:i===5?C.deep:C.gra}));
+  const out0=1-ph(t,l1-.55,.4);
+  g.save();g.globalAlpha=out0;flow(g,l0,W/2,968,t,{size:76,w:600});g.restore();
+  if(t>l1-.2){const l=LN[1].map((w,i,a)=>({s:w.word,t:w.t-.04,font:i===a.length-1?fnt(84,400,SERIF,1):null,col:i===a.length-1?C.deep:C.gra}));flow(g,l,W/2,968,t,{size:68,w:600})}
+  // iris: the night of the next scene grows out of the centre phone's mute dot
+  const ir=ph(lt,d-.5,.5);if(ir>0){const p=wallPos(3,0);const m=g.getTransform();
+    const dx=(p.x+WALL.h*.4615/2-36-ax)*s*drift+px,dy=(p.y-WALL.h/2+40-ay)*s*drift+py;
+    g.fillStyle=C.lac;g.beginPath();g.arc(dx,dy,Math.pow(2600,ramp(ir))*1-1+20*ir,0,7);g.fill()}
+}
+
+// ===== B: so we taught the words to move / Introducing CaptionsEasy (dark)
+function sB(g,t,lt,d){
+  const l3=L(3),cap=Wd(3,1).t;
+  const bloom=.25+.5*eo(ph(t,Wd(2,LN[2].length-1).t,.6))+.35*eo(ph(t,cap,.5))-.3*ph(t,cap+1.3,1);
+  bgDark(g,bloom,W/2,H/2+20,820);
+  cam(g,lt,d,.05,()=>{
+    // the line, each word wearing a different caption style from the product
+    const out=1-ph(t,l3-.5,.45);
+    if(out>0){g.save();g.globalAlpha=out;
+      const st=['plain','plain','karaoke','plain','box','plain','serif'];
+      const ws=LN[2].map((w,i)=>{const sty=st[i]||'plain';const big=sty==='serif';
+        return {s:w.word.replace('.',''),t:w.t-.04,font:big?fnt(150,400,SERIF,1):fnt(100,800),col:big?C.grn:C.cream,
+          draw:(q,s,x,y,font,col,p)=>styled(q,sty,s,x,y,font,col,p,t,w)}});
+      flow(g,ws,W/2,H/2+40,t,{size:100,gap:.2});g.restore()}
+    // the reveal
+    const ip=ph(t,Wd(3,0).t-.05,.6);
+    if(ip>0){const fade=1-ph(lt,d-.55,.3);g.save();g.globalAlpha=fade;word(g,'Introducing',W/2,H/2-150,fnt(52,500),C.fog,ip,{al:'c'});g.restore()}
+    const lp=ph(t,cap-.08,.7);
+    if(lp>0)logo(g,W/2,H/2+60,170,lp,{p2:ph(t,cap+.18,.7),rise:30});
+  },W/2,H/2);
+}
+function styled(g,sty,s,x,y,font,col,p,t,w){
+  if(sty==='box'){const k=spring(t-w.t,11,.45);const wd=tw(s,font);if(p>0){g.save();g.translate(x+wd/2,y-40);g.scale(k*1.0,k);g.rotate(-.025);g.fillStyle=C.grn;rr(g,-wd/2-22,-62,wd+44,106,20);g.fill();g.restore()}
+    word(g,s,x,y,font,C.ink,p);return}
+  if(sty==='karaoke'){word(g,s,x,y,font,'#5d6e64',p);const f=eio(ph(t,w.t,Math.max(.25,w.end-w.t)));if(f>0){const wd=tw(s,font);g.save();g.beginPath();g.rect(x-10,y-160,(wd+20)*f,220);g.clip();word(g,s,x,y,font,C.grn,1);g.restore()}return}
+  if(sty==='serif'){const k=lerp(1.5,1,outBack(ph(t,w.t,.5)));const wd=tw(s,font);g.save();g.translate(x+wd/2,y-50);g.scale(k,k);g.translate(-x-wd/2,-y+50);word(g,s,x,y,font,col,p,{glow:'rgba(52,211,153,.55)'});g.restore();return}
+  word(g,s,x,y,font,col,p);
+}
+
+// ===== C: drop in a video / Whisper listens / every word lands (the product's own studio)
+function studio(g,x,y,w,h,st){ // the real Studio page, in the product's own cream and ink
+  shadow(g,x,y,w,h,.38,.55);g.save();rr(g,x,y,w,h,26);g.clip();g.fillStyle=C.cream;g.fillRect(x,y,w,h);
+  // browser chrome
+  g.fillStyle='#F2F2DC';g.fillRect(x,y,w,58);['#e8b4a6','#e9d79a','#a9d8b8'].forEach((c,i)=>{g.fillStyle=c;g.beginPath();g.arc(x+30+i*24,y+29,7,0,7);g.fill()});
+  g.fillStyle='#ffffff';rr(g,x+w/2-260,y+14,520,30,15);g.fill();
+  const url=st.url??'captionseasy-web-app-r5ri.bolt.host/studio';word(g,url,x+w/2,y+36,fnt(16,500),'#1a1a1a99',1,{al:'c'});
+  // header
+  g.strokeStyle='#1a1a1a14';g.lineWidth=1.5;rr(g,x+28,y+80,w-56,64,18);g.stroke();
+  if(st.logo!==false)logo(g,x+56,y+122,26,1,{al:'l',col:C.ink,w:600});
+  word(g,'Studio',x+w-210,y+120,fnt(18,500),'#1a1a1ab3',1,{al:'r'});
+  g.fillStyle=C.ink;rr(g,x+w-190,y+94,134,38,19);g.fill();word(g,'Start free',x+w-123,y+120,fnt(17,800),C.cream,1,{al:'c'});
+  // body
+  const bo=st.body??1;g.save();g.globalAlpha=bo;
+  word(g,'The Studio',x+w/2,y+236,fnt(46,800),C.ink,1,{al:'c'});
+  word(g,'Drop a video to start captioning. Nothing leaves your device.',x+w/2,y+278,fnt(19,500),'#1a1a1a99',1,{al:'c'});
+  g.restore();
+  const z=st.zone;g.save();
+  g.fillStyle=st.over?`rgba(52,211,153,${.12*st.over})`:'rgba(0,0,0,0)';rr(g,z.x,z.y,z.w,z.h,24);g.fill();
+  g.setLineDash([10,9]);g.lineWidth=2.2;g.strokeStyle=st.over?`rgba(20,150,105,${.5+.5*st.over})`:'#1a1a1a40';rr(g,z.x,z.y,z.w,z.h,24);g.stroke();g.setLineDash([]);g.restore();
+  if(st.zoneUI??1){g.save();g.globalAlpha=st.zoneUI??1;const zx=z.x+z.w/2,zy=z.y+z.h/2;
+    g.strokeStyle='#1a1a1a26';g.lineWidth=1.5;g.beginPath();g.arc(zx,zy-70,30,0,7);g.stroke();
+    g.strokeStyle=C.ink;g.lineWidth=2.4;g.lineCap='round';g.beginPath();g.moveTo(zx,zy-58);g.lineTo(zx,zy-80);g.moveTo(zx-8,zy-72);g.lineTo(zx,zy-80);g.lineTo(zx+8,zy-72);g.stroke();
+    word(g,'Drop a video',zx,zy-4,fnt(24,800),C.ink,1,{al:'c'});word(g,'MP4, MOV, or WebM · up to 5 minutes',zx,zy+28,fnt(16,500),'#1a1a1a8c',1,{al:'c'});
+    g.fillStyle=C.ink;rr(g,zx-72,zy+52,144,44,22);g.fill();word(g,'Choose file',zx,zy+81,fnt(17,800),C.cream,1,{al:'c'});g.restore()}
+  if(st.inner)st.inner(g);
+  g.restore();
+}
+function sC(g,t,lt,d){
+  const l4=L(4),l5=L(5),l6=L(6);
+  // the window rises around the logo, the logo shrinks into its header (the bridge)
+  const rise=out(ph(lt,0,1.1));
+  const dive=ramp(ph(t,l6-.55,1.0));               // into the video, full-bleed
+  const push=1+.06*(lt/d);
+  const win={x:310,y:44+(1-rise)*900,w:1300,h:900};
+  const zone={x:win.x+(win.w-880)/2,y:win.y+316,w:880,h:540};
+  // drag: the clip card flies in on a speed ramp and drops on "video"
+  const dropT=Wd(4,LN[4].length-1).t,dragA=l4-.25;
+  const dp=sramp(ph(t,dragA,dropT-dragA));
+  const card={w:300,h:169};const cs=lerp(1.1,1,dp);
+  const cx0=1790,cy0=1000,cx1=zone.x+zone.w/2,cy1=zone.y+zone.h/2;
+  const ccx=lerp(cx0,cx1,dp),ccy=lerp(cy0,cy1,dp)-Math.sin(dp*Math.PI)*90;
+  const dropped=ph(t,dropT,.55),over=cl(dp*3-1.7)*(1-dropped);
+  // after the drop the card grows into the zone and plays
+  const vid={x:lerp(ccx-card.w/2,zone.x+16,eo(dropped)),y:lerp(ccy-card.h/2,zone.y+16,eo(dropped)),w:lerp(card.w,zone.w-32,eo(dropped)),h:lerp(card.h,zone.h-32-(t>l5?120*eo(ph(t,l5-.2,.6))*(1-dive):0),eo(dropped))};
+  bgLight(g);
+  const fx=zone.x+zone.w/2,fy=zone.y+zone.h/2-40;
+  // the dive: scale so the video fills the frame
+  const vs=Math.max(W/vid.w,H/vid.h)/push,dS=Math.pow(vs,dive);
+  g.save();g.translate(W/2,H/2);g.scale(push*dS,push*dS);g.translate(-lerp(W/2,vid.x+vid.w/2,dive),-lerp(H/2,vid.y+vid.h/2,dive));
+  studio(g,win.x,win.y,win.w,win.h,{zone,over:over+(t>dropT?(1-dropped)*.6:0),zoneUI:1-cl(dropped*2),logo:lt>.6,
+    inner:q=>{
+      if(t<dropT){ // card in flight with the cursor holding it
+        q.save();q.translate(ccx,ccy);q.rotate((1-dp)*.06);q.scale(cs,cs);shadow(q,-card.w/2,-card.h/2,card.w,card.h,.4+.2*(1-dp),.4);q.save();rr(q,-card.w/2,-card.h/2,card.w,card.h,14);q.clip();drawClip(q,'vlog',t,-card.w/2,-card.h/2,card.w,card.h,.45);q.restore();
+        q.fillStyle='rgba(16,22,19,.7)';rr(q,-card.w/2+12,card.h/2-40,120,28,14);q.fill();word(q,'my-vlog.mp4',-card.w/2+72,card.h/2-20,fnt(14,600),C.cream,1,{al:'c'});q.restore();
+      }else{
+        q.save();rr(q,vid.x,vid.y,vid.w,vid.h,lerp(14,18,dropped));q.clip();drawClip(q,'vlog',t,vid.x,vid.y,vid.w,vid.h,.42);
+        // captions write themselves onto the clip, beside her face
+        if(t>l5){const lw=LN[6];captionsOn(q,vid,t,dive)}
+        q.restore();
+        // waveform → words: Whisper listening, on the device
+        const wp=ph(t,l5-.2,.6)*(1-dive);if(wp>0){q.save();q.globalAlpha=eo(wp);const by=zone.y+zone.h-70;
+          for(let i=0;i<64;i++){const lv=vadLevel(t-i*.012)*(0.5+.5*rnd(i)),hh=8+lv*58;const xx=zone.x+40+i*((zone.w-80)/64);q.fillStyle=i/64<ph(t,l5,E(5)-l5+.4)?C.deep:'#1a1a1a33';rr(q,xx,by-hh/2,6,hh,3);q.fill()}
+          // the on-device chip
+          const cp=ph(t,Wd(5,3).t-.1,.5);if(cp>0){q.save();q.translate(vid.x+190,vid.y+44);const k=outBack(cp);q.scale(k,k);q.fillStyle=C.ink;rr(q,-170,-24,340,48,24);q.fill();
+            const done=ph(t,E(5)-.1,.3);q.fillStyle=C.grn;q.beginPath();q.arc(-140,0,9,0,7);q.fill();
+            word(q,done>0?'Transcribed on your device':'Whisper · on your device',12,7,fnt(17,800),C.cream,1,{al:'c'});q.restore()}
+          q.restore()}
+      }
+    }});
+  g.restore();
+  // the iris back into the light, born from the logo
+  const ir=ph(lt,0,.6);if(ir<1){const r=Math.pow(2400,ramp(ir));g.save();g.beginPath();g.rect(0,0,W,H);g.moveTo(W/2+r,H/2+20);g.arc(W/2,H/2+20,r,0,Math.PI*2,true);g.fillStyle=C.lac;g.fill('evenodd');g.restore()}
+  // the logo flies from centre stage into the header (bridge from scene B)
+  const lg=ramp(ph(lt,0,.85));if(lg<1){const hx=lerp(W/2,win.x+56+tw('Captions',fnt(26,600))/2+8,lg),hy=lerp(H/2+60,win.y+122,lg);
+    const sz=lerp(170,26,lg);g.save();g.globalAlpha=1;logo(g,hx,hy,sz,1,{col:lg>.35?C.ink:C.cream})
+    g.restore()}
+  // cursor carries the card, then rests
+  if(t>dragA&&t<dropT+.9&&dive<.05){const cx=lerp(ccx+card.w*.18,ccx+card.w*.18+40,dropped),cy=ccy+card.h*.12+dropped*30;cursor(g,cx*push,cy,cl(1-Math.abs(t-dropT)/.18));ripple(g,ccx,ccy,ph(t,dropT,.5))}
+  // the line under the window: kept short, in porcelain, out of the way of the UI
+  const lines=[[4,1],[5,1]];lines.forEach(([k])=>{const on=t>L(k)-.25&&t<(k===4?L(5)-.35:L(6)-.4);if(!on)return;
+    const ws=LN[k].map((w,i,a)=>({s:w.word,t:w.t-.04,font:i===a.length-1?fnt(62,400,SERIF,1):null,col:i===a.length-1?C.deep:C.gra}));
+    const outp=1-ph(t,k===4?L(5)-.65:L(6)-.7,.3);g.save();g.globalAlpha=outp;g.fillStyle=`rgba(239,244,238,${.0})`;flow(g,ws,W/2,1030,t,{size:52,w:600});g.restore()});
+}
+function vadLevel(t){ // a level from the voice's own word stamps (speech on, gaps off), smooth
+  let v=0;for(const w of WORDS){if(t>w.t-.05&&t<w.end+.05){v=.55+.45*Math.abs(Math.sin(t*23+w.t*7));break}}return v}
+// the captions for "And every word lands, perfectly on time", word-by-word, in the product's jumping box
+function captionsOn(g,vid,t,dive){
+  const ws=LN[6];const groups=[[0,1,2],[3,4],[5,6]];  // ≤3 words a line
+  let gi=0;for(let i=0;i<groups.length;i++)if(t>=ws[groups[i][0]].t-.06)gi=i;
+  if(t<ws[0].t-.06)return;
+  const sz=lerp(26,88,dive)*(vid.w/((W-400))*.9+.1)/(lerp(1,1,dive));
+  const size=Math.max(24,vid.w*.05),xr=vid.x+vid.w*.94,y=vid.y+vid.h*.3;  // up and right of her face, on the wall
+  const items=groups[gi].map(i=>({s:ws[i].word.replace(/[,.]/g,'').toUpperCase(),t:ws[i].t-.03,w:ws[i]}));
+  const font=fnt(size,800);let tot=0;items.forEach((it,k)=>tot+=tw(it.s,font)+(k?size*.3:0));let xx=xr-tot;
+  items.forEach(it=>{const wd=tw(it.s,font);if(t>=it.t){const act=t<it.w.end+.05||it===items.at(-1);const k=spring(t-it.t,13,.5);
+    if(act){g.save();g.translate(xx+wd/2,y-size*.34);g.scale(k,k);g.rotate(-.02);g.fillStyle=C.grn;rr(g,-wd/2-size*.22,-size*.62,wd+size*.44,size*1.1,size*.2);g.fill();g.restore()}
+    word(g,it.s,xx,y,font,act?C.ink:C.cream,ph(t,it.t,.18),{rise:size*.25})}xx+=wd+size*.3});
+  // the timing ruler: every word a block on the clip's timeline, the playhead lands each one
+  const rp=ph(t,ws[0].t-.3,.4);if(rp>0){g.save();g.globalAlpha=eo(rp);const ry=vid.y+vid.h*.86,rx=vid.x+vid.w*.18,rw=vid.w*.64;
+    g.fillStyle='rgba(16,22,19,.55)';rr(g,rx-16,ry-22,rw+32,44,22);g.fill();const t0=ws[0].t-.2,t1=ws.at(-1).end+.3;
+    ws.forEach(w=>{const a=(w.t-t0)/(t1-t0),b=(w.end-t0)/(t1-t0);const lit=t>=w.t;g.fillStyle=lit?C.grn:'rgba(239,244,238,.35)';rr(g,rx+a*rw,ry-8,Math.max(6,(b-a)*rw-6),16,8);g.fill()});
+    const ph_=cl((t-t0)/(t1-t0));g.fillStyle=C.cream;g.fillRect(rx+ph_*rw-1.5,ry-18,3,36);g.restore()}
+}
+
+// ===== D: pick a look / Bold. Soft. Karaoke. Serif. / Export. No watermark. Ever.
+const LOOKS=['Bold','Soft','Karaoke','Serif'];
+function sD(g,t,lt,d){
+  bgLight(g);
+  const l7=L(7),l8=L(8),l9=L(9);
+  // recede: the full-bleed clip shrinks into the phone (match from scene C)
+  const rc=ramp(ph(lt,0,1.0));
+  const pc={x:1260,y:540,h:860};
+  const look=t<Wd(8,0).t-.05?-1:t<Wd(8,1).t-.05?0:t<Wd(8,2).t-.05?1:t<Wd(8,3).t-.05?2:3;
+  const ex=Wd(9,0).t,nw=Wd(9,1).t,ev=Wd(9,3).t;
+  const whip=ph(lt,d-.42,.42);
+  g.save();if(whip>0){g.translate(-ramp(whip)*W*.9,0)}
+  cam(g,lt,d,.045,()=>{
+    if(rc<1){ // full-bleed shrinking
+      const sw=lerp(W,pc.h*.4615*.956,rc),sh=lerp(H,pc.h*.956,rc),sx=lerp(W/2,pc.x,rc),sy=lerp(H/2,pc.y,rc);
+      if(rc>.5)phone(g,pc.x,pc.y,lerp(pc.h*1.4,pc.h,eo((rc-.5)*2)),null,t,{sh:.4*(rc-.5)*2});
+      g.save();rr(g,sx-sw/2,sy-sh/2,sw,sh,lerp(0,pc.h*.11,rc));g.clip();drawClip(g,'vlog',t,sx-sw/2,sy-sh/2,sw,sh,.42);g.restore();
+    }else{
+      phone(g,pc.x,pc.y,pc.h,'vlog',t,{fx:.42,screen:(q,x,y,w,h)=>{
+        // the caption on her video wears the chosen look, above her head on the wall
+        const lk=Math.max(0,look);const since=look<0?t-l7:t-Wd(8,look).t;lookCaption(q,lk,x+w/2,y+h*.2,w,since,t);
+        // a watermark other apps would stamp, then blown away on "No watermark"
+        const wm=ph(t,ex+.25,.35),gone=ph(t,nw,.7);if(wm>0&&gone<1)watermark(q,x,y,w,h,eo(wm),gone);
+      }});
+    }
+    // the look picker rail under the big word
+    const rp=ph(t,l7-.1,.6)*(1-ph(t,ex-.35,.3));if(rp>0){g.save();g.globalAlpha=eo(rp);const rx=210,ry=720,cw=150,gp=12;
+      g.fillStyle='#ffffff';shadow(g,rx-10,ry-10,4*cw+3*gp+20,64+20,.18,.35);rr(g,rx-10,ry-10,4*cw+3*gp+20,84,42);g.fill();
+      const pos=look<0?0:look,prev=Math.max(0,pos-1);const lt8=look<0?0:ph(t,Wd(8,look).t-.08,.32);const th=lerp(prev,pos,look<=0?1:outBack(lt8));
+      g.fillStyle=C.ink;rr(g,rx+th*(cw+gp),ry,cw,64,32);g.fill();
+      LOOKS.forEach((s,i)=>{const on=Math.abs(th-i)<.5;word(g,s,rx+i*(cw+gp)+cw/2,ry+41,fnt(22,800),on?C.cream:C.gra2,1,{al:'c'})});
+      // the cursor clicks each look on its word
+      if(t<ex-.1){const ci=Math.max(0,look);const tx=rx+ci*(cw+gp)+cw*.62,ty=ry+44;const prevx=rx+Math.max(0,ci-1)*(cw+gp)+cw*.62;const mv=look<=0?out(ph(t,l7,.8)):out(ph(t,Wd(8,look).t-.36,.3));
+        const cx=look<0||look===0?lerp(560,tx,mv):lerp(prevx,tx,mv),cy=look<=0?lerp(900,ty,mv):ty;const pr=look<0?0:cl(1-Math.abs(t-(Wd(8,look).t-.06))/.12);cursor(g,cx,cy,pr);if(look>=0)ripple(g,tx,ty,ph(t,Wd(8,look).t-.06,.5))}
+      g.restore()}
+    // the big word: "Pick a look." then each look name in its own look
+    const bx=520,by=520;
+    if(look<0){flow(g,LN[7].map((w,i)=>({s:w.word,t:w.t-.04,font:i===2?fnt(150,400,SERIF,1):null,col:i===2?C.deep:C.gra})),bx,by,t,{size:132,w:800})}
+    else if(t<ex-.15){bigLook(g,look,bx,by,t-Wd(8,look).t,t)}
+    // export
+    if(t>=ex-.15){const btn={x:bx,y:by-40};const bp=ph(t,ex-.15,.4);
+      const prog=eio(ph(t,ex+.15,nw-ex-.1));const fin=ph(t,nw-.05,.3);
+      g.save();g.translate(btn.x,btn.y);const k=outBack(bp)*(1-.06*cl(1-Math.abs(t-ex-.05)/.1));g.scale(k,k);
+      g.fillStyle=C.ink;rr(g,-230,-56,460,112,56);g.fill();
+      if(prog>0&&fin<1){g.fillStyle=C.deep;g.save();rr(g,-230,-56,460,112,56);g.clip();g.fillRect(-230,-56,460*prog,112);g.restore()}
+      if(fin>0){g.fillStyle=C.grn;g.globalAlpha=eo(fin);rr(g,-230,-56,460,112,56);g.fill();g.globalAlpha=1}
+      word(g,fin>.5?'Saved · MP4':'Export MP4',0,16,fnt(44,800),fin>.5?C.ink:C.cream,1,{al:'c'});g.restore();
+      if(t<ex+.4)cursor(g,bx+90,by-20,cl(1-Math.abs(t-ex-.05)/.12)),ripple(g,bx+90,by-20,ph(t,ex+.02,.5));
+      // "No watermark." then "Ever." in the serif
+      const n1=ph(t,nw-.04,.4);if(n1>0)word(g,'No watermark.',bx,by+150,fnt(84,800),C.gra,n1,{al:'c'});
+      const n2=ph(t,ev-.04,.5);if(n2>0){const kk=lerp(1.35,1,outBack(n2));g.save();g.translate(bx,by+300);g.scale(kk,kk);word(g,'Ever.',0,0,fnt(150,400,SERIF,1),C.deep,n2,{al:'c'});g.restore()}
+    }
+  },pc.x-200,H/2);
+  g.restore();
+  if(whip>0){g.fillStyle=C.lac;g.fillRect(W*(1-ramp(whip)),0,W,H)}
+}
+function bigLook(g,i,x,y,lt,t){
+  const s=LOOKS[i],p=ph(lt,-.06,.4);
+  if(i===0){const f=fnt(176,800);const k=lerp(1.3,1,outBack(ph(lt,0,.4)));g.save();g.translate(x,y-60);g.scale(k,k);g.translate(-x,-y+60);word(g,s.toUpperCase(),x,y,f,C.ink,p,{al:'c'});g.restore();return}
+  if(i===1){word(g,s,x,y,fnt(176,600),C.deep,p,{al:'c',glow:'rgba(52,211,153,.7)'});return}
+  if(i===2){const f=fnt(160,800);word(g,s,x,y,f,C.mist,p,{al:'c'});const wd=tw(s,f);const fl=eio(ph(lt,.02,.55));g.save();g.beginPath();g.rect(x-wd/2-10,y-180,(wd+20)*fl,240);g.clip();word(g,s,x,y,f,C.deep,1,{al:'c'});g.restore();return}
+  const k=lerp(1.4,1,outBack(ph(lt,0,.5)));g.save();g.translate(x,y-60);g.scale(k,k);g.translate(-x,-y+60);word(g,s,x,y,fnt(220,400,SERIF,1),C.deep,p,{al:'c'});g.restore();
+}
+function lookCaption(g,i,cx,y,w,since,t){ // "WATCH THIS" on the phone, in the chosen look (the site's own sample)
+  const ws=['WATCH','THIS'],size=w*.13;const st=[0,.18];
+  if(i===3){ws[0]='Watch';ws[1]='this'}
+  const font=i===3?fnt(size*1.25,400,SERIF,1):i===1?fnt(size,600):fnt(size,800);
+  let tot=tw(ws[0],font)+tw(ws[1],font)+size*.3,x=cx-tot/2;
+  ws.forEach((s,k)=>{const p=ph(since,st[k],.25),wd=tw(s,font);
+    if(i===0){const kk=spring(since-st[k],13,.5);if(p>0){g.save();g.translate(x+wd/2,y-size*.34);g.scale(kk,kk);g.fillStyle=k===1?C.grn:'rgba(16,22,19,.0)';rr(g,-wd/2-size*.2,-size*.6,wd+size*.4,size*1.06,size*.18);g.fill();g.restore()}
+      word(g,s,x,y,font,k===1?C.ink:C.cream,p,{rise:size*.3})}
+    else if(i===1)word(g,s,x,y,font,'#ffffff',p,{glow:'rgba(52,211,153,.9)',rise:size*.2});
+    else if(i===2){word(g,s,x,y,font,'rgba(255,255,235,.55)',p,{rise:0});const f=eio(ph(since,st[k]+.05,.35));if(f>0){g.save();g.beginPath();g.rect(x-4,y-size*1.2,(wd+8)*f,size*1.6);g.clip();word(g,s,x,y,font,C.grn,1);g.restore()}}
+    else word(g,s,x,y,font,k===1?C.grn:C.cream,p,{rise:size*.3});
+    x+=wd+size*.3});
+}
+function watermark(g,x,y,w,h,a,gone){ // a pixel-block dissolve carries it away
+  const bs=14,cols=Math.ceil(w/bs),rows=Math.ceil(h*.12/bs);const yy=y+h*.9;
+  g.save();g.translate(x+w/2,yy);g.rotate(-.12);
+  if(gone<=0){g.globalAlpha=a*.55;word(g,'WATERMARK',0,0,fnt(w*.12,800),'#ffffff',1,{al:'c'});g.restore();return}
+  const c=spr('WATERMARK',fnt(w*.12,800),'#ffffff');const cw=c.width,chh=c.height;
+  for(let r=0;r*bs<chh;r++)for(let q=0;q*bs<cw;q++){const k=rnd(q*31+r*7);const lp=cl((gone-k*.6)/.4);if(lp>=1)continue;
+    g.globalAlpha=a*.55*(1-lp);g.drawImage(c,q*bs,r*bs,bs,bs,-c.w/2-c.ox+q*bs+lp*40*(k-.3),-c.oy+r*bs-lp*60*k,bs,bs)}
+  g.restore();
+}
+
+// ===== E: nothing is uploaded, nothing leaves your device (dark, whip in)
+function sE(g,t,lt,d){
+  const up=Wd(10,2).t,lv=Wd(10,4).t;
+  const dome=eo(ph(t,lv-.1,.9));
+  bgDark(g,.18+.35*dome,W/2,610,760);
+  const wi=1-out(ph(lt,0,.55));
+  g.save();g.translate(wi*W*.9,0);
+  cam(g,lt,d,.05,()=>{
+    const lx=W/2,ly=640;
+    // laptop: graphite with a rim of light, her video still on the screen
+    g.fillStyle=C.gra;rr(g,lx-380,ly-250,760,470,26);g.fill();g.strokeStyle='#5f7368';g.lineWidth=2;rr(g,lx-380,ly-250,760,470,26);g.stroke();
+    g.save();rr(g,lx-356,ly-226,712,422,12);g.clip();drawClip(g,'vlog',t,lx-356,ly-226,712,422,.42);
+    g.fillStyle='rgba(16,22,19,.25)';g.fillRect(lx-356,ly-226,712,422);g.restore();
+    const bgrad=g.createLinearGradient(0,ly+220,0,ly+250);bgrad.addColorStop(0,'#5a6b62');bgrad.addColorStop(1,'#2a332e');g.fillStyle=bgrad;rr(g,lx-470,ly+220,940,30,15);g.fill();
+    // the cloud above, outlined, never reached
+    const cp=ph(lt,.3,.6);g.save();g.globalAlpha=.55*eo(cp)*(1-.6*dome);g.strokeStyle=C.fog;g.lineWidth=3;g.setLineDash([12,10]);
+    const cx=lx,cy=130;g.beginPath();g.arc(cx-70,cy+20,46,Math.PI*.6,Math.PI*1.55);g.arc(cx,cy-10,66,Math.PI*1.1,Math.PI*1.95);g.arc(cx+76,cy+22,44,Math.PI*1.45,Math.PI*.4);g.closePath();g.stroke();g.restore();
+    // the upload arrow rises, meets the glass, settles back home
+    const a=ph(t,up-.35,1.3);if(a>0&&a<1){const yy=ly-260-Math.sin(Math.PI*cl(a/.82))*150;const al=a<.9?1:1-(a-.9)/.1;
+      g.save();g.globalAlpha=al;g.strokeStyle=C.grn;g.lineWidth=7;g.lineCap='round';g.beginPath();g.moveTo(lx,yy+40);g.lineTo(lx,yy-30);g.moveTo(lx-22,yy-8);g.lineTo(lx,yy-30);g.lineTo(lx+22,yy-8);g.stroke();g.restore()}
+    // the glass ceiling and then the dome: the device keeps it
+    const gl=ph(t,up-.1,.4);if(gl>0){const hit=ph(t,up+.2,.4);g.save();g.globalAlpha=eo(gl)*(1-dome)*.9;g.strokeStyle=C.cream;g.lineWidth=2+3*(1-hit);g.beginPath();g.moveTo(lx-180*eo(gl),ly-470);g.lineTo(lx+180*eo(gl),ly-470);g.stroke();g.restore()}
+    if(dome>0){g.save();g.strokeStyle=C.grn;g.lineWidth=4;g.globalAlpha=.9;g.beginPath();g.ellipse(lx,ly+236,560,620,0,Math.PI,Math.PI+Math.PI*dome);g.stroke();g.beginPath();g.ellipse(lx,ly+236,560,620,0,Math.PI*2-Math.PI*0,Math.PI*2-Math.PI*dome,true);g.stroke();g.restore()}
+  });
+  g.restore();
+  // words, below the laptop
+  const ws=LN[10].map((w,i)=>({s:w.word,t:w.t-.04,font:i===LN[10].length-1?fnt(70,400,SERIF,1):null,col:i===LN[10].length-1?C.grn:C.cream}));
+  flow(g,ws,W/2+wi*W*.9,1010,t,{size:60,w:600});
+  // white flash on the dome's close, into the light
+  const fl=ph(lt,d-.22,.22);if(fl>0){g.fillStyle=C.por;g.globalAlpha=eio(fl);g.fillRect(0,0,W,H);g.globalAlpha=1}
+}
+
+// ===== F: Free. In your browser.
+function sF(g,t,lt,d){
+  bgLight(g);const fr=Wd(11,0).t,br=Wd(11,1).t;
+  cam(g,lt,d,.05,()=>{
+    const fp=ph(t,fr-.06,.55);const s=Math.pow(2.6,1-eo5(fp));
+    g.save();g.translate(W/2,470);g.scale(s,s);word(g,'Free.',0,0,fnt(300,800),C.ink,fp,{al:'c',rise:0});g.restore();
+    // the browser bar, the URL types itself
+    const bp=ph(t,br-.2,.5);if(bp>0){g.save();g.globalAlpha=eo(bp);const bw=1000,bx=W/2-bw/2,by=650+(1-eo(bp))*30;
+      shadow(g,bx,by,bw,96,.22,.4);g.fillStyle='#ffffff';rr(g,bx,by,bw,96,48);g.fill();
+      g.strokeStyle=C.sage;g.lineWidth=3;g.beginPath();g.arc(bx+58,by+48,13,0,7);g.stroke();g.beginPath();g.moveTo(bx+45,by+48);g.lineTo(bx+71,by+48);g.moveTo(bx+58,by+35);g.bezierCurveTo(bx+50,by+42,bx+50,by+54,bx+58,by+61);g.moveTo(bx+58,by+35);g.bezierCurveTo(bx+66,by+42,bx+66,by+54,bx+58,by+61);g.stroke();
+      const url='captionseasy-web-app-r5ri.bolt.host',n=Math.floor(cl((t-br)/1.0)*url.length);const f=fnt(36,600);word(g,url.slice(0,n),bx+96,by+60,f,C.gra,1);
+      const cw=tw(url.slice(0,n),f);if(Math.floor(t*2.2)%2===0||n<url.length){g.fillStyle=C.deep;g.fillRect(bx+100+cw,by+28,3,42)}
+      g.restore()}
+    const ip=ph(t,br+.15,.5);if(ip>0)word(g,'in your browser',W/2,860,fnt(64,400,SERIF,1),C.deep,ip,{al:'c'});
+  });
+  // the night rises from the bottom as a wall, carrying the end card
+  const wp=ph(lt,d-.5,.5);if(wp>0){g.fillStyle=C.lac;g.fillRect(0,H*(1-ramp(wp)),W,H)}
+}
+
+// ===== G: end card
+function sG(g,t,lt,d){
+  bgDark(g,.45+.15*Math.sin(lt*.8),W/2,H/2+10,760);
+  cam(g,lt,d,.04,()=>{
+    const p=ph(t,Wd(12,0).t-.15,.8);logo(g,W/2,H/2+30,150,p,{p2:ph(t,Wd(12,0).t+.15,.8)});
+    word(g,'Free animated captions · no watermark · on-device',W/2,H/2+130,fnt(30,500),C.fog,ph(t,E(12)+.3,.6),{al:'c'});
+    word(g,'captionseasy-web-app-r5ri.bolt.host',W/2,H-110,fnt(26,600),C.grn,ph(t,E(12)+.7,.6),{al:'c'});
+  });
+}
+
+// ---------- frame(t)
+function frame(t){
+  usedNow.clear();X.setTransform(1,0,0,1,0,0);
+  const i=Math.max(0,S.findIndex(s=>t>=s.a&&t<s.b));const s=S[i===-1?S.length-1:i]||S.at(-1);
+  X.save();s.f(X,t,t-s.a,s.b-s.a);X.restore();
+  // film grain is not used; a faint vignette only
+}
+
+// ---------- sound: voice, a synthesized keynote bed, recorded sfx; every cue reads the same timing
+let ac=null,bus,buf={},vo=null;const CUES=[];
+function cues(){
+  CUES.length=0;const q=(t,n,g=.5,r=1)=>CUES.push({t,n,g,r});
+  WORDS.forEach(w=>{if(w.line!==8&&w.line!==12)q(w.t-.01,'kenney.click',.06,1.6)});         // a tick under every word, barely there
+  const mute=LN[1].at(-1).t;for(let c=0;c<7;c++)for(let r=0;r<2;r++){const j=rnd(c*7+r*3);q(mute-.05+j*.28,'ui.pop',.12,1+j*.3)}
+  q(S[1].a-.42,'woosh-tight',.35);                                    // iris
+  q(Wd(2,2).t,'fs.ui.pop-9',.25);q(Wd(2,4).t,'ui.pop',.35);q(Wd(2,6).t,'fs.impact.soft-hit',.45);
+  q(Wd(3,1).t-1.6,'riser-short',.35);q(Wd(3,1).t,'fs.impact.soft-hit',.6);q(Wd(3,1).t,'tonal.chime',.35);
+  q(S[2].a+.05,'woosh-short',.35);
+  const dropT=Wd(4,LN[4].length-1).t;q(L(4)-.2,'woosh-tight',.25);q(dropT,'fs.foley.water-drop',.5);q(dropT+.02,'kenney.click',.3);
+  q(Wd(5,3).t-.1,'ui.pop',.3);q(E(5)-.1,'tonal.chime',.2,1.25);
+  q(L(6)-.55,'woosh-short',.35);LN[6].forEach(w=>q(w.t,'fs.ui.pop-9',.16,1.2));
+  q(S[3].a+.05,'woosh-tight',.3);
+  [0,1,2,3].forEach(i=>{q(Wd(8,i).t-.06,'kenney.click',.4);q(Wd(8,i).t,'ui.pop',.28,1+i*.12)});
+  q(Wd(9,0).t+.03,'kenney.click',.45);q(Wd(9,1).t-.05,'tonal.chime',.25,1.12);q(Wd(9,1).t,'woosh-short',.25,1.4);q(Wd(9,3).t,'fs.impact.soft-hit',.4);
+  q(S[4].a-.42,'woosh-short',.45,.9);q(Wd(10,2).t-.3,'woosh-tight',.2,1.3);q(Wd(10,2).t+.2,'finger-snap-tight',.3);q(Wd(10,4).t,'tonal.chime',.25,.9);
+  q(S[5].a-.15,'fs.impact.soft-hit',.3,1.2);q(Wd(11,0).t,'fs.impact.soft-hit',.55);
+  const url='captionseasy-web-app-r5ri.bolt.host';for(let i=0;i<url.length;i+=2)q(Wd(11,1).t+i/url.length*1.0,'kenney.click',.12,1.4+rnd(i)*.4);
+  q(S[6].a-.45,'woosh-tight',.3,.8);q(Wd(12,0).t,'tonal.chime',.4);q(Wd(12,0).t,'fs.impact.soft-hit',.35,.8);
+}
+const SFX=['kenney.click','ui.pop','fs.ui.pop-9','woosh-tight','woosh-short','fs.impact.soft-hit','riser-short','tonal.chime','fs.foley.water-drop','finger-snap-tight'];
+const midi=n=>440*Math.pow(2,(n-69)/12);
+const CH=[[50,54,57,61,64],[47,50,54,57,61],[43,47,50,54,57],[45,49,52,59,64]];  // Dmaj9, Bm9, Gmaj9, A6/9
+function notes(){ // a keynote bed: a pad that breathes, a glass arpeggio, a soft pulse; sections follow the story
+  const N=[],bar=2.5,e=.3125;const end=T;
+  for(let b=0;b*bar<end;b+=2){const ch=CH[(b/2)%4],t0=b*bar;const last=t0+bar*2>=S[6].a;
+    ch.forEach((m,k)=>N.push({t:t0,d:last?7:bar*2+.6,f:midi(m),k:'pad',g:.032}));}
+  for(let t=0;t<end;t+=e){const sec=t<L(1)?0:t<S[1].a?1:t<Wd(3,1).t?1:t<S[4].a?2:t<S[5].a?0:t<S[6].a?2:0;if(!sec)continue;
+    const ch=CH[Math.floor(t/5)%4],i=Math.round(t/e);const m=ch[[0,2,4,3,1,3,2,4][i%8]]+12;if(sec===1&&i%2)continue;N.push({t,d:.9,f:midi(m),k:'pluck',g:sec===1?.035:.045})}
+  for(let t=Wd(3,1).t;t<S[6].a;t+=1.25){if(t>S[4].a&&t<S[5].a)continue;N.push({t,d:.4,f:0,k:'kick',g:.32})}
+  N.push({t:S[6].a+.1,d:5,f:midi(38),k:'sub',g:.18});N.push({t:Wd(3,1).t,d:3,f:midi(38),k:'sub',g:.2});
+  return N;
+}
+function playNote(n,when){const g=ac.createGain(),o=ac.createOscillator();o.connect(g);g.connect(bus.mus);
+  if(n.k==='pad'){o.type='triangle';o.frequency.value=n.f;const o2=ac.createOscillator();o2.type='sine';o2.frequency.value=n.f*1.003;o2.connect(g);
+    const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=1100;g.disconnect();g.connect(lp);lp.connect(bus.mus);
+    g.gain.setValueAtTime(0,when);g.gain.linearRampToValueAtTime(n.g,when+1.4);g.gain.setValueAtTime(n.g,when+n.d-1.2);g.gain.linearRampToValueAtTime(0,when+n.d);o2.start(when);o2.stop(when+n.d+.05)}
+  else if(n.k==='pluck'){o.type='sine';o.frequency.value=n.f;g.gain.setValueAtTime(0,when);g.gain.linearRampToValueAtTime(n.g,when+.006);g.gain.exponentialRampToValueAtTime(.0005,when+n.d)}
+  else if(n.k==='kick'){o.type='sine';o.frequency.setValueAtTime(120,when);o.frequency.exponentialRampToValueAtTime(42,when+.14);g.gain.setValueAtTime(n.g,when);g.gain.exponentialRampToValueAtTime(.001,when+n.d)}
+  else {o.type='sine';o.frequency.value=n.f;g.gain.setValueAtTime(0,when);g.gain.linearRampToValueAtTime(n.g,when+.08);g.gain.exponentialRampToValueAtTime(.001,when+n.d)}
+  o.start(when);o.stop(when+n.d+.05)}
+let NOTES=[];
+function graph(){bus={};bus.out=ac.createGain();bus.out.gain.value=.95;const comp=ac.createDynamicsCompressor();comp.threshold.value=-10;comp.ratio.value=8;comp.attack.value=.003;comp.release.value=.2;bus.out.connect(comp);comp.connect(ac.destination);
+  bus.mus=ac.createGain();bus.mus.gain.value=.9;bus.mus.connect(bus.out);bus.sfx=ac.createGain();bus.sfx.gain.value=.8;bus.sfx.connect(bus.out);bus.vo=ac.createGain();bus.vo.gain.value=1;bus.vo.connect(bus.out)}
+let acBase=0,tBase=0;
+function sched(from){if(bus)bus.out.disconnect();graph();const now=ac.currentTime+.05;acBase=now;tBase=from;
+  if(buf.vo){const s=ac.createBufferSource();s.buffer=buf.vo;s.connect(bus.vo);if(from<O)s.start(now+O-from);else s.start(now,from-O)}
+  CUES.forEach(c=>{if(c.t<from-.02||!buf[c.n])return;const s=ac.createBufferSource();s.buffer=buf[c.n];s.playbackRate.value=c.r;const g=ac.createGain();g.gain.value=c.g;s.connect(g);g.connect(bus.sfx);s.start(now+c.t-from)});
+  NOTES.forEach(n=>{if(n.t<from-.01)return;playNote(n,now+n.t-from)});
+}
+// ---------- player
+let playing=false,t=0,last=0,withSound=false;
+const pp=document.getElementById('pp'),sk=document.getElementById('sk'),tm=document.getElementById('tm'),go=document.getElementById('go');
+function syncVideos(t){for(const n of CLIPS){const v=V[n];if(!v)continue;if(usedNow.has(n)&&playing){if(v.paused)v.play().catch(()=>{});const want=clipT(n,t);if(Math.abs(v.currentTime-want)>.35)v.currentTime=want}else if(!v.paused)v.pause()}}
+function loop(n){
+  if(playing){if(withSound&&ac)t=tBase+(ac.currentTime-acBase);else t+=(n-last)/1000;if(t>=T){t=0;if(withSound)sched(0)}}
+  last=n;frame(Math.max(0,t));syncVideos(t);sk.value=Math.round(t/T*1000);tm.textContent=t.toFixed(1)+'s';requestAnimationFrame(loop)}
+pp.onclick=()=>{if(playing){playing=false;pp.textContent='Play';if(ac)ac.suspend()}else{playing=true;pp.textContent='Pause';if(ac){ac.resume();if(withSound)sched(t)}}};
+sk.oninput=()=>{t=sk.value/1000*T;if(withSound&&playing)sched(t)};
+// stills for review: renderAt(t) seeks every clip first, so the frame is exact
+window.renderAt=async t0=>{playing=false;t=t0;frame(t0);const ps=[];for(const n of usedNow){const v=V[n];if(!v)continue;ps.push(new Promise(r=>{const w=clipT(n,t0);if(Math.abs(v.currentTime-w)<.02)return r();v.onseeked=()=>r();v.currentTime=w;setTimeout(r,1500)}))}await Promise.all(ps);frame(t0);return cv.toDataURL('image/jpeg',.82)};
+window.sweep=(fps=20)=>{const errs=[];let worst=0;for(let tt=0;tt<T;tt+=1/fps){const a=performance.now();try{frame(tt)}catch(e){errs.push([tt.toFixed(2),e.message])}worst=Math.max(worst,performance.now()-a)}return {errs:errs.slice(0,10),n:errs.length,worst:+worst.toFixed(1)}};
+async function boot(){
+  const [w]=await Promise.all([fetch('media/words.json').then(r=>r.json()),document.fonts.load(fnt(40,800)),document.fonts.load(fnt(40,600)),document.fonts.load(fnt(40,500)),document.fonts.load(fnt(40,400,SERIF,1))]);
+  WORDS=w.map(x=>({...x,t:x.t+O,end:x.end+O}));LN=[];WORDS.forEach(x=>(LN[x.line]??=[]).push(x));
+  scenes();T=S.at(-1).b;cues();NOTES=notes();
+  await Promise.all(CLIPS.map(async n=>{P[n]=await loadImg('media/'+n+'.jpg');const v=document.createElement('video');v.src='media/'+n+'.mp4';v.muted=true;v.loop=true;v.playsInline=true;v.preload='auto';V[n]=v;await new Promise(r=>{v.oncanplay=r;v.onerror=r;setTimeout(r,4000)})}));
+  // warm every sprite: render the film once at coarse steps
+  for(let tt=0;tt<T;tt+=.25)frame(tt);
+  document.getElementById('ld').textContent='or click anywhere';
+  const q=new URLSearchParams(location.search);
+  if(q.has('t')){t=+q.get('t');go.remove();frame(t);requestAnimationFrame(n=>{last=n;loop(n)});return}
+  go.onclick=async()=>{go.remove();ac=new AudioContext();withSound=true;
+    const dec=async(u)=>{try{return await ac.decodeAudioData(await (await fetch(u)).arrayBuffer())}catch{return null}};
+    buf.vo=await dec('media/vo.wav');await Promise.all(SFX.map(async n=>buf[n]=await dec('media/'+n+'.wav')));
+    playing=true;t=0;sched(0);requestAnimationFrame(n=>{last=n;loop(n)})};
+}
+boot();
+</script></body></html>
