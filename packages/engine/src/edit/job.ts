@@ -23,7 +23,7 @@ import { EDIT, type PlayerEdl } from './lib';
 import { keepTextInFrame, lookText } from './burned';
 import { lookFaces } from './look';
 import { roughEdl } from './rough';
-import { ownerGrade, restoreVideo, useRestored, type Restored } from './restore';
+import { ownerGrade, restoreVideo, useRestored, withFinish, type Restored } from './restore';
 import { romanizeWords } from './romanize';
 import { dropSpans, findTakes } from './takes';
 import { checkAndRepair } from '../review/runner';
@@ -66,6 +66,8 @@ export interface PlanInput {
   voice?: boolean;
   /** start the picture restore for a weak clip (edit/restore.ts; default true) */
   restore?: boolean;
+  /** a later grade the restore folds into its pass (restore.ts withFinish): the Edit type's Edit mastery grade */
+  finish?: string;
   /** cast camera moves, sounds and transitions from the library graph per beat (edit/cast.ts; default true) */
   library?: boolean;
   /** D2.5: cast Style 1 UI cards and Editorial posters into insert frames on the beats that call for one (edit/inserts.ts; default true) */
@@ -378,7 +380,7 @@ export async function planEdit(o: PlanInput): Promise<Planned> {
   // clip is also deblocked, cleaned, upscaled to 1080 and sharpened; edl.json then points at hd.mp4 (the preview's next
   // load and every render). The zoom cap above stays on the original resolution.
   const restore: Promise<Restored | null> = o.restore !== false
-    ? restoreVideo(join(dir, file), join(dir, 'hd.mp4'), { w: source.w, h: source.h, fps: source.fps, duration: pr.duration }, { grade: ownerGrade() ?? undefined })
+    ? restoreVideo(join(dir, file), join(dir, 'hd.mp4'), { w: source.w, h: source.h, fps: source.fps, duration: pr.duration }, { grade: ((g) => g && o.finish ? withFinish(g, o.finish) : g ?? undefined)(ownerGrade()) })
       // a version forked before the pass finished (change/versions.ts) gets the restored picture too
       .then(r => r && patch(() => { useRestored(dir, r); for (const f of forksOf(dir)) { linkInto(dir, f, 'hd.mp4'); useRestored(f, r); } }).then(() => r))
       .then(r => { if (r) { writeFileSync(join(dir, 'restore.json'), JSON.stringify(r, null, 1)); } return r; })

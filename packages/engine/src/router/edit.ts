@@ -14,7 +14,7 @@ import type { FxEvent } from '../edit/effects/plan';
 import { fxLines } from '../edit/effects/auto';
 import { fxMusic } from '../edit/effects/music';
 import { filmMix, renderFilm, useMix } from '../edit/film';
-import { lookFromFootage, prepareClip, renderMasteryFilm, skeletonSpec, worldCutouts, writeSpec } from '../edit/mastery';
+import { lookFromFootage, masteryGrade, prepareClip, renderMasteryFilm, skeletonSpec, worldCutouts, writeSpec } from '../edit/mastery';
 import { directMasterySpec } from '../edit/mastery-direct';
 import { completeCoverage, deviceSequence, directFromMenu, libraryRanks, loadMenu, resolveFootage, resolveMusic, resolveSounds, sentencesOfWords, specFromPicks } from '../edit/mastery-menu';
 import { tierFor } from '../skill-prompt';
@@ -197,7 +197,7 @@ export const editReel: Handler = async ctx => {
   const part = trimSpan(inp.trim);
   const clipPath = part ? await trimmed(u.path, join(dir, '..', `trim-${part.in}-${part.out}${extname(u.name) || '.mp4'}`), part) : u.path;
   const plan = await planEdit({ path: clipPath, dir, name: u.name, signal: ctx.signal, onStage: step, onDone: done, onNote: text => ctx.activity('note', text),
-    ...(M ? { library: false, inserts: false, effects: false, beats: false, moves: [], check: false } : { style: 'auto' }), brief: inp.brief ?? '', requireWords: !NO_WORDS.test(inp.brief ?? ''), ...(inp.caption ? { caption: inp.caption } : {}), ...(inp.names?.length ? { names: inp.names } : {}), asks: inp.brief ?? '', footage: process.env.MOOVI_EDIT_FOOTAGE === 'on' }).finally(() => lines.end());
+    ...(M ? { library: false, inserts: false, effects: false, beats: false, moves: [], check: false, finish: masteryGrade() } : { style: 'auto' }), brief: inp.brief ?? '', requireWords: !NO_WORDS.test(inp.brief ?? ''), ...(inp.caption ? { caption: inp.caption } : {}), ...(inp.names?.length ? { names: inp.names } : {}), asks: inp.brief ?? '', footage: process.env.MOOVI_EDIT_FOOTAGE === 'on' }).finally(() => lines.end());
   void plan.restore.then(r => r && ctx.activity('note', r.restored
     ? `cleaned and upscaled your clip from ${r.from.w}x${r.from.h} to ${r.to.w}x${r.to.h}${r.graded ? ', graded' : ''} (${r.seconds} s)`
     : `graded your clip (${r.seconds} s)`));
