@@ -1,0 +1,261 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Stickman Games cast</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>html,body{margin:0;background:#1d1620}#ph{position:relative;width:960px;height:540px;overflow:hidden}#cv{position:absolute;inset:0;width:960px;height:540px}</style></head>
+<body><div id="ph"><canvas id="cv" width="1920" height="1080"></canvas></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>window.FILM_BAND_ND = 0;</script>
+<script src="../../film-addicted/studio16.js"></script>
+<script src="../../brand/characters/ordinary-odd-rig.js"></script>
+<script src="cast.js"></script>
+<script>
+/* castsheet.html: the STICKMAN GAMES cast sheets.  ?m=all | heads | heads12 | host | tiles   (debug: ?m=cells&ids=a,b,c&shot=full|bust|face)
+   heads = the episode's seven main close-ups (Ordinary, his sister, the host, Freeze, Copycat, Moneybags, Respawn); heads12 = the
+   wider dozen; tiles = the scoreboard face tiles (STICK_CAST.faceTile). The world is light and pastel (the owner, 2026-10-27).
+   Add &scale=2 to supersample (studio16 renders 3840x2160; the sheet downsamples to 1920x1080): the sheets are judged that way.
+   window.seek(t) pure; window.__ready; the 1920x1080 canvas #cv in #ph. window.__info = luma stats of the last frame. */
+(async function () {
+'use strict';
+const QS = new URLSearchParams(location.search), MODE = QS.get('m') || 'all', SC = window.STICK_CAST, C2 = window.CHARACTERS2;
+for (let i = 0; i < 20 && !document.fonts.check('800 40px Rubik'); i++) { await Promise.all(['800 40px Rubik', '900 40px Rubik', '600 20px Rubik', '500 20px Rubik'].map(f => document.fonts.load(f).catch(() => 0))); if (!document.fonts.check('800 40px Rubik')) await new Promise(r => setTimeout(r, 300)); }
+const clamp = (x, a, b) => Math.min(b, Math.max(a, x)), lerp = (a, b, k) => a + (b - a) * k, ss = (a, b, x) => { x = clamp((x - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
+const TAU = Math.PI * 2, V = (x, y, z) => new THREE.Vector3(x, y, z);
+
+// the sheets' stage: aubergine stone (OKLCH h 330, neutrals tinted with it). Every hoodie hue reads on it, and a back rim light keeps
+// the black heads off it. The lime stays the host's alone (his podium ring is the only lime in any frame).
+const T = {}; [[100, .9, .012], [200, .8, .018], [300, .7, .024], [400, .6, .03], [500, .5, .034], [600, .41, .034], [700, .33, .03], [800, .25, .025], [900, .17, .018]].forEach(([k, L, c]) => T['AB' + k] = SC.oklch(L, c, 330));
+T.BONE = SC.RAMPS.bone[50]; T.PG = SC.oklch(.955, .014, 330); T.BAND = SC.oklch(.985, .006, 330); Object.assign(window.FILM_TOK, T);
+const glc = document.createElement('canvas');
+const ST = makeStudio(THREE, null, { canvas: glc, stone: false, fov: 22, near: 10, far: 30000, bg: 'AB800', envDark: 'AB700', shadowTint: 'AB900', hiTint: 'AB100', vigTint: 'AB900' });
+ST.scene.environment = (() => { const es = new THREE.Scene(), L = h => new THREE.Color(h).convertSRGBToLinear();
+  es.add(new THREE.Mesh(new THREE.SphereGeometry(50, 32, 16), new THREE.MeshBasicMaterial({ color: L('#7d7380'), side: THREE.BackSide })));
+  const pane = (w, h, c, k, q) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: L(c).multiplyScalar(k), side: THREE.DoubleSide })); m.position.set(q[0], q[1], q[2]); m.lookAt(0, 0, 0); es.add(m); };
+  pane(16, 12, '#fff6ee', 2.4, [-22, 30, 14]); pane(6, 30, '#f2f4ff', 2.2, [30, 6, -6]); pane(96, 44, '#e6d9ef', .55, [0, -30, 18]); pane(14, 14, '#fbeff4', .9, [26, 10, 26]); pane(40, 8, '#ffffff', .6, [0, 34, -10]);
+  return new THREE.PMREMGenerator(ST.R).fromScene(es, .03).texture; })();
+const SS = ST.W / 1920, S = ST.scene, env = S.environment, lin = ST.lin, out = document.getElementById('cv'), cx = out.getContext('2d');
+ST.grade.blacks.value = .0; ST.grade.shadows.value = .2; ST.grade.whites.value = -.14; ST.grade.contrast.value = .16; ST.post.grain = .06; ST.post.expo = .86; ST.grade.uClar.value = .1; ST.setAperture(0);
+const key = ST.key; key.distance = 0; key.decay = 0; key.angle = .62; key.penumbra = .75; key.color = lin('#fff2e4'); key.intensity = 2.1;
+key.shadow.mapSize.set(4096, 4096); key.shadow.bias = -.0002; key.shadow.normalBias = .9; key.shadow.radius = 10;
+ST.rim.color = lin('#ffffff'); ST.rim.intensity = 2.4; ST.hemi.color = lin('#fffaf6'); ST.hemi.groundColor = lin('#f1d6cc'); ST.hemi.intensity = .72;
+const bounce = new THREE.PointLight(lin('#eadff2'), 0, 0, 0); S.add(bounce);   // the warm bounce under a face
+const fillL = new THREE.DirectionalLight(lin('#f4eef8'), .45); S.add(fillL);
+const sculpt = C2.sculpt(THREE, S); fillL.intensity = .25;
+const K = SC.kit(THREE);
+
+// ---------- set pieces ----------
+function cyc(R, H, cz, a0, a1, cols) {   // floor curving up into the wall, vertex-graded
+  const g = new THREE.BufferGeometry(), pos = [], col = [], idx = [], NA = 96, prof = [];
+  for (let i = 0; i <= 6; i++) prof.push([lerp(R - 900, R - 260, i / 6), 0]);
+  for (let i = 1; i <= 14; i++) { const a = i / 14 * Math.PI / 2; prof.push([R - 260 + Math.sin(a) * 260, 260 - Math.cos(a) * 260]); }
+  for (let i = 1; i <= 12; i++) prof.push([R, 260 + i / 12 * (H - 260)]);
+  const [cF, cW, cT] = (cols || ['AB600', 'AB700', 'AB900']).map(k => lin(k));
+  prof.forEach(([r, y]) => { for (let i = 0; i <= NA; i++) { const a = lerp(a0, a1, i / NA); pos.push(Math.sin(a) * r, y, cz + Math.cos(a) * r);
+    const c = cF.clone().lerp(cW, ss(0, 320, y)).lerp(cT, ss(450, H, y)); col.push(c.r, c.g, c.b); } });
+  for (let j = 0; j < prof.length - 1; j++) for (let i = 0; i < NA; i++) { const a = j * (NA + 1) + i, b = a + 1, c = a + NA + 1, d = c + 1; idx.push(a, c, b, b, c, d); }
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); g.setIndex(idx); g.computeVertexNormals();
+  const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .9, envMap: env, envMapIntensity: .3, side: THREE.DoubleSide, normalMap: K.plasterN, normalScale: new THREE.Vector2(.3, .3) });
+  const mesh = new THREE.Mesh(g, m); mesh.receiveShadow = true; return mesh;
+}
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(20000, 20000), new THREE.MeshPhysicalMaterial({ color: lin('AB600'), roughness: .55, clearcoat: .5, clearcoatRoughness: .35, envMap: env, envMapIntensity: .45 }));
+floor.rotation.x = -Math.PI / 2; floor.position.y = -.2; floor.receiveShadow = true; S.add(floor);
+const radialTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d'), r = g.createRadialGradient(128, 128, 0, 128, 128, 128);
+  r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(.45, 'rgba(255,255,255,.45)'); r.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = r; g.fillRect(0, 0, 256, 256); return new THREE.CanvasTexture(c); })();
+function glowCard(col, w, h, op) { return new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: radialTex, color: lin(col), transparent: true, opacity: op == null ? 1 : op, depthWrite: false })); }
+
+// ---------- helpers ----------
+const headC = rig => { rig.root.updateMatrixWorld(true); return rig.joints.face.localToWorld(V(0, rig.spec.headR - 2, 0)); };
+function rstats() { const d = cx.getImageData(0, 0, 1920, 1080).data; let s = 0, cr = 0, cl = 0, n = 0; for (let i = 0; i < d.length; i += 16) { const l = .2126 * d[i] + .7152 * d[i + 1] + .0722 * d[i + 2]; s += l; n++; if (l < 10) cr++; if (l > 250) cl++; }
+  return { mean: +(s / n).toFixed(1), crushed: +(cr / n * 100).toFixed(2), clipped: +(cl / n * 100).toFixed(2) }; }
+function label(txt, x, y, o) { o = o || {}; cx.save(); cx.font = o.font || '600 18px Rubik'; cx.fillStyle = o.col || '#f3efe8'; cx.textAlign = o.align || 'left'; cx.textBaseline = 'alphabetic'; if (o.track) cx.letterSpacing = o.track + 'px'; cx.fillText(txt, x, y); cx.restore(); }
+// a card: the render (1920-space source rect, scaled by the supersample) over a caption band that never covers the subject
+function card(sx, sy, sw, sh, dx, dy, dw, dh, band, title, sub) {
+  cx.save(); cx.shadowColor = 'rgba(70,40,70,.14)'; cx.shadowBlur = 18; cx.shadowOffsetY = 4; cx.fillStyle = T.BAND; cx.beginPath(); cx.roundRect(dx, dy, dw, dh, 16); cx.fill(); cx.restore();
+  cx.save(); cx.beginPath(); cx.roundRect(dx, dy, dw, dh, 16); cx.clip();
+  cx.drawImage(glc, sx * SS, sy * SS, sw * SS, sh * SS, dx, dy, dw, dh - band);
+  cx.restore();
+  label(title, dx + 18, dy + dh - band + 28, { font: '800 21px Rubik', track: 1.2, col: T.AB900 });
+  label(sub, dx + 18, dy + dh - 12, { font: '500 14px Rubik', col: T.AB600 });
+}
+function plate(n) {   // a stadium seat-number plate: dark enamel, bone numerals
+  const c = document.createElement('canvas'); c.width = 256; c.height = 128; const g = c.getContext('2d');
+  g.fillStyle = T.AB900; g.beginPath(); g.roundRect(6, 6, 244, 116, 26); g.fill(); g.strokeStyle = 'rgba(255,250,240,.35)'; g.lineWidth = 4; g.stroke();
+  g.fillStyle = '#f2ece2'; g.font = '800 84px Rubik'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(String(n).padStart(2, '0'), 128, 70);
+  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8;
+  return new THREE.Mesh(new THREE.PlaneGeometry(26, 13), new THREE.MeshStandardMaterial({ map: t, roughness: .4, envMap: env, envMapIntensity: .5 }));
+}
+const famTone = (e, step) => { if (e.fam === 'chrome') return { 200: '#e6e2f2', 400: '#5d4d86', 600: '#3a3446', 700: '#24212b', 800: '#18161d', 900: '#0f0e12' }[step]; if (e.id === 'host') return { 200: '#d9e9b0', 400: '#6a5a6d', 600: '#3f3242', 700: '#33293a', 800: '#251d28', 900: '#17121a' }[step]; if (e.fam === 'cobalt') return { 200: '#a9b9e3', 400: '#5f7bbd', 600: '#36559c', 700: '#2a447f', 800: '#1f3263', 900: '#141f40' }[step]; const R = SC.RAMPS[e.fam] || SC.RAMPS.graphite; return R[step]; };
+
+// =============================== modes ===============================
+let frame;
+if (MODE === 'all') {
+  // the stand: five curved tiers concave toward the camera; rows staggered so every body shows. Front row: the ten headliners;
+  // row two centre: the story's two leads, Copycat (29) and Ordinary (50), side by side; then 19-28, 30-39, 40-49.
+  const CZ = 1250, H0 = 26, HT = 84, DT = 112, ROWS = 5, PER = 10, R0 = CZ, A = .5, CAMZ = 1760;
+  const by = {}; SC.list.forEach(e => by[e.number] = e);
+  const order = [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [11, 12, 13, 14, 29, 50, 15, 16, 17, 18], [19, 20, 21, 22, 23, 24, 25, 26, 27, 28], [30, 31, 32, 33, 34, 35, 36, 37, 38, 39], [40, 41, 42, 43, 44, 45, 46, 47, 48, 49]];
+  S.add(cyc(CZ + ROWS * DT + 900, 1700, CZ, Math.PI - 1.15, Math.PI + 1.15, ['AB200', 'AB200', 'AB400'])); floor.material.color = lin('AB200');
+  const stoneTop = new THREE.MeshPhysicalMaterial({ color: lin('AB100'), roughness: .45, clearcoat: .45, clearcoatRoughness: .3, envMap: env, envMapIntensity: .55, normalMap: K.plasterN, normalScale: new THREE.Vector2(.35, .35) });
+  const stoneRiser = new THREE.MeshPhysicalMaterial({ color: lin('AB300'), roughness: .6, envMap: env, envMapIntensity: .45, normalMap: K.plasterN, normalScale: new THREE.Vector2(.5, .5), side: THREE.DoubleSide });
+  const led = new THREE.MeshBasicMaterial({ color: lin('#ffeed6').multiplyScalar(1.7), toneMapped: false });
+  const nosing = new THREE.MeshPhysicalMaterial({ color: lin('AB200'), roughness: .25, clearcoat: .9, clearcoatRoughness: .15, envMap: env, envMapIntensity: .9, side: THREE.DoubleSide });
+  const stage = new THREE.Group(); stage.position.z = CZ; S.add(stage);
+  for (let r = 0; r < ROWS; r++) {
+    const rin = R0 + r * DT - DT / 2 - (r === 0 ? 40 : 0), rout = R0 + r * DT + DT / 2 + (r === ROWS - 1 ? 90 : 0), y1 = H0 + r * HT, y0 = r ? H0 + (r - 1) * HT : 0, a0 = Math.PI - A - .06 - r * .01, al = 2 * (A + .06 + r * .01);
+    { const m = new THREE.Mesh(new THREE.LatheGeometry([new THREE.Vector2(rout, y1), new THREE.Vector2(rin, y1)], 160, a0, al), stoneTop); m.receiveShadow = m.castShadow = true; stage.add(m); }
+    { const m = new THREE.Mesh(new THREE.LatheGeometry([new THREE.Vector2(rin, y1), new THREE.Vector2(rin, y0)], 160, a0, al), stoneRiser); m.receiveShadow = m.castShadow = true; stage.add(m); }
+    stage.add(new THREE.Mesh(new THREE.LatheGeometry([new THREE.Vector2(rin - .5, y1 - 3.6), new THREE.Vector2(rin - .5, y1 - 1.2)], 160, a0, al), led));
+    { const m = new THREE.Mesh(new THREE.LatheGeometry([new THREE.Vector2(rin + .2, y1 + .05), new THREE.Vector2(rin + 7, y1 + .05)], 160, a0, al), nosing); m.receiveShadow = true; stage.add(m); }
+    [a0, a0 + al].forEach(a => { const cap = new THREE.Mesh(new THREE.PlaneGeometry(rout - rin, y1), stoneRiser); cap.position.set(Math.sin(a) * (rin + rout) / 2, y1 / 2, Math.cos(a) * (rin + rout) / 2); cap.rotation.y = a + Math.PI / 2; stage.add(cap); });
+  }
+  // stadium cues: a pool of light on the back wall, a ribbon of stadium lamps behind the top row, two floodlight rigs with beams
+  const WALLZ = CZ - (CZ + ROWS * DT + 900);
+  const pool = glowCard('#ffffff', 3600, 1300, .7); pool.position.set(0, 520, WALLZ + 6); S.add(pool);
+  { const n = 70, R = CZ + ROWS * DT + 880, lampM = new THREE.MeshBasicMaterial({ color: lin('#ffe9c8').multiplyScalar(2), toneMapped: false }), haloM = new THREE.SpriteMaterial({ map: radialTex, color: lin('#ffd9a0'), transparent: true, opacity: .55, depthWrite: false, toneMapped: false });
+    const band = new THREE.Mesh(new THREE.LatheGeometry([new THREE.Vector2(R, 760), new THREE.Vector2(R, 700)], 160, Math.PI - 1.0, 2.0), new THREE.MeshStandardMaterial({ color: lin('AB500'), roughness: .5, side: THREE.DoubleSide, envMap: env, envMapIntensity: .4 })); band.position.z = CZ; S.add(band);
+    for (let i = 0; i < n; i++) { const a = Math.PI - 1.0 + (i + .5) / n * 2.0, p = V(Math.sin(a) * (R - 3), 730, CZ + Math.cos(a) * (R - 3));
+      const l = new THREE.Mesh(new THREE.CircleGeometry(6, 16), lampM); l.position.copy(p); l.lookAt(0, 730, CZ); S.add(l); const h = new THREE.Sprite(haloM); h.scale.setScalar(70); h.position.copy(p); S.add(h); } }
+  [-1, 1].forEach(s => { const rig = new THREE.Group(); rig.position.set(s * 1350, 1180, WALLZ + 520); rig.lookAt(s * 300, 200, 300); S.add(rig);
+    const frm = new THREE.Mesh(new THREE.BoxGeometry(300, 170, 26), new THREE.MeshStandardMaterial({ color: lin('AB900'), roughness: .5, envMap: env, envMapIntensity: .5 })); rig.add(frm);
+    const lm = new THREE.MeshBasicMaterial({ color: lin('#fff4e2').multiplyScalar(2.4), toneMapped: false });
+    for (let i = 0; i < 4; i++) for (let j = 0; j < 2; j++) { const d = new THREE.Mesh(new THREE.CircleGeometry(26, 28), lm); d.position.set(-105 + i * 70, -38 + j * 76, 14); rig.add(d); }
+    const beam = new THREE.Mesh(new THREE.CylinderGeometry(80, 520, 2600, 40, 1, true), new THREE.MeshBasicMaterial({ color: lin('#ffe9cc'), transparent: true, opacity: .045, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    beam.rotation.x = -Math.PI / 2; beam.position.z = 1300; rig.add(beam); });
+  // the cast
+  const actors = [];
+  order.forEach((row, r) => row.forEach((num, j) => {
+    const e = by[num], R = R0 + r * DT - (r === 0 ? 46 : 0), sp = .1 * (R0 / CAMZ) * (CAMZ + r * DT) / R, a = Math.PI - (j - 4.5 + (r % 2 ? .5 : 0) - .25) * sp;
+    const Ac = SC.make(THREE, e.id, { env }); Ac.rig.contact.visible = true;
+    const p = V(Math.sin(a) * R, H0 + r * HT, CZ + Math.cos(a) * R); Ac.rig.root.position.copy(p); S.add(Ac.rig.root); if (Ac.fx.overlay) S.add(Ac.fx.overlay);
+    const pl = plate(e.number); pl.position.set(Math.sin(a) * (R - DT / 2 - .8 - (r === 0 ? 0 : 0)), H0 + r * HT - 10, CZ + Math.cos(a) * (R - DT / 2 - .8)); pl.rotation.y = a + Math.PI; S.add(pl);
+    actors.push(Object.assign(Ac, { p, i: num, r })); }));
+  const A_ = id => actors.find(x => x.entry.id === id);
+  A_('countdown').fx.watch([{ rig: A_('ordinary').rig, secs: null }, { rig: A_('pulse').rig, secs: 7 }, { rig: A_('dash').rig, secs: 21 }, { rig: A_('giant').rig, secs: 4 }, { rig: A_('reflex').rig, secs: 220 }, { rig: A_('brain').rig, secs: 495 }]);
+  const camP = V(0, 330, CAMZ), camL = V(0, 236, -150);
+  ST.post.expo = .74; ST.grade.contrast.value = .24; ST.grade.shadows.value = .1; ST.hemi.intensity = .5; ST.rim.intensity = 2.8; key.intensity = 1.8;
+  key.position.set(-500, 2500, 2400); key.target.position.set(0, 160, -200); key.shadow.camera.near = 1600; key.shadow.camera.far = 5800;
+  ST.rim.position.set(300, 1600, -1500); fillL.position.set(900, 300, 900);
+  frame = t => {
+    actors.forEach(Ac => { Ac.rig.root.rotation.y = Math.atan2(camP.x - Ac.p.x, camP.z - Ac.p.z) + (Ac.entry.id === 'turbo' ? .5 : Ac.entry.id === 'dash' ? .35 : 0);
+      Ac.fx.pose(t); Ac.fx.update(t, 1, { camera: ST.camera }); Ac.rig.setBlink(C2.blink(t, Ac.i * .7)); Ac.rig.lookAt(camP, .12); });
+    ST.camera.fov = 24.6; ST.camera.updateProjectionMatrix(); ST.lookAt(camP.toArray(), camL.toArray()); ST.setFocus(2000); sculpt.update(V(0, 200, -200), camP, 0, 0);
+    ST.render(t); cx.drawImage(glc, 0, 0, 1920, 1080);
+    label('STICKMAN GAMES', 44, 66, { font: '900 40px Rubik', col: T.AB900, track: 1.5 });
+    label('THE 50  ·  FRONT ROW: THE TEN HEADLINERS  ·  ROW TWO, CENTRE: COPYCAT 29 AND ORDINARY 50', 46, 94, { font: '600 15px Rubik', col: T.AB700, track: 2 });
+    return rstats();
+  };
+} else if (MODE === 'heads' || MODE === 'heads12' || MODE === 'cells') {
+  const ids = MODE === 'heads' ? ['ordinary', 'sister', 'host', 'freeze', 'copycat', 'moneybags', 'respawn']
+    : MODE === 'heads12' ? ['ordinary', 'host', 'reflex', 'copycat', 'countdown', 'freeze', 'brain', 'moneybags', 'pulse', 'dash', 'giant', 'respawn'] : (QS.get('ids') || 'reflex').split(',');
+  const shot = QS.get('shot') || (MODE === 'cells' ? 'full' : 'bust');
+  const cycM = cyc(1400, 1600, 900, Math.PI - 1.3, Math.PI + 1.3, ['#ffffff', '#f6f6f6', '#d6d6d6']); S.add(cycM);
+  const backGlow = glowCard('#ffffff', 560, 460, .42); S.add(backGlow);
+  const actors = ids.map((id, i) => { const Ac = id === 'host' ? SC.makeHost(THREE, { env }) : id === 'sister' ? SC.makeSister(THREE, { env }) : SC.make(THREE, id, { env });
+    if (Ac.fx.gate) Ac.fx.gate(1); Ac.rig.contact.visible = !Ac.bed; Ac.top = Ac.bed || Ac.rig.root; S.add(Ac.top); if (Ac.fx.overlay) S.add(Ac.fx.overlay); return Object.assign(Ac, { i }); });
+  const by = {}; actors.forEach(Ac => by[Ac.entry.id] = Ac);
+  const cd = by.countdown;
+  if (cd && !by.pulse) { const p2 = SC.make(THREE, 'pulse', { env }); p2.rig.contact.visible = true; p2.top = p2.rig.root; S.add(p2.top); actors.push(Object.assign(p2, { i: 99, extra: true })); }
+  const pulseA = actors.find(a => a.entry.id === 'pulse');
+  if (cd) cd.fx.watch([{ rig: pulseA.rig, secs: 7 }]);
+  // each card's pastel field: a hue that sets the outfit off by value and by colour
+  const CARD = { ordinary: ['orange', .87], sister: ['gamboge', .89], host: ['dioxazine', .84], freeze: ['prussian', .76], copycat: ['dioxazine', .74], moneybags: ['rose', .86], respawn: ['gamboge', .87] };
+  const cardTone = (e, dL) => SC.fieldOf(e.id, dL);
+  // what each close-up must hold besides the face: the hand or prop that carries the power
+  const HOLD = { ordinary: ['chest', 'handL', 'handR'], host: ['handR', 'handL'], reflex: ['handL', 'handR', 'echo'], copycat: ['tipR'], freeze: ['tipR', 'handR'], brain: ['handL', 'handR'], moneybags: ['chest', 'sack'], pulse: ['chest'],
+    dash: ['handR', 'handL'], giant: ['handL', 'handR'], respawn: ['handL', 'flag'], sister: ['handR', 'lap'] };
+  const keyPts = Ac => { const r = Ac.rig, J = r.joints, w = (o, x, y, z) => o.localToWorld(V(x, y, z)), out = []; Ac.top.updateMatrixWorld(true);
+    (HOLD[Ac.entry.id] || []).forEach(k => { if (k === 'chest') out.push(w(J.torso, 0, 14, 8)); else if (k === 'handL' || k === 'handR') out.push(w(r.hands[k[4]].hand, 0, -4, 0));
+      else if (k === 'tipR') out.push(w(r.fingers.R[1][2], 0, -5, 0)); else if (k === 'echo') out.push(w(r.root, -26, 100, -18)); else if (k === 'sack') out.push(w(r.hands.R.hand, 0, -4, 0).add(V(0, -30, 0)));
+      else if (k === 'flag') out.push(w(r.hands.L.hand, 0, -4, 0).add(V(16, 62 * r.root.scale.x, 0))); else if (k === 'lap') { out.push(w(Ac.bed, 0, 64, 6), w(Ac.bed, -40, 72, -60), w(Ac.bed, 30, 60, 10)); } });
+    return out; };
+  const n = ids.length, M = 22, G = 16, BAND = 58, rowsSpec = n === 7 ? [4, 3] : null, cols = n <= 4 ? n : n <= 12 ? 4 : 5, rows = rowsSpec ? rowsSpec.length : Math.ceil(n / cols);
+  const ch = (1080 - 2 * M - (rows - 1) * G) / rows;
+  const slot = ci => { if (rowsSpec) { const r = ci < rowsSpec[0] ? 0 : 1, c = r ? ci - rowsSpec[0] : ci, k = rowsSpec[r], w = (1920 - 2 * M - (k - 1) * G) / k; return { x: M + c * (w + G), y: M + r * (ch + G), w }; }
+    const w = (1920 - 2 * M - (cols - 1) * G) / cols; return { x: M + (ci % cols) * (w + G), y: M + Math.floor(ci / cols) * (ch + G), w }; };
+  key.position.set(-260, 420, 520); key.target.position.set(0, 80, 0); key.shadow.camera.near = 200; key.shadow.camera.far = 1600; key.angle = .5; key.intensity = 1.9; key.shadow.bias = -.0009; key.shadow.normalBias = 1.6;
+  ST.rim.position.set(260, 300, -420); fillL.position.set(400, 120, 300);
+  frame = t => {
+    cx.fillStyle = T.PG; cx.fillRect(0, 0, 1920, 1080);
+    actors.forEach((Ac, ci) => {
+      if (Ac.extra) return; actors.forEach(B => { B.top.visible = B === Ac; if (B.fx.overlay) B.fx.overlay.visible = B === Ac; });
+      const e = Ac.entry, R = Ac.rig;
+      if (Ac.bed) { Ac.bed.position.set(0, 0, 0); Ac.bed.rotation.y = .62; } else { R.root.position.set(0, 0, 0); R.root.rotation.y = .3; }
+      cycM.material.color = lin(cardTone(e)); floor.material.color = lin(cardTone(e, -.05)); ST.rim.color = lin('#ffffff'); ST.rim.intensity = 2.5;
+      if (Ac === cd) { const P2 = pulseA; P2.top.visible = true; P2.rig.root.position.set(96, 0, -120); P2.rig.root.rotation.y = -.35; P2.fx.pose(t); P2.fx.update(t, 1); P2.rig.setBlink(0); P2.rig.lookAt(V(0, 110, 0), .3); }
+      Ac.fx.pose(t); Ac.fx.update(t, 1, { camera: ST.camera }); R.setBlink(0);
+      const sl = slot(ci), hc = headC(R), sc = R.root.scale.x * (Ac.bed ? 1 : 1), aspect = sl.w / (ch - BAND);
+      let camP, look, fov = 25;
+      if (shot === 'bust') {   // fit the face and its power into the card, a quarter turn off the nose
+        const hr = R.spec.headR * sc, yaw = (Ac.bed ? Ac.bed.rotation.y - .15 : R.root.rotation.y) + .32, dir = V(Math.sin(yaw), .1, Math.cos(yaw)).normalize(), up = V(0, 1, 0), right = new THREE.Vector3().crossVectors(up, dir).normalize(), up2 = new THREE.Vector3().crossVectors(dir, right);
+        const pts = [hc.clone().addScaledVector(up, hr * 1.42), hc.clone().addScaledVector(up, -hr * 1.75), hc.clone().addScaledVector(right, hr * 1.15), hc.clone().addScaledVector(right, -hr * 1.15)].concat(keyPts(Ac));
+        if (e.id === 'giant') pts.push(hc.clone().addScaledVector(up, hr * 1.9)); if (e.id === 'countdown') { const ph = headC(pulseA.rig); pts.push(ph.clone().add(V(0, pulseA.rig.spec.headR * 2.4, 0)), ph.clone().add(V(0, -pulseA.rig.spec.headR * 1.4, 0))); }
+        let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9; const c0 = hc.clone(); pts.forEach(p => { const q = p.clone().sub(c0), x = q.dot(right), y = q.dot(up2); x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); });
+        const ctr = c0.clone().addScaledVector(right, (x0 + x1) / 2).addScaledVector(up2, (y0 + y1) / 2), tv = Math.tan(fov * Math.PI / 360), d = Math.max((y1 - y0) / 2 / tv, (x1 - x0) / 2 / (tv * aspect)) * 1.2 + hr;
+        camP = ctr.clone().addScaledVector(dir, d); look = ctr; }
+      else if (shot === 'face') { camP = V(hc.x + 20, hc.y + 40, hc.z + 120); look = V(hc.x, hc.y + 4, hc.z); fov = 24; }
+      else { camP = V(30, 82 * sc, 430 * sc + 30); look = V(0, 64 * sc, 0); fov = 24; }
+      backGlow.position.set(hc.x - 30, hc.y + 6, hc.z - 170); backGlow.lookAt(camP); backGlow.material.color = lin('#ffffff');
+      { const tw = camP.clone().sub(hc).setY(0).normalize(), side = new THREE.Vector3().crossVectors(V(0, 1, 0), tw).normalize(); bounce.position.copy(hc).addScaledVector(tw, R.spec.headR * sc * 2.4).addScaledVector(side, R.spec.headR * sc * 1.6).add(V(0, -R.spec.headR * sc * 1.9, 0)); bounce.intensity = .3; }
+      R.lookAt(camP, .2);
+      ST.camera.fov = fov; ST.camera.updateProjectionMatrix(); ST.lookAt(camP.toArray(), look.toArray()); ST.setFocus(camP.distanceTo(hc));
+      sculpt.update(hc, camP, 1.5, .02); ST.render(t);
+      const sh = Math.min(1080, 1920 / aspect), sw = sh * aspect;
+      card((1920 - sw) / 2, (1080 - sh) / 2, sw, sh, sl.x, sl.y, sl.w, ch, BAND, (e.number ? String(e.number).padStart(2, '0') + '  ' : '') + e.name.toUpperCase(), e.power);
+    });
+    bounce.intensity = 0;
+    return rstats();
+  };
+} else if (MODE === 'tiles') {   // the scoreboard: every face tile (two shown fallen), plus the host
+  const sz = 152, G = 12, cols = 10, ids = SC.list.map(e => e.id), fallen = new Set(['giant', 'dash']);
+  const tiles = ids.map(id => SC.faceTile(THREE, id, { size: 300, lit: !fallen.has(id) })), hostT = SC.faceTile(THREE, 'host', { size: 300 }), sisT = SC.faceTile(THREE, 'sister', { size: 300 });
+  frame = () => {
+    cx.fillStyle = T.PG; cx.fillRect(0, 0, 1920, 1080);
+    label('STICKMAN GAMES  \u00b7  THE SCOREBOARD FACES', 44, 62, { font: '900 30px Rubik', col: T.AB900, track: 1.4 });
+    const x0 = 40, y0 = 92;
+    tiles.forEach((c, i) => { const x = x0 + (i % cols) * (sz + G), y = y0 + Math.floor(i / cols) * (sz + G + 18);
+      cx.save(); cx.beginPath(); cx.roundRect(x, y, sz, sz, 12); cx.clip(); cx.drawImage(c, x, y, sz, sz); cx.restore();
+      label(String(i + 1).padStart(2, '0') + '  ' + SC.list[i].name.toUpperCase(), x + 4, y + sz + 15, { font: '700 11px Rubik', col: T.AB700, track: .6 }); });
+    const hx = 1696, hy = 92; cx.save(); cx.beginPath(); cx.roundRect(hx, hy, 190, 190, 16); cx.clip(); cx.drawImage(hostT, hx, hy, 190, 190); cx.restore();
+    label('THE HOST', hx + 4, hy + 212, { font: '800 16px Rubik', col: T.AB900, track: 1 });
+    cx.save(); cx.beginPath(); cx.roundRect(hx, hy + 250, 190, 190, 16); cx.clip(); cx.drawImage(sisT, hx, hy + 250, 190, 190); cx.restore();
+    label('HIS SISTER', hx + 4, hy + 462, { font: '800 16px Rubik', col: T.AB900, track: 1 });
+    cx.save(); cx.beginPath(); cx.roundRect(hx, hy + 520, 42, 42, 8); cx.clip(); cx.drawImage(tiles[21], hx, hy + 520, 42, 42); cx.restore(); label('OUT OF THE GAME', hx + 52, hy + 546, { font: '700 12px Rubik', col: T.AB700, track: .8 });
+    return rstats();
+  };
+} else if (MODE === 'host') {
+  S.add(cyc(1400, 1600, 900, Math.PI - 1.3, Math.PI + 1.3, [SC.pastel('dioxazine', .86, 1.1), SC.pastel('dioxazine', .84, 1.1), SC.pastel('dioxazine', .7, 1)])); floor.material.color = lin(SC.pastel('dioxazine', .82, 1));
+  const H = SC.makeHost(THREE, { env }); H.rig.contact.visible = true; S.add(H.rig.root);
+  const pool = glowCard('#ffffff', 900, 700, .45); pool.position.set(0, 160, -480); S.add(pool);
+  // his podium: the end card's disc as a stage, the one lime in the frame on its rim
+  const disc = new THREE.Mesh(new THREE.CylinderGeometry(70, 74, 8, 96), new THREE.MeshPhysicalMaterial({ color: lin('AB300'), roughness: .3, clearcoat: .7, envMap: env, envMapIntensity: .6 })); disc.position.y = 4; disc.receiveShadow = disc.castShadow = true; S.add(disc);
+  const rimL = new THREE.Mesh(new THREE.TorusGeometry(72, 1.1, 10, 128), new THREE.MeshBasicMaterial({ color: lin(SC.LIME).multiplyScalar(1.3), toneMapped: false })); rimL.rotation.x = Math.PI / 2; rimL.position.y = 8; S.add(rimL);
+  key.position.set(-300, 520, 560); key.target.position.set(0, 90, 0); key.shadow.camera.near = 200; key.shadow.camera.far = 1800; key.angle = .45;
+  ST.rim.position.set(320, 340, -420); fillL.position.set(420, 140, 300);
+  const EXPR = [['happy', 'DELIGHTED', 'welcome to Stickman Games', -.3], ['smug', 'KNOWING', 'a billion dollars, still in the vault', .5], ['determined', 'SERIOUS', 'the floor opens if you leave the circle', .05]];
+  frame = t => {
+    cx.fillStyle = T.PG; cx.fillRect(0, 0, 1920, 1080);
+    const R = H.rig; R.root.position.set(0, 8, 0); bounce.intensity = .3; bounce.position.copy(headC(R)).add(V(20, -50, 60));
+    [[0, 'THE HOST  ·  FRONT'], [-.95, 'THE HOST  ·  THREE-QUARTER']].forEach(([ry, name], i) => {
+      R.root.rotation.y = ry; H.fx.pose(t); H.fx.update(t, 1); R.setBlink(0);
+      const camP = V(14, 112, 520), look = V(14, 84, 0); R.lookAt(i ? V(-260, 150, 420) : camP, .25);
+      ST.camera.fov = 25; ST.camera.updateProjectionMatrix(); ST.lookAt(camP.toArray(), look.toArray()); ST.setFocus(560);
+      sculpt.update(headC(R), camP, 1.3, .06); ST.render(t);
+      const x = 22 + i * 640, w = 626, h = 1036, sh = 1080 * .98, sw = sh * w / (h - 56);
+      card((1920 - sw) / 2, (1080 - sh) / 2, sw, sh, x, 22, w, h, 56, name, 'the channel mascot in a lime suit: he runs the games and never plays');
+    });
+    EXPR.forEach(([ex, name, sub, ry], i) => {
+      R.root.rotation.y = ry; H.fx.pose(t + i * 1.3); R.setExpression(ex, 1); R.setFace({ mouthOpen: .04 }); R.setBlink(0); R.joints.head.rotation.z += [.12, -.1, .05][i];
+      const hc = headC(R), camP = V(hc.x + 30, hc.y + 8, hc.z + 290), look = V(hc.x, hc.y - 2, hc.z); R.lookAt(camP, .3); bounce.position.copy(hc).add(V(40, -50, 70)); bounce.intensity = .4;
+      ST.camera.fov = 25; ST.camera.updateProjectionMatrix(); ST.lookAt(camP.toArray(), look.toArray()); ST.setFocus(210);
+      sculpt.update(hc, camP, 1.4, .06); ST.render(t);
+      const x = 1302, w = 596, h = 330, y = 22 + i * (h + 23), sh = 1080 * .62, sw = sh * w / (h - 58);
+      card((1920 - sw) / 2, (1080 - sh) / 2 - 40, sw, sh, x, y, w, h, 58, name, sub);
+    });
+    return rstats();
+  };
+}
+window.seek = t => { window.__info = Object.assign({ mode: MODE, t }, frame(t || 0)); return window.__info; };
+window.seek(0);
+window.__ready = true;
+})().catch(e => { console.error(e); document.title = 'ERR ' + e.message; window.__err = String(e.stack || e); window.seek = () => (window.__info = { error: window.__err }); window.__ready = true; });
+</script></body></html>
