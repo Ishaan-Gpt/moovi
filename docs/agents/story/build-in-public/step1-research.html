@@ -1,0 +1,112 @@
+<title>Stickman Film Plan</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;700&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column; the step rail first (where we are), then the evidence, then the decisions. */
+:root{
+  --bg:#EEF2EC; --panel:#F7F9F5; --ink:#1E2A23; --muted:#56655B; --rule:#CBD6CD; --moss:#3E6B52; --marigold:#C98A1E; --mark:#E6EFE4;
+  --f-display:"Familjen Grotesk","Segoe UI",system-ui,sans-serif; --f-body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif; --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#121915;--panel:#18211C;--ink:#E4ECE5;--muted:#9AABA0;--rule:#2C3A31;--moss:#7FB394;--marigold:#E3AC4C;--mark:#1F2C24;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#121915;--panel:#18211C;--ink:#E4ECE5;--muted:#9AABA0;--rule:#2C3A31;--moss:#7FB394;--marigold:#E3AC4C;--mark:#1F2C24;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 var(--f-body);padding-block:36px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:44px}
+h1{font:700 clamp(30px,5.5vw,44px)/1.08 var(--f-display);margin:0 0 12px;letter-spacing:-.015em;text-wrap:balance}
+h2{font:700 22px/1.2 var(--f-display);margin:0 0 6px;text-wrap:balance}
+p{margin:0}
+.lede{color:var(--muted);max-width:64ch}
+.sub{color:var(--muted);font-size:15px;max-width:66ch;margin-bottom:16px}
+.steps{list-style:none;margin:20px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.steps li{border:1px solid var(--rule);border-radius:6px;padding:10px 12px;background:var(--panel);font-size:14px;min-width:0}
+.steps b{display:block;font:600 12px var(--f-mono);color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.steps .done{border-color:var(--moss)} .steps .done b{color:var(--moss)}
+.steps .now{border:2px solid var(--marigold)} .steps .now b{color:var(--marigold)}
+.wide{overflow-x:auto;border:1px solid var(--rule);border-radius:6px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:680px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font:600 12px var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+td.n{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.hit td{background:var(--mark)}
+.x{font-weight:700;color:var(--moss)}
+.titles{display:flex;flex-direction:column;gap:10px}
+.t{border:1px solid var(--rule);border-radius:6px;padding:14px 16px;background:var(--panel)}
+.t.pick{border:2px solid var(--moss)}
+.t q{font:700 19px/1.3 var(--f-display);quotes:none;display:block}
+.t span{display:block;color:var(--muted);font-size:14px;margin-top:4px}
+.tag{font:600 11px var(--f-mono);color:var(--moss);text-transform:uppercase;letter-spacing:.05em}
+ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px}
+.ask li{max-width:70ch}
+.ask b{font-family:var(--f-display)}
+.time{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+</style>
+<main>
+<header>
+  <h1>Your first long form: 3D stickmen, made with Claude</h1>
+  <p class="lede">Step 1 is done: the reference is decoded and the niche is measured. Every later step gets its own preview link like this one, and nothing is built past a step until you say yes.</p>
+  <ol class="steps">
+    <li class="done"><b>1 · done</b>Research, why, title</li>
+    <li class="now"><b>2 · next</b>Script and voice samples</li>
+    <li><b>3</b>Look options, live</li>
+    <li><b>4</b>The real one-hour stickman short</li>
+    <li><b>5</b>Rough cut of the long form</li>
+    <li><b>6</b>Final film and upload pack</li>
+  </ol>
+</header>
+
+<section>
+  <h2>Who is breaking out in this niche</h2>
+  <p class="sub">From 12 YouTube searches (191 videos), I checked the top 40 for upload date and channel size. "× subs" is views divided by subscribers: a high number means a small channel broke out. Shaded rows are the small-channel breakouts.</p>
+  <div class="wide"><table>
+    <thead><tr><th>Views</th><th>Age</th><th>Subs</th><th>× subs</th><th>Channel</th><th>Title</th></tr></thead>
+    <tbody>
+      <tr class="hit"><td class="n">226,539</td><td class="n">2 d</td><td class="n">6,190</td><td class="n x">36.6</td><td>Mr omi</td><td>How to Make Viral Animated Shorts Using Claude (Full Workflow)</td></tr>
+      <tr class="hit"><td class="n">255,992</td><td class="n">20 d</td><td class="n">5,220</td><td class="n x">49.0</td><td>Tyler Mommsen</td><td>How To Create Insane Motion Graphics With Opus 5.5</td></tr>
+      <tr class="hit"><td class="n">726,394</td><td class="n">35 d</td><td class="n">30,300</td><td class="n x">24.0</td><td>Lukas Margerie</td><td>How to Make Insane Motion Graphics With Opus 5.5</td></tr>
+      <tr class="hit"><td class="n">328,900</td><td class="n">32 d</td><td class="n">14,600</td><td class="n x">22.5</td><td>RandomAI</td><td>Claude Opus 5.5 Is INSANE at Motion Graphics</td></tr>
+      <tr><td class="n">185,490</td><td class="n">10 d</td><td class="n">26,400</td><td class="n">7.0</td><td>The AI Blueprint</td><td>Claude + Google Vids = Full Stickman Animations on Autopilot</td></tr>
+      <tr><td class="n">516,416</td><td class="n">21 d</td><td class="n">84,100</td><td class="n">6.1</td><td>Mark Ai Guy</td><td>How to Create Stickman Animation with AI 100% FREE</td></tr>
+      <tr><td class="n">183,326</td><td class="n">8 d</td><td class="n">71,000</td><td class="n">2.6</td><td>Jacksons AI</td><td>FREE &amp; UNLIMITED: Opus 5.5 Can Make Viral Stick Animations FREE FOREVER</td></tr>
+    </tbody>
+  </table></div>
+  <p class="sub" style="margin-top:14px">Two hot topics meet here: making animation with Claude, and free stickman animation. Nobody in the list makes <b>3D</b> stickmen with Claude, and you already have a 3D cast of 50.</p>
+</section>
+
+<section>
+  <h2>Why the reference worked</h2>
+  <ul>
+    <li>Proof in the first five seconds: a 29M-view Short beside "that's mine".</li>
+    <li>The promise names the failure: "what went wrong and how I fixed it".</li>
+    <li>A number every 10-20 seconds, and two tips worded as rules people quote.</li>
+    <li>It falls apart at 57% ("it looked cheap"), then climbs back with a team of 12 agents.</li>
+    <li>It corrects itself on camera ("some of our own notes were wrong").</li>
+    <li>A free GitHub skill against a $67-a-month rival; it ends on the next video, already working.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Title options</h2>
+  <p class="sub">All use the shape the breakouts share. Pick one, or change the words.</p>
+  <div class="titles">
+    <div class="t pick"><span class="tag">My pick</span><q>How to Make Viral 3D Stickman Animations With Claude (Free Full Workflow)</q><span>Joins both hot topics, adds "3D" (the gap), and keeps "Free" and "Full Workflow".</span></div>
+    <div class="t"><q>How to Make Viral Animated Videos With Claude for FREE (Full Workflow)</q><span>Your words; the broadest search match, with less of your own edge.</span></div>
+    <div class="t"><q>I Gave Claude 1 Hour to Make a 3D Stickman Film (Free Full Workflow)</q><span>A challenge title with a clock; stronger story, weaker search.</span></div>
+  </div>
+  <p class="sub" style="margin-top:12px">One honest catch on "free": three.js, ffmpeg, the free voices and the skill cost nothing, but Claude Code needs a Claude plan. The video says so plainly.</p>
+</section>
+
+<section>
+  <h2>The film, in one line</h2>
+  <p class="lede">Proof first: your 3D stickman short with a clock that stops at its real time. Then the workflow: measure 20 references, the rulebook that grows from your corrections, the one-hour build with a blind judge per scene, the moment it nearly broke, and the free <span style="font-family:var(--f-mono)">ishaan-3d-stickmen</span> skill. About 10 minutes, 16:9, and every frame made in code.</p>
+</section>
+
+<section class="ask">
+  <h2>Three answers I need before step 2</h2>
+  <ul>
+    <li><b>Title:</b> my pick, or another one above.</li>
+    <li><b>Voice:</b> Brian or Andrew (free), your own voice reading my script, or ElevenLabs if you add credits. In step 2 I'll send samples of the free ones reading the cold open.</li>
+    <li><b>The free skill on GitHub:</b> make it public at github.com/Ishaan-Gpt/ishaan-3d-stickmen (MIT) once it is checked, or keep it private.</li>
+  </ul>
+  <p class="sub" style="margin-top:14px">Time, honestly: <span class="time">about 8.5-10 h</span> over 1-2 days, because a 10-minute film needs a new screen kit. The stickman short inside it is the real one-hour run.</p>
+</section>
+</main>
