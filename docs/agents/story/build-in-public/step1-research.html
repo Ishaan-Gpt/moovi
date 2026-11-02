@@ -55,17 +55,37 @@ ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px}
 <main>
 <header>
   <h1>How to Make Viral 3D Stickman Animations With Claude</h1>
-  <p class="lede">Title 1 is locked. Step 2 is here: the first full script and the Fish Audio voice shortlist. This same link updates at every step, and nothing is built past a step until you say yes.</p>
+  <p class="lede">Title 1 is locked and the voice is Ethan on Fish Audio. Step 4 is here: the real timed run made a finished stickman short. This same link updates at every step, and nothing is built past a step until you say yes.</p>
   <ol class="steps">
     <li class="done"><b>1 · done</b>Research, why, title</li>
-    <li class="now"><b>2 · now</b>Script and voice</li>
-    <li><b>3</b>Look options, live</li>
-    <li><b>4</b>The real one-hour stickman short</li>
+    <li class="done"><b>2 · done</b>Script and voice</li>
+    <li class="done"><b>3 · done</b>Look: the series look, reused</li>
+    <li class="now"><b>4 · now</b>The real one-hour stickman short</li>
     <li><b>5</b>Rough cut of the long form</li>
     <li><b>6</b>Final film and upload pack</li>
   </ol>
 </header>
 
+
+<section>
+  <h2>Step 4 · The real one-hour run: "The Stillest Man Alive"</h2>
+  <p class="sub">A 48-second stickman short made from scratch on your laptop: idea, script, Fish voice (Ethan), 15 shots on the Stickman kit, sound from the series engine, export, two blind judges and one fix round. <b>47 minutes of wall time, by the machine clock.</b> It is fast, but it is <b>not 8/10</b>: the blind judges scored it 5.17 and then 5.0 after the fix round. Shown here as a plateau, not as finished.</p>
+  <video controls preload="metadata" poster="short/poster.jpg" src="short/stillest-man-alive-720p.mp4" style="width:100%;border-radius:6px;border:1px solid var(--rule);background:#000"></video>
+  <div class="wide" style="margin-top:14px"><table>
+    <thead><tr><th>Stage</th><th>Estimate</th><th>Actual</th><th>What happened</th></tr></thead>
+    <tbody>
+      <tr><td>Preflight + kit read</td><td class="n">6 min</td><td class="n">1 min</td><td>The gate refused to start: disk at 7.7 GB, RAM at 1.1 GB, and a Blender render from another session holding the GPU. Script and voice went first.</td></tr>
+      <tr><td>Script, Fish voice, word times</td><td class="n">8 min</td><td class="n">7 min</td><td>One re-voice: a line said the clock read 59 while the on-screen clock already had.</td></tr>
+      <tr><td>Shots on the Stickman kit</td><td class="n">20 min</td><td class="n">7 min</td><td>4 check renders and one fix to framing and a pose.</td></tr>
+      <tr><td>Sound + export v1</td><td class="n">12 min</td><td class="n">9 min</td><td>The series sound engine mixed in 9 s. The re-export reused 4 of 5 chunks (90 s instead of 416).</td></tr>
+      <tr><td>Blind judge 1</td><td class="n">6 min</td><td class="n">3 min</td><td><b>5.17/10.</b> The rule's proof faller fell before Turbo, who "lasted less than a second". Running, the swat and Reflex's fall didn't read, and the payoff was shot from behind.</td></tr>
+      <tr><td>Fix round (one only)</td><td class="n">15 min</td><td class="n">11 min</td><td>Turbo became the proof faller, with a replay; a new voice take; eight shot fixes; two bugs of my own.</td></tr>
+      <tr><td>Export v2</td><td class="n">9 min</td><td class="n">7 min</td><td>All chunks changed, because the new voice moved every shot.</td></tr>
+      <tr><td>Blind judge 2</td><td class="n">5 min</td><td class="n">2 min</td><td><b>5.0/10: a plateau.</b> The replay with no marker read as Turbo falling twice. His legs and the swat still don't read: the kit can't do those actions yet.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="sub" style="margin-top:12px"><b>What this taught (now ishaan-motion 1.17.72):</b> the hour works for everything the kit has already proven: world, light, clock, falls, captions, voice, sound, export. It breaks on beats that need new actions. So a one-hour film casts every beat from the kit's proven actions, and any new action gets its own kit day first. That is also the honest "fall" for the long form.</p>
+</section>
 <section>
   <h2>Step 2 · The script, draft 1</h2>
   <p class="sub">Written in author's English: joined, flowing sentences with the feeling inside them. Every number traces to a log in the repo (sources in SCRIPT-v1.md). The marigold slots get filled from the real one-hour run in step 4, and nothing in them is guessed.</p>
@@ -102,12 +122,14 @@ ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px}
     <div class="v"><a href="https://fish.audio/m/906b8b47c30d4ba2a7f1287773e8a3ed/">Verity</a><small>A young, bright, conversational male voice (2.2M uses on its twin). Playful, and a little like an assistant.</small></div>
     <div class="v"><a href="https://fish.audio/m/638893dc81e241c79356f02ea1ed28f6/">Calm Narrator</a><small>A measured, professional male voice. The safest choice, and the least personality.</small></div>
   </div>
-  <p class="sub" style="margin-top:14px">Fish Audio's best model, S2.1 Pro, has a free version on its API, but every call needs an API key, and creating that account is yours to do. Two options:</p>
-  <ul>
-    <li><b>Free model</b> (<span style="font-family:var(--f-mono)">s2.1-pro-free</span>): $0, under a fair-use policy. Fish says "some commercial scenarios may have restrictions", and a monetised channel may count.</li>
-    <li><b>Paid model</b> (<span style="font-family:var(--f-mono)">s2.1-pro</span>): $15 per million characters, so this whole script costs about <b>$0.15</b> per voice take. The same quality, and the safer choice for a monetised channel. It needs a card on the account.</li>
-  </ul>
-  <p class="sub" style="margin-top:10px"><b>What I need from you:</b> create a key at fish.audio (Developers, then API keys), put it in the Moovi repo's <span style="font-family:var(--f-mono)">.env.local</span> as <span style="font-family:var(--f-mono)">FISH_API_KEY=...</span>, and tell me which voice and which model. I'll then post four voice takes of the cold open here, and the full read once you pick one.</p>
+  <p class="sub" style="margin-top:14px"><b>Going with Ethan on the free model</b> (your call: the channel is not monetised). Here is the cold open in all four voices, levelled to the same loudness so none wins just by being louder. All four transcribe cleanly. The "fifty-eight minutes" is only a stand-in until the real run.</p>
+  <div class="voices">
+    <div class="v pick"><span class="tag">Chosen</span><b>Ethan</b><small>3.3 words a second</small><audio controls preload="none" src="voice/ethan.mp3" style="width:100%"></audio></div>
+    <div class="v"><b>Alex</b><small>3.3 words a second</small><audio controls preload="none" src="voice/alex.mp3" style="width:100%"></audio></div>
+    <div class="v"><b>Verity</b><small>3.7 words a second</small><audio controls preload="none" src="voice/verity.mp3" style="width:100%"></audio></div>
+    <div class="v"><b>Calm Narrator</b><small>3.0 words a second</small><audio controls preload="none" src="voice/calm.mp3" style="width:100%"></audio></div>
+  </div>
+  <p class="sub" style="margin-top:10px">To switch voices, just name one. Next on this page: the stickman short's look options, then the real one-hour run.</p>
 </section>
 
 <section>

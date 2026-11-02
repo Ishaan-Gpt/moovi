@@ -1,0 +1,15 @@
+{
+ "dur": 48.15,
+ "measuredFirstPass": {
+  "input_i": "-11.68",
+  "input_tp": "4.52",
+  "input_lra": "4.10",
+  "input_thresh": "-22.37",
+  "output_i": "-14.04",
+  "output_tp": "-1.20",
+  "output_lra": "3.10",
+  "output_thresh": "-24.57",
+  "normalization_type": "dynamic",
+  "target_offset": "0.04"
+ }
+}

@@ -1,0 +1,256 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>The Stillest Man Alive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Lilita+One&family=Baloo+2:wght@700;800&family=Rubik:ital,wght@0,600;0,700;0,800;0,900;1,900&display=swap" rel="stylesheet">
+<style>html,body{margin:0;background:#2a5242}#ph{position:relative;width:960px;height:540px;overflow:hidden}#cv{position:absolute;inset:0;width:960px;height:540px}
+#play{position:absolute;left:12px;bottom:12px;font:700 15px Rubik,sans-serif;padding:8px 16px;border-radius:20px;border:0;background:#F7EDE0;color:#1F3D31;cursor:pointer}</style></head>
+<body><div id="ph"><canvas id="cv" width="1920" height="1080"></canvas></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="../../ai-disappeared/stick-games/kit/studio-kit.js"></script>
+<script src="../../ai-disappeared/stick-games/kit/palettes.js"></script>
+<script src="../../ai-disappeared/brand/characters/ordinary-odd-rig.js"></script>
+<script src="../../ai-disappeared/stick-games/kit/set-arena.js"></script>
+<script src="../../ai-disappeared/stick-games/kit/set-sky.js" onerror="0"></script>
+<script src="../../ai-disappeared/stick-games/kit/prize.js" onerror="0"></script>
+<script src="../../ai-disappeared/stick-games/kit/graphics.js" onerror="0"></script>
+<script src="../../ai-disappeared/stick-games/kit/cast.js"></script>
+<script src="timing.js"></script>
+<script>
+/* short.html: "The Stillest Man Alive", the stickman short made inside the one-hour run (build-in-public long form, 2026-11-03).
+   Built on the Stickman Games kit (arena, sky, cast, studio grade) and the cold-open page's camera helpers (ep1/cold/cold3.html).
+   One rule, one visible danger: while the clock runs nobody moves; anyone who twitches drops through their gold circle.
+   Shots, cut on words (timing.js, word index):
+     A  0    the fifty in their circles, a crane down            B  5    #50 (Ordinary) looks up: "the only player..."
+     C  19   the clock on the crest starts                        D  28   the rule proven: Pulse twitches, his circle drops him
+     E  41   Turbo can't stop running, close                      F  58   Turbo's floor opens under his running feet
+     G  72   Reflex, smug, arms crossed                           H  86   a fly lands on Reflex's nose
+     I  93   the swat, then his circle opens                      J  103  one by one the circles open (high wide)
+     K  109  #50 alone among the holes, low behind               L  123  #50 close: a slow blink, a small smile
+     M  137  pull out: one man standing, forty-nine open holes
+   The story clock ticks one second per second from 7.4 s on the film clock, and is only seen in C and J.
+   ?t= &embed=1 &nocap=1 &shot=E */
+window.__errs = []; window.addEventListener('error', e => window.__errs.push(String(e.message) + ' @' + (e.filename || '').split('/').pop() + ':' + e.lineno));
+(async function () { try {
+'use strict';
+window.FILM_BAND_ND = 0;
+const QS = new URLSearchParams(location.search), TM = window.SHORT, DUR = TM.dur;
+const P = JSON.parse(JSON.stringify(window.SG_PALETTES.D || window.SG_PALETTES.C)); Object.assign(window.FILM_TOK, window.SG_CONST, P.tok);
+const FONTS = ['700 60px Fredoka', '800 60px Rubik', '900 60px Rubik', '400 60px "Lilita One"', '800 60px "Baloo 2"'];
+for (let k = 0; k < 14 && !FONTS.every(f => document.fonts.check(f)); k++) { await Promise.all(FONTS.map(f => document.fonts.load(f).catch(() => 0))); if (!FONTS.every(f => document.fonts.check(f))) await new Promise(r => setTimeout(r, 400)); }
+if (window.SG_GFX && window.SG_GFX.ready) await window.SG_GFX.ready().catch(() => 0);
+const clamp = (x, a, b) => Math.min(b, Math.max(a, x)), lerp = (a, b, k) => a + (b - a) * k;
+const eio = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2, eout = x => 1 - Math.pow(1 - clamp(x, 0, 1), 3);
+const V = (x, y, z) => new THREE.Vector3(x, y, z), D2R = Math.PI / 180, at = (r, deg, y) => V(r * Math.cos(deg * D2R), y, r * Math.sin(deg * D2R));
+const WT = i => TM.words[i].t;
+const hash = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+
+// ---------- the studio, the arena, the sky ----------
+const glc = document.createElement('canvas');
+const ST = makeStudio(THREE, null, { canvas: glc, stone: false, fov: 32, near: 5, far: 400000, bg: P.sky.hor, envDark: 'NT600', shadowTint: P.shadowTint, hiTint: P.hiTint, vigTint: 'NT900' });
+ST.key.intensity = 0; ST.key.castShadow = false; ST.stoneSpot.intensity = 0; ST.rim.intensity = 0; ST.hemi.intensity = 0;
+const S = ST.scene, cam = ST.camera, lin = ST.lin;
+const A = makeArena(ST, P);
+const SKY = window.makeSky ? window.makeSky(ST, A, P, { landmark: false }) : null;
+const C2 = window.CHARACTERS2, SC = window.STICK_CAST;
+const sculpt = C2.sculpt(THREE, S);
+const fill = new THREE.PointLight(lin('#fff6ea'), 0, 900, 1.4); S.add(fill);
+window.SG_UNIFORM = { style: 'jersey', base: '#EFDAC2', dark: '#D9C2A6', light: '#F7EDE0', green: '#244A3A', greenDark: '#1A3529', num: '#2A5242', shoe: '#F1E8DC', headK: 1.22 };
+
+// ---------- the cast: the featured three, #50, and the other headliners ----------
+const ADD = []; const shadowed = r => r.traverse(m => { if (m.isMesh && m.material) { m.castShadow = !m.material.transparent; m.receiveShadow = true; } });
+function cast(id) { const a = SC.make(THREE, id, { env: A.env }); shadowed(a.rig.root); S.add(a.rig.root); if (a.fx.overlay) S.add(a.fx.overlay); a.id = id; ADD.push(a); return a; }
+const HEAD = ['reflex', 'turbo', 'clockwork', 'countdown', 'brain', 'moneybags', 'lonely', 'dash', 'freeze', 'pulse'];
+const CA = {}; HEAD.forEach(id => CA[id] = cast(id)); CA.ordinary = cast('ordinary');
+const SPOT = { reflex: 0, turbo: 1, clockwork: 2, countdown: 3, brain: 4, moneybags: 5, lonely: 6, dash: 7, freeze: 8, pulse: 9, ordinary: 49 };
+const headOf = rig => { rig.root.updateMatrixWorld(true); return rig.joints.face.localToWorld(V(0, rig.spec.headR - 2, 0)); };
+const cw = i => A.circle(i).world();
+
+// when each circle drops its player (film seconds); #50 never drops
+const DROP = {}; DROP[SPOT.turbo] = WT(35); DROP[SPOT.reflex] = WT(103);
+const TURBO_LIVE = WT(35), TURBO_REPLAY = WT(64);   // the rule's proof is Turbo; E-F replay his drop on 'opened'
+const J0 = WT(106) - .1, J1 = WT(112) - .6;   // the one-by-one wave, everyone else
+for (let i = 0; i < 49; i++) if (DROP[i] == null) DROP[i] = lerp(J0, J1, (i * 37 % 49) / 48) + hash(i) * .12;
+const OPEN_T = .28;                           // the leaves swing open, then the fall starts
+const opened = (i, t) => DROP[i] == null ? 0 : clamp((t - DROP[i]) / OPEN_T, 0, 1);
+const fallY = (i, t) => { const u = t - DROP[i] - OPEN_T * .55; return u <= 0 ? 0 : -.5 * 1600 * u * u; };
+
+function stand(a, i, face, t, k) { const c = cw(i); a.fx.pose(t); a.rig.root.position.copy(c); a.rig.root.rotation.set(0, Math.atan2(face.x - c.x, face.z - c.z), 0);
+  const y = DROP[i] != null ? fallY(i, t) : 0; a.rig.root.position.y += y; a.rig.root.visible = y > -150;   // gone once the head passes the floor: no bodies seen in the shafts
+  a.fx.update(t, k == null ? 1 : k, { camera: cam }); a.rig.setBlink(C2.blink(t, i % 5));
+  if (y < 0) { const J = a.rig.joints, s = clamp(-y / 120, 0, 1); J.armL.rotation.z = lerp(J.armL.rotation.z, 2.5, s); J.armR.rotation.z = lerp(J.armR.rotation.z, -2.5, s); a.rig.setExpression('surprised', 1); } }
+
+// the rest of the fifty: instanced stand-ins in the jersey; each one hides as its circle drops it
+const crowd = new THREE.Group(); S.add(crowd); const CROWD = [];
+{ const U = window.SG_UNIFORM, M = (c, o) => new THREE.MeshPhysicalMaterial(Object.assign({ color: lin(c), roughness: .8, envMap: A.env, envMapIntensity: .5 }, o || {}));
+  const mU = M(U.base), mG = M(U.green), mK = M('#141215', { roughness: .45, clearcoat: .4 }), mH = M('#151316', { roughness: .5, clearcoat: .45, envMapIntensity: .4 }), mE = M('#fbf9f4', { roughness: .3, clearcoat: .8 }), mS = M(U.shoe);
+  const parts = [[new THREE.CylinderGeometry(2.6, 2.4, 30, 8), mK, [-6.5, 15, 0]], [new THREE.CylinderGeometry(2.6, 2.4, 30, 8), mK, [6.5, 15, 0]],
+    [new THREE.CylinderGeometry(8, 7.2, 20, 12), mG, [-7, 36, 0]], [new THREE.CylinderGeometry(8, 7.2, 20, 12), mG, [7, 36, 0]],
+    [new THREE.CylinderGeometry(14.5, 16, 34, 16), mU, [0, 62, 0]], [new THREE.CylinderGeometry(4.8, 4.4, 16, 8), mG, [-19.5, 70, 0]], [new THREE.CylinderGeometry(4.8, 4.4, 16, 8), mG, [19.5, 70, 0]],
+    [new THREE.CylinderGeometry(3, 2.8, 22, 8), mK, [-20, 52, 0]], [new THREE.CylinderGeometry(3, 2.8, 22, 8), mK, [20, 52, 0]],
+    [new THREE.SphereGeometry(7, 12, 8).scale(1, .7, 1.5), mS, [-6.5, 2.5, 3]], [new THREE.SphereGeometry(7, 12, 8).scale(1, .7, 1.5), mS, [6.5, 2.5, 3]],
+    [new THREE.SphereGeometry(29, 22, 16), mH, [0, 106, 0]], [new THREE.SphereGeometry(7.5, 14, 10).scale(1, 1.25, .5), mE, [-9.5, 110, 26]], [new THREE.SphereGeometry(7.5, 14, 10).scale(1, 1.25, .5), mE, [9.5, 110, 26]],
+    [new THREE.SphereGeometry(4.2, 12, 8).scale(1, 1.2, .4), mK, [-8.6, 110, 29.5]], [new THREE.SphereGeometry(4.2, 12, 8).scale(1, 1.2, .4), mK, [8.6, 110, 29.5]]];
+  const used = new Set(Object.values(SPOT)), ids = []; for (let i = 0; i < 50; i++) if (!used.has(i)) ids.push(i);
+  parts.forEach(([geo, m, o]) => { geo.translate(o[0], o[1], o[2]); const im = new THREE.InstancedMesh(geo, m, ids.length); im.castShadow = true; crowd.add(im); CROWD.push(im); });
+  crowd.userData.ids = ids; }
+const m4 = new THREE.Matrix4(), q4 = new THREE.Quaternion(), one = V(1, 1, 1);
+function crowdAt(t) { const ids = crowd.userData.ids;
+  ids.forEach((i, n) => { const c = cw(i), y = fallY(i, t); q4.setFromAxisAngle(V(0, 1, 0), Math.atan2(-c.x, -c.z) + Math.sin(i * 1.7) * .5);
+    m4.compose(V(c.x, c.y + y, c.z), q4, y < -150 ? V(0, 0, 0) : one); CROWD.forEach(im => im.setMatrixAt(n, m4)); });
+  CROWD.forEach(im => { im.instanceMatrix.needsUpdate = true; }); }
+
+// ---------- the trophy at the centre, the fly ----------
+A.vault.group.visible = false;
+const TRO = window.makeTrophy ? window.makeTrophy(THREE, { env: A.env }) : null;
+if (TRO) { S.add(TRO.group); TRO.group.position.set(0, 0, 0); shadowed(TRO.group); }
+const fly = new THREE.Group(); fly.scale.setScalar(1.6); S.add(fly);   // a black fly on a black head: big pale wings carry it
+{ const body = new THREE.Mesh(new THREE.SphereGeometry(2.6, 12, 8).scale(1, .8, 1.6), new THREE.MeshStandardMaterial({ color: lin('#1d1a12'), roughness: .9, metalness: 0 })); fly.add(body);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(1.3, 10, 8), body.material); head.position.z = 2.7; fly.add(head);
+  const wm = new THREE.MeshStandardMaterial({ color: lin('#f4f8fb'), transparent: true, opacity: .95, roughness: .5, emissive: lin('#c9d6e0'), emissiveIntensity: .35, side: THREE.DoubleSide, depthWrite: false });
+  fly.userData.w = [-1, 1].map(s => { const w = new THREE.Mesh(new THREE.CircleGeometry(2.9, 16).scale(.55, 1, 1), wm); w.position.set(s * 2.3, 1.5, -.5); w.rotation.set(-Math.PI / 2, 0, s * .4); fly.add(w); return w; }); }
+
+// ---------- body acting ----------
+function runOnSpot(rig, t, k) {   // can never stop running: legs pump, arms swing, a little bob (feet stay over the circle)
+  const J = rig.joints, f = 2.6, ph = t * f * Math.PI * 2;
+  ['L', 'R'].forEach((n, i) => { const s = Math.sin(ph + (i ? Math.PI : 0));
+    J['leg' + n].rotation.x = lerp(J['leg' + n].rotation.x, -1.15 * Math.max(0, s) + .2, k); J['shin' + n].rotation.x = lerp(J['shin' + n].rotation.x, 1.7 * Math.max(0, s), k);
+    J['arm' + n].rotation.x = lerp(J['arm' + n].rotation.x, (i ? 1 : -1) * .8 * Math.sin(ph), k); J['foreArm' + n].rotation.x = lerp(J['foreArm' + n].rotation.x, -1.4, k); });
+  J.hips.position.y += Math.abs(Math.sin(ph)) * 5 * k; rig.root.position.y += Math.abs(Math.sin(ph)) * 4 * k; J.torso.rotation.x = lerp(J.torso.rotation.x, .16, k); }
+function twitch(rig, t, t0) {     // a heartbeat too strong to stand still through: three jolts, the last one big
+  const u = t - t0; if (u < 0 || u > .5) return; const J = rig.joints, k = Math.exp(-u * 9) * (u < .25 ? .5 : 1) * Math.sin(u * 60);
+  J.torso.rotation.z += .09 * k; J.head.rotation.x += .14 * k; J.armL.rotation.z += .25 * k; J.armR.rotation.z -= .25 * k; }
+function crossArms(rig) { const J = rig.joints; J.armL.rotation.set(-1.1, .5, .6); J.foreArmL.rotation.set(-1.5, 0, -.4); J.armR.rotation.set(-1.1, -.5, -.6); J.foreArmR.rotation.set(-1.5, 0, .4); }
+function swat(rig, t, t0) {       // the right hand snaps up to the nose, faster than a thought
+  const J = rig.joints, k = clamp((t - t0) / .12, 0, 1), back = clamp((t - t0 - .45) / .35, 0, 1), s = k * (1 - back * .6);
+  const SV = +(QS.get('sv') || 2), POSES = [[-.6, 0, -1.7, -2.3, 0, 0], [-1.4, 0, -1.2, -2.2, 0, .6], [-.3, .4, -2.1, -1.9, 0, -.5]], Q = POSES[SV];
+  J.armR.rotation.set(lerp(-1.1, Q[0], s), lerp(-.5, Q[1], s), lerp(-.6, Q[2], s)); J.foreArmR.rotation.set(lerp(-1.5, Q[3], s), Q[4] * s, lerp(.4, Q[5], s)); J.head.rotation.x += .12 * s; }
+
+// ---------- shots ----------
+const SHOTS = [['A', 0], ['A2', WT(3)], ['B', WT(5)], ['C', WT(19)], ['D', WT(28)], ['E', WT(41)], ['F', WT(61)], ['G', WT(69)], ['G2', WT(75)], ['H', WT(89)], ['I', WT(96)], ['J', WT(106)], ['K', WT(112)], ['L', WT(126)], ['M', WT(140)]];
+const shotAt = t => { let s = SHOTS[0]; for (const x of SHOTS) if (t >= x[1]) s = x; return s; };
+const CLOCK0 = 6.3, clockAt = t => t < CLOCK0 ? 60 : Math.max(0, 60 - (t - CLOCK0));
+function setCam(p, l, fov, roll) { cam.fov = fov; cam.near = 1; cam.far = 400000; cam.updateProjectionMatrix(); cam.position.copy(p); cam.up.set(0, 1, 0); cam.lookAt(l); if (roll) cam.rotateZ(roll); cam.updateMatrixWorld(); }
+function frameOn(subj, dirToCam, d, fov, xs, ys) {
+  const f = dirToCam.clone().normalize().multiplyScalar(-1), right = V().crossVectors(f, V(0, 1, 0)).normalize(), up = V().crossVectors(right, f).normalize();
+  const th = Math.tan(fov * D2R / 2), tw = th * 16 / 9, p = subj.clone().addScaledVector(dirToCam.clone().normalize(), d);
+  return { p, l: subj.clone().addScaledVector(right, -xs * tw * d).addScaledVector(up, -ys * th * d) };
+}
+const sideOf = i => { const c = cw(i), out = c.clone().setY(0).normalize(); return { c, out, side: V(-out.z, 0, out.x) }; };
+function shot(t) {
+  const SH = QS.get('shot'), [id, t0] = SH ? [SH, SHOTS.find(s => s[0] === SH)[1]] : shotAt(t), u = t - t0, dur = ((SHOTS[SHOTS.findIndex(s => s[0] === id) + 1] || [0, DUR])[1]) - t0;
+  DROP[SPOT.turbo] = (id === 'E' || id === 'F') ? TURBO_REPLAY : TURBO_LIVE;
+  for (let i = 0; i < 50; i++) { A.circle(i).light(i === 49 ? 1 : 1 - opened(i, t) * .85); A.circle(i).open(opened(i, t)); }
+  A.spotlight(null, 0); A.disc.set({ lift: 0, spin: 0, tilt: 0, tiltDir: 0, bridges: 0 }); A.door(0); A.clock(clockAt(t));
+  ADD.forEach(a => { a.rig.root.visible = false; if (a.fx.overlay) a.fx.overlay.visible = false; });
+  crowd.visible = false; fly.visible = false; if (TRO) TRO.group.visible = true;
+  let p, l, fov = 30, ap = 0, focus = null, hero = null, sk = 0;
+  const everyone = (face) => { Object.keys(SPOT).forEach(h => stand(CA[h], SPOT[h], face || V(0, 0, 0), t, 0)); crowd.visible = true; crowdAt(t);
+    if (CA.turbo.rig.root.visible && t < DROP[SPOT.turbo] + .6) runOnSpot(CA.turbo.rig, t, 1); };
+  const closeOn = (who, side, d0, d1, xs, mood) => { const a = CA[who], i = SPOT[who], o = sideOf(i), toCam = o.side.clone().multiplyScalar(side).addScaledVector(o.out, .3).normalize();
+    stand(a, i, o.c.clone().addScaledVector(toCam, 100), t, 1); if (mood) a.rig.setExpression(mood[0], mood[1]);
+    const hd = headOf(a.rig), F = frameOn(hd.clone().add(V(0, -12, 0)), toCam.clone().add(V(0, -.06, 0)), lerp(d0, d1, eout(u / Math.max(.8, dur))), 30, xs, -.02);
+    p = F.p; l = F.l; ap = .018; hero = a.rig; sk = 1; focus = p.distanceTo(hd); A.shadowFocus(o.c, 420); return { a, hd, toCam, o }; };
+  if (id === 'A') {          // the fifty in their circles, a crane down
+    everyone(); const k = eio(clamp(u / dur, 0, 1)), az = 228 * D2R, r = lerp(1900, 1450, k), y = lerp(1250, 620, k);
+    p = V(Math.cos(az) * r, y, Math.sin(az) * r); l = V(0, lerp(40, 110, k), 0); fov = 40; ap = .002; focus = p.length() * .75; A.shadowFocus(V(0, 0, 0), 1400);
+  } else if (id === 'A2') {  // a power on 'superpowers': Turbo running on the spot, his streaks round him
+    everyone(); closeOn('turbo', 1, 300, 250, .2, ['determined', 1]); runOnSpot(CA.turbo.rig, t, 1);
+  } else if (id === 'B') {   // #50 looks up at the trophy
+    everyone(); const a = CA.ordinary, c = cw(49), toTro = V(0, 0, 0).sub(c).setY(0).normalize(), side = V(-toTro.z, 0, toTro.x);
+    stand(a, 49, V(0, 0, 0), t, 0); a.rig.setExpression('neutral', 1); a.rig.lookAt(V(0, 260, 0), .5);
+    const hd = headOf(a.rig), toCam = toTro.clone().addScaledVector(side, .45).normalize();
+    const F = frameOn(hd.clone().add(V(0, -14, 0)), toCam.clone().add(V(0, .02, 0)), lerp(300, 215, eio(clamp(u / dur, 0, 1))), 30, -.2, -.04); p = F.p; l = F.l;
+    ap = .02; hero = a.rig; sk = 1; focus = p.distanceTo(hd); A.shadowFocus(c, 500);
+  } else if (id === 'C') {   // the clock on the crest of the board, the floor of players below it
+    everyone(); const bz = 270 * D2R, bp = V(Math.cos(bz) * 3360, 3660, Math.sin(bz) * 3360), k = eout(u / dur);
+    const dir = V(-Math.cos(bz), 0, -Math.sin(bz)); p = bp.clone().addScaledVector(dir, lerp(2600, 2150, k)).add(V(0, lerp(-420, -300, k), 0)); l = bp.clone().add(V(0, -60, 0)); fov = 26; ap = 0;
+    A.shadowFocus(V(0, 0, 0), 1400);
+  } else if (id === 'D') {   // the rule proven: Turbo cannot stop his feet, and his circle drops him (who he is comes next)
+    everyone(); const i = SPOT.turbo, o = sideOf(i), toCam = o.side.clone().addScaledVector(o.out, .55).normalize();
+    stand(CA.turbo, i, o.c.clone().addScaledVector(toCam, 100), t, 1); CA.turbo.rig.setExpression(t < DROP[i] ? 'worried' : 'surprised', 1); if (t < DROP[i] + .6) runOnSpot(CA.turbo.rig, t, 1);
+    const fk = clamp((t - DROP[i]) / 1.1, 0, 1); p = o.c.clone().addScaledVector(toCam, lerp(380, 300, eout(u / dur))).add(V(0, lerp(150, 260, fk), 0)); l = o.c.clone().add(V(0, lerp(55, -40, fk), 0));
+    fov = 34; ap = .01; focus = p.distanceTo(o.c); hero = CA.turbo.rig; sk = .7; A.shadowFocus(o.c, 500);
+  } else if (id === 'E') {   // Turbo can't stop running
+    everyone(); const R = closeOn('turbo', -1, 270, 230, -.2, ['worried', 1]); runOnSpot(CA.turbo.rig, t, 1);
+  } else if (id === 'F') {   // the floor opens under his running feet: a low three-quarter on the circle
+    everyone(); const i = SPOT.turbo, o = sideOf(i), toCam = o.side.clone().addScaledVector(o.out, .55).normalize();   // round the ring on his other side, raised: no neighbour in the foreground
+    stand(CA.turbo, i, o.c.clone().addScaledVector(toCam, 100), t, 1); CA.turbo.rig.setExpression(t < DROP[i] ? 'determined' : 'surprised', 1); if (t < DROP[i] + .6) runOnSpot(CA.turbo.rig, t, 1);
+    p = o.c.clone().addScaledVector(toCam, lerp(400, 360, eout(u / dur))).add(V(0, 175, 0)); l = o.c.clone().add(V(0, 45, 0)); fov = 34;   // above head height: no neighbour in the foreground ap = .012; focus = p.distanceTo(o.c); hero = CA.turbo.rig; sk = .7; A.shadowFocus(o.c, 500);
+  } else if (id === 'G') {   // 'before anyone else had even blinked': Reflex close, a smug slow blink
+    everyone(); closeOn('reflex', -1, 200, 180, -.2, ['smug', 1]); crossArms(CA.reflex.rig); CA.reflex.rig.setBlink(clamp(1 - Math.abs(t - WT(74) - .1) / .18, 0, 1));
+  } else if (id === 'G2') {  // Reflex, faster than anyone alive: smug, arms crossed
+    everyone(); closeOn('reflex', 1, 280, 240, .22, ['smug', 1]); crossArms(CA.reflex.rig);
+  } else if (id === 'H') {   // a fly lands on his nose
+    everyone(); const R = closeOn('reflex', 1, 165, 150, .0, t < WT(93) ? ['smug', 1] : ['worried', 1]);   // chin to crown, the hands below frame crossArms(CA.reflex.rig);
+    const toLens = p.clone().sub(R.hd).normalize(), nose = R.hd.clone().addScaledVector(toLens, CA.reflex.rig.spec.headR * 1.32 + 3).add(V(0, -6, 0)), k = eio(clamp((t - WT(90)) / (WT(93) - WT(90)), 0, 1));   // the head is drawn 1.22x: land the fly on the visible surface, toward the lens
+    const from = nose.clone().add(V(60, 40, 30)); fly.visible = true; fly.position.copy(from.lerp(nose, k)).add(V(Math.sin(t * 23) * 6 * (1 - k), Math.cos(t * 17) * 5 * (1 - k), 0));
+    fly.lookAt(cam.position); fly.userData.w.forEach((w, n) => { w.rotation.z = (n ? 1 : -1) * (.4 + (k < 1 ? Math.sin(t * 140) * .5 : 0)); });
+    CA.reflex.rig.lookAt(fly.position, .2); ap = .025; focus = p.distanceTo(nose);
+  } else if (id === 'I') {   // the swat, then his circle opens
+    everyone(); const R = closeOn('reflex', 1, 300, 330, .15, t < WT(100) ? ['surprised', 1] : ['worried', 1]); crossArms(CA.reflex.rig); swat(CA.reflex.rig, t, WT(98) - .08);
+    if (t > DROP[SPOT.reflex]) { const c = R.o.c; p = c.clone().addScaledVector(R.toCam, 330).add(V(0, 150, 0)); focus = p.distanceTo(c); l = c.clone().add(V(0, lerp(90, 45, clamp((t - DROP[SPOT.reflex]) / .6, 0, 1)), 0)); }   // he sinks out of frame; the lens stays on the floor
+  } else if (id === 'J') {   // one by one the circles open: high and wide, the clock on the far board
+    everyone(); const k = eio(clamp(u / dur, 0, 1)), az = 90 * D2R + lerp(-.18, .05, k); p = V(Math.cos(az) * lerp(2300, 2050, k), lerp(1500, 1350, k), Math.sin(az) * lerp(2300, 2050, k));
+    l = V(Math.cos(az) * -400, 0, Math.sin(az) * -400); fov = 44; ap = 0; A.shadowFocus(V(0, 0, 0), 1500);
+  } else if (id === 'K') {   // #50 alone: in front of him, his face, the open holes behind
+    everyone(); const a = CA.ordinary, c = cw(49), toTro = V(0, 0, 0).sub(c).setY(0).normalize(), side = V(-toTro.z, 0, toTro.x), k = eio(clamp(u / dur, 0, 1));
+    stand(a, 49, V(0, 0, 0), t, 0); a.rig.setExpression('neutral', 1); a.rig.lookAt(null, 0);
+    const toCam = toTro.clone().multiplyScalar(.85).addScaledVector(side, .55).normalize(); p = c.clone().addScaledVector(toCam, lerp(520, 430, k)).add(V(0, lerp(110, 95, k), 0));
+    l = c.clone().add(V(0, 75, 0)).addScaledVector(toTro, 120); fov = 36; ap = .006; focus = p.distanceTo(c); hero = a.rig; sk = .8; A.shadowFocus(c, 900);
+  } else if (id === 'L') {   // #50 close: a slow blink, a small smile
+    everyone(); const a = CA.ordinary, c = cw(49), toTro = V(0, 0, 0).sub(c).setY(0).normalize(), side = V(-toTro.z, 0, toTro.x);
+    stand(a, 49, V(0, 0, 0), t, 0); a.rig.setExpression(t < WT(135) ? 'neutral' : 'happy', t < WT(135) ? 1 : .55);
+    const bl = clamp(1 - Math.abs(t - WT(131)) / .22, 0, 1); a.rig.setBlink(Math.max(bl, C2.blink(t, 4)));
+    const hd = headOf(a.rig), toCam = toTro.clone().addScaledVector(side, .35).normalize();
+    const F = frameOn(hd.clone().add(V(0, -12, 0)), toCam.clone().add(V(0, -.12, 0)), lerp(235, 190, eio(clamp(u / dur, 0, 1))), 30, .18, -.03); p = F.p; l = F.l; a.rig.lookAt(p, .15);   // lower and wider than B
+    ap = .022; hero = a.rig; sk = 1; focus = p.distanceTo(hd); A.shadowFocus(c, 500);
+  } else {                   // M: pull out, one man standing among forty-nine open holes
+    everyone(); const k = eio(clamp(u / Math.max(2, dur), 0, 1)), c = cw(49), az = Math.atan2(c.z, c.x) + lerp(.25, .5, k);
+    p = c.clone().multiplyScalar(1 - k).add(V(Math.cos(az) * lerp(380, 2100, k), lerp(170, 1600, k), Math.sin(az) * lerp(380, 2100, k)));   // starts on #50, then the pull-out
+    l = c.clone().lerp(V(0, 0, 0), k * .7).add(V(0, 40, 0)); fov = 40; ap = 0; A.shadowFocus(V(0, 0, 0), 1500);
+  }
+  setCam(p, l, fov, 0);
+  A.update(t, cam); if (SKY) SKY.update(t, cam); if (TRO && TRO.update) TRO.update(t);
+  if (hero) { const hd = headOf(hero); sculpt.update(hd, p, sk, .05); fill.position.copy(p).add(V(0, 60, 0)); fill.intensity = .32 * sk; fill.distance = p.distanceTo(hd) * 2.2; focus = focus || p.distanceTo(hd); }
+  else { sculpt.update(V(0, 0, 0), p, 0, 0); fill.intensity = 0; }
+  ST.setFocus(focus || p.distanceTo(l)); ST.setAperture(ap);
+  // the series grade (cold3.html, after Ishaan's 2026-10-28 note), unchanged
+  ST.post.bloom = .06; ST.post.bloomThr = .9; ST.post.grain = .045; ST.post.expo = (P.sky.expo || .95) * .9; ST.post.split = .11;
+  ST.grade.blacks.value = -.18; ST.grade.shadows.value = -.02; ST.grade.uClar.value = .26; ST.grade.contrast.value = .32; ST.grade.vibrance.value = .27; ST.grade.highlights.value = -.16; ST.grade.whites.value = -.1;
+  ST.grade.uVigK.value = .95; ST.grade.uMaxOut.value = .97;
+  S.updateMatrixWorld(true); SKINS.forEach(m => { if (m.skeleton) m.skeleton.update(); });
+  ST.render(t);
+  return id;
+}
+const SKINS = []; ADD.forEach(c => c.rig.root.traverse(o => { if (o.isSkinnedMesh) SKINS.push(o); }));
+{ let n = 0; S.updateMatrixWorld(true); S.traverse(o => { if (!o.isMesh || !o.castShadow || !o.geometry) return; if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
+    const sz = o.geometry.boundingBox.getSize(V()).multiply(o.getWorldScale(V())), a3 = [sz.x, sz.y, sz.z].sort((x, y) => x - y); if (a3[1] < 14 && a3[2] > 120) { o.castShadow = false; n++; } }); }
+
+// ---------- captions: 2-3 word cards, the series' caption (SG_GFX) inside the frame, no punctuation ----------
+const CAPW = TM.words.map(w => ({ ...w, s: w.w.replace(/[^A-Za-z0-9'’\-]/g, '').toUpperCase() }));
+const CARDS = []; { let i = 0; while (i < CAPW.length) { let n = 3; const end = /[.,:]$/; for (let k = 0; k < 3 && i + k < CAPW.length; k++) if (end.test(CAPW[i + k].w)) { n = k + 1; break; } if (n === 1 && i + 1 < CAPW.length && CAPW[i].s.length < 5) n = 2; CARDS.push(CAPW.slice(i, i + n)); i += n; } }
+CARDS.forEach((c, i) => { c.a = c[0].t - .05; c.b = CARDS[i + 1] ? Math.min(CARDS[i + 1][0].t - .05, c.at(-1).e + .5) : c.at(-1).e + .6; });
+const out = document.getElementById('cv'), cx = out.getContext('2d');
+function rr(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+function captions(t) {
+  if (QS.get('nocap')) return; const k = CARDS.find(c => t >= c.a && t < c.b); if (!k) return;
+  const words = k.map(w => ({ s: w.s, t: w.t, e: w.e }));
+  if (window.SG_GFX && window.SG_GFX.caption) { window.SG_GFX.caption(cx, glc, t, words.map(w => ({ w: w.s, s: w.t, e: w.e })), 948, { hl: 'chip' }); return; }
+  const SZ = 64, Y = 948, GAP = SZ * .28, PADX = 34, PADY = 20; cx.save(); cx.font = `800 ${SZ}px Rubik`; cx.textBaseline = 'middle';
+  const ws = words.map(w => ({ ...w, wd: cx.measureText(w.s).width })), tw = ws.reduce((s, w) => s + w.wd, 0) + GAP * (ws.length - 1), bw = tw + PADX * 2, bh = SZ + PADY * 2, bx = 960 - bw / 2, by = Y - bh / 2;
+  cx.save(); rr(cx, bx, by, bw, bh, bh / 2); cx.clip(); cx.filter = 'blur(16px)'; cx.drawImage(glc, 0, 0, glc.width, glc.height, 0, 0, 1920, 1080); cx.filter = 'none'; cx.fillStyle = 'rgba(30,62,48,.55)'; cx.fillRect(bx, by, bw, bh); cx.restore();
+  let x = 960 - tw / 2; for (const w of ws) { const on = t >= w.t - .03, now = on && t < w.e + .05; cx.fillStyle = now ? '#FFF4D8' : on ? 'rgba(247,237,224,.92)' : 'rgba(247,237,224,.62)'; cx.fillText(w.s, x, Y + 2); x += w.wd + GAP; }
+  cx.restore();
+}
+window.seek = function (t) { t = clamp(t, 0, DUR); const a = performance.now(); const id = shot(t); cx.drawImage(glc, 0, 0, 1920, 1080); captions(t);
+  window.__info = { t, id, ms: Math.round(performance.now() - a), errs: window.__errs, sky: !!SKY, gfx: !!window.SG_GFX }; return true; };
+window.__dbg = { CA, A, cam, S, ST, DROP }; window.sceneRange = [0, DUR];
+window.seek(+(QS.get('t') || .4)); window.__ready = true;
+if (!QS.get('embed')) {   // the live preview: play with the voice from a click
+  const au = new Audio(TM.vo), b = document.createElement('button'); b.id = 'play'; b.textContent = 'Play with sound'; document.getElementById('ph').appendChild(b);
+  let a0 = 0, on = false; b.onclick = () => { on = !on; b.textContent = on ? 'Pause' : 'Play with sound'; if (on) { au.currentTime = 0; au.play(); a0 = performance.now(); tick(); } else au.pause(); };
+  const tick = () => { if (!on) return; const t = au.currentTime || (performance.now() - a0) / 1000; window.seek(t); if (t >= DUR - .05) { on = false; b.textContent = 'Play with sound'; return; } requestAnimationFrame(tick); };
+}
+} catch (e) { window.__info = { error: String(e && e.stack || e).slice(0, 1500), errs: window.__errs }; window.seek = () => {}; window.__ready = true; }
+})();
+</script></body></html>

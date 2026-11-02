@@ -1,0 +1,60 @@
+{
+ "stages": [
+  {
+   "stage": "Preflight + kit read",
+   "est": 6,
+   "start": 1793649864601,
+   "end": 1793649939245,
+   "note": "preflight blocked on disk 7.7 GB, RAM 1.1 GB and a Blender render holding the GPU; kit read took longer than planned"
+  },
+  {
+   "stage": "Script + voice + word times",
+   "est": 8,
+   "start": 1793649939406,
+   "end": 1793650342199,
+   "note": "one re-voice: a line said the clock read 59 when the screen clock already had (logic rule)"
+  },
+  {
+   "stage": "Shots: page build (13 shots)",
+   "est": 20,
+   "start": 1793650342585,
+   "end": 1793650770852,
+   "note": "4 check renders; 1 fix round on F (framing) and I (swat pose); GPU shared with a Blender render"
+  },
+  {
+   "stage": "Export (export.mjs) + mux",
+   "est": 12,
+   "start": 1793650792633,
+   "end": 1793651344458,
+   "note": "picture 416 s at 242 ms a frame (1 tab); re-export to the mix length reused 4 of 5 chunks (90 s); sound engine reused from ep1 (9 s mix)"
+  },
+  {
+   "stage": "Blind judge on the export",
+   "est": 6,
+   "start": 1793651344568,
+   "end": 1793651505870,
+   "note": "5.17/10: logic (proof faller before Turbo), unseen actions (run, swat, Reflex's fall), fly reads as a drop, static clock, payoff from behind"
+  },
+  {
+   "stage": "Fix round 1 (judge's top defects)",
+   "est": 15,
+   "start": 1793651505993,
+   "end": 1793652145112,
+   "note": "logic restructure (Turbo is the proof + a replay), re-voice + re-align, 8 shot fixes, 2 self-made bugs (comments swallowing code), sound cues re-keyed"
+  },
+  {
+   "stage": "Export v2 + mux",
+   "est": 9,
+   "start": 1793652145218,
+   "end": 1793652591803,
+   "note": "437 s at 226 ms a frame; all 5 chunks changed (the re-voice moved every shot)"
+  },
+  {
+   "stage": "Blind judge 2 on the export",
+   "est": 5,
+   "start": 1793652591908,
+   "end": 1793652686155,
+   "note": "5.0/10 (v1 5.17): plateau. The replay read as Turbo falling twice; running legs and the swat still do not read; holds too long; hook shows no loss"
+  }
+ ]
+}

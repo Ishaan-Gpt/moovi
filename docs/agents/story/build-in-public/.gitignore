@@ -1,0 +1,10 @@
+# media and renders stay local (the repo keeps the code and the notes)
+*.mp4
+*.mp3
+*.wav
+*.f32
+*.jpg
+short/out/
+short/check/
+short/judge1/sheets/
+voice/cmp/

@@ -1,0 +1,2 @@
+Claude made this little stickman film on my laptop, writing every single frame as code, and the clock says it took fifty-eight minutes. The last film like it took me five whole days, so before trying again, I went looking for where all that time had gone.
+I'll walk you through the whole workflow, from an empty folder to the final render, including the moment it nearly fell apart. And at the end, you can take the exact skill I built from all of this, completely free, so your Claude can make these too.
