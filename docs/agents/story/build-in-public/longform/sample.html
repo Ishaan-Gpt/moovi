@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Real Screens Sample</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;background:#141A16;height:100%;overflow:hidden}
+#cv{display:block;width:100vw;height:56.25vw;max-height:100vh;max-width:177.78vh;margin:auto;position:absolute;inset:0}
+#play{position:fixed;inset:0;margin:auto;width:220px;height:60px;border:0;border-radius:30px;background:#F4F1E2;color:#141A16;font:600 18px Inter,system-ui;cursor:pointer;z-index:4}
+#co{position:fixed;left:-4000px;top:0;width:960px;height:540px;border:0}
+</style></head><body>
+<canvas id="cv" width="1920" height="1080"></canvas>
+<button id="play" hidden>Play the 40 s sample</button>
+<audio id="au" src="vo/mix.mp3" preload="auto"></audio>
+<script src="timing.js"></script>
+<script>
+// Sample of the long form in the reference's form (ishaan-motion 1.17.77): the real work on screen. Every window is a real capture
+// (YouTube, GitHub, Fish Audio, taken today); the camera moves to the thing being said; the reference clip plays inside its real player;
+// our cold open plays live in its own window. Desktop and window chrome are the only drawn parts.
+const W = 1920, H = 1080, cv = document.getElementById('cv'), cx = cv.getContext('2d');
+const LF = window.LF, WD = LF.words, END = LF.secs[1].t + 17;
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x)), lerp = (a, b, k) => a + (b - a) * k;
+const eio = k => { k = clamp(k); return k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; };
+const norm = s => s.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+function at(sec, phrase) { const S = LF.secs[sec - 1], toks = phrase.split(/\s+/).map(norm), end = sec < LF.secs.length ? LF.secs[sec].i0 : WD.length;
+  for (let i = S.i0; i < end; i++) { let ok = true; for (let k = 0; k < toks.length; k++) if (!WD[i + k] || norm(WD[i + k].w) !== toks[k]) { ok = false; break; } if (ok) return WD[i].t; } console.warn('missing', phrase); return S.t; }
+function rr(x, y, w, h, r) { cx.beginPath(); cx.roundRect(x, y, w, h, r); }
+
+const REMOTE = location.protocol === 'https:', SCR = REMOTE ? 'screens/' : '../screens/', COS = REMOTE ? 'coldopen/film.html?embed=1' : '../coldopen/film.html?embed=1';
+const IMG = {}; ['yt-ifverse-watch', 'yt-ifverse-videos', 'gh-coldopen', 'gh-judges', 'gh-study-full', 'fish-ethan', 'yt-search', 'gh-film'].forEach(n => { const i = new Image(); i.src = SCR + n + '.png'; IMG[n] = i; });
+const VID = {}; ['ifv-fly', 'ifv-cup'].forEach(n => { const v = document.createElement('video'); v.src = 'clips/' + n + '.mp4'; v.muted = true; v.preload = 'auto'; v.playsInline = true; VID[n] = v; });
+const co = document.createElement('iframe'); co.id = 'co'; co.src = COS; document.body.appendChild(co);
+const coReady = () => { try { return co.contentWindow.__ready === true; } catch { return false; } };
+let WANT = [];
+
+// ---------- the desktop: a soft matcha wallpaper (not the reference's colours), windows with real captures ----------
+function wallpaper(t) {
+  const g = cx.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#2C3A31'); g.addColorStop(.5, '#6F8A64'); g.addColorStop(1, '#C9C27E'); cx.fillStyle = g; cx.fillRect(-2000, -2000, W + 4000, H + 4000);
+  const r = cx.createRadialGradient(1500, 200, 0, 1500, 200, 1200); r.addColorStop(0, 'rgba(255,243,188,.35)'); r.addColorStop(1, 'rgba(255,243,188,0)'); cx.fillStyle = r; cx.fillRect(-2000, -2000, W + 4000, H + 4000);
+}
+// a browser window: chrome bar with the real URL, then the capture; sy scrolls a full-page capture (in capture px)
+const IW = 2400;
+function win(key, x, y, w, url, o = {}) {
+  const i = IMG[key], k = w / IW, vh = o.vh || 1500, h = vh * k, dark = !!o.dark;
+  cx.save(); cx.shadowColor = 'rgba(0,0,0,.45)'; cx.shadowBlur = 60; cx.shadowOffsetY = 24; cx.fillStyle = dark ? '#1b1d21' : '#eceef1'; rr(x, y, w, h + 46, 14); cx.fill(); cx.restore();
+  cx.fillStyle = dark ? '#1b1d21' : '#e3e6ea'; rr(x, y, w, 46, [14, 14, 0, 0]); cx.fill();
+  ['#e5675d', '#e9b84c', '#6cc565'].forEach((c, j) => { cx.fillStyle = c; cx.beginPath(); cx.arc(x + 24 + j * 22, y + 23, 7, 0, 7); cx.fill(); });
+  cx.fillStyle = dark ? '#2a2d33' : '#fff'; rr(x + 110, y + 9, w - 220, 28, 14); cx.fill();
+  cx.font = '500 15px Inter, system-ui'; cx.fillStyle = dark ? '#c9ced6' : '#3c4048'; cx.textBaseline = 'middle'; cx.textAlign = 'left'; cx.fillText(url, x + 130, y + 24);
+  cx.save(); rr(x, y + 46, w, h, [0, 0, 14, 14]); cx.clip();
+  if (i.complete && i.naturalWidth) cx.drawImage(i, 0, o.sy || 0, IW, vh, x, y + 46, w, h);
+  cx.restore();
+  return { x, y: y + 46, k, sy: o.sy || 0 };   // to map capture px into desktop px
+}
+const P2D = (w, px, py) => [w.x + px * w.k, w.y + (py - w.sy) * w.k];
+// the reference clip inside its real player (capture px rect)
+function inPlayer(w, name, t, t0, r) { const v = VID[name], ct = Math.max(0, Math.min(4.9, t - t0)); WANT.push([name, ct]);
+  const [x, y] = P2D(w, r[0], r[1]), [x2, y2] = P2D(w, r[2], r[3]); cx.save(); cx.beginPath(); cx.rect(x, y, x2 - x, y2 - y); cx.clip(); cx.fillStyle = '#000'; cx.fillRect(x, y, x2 - x, y2 - y);
+  if (v.readyState >= 2) { const s = Math.max((x2 - x) / v.videoWidth, (y2 - y) / v.videoHeight); cx.drawImage(v, (x + x2) / 2 - v.videoWidth * s / 2, (y + y2) / 2 - v.videoHeight * s / 2, v.videoWidth * s, v.videoHeight * s); } cx.restore(); }
+// a highlight on the real thing being said, with the cursor gliding to it
+function mark(w, r, k, cur = true) { if (k <= 0) return; const [x, y] = P2D(w, r[0], r[1]), [x2, y2] = P2D(w, r[2], r[3]), p = 8;
+  cx.save(); cx.globalAlpha = k; cx.strokeStyle = '#F3E7A0'; cx.lineWidth = 5; rr(x - p, y - p, x2 - x + 2 * p, y2 - y + 2 * p, 10); cx.stroke();
+  cx.fillStyle = 'rgba(243,231,160,.16)'; cx.fill(); cx.restore();
+  if (cur) cursor(lerp(x2 + 160, x2 - 6, eio(k)), lerp(y2 + 120, y2 - 4, eio(k)));
+}
+function cursor(x, y) { cx.save(); cx.translate(x, y); cx.fillStyle = '#fff'; cx.strokeStyle = '#111'; cx.lineWidth = 2; cx.beginPath(); cx.moveTo(0, 0); cx.lineTo(0, 30); cx.lineTo(8, 23); cx.lineTo(14, 36); cx.lineTo(19, 34); cx.lineTo(13, 21); cx.lineTo(23, 21); cx.closePath(); cx.fill(); cx.stroke(); cx.restore(); }
+// camera: focus a desktop point at a zoom, eased between keys [t, fx, fy, z]
+function camAt(keys, t) { let a = keys[0], b = keys[0]; for (const k of keys) { if (t >= k[0]) a = k; } const i = keys.indexOf(a); b = keys[i + 1] || a;
+  const q = b === a ? 0 : eio(clamp((t - a[0]) / Math.min(.9, b[0] - a[0]))); const fx = lerp(a[1], b[1], q), fy = lerp(a[2], b[2], q), z = lerp(a[3], b[3], q);
+  cx.translate(W / 2, H / 2); cx.scale(z, z); cx.translate(-fx, -fy); }
+// the focus point and zoom that frame a capture rect (capture px) at a share of the screen width
+function frame(w, r, share = .6) { const [x, y] = P2D(w, r[0], r[1]), [x2, y2] = P2D(w, r[2], r[3]); return [(x + x2) / 2, (y + y2) / 2, Math.min(4, W * share / (x2 - x))]; }
+
+// ---------- the shots (keyed to the voice) ----------
+const E = {};
+function events() { const e = (k, s, p) => E[k] = at(s, p);
+  e('m46', 1, 'four point six million'); e('ch', 1, 'on a channel'); e('next', 1, 'and the one playing'); e('claude', 1, 'i made with claude'); e('morning', 1, 'this morning'); e('free', 1, 'every other tool');
+  e('end', 1, 'by the end'); e('fell', 1, 'where mine fell apart'); e('home', 1, 'take the whole system'); e('genre', 2, 'the genre is called'); e('oct', 2, 'seventh of october'); e('watched', 2, 'watched four point six'); }
+const WATCH = { player: [24, 102, 1584, 978], views: [42, 1152, 228, 1182], title: [24, 1000, 640, 1040] };
+const SHOTS = [
+  [0, t => {   // Ifverse's 4.6M film, playing in its real YouTube page
+    const w = win('yt-ifverse-watch', 160, 70, 1600, 'youtube.com/watch?v=MroF1XmHOZw'); inPlayer(w, 'ifv-fly', t, 0, WATCH.player);
+    const f1 = frame(w, WATCH.player, .95), f2 = frame(w, WATCH.views, .3); return [[0, ...f1], [E.m46 - .3, ...f1], [E.m46 + .4, ...f2]]; },
+   (t, w) => mark(w, WATCH.views, clamp((t - E.m46 - .4) / .5))],
+  [() => E.ch, t => {   // the channel: 59K subscribers, 30 videos, a month old
+    const w = win('yt-ifverse-videos', 160, 70, 1600, 'youtube.com/@IfverseTales/videos'); const r = [680, 498, 1093, 524];
+    return [[E.ch, ...frame(w, [680, 420, 1500, 540], .7)], [E.ch + 1, ...frame(w, r, .45)]]; },
+   (t, w) => mark(w, [680, 498, 1093, 524], clamp((t - E.ch - 1) / .4))],
+  [() => E.next, t => {   // side by side: their film and mine
+    const a = win('yt-ifverse-watch', 60, 150, 1100, 'youtube.com/watch?v=MroF1XmHOZw'); inPlayer(a, 'ifv-cup', t, E.next, WATCH.player);
+    // our cold open, live, in its own window
+    const x = 1000, y = 330, w = 860, h = 484; cx.save(); cx.shadowColor = 'rgba(0,0,0,.5)'; cx.shadowBlur = 60; cx.fillStyle = '#1b1d21'; rr(x, y - 46, w, h + 46, 14); cx.fill(); cx.restore();
+    cx.fillStyle = '#1b1d21'; rr(x, y - 46, w, 46, [14, 14, 0, 0]); cx.fill(); cx.fillStyle = '#2a2d33'; rr(x + 110, y - 37, w - 220, 28, 14); cx.fill(); cx.font = '500 15px Inter'; cx.fillStyle = '#c9ced6'; cx.textBaseline = 'middle'; cx.fillText('localhost:4371/coldopen/film.html', x + 130, y - 23);
+    ['#e5675d', '#e9b84c', '#6cc565'].forEach((c, j) => { cx.fillStyle = c; cx.beginPath(); cx.arc(x + 24 + j * 22, y - 23, 7, 0, 7); cx.fill(); });
+    cx.save(); rr(x, y, w, h, [0, 0, 14, 14]); cx.clip(); if (coReady()) { co.contentWindow.seek(Math.max(0, t - E.next + 1.2)); cx.drawImage(co.contentWindow.document.getElementById('cv'), x, y, w, h); } cx.restore();
+    return [[E.next, 960, 560, .98], [E.next + 1.6, 1430, 560, 1.55]]; }, () => {}],
+  [() => E.claude, t => {   // made with Claude, this morning: the real commits
+    const w = win('gh-coldopen', 160, 70, 1600, 'github.com/Ishaan-Gpt/moovi/tree/main/docs/agents/story/build-in-public/coldopen', { dark: true });
+    return [[E.claude, ...frame(w, [524, 360, 1300, 408], .7)], [E.morning, ...frame(w, [506, 564, 2376, 1176], .95)]]; },
+   (t, w) => { mark(w, [524, 360, 800, 408], clamp((t - E.claude - .3) / .4), t < E.morning); if (t > E.morning) mark(w, [2200, 564, 2376, 1176], clamp((t - E.morning - .5) / .4)); }],
+  [() => E.free, t => {   // every other tool was free: Fish Audio's Ethan
+    const w = win('fish-ethan', 160, 70, 1600, 'fish.audio/m/536d3a5e000945adb7038665781a4aca');
+    return [[E.free, ...frame(w, [520, 470, 1900, 720], .75)], [E.free + 1.3, ...frame(w, [683, 640, 900, 690], .3)]]; },
+   (t, w) => mark(w, [683, 652, 862, 678], clamp((t - E.free - 1.3) / .4))],
+  [() => E.end, t => {   // how both were made: the real study, scrolled
+    const i = IMG['gh-study-full'], H0 = i.naturalHeight || 6000, sy = lerp(400, Math.min(H0 - 1500, 2600), eio((t - E.end) / 3.2));
+    const w = win('gh-study-full', 160, 70, 1600, 'github.com/Ishaan-Gpt/moovi/blob/main/docs/agents/story/build-in-public/STUDY-whatif.md', { dark: true, sy });
+    return [[E.end, 960, 560, 1], [E.end + 2.5, 1100, 520, 1.25]]; }, () => {}],
+  [() => E.fell, t => {   // where mine fell apart: the blind judges' real results
+    const w = win('gh-judges', 160, 70, 1600, 'github.com/Ishaan-Gpt/moovi/blob/main/docs/agents/story/build-in-public/coldopen/JUDGE-results.md', { dark: true });
+    return [[E.fell, ...frame(w, [683, 720, 1476, 886], .6)], [E.fell + 1.2, ...frame(w, [683, 720, 1476, 886], .8)]]; },
+   (t, w) => mark(w, [1014, 774, 1104, 828], clamp((t - E.fell - .6) / .4))],
+  [() => E.home, t => {   // the whole system, free on GitHub
+    const w = win('gh-coldopen', 160, 70, 1600, 'github.com/Ishaan-Gpt/moovi', { dark: true });
+    return [[E.home, ...frame(w, [0, 380, 480, 1500], .45)], [E.home + 2.5, ...frame(w, [0, 380, 2400, 1500], 1)]]; },
+   (t, w) => mark(w, [24, 1040, 430, 1080], clamp((t - E.home - .8) / .4))],
+  [() => E.genre, t => {   // the genre: What If, a month old
+    const sy = lerp(0, 0, 0); const w = win('yt-search', 160, 70, 1600, 'youtube.com/results?search_query=what+if+stickman');
+    return [[E.genre, 960, 560, 1], [E.genre + 2, ...frame(w, [940, 650, 2380, 1060], .9)]]; }, () => {}],
+  [() => E.oct, t => {   // Ifverse posted on 7 October; watched 4.6M times
+    const w = win('yt-ifverse-watch', 160, 70, 1600, 'youtube.com/watch?v=MroF1XmHOZw'); inPlayer(w, 'ifv-cup', t, E.oct, WATCH.player);
+    return [[E.oct, ...frame(w, WATCH.player, .9)], [E.watched - .2, ...frame(w, WATCH.player, .9)], [E.watched + .5, ...frame(w, [24, 1000, 1600, 1190], .7)]]; },
+   (t, w) => mark(w, WATCH.views, clamp((t - E.watched - .5) / .4))],
+];
+const startOf = s => typeof s[0] === 'function' ? s[0]() : s[0];
+
+function render(t) {
+  WANT = []; let s = SHOTS[0]; for (const x of SHOTS) if (t >= startOf(x) - .05) s = x;
+  cx.setTransform(1, 0, 0, 1, 0, 0); wallpaper(t);
+  // pass 1 finds the camera from the shot's window layout, pass 2 draws with it
+  cx.save(); const keys = s[1](t); cx.restore();
+  cx.setTransform(1, 0, 0, 1, 0, 0); wallpaper(t); cx.save(); camAt(keys, t); wallpaper(t); WANT = []; s[1](t);
+  const wref = winRef(s, t); s[2](t, wref); cx.restore();
+  const d = t - startOf(s); if (s !== SHOTS[0] && d < .12) { cx.fillStyle = `rgba(20,26,22,${(.35 * (1 - d / .12)).toFixed(3)})`; cx.fillRect(0, 0, W, H); }
+}
+// the window geometry for marks (same numbers as the shot's main window)
+function winRef(s, t) { return { x: 160, y: 116, k: 1600 / IW, sy: 0 }; }
+
+async function seekClips() { await Promise.all(WANT.map(([n, ct]) => new Promise(async res => { const v = VID[n];
+  if (v.readyState < 2) await new Promise(r => { v.addEventListener('loadeddata', r, { once: true }); v.load(); setTimeout(r, 6000); });
+  if (Math.abs(v.currentTime - ct) < .02) return res(); const done = () => { v.removeEventListener('seeked', done); res(); }; v.addEventListener('seeked', done); v.currentTime = ct; setTimeout(res, 3000); }))); }
+window.frameB64 = async t => { render(t); await seekClips(); render(t); return cv.toDataURL('image/jpeg', .9).slice(23); };
+window.seek = render; window.DUR = END;
+
+const au = document.getElementById('au');
+function syncClips() { for (const n in VID) { const w = WANT.find(x => x[0] === n), v = VID[n]; if (w && !au.paused) { if (Math.abs(v.currentTime - w[1]) > .25) v.currentTime = w[1]; if (v.paused) v.play().catch(() => {}); } else if (!v.paused) v.pause(); } }
+function loop() { const t = au.currentTime; render(t); syncClips(); if (t < END && !au.paused) requestAnimationFrame(loop); else { au.pause(); document.getElementById('play').hidden = false; } }
+Promise.all(Object.values(IMG).map(i => i.decode().catch(() => {}))).then(() => document.fonts.load('500 15px Inter')).catch(() => {}).then(() => {
+  events(); render(0); window.__ready = true;
+  if (!navigator.webdriver && !/embed=1/.test(location.search)) { const b = document.getElementById('play'); b.hidden = false; b.onclick = () => { b.hidden = true; au.currentTime = 0; au.play(); loop(); }; }
+});
+</script></body></html>
