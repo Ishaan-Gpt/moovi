@@ -60,6 +60,6 @@
 
 ## Character (any new or rebuilt character)
 - [ ] Every rig built so far was listed and the best one named; the new character starts from it or beats it in a blind side-by-side (lessons.md, 2026-11-03).
-- [ ] The hero passed a kit day at 8/10 alone: close-ups of every expression the script needs and every action the shots use, before any shot was built.
+- [ ] The hero's close-ups (every expression the script needs) and actions (hands to every prop) score 8/10 in the film's own grabbed frames (no separate kit day: Ishaan, 2026-11-03).
 - [ ] A historical hero keeps his icon (hat, glasses, silhouette) in the hook and the thumbnail.
 - [ ] Shots pre-vized as a still contact sheet and judged (face readable, eyes on the upper third, no bar across a face, no camera inside a wall) before animating.

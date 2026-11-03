@@ -49,3 +49,8 @@ Review notes on finished videos are almost never about layout. They are about mo
   in `@moovi/library/camera`). Check for corners (the second difference of velocity) before showing anything.
 - The hard AE ramp bezier (0.86, 0, 0.07, 1) is for a slam, not for travel. Travel and cursor paths use a soft in-out.
 - Camera taste by moment: `references/camera.md`.
+
+## Pace and variety (Ishaan, 2026-10-21, API vs MCP paper film)
+- Faster: attention is short. Target about 3.2-3.8 words a second with 0.05-0.25 s phrase gaps, a visible change every 1.2-2 s, nothing held over about 5 s, the hook inside 2 s. A slow first cut is a defect, not a style.
+- Varied: no transition twice in a row and none more than about twice a film; entrances differ by meaning (drop, grow, slide, flip, unfold, stamp, draw-on). Tabulate transitions and entrances before rendering.
+- Full rule: references/showreel-youtube-automation.md (2026-10-21).

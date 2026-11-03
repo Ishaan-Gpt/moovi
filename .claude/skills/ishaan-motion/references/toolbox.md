@@ -43,3 +43,11 @@ Add a line each time something is added: `date · package · why · where it is 
   BEFORE continueRender, or the frame is screenshotted without it. Clip on a 3D screen = JPG sequence + swap texture.image.
 - Set the camera in useFrame(priority -1); render the post in useFrame(priority 1). Bloom threshold > 1.0 in light scenes so
   only HDR emissive blooms. Clamp camera motion blur on cut frames.
+- 2026-10-26 · Blender 5.2 + MPFB 2.0.18 (GPL-3) + MakeHuman CC0 assets · a rigged realistic human from numbers (Rigify, 930 bones), 60k-strand hair grown in Python with head collision, a Verlet + shape-matching hair solver (the XPBD node's "Animation" mode ignores rigid motion; "Physics" ignored stiffness), Guide Follow GN for strands; 5.x modifier inputs are `mod.properties.inputs.<id>.value`; Eevee crashes on the 512 MB iGPU with full hair, Cycles CPU ~2 min/still · Moovi docs/agents/story/avatar-ishaan
+
+## Blender character clips: the measured fast path (Ishaan, 2026-11-03: "30 minutes for 10 seconds... did you not take the learnings from speed lab")
+Measured on this PC (Ryzen 5 7520U, 512 MB iGPU) on the robed figure, a 10 s clip:
+- **Cloth starts settled.** Dump the settled cloth shape once (`robed-figure/dump_cloak.py`) and start every clip from it with a ~10-frame lead-in (`fastsim.py`), never a 110-frame settle per clip: 30 min -> 6 min.
+- **Only the cloth that moves is simulated.** Undergarments in a standing clip are skinned (no cloth): the 27k-vertex tunic sim is gone.
+- **Render-time subdivision was 80% of the frame.** Eevee at 540x960: 15-22 s a frame with subdiv render levels 1-2, 3 s with body 1 and garments 0. Ray tracing off and light shadows on black cloth cost little to the eye.
+- **Time one frame before any batch** (and log every stage with tlog.mjs, preflight + GPU lease first). Never start a bake or render without a measured per-frame cost and a total.

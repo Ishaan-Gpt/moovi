@@ -49,3 +49,49 @@
   fading; scene = an air cut; at most 2 punches; a 60 ms minimum gap by priority; risers end on the cut; no ducking.
   Level each sample by its RMS around the peak to the map's target, SFX stem +6 dB.
 - Master through a compressor and a tanh soft clip; peaks under -1 dBFS. Render the score while the page loads.
+
+## Voice delivery (Ishaan, 2026-10-21: monotonic, then "different voices sound weird, keep 1 voice only, fast paced")
+- One voice, one continuous read of the whole script in a single synthesis call, faster (about +25-30% rate for Andrew Multilingual, about 3.8-3.9 words a second). Never speak lines separately with different pitch/rate/volume offsets: it sounds like different people. Tighten silences by cutting the middle of gaps over 0.2 s; keep the voice itself untouched. Tone comes from the writing and the voice's own intonation.
+
+## Sound is built WITH the picture, never last (Ishaan, 2026-10-22: coat film 1, first 43 s: "animation storytelling 9/10, voice captions sfx music 2/10")
+The picture had four builders and three review rounds; the sound was one lead's side job (WebAudio beeps, a drone for music, no
+captions, a fast flat read). So the sound got none of the craft the picture got, and it showed.
+- **A sound lead from minute one,** with the same weight as a shot builder: the score, the sfx and the caption system are designed
+  from the script and the story beats before the shots land, then re-keyed to the shots' word times.
+- **A composed score, not a drone:** themes, a key, instruments that belong to the world (for 1347: plucked strings, a bowed drone,
+  frame drum, bronze), entering at the title, moving 4-6 dB with the story, sub weight at the turns (the Ifology measure), never silent.
+- **Designed sfx in families from what is on screen** (straw, wood, bronze, cloth, brass, ink), layered on hero beats, pitched per hit,
+  a room/reverb per set; never generic tones (see the AirPods SOUND-WHY).
+- **Captions are always on** (the series system, adapted to the frame), and the shots keep their caption band calm in the contract.
+- **The voice is chosen per film from rendered candidates,** delivered as a storyteller (one voice, one continuous read).
+- **Mixed and measured offline** (voice -18 LUFS, bed 3 LU under, master -14 LUFS, TP < -1 dBTP); the player plays the measured mix.
+
+## Trailer and Short sound (2026-10-25, Ishaan 4/10: "weird song in the back", "the sounds could have been so much better")
+- No tone-generator melodies (sine/additive "guitars" read as weird). Plucked instruments come from a string model (Karplus-Strong with a
+  wooden body) or real samples; the bed is a dark pad + a rhythm that IS the subject (a clock speeding up for a film about time).
+- Trailer grammar: pre-roll motif, a rhythm that tightens with the stakes, a dead stop for the reveal, silence, a riser through the black,
+  one braam + boom on the title, key clicks for typed letters, a bright change for the end card, a slam on the CTA's spoken word.
+- Measure stems, not the mix: in every spoken line the bed sits 6-9 LU under the voice; in the gaps the bed carries at about -17 LUFS
+  (a bed 19 LU under the voice made the first line sound empty and odd). Master -14 LUFS, TP -1.2.
+- **Level riding by line (2026-10-26, film 3):** a cue sheet written by hand landed 10-28 LU under the voice on most lines (too empty).
+  Mix once with stems, measure voice vs bed per spoken line, write a gain per line (clamped -8..+14 dB) so the bed sits ~7.5 LU under,
+  ramp 0.4 s between lines, re-mix (2-3 passes converge). Keep deliberately sparse beats (a comic wait, a 3 a.m. silence) sparse.
+  Code: Moovi `docs/agents/story/ai-disappeared/film-unfinished/audio/ride.mjs`.
+
+## Voice and bed for explainer Shorts (Ishaan, 2026-10-26, on the voice-cloning Short v1)
+- **"Use the voice of a young man, realistic."** Cast a young, natural male read: Edge `en-US-BrianMultilingualNeural` (casual, sincere) won
+  his A/B against William (AU), Liam (CA) and the old Andrew (warmer, older). Still one continuous read at about +25%; the closing lines may
+  be read a little slower (TAIL). Offer the A/B as one audio file of whole reads, never single words.
+- **"Have a music bed behind the video."** A bed he cannot hear is the same as no bed: it sits about 7.5-8.5 LU under the voice (bed
+  level = voice - 7.5 dB before the ride, ~1 dB lower under speech), never -10 or below. When asked, send the bed choices as one file with
+  the real voice over each bed (he kept Funkorama, louder).
+
+## Hindi narration (Ishaan, 2026-10-28, on the Dandi Short: "Hate them all")
+- He rejected every Edge Hindi voice (Madhur, Swara, normal and fast). Hindi films use a real ElevenLabs Hindi narrator from the voice
+  library; his pick, made on the website: **Viraj - Energetic, Clear Narrator** (model v4, speed ~0.93, stability ~41%, similarity ~75%).
+- His ElevenLabs account is on the free plan, which cannot call library voices through the API (402 paid_plan_required). So the
+  voice is generated on the website from a Devanagari text file Claude writes (numbers spelled as words), and word timing comes
+  from ElevenLabs forced alignment (`/v1/forced-alignment`, works on free), mapped token for token to the Roman caption script.
+  Moovi code: `docs/agents/story/hindi-dandi/short/audio/align.mjs`.
+- The world's own instruments in code for an Indian story: tanpura drone and sitar (Karplus-Strong with a jawari buzz), santoor
+  plucks, keherwa theka on modal tabla (dayan/bayan with the bayan's pitch glide), not tone generators.

@@ -37,14 +37,12 @@ const C = { ivory: '#F4F1E2', lemon: '#F3E7A0', coral: '#E06B52', ink: '#141A16'
 
 // ---------- assets, all preloaded behind the gate ----------
 const IMG = {}, VID = {}, loads = [];
-const img = (k, src) => { const i = new Image(); i.src = src; IMG[k] = i; loads.push(i.decode().catch(() => {})); };
-['yt-s-rewind', 'yt-s-words', 'gh-skill', 'fish-ethan', 'claude-pricing'].forEach(k => img(k, SCR + k + EXT));
-['v1-1', 'v1-5.5', 'v1-11', 'v2-0001.00', 'v2-0005.50', 'v2-0011.00'].forEach(k => img(k, 'img/' + k + '.jpg')); img('sheet', 'real/sheet-ifverse.jpg');
-['ifv-fly', 'ifv-cup', 'ifv-number', 'ifv-title', 'ifv-how', 'mz-speed', 'ifi-bus', 'ifi-flip', 'miko-love', 'short3d'].forEach(n => { const v = document.createElement('video'); v.src = 'clips/' + n + '.mp4'; v.muted = true; v.preload = 'auto'; v.playsInline = true; VID[n] = v;
+const img = (k, src) => { const i = new Image(); i.src = src; IMG[k] = i; loads.push(Promise.race([i.decode().catch(() => {}), new Promise(r => { i.addEventListener('load', r, { once: true }); setTimeout(r, 20000); })])); };
+img('gh-skill', SCR + 'gh-skill-full' + EXT);
+
+['ifv-fly', 'ifv-cup', 'mz-speed', 'e-hook', 'e-save', 'e-end', 'e-arena', 'e-cards', 'e-rule', 'e-giant', 'e-money-turbo', 'e-tip', 'e-steep', 'e-door', 'e-last', 'old-game1'].forEach(n => { const v = document.createElement('video'); v.src = 'clips/' + n + '.mp4'; v.muted = true; v.preload = 'auto'; v.playsInline = true; VID[n] = v;
   loads.push(new Promise(r => { if (v.readyState >= 3) return r(); v.addEventListener('canplaythrough', r, { once: true }); v.addEventListener('error', r, { once: true }); v.load(); setTimeout(r, 20000); })); });
-const co = document.createElement('iframe'); co.id = 'co'; co.src = COS; document.body.appendChild(co);
-const coReady = () => { try { return co.contentWindow.__ready === true; } catch { return false; } };
-loads.push(new Promise(r => { const tick = () => coReady() ? r() : setTimeout(tick, 200); tick(); setTimeout(r, 25000); }));
+const coReady = () => false;
 let WANT = [];
 
 // ---------- the desk and the windows ----------
@@ -66,6 +64,32 @@ function mark(x, y, w, h, k) { if (k <= 0) return; cx.save(); cx.globalAlpha *= 
 
 // ---------- shot painters (each is a pure function of t) ----------
 const P = {
+  full(s, t) {   // footage, full frame, a slow push; a stat chip low
+    const v = VID[s.clip], d = v.duration || 5, ct = Math.min(d - .05, (t - s.t0) * (s.rate || 1) + (s.from || 0)); WANT.push([s.clip, ct]);
+    cx.fillStyle = '#000'; cx.fillRect(0, 0, W, H); if (v.readyState >= 2) { if (s.noPush) cx.drawImage(v, 0, 0, W, H); else { const c = 1.3; cx.drawImage(v, -W * (c - 1) / 2, -H * .02, W * c, H * c); } }   // narrated shots crop the episode's own captions off the bottom
+    if (s.stat) chip(s.stat, W / 2, 130, { center: true, size: s.statSize || 36, bg: s.statBg || C.lemon, c: s.statC || C.ink, k: clamp((t - s.t0 - .3) / .4) });
+  },
+  map(s, t) {   // the promise and the five steps, over the episode, blurred
+    const v = VID['e-tip'], ct = Math.min((v.duration || 30) - .1, 4 + (t - s.t0) * .5); WANT.push(['e-tip', ct]);
+    cx.save(); cx.filter = 'blur(14px) brightness(.45)'; if (v.readyState >= 2) cx.drawImage(v, -40, -40, W + 80, H + 80); cx.restore();
+    let y = 170; for (const [txt, t1] of s.items) { const k = clamp((t - t1) / .35); if (k <= 0) continue; chip(txt, 150, y, { size: 30, k, bg: /2 \//.test(txt) ? C.coral : 'rgba(244,241,226,.14)', c: C.ivory }); y += 76; }
+    const t0 = s.steps[0][2]; if (t < t0 - .2) return; y = 210;
+    cx.save(); cx.globalAlpha = clamp((t - t0 + .2) / .3); cx.fillStyle = 'rgba(20,26,22,.82)'; rr(860, 150, 920, 640, 26); cx.fill(); cx.restore();
+    s.steps.forEach(([n, txt, t1, tag], i) => { const k = clamp((t - t1) / .35); if (k <= 0) return; const yy = 230 + i * 116; cx.save(); cx.globalAlpha = k;
+      cx.fillStyle = C.lemon; cx.font = '800 52px Inter'; cx.textBaseline = 'middle'; cx.textAlign = 'left'; cx.fillText(n, 910, yy);
+      cx.fillStyle = C.ivory; cx.font = '700 34px Inter'; cx.fillText(txt, 980, yy - (tag ? 14 : 0)); if (tag) { cx.fillStyle = C.lemon; cx.font = '600 24px Inter'; cx.fillText(tag.toUpperCase(), 980, yy + 26); } cx.restore(); });
+  },
+  graph(s, t) {   // the blind judges' scores, round by round
+    const v = VID['e-save'], ct = 2; WANT.push(['e-save', ct]); cx.save(); cx.filter = 'blur(16px) brightness(.4)'; if (v.readyState >= 2) cx.drawImage(v, -40, -40, W + 80, H + 80); cx.restore();
+    cx.fillStyle = C.ivory; cx.font = '800 46px Inter'; cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.fillText('Blind judge scores, round by round', W / 2, 150);
+    const n = s.scores.length, bw = 170, gap = 60, x0 = W / 2 - (n * bw + (n - 1) * gap) / 2, base = 880, unit = 58;
+    cx.strokeStyle = C.coral; cx.setLineDash([12, 10]); cx.lineWidth = 4; cx.beginPath(); cx.moveTo(x0 - 30, base - 8 * unit); cx.lineTo(x0 + n * (bw + gap), base - 8 * unit); cx.stroke(); cx.setLineDash([]);
+    cx.fillStyle = C.coral; cx.font = '700 26px Inter'; cx.textAlign = 'left'; cx.fillText('the bar: 8', x0 + n * (bw + gap) - 150, base - 8 * unit - 26);
+    s.scores.forEach(([lab, sc], i) => { const k = eio((t - s.t0 - .25 - i * .55) / .6); if (k <= 0) return; const x = x0 + i * (bw + gap), h = sc * unit * k, last = i === n - 1;
+      cx.fillStyle = last ? C.lemon : 'rgba(244,241,226,.85)'; rr(x, base - h, bw, h, 12); cx.fill();
+      cx.fillStyle = C.ivory; cx.font = '800 48px Inter'; cx.textAlign = 'center'; cx.fillText(String(Math.round(sc * k * 10) / 10), x + bw / 2, base - h - 40);
+      cx.font = '600 24px Inter'; cx.fillStyle = C.mute; cx.fillText(lab, x + bw / 2, base + 36); });
+  },
   prompt(s, t) {   // the exact prompt, typed out big in a Claude Code window
     const b = frame(WX, WY, WW, WH, 'Claude Code', true); const lines = REAL[s.p].join('\n').trim();
     inside(b, () => { const font = '500 34px "JetBrains Mono", monospace', L = wrap(lines, b.w - 150, font), total = lines.length, n = Math.floor(clamp((t - s.t0 - .3) / Math.max(1.5, Math.min(4, (s.dur || 6) * .55))) * total);
@@ -118,81 +142,85 @@ let SHOTS = [], STEPS = [];
 function build() {
   const A = at, S = [], add = (t0, kind, o = {}) => S.push({ t0, kind, ...o });
   const rk = (k, x) => (RECTS[k] || {})[x];
-  // hook
-  add(LF.cos[0].t, 'cofull', { from: 0 });
-  add(A(20, 'this stickman film'), 'side', { clip: 'ifv-cup', coFrom: 0, labels: ['Ifverse · 4.6M views', 'mine · made with Claude'] });
-  add(A(20, 'in the next few minutes'), 'text', { file: 'prompts-index', title: 'github.com/Ishaan-Gpt/ishaan-stickmen/PROMPTS.md', size: 38, hl: [[A(20, 'step by step'), [2, 3, 4, 5, 6, 7, 8, 9]]] });
-  add(A(20, 'one command that does'), 'page', { key: 'gh-skill', title: 'github.com/Ishaan-Gpt/ishaan-stickmen', dark: true, focus: rk('gh-skill', 'git clone https://github.com/Ishaan-Gpt/ishaan-stickmen'), zoom: 1.5, mark: rk('gh-skill', 'git clone https://github.com/Ishaan-Gpt/ishaan-stickmen') });
-  // step 1
-  STEPS.push([A(21, 'step one'), 'STEP 1', 'Find what is actually working']);
-  add(A(21, 'step one'), 'prompt', { p: 'p1', step: 1 });
-  add(A(21, 'plus one extra column'), 'text', { file: 'top', title: 'Claude: the top What If films, by views per subscriber', size: 28, hl: [[A(21, 'plus one extra column') + .6, [0]]] });
-  add(A(21, 'but miko getting'), 'clip', { clip: 'miko-love', who: 'Miko', stat: '692K views · only 7.1K subscribers' });
-  add(A(21, 'sorted that way'), 'text', { file: 'top', title: 'Claude: the top What If films, by views per subscriber', size: 28, hl: [[A(21, 'sorted that way'), [3, 4, 5]]] });
-  add(A(21, 'because ifverse'), 'clip', { clip: 'ifv-cup', who: 'Ifverse', stat: '4.6M views · 59K subscribers' });
-  add(A(21, 'minute zero and'), 'clip', { clip: 'mz-speed', who: 'Minute Zero', stat: '2.2M views · 21K subscribers' });
-  add(A(21, 'ifinite are all'), 'clip', { clip: 'ifi-bus', who: 'Ifinite', stat: '1.7M views · 16K subscribers' });
-  // step 2
-  STEPS.push([A(22, 'step two'), 'STEP 2', 'Make Claude really watch the hits']);
-  add(A(22, 'step two'), 'prompt', { p: 'p2', step: 2, dur: 12 });
-  add(A(22, 'every word of the narration'), 'img', { key: 'sheet', title: 'study/ifverse-1.jpg · one frame a second', stat: 'one frame every second', statBg: C.lemon, statC: C.ink });
-  add(A(22, 'then ask for a rulebook'), 'text', { file: 'transcript-ifverse', title: 'study/ifverse.txt · every word, timed', size: 32, hl: [[A(22, 'then ask for a rulebook'), [0, 1, 2]]] });
-  add(A(22, 'mine came back with four rules'), 'text', { file: 'rulebook', title: 'STUDY-whatif.md · the rulebook Claude wrote', size: 26, hl: [[A(22, 'mine came back with four rules') + .3, [0]]] });
-  add(A(22, 'first, prove the power'), 'clip', { clip: 'ifv-fly', who: 'Ifverse · 4.6M', stat: 'Rule 1 · prove the power before you name it' });
-  add(A(22, 'then a falling coffee cup'), 'clip', { clip: 'ifv-cup', who: 'Ifverse · 4.6M', stat: 'Rule 1 · prove the power before you name it' });
-  add(A(22, 'only shows the title'), 'clip', { clip: 'ifv-title', who: 'Ifverse · 4.6M', from: .5, stat: 'the title only lands at 0:35' });
-  add(A(22, 'second, put one number'), 'clip', { clip: 'ifv-number', who: 'Ifverse · 4.6M', stat: 'Rule 2 · one number: 0.25 s against 0.025 s' });
-  add(A(22, 'third, give a friend'), 'clip', { clip: 'ifv-how', who: 'Ifverse · 4.6M', stat: 'Rule 3 · a friend says "How did you do that?"' });
-  add(A(22, 'and fourth, slow down'), 'text', { file: 'transcript-ifverse', title: 'study/ifverse.txt · about 1.6 words a second', size: 32, hl: [[A(22, 'and fourth, slow down'), [0, 1, 2, 3, 4, 5, 6]]] });
-  // step 3
-  STEPS.push([A(23, 'step three'), 'STEP 3', 'Pick an idea nobody has made']);
-  add(A(23, 'step three'), 'prompt', { p: 'p3', step: 3, dur: 8 });
-  add(A(23, 'what if you could rewind'), 'page', { key: 'yt-s-rewind', title: 'youtube.com/results?search_query=what+if+you+could+rewind+10+seconds', stat: '8 copies already · the best has 13K views' });
-  add(A(23, 'what if you only had'), 'page', { key: 'yt-s-words', title: 'youtube.com/results?search_query=what+if+you+only+had+a+limited+number+of+words+left', stat: 'nobody in the genre · a Roblox story got 89K' });
-  add(A(23, 'keep one number'), 'co', { from: 17.2, rate: .5, stat: 'one number over the head: words left' });
-  add(A(23, 'only need to talk'), 'co', { from: 6.6 });
-  add(A(23, "you can't animate"), 'clip', { clip: 'short3d', who: 'my 3D try', stat: 'what you can\'t animate well, you end up cutting', statBg: C.coral, statC: C.ivory });
-  // step 4
-  STEPS.push([A(24, 'step four'), 'STEP 4', 'Write the script with the rules']);
-  add(A(24, 'step four'), 'prompt', { p: 'p4', step: 4 });
-  add(A(24, 'mine opens like this'), 'co', { from: 0, stat: '"You have forty-one words left…"' });
-  // step 5
-  STEPS.push([A(25, 'step five'), 'STEP 5', 'Voice it, for free']);
-  add(A(25, 'step five'), 'page', { key: 'fish-ethan', title: 'fish.audio · Ethan, free model', stat: 'Fish Audio · free model · voice "Ethan"' });
-  add(A(25, 'one command turns'), 'text', { file: 'voice', title: 'PowerShell', size: 32, hl: [[A(25, 'one command turns') + .3, [0, 1]], [A(25, 'then have claude time'), [3, 4]]] });
-  add(A(25, 'so when you say'), 'text', { file: 'timing-always', title: 'coldopen/timing.js · every word to a hundredth of a second', size: 30, hl: [[A(25, 'so when you say'), [13]]] });
-  add(A(25, 'the counter drops'), 'co', { from: 17.3, stat: '41 → 40 on "always"' });
-  // step 6
-  STEPS.push([A(26, 'step six'), 'STEP 6', 'Build the picture: 2D that feels 3D']);
-  add(A(26, 'step six'), 'clip', { clip: 'short3d', who: 'my first try, in 3D', stat: 'two blind judges: 5 out of 10', statBg: C.coral, statC: C.ivory });
-  add(A(26, 'the biggest films'), 'clip', { clip: 'ifi-flip', who: 'Ifinite · 1.7M', stat: 'flat 2D that only feels 3D' });
-  add(A(26, 'so ask for exactly that'), 'prompt', { p: 'p6', step: 6, dur: 9 });
-  add(A(26, 'claude built mine'), 'co', { from: 0, rate: 3, stat: '21 shots · 61 seconds · all code' });
-  // step 7
-  STEPS.push([A(27, 'step seven'), 'STEP 7', 'Judge it blind, then fix it']);
-  add(A(27, 'step seven'), 'prompt', { p: 'p7', step: 7, dur: 9 });
-  add(A(27, 'mine came last'), 'text', { file: 'judges', title: 'coldopen/JUDGE-results.md', size: 28, hl: [[A(27, 'mine came last'), [4]]] });
-  add(A(27, 'no face in the first'), 'img', { key: 'v1-1', title: 'cold open v1 · 0:01', stat: 'no face in the first shot' });
-  add(A(27, 'the wedding ask'), 'img', { key: 'v1-5.5', title: 'cold open v1 · 0:05', stat: 'the wedding ask never shown' });
-  add(A(27, 'a muddy olive'), 'img', { key: 'v1-11', title: 'cold open v1 · 0:11', stat: 'muddy light, a frozen crowd' });
-  add(A(27, 'so i fixed exactly'), 'pair', { a: 'v1-1', b: 'v2-0001.00', stat: 'fixed: your face and the 41 first' });
-  add(A(27, 'judged it again'), 'pair', { a: 'v1-11', b: 'v2-0011.00', stat: 'fixed: brighter, a crowd that reacts' });
-  add(A(27, 'and it scored five'), 'text', { file: 'judges', title: 'coldopen/JUDGE-results.md', size: 28, hl: [[A(27, 'and it scored five'), [5]]] });
-  // step 8
-  STEPS.push([A(28, 'the shortcut'), 'GET IT', 'Everything in one free skill']);
-  add(A(28, 'the shortcut'), 'page', { key: 'gh-skill', title: 'github.com/Ishaan-Gpt/ishaan-stickmen', dark: true, stat: 'free for personal use · PolyForm Noncommercial' });
-  add(A(28, 'every prompt you just saw'), 'text', { file: 'prompts-index', title: 'PROMPTS.md', size: 38, hl: [[A(28, 'every prompt you just saw'), [2, 3, 4, 5, 6, 7, 8, 9]]] });
-  add(A(28, 'one command installs it'), 'page', { key: 'gh-skill', title: 'github.com/Ishaan-Gpt/ishaan-stickmen', dark: true, focus: rk('gh-skill', 'git clone https://github.com/Ishaan-Gpt/ishaan-stickmen'), zoom: 1.5, mark: rk('gh-skill', 'git clone https://github.com/Ishaan-Gpt/ishaan-stickmen') });
-  add(A(28, "you'll need claude itself"), 'page', { key: 'claude-pricing', title: 'claude.com/pricing', stat: 'Claude is a paid plan · everything else is free' });
-  add(A(28, 'my full episode'), 'co', { from: 0, title: 'next · What If You Only Had 1,000 Words Left?' });
-  STEPS.push([LF.cos[1].t, '', '']);
-  add(LF.cos[1].t, 'cofull', { from: LF.cos[1].from });
+  const full = (t0, clip, o = {}) => add(t0, 'full', { clip, ...o });
+  // the hook: Countdown's count and Giant's fall, with its own sound
+  full(LF.cos[0].t, 'e-hook', { noPush: true });
+  // 30 · the reveal
+  full(A(30, 'fifty stickmen'), 'e-arena');
+  full(A(30, 'one shrinking gold circle'), 'e-rule', { from: 1 });
+  full(A(30, 'a billion dollars'), 'e-rule', { from: 10.5 });
+  add(A(30, 'claude made every frame'), 'text', { file: 'cast-code', title: 'kit/cast.js · every player is code', size: 30, hl: [[A(30, 'claude made every frame') + .4, [1, 2, 3, 4]]] });
+  full(A(30, 'no ai video generator'), 'e-cards', { from: 33, stat: 'no AI video generator · every frame is code' });
+  add(A(30, 'the stickman channels'), 'clip', { clip: 'ifv-cup', who: 'Ifverse', stat: '4.6M views · 59K subscribers' });
+  add(A(30, 'millions of views right now'), 'clip', { clip: 'mz-speed', who: 'Minute Zero', stat: '2.2M views · 21K subscribers' });
+  // 31 · the promise and the map
+  add(A(31, 'in the next few minutes'), 'map', { items: [['the five steps', A(31, 'the five steps')], ['v1 scored 2 / 10', A(31, 'the first version')], ['how it climbed to 9', A(31, 'how it climbed')], ['the whole workflow, free', A(31, 'the whole workflow')]], steps: [['1', 'Steal the why from the biggest videos', A(31, 'step one')], ['2', 'Build your cast in code', A(31, 'step two')], ['3', 'Tell the story the MrBeast way', A(31, 'step three')], ['4', 'The blind judge', A(31, 'step four'), 'the part every tutorial skips'], ['5', 'Sound and one export', A(31, 'step five')]] });
+  // 32 · the problem
+  full(A(32, 'most ai stickman videos'), 'old-game1', { from: 2, rate: 1.4, stat: 'my first version', statBg: C.coral, statC: C.ivory });
+  full(A(32, 'it scored two out of ten'), 'old-game1', { from: 9, rate: 1.4, stat: '2 / 10', statBg: C.coral, statC: C.ivory, statSize: 60 });
+  full(A(32, 'fifty strangers'), 'old-game1', { from: 15, rate: 1.8 });
+  full(A(32, 'cuts so fast'), 'old-game1', { from: 24, rate: 2.6 });
+  full(A(32, 'the look was never'), 'e-cards', { from: 21 });
+  // 33 · step 1
+  STEPS.push([A(33, 'step one'), 'STEP 1', 'Steal the why from the biggest videos']);
+  add(A(33, 'step one'), 'text', { file: 'mrbeast', title: 'data/refs/mrbeast · the transcripts, line by line', size: 28, hl: [[A(33, 'three mrbeast games'), [0, 9]]] });
+  full(A(33, 'with five hundred'), 'e-door', { from: 10, stat: 'MrBeast games: 565M · 979M · 498M views' });
+  add(A(33, 'and read them'), 'text', { file: 'mrbeast', title: 'data/refs/mrbeast · read line by line, with timestamps', size: 28, hl: [[A(33, 'and read them'), [1, 2, 3, 4, 5]]] });
+  add(A(33, 'he says the rule'), 'text', { file: 'mrbeast', title: 'data/refs/mrbeast · the rule in one breath, proven at once', size: 28, hl: [[A(33, 'he says the rule'), [1, 2, 3]], [A(33, 'proves it straight away'), [4, 5, 6, 7]]] });
+  full(A(33, 'proves it straight away'), 'e-hook', { from: 3.6, stat: 'the rule, proven by the first try' });
+  full(A(33, 'he follows only'), 'e-cards', { from: 28, stat: 'follow only a few players' });
+  full(A(33, 'every try is a little story'), 'e-money-turbo', { from: 20, stat: 'every try is a 20-30 second story' });
+  add(A(33, 'the stickman hits do'), 'clip', { clip: 'ifv-fly', who: 'Ifverse · 4.6M' });
+  add(A(33, 'a falling coffee cup'), 'clip', { clip: 'ifv-cup', who: 'Ifverse · 4.6M', stat: 'the power proven before it is named' });
+  // 34 · step 2
+  STEPS.push([A(34, 'step two'), 'STEP 2', 'Build your cast in code']);
+  add(A(34, 'step two'), 'text', { file: 'cast-code', title: 'kit/cast.js', size: 30, hl: [[A(34, 'a few lines of code'), [1, 2, 3, 4]]] });
+  full(A(34, "turbo can't stop"), 'e-cards', { from: 27.6 });
+  full(A(34, 'clockwork ages'), 'e-cards', { from: 21.2 });
+  full(A(34, 'reflex reacts'), 'e-cards', { from: 36.6 });
+  full(A(34, 'and copycat'), 'e-cards', { from: 44 });
+  full(A(34, 'because they\'re code'), 'e-tip', { from: 2, stat: 'the same face in every shot, every angle, every episode' });
+  full(A(34, 'the arena is code too'), 'e-arena', { from: 0 });
+  full(A(34, 'and episode two'), 'e-steep', { from: 4 });
+  // 35 · step 3
+  STEPS.push([A(35, 'step three'), 'STEP 3', 'Tell the story the MrBeast way']);
+  full(A(35, 'step three'), 'e-rule', { from: 0 });
+  full(A(35, 'every ten seconds it shrinks'), 'e-rule', { from: 18, stat: 'one rule, one visible threat' });
+  full(A(35, 'the first fall proves it'), 'e-hook', { from: 3.6 });
+  full(A(35, 'giant is too big'), 'e-giant', { from: 8 });
+  full(A(35, 'clockwork gets older'), 'e-money-turbo', { from: 0 });
+  full(A(35, 'number fifty'), 'e-arena', { from: 5.5 });
+  full(A(35, 'each of them gets a fight'), 'e-money-turbo', { from: 23 });
+  // the save, with its own sound
+  full(LF.cos[1].t, 'e-save', { noPush: true });
+  // 36 · step 4: the blind judge
+  STEPS.push([A(36, 'step four'), 'STEP 4', 'The blind judge · the part every tutorial skips']);
+  add(A(36, 'step four'), 'text', { file: 'claude-judge', title: 'Claude Code · a fresh agent, the blind judge', size: 32, hl: [[A(36, 'with no idea which'), [6, 7, 8]]] });
+  add(A(36, 'the first judge gave'), 'text', { file: 'fixes', title: 'ep1/game1v2/FIXES.md · the judge’s notes', size: 30, hl: [[A(36, 'the first judge gave'), [0]]] });
+  full(A(36, "giant wasn't giant"), 'old-game1', { from: 17, stat: 'judge: "Giant is not giant"', statBg: C.coral, statC: C.ivory });
+  full(A(36, 'the clock sat frozen'), 'old-game1', { from: 26, stat: 'judge: the clock sat at 40 for 27 seconds', statBg: C.coral, statC: C.ivory });
+  add(A(36, "clockwork's arm"), 'text', { file: 'fixes', title: 'ep1/game1v2/FIXES.md · the judge’s notes', size: 30, hl: [[A(36, "clockwork's arm"), [3]]] });
+  full(A(36, 'so claude fixed'), 'e-giant', { from: 8, stat: 'fixed: Giant towers over everyone' });
+  add(A(36, 'round after round'), 'graph', { scores: [['judge 1', 5], ['judge 2', 6], ['judge 3', 6], ['judge 4', 7], ['judge 5', 7], ['clips 1-2', 9]] });
+  full(A(36, 'only a judge who'), 'e-save', { from: 9 });
+  // 37 · step 5
+  STEPS.push([A(37, 'step five'), 'STEP 5', 'Sound and one export']);
+  full(A(37, 'step five'), 'e-door', { from: 2 });
+  full(A(37, 'the music and every whoosh'), 'e-tip', { from: 14 });
+  full(A(37, 'is exported once'), 'e-last', { from: 6, stat: '7:39 · exported once, at the very end' });
+  // the cliffhanger, with its own sound
+  STEPS.push([LF.cos[2].t, '', '']);
+  full(LF.cos[2].t, 'e-end', { noPush: true });
+  // 38 · the gift
+  STEPS.push([A(38, 'the whole workflow'), 'FREE', 'the whole workflow on GitHub']);
+  add(A(38, 'the whole workflow'), 'page', { key: 'gh-skill', title: 'github.com/Ishaan-Gpt/ishaan-stickmen', dark: true, focus: rk('gh-skill', 'git clone https://github.com/Ishaan-Gpt/ishaan-stickmen'), zoom: 1.75, mark: rk('gh-skill', 'git clone https://github.com/Ishaan-Gpt/ishaan-stickmen') });
+  full(A(38, 'the full episode'), 'e-last', { from: 14, stat: 'Stickman Games · Episode 1 · on Ordinary Odd' });
   SHOTS = S.sort((a, b) => a.t0 - b.t0); SHOTS.forEach((s, i) => s.dur = (SHOTS[i + 1] ? SHOTS[i + 1].t0 : DUR) - s.t0);
 }
 
 // ---------- the frame: the current shot, crossfading from the last one ----------
 const XF = .3;
-function drawShot(s, t) { cx.save(); const z = 1 + .025 * clamp((t - s.t0) / Math.max(2, s.dur)); if (s.kind !== 'cofull') { cx.translate(W / 2, H / 2); cx.scale(z, z); cx.translate(-W / 2, -H / 2); desk(); } P[s.kind](s, t); cx.restore(); }
+function drawShot(s, t) { cx.save(); const z = 1 + .025 * clamp((t - s.t0) / Math.max(2, s.dur)); if (s.kind === 'full' && !s.noPush) { cx.translate(W / 2, H / 2); cx.scale(z * 1.0, z * 1.0); cx.translate(-W / 2, -H / 2); } if (!['cofull', 'full', 'map', 'graph'].includes(s.kind)) { cx.translate(W / 2, H / 2); cx.scale(z, z); cx.translate(-W / 2, -H / 2); desk(); } P[s.kind](s, t); cx.restore(); }
 function render(t) {
   WANT = []; let i = 0; for (let j = 0; j < SHOTS.length; j++) if (t >= SHOTS[j].t0) i = j;
   const s = SHOTS[i], prev = SHOTS[i - 1], d = t - s.t0;

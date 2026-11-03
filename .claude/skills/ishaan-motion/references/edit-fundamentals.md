@@ -22,6 +22,11 @@ not designed yet.
   translated; English words in English spelling; Hindi numbers stay Hindi; no diacritics.
 - One text layer per frame: the caption hides under any text graphic.
 - Text never covers a face (captions, titles, stickers): placed by the projected face box with a margin.
+- Spoken-word focus (Ishaan, 2026-10-21): the word being spoken is bright, the rest of the card grey; an elastic highlight on the key word; never a black shadow plate or dark halo for legibility.
+- Caption cards follow the measured why, not an old floor (Ishaan, battery film, "captions fucked up again", 2026-10-21): 1-4 words on screen, ONE line, phrase boundaries; no ">= 1.0 s per card" floor at a fast voice (it stretched cards to 8-12 words on 3 lines); the key word's gesture is small and stays inside its line (at most 0.2 cap height of travel, settled in about 0.2 s, never overlapping a word); no blur-in at 3.5+ words a second. Before showing, open full-resolution crops of the caption band at 6+ moments and check by eye: one line, no overlap, nothing blurred.
+- No blackish captions (Ishaan, 2026-10-24): on light worlds, white type on a frosted translucent pill of the blurred scene, lightly tinted with the look; never dark ink on a pale band.
+- No punctuation in captions (Ishaan, 2026-10-24); grey words at least 4.5:1 on light looks, weight 600.
+- Plate-free captions need a calm frame (Ishaan chose "reframe the shots", 2026-10-21): in a code-made film, every shot keeps the caption band (58-78% of height) free of the hero and of text, and deep in the world's own darkest tones (band mean luma about 40/255 or less, textured, never flat black), by framing and lighting, not an overlay. Measured on the AirPods film: spoken words 11.5:1 on a calm deep band, 1.3:1 over skin and the white stem.
 
 ## 4. Show it (owner)
 A playable preview with voice, SFX and the music bed, served with byte ranges so it seeks, smooth (no hang). Stills
@@ -128,3 +133,13 @@ light and contact shadows, depth of field and two or three parallax planes, phys
 props entering from the corners, light that moves across the surface, a hand-drawn layer that interacts with the
 objects. This is its own discipline (a motion-graphics mastery); until then, keep the world short and prefer real
 footage prints over drawn objects.
+
+## 14. Edit-DNA test verdict, 2/10 (Ishaan, 2026-10-21): a why-based edit of a free-licence raw clip
+The test applied the measured why of an Instagram edit reel to a 720p Wikimedia statement clip, with Premium Caption 1, two drawn cards and voice only. Ishaan scored it 2/10 and named all four: **the picture, the subject, the cards and motion, the sound.** Rules:
+- **Source first.** A why-test is only judged on a source that can look premium: at least 1080p, well lit, shot for a camera (a creator or expert talking to camera). A soft 720p political statement, however licensed, cannot pass; never upscale 3x and call it done. If no such free clip exists, ask for one rather than spending the edit on a weak source.
+- **Subject fits the look.** A grave public statement does not take a pop caption look; choose a creator-style subject, or match the look to the tone.
+- **Cards and motion are the craft, not plain icons.** Cards need designed depth (springs, layered parallax, shadows, light leaks on exits, a morphing hero object), not outline glyphs on a flat ground; judge them against the reference's cards before showing.
+- **Sound is part of the edit.** Voice only is the reel's bare audio, but Ishaan reads it as dead: treat sound as A/B (voice only vs a low bed plus sfx on arrivals from the owner's pack), show both, let him pick; never ship one silently.
+- Process: a hand-measured why (24 min) is fine as research, but the test edit must clear a visual bar before it is shown; run a blind comparison against the reference's own frames first.
+
+- Shorts safe area for every caption (Ishaan, 2026-10-25): y 230-1480, x 70-905, captions centred at x ~490 in the lower half; a mask over 10+ stills is checked before render (showreel-youtube-automation.md).

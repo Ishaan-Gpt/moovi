@@ -1,5 +1,7 @@
 # Palette: never the AI default, always a rare one, built as ramps (owner, 2026-10-18)
 
+> **First choice for channel story films (Ishaan, 2026-10-27): bright, pastel, sunlit, full of life.** Build it with the same method (OKLCH ramps, one dominant, one support, one accent of 10% at most, neutrals tinted with the dominant), and keep a firm darkest value in shadows and outlines so pastel never turns milky. Dark or dusk worlds only when the story asks for them.
+
 The owner's rule: never use the colours an AI reaches for by default. Blue, orange, cream and their usual pairings read
 as "made by Claude" before a single frame moves. Every film gets a palette that is **rare, premium and owned**, built as
 tint ramps so contrast is designed, not hoped for.
@@ -77,3 +79,9 @@ site, and cream is banned as a world); Apple aluminium greys (reads as Tailwind 
 the glaze colour of the brand's green pushed toward grey: porcelain `#EFF4EE` → `#DCE6DD`, mist `#C3D3C6`, sage
 `#7C9486`, graphite `#2E3833`; dark world lacquer `#101613` with one green bloom; accent `#34d399` (+ deep `#0D6B4C` for
 serif hero words on light) under 10%. The brand's cream and ink appear only on its logo and its real UI.
+
+## Rejected: dull plum-smoke (AirPods film, 2026-10-21)
+Ishaan: "bad purple background". A low-chroma dominant (OKLCH C about 0.03-0.05) read as muddy, not premium. The dominant of a film world needs real vibrancy (C 0.12-0.18 in the mid ramp) and a material texture; show him 2-3 rendered options and let him pick.
+
+## Per video, not per channel (Ishaan, 2026-10-22)
+A channel's films do not share one palette or texture: each video derives its own from its subject. The brand kit stays neutral so it sits beside any video's look.

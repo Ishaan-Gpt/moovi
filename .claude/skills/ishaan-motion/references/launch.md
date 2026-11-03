@@ -197,3 +197,32 @@ the brand's earlier slide-style film 4.8 in the same round. The recipe, for a sm
    following the story: sparse hook, pulse from the logo, breakdown on the serious claim, long final chord).
 6. Judge debts still open: the Studio page's small UI text is illegible at full-window scale (zoom to the drop zone or
    take the page 1.3x); the end card wants a product glimpse.
+
+## A launch film is 2D on the brand's own colours unless asked otherwise (Ishaan on Fetaccino, 2026-10-23: "make it a 2d launch video not 3d, bright themed, on its brand colours, but very advanced and good")
+- A launch film for a brand with a designed light site is built in 2D (canvas) on the site's own tokens, type and mark: its field colours ARE the world (the brand really owns them, so they beat the no-default-palette list). A derived 3D material world (glaze, stone, lacquer) was the channel films' grammar, not the launch default; I had started three 3D material worlds for Fetaccino and they were dropped.
+- "Advanced" in 2D comes from craft, not from 3D: layered soft shadows tinted with the brand ink (never black), depth of field between UI planes (the row lifted toward the lens, the window soft behind), the real UI redrawn from the site CSS at any scale, a cursor that drives, grain, camera moves in 2.5D, and designed sound.
+- The palette drill still runs, inside the brand: the choice is which brand field carries which part of the story (Fetaccino: the site's map greens for "found it", the cream page for "filed it", the soft rose for the mark). Show 2-3 rendered treatments and let him pick.
+- When the brief does not say 2D or 3D, offer both at intake with one rendered frame each; never pick the medium silently.
+
+## Look L-2D-1 "Brand UI, 2D" (Fetaccino, 2026-10-23; code `docs/agents/story/launch-fetaccino/`)
+A 35 s launch for a small tool whose site has a designed demo, built 2D in canvas on the site's own tokens:
+- **The film follows one real item from the site's demo** (a result row) through the product's whole job (tick, review, send,
+  dedupe), and performs the promise before naming the brand ("Watch it become row four" -> "That was Fetaccino").
+- **The site's UI redrawn from its CSS at any scale** (kit/ui.js, kit/draw2d.js), never a screenshot: the camera can sit at 3-5x on
+  a row and the type stays sharp. The data of a row arrives on the words that speak it.
+- **Worlds follow the story using the site's own line** ("from found it to filed it"): the demo's map enlarged for finding, the page
+  cream for filing, the soft rose only for the mark; the map's roads straighten into the sheet's grid lines (a morph, not a cut).
+- Depth in 2D: ink-tinted three-layer shadows, a row lifting toward the lens with its window going soft, an affine "turn" that eases
+  to frontal, log-space scale, motion ghosts, a cursor with a ripple. The judge still asked for more depth and fewer crops (6.9 vs 7.1).
+- **Caption cards are hand-set phrases** when the script is fixed (a word-count list): automatic splits by length orphaned "row |
+  four" and "don't | fit", and the judge read the cards as fragments.
+- **9:16 from the same film:** render each 16:9 frame off-screen without its ground (worlds skip when `__NO_WORLD`), reframe it by a
+  per-shot focus (centre, zoom, deliberate pans) into a tall window over the full-height world, the brand on top, captions native.
+- **Judge on full-size frames**: a downscaled contact sheet made the judge call readable UI "illegible"; give it the MP4 and frame
+  numbers and require 3 full frames per film before scoring.
+
+## Launch films are soft, slow and premium (Ishaan on Fetaccino v3, 2026-10-23: "not so fast paced.. soft slow and premium feel")
+The fast-pacing rule (3.2-3.8 words a second, a change every 1.2-2 s) is for channel and social films. A brand launch film is
+paced like a keynote: a calm read (Andrew at about -6%, about 2.7-3 words a second), natural breaths between sentences kept (up to
+about 0.6 s, never cut to 0.2 s), every move slower with long soft settles, springs damped (no visible bounce), no elastic caption
+gestures, a softer bed. Every event still lands on its word; only the speed drops. Length 40-45 s is fine for the master.

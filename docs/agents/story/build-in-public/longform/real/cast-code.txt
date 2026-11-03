@@ -1,0 +1,10 @@
+// kit/cast.js · the 50 (ROSTER.md order)
+  [1, 'reflex', 'Reflex', 'reacts 10x faster', 'hero', 'cinnabar', 500, 1.04, 'fists', 'smug', 'cinnabar hoodie in a b
+  [2, 'turbo', 'Turbo', "sped up and can't stop", 'hero', 'gamboge', 400, .98, 'run', 'surprised', 'gamboge hoodie run
+  [3, 'clockwork', 'Clockwork', 'time sped up for her; she ages a year every game', 'sister', 'ochre', 700, 1.0, 'clas
+  [29, 'copycat', 'Copycat', 'copies any power he touches', 'hero', 'chrome', 0, 1.06, 'reachR', 'smug', 'the villain:
+
+SIG.turbo = (THREE, X) => {   // speed streaks, loud sneakers, a sweatband
+  const Mt = X.rig.materials, L = X.lin, hg = headGroup(THREE, X), R = X.rig.spec.headR;
+SIG.clockwork = (THREE, X) => {   // a brass clock pin with racing hands; grey creeping in with age(k)
+  const rig = X.rig, L = X.lin, mt = X.mat, R = rig.spec.headR, S = rig.spec;

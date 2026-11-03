@@ -8,7 +8,7 @@ expensive step and happens ONCE, at the end, after Ishaan has watched the live p
 Every check and every blind judge uses `grab.mjs` sheets of frames seeked from the live page, never an MP4. The one export uses `export.mjs`
 (every chunk starts with a 1 s pre-roll so a split never pops). Cast every beat from the kit's proven actions: the first real
 one-hour run (47 min wall, 2026-11-03) plateaued at 5/10 because its beats needed new actions (a run on the spot, a hand to the face,
-a fly); new actions are a kit day, and a replay always carries a visible marker.
+a fly); new actions are built in the film and judged in its grabbed frames (no separate kit day, Ishaan 2026-11-03), and a replay always carries a visible marker.
 
 Ishaan, after the AirPods film (channel film 1): "this took too much time; the next video takes one hour max". Film 1
 took 2 h 06 min to v1, then about 2.5 h more of fixes (captions, sound, label, palette, reframing every shot for the

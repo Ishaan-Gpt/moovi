@@ -197,6 +197,12 @@ video and it doesn't feel repetitive." And: "animation is shitty 3/10, so many e
   - **Dialogue as J-cuts over the music:** a line starts before its picture, and a scene's sound never stops at a hard cut.
   - **A story a half-watching viewer follows:** who, what is at stake, the rule, the first loss, the escalation, the question.
     A line never arrives without its setup.
+- **A thumbnail or cover is a composed still, never a grabbed video frame (Ishaan, 2026-11-03, "this feels off, Stickman Games
+  must be in the centre, well appeared already and everything perfect").** I sent the teaser's opening frame: the title off-centre
+  (it sat where the safe area put it for the video) and a caption on it. A cover is rebuilt from the live page: the background shot
+  with captions and titles off, then the title drawn fully settled (past its animation), centred horizontally on its measured ink,
+  about 75-80% of the frame width with clear margins, over open sky or a quiet area and never covering the key set (the stadium).
+  Render two placements (exact centre and centre-high) and look at both before sending.
 
 ## Captions: themed, light, never a smudge (Ishaan, 2026-10-31, "u fucked up captions" on the Gandhi long form)
 
@@ -240,7 +246,7 @@ video and it doesn't feel repetitive." And: "animation is shitty 3/10, so many e
   stood still with streaks), a hand slapping the face (the rig's arm cannot reach it cleanly), a fly at film size on a black head, and a
   replay with no marker (read as the same character falling twice). Rule: in a one-hour film every beat is cast from the kit's
   proven actions (a list kept with the kit, each with a frame that scored 8+); a beat that needs a new action is cut, rewritten to a
-  proven one, or built first on a kit day and judged alone. A replay or flashback always carries a visible marker. Times: preflight 1,
+  proven one, or built in the film and judged in its grabbed frames (no separate kit day, Ishaan 2026-11-03). A replay or flashback always carries a visible marker. Times: preflight 1,
   script and voice 7, shots 7, export 9, judge 3, fix round 11, export 7, judge 2 (TIMINGS.md in docs/agents/story/build-in-public/short).
 
 - **2026-11-03 · build-in-public long form · essence before plan.** Ishaan: "the entire point was about how to make viral stickman
@@ -263,9 +269,9 @@ video and it doesn't feel repetitive." And: "animation is shitty 3/10, so many e
   coordinates with no pre-viz (faces away, upside-down close-ups, a focus bug, a NaN camera). And I advised dropping his felt hat, his
   one iconic silhouette, so a generic face had to carry recognition alone.
   Rules: (1) before any new character, list every rig built so far (repo-wide), name the best by measured quality, start from it or
-  beat it, and show a blind side-by-side where the new one wins or matches; a rig is never worse than the previous best. (2) A new
-  hero is a kit day: 8/10 alone in close-ups and in its film actions (sit, kneel, walk, hands to a prop, every expression the script
-  needs) before a single shot is built. (3) A historical hero keeps his icon (the hat, the glasses, the silhouette) in the hook and
+  beat it, and show a blind side-by-side where the new one wins or matches; a rig is never worse than the previous best. (2) No separate
+  kit day (Ishaan, 2026-11-03, removed: "I don't have that much time"): the hero is built inside the film, and its close-ups and
+  actions (hands to a prop, every expression the script needs) are judged in the film's own grabbed frames. (3) A historical hero keeps his icon (the hat, the glasses, the silhouette) in the hook and
   the thumbnail, even when a scene would drop it. (4) Shots are pre-vized as a contact sheet of stills (shot size, eyes on the upper
   third, the face never behind a bar or the camera inside a wall) and judged before animation.
 - **2026-11-03 · build-in-public cold open · one export, at the end, on Ishaan's word.** Ishaan: "again why so many exports.. when only one final
@@ -286,3 +292,8 @@ video and it doesn't feel repetitive." And: "animation is shitty 3/10, so many e
   full-page captures stuttered, the camera zoomed 3x into blurry screenshot text. Rules: why-not-what.md "The why of a how-to is the viewer's
   utility"; checklist: a preview is watched in real time in a browser before it is sent, every asset preloaded behind a loading gate, camera
   moves calm and text always readable at 1080p.
+- **2026-11-03 · build-in-public long form v5 · "a great report, not a YouTube video".** Ishaan: the shots I made were "a terrible example of
+  the potential... you should have created something better than it was if you wanted to compare"; "90% of the time all you have done is
+  written some random things"; study the newest top videos in the niche (1-2 days old), learn how a YouTube long-form explainer works, and
+  rebuild to the graph (initial reveal, problem, structured steps, a reason to stay till the end), aiming for 80-90% retention. Rules in
+  why-not-what.md ("A YouTube long form is for a stranger, and its demo must win").

@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Viral Stickman With Claude</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;background:#141A16;height:100%;overflow:hidden}
+#cv{display:block;width:100vw;height:56.25vw;max-height:100vh;max-width:177.78vh;margin:auto;position:absolute;inset:0}
+#ui{position:fixed;left:0;right:0;bottom:0;display:flex;gap:12px;align-items:center;padding:10px 16px;background:linear-gradient(transparent,rgba(16,21,18,.85));z-index:3;font:600 13px "JetBrains Mono",monospace;color:#F4F1E2;opacity:0;transition:opacity .3s}
+body:hover #ui{opacity:1}
+#ui button{border:0;border-radius:18px;background:#F4F1E2;color:#141A16;font:600 14px Inter,system-ui;padding:8px 16px;cursor:pointer}
+#bar{flex:1;height:6px;background:rgba(244,241,226,.25);border-radius:3px;cursor:pointer;position:relative}
+#fill{position:absolute;left:0;top:0;bottom:0;background:#F3E7A0;border-radius:3px}
+#play{position:fixed;inset:0;margin:auto;width:260px;height:60px;border:0;border-radius:30px;background:#F4F1E2;color:#141A16;font:600 18px Inter,system-ui;cursor:pointer;z-index:4}
+#play:disabled{opacity:.75;cursor:wait}
+#co{position:fixed;left:-4000px;top:0;width:960px;height:540px;border:0}
+</style></head><body>
+<canvas id="cv" width="1920" height="1080"></canvas>
+<button id="play" disabled>Loading…</button>
+<div id="ui"><button id="pp">Play</button><span id="tc">0:00</span><div id="bar"><div id="fill"></div></div><span id="td"></span></div>
+<audio id="au" src="vo/mix.mp3" preload="auto"></audio>
+<script src="timing.js"></script><script src="rects.js"></script><script src="real.js"></script>
+<script>
+// v5: the tutorial (WHY-v5.md). Each step: the exact prompt typed out big, the real output, the result. Real pages, real clips, our film
+// running live. Text is drawn at screen resolution (never a zoomed screenshot); everything is preloaded before Play; shots crossfade.
+const W = 1920, H = 1080, cv = document.getElementById('cv'), cx = cv.getContext('2d');
+const LF = window.LF, WD = LF.words, DUR = LF.dur + .5, RECTS = window.RECTS, REAL = window.REAL;
+const REMOTE = location.protocol === 'https:', SCR = REMOTE ? 'screens/' : '../screens/', EXT = REMOTE ? '.jpg' : '.png', COS = REMOTE ? 'coldopen/film.html?embed=1' : '../coldopen/film.html?embed=1';
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x)), lerp = (a, b, k) => a + (b - a) * k;
+const eio = k => { k = clamp(k); return k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; };
+const norm = s => s.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+function at(sec, phrase, off = 0) { const si = LF.secs.findIndex(s => s.n === sec), S = LF.secs[si]; if (!S) return 0; const toks = phrase.split(/\s+/).map(norm), end = si + 1 < LF.secs.length ? LF.secs[si + 1].i0 : WD.length;
+  for (let i = S.i0; i < end; i++) { let ok = true; for (let k = 0; k < toks.length; k++) if (!WD[i + k] || norm(WD[i + k].w) !== toks[k]) { ok = false; break; } if (ok) return WD[i].t + off; }
+  console.warn('missing', sec, phrase); return S.t + off; }
+function rr(x, y, w, h, r) { cx.beginPath(); cx.roundRect(x, y, w, h, r); }
+const C = { ivory: '#F4F1E2', lemon: '#F3E7A0', coral: '#E06B52', ink: '#141A16', win: '#16191d', winBar: '#202329', mute: '#9aa3ad', sage: '#9DB38A' };
+
+// ---------- assets, all preloaded behind the gate ----------
+const IMG = {}, VID = {}, loads = [];
+const img = (k, src) => { const i = new Image(); i.src = src; IMG[k] = i; loads.push(i.decode().catch(() => {})); };
+['yt-s-rewind', 'yt-s-words', 'gh-skill', 'fish-ethan', 'claude-pricing'].forEach(k => img(k, SCR + k + EXT));
+['v1-1', 'v1-5.5', 'v1-11', 'v2-0001.00', 'v2-0005.50', 'v2-0011.00'].forEach(k => img(k, 'img/' + k + '.jpg')); img('sheet', 'real/sheet-ifverse.jpg');
+['ifv-fly', 'ifv-cup', 'ifv-number', 'ifv-title', 'ifv-how', 'mz-speed', 'ifi-bus', 'ifi-flip', 'miko-love', 'short3d'].forEach(n => { const v = document.createElement('video'); v.src = 'clips/' + n + '.mp4'; v.muted = true; v.preload = 'auto'; v.playsInline = true; VID[n] = v;
+  loads.push(new Promise(r => { if (v.readyState >= 3) return r(); v.addEventListener('canplaythrough', r, { once: true }); v.addEventListener('error', r, { once: true }); v.load(); setTimeout(r, 20000); })); });
+const co = document.createElement('iframe'); co.id = 'co'; co.src = COS; document.body.appendChild(co);
+const coReady = () => { try { return co.contentWindow.__ready === true; } catch { return false; } };
+loads.push(new Promise(r => { const tick = () => coReady() ? r() : setTimeout(tick, 200); tick(); setTimeout(r, 25000); }));
+let WANT = [];
+
+// ---------- the desk and the windows ----------
+function desk() { const g = cx.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#2C3A31'); g.addColorStop(.55, '#6F8A64'); g.addColorStop(1, '#C9C27E'); cx.fillStyle = g; cx.fillRect(-200, -200, W + 400, H + 400);
+  const r = cx.createRadialGradient(1500, 160, 0, 1500, 160, 1300); r.addColorStop(0, 'rgba(255,243,188,.32)'); r.addColorStop(1, 'rgba(255,243,188,0)'); cx.fillStyle = r; cx.fillRect(-200, -200, W + 400, H + 400); }
+const WX = 150, WY = 150, WW = 1620, WH = 860;   // the main window
+function frame(x, y, w, h, title, dark = true) {
+  cx.save(); cx.shadowColor = 'rgba(0,0,0,.45)'; cx.shadowBlur = 50; cx.shadowOffsetY = 20; cx.fillStyle = dark ? C.win : '#f2f3f5'; rr(x, y, w, h, 14); cx.fill(); cx.restore();
+  cx.fillStyle = dark ? C.winBar : '#e3e6ea'; rr(x, y, w, 44, [14, 14, 0, 0]); cx.fill();
+  ['#e5675d', '#e9b84c', '#6cc565'].forEach((c, j) => { cx.fillStyle = c; cx.beginPath(); cx.arc(x + 24 + j * 22, y + 22, 7, 0, 7); cx.fill(); });
+  cx.font = '600 17px Inter, system-ui'; cx.fillStyle = dark ? '#c9ced6' : '#3c4048'; cx.textAlign = 'left'; cx.textBaseline = 'middle'; cx.fillText(title, x + 100, y + 23);
+  return { x, y: y + 44, w, h: h - 44 };
+}
+function inside(b, fn) { cx.save(); rr(b.x, b.y, b.w, b.h, [0, 0, 14, 14]); cx.clip(); fn(b); cx.restore(); }
+function wrap(text, maxW, font) { cx.font = font; const out = []; for (const para of text.split('\n')) { let line = ''; for (const w of para.split(' ')) { const t = line ? line + ' ' + w : w; if (cx.measureText(t).width > maxW && line) { out.push(line); line = w; } else line = t; } out.push(line); } return out; }
+function chip(s, x, y, o = {}) { cx.font = `700 ${o.size || 30}px Inter, system-ui`; const w = cx.measureText(s).width + 44, h = (o.size || 30) + 26; cx.save(); cx.globalAlpha *= o.k ?? 1;
+  cx.fillStyle = o.bg || 'rgba(20,26,22,.86)'; rr(o.center ? x - w / 2 : x, y, w, h, h / 2); cx.fill(); cx.fillStyle = o.c || C.ivory; cx.textAlign = o.center ? 'center' : 'left'; cx.textBaseline = 'middle'; cx.fillText(s, o.center ? x : x + 22, y + h / 2 + 1); cx.restore(); }
+function mark(x, y, w, h, k) { if (k <= 0) return; cx.save(); cx.globalAlpha *= k; cx.strokeStyle = C.lemon; cx.lineWidth = 5; rr(x - 8, y - 6, w + 16, h + 12, 10); cx.stroke(); cx.fillStyle = 'rgba(243,231,160,.16)'; cx.fill(); cx.restore(); }
+
+// ---------- shot painters (each is a pure function of t) ----------
+const P = {
+  prompt(s, t) {   // the exact prompt, typed out big in a Claude Code window
+    const b = frame(WX, WY, WW, WH, 'Claude Code', true); const lines = REAL[s.p].join('\n').trim();
+    inside(b, () => { const font = '500 34px "JetBrains Mono", monospace', L = wrap(lines, b.w - 150, font), total = lines.length, n = Math.floor(clamp((t - s.t0 - .3) / Math.max(1.5, Math.min(4, (s.dur || 6) * .55))) * total);
+      cx.font = font; cx.textBaseline = 'top'; cx.textAlign = 'left'; let used = 0, y = b.y + 60; cx.fillStyle = C.sage; cx.fillText('❯', b.x + 50, y);
+      for (const l of L) { const take = Math.max(0, Math.min(l.length, n - used)); cx.fillStyle = C.ivory; cx.fillText(l.slice(0, take), b.x + 100, y); used += l.length + 1; if (take < l.length) { if ((t * 2 % 1) < .6) { cx.fillStyle = C.lemon; cx.fillRect(b.x + 100 + cx.measureText(l.slice(0, take)).width + 2, y + 2, 16, 38); } break; } y += 52; }
+      cx.font = '600 22px Inter'; cx.fillStyle = C.mute; cx.fillText('PROMPTS.md · step ' + s.step + ' · in the free skill', b.x + 50, b.y + b.h - 56); });
+  },
+  text(s, t) {   // a real file or output, crisp, with the spoken lines lit
+    const b = frame(WX, WY, WW, WH, s.title, true); let hl = []; for (const [t1, ls] of s.hl || []) if (t >= t1) hl = ls;
+    inside(b, () => { const size = s.size || 30, lh = size * 1.55, lines = REAL[s.file]; const fit = Math.floor((b.h - 80) / lh), first = hl.length ? Math.max(0, Math.min(hl[0] - 3, lines.length - fit)) : 0;
+      cx.font = `500 ${size}px "JetBrains Mono", monospace`; cx.textBaseline = 'middle'; cx.textAlign = 'left';
+      lines.forEach((l, i) => { const y = b.y + 50 + (i - first) * lh; if (y < b.y || y > b.y + b.h) return; const on = hl.includes(i);
+        if (on) { cx.fillStyle = 'rgba(243,231,160,.13)'; cx.fillRect(b.x + 20, y - lh / 2, b.w - 40, lh); }
+        cx.fillStyle = on ? C.lemon : (/^#|^PS>|^\(|^channel/.test(l) ? C.sage : '#d7dae0'); let tx = l.replace(/\*\*/g, ''); const maxW = b.w - 100; if (cx.measureText(tx).width > maxW) { while (tx.length > 4 && cx.measureText(tx + '…').width > maxW) tx = tx.slice(0, -1); tx += '…'; } cx.fillText(tx, b.x + 50, y); }); });
+  },
+  clip(s, t) {   // a reference clip, big, with its channel and its real numbers
+    const x = 240, y = 120, w = 1440, h = 810; const v = VID[s.clip], d = v.duration || 5, ct = (((t - s.t0) * (s.rate || 1) + (s.from || 0)) % (d - .1) + (d - .1)) % (d - .1); WANT.push([s.clip, ct]);
+    cx.save(); cx.shadowColor = 'rgba(0,0,0,.5)'; cx.shadowBlur = 60; cx.fillStyle = '#000'; rr(x, y, w, h, 18); cx.fill(); cx.restore();
+    cx.save(); rr(x, y, w, h, 18); cx.clip(); if (v.readyState >= 2) cx.drawImage(v, x, y, w, h); cx.restore();
+    chip(s.who, x + 24, y + 24, { size: 26 }); if (s.stat) chip(s.stat, W / 2, y + h + 28, { center: true, size: 34, bg: s.statBg || C.lemon, c: s.statC || C.ink, k: clamp((t - s.t0 - .3) / .4) });
+  },
+  page(s, t) {   // a real captured page, fitted, a gentle push to the spoken detail
+    const i = IMG[s.key]; const b = frame(WX, WY, WW, WH, s.title, s.dark);
+    inside(b, () => { if (!i || !i.naturalWidth) return; const sc = b.w / i.naturalWidth, f = s.focus, k = f ? eio((t - s.t0 - .5) / 1.2) : 0, z = 1 + (f ? (s.zoom || 1.4) - 1 : 0) * k;
+      const fx = f ? (f[0] + f[2]) / 2 * sc : b.w / 2, fy = f ? (f[1] + f[3]) / 2 * sc : b.h / 2, ox = lerp(b.w / 2, fx, k), oy = lerp(b.h / 2, fy, k);
+      cx.translate(b.x + b.w / 2, b.y + b.h / 2); cx.scale(z, z); cx.translate(-ox, -oy); cx.drawImage(i, 0, 0, i.naturalWidth * sc, i.naturalHeight * sc);
+      if (s.mark) { const m = s.mark; mark(m[0] * sc, m[1] * sc, (m[2] - m[0]) * sc, (m[3] - m[1]) * sc, clamp((t - s.t0 - 1.4) / .4)); } });
+    if (s.stat) chip(s.stat, W / 2, WY + WH + 14, { center: true, size: 30, bg: C.lemon, c: C.ink, k: clamp((t - s.t0 - .6) / .4) });
+  },
+  img(s, t) { const b = frame(WX, WY, WW, WH, s.title, true); const i = IMG[s.key]; inside(b, () => { cx.fillStyle = '#0c0e0d'; cx.fillRect(b.x, b.y, b.w, b.h); if (!i.naturalWidth) return; const z = 1 + .04 * clamp((t - s.t0) / 6), sc = Math.min(b.w / i.naturalWidth, b.h / i.naturalHeight) * z; cx.drawImage(i, b.x + b.w / 2 - i.naturalWidth * sc / 2, b.y + b.h / 2 - i.naturalHeight * sc / 2, i.naturalWidth * sc, i.naturalHeight * sc); });
+    if (s.stat) chip(s.stat, W / 2, WY + WH + 14, { center: true, size: 30, bg: s.statBg || C.coral, c: s.statC || C.ivory, k: clamp((t - s.t0 - .4) / .4) }); },
+  co(s, t) { const b = frame(WX, WY, WW, WH, s.title || 'localhost:4371/coldopen/film.html', true); inside(b, () => { cx.fillStyle = '#000'; cx.fillRect(b.x, b.y, b.w, b.h); if (coReady()) { co.contentWindow.seek(Math.max(0, s.from + (t - s.t0) * (s.rate || 1))); const hh = b.w * 9 / 16; cx.drawImage(co.contentWindow.document.getElementById('cv'), b.x, b.y + (b.h - hh) / 2, b.w, hh); } });
+    if (s.stat) chip(s.stat, W / 2, WY + WH + 14, { center: true, size: 30, bg: C.lemon, c: C.ink, k: clamp((t - s.t0 - .4) / .4) }); },
+  cofull(s, t) { cx.fillStyle = '#000'; cx.fillRect(0, 0, W, H); if (coReady()) { co.contentWindow.seek(Math.max(0, s.from + t - s.t0)); cx.drawImage(co.contentWindow.document.getElementById('cv'), 0, 0, W, H); } },
+  side(s, t) { const v = VID[s.clip], d = v.duration || 5, ct = ((t - s.t0 + (s.from || 0)) % (d - .1)); WANT.push([s.clip, ct]);
+    const a = frame(40, 200, 900, 560, 'Ifverse · 4.6M views', false), b = frame(980, 200, 900, 560, 'made with Claude', true);
+    inside(a, () => { cx.fillStyle = '#000'; cx.fillRect(a.x, a.y, a.w, a.h); if (v.readyState >= 2) cx.drawImage(v, a.x, a.y, a.w, a.h); });
+    inside(b, () => { cx.fillStyle = '#000'; cx.fillRect(b.x, b.y, b.w, b.h); if (coReady()) { co.contentWindow.seek(Math.max(0, s.coFrom + t - s.t0)); cx.drawImage(co.contentWindow.document.getElementById('cv'), b.x, b.y, b.w, b.h); } });
+    if (s.labels) { const k = clamp((t - s.t0 - .5) / .4); chip(s.labels[0], 490, 800, { center: true, size: 30, k }); chip(s.labels[1], 1430, 800, { center: true, size: 30, bg: C.lemon, c: C.ink, k }); } },
+  pair(s, t) { const a = frame(40, 220, 900, 560, 'before · cold open v1', true), b = frame(980, 220, 900, 560, 'after · cold open v2', true);
+    [[a, s.a], [b, s.b]].forEach(([q, k]) => inside(q, () => { const i = IMG[k]; if (i.naturalWidth) cx.drawImage(i, q.x, q.y, q.w, q.h); }));
+    chip('before', 490, 140, { center: true, size: 28, bg: C.coral }); chip('after', 1430, 140, { center: true, size: 28, bg: C.lemon, c: C.ink }); if (s.stat) chip(s.stat, W / 2, 830, { center: true, size: 30, k: clamp((t - s.t0 - .4) / .4) }); },
+};
+function stepLabel(t) { let st = null; for (const x of STEPS) if (t >= x[0] - .05) st = x; if (!st || !st[1]) return; const k = clamp((t - st[0]) / .4);
+  cx.save(); cx.globalAlpha = k; cx.font = '700 26px Inter'; const a = st[1], b = st[2], wa = cx.measureText(a).width; cx.font = '600 26px Inter'; const wb = cx.measureText(b).width;
+  cx.fillStyle = 'rgba(20,26,22,.88)'; rr(40, 40, wa + wb + 72, 56, 28); cx.fill(); cx.fillStyle = C.lemon; cx.font = '700 26px Inter'; cx.textBaseline = 'middle'; cx.textAlign = 'left'; cx.fillText(a, 64, 69); cx.fillStyle = C.ivory; cx.font = '600 26px Inter'; cx.fillText(b, 64 + wa + 16, 69); cx.restore(); }
+
+// ---------- the cut ----------
+let SHOTS = [], STEPS = [];
+function build() {
+  const A = at, S = [], add = (t0, kind, o = {}) => S.push({ t0, kind, ...o });
+  const rk = (k, x) => (RECTS[k] || {})[x];
+  // hook
+  add(LF.cos[0].t, 'cofull', { from: 0 });
+  add(A(20, 'this stickman film'), 'side', { clip: 'ifv-cup', coFrom: 0, labels: ['Ifverse · 4.6M views', 'mine · made with Claude'] });
+  add(A(20, 'in the next few minutes'), 'text', { file: 'prompts-index', title: 'github.com/Ishaan-Gpt/ishaan-stickmen/PROMPTS.md', size: 38, hl: [[A(20, 'step by step'), [2, 3, 4, 5, 6, 7, 8, 9]]] });
+  add(A(20, 'one command that does'), 'page', { key: 'gh-skill', title: 'github.com/Ishaan-Gpt/ishaan-stickmen', dark: true, focus: rk('gh-skill', 'git clone https://github.com/Ishaan-Gpt/ishaan-stickmen'), zoom: 1.5, mark: rk('gh-skill', 'git clone https://github.com/Ishaan-Gpt/ishaan-stickmen') });
+  // step 1
+  STEPS.push([A(21, 'step one'), 'STEP 1', 'Find what is actually working']);
+  add(A(21, 'step one'), 'prompt', { p: 'p1', step: 1 });
+  add(A(21, 'plus one extra column'), 'text', { file: 'top', title: 'Claude: the top What If films, by views per subscriber', size: 28, hl: [[A(21, 'plus one extra column') + .6, [0]]] });
+  add(A(21, 'but miko getting'), 'clip', { clip: 'miko-love', who: 'Miko', stat: '692K views · only 7.1K subscribers' });
+  add(A(21, 'sorted that way'), 'text', { file: 'top', title: 'Claude: the top What If films, by views per subscriber', size: 28, hl: [[A(21, 'sorted that way'), [3, 4, 5]]] });
+  add(A(21, 'because ifverse'), 'clip', { clip: 'ifv-cup', who: 'Ifverse', stat: '4.6M views · 59K subscribers' });
+  add(A(21, 'minute zero and'), 'clip', { clip: 'mz-speed', who: 'Minute Zero', stat: '2.2M views · 21K subscribers' });
+  add(A(21, 'ifinite are all'), 'clip', { clip: 'ifi-bus', who: 'Ifinite', stat: '1.7M views · 16K subscribers' });
+  // step 2
+  STEPS.push([A(22, 'step two'), 'STEP 2', 'Make Claude really watch the hits']);
+  add(A(22, 'step two'), 'prompt', { p: 'p2', step: 2, dur: 12 });
+  add(A(22, 'every word of the narration'), 'img', { key: 'sheet', title: 'study/ifverse-1.jpg · one frame a second', stat: 'one frame every second', statBg: C.lemon, statC: C.ink });
+  add(A(22, 'then ask for a rulebook'), 'text', { file: 'transcript-ifverse', title: 'study/ifverse.txt · every word, timed', size: 32, hl: [[A(22, 'then ask for a rulebook'), [0, 1, 2]]] });
+  add(A(22, 'mine came back with four rules'), 'text', { file: 'rulebook', title: 'STUDY-whatif.md · the rulebook Claude wrote', size: 26, hl: [[A(22, 'mine came back with four rules') + .3, [0]]] });
+  add(A(22, 'first, prove the power'), 'clip', { clip: 'ifv-fly', who: 'Ifverse · 4.6M', stat: 'Rule 1 · prove the power before you name it' });
+  add(A(22, 'then a falling coffee cup'), 'clip', { clip: 'ifv-cup', who: 'Ifverse · 4.6M', stat: 'Rule 1 · prove the power before you name it' });
+  add(A(22, 'only shows the title'), 'clip', { clip: 'ifv-title', who: 'Ifverse · 4.6M', from: .5, stat: 'the title only lands at 0:35' });
+  add(A(22, 'second, put one number'), 'clip', { clip: 'ifv-number', who: 'Ifverse · 4.6M', stat: 'Rule 2 · one number: 0.25 s against 0.025 s' });
+  add(A(22, 'third, give a friend'), 'clip', { clip: 'ifv-how', who: 'Ifverse · 4.6M', stat: 'Rule 3 · a friend says "How did you do that?"' });
+  add(A(22, 'and fourth, slow down'), 'text', { file: 'transcript-ifverse', title: 'study/ifverse.txt · about 1.6 words a second', size: 32, hl: [[A(22, 'and fourth, slow down'), [0, 1, 2, 3, 4, 5, 6]]] });
+  // step 3
+  STEPS.push([A(23, 'step three'), 'STEP 3', 'Pick an idea nobody has made']);
+  add(A(23, 'step three'), 'prompt', { p: 'p3', step: 3, dur: 8 });
+  add(A(23, 'what if you could rewind'), 'page', { key: 'yt-s-rewind', title: 'youtube.com/results?search_query=what+if+you+could+rewind+10+seconds', stat: '8 copies already · the best has 13K views' });
+  add(A(23, 'what if you only had'), 'page', { key: 'yt-s-words', title: 'youtube.com/results?search_query=what+if+you+only+had+a+limited+number+of+words+left', stat: 'nobody in the genre · a Roblox story got 89K' });
+  add(A(23, 'keep one number'), 'co', { from: 17.2, rate: .5, stat: 'one number over the head: words left' });
+  add(A(23, 'only need to talk'), 'co', { from: 6.6 });
+  add(A(23, "you can't animate"), 'clip', { clip: 'short3d', who: 'my 3D try', stat: 'what you can\'t animate well, you end up cutting', statBg: C.coral, statC: C.ivory });
+  // step 4
+  STEPS.push([A(24, 'step four'), 'STEP 4', 'Write the script with the rules']);
+  add(A(24, 'step four'), 'prompt', { p: 'p4', step: 4 });
+  add(A(24, 'mine opens like this'), 'co', { from: 0, stat: '"You have forty-one words left…"' });
+  // step 5
+  STEPS.push([A(25, 'step five'), 'STEP 5', 'Voice it, for free']);
+  add(A(25, 'step five'), 'page', { key: 'fish-ethan', title: 'fish.audio · Ethan, free model', stat: 'Fish Audio · free model · voice "Ethan"' });
+  add(A(25, 'one command turns'), 'text', { file: 'voice', title: 'PowerShell', size: 32, hl: [[A(25, 'one command turns') + .3, [0, 1]], [A(25, 'then have claude time'), [3, 4]]] });
+  add(A(25, 'so when you say'), 'text', { file: 'timing-always', title: 'coldopen/timing.js · every word to a hundredth of a second', size: 30, hl: [[A(25, 'so when you say'), [13]]] });
+  add(A(25, 'the counter drops'), 'co', { from: 17.3, stat: '41 → 40 on "always"' });
+  // step 6
+  STEPS.push([A(26, 'step six'), 'STEP 6', 'Build the picture: 2D that feels 3D']);
+  add(A(26, 'step six'), 'clip', { clip: 'short3d', who: 'my first try, in 3D', stat: 'two blind judges: 5 out of 10', statBg: C.coral, statC: C.ivory });
+  add(A(26, 'the biggest films'), 'clip', { clip: 'ifi-flip', who: 'Ifinite · 1.7M', stat: 'flat 2D that only feels 3D' });
+  add(A(26, 'so ask for exactly that'), 'prompt', { p: 'p6', step: 6, dur: 9 });
+  add(A(26, 'claude built mine'), 'co', { from: 0, rate: 3, stat: '21 shots · 61 seconds · all code' });
+  // step 7
+  STEPS.push([A(27, 'step seven'), 'STEP 7', 'Judge it blind, then fix it']);
+  add(A(27, 'step seven'), 'prompt', { p: 'p7', step: 7, dur: 9 });
+  add(A(27, 'mine came last'), 'text', { file: 'judges', title: 'coldopen/JUDGE-results.md', size: 28, hl: [[A(27, 'mine came last'), [4]]] });
+  add(A(27, 'no face in the first'), 'img', { key: 'v1-1', title: 'cold open v1 · 0:01', stat: 'no face in the first shot' });
+  add(A(27, 'the wedding ask'), 'img', { key: 'v1-5.5', title: 'cold open v1 · 0:05', stat: 'the wedding ask never shown' });
+  add(A(27, 'a muddy olive'), 'img', { key: 'v1-11', title: 'cold open v1 · 0:11', stat: 'muddy light, a frozen crowd' });
+  add(A(27, 'so i fixed exactly'), 'pair', { a: 'v1-1', b: 'v2-0001.00', stat: 'fixed: your face and the 41 first' });
+  add(A(27, 'judged it again'), 'pair', { a: 'v1-11', b: 'v2-0011.00', stat: 'fixed: brighter, a crowd that reacts' });
+  add(A(27, 'and it scored five'), 'text', { file: 'judges', title: 'coldopen/JUDGE-results.md', size: 28, hl: [[A(27, 'and it scored five'), [5]]] });
+  // step 8
+  STEPS.push([A(28, 'the shortcut'), 'GET IT', 'Everything in one free skill']);
+  add(A(28, 'the shortcut'), 'page', { key: 'gh-skill', title: 'github.com/Ishaan-Gpt/ishaan-stickmen', dark: true, stat: 'free for personal use · PolyForm Noncommercial' });
+  add(A(28, 'every prompt you just saw'), 'text', { file: 'prompts-index', title: 'PROMPTS.md', size: 38, hl: [[A(28, 'every prompt you just saw'), [2, 3, 4, 5, 6, 7, 8, 9]]] });
+  add(A(28, 'one command installs it'), 'page', { key: 'gh-skill', title: 'github.com/Ishaan-Gpt/ishaan-stickmen', dark: true, focus: rk('gh-skill', 'git clone https://github.com/Ishaan-Gpt/ishaan-stickmen'), zoom: 1.5, mark: rk('gh-skill', 'git clone https://github.com/Ishaan-Gpt/ishaan-stickmen') });
+  add(A(28, "you'll need claude itself"), 'page', { key: 'claude-pricing', title: 'claude.com/pricing', stat: 'Claude is a paid plan · everything else is free' });
+  add(A(28, 'my full episode'), 'co', { from: 0, title: 'next · What If You Only Had 1,000 Words Left?' });
+  STEPS.push([LF.cos[1].t, '', '']);
+  add(LF.cos[1].t, 'cofull', { from: LF.cos[1].from });
+  SHOTS = S.sort((a, b) => a.t0 - b.t0); SHOTS.forEach((s, i) => s.dur = (SHOTS[i + 1] ? SHOTS[i + 1].t0 : DUR) - s.t0);
+}
+
+// ---------- the frame: the current shot, crossfading from the last one ----------
+const XF = .3;
+function drawShot(s, t) { cx.save(); const z = 1 + .025 * clamp((t - s.t0) / Math.max(2, s.dur)); if (s.kind !== 'cofull') { cx.translate(W / 2, H / 2); cx.scale(z, z); cx.translate(-W / 2, -H / 2); desk(); } P[s.kind](s, t); cx.restore(); }
+function render(t) {
+  WANT = []; let i = 0; for (let j = 0; j < SHOTS.length; j++) if (t >= SHOTS[j].t0) i = j;
+  const s = SHOTS[i], prev = SHOTS[i - 1], d = t - s.t0;
+  cx.setTransform(1, 0, 0, 1, 0, 0); cx.globalAlpha = 1;
+  if (prev && d < XF) { drawShot(prev, t); cx.globalAlpha = eio(d / XF); drawShot(s, t); cx.globalAlpha = 1; } else drawShot(s, t);
+  stepLabel(t);
+}
+async function seekClips() { await Promise.all(WANT.map(([n, ct]) => new Promise(res => { const v = VID[n]; if (Math.abs(v.currentTime - ct) < .02) return res(); const done = () => { v.removeEventListener('seeked', done); res(); }; v.addEventListener('seeked', done); v.currentTime = ct; setTimeout(res, 3000); }))); }
+window.frameB64 = async t => { render(t); await seekClips(); render(t); return cv.toDataURL('image/jpeg', .9).slice(23); };
+window.seek = render; window.DUR = DUR;
+
+// ---------- live preview ----------
+const au = document.getElementById('au'), pp = document.getElementById('pp'), fill = document.getElementById('fill'), tc = document.getElementById('tc'), bar = document.getElementById('bar'), playB = document.getElementById('play');
+const mmss = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+function syncClips() { for (const n in VID) { const w = WANT.find(x => x[0] === n), v = VID[n]; if (w && !au.paused) { if (Math.abs(v.currentTime - w[1]) > .3) v.currentTime = w[1]; if (v.paused) v.play().catch(() => {}); } else if (!v.paused) v.pause(); } }
+function loop() { const t = au.currentTime; render(t); syncClips(); fill.style.width = (100 * t / DUR) + '%'; tc.textContent = mmss(t); if (!au.paused && !au.ended) requestAnimationFrame(loop); else pp.textContent = 'Play'; }
+pp.onclick = () => { if (au.paused) { au.play(); pp.textContent = 'Pause'; loop(); } else au.pause(); };
+bar.onclick = e => { const r = bar.getBoundingClientRect(); au.currentTime = DUR * (e.clientX - r.left) / r.width; render(au.currentTime); seekClips().then(() => render(au.currentTime)); };
+document.getElementById('td').textContent = mmss(DUR);
+loads.push(new Promise(r => { au.addEventListener('canplaythrough', r, { once: true }); au.load(); setTimeout(r, 20000); }));
+let done = 0; loads.forEach(p => p.then(() => { done++; playB.textContent = `Loading ${done}/${loads.length}…`; }));
+Promise.all([...loads, document.fonts.load('600 26px Inter'), document.fonts.load('500 34px "JetBrains Mono"')]).catch(() => {}).then(() => {
+  build(); render(0); window.__ready = true;
+  if (navigator.webdriver || /embed=1/.test(location.search)) { playB.hidden = true; return; }
+  playB.disabled = false; playB.textContent = 'Play with sound'; playB.onclick = () => { playB.hidden = true; au.currentTime = 0; au.play(); pp.textContent = 'Pause'; loop(); };
+});
+</script></body></html>

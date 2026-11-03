@@ -13,6 +13,15 @@ are getting the essence wrong in itself". **A how-to film's subject is the genre
 genre's famous channels' own clips (short credited excerpts, with their real view counts), and our film made in that genre beside
 them. Why-not-what still holds for OUR film (own premise, own look), but the references themselves are on screen.
 
+## A YouTube long form is for a stranger, and its demo must win (Ishaan, 2026-11-03)
+- **The demo beats the hits.** When a how-to shows its own result beside famous ones, its result must be visibly better (or at least equal):
+  a weaker demo tells the viewer the method does not work. Raise the demo first; never compare down.
+- **It is a video, not a report.** Moving picture most of the time (the result playing, the process in motion, the hits), on-screen text a small
+  minority (a prompt shown once, briefly, then the picture). A film that is mostly text windows or files reads as an email to the owner.
+- **The retention graph, built on purpose:** (1) the reveal first, showing the payoff in the first seconds; (2) the problem the viewer has;
+  (3) structured steps, each ending on a visible result; (4) a reason to stay to the end, promised early and paid last. Study the newest
+  breakouts in the exact niche (the last days, views over subscribers) from the videos themselves before writing a word.
+
 ## The why of a how-to is the viewer's utility (Ishaan, 2026-11-03, "very bad")
 Ask why the viewer clicked. For "how to make X with Claude" the answer is "so I can make X myself". Every section is then one step the
 viewer can do, in order: the exact prompt or command (shown big and long enough to pause and copy), what Claude gives back (the real
