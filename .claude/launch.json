@@ -1,9 +1,303 @@
 {
   "version": "0.0.1",
   "configurations": [
-    { "name": "studio", "runtimeExecutable": "pnpm", "runtimeArgs": ["--filter", "@moovi/studio", "dev"], "port": 3100 },
-    { "name": "landing", "runtimeExecutable": "pnpm", "runtimeArgs": ["--filter", "@moovi/landing", "dev"], "port": 3000 },
-    { "name": "captionseasy-film", "runtimeExecutable": "python", "runtimeArgs": ["-m", "http.server", "4310", "--directory", "docs/launch/captionseasy"], "port": 4310 },
-    { "name": "captionseasy-keynote", "runtimeExecutable": "node", "runtimeArgs": ["docs/launch/serve-range.mjs", "docs/launch/captionseasy-apple", "4320"], "port": 4320 }
+    {
+      "name": "studio",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "@moovi/studio",
+        "dev"
+      ],
+      "port": 3100
+    },
+    {
+      "name": "landing",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "@moovi/landing",
+        "dev"
+      ],
+      "port": 3000
+    },
+    {
+      "name": "captionseasy-film",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4310",
+        "--directory",
+        "docs/launch/captionseasy"
+      ],
+      "port": 4310
+    },
+    {
+      "name": "story-looks-video",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "docs/launch/serve-range.mjs",
+        "docs/agents/story/look-options-c2/remotion/out",
+        "4332"
+      ],
+      "port": 4332
+    },
+    {
+      "name": "story-mascot-film",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "docs/launch/serve-range.mjs",
+        "docs/agents/story/mascot-film/api-vs-mcp",
+        "4372"
+      ],
+      "port": 4372
+    },
+    {
+      "name": "story-mascot-out",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "docs/launch/serve-range.mjs",
+        "docs/agents/story/mascot-film/api-vs-mcp/out",
+        "4373"
+      ],
+      "port": 4373
+    },
+    {
+      "name": "story-style-samples",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "docs/launch/serve-range.mjs",
+        "docs/agents/story/style-samples",
+        "4371"
+      ],
+      "port": 4371
+    },
+    {
+      "name": "story-final-cta-video",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "docs/launch/serve-range.mjs",
+        "docs/agents/story/farm/final-cta",
+        "4370"
+      ],
+      "port": 4370
+    },
+    {
+      "name": "paper-api-vs-mcp-video",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "docs/launch/serve-range.mjs",
+        "docs/agents/story/paper-api-vs-mcp/out/play",
+        "4361"
+      ],
+      "port": 4361
+    },
+    {
+      "name": "story-looks-remotion",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "docs/agents/story/look-options-c2/remotion",
+        "run",
+        "studio",
+        "--",
+        "--port",
+        "4331",
+        "--no-open"
+      ],
+      "port": 4331
+    },
+    {
+      "name": "story-looks-c2",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4330",
+        "--directory",
+        "docs/agents/story/look-options-c2"
+      ],
+      "port": 4330
+    },
+    {
+      "name": "cstack-demo-film",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "docs/agents/story/cstack-demo/film",
+        "run",
+        "studio",
+        "--",
+        "--port",
+        "4340",
+        "--no-open"
+      ],
+      "port": 4340
+    },
+    {
+      "name": "cstack-skill-film",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "docs/agents/story/cstack-demo/film-skill",
+        "run",
+        "studio",
+        "--",
+        "--port",
+        "4341",
+        "--no-open"
+      ],
+      "port": 4341
+    },
+    {
+      "name": "captionseasy-keynote",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "docs/launch/serve-range.mjs",
+        "docs/launch/captionseasy-apple",
+        "4320"
+      ],
+      "port": 4320
+    },
+    {
+      "name": "cstack-round1-video",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "docs/launch/serve-range.mjs",
+        "docs/agents/story/cstack-demo/film-skill/out",
+        "4350"
+      ],
+      "port": 4350
+    },
+    {
+      "name": "story-samples",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "docs/launch/serve-range.mjs",
+        "docs/agents/story",
+        "4333"
+      ],
+      "port": 4333
+    },
+    {
+      "name": "char-sheets",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "docs/launch/serve-range.mjs",
+        "docs/agents/story/char-sheets",
+        "4346"
+      ],
+      "port": 4346
+    },
+    {
+      "name": "coat-film1",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "docs/launch/serve-range.mjs",
+        "docs/agents/story/coat-film1",
+        "4347"
+      ],
+      "port": 4347
+    },
+    {
+      "name": "voice-lab",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "docs/launch/serve-range.mjs",
+        "docs/agents/story/voice-lab/web",
+        "4372"
+      ],
+      "port": 4372
+    },
+    {
+      "name": "coat-film2",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "docs/launch/serve-range.mjs",
+        "docs/agents/story/coat-film2",
+        "4348"
+      ],
+      "port": 4348
+    },
+    {
+      "name": "fetaccino-launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "docs/launch/serve-range.mjs",
+        "docs/agents/story/launch-fetaccino/out",
+        "4393"
+      ],
+      "port": 4393
+    },
+    {
+      "name": "reel-style-dna",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "docs/launch/serve-range.mjs",
+        "docs/agents/story/reel-style-dna",
+        "4401"
+      ],
+      "port": 4401
+    },
+    {
+      "name": "token-router",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "docs/launch/serve-range.mjs",
+        "docs/agents/story/token-router",
+        "4402"
+      ],
+      "port": 4402
+    },
+    {
+      "name": "unslop5",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "docs/launch/serve-range.mjs",
+        "docs/agents/story/unslop5",
+        "4403"
+      ],
+      "port": 4403
+    },
+    {
+      "name": "avatar-ishaan",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "docs/launch/serve-range.mjs",
+        "data/avatar-ishaan/final",
+        "4394"
+      ],
+      "port": 4394
+    },
+    {
+      "name": "hindi-dandi",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "docs/launch/serve-range.mjs",
+        "docs/agents/story/hindi-dandi",
+        "4349"
+      ],
+      "port": 4349
+    },
+    {
+      "name": "hindi-story",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "docs/launch/serve-range.mjs",
+        "docs/agents/story",
+        "4377"
+      ],
+      "port": 4377
+    },
+    {
+      "name": "build-in-public",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "docs/agents/story/build-in-public/tools/serve.cjs",
+        "4371"
+      ],
+      "port": 4371
+    }
   ]
 }
