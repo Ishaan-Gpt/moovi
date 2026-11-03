@@ -13,6 +13,16 @@ are getting the essence wrong in itself". **A how-to film's subject is the genre
 genre's famous channels' own clips (short credited excerpts, with their real view counts), and our film made in that genre beside
 them. Why-not-what still holds for OUR film (own premise, own look), but the references themselves are on screen.
 
+## Then, the form at the shot level (Ishaan, 2026-11-03, 0/10)
+The essence line is not enough on its own: list what is ON SCREEN in the reference every 2 s, from its own frames (a sheet at 0.5 fps),
+and name the kind of picture (real screen, real footage, designed graphic, character animation). Our film uses the same KIND of picture.
+Mr omi's how-to is a screen recording of the real work in almost every frame: the real channel page and its counts, the real folder of
+downloads, his real prompts in Claude Code (the blunt "it looks like a cheap copy" one included), the rulebook file scrolled with the spoken
+line highlighted, real code, real waveforms, frame grids and graphs, the reference Shorts playing large beside his own, and a new picture
+on almost every 2 s sample. I kept his principles and replaced that picture with designed cards and bar charts on a dark grid: "shitty af
+explainer, 0 retention". Rule: a how-to or build-in-public film shows the real work (real pages, prompts, files, outputs, footage), zoomed
+and panned to the line being said; designed graphics only where the reference uses them.
+
 ## What a reference must yield (the "why card", one page, written in words)
 For every reference, answer in plain sentences, each with the timestamp(s) it is seen at:
 1. **Intent**: what is the viewer meant to feel or understand at second 0, 3, mid, end? Why does it hold attention?

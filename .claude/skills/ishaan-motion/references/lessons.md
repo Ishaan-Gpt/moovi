@@ -245,3 +245,8 @@ video and it doesn't feel repetitive." And: "animation is shitty 3/10, so many e
   the fix round, because my own speed rule (1.17.69) said to export scenes as they pass and judge the MP4. Wrong: the page is the preview and
   the judge's material. Rule: checks and blind judges run on frames seeked from the live page (`docs/agents/speed/grab.mjs`, about 0.3-1 s a
   frame, no encode); Ishaan watches the live preview with sound; the single export runs only after he says export.
+- **2026-11-03 · build-in-public long form rough cut 1 · 0/10.** Ishaan: "u did not extract the why from the reference video.. this looks
+  shitty af explainer video... nobody will watch it, 0 retention". I wrote the reference's principles down (proof first, a number every
+  10-20 s, the fall, the free skill) and then built the picture as designed cards and charts on a dark grid. The reference's picture is the
+  real work: a screen recording of real pages, prompts, files, outputs and footage, zoomed to the spoken line, changing every ~2 s. The form
+  of a how-to is its proof, so it is part of the essence. Rule in why-not-what.md ("Then, the form at the shot level").
