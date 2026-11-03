@@ -13,6 +13,13 @@ are getting the essence wrong in itself". **A how-to film's subject is the genre
 genre's famous channels' own clips (short credited excerpts, with their real view counts), and our film made in that genre beside
 them. Why-not-what still holds for OUR film (own premise, own look), but the references themselves are on screen.
 
+## The why of a how-to is the viewer's utility (Ishaan, 2026-11-03, "very bad")
+Ask why the viewer clicked. For "how to make X with Claude" the answer is "so I can make X myself". Every section is then one step the
+viewer can do, in order: the exact prompt or command (shown big and long enough to pause and copy), what Claude gives back (the real
+output), and the result it leads to. The maker's story (the fall, the scores, the corrections) only seasons the steps; when it becomes the
+spine the viewer learns nothing ("even if they watch, they would not get any utility out of it"). Before building, write the steps the viewer
+will be able to do after watching; if the list is short or vague, the film is not a how-to yet.
+
 ## Then, the form at the shot level (Ishaan, 2026-11-03, 0/10)
 The essence line is not enough on its own: list what is ON SCREEN in the reference every 2 s, from its own frames (a sheet at 0.5 fps),
 and name the kind of picture (real screen, real footage, designed graphic, character animation). Our film uses the same KIND of picture.

@@ -1,0 +1,3 @@
+Spawn a fresh agent as a blind judge. Give it contact sheets of three openings,
+mine and two hits from the genre, labelled X, Y and Z, never saying which is mine.
+Use judge/JUDGE-brief.md. Then fix exactly what it names and judge again with a new agent.

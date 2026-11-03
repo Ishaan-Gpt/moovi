@@ -169,6 +169,34 @@ video and it doesn't feel repetitive." And: "animation is shitty 3/10, so many e
   - Night is lit by its practical light, with skin unchanged. It is never grey walls and mud.
 - **Judge the long form against its own Short** in a blind side by side (same beats, matched frames) before anything reaches Ishaan.
   It ships only if it wins.
+- **The other direction: Shorts cut from a long form that is already out (Ishaan, 2026-11-03, Stickman Games ep 1: "u can have cuts..
+  long form had no view.. so make the best cuts so as people must watch long form.. first short is more like a teaser").** When the
+  long form came first and has no audience yet, its Shorts ARE its best cuts: the job is to send viewers to it. The no-repeat rule
+  above is for a long form made after a Short. Pick the moments that hook hardest, reframe them for 9:16 (faces in frame, captions
+  inside the safe area, no burned-in 16:9 captions), and end every cut on an open question the long form answers (never its payoff).
+  Short 1 is a teaser montage of the whole episode; the others are single stories, each cut before its result.
+- **Cuts are re-rendered for 9:16, never cropped (Ishaan, 2026-11-03, on the Stickman Games teaser: "my clips were cut and not optimised
+  for this ratio.. do necessary optimization/transformation").** A centre or panned 608x1080 crop of a 16:9 frame slices faces, loses the
+  subject of every wide and two-shot, and is upscaled 1.8x. A film made in code is re-rendered natively at 1080x1920 for its Short: the
+  same shot cameras (position and target), the vertical field opened about 1.8x so the subject sits whole with headroom, an off-axis lens
+  shift per shot to centre the subject, the in-world overlays (timers) projected for the vertical frame, and 16:9-only overlays (chips,
+  cards, vignettes) rebuilt or graded in the Short's composer. Moovi: `kit/studio-kit.js ?vert=1&vk=&vpan=` and each page's `ST.vert` path.
+- **A teaser Short starts on its stakes line, spoken from frame 1 (Ishaan, 2026-11-03: "start the short directly with.. i brought.. 50..").**
+  No title-only or silent opening shot and no warm-up words before it: the first spoken words are the premise and the stakes ("I brought
+  fifty of the most famous ones under one roof to compete for a billion dollars"), with the hook title laid over that same first shot.
+  For a series, that title is the series' own animated logo (Ishaan, 2026-11-03: "instead of 49 vs 1.. replace it with my 'Stickman games'
+  title with animation"), sized to the 9:16 safe area, never an invented text hook.
+- **A teaser is a movie trailer, never a string of clips (Ishaan, 2026-11-03, 2/10: "so many abrupt cuts.. abrupt music.. abrupt
+  storyline.. extremely bad storytelling.. give me the actual teaser like a teaser is for a movie").** I had cut eleven moments in a row,
+  each carrying its own slice of the episode's sound bed, so the music restarted at every cut and the story jumped. A teaser has:
+  - **Three acts:** the world and the promise (calm, held shots of 2-3 s, crossfades); the rule, the threat proven once and an
+    escalating montage (cuts on the beat, the music building); the climax, then the music drops to silence for the mystery, a big
+    hit on the title card, and one last button line.
+  - **One continuous score designed for the teaser,** with the cuts placed on its beats. It is never each clip's own bed. The
+    episode's effects come in only as chosen hits.
+  - **Dialogue as J-cuts over the music:** a line starts before its picture, and a scene's sound never stops at a hard cut.
+  - **A story a half-watching viewer follows:** who, what is at stake, the rule, the first loss, the escalation, the question.
+    A line never arrives without its setup.
 
 ## Captions: themed, light, never a smudge (Ishaan, 2026-10-31, "u fucked up captions" on the Gandhi long form)
 
@@ -250,3 +278,11 @@ video and it doesn't feel repetitive." And: "animation is shitty 3/10, so many e
   10-20 s, the fall, the free skill) and then built the picture as designed cards and charts on a dark grid. The reference's picture is the
   real work: a screen recording of real pages, prompts, files, outputs and footage, zoomed to the spoken line, changing every ~2 s. The form
   of a how-to is its proof, so it is part of the essence. Rule in why-not-what.md ("Then, the form at the shot level").
+- **2026-11-03 · build-in-public long form v4 · "very bad": no utility, not visible, unsmooth.** Ishaan: "most of it is genuinely either not visible
+  or extremely unsmooth movements, or logicless. I don't find the actual essence of the actual benefit somebody would be getting... when you are
+  saying YouTube, it is just blank screen, unloaded screen... understand why I made you create this video, and then deliver." I chased judges'
+  retention notes and the reference's surface (real screens, highlights) and told my own journey (scores, judges, corrections), so the viewer
+  learned no step they could follow. And I never watched the live preview in real time as he would: clips loaded late into black players,
+  full-page captures stuttered, the camera zoomed 3x into blurry screenshot text. Rules: why-not-what.md "The why of a how-to is the viewer's
+  utility"; checklist: a preview is watched in real time in a browser before it is sent, every asset preloaded behind a loading gate, camera
+  moves calm and text always readable at 1080p.

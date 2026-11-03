@@ -1,0 +1,3 @@
+Find the 20 most viewed "What If" stickman videos uploaded in the last 30 days.
+For each, give me views, the channel's subscribers, and views divided by subscribers.
+Sort by that ratio, so the breakouts from small channels come first.

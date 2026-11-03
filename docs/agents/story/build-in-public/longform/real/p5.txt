@@ -1,0 +1,2 @@
+Voice this with Fish Audio (free model, voice "Ethan") using tools/fish.mjs,
+then time every word with tools/align.py so the counter can change on the exact word.

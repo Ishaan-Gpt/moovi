@@ -1,0 +1,1 @@
+Step five is the voice, and it's free. Fish Audio's free model has a voice called Ethan that reads this kind of story well, and one command turns the script into audio. Then have Claude time every single word, so when you say "always", the counter drops from forty-one to forty on exactly that word.

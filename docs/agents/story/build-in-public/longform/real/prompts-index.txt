@@ -1,0 +1,10 @@
+PROMPTS.md: every prompt, step by step
+
+1. Find what's working
+2. Make Claude really watch the hits
+3. Pick an idea nobody has made
+4. Write the script with the rules
+5. Voice it for free
+6. Build the picture: 2D that feels 3D
+7. Judge it blind, then fix
+8. All of it at once

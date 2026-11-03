@@ -1,0 +1,9 @@
+channel        views       subscribers   views ÷ subs   title
+Miko           692,423       7,100          97.5×       What If You Could See Everyone's Lie Count?
+FunNotSoFun    985,935       5,510         178.9×       What If Your Money Grew 10x Every Day?
+Ifinite      1,753,413      16,300         107.6×       What If You Could See How Long Everyone Has Left?
+Minute Zero  2,221,360      21,300         104.3×       What If You Sped Up and Couldn't Stop?
+Ifverse      4,672,272      59,000          79.2×       What If Your Reaction Time Was 10x Faster?
+IFOLOGY        891,171      50,700          17.6×       What IF You Were 10x Faster?
+
+(yt-dlp metadata, 2026-11-03)

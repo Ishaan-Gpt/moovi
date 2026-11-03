@@ -1,0 +1,20 @@
+## 1. Is the wave still there?
+| Upload week | Long videos uploaded | Median views | Share over 100K | Top video |
+|---|---|---|---|---|
+| Oct 5-11 | 11 | 247K | 72% | 4.59M |
+| Oct 12-18 | 54 | 72K | 46% | 2.03M |
+| Oct 19-25 | 147 | 21K | 20% | 496K |
+| Oct 26-27 (1-2 days old) | 32 | 4K | 6% | 172K |
+
+- **Supply is exploding:** 1 upload a day on Oct 7, 28 a day on Oct 26. Uploads per week went 11 -> 54 -> 147.
+- **Demand per video is falling fast:** the median dropped from 247K to 21K in two weeks. Newer videos are younger,
+  which explains part of it, but not a fall this steep.
+- **The wave is not dead yet:** in the last 6 days, 15 videos passed 125K. Several came from tiny channels:
+  - Miko (4.2K subscribers): 396K
+  - Alternate You (1.5K subscribers): 172K in its first day
+  - OTHERWISE (1.3K subscribers): 155K
+  - Iceloppe (6.5K subscribers): 128K
+- **Verdict:** the genre is past its peak for copies but still rewards a fresh idea. The window is days to a couple of
+  weeks, not months, so speed matters.
+
+## 2. Has anyone done "one by one" (1v1 stickman superpower battles)?

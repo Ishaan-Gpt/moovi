@@ -2,7 +2,7 @@
 // its sound (the hook), sections 1-8, the fixed cold open playing as the payoff, then section 10. Section 9 is cut.
 // Writes vo/vo.wav and timing.js (window.LF: words with film times, secs, cos = cold open segments [{t, e, from}]).
 const fs = require('fs'), cp = require('child_process'), path = require('path'); const GAP = 0.6, V = path.join(__dirname, 'vo');
-const ORDER = [{ co: 'coA', from: 0 }, 1, 11, 2, 3, 4, 5, 6, 7, 8, { co: 'coB', from: 9.0 }, 10];   // v4: the 3D failure (11) moved into minute one
+const ORDER = [{ co: 'coA', from: 0 }, 20, 21, 22, 23, 24, 25, 26, 27, 28, { co: 'coB', from: 9.0 }];   // v5: the tutorial (WHY-v5.md)
 const dur = f => +cp.execSync('ffprobe -v error -show_entries format=duration -of csv=p=0 "' + f + '"').toString();
 let off = 0, words = [], secs = [], cos = [], list = [];
 ORDER.forEach((it, i) => {

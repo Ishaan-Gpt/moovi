@@ -17,7 +17,7 @@ function at(sec, phrase) { const si = LF.secs.findIndex(s => s.n === sec), S = L
 
 // pad: D major family, 8 s a chord, darker in the fall (section 7) and brighter in the climb (8)
 const CH = [[50, 57, 61, 66], [47, 54, 59, 62], [43, 50, 55, 59], [45, 52, 57, 61]], FALL = [[47, 54, 57, 62], [43, 50, 53, 58]];
-{ const lp = [0, 0]; const s7 = LF.secs.find(s => s.n === 7), s8 = LF.secs.find(s => s.n === 8), inCo = t => (LF.cos || []).some(c => t >= c.t - .2 && t < c.e + .2);
+{ const lp = [0, 0]; const s7 = LF.secs.find(s => s.n === 27) || { t: 1e9 }, s8 = LF.secs.find(s => s.n === 28) || { t: 1e9 }, inCo = t => (LF.cos || []).some(c => t >= c.t - .2 && t < c.e + .2);
   for (let i = 0; i < N; i++) { const t = i / SR, inFall = t >= s7.t && t < s8.t, set = inFall ? FALL : CH, c = set[Math.floor(t / 8) % set.length];
     let s = 0; for (let k = 0; k < 4; k++) { const f = mtof(c[k]); for (const d of [-.07, .07]) { const ph = (t * f * Math.pow(2, d / 12)) % 1; s += (2 * ph - 1) * .05; } }
     const a = .012 + .004 * Math.sin(t * .5); lp[0] += a * (s - lp[0]); lp[1] += a * (lp[0] - lp[1]);
@@ -28,7 +28,7 @@ const CH = [[50, 57, 61, 66], [47, 54, 59, 62], [43, 50, 55, 59], [45, 52, 57, 6
 function bell(t, m, g = .2) { const i0 = Math.round(t * SR), f = mtof(m); for (let i = 0; i < SR * 1.6; i++) { const u = i / SR, e = Math.exp(-u * 5) * Math.min(1, u * 400); const s = (Math.sin(2 * Math.PI * f * u) + .3 * Math.sin(2 * Math.PI * f * 2.76 * u) * Math.exp(-u * 9)) * e * g; put(i0 + i, s, s); } }
 function swell(t, g = .14) { const i0 = Math.round((t - 1) * SR); let lp = 0; for (let i = 0; i < SR * 1.6; i++) { const u = i / SR, e = u < 1 ? u * u : Math.exp(-(u - 1) * 4); lp += (.02 + .15 * Math.min(1, u)) * (rnd() - lp); put(i0 + i, lp * e * g, lp * e * g); } }
 LF.secs.forEach(s => swell(s.t));
-[[1, 'four point three out of ten', 74], [2, 'watched four point six', 81], [2, 'and yet fifteen', 86], [3, 'came back with a rulebook', 78], [5, 'hadn\'t been made', 83], [6, 'always', 81], [7, 'mine came last', 62], [8, 'scored it five and a half', 79], [8, 'my bar is eight', 74], [10, 'the full episode', 81]]
+[[20, 'four point six million', 81], [21, 'that column is the trick', 78], [22, 'mine came back with four rules', 78], [23, 'had nobody in the genre', 83], [25, 'from forty-one to forty', 81], [27, 'mine came last', 62], [27, 'and it scored five', 79], [28, 'the shortcut is a skill', 81]]
   .forEach(([s, p, m]) => { const t = at(s, p); bell(t, m, .2); bell(t + .02, m + 7, .08); });
 
 function wav(path) { const b = Buffer.alloc(44 + N * 4); b.write('RIFF', 0); b.writeUInt32LE(36 + N * 4, 4); b.write('WAVEfmt ', 8); b.writeUInt32LE(16, 16); b.writeUInt16LE(1, 20); b.writeUInt16LE(2, 22);

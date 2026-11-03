@@ -1,0 +1,5 @@
+PS> node tools/fish.mjs 536d3a5e000945adb7038665781a4aca script.txt vo.mp3
+{"out":"vo.mp3","model":"s2.1-pro-free","speed":1,"words":27,"seconds":4.4}
+
+PS> python tools/align.py vo.wav script.txt timing.js COLD
+{"asr_words": 205, "script_words": 205, "dur": 62.24}

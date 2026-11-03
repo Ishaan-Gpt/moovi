@@ -1,0 +1,33 @@
+PS> ls data/refs/stickman-whatif/clips, study
+Nov 3     4137361  funnotsofun-money.mp4
+Nov 3     4366256  ifinite-howlong.mp4
+Nov 3     6794946  ifology-10x.mp4
+Nov 3     3878983  ifverse-500iq.mp4
+Nov 3     4026984  ifverse-reaction.mp4
+Nov 3     3684762  miko-liecount.mp4
+Nov 3     9879014  minutezero-spedup.mp4
+
+funnotsofun-money-1.jpg
+funnotsofun-money-2.jpg
+funnotsofun-money-3.jpg
+funnotsofun.txt
+ifinite-howlong-1.jpg
+ifinite-howlong-2.jpg
+ifinite-howlong-3.jpg
+ifinite.txt
+ifology-10x-1.jpg
+ifology-10x-2.jpg
+ifology-10x-3.jpg
+ifology.txt
+ifverse-1.jpg
+ifverse-2.jpg
+ifverse-3.jpg
+ifverse-500iq-1.jpg
+ifverse-500iq-2.jpg
+ifverse-500iq-3.jpg
+ifverse-500iq.txt
+ifverse.txt
+miko-liecount-1.jpg
+miko-liecount-2.jpg
+miko-liecount-3.jpg
+miko.txt

@@ -1,0 +1,22 @@
+window.COLD.words  (faster-whisper, per take)
+
+ 50  N   13.46 →  13.68   it,
+ 51  N   14.00 →  14.24   and
+ 52  N   14.24 →  14.56   everyone
+ 53  N   14.56 →  14.80   knows
+ 54  N   14.80 →  15.06   exactly
+ 55  N   15.06 →  15.54   what
+ 56  N   15.54 →  15.62   a
+ 57  N   15.62 →  15.82   word
+ 58  N   15.82 →  16.08   from
+ 59  N   16.08 →  16.24   you
+ 60  N   16.24 →  16.54   costs.
+ 61  Y   17.97 →  18.43   Always.
+ 62  N   19.66 →  19.76   He
+ 63  N   19.76 →  20.00   cries
+ 64  N   20.00 →  20.34   into
+ 65  N   20.34 →  20.52   his
+ 66  N   20.52 →  21.20   cappuccino,
+ 67  N   21.58 →  21.74   which
+ 68  N   21.74 →  21.88   is
+ 69  N   21.88 →  22.14   fair,

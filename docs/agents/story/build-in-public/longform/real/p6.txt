@@ -1,0 +1,5 @@
+Build the cold open on one canvas, 1920x1080, as a pure function of time.
+2D that feels 3D: matte black ball heads with a light rim on the side the light
+comes from, one colour per character, a bright room the camera pans across, the
+foreground blurred, one light mood. A counter pill over the hero's head that ticks
+on the spoken word. Start from kit/coldopen.html.

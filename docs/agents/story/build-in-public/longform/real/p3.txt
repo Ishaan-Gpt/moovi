@@ -1,0 +1,4 @@
+Here are 5 premises: [list]. Search YouTube for each one and tell me how many
+copies exist and the views of the best copy. Keep a premise only if it is open,
+has one number that can sit over a character's head, and needs only talking,
+looking and simple gestures to act out.
