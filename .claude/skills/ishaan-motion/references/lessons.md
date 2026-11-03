@@ -226,3 +226,22 @@ video and it doesn't feel repetitive." And: "animation is shitty 3/10, so many e
   the reference is not [3d].. maybe the reference might be 2d but feels like 3d thing.. so u also do that. It takes less time but has got
   higher quality". The genre's top video (Ifverse, 4.6M) is 2D silhouettes with layered light and depth; I had planned real 3D by habit.
   Rule: the medium follows the reference (look.md, "Medium"); 2D-with-depth when the reference is 2D-with-depth.
+- **2026-11-03 · the Bhagat Singh Short, 5/10 blind against the viral Gandhi Short's 7.5 · a new character starts from the best rig
+  ever built, never the nearest one.** Ishaan: "even after learning so much, why did u land up bad... u have rigged a human being body
+  once.. u have to improve on rigging. how can u have rigging worse than previous one". I built the hero by copying the nearest
+  three.js rig (the Gandhi family: SDF-ish head, tube limbs, painted mouths) instead of the best human rig already made (the robed
+  figure: MPFB human + Rigify + cloth, "extremely well rigged and smooth"; the avatar-ishaan Blender rig). I also skipped the kit day:
+  the face sat at 6/10 when the film began, so every judge round fixed the face and the staging at once, and 37 shots were placed by
+  coordinates with no pre-viz (faces away, upside-down close-ups, a focus bug, a NaN camera). And I advised dropping his felt hat, his
+  one iconic silhouette, so a generic face had to carry recognition alone.
+  Rules: (1) before any new character, list every rig built so far (repo-wide), name the best by measured quality, start from it or
+  beat it, and show a blind side-by-side where the new one wins or matches; a rig is never worse than the previous best. (2) A new
+  hero is a kit day: 8/10 alone in close-ups and in its film actions (sit, kneel, walk, hands to a prop, every expression the script
+  needs) before a single shot is built. (3) A historical hero keeps his icon (the hat, the glasses, the silhouette) in the hook and
+  the thumbnail, even when a scene would drop it. (4) Shots are pre-vized as a contact sheet of stills (shot size, eyes on the upper
+  third, the face never behind a bar or the camera inside a wall) and judged before animation.
+- **2026-11-03 · build-in-public cold open · one export, at the end, on Ishaan's word.** Ishaan: "again why so many exports.. when only one final
+  export must happen at the end when i say ok done previewed now export". I exported v1 (895 s) only to judge it, then started a v2 export after
+  the fix round, because my own speed rule (1.17.69) said to export scenes as they pass and judge the MP4. Wrong: the page is the preview and
+  the judge's material. Rule: checks and blind judges run on frames seeked from the live page (`docs/agents/speed/grab.mjs`, about 0.3-1 s a
+  frame, no encode); Ishaan watches the live preview with sound; the single export runs only after he says export.

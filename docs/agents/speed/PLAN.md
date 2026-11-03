@@ -1,5 +1,9 @@
 # The one-hour film: speed plan for every video session
 
+> **Correction (Ishaan, 2026-11-03): one export per film, at the very end, after he has watched the live preview and said export.**
+> The per-scene exports in the table below (rows 38-55 and "scenes are exported as they pass") are withdrawn: checks and blind judges
+> run on frames seeked from the live page with `grab.mjs`, which encodes nothing. ishaan-motion 1.17.76.
+
 Written 2026-11-02 by the speed lab session. Every number here was measured on Ishaan's PC, either in the logs the film
 sessions kept or in timed tests run today, and anything that was not measured says so. Read it with `PREFLIGHT.md`
 (the gate every session runs) and `CHECKLIST-PC.md` (what Ishaan does on his PC).
