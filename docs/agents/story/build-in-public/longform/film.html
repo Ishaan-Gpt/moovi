@@ -2,342 +2,268 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Viral Stickman With Claude</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
-html,body{margin:0;background:#101512;height:100%;overflow:hidden}
+html,body{margin:0;background:#141A16;height:100%;overflow:hidden}
 #cv{display:block;width:100vw;height:56.25vw;max-height:100vh;max-width:177.78vh;margin:auto;position:absolute;inset:0}
 #ui{position:fixed;left:0;right:0;bottom:0;display:flex;gap:12px;align-items:center;padding:10px 16px;background:linear-gradient(transparent,rgba(16,21,18,.85));z-index:3;font:600 13px "JetBrains Mono",monospace;color:#F4F1E2;opacity:0;transition:opacity .3s}
 body:hover #ui{opacity:1}
-#ui button{border:0;border-radius:18px;background:#F4F1E2;color:#141A16;font:800 14px "Bricolage Grotesque",system-ui;padding:8px 16px;cursor:pointer}
+#ui button{border:0;border-radius:18px;background:#F4F1E2;color:#141A16;font:600 14px Inter,system-ui;padding:8px 16px;cursor:pointer}
 #bar{flex:1;height:6px;background:rgba(244,241,226,.25);border-radius:3px;cursor:pointer;position:relative}
 #fill{position:absolute;left:0;top:0;bottom:0;background:#F3E7A0;border-radius:3px}
-#play{position:fixed;inset:0;margin:auto;width:200px;height:60px;border:0;border-radius:30px;background:#F4F1E2;color:#141A16;font:800 19px "Bricolage Grotesque",system-ui;cursor:pointer;z-index:4}
+#play{position:fixed;inset:0;margin:auto;width:200px;height:60px;border:0;border-radius:30px;background:#F4F1E2;color:#141A16;font:600 18px Inter,system-ui;cursor:pointer;z-index:4}
 #co{position:fixed;left:-4000px;top:0;width:960px;height:540px;border:0}
 </style></head><body>
 <canvas id="cv" width="1920" height="1080"></canvas>
 <button id="play" hidden>Play with sound</button>
-<div id="ui"><button id="pp">Pause</button><span id="tc">0:00</span><div id="bar"><div id="fill"></div></div><span id="td"></span></div>
+<div id="ui"><button id="pp">Play</button><span id="tc">0:00</span><div id="bar"><div id="fill"></div></div><span id="td"></span></div>
 <audio id="au" src="vo/mix.mp3" preload="auto"></audio>
-<script src="timing.js"></script>
+<script src="timing.js"></script><script src="rects.js"></script><script src="real.js"></script>
 <script>
-// The long form, as a live page: a pure function of t for the drawn layers; the reference clips are seeked videos; our cold open is
-// its own page in an iframe, seeked frame by frame. One canvas, 1920x1080. Export (only when Ishaan says so) uses window.frameB64(t).
+// The long form in the reference's form (ishaan-motion 1.17.77): the real work on screen. Every window shows a real capture (YouTube,
+// GitHub, Fish Audio, Claude's pricing, taken 2026-11-03), a real local file (copied verbatim), a real image, a reference clip in its real
+// player, or our cold open running live. The camera and the highlight land on the exact text being said (positions from tools/locate.mjs).
 const W = 1920, H = 1080, cv = document.getElementById('cv'), cx = cv.getContext('2d');
-const LF = window.LF, WD = LF.words, DUR = LF.dur + .8;
-const FD = '"Bricolage Grotesque", system-ui, sans-serif', FM = '"JetBrains Mono", ui-monospace, monospace';
-// matcha palette, shared with the cold open (sage, lemon light, aubergine, one coral accent)
-const P = { bg0: '#141A16', bg1: '#1F2A23', bg2: '#2C3A31', ink: '#141A16', ivory: '#F4F1E2', paper: '#EFE9D2', lemon: '#F3E7A0', glow: '#FFF3BC',
-  sage: '#9DB38A', sage2: '#6F8A64', aub: '#46304A', aub2: '#5E3352', coral: '#E06B52', mute: '#A9B5A3', line: 'rgba(244,241,226,.14)' };
+const LF = window.LF, WD = LF.words, DUR = LF.dur + 1, RECTS = window.RECTS, REAL = window.REAL;
+const REMOTE = location.protocol === 'https:', SCR = REMOTE ? 'screens/' : '../screens/', EXT = REMOTE ? '.jpg' : '.png', COS = REMOTE ? 'coldopen/film.html?embed=1' : '../coldopen/film.html?embed=1';
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x)), lerp = (a, b, k) => a + (b - a) * k;
-const eout = k => 1 - Math.pow(1 - clamp(k), 3), eio = k => { k = clamp(k); return k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; };
-const back = k => { k = clamp(k); const c = 1.5; return 1 + (c + 1) * Math.pow(k - 1, 3) + c * Math.pow(k - 1, 2); };
-function rr(x, y, w, h, r) { cx.beginPath(); cx.roundRect(x, y, w, h, r); }
-function grad(y0, y1, stops) { const g = cx.createLinearGradient(0, y0, 0, y1); stops.forEach(([k, c]) => g.addColorStop(k, c)); return g; }
-function glowAt(x, y, r, c = P.glow, a = .5) { const g = cx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, c); g.addColorStop(1, 'rgba(255,243,188,0)'); cx.save(); cx.globalAlpha = a; cx.globalCompositeOperation = 'screen'; cx.fillStyle = g; cx.fillRect(x - r, y - r, r * 2, r * 2); cx.restore(); }
-const fmt = n => Math.round(n).toLocaleString('en-US');
-
-// ---------- the word clock ----------
+const eio = k => { k = clamp(k); return k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; };
 const norm = s => s.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
-function at(sec, phrase, off = 0) {
-  const S = LF.secs[sec - 1], toks = phrase.split(/\s+/).map(norm), end = sec < LF.secs.length ? LF.secs[sec].i0 : WD.length;
+function at(sec, phrase, off = 0) { const S = LF.secs[sec - 1], toks = phrase.split(/\s+/).map(norm), end = sec < LF.secs.length ? LF.secs[sec].i0 : WD.length;
   for (let i = S.i0; i < end; i++) { let ok = true; for (let k = 0; k < toks.length; k++) if (!WD[i + k] || norm(WD[i + k].w) !== toks[k]) { ok = false; break; } if (ok) return WD[i].t + off; }
-  console.warn('phrase not found', sec, phrase); return S.t + off;
-}
-const SEC = n => LF.secs[n - 1];
-const since = (t, t0, d = .5) => clamp((t - t0) / d);
+  console.warn('missing', sec, phrase); return S.t + off; }
+function rr(x, y, w, h, r) { cx.beginPath(); cx.roundRect(x, y, w, h, r); }
+const R = (page, text) => (RECTS[page] || {})[text] || [400, 400, 1600, 600];
 
 // ---------- assets ----------
-const IMG = {}, VID = {};
-['v1-1', 'v1-5.5', 'v1-11', 'v1-22', 'v2-0001.00', 'v2-0005.50', 'v2-0011.00', 'v2-0022.00', 'short3d-b', 'sheet-ifverse-1', 'sheet-ifinite-howlong-1', 'sheet-miko-liecount-1', 'sheet-ifology-10x-1']
-  .forEach(n => { const i = new Image(); i.src = 'img/' + n + '.jpg'; IMG[n] = i; });
-const CLIPS = { 'ifv-fly': 5, 'ifv-cup': 6, 'ifv-number': 6, 'ifv-title': 6, 'ifv-how': 4, 'mz-speed': 6, 'ifi-bus': 6, 'ifi-flip': 5, 'miko-love': 5, 'ifo-3d': 5, 'fnsf-money': 5, 'ifv-iq': 6 };
-for (const n in CLIPS) { const v = document.createElement('video'); v.src = 'clips/' + n + '.mp4'; v.muted = true; v.playsInline = true; v.preload = 'auto'; VID[n] = v; }
-const CREDIT = { 'ifv': 'Ifverse', 'mz': 'Minute Zero', 'ifi': 'Ifinite', 'miko': 'Miko', 'ifo': 'IFOLOGY', 'fnsf': 'FunNotSoFun' };
-let WANT = [];   // clips this frame needs: [name, clip time]
-// a clip in a card: plays from film time t0, holds its last frame
-function clip(name, x, y, w, h, t, t0, o = {}) {
-  const v = VID[name], ct = Math.min(CLIPS[name] - .05, Math.max(0, (t - t0) * (o.rate || 1) + (o.from || 0)));
-  WANT.push([name, ct]);
-  cx.save(); rr(x, y, w, h, o.r ?? 18); cx.clip(); cx.fillStyle = '#0c0f0d'; cx.fillRect(x, y, w, h);
-  if (v.readyState >= 2) { const vw = v.videoWidth || 16, vh = v.videoHeight || 9, s = Math.max(w / vw, h / vh), z = o.zoom || 1; cx.drawImage(v, x + w / 2 - vw * s * z / 2, y + h / 2 - vh * s * z / 2, vw * s * z, vh * s * z); }
+const IMG = {}, img = (k, src) => { if (IMG[k]) return IMG[k]; const i = new Image(); i.src = src; IMG[k] = i; return i; };
+['yt-ifverse-watch', 'yt-ifverse-videos', 'yt-mz-watch', 'yt-ifinite-watch', 'yt-miko-watch', 'yt-ifology-watch', 'yt-fnsf-watch', 'yt-search', 'yt-s-rewind', 'yt-s-words',
+ 'gh-coldopen', 'gh-judges', 'gh-film', 'gh-grab', 'gh-brief', 'fish-ethan', 'claude-pricing'].forEach(k => img(k, SCR + k + EXT));
+['gh-study', 'gh-plan1', 'gh-short-timings', 'gh-co-script', 'gh-co-timings', 'yt-search', 'yt-s-rewind', 'yt-s-words'].forEach(k => img(k + '-full', SCR + k + '-full' + EXT));
+['v1-1', 'v1-5.5', 'v1-11', 'v2-0001.00', 'v2-0005.50', 'v2-0011.00'].forEach(k => img(k, 'img/' + k + '.jpg')); img('sheet', 'real/sheet-ifverse.jpg');
+const CLIPS = ['ifv-fly', 'ifv-cup', 'ifv-number', 'ifv-title', 'ifv-how', 'mz-speed', 'ifi-bus', 'ifi-flip', 'miko-love', 'ifo-3d', 'fnsf-money', 'ifv-iq', 'short3d'], VID = {};
+CLIPS.forEach(n => { const v = document.createElement('video'); v.src = 'clips/' + n + '.mp4'; v.muted = true; v.preload = 'auto'; v.playsInline = true; VID[n] = v; });
+const co = document.createElement('iframe'); co.id = 'co'; co.src = COS; document.body.appendChild(co);
+const coReady = () => { try { return co.contentWindow.__ready === true; } catch { return false; } };
+let WANT = [];
+
+// ---------- the desktop and the window ----------
+function wallpaper() { const g = cx.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#2C3A31'); g.addColorStop(.5, '#6F8A64'); g.addColorStop(1, '#C9C27E'); cx.fillStyle = g; cx.fillRect(-3000, -3000, W + 6000, H + 6000);
+  const r = cx.createRadialGradient(1500, 200, 0, 1500, 200, 1300); r.addColorStop(0, 'rgba(255,243,188,.35)'); r.addColorStop(1, 'rgba(255,243,188,0)'); cx.fillStyle = r; cx.fillRect(-3000, -3000, W + 6000, H + 6000); }
+const CW = 2400, CH = 1500;   // window content in capture px (1600 x 1000 css at 1.5)
+// a window at desktop (x, y, w); content drawn in capture px by fn, scrolled by sy
+function windowAt(x, y, w, title, dark, sy, fn, ch = CH) {
+  const k = w / CW, h = ch * k;
+  cx.save(); cx.shadowColor = 'rgba(0,0,0,.45)'; cx.shadowBlur = 60; cx.shadowOffsetY = 24; cx.fillStyle = dark ? '#1b1d21' : '#eceef1'; rr(x, y, w, h + 46, 14); cx.fill(); cx.restore();
+  cx.fillStyle = dark ? '#1b1d21' : '#e3e6ea'; rr(x, y, w, 46, [14, 14, 0, 0]); cx.fill();
+  ['#e5675d', '#e9b84c', '#6cc565'].forEach((c, j) => { cx.fillStyle = c; cx.beginPath(); cx.arc(x + 24 + j * 22, y + 23, 7, 0, 7); cx.fill(); });
+  cx.fillStyle = dark ? '#2a2d33' : '#fff'; rr(x + 110, y + 9, w - 220, 28, 14); cx.fill();
+  cx.font = '500 15px Inter, system-ui'; cx.fillStyle = dark ? '#c9ced6' : '#3c4048'; cx.textBaseline = 'middle'; cx.textAlign = 'left'; cx.fillText(title, x + 130, y + 24);
+  cx.save(); rr(x, y + 46, w, h, [0, 0, 14, 14]); cx.clip(); cx.translate(x, y + 46); cx.scale(k, k); cx.translate(0, -sy); fn(); cx.restore();
+  return { x, y: y + 46, k, sy };
+}
+const P2D = (w, px, py) => [w.x + px * w.k, w.y + (py - w.sy) * w.k];
+
+// content painters (capture px)
+function pageImg(key, sy) { const i = IMG[key]; if (i && i.complete && i.naturalWidth) cx.drawImage(i, 0, 0); }
+function playerClip(name, ct, r) { const v = VID[name], dur = v.duration || 5; ct = ((ct % (dur - .1)) + (dur - .1)) % (dur - .1); WANT.push([name, ct]); cx.save(); cx.beginPath(); cx.rect(r[0], r[1], r[2] - r[0], r[3] - r[1]); cx.clip(); cx.fillStyle = '#000'; cx.fillRect(r[0], r[1], r[2] - r[0], r[3] - r[1]);
+  if (v.readyState >= 2) { const s = Math.max((r[2] - r[0]) / v.videoWidth, (r[3] - r[1]) / v.videoHeight); cx.drawImage(v, (r[0] + r[2]) / 2 - v.videoWidth * s / 2, (r[1] + r[3]) / 2 - v.videoHeight * s / 2, v.videoWidth * s, v.videoHeight * s); } cx.restore(); }
+const TL = 66, TX = 90, TY = 130;   // text window line layout (capture px)
+function textFile(lines, hl) { cx.fillStyle = '#16181c'; cx.fillRect(0, 0, CW, Math.max(CH, TY + lines.length * TL + 200)); cx.font = '500 40px "JetBrains Mono", monospace'; cx.textBaseline = 'middle'; cx.textAlign = 'left';
+  lines.forEach((l, i) => { const y = TY + i * TL; cx.fillStyle = '#5c6370'; cx.fillText(String(i + 1).padStart(3), 10, y); cx.fillStyle = hl.includes(i) ? '#F3E7A0' : (l.startsWith('#') || l.startsWith('PS>') ? '#9DB38A' : '#d7dae0'); cx.fillText(l.length > 92 ? l.slice(0, 92) + '…' : l, TX + 90, y); }); }
+const lineRect = (i, j = i) => [TX + 70, TY + i * TL - 34, 2300, TY + j * TL + 34];
+function imageFit(key) { const i = IMG[key]; cx.fillStyle = '#0d0f0d'; cx.fillRect(0, 0, CW, CH); if (!i || !i.naturalWidth) return; const s = Math.min(CW / i.naturalWidth, CH / i.naturalHeight); cx.drawImage(i, (CW - i.naturalWidth * s) / 2, (CH - i.naturalHeight * s) / 2, i.naturalWidth * s, i.naturalHeight * s); }
+function coFrame(ct) { cx.fillStyle = '#000'; cx.fillRect(0, 0, CW, CH); if (coReady()) { co.contentWindow.seek(Math.max(0, ct)); cx.drawImage(co.contentWindow.document.getElementById('cv'), 0, 75, CW, 1350); } }
+function videoFull(name, ct) { playerClip(name, ct, [0, 75, CW, 1425]); }
+
+// highlight + cursor
+function mark(w, r, k) { if (k <= 0) return; const [x, y] = P2D(w, r[0], r[1]), [x2, y2] = P2D(w, r[2], r[3]), p = 8;
+  cx.save(); cx.globalAlpha = k; cx.strokeStyle = '#F3E7A0'; cx.lineWidth = 5; rr(x - p, y - p, x2 - x + 2 * p, y2 - y + 2 * p, 10); cx.stroke(); cx.fillStyle = 'rgba(243,231,160,.16)'; cx.fill(); cx.restore();
+  const q = eio(k); cursor(lerp(x2 + 160, Math.min(x2, x + 220) - 6, q), lerp(y2 + 120, y2 - 4, q)); }
+function cursor(x, y) { cx.save(); cx.translate(x, y); cx.fillStyle = '#fff'; cx.strokeStyle = '#111'; cx.lineWidth = 2; cx.beginPath(); cx.moveTo(0, 0); cx.lineTo(0, 30); cx.lineTo(8, 23); cx.lineTo(14, 36); cx.lineTo(19, 34); cx.lineTo(13, 21); cx.lineTo(23, 21); cx.closePath(); cx.fill(); cx.stroke(); cx.restore(); }
+
+// ---------- a shot ----------
+// { t0, kind: 'page'|'text'|'img'|'co'|'video'|'pair'|'side', key, title, dark, full, clip: [name, t0, from], lines, keys: [[t, rect, share]], marks: [[t, rect]], hl: [[t, [lines]]], co: [from, rate] }
+const MAIN = { x: 160, y: 70, w: 1600 };
+function contentH(s) { if (s.kind === 'page' && s.full) { const i = IMG[s.key + '-full']; return i && i.naturalHeight || CH; } if (s.kind === 'text') return TY + s.lines.length * TL + 200; return CH; }
+const syFor = (s, r) => { const hmax = contentH(s) - CH; return hmax <= 0 ? 0 : clamp((r[1] + r[3]) / 2 - CH * .42, 0, hmax); };
+function interp(keys, t) { let a = keys[0]; for (const k of keys) if (t >= k[0]) a = k; const i = keys.indexOf(a), b = keys[i + 1] || a; const q = b === a ? 0 : eio((t - a[0]) / Math.max(.2, Math.min(.9, b[0] - a[0])));
+  if (b === a || t < b[0] - Math.min(.9, b[0] - a[0])) return [a[1], a[2]];   // hold, then glide in the last 0.9 s before the next key
+  const q2 = eio((t - (b[0] - Math.min(.9, b[0] - a[0]))) / Math.min(.9, b[0] - a[0])); return [a[1].map((v, j) => lerp(v, b[1][j], q2)), lerp(a[2], b[2], q2)]; }
+function drawShot(s, t) {
+  const keys = s.keys || [[s.t0, [0, 0, CW, CH], 1]]; let [rect, share] = interp(keys, t);
+  if (s.kind === 'pair') return drawPair(s, t, rect, share);
+  if (s.kind === 'side') return drawSide(s, t);
+  const sy = syFor(s, rect), title = s.title || '';
+  const paint = () => {
+    if (s.kind === 'page') { pageImg(s.full ? s.key + '-full' : s.key); if (s.clip) playerClip(s.clip[0], (t - s.clip[1]) + (s.clip[2] || 0), R(s.key, '#movie_player')); }
+    else if (s.kind === 'text') { let hl = []; for (const [t1, ls] of s.hl || []) if (t >= t1) hl = ls; textFile(s.lines, hl); }
+    else if (s.kind === 'img') imageFit(s.key);
+    else if (s.kind === 'co') coFrame(s.co[0] + (t - s.t0) * (s.co[1] ?? 1));
+    else if (s.kind === 'video') videoFull(s.clip[0], t - s.t0 + (s.clip[2] || 0));
+  };
+  // the camera: frame the interpolated rect at the interpolated share of the screen width
+  const w0 = { x: MAIN.x, y: MAIN.y + 46, k: MAIN.w / CW, sy }; const [x1, y1] = P2D(w0, rect[0], rect[1]), [x2, y2] = P2D(w0, rect[2], rect[3]);
+  let lastK = keys[0][0]; for (const k of keys) if (t >= k[0]) lastK = k[0]; for (const [t1] of s.marks || []) if (t >= t1 && t1 > lastK) lastK = t1; const dr = Math.min(7, t - lastK);
+  const z = Math.min(3.2, W * share / Math.max(40, x2 - x1)) * (1 + .014 * dr); cx.save(); cx.translate(W / 2, H / 2); cx.scale(z, z); cx.translate(-(x1 + x2) / 2 - dr * 5, -(y1 + y2) / 2 + dr * 2);
+  wallpaper(); const w = windowAt(MAIN.x, MAIN.y, MAIN.w, title, s.dark, sy, paint);
+  let m = null, mt = 0; for (const [t1, r] of s.marks || []) if (t >= t1) { m = r; mt = t1; } if (m) mark(w, m, clamp((t - mt) / .4));
   cx.restore();
-  if (o.credit !== false) { const who = CREDIT[name.split('-')[0]]; cx.font = `700 ${o.cs || 22}px ${FM}`; const tw = cx.measureText(who).width; cx.fillStyle = 'rgba(16,21,18,.78)'; rr(x + 14, y + 14, tw + 28, (o.cs || 22) + 18, 10); cx.fill(); cx.fillStyle = P.ivory; cx.textBaseline = 'middle'; cx.textAlign = 'left'; cx.fillText(who, x + 28, y + 14 + ((o.cs || 22) + 18) / 2 + 1); }
-  cx.strokeStyle = 'rgba(244,241,226,.18)'; cx.lineWidth = 2; rr(x, y, w, h, o.r ?? 18); cx.stroke();
 }
-// our cold open, live from its own page in a hidden iframe (falls back to stills)
-const co = document.createElement('iframe'); co.id = 'co';
-co.src = (location.protocol === 'https:' && /claude|artifact/.test(location.host + location.pathname)) ? 'coldopen/film.html?embed=1' : '../coldopen/film.html?embed=1';
-document.body.appendChild(co);
-function coReady() { try { return co.contentWindow && co.contentWindow.__ready === true; } catch { return false; } }
-function ours(x, y, w, h, ct, o = {}) {
-  cx.save(); rr(x, y, w, h, o.r ?? 18); cx.clip(); cx.fillStyle = '#0c0f0d'; cx.fillRect(x, y, w, h);
-  if (coReady()) { try { co.contentWindow.seek(ct); const c = co.contentWindow.document.getElementById('cv'); const s = Math.max(w / 1920, h / 1080); cx.drawImage(c, x + w / 2 - 960 * s, y + h / 2 - 540 * s, 1920 * s, 1080 * s); } catch (e) { stillFallback(x, y, w, h, ct); } }
-  else stillFallback(x, y, w, h, ct);
-  cx.restore();
-  if (o.credit !== false) { cx.font = `700 22px ${FM}`; const lab = o.label || 'Made with Claude'; const tw = cx.measureText(lab).width; cx.fillStyle = P.lemon; rr(x + 14, y + 14, tw + 28, 40, 10); cx.fill(); cx.fillStyle = P.ink; cx.textBaseline = 'middle'; cx.textAlign = 'left'; cx.fillText(lab, x + 28, y + 35); }
-  cx.strokeStyle = 'rgba(243,231,160,.5)'; cx.lineWidth = 3; rr(x, y, w, h, o.r ?? 18); cx.stroke();
-}
-function stillFallback(x, y, w, h, ct) { const k = ct < 3 ? 'v2-0001.00' : ct < 8 ? 'v2-0005.50' : ct < 16 ? 'v2-0011.00' : 'v2-0022.00'; img(k, x, y, w, h); }
-function img(k, x, y, w, h, o = {}) { const i = IMG[k]; if (!i || !i.complete || !i.naturalWidth) return; const s = Math.max(w / i.naturalWidth, h / i.naturalHeight) * (o.zoom || 1); cx.save(); rr(x, y, w, h, o.r ?? 18); cx.clip(); cx.drawImage(i, x + w / 2 - i.naturalWidth * s / 2 + (o.dx || 0), y + h / 2 - i.naturalHeight * s / 2 + (o.dy || 0), i.naturalWidth * s, i.naturalHeight * s); cx.restore(); }
+function drawPair(s, t) {   // before | after, two image windows
+  cx.save(); const z = lerp(1, 1.04, clamp((t - s.t0) / 4)); cx.translate(W / 2, H / 2); cx.scale(z, z); cx.translate(-W / 2, -H / 2); wallpaper();
+  windowAt(60, 220, 880, 'before · coldopen v1 · frame ' + s.label, true, 0, () => imageFit(s.a));
+  windowAt(980, 220, 880, 'after · coldopen v2 · frame ' + s.label, true, 0, () => imageFit(s.b));
+  cx.font = '600 30px Inter'; cx.fillStyle = '#F4F1E2'; cx.textAlign = 'center'; cx.fillText('before', 500, 190); cx.fillText('after', 1420, 190); cx.restore(); }
+function drawSide(s, t) {   // a reference film beside ours
+  cx.save(); const z = lerp(1, 1.06, clamp((t - s.t0) / 5)); cx.translate(W / 2, H / 2); cx.scale(z, z); cx.translate(-W / 2, -H / 2); wallpaper();
+  windowAt(40, 170, 920, 'youtube.com/watch?v=MroF1XmHOZw · Ifverse · 4.6M views', false, 0, () => playerClip(s.clip, t - s.t0, [0, 75, CW, 1425]));
+  windowAt(980, 170, 900, 'localhost:4371/coldopen/film.html · made with Claude', true, 0, () => coFrame(s.from + t - s.t0)); cx.restore(); }
 
-// ---------- the studio: a dark matcha desk with a fine paper grid and a lemon lamp ----------
-function studio(t, glowX = 1500) {
-  cx.fillStyle = grad(0, H, [[0, P.bg1], [1, P.bg0]]); cx.fillRect(0, 0, W, H);
-  cx.strokeStyle = P.line; cx.lineWidth = 1; cx.globalAlpha = .45; for (let x = 0; x < W; x += 60) { cx.beginPath(); cx.moveTo(x, 0); cx.lineTo(x, H); cx.stroke(); } for (let y = 0; y < H; y += 60) { cx.beginPath(); cx.moveTo(0, y); cx.lineTo(W, y); cx.stroke(); } cx.globalAlpha = 1;
-  glowAt(glowX + Math.sin(t * .2) * 60, 120, 900, P.glow, .16); glowAt(300, 1000, 700, '#9DB38A', .1);
+// ---------- the cut, keyed to the voice ----------
+let SHOTS = [];
+function build() {
+  const A = at, P = (k, x) => R(k, x), ALL = [0, 0, CW, CH];
+  const WATCH = k => ({ player: P(k, '#movie_player'), views: P(k, Object.keys(RECTS[k] || {}).find(x => /views/.test(x)) || '#movie_player') });
+  const page = (t0, key, title, o = {}) => ({ t0, kind: 'page', key, title, dark: key.startsWith('gh-'), ...o });
+  const text = (t0, name, title, o = {}) => ({ t0, kind: 'text', lines: REAL[name], title, dark: true, ...o });
+  const iv = WATCH('yt-ifverse-watch'), mz = WATCH('yt-mz-watch'), ifi = WATCH('yt-ifinite-watch'), mk = WATCH('yt-miko-watch'), ifo = WATCH('yt-ifology-watch'), fn = WATCH('yt-fnsf-watch');
+  const yt = 'youtube.com/watch?v=', gh = 'github.com/Ishaan-Gpt/moovi/blob/main/docs/agents/story/build-in-public/';
+  const S = [];
+  // 1 · proof
+  S.push(page(0, 'yt-ifverse-watch', yt + 'MroF1XmHOZw', { clip: ['ifv-fly', 0], keys: [[0, iv.player, .95], [A(1, 'four point six million') + .3, iv.views, .3]], marks: [[A(1, 'four point six million') + .7, iv.views]] }));
+  S.push(page(A(1, 'on a channel'), 'yt-ifverse-videos', 'youtube.com/@IfverseTales/videos', { keys: [[A(1, 'on a channel'), [680, 420, 1500, 560], .7], [A(1, 'on a channel') + 1, [681, 496, 1094, 526], .45]], marks: [[A(1, 'on a channel') + 1.2, [681, 496, 1094, 526]]] }));
+  S.push({ t0: A(1, 'and the one playing'), kind: 'side', clip: 'ifv-cup', from: 1 });
+  S.push(page(A(1, 'i made with claude'), 'gh-coldopen', 'github.com/Ishaan-Gpt/moovi/tree/main/docs/agents/story/build-in-public/coldopen', { keys: [[A(1, 'i made with claude'), [520, 340, 1700, 420], .7], [A(1, 'this morning'), [506, 560, 2380, 1180], .95]], marks: [[A(1, 'i made with claude') + .3, P('gh-coldopen', 'Ishaan-Gpt')], [A(1, 'this morning') + .5, [2200, 560, 2380, 1180]]] }));
+  S.push(page(A(1, 'every other tool'), 'fish-ethan', 'fish.audio/m/536d3a5e000945adb7038665781a4aca', { keys: [[A(1, 'every other tool'), [520, 470, 1900, 760], .75]], marks: [[A(1, 'every other tool') + .6, [683, 640, 1680, 720]]] }));
+  S.push(page(A(1, 'by the end'), 'gh-study', gh + 'STUDY-whatif.md', { full: true, keys: [[A(1, 'by the end'), [634, 300, 2200, 900], .95], [A(1, 'by the end') + 2.4, P('gh-study', 'The rulebook (what all seven share)'), .8]] }));
+  S.push(page(A(1, 'where mine fell apart'), 'gh-judges', gh + 'coldopen/JUDGE-results.md', { keys: [[A(1, 'where mine fell apart'), [683, 720, 1476, 900], .6]], marks: [[A(1, 'where mine fell apart') + .5, P('gh-judges', '4.3')]] }));
+  S.push(page(A(1, 'take the whole system'), 'gh-coldopen', 'github.com/Ishaan-Gpt/moovi', { keys: [[A(1, 'take the whole system'), [0, 380, 600, 1500], .45], [A(1, 'take the whole system') + 2.5, ALL, 1]] }));
+  // 2 · the gold rush
+  const g0 = A(2, 'the genre is called');
+  S.push(page(g0, 'yt-search', 'youtube.com/results?search_query=what+if+stickman', { full: true, keys: [[g0, [420, 160, 2340, 1300], .95], [g0 + 2.6, [420, 1500, 2340, 2700], .95]] }));
+  const o7 = A(2, 'seventh of october'), w46 = A(2, 'watched four point six');
+  const hd = A(2, 'a kid in a red hoodie');
+  S.push(page(o7, 'yt-ifverse-watch', yt + 'MroF1XmHOZw', { clip: ['ifv-cup', o7], keys: [[o7, [24, 1080, 1692, 1300], .7], [o7 + 1.6, iv.player, .95], [hd, [500, 250, 1400, 900], .9], [A(2, 'ten times faster than yours'), iv.player, .95], [w46 - .3, iv.views, .32]], marks: [[o7 + .4, [24, 1080, 1100, 1140]], [w46, iv.views]] }));
+  const m0 = A(2, 'minute zero'), m1 = A(2, 'got two point two million');
+  S.push(page(m0, 'yt-mz-watch', yt + 'gpLC_ELulyg', { clip: ['mz-speed', m0], keys: [[m0, mz.player, .9], [m0 + 1, P('yt-mz-watch', '21.3K subscribers'), .3], [m1, mz.views, .3]], marks: [[m0 + 1.3, P('yt-mz-watch', '21.3K subscribers')], [m1 + .3, mz.views]] }));
+  const i0 = A(2, 'ifinite'), i1 = A(2, 'got one point seven million');
+  S.push(page(i0, 'yt-ifinite-watch', yt + 'u2GyTKhHsTQ', { clip: ['ifi-bus', i0], keys: [[i0, ifi.player, .9], [i0 + .8, P('yt-ifinite-watch', '16.3K subscribers'), .3], [i1, ifi.views, .3]], marks: [[i0 + 1, P('yt-ifinite-watch', '16.3K subscribers')], [i1 + .3, ifi.views]] }));
+  const k0 = A(2, 'a channel called miko'), k1 = A(2, 'almost seven hundred thousand'), k2 = A(2, 'only seven thousand');
+  S.push(page(k0, 'yt-miko-watch', yt + 'MGZdDZyQUGg', { clip: ['miko-love', k0], keys: [[k0, mk.player, .9], [k1, mk.views, .3], [k2, P('yt-miko-watch', '7.1K subscribers'), .3], [A(2, 'quit their jobs'), [24, 1100, 1700, 1260], .8]], marks: [[k1 + .3, mk.views], [k2 + .3, P('yt-miko-watch', '7.1K subscribers')]] }));
+  const n0 = A(2, 'then everybody noticed'), mkt = 'C:/…/stick-games/MARKET.md · 288 videos, measured';
+  const e11 = A(2, 'eleven of these'), e54 = A(2, 'fifty-four in the second'), e147 = A(2, 'a hundred and forty-seven'), tyv = A(2, 'the typical new video'), lo = A(2, 'share the leftovers'), f15 = A(2, 'and yet fifteen');
+  S.push(text(n0, 'market', mkt, { keys: [[n0, [0, 0, CW, 900], .95], [e11, [150, 280, 1500, 420], .6], [e54, [150, 280, 1500, 480], .62], [e147, [150, 280, 1500, 540], .62], [tyv, [150, 120, 2300, 760], .9], [tyv + 1.6, lineRect(9, 10), .85]], hl: [[e11, [3]], [e54, [3, 4]], [e147, [3, 4, 5]], [tyv, [3, 4, 5]], [tyv + 1.6, [9, 10]]] }));
+  S.push(page(lo, 'yt-search', 'youtube.com/results?search_query=what+if+stickman', { full: true, keys: [[lo, [420, 2600, 2340, 3800], .95], [lo + 1.3, [420, 4200, 2340, 5400], .95], [lo + 2.6, [420, 6000, 2340, 7200], .95]] }));
+  S.push(text(f15, 'market', mkt, { keys: [[f15, lineRect(10, 13), .85], [f15 + 1.4, lineRect(11), .6]], hl: [[f15, [11, 12, 13]]] }));
+  S.push(page(A(2, 'the gap between'), 'yt-search', 'youtube.com/results?search_query=what+if+stickman', { full: true, keys: [[A(2, 'the gap between'), [420, 160, 2340, 1300], .95], [A(2, 'the gap between') + 2, [420, 160, 1400, 900], .7]] }));
+  // 3 · the study
+  const s0 = A(3, 'so i asked claude');
+  S.push(text(s0, 'folder', 'PowerShell · data/refs/stickman-whatif', { keys: [[s0, [0, 0, CW, 1300], .95], [s0 + 2, lineRect(1, 8), .85]], hl: [[s0 + 1.5, [1, 2, 3, 4, 5, 6, 7]]] }));
+  const f0 = A(3, 'one frame every second');
+  S.push({ t0: f0, kind: 'img', key: 'sheet', title: 'study/ifverse-1.jpg · 1 frame a second', dark: true, keys: [[f0, ALL, 1], [f0 + 1.5, [0, 0, 1200, 750], .95]] });
+  const nr = A(3, 'narration written out');
+  S.push(text(nr, 'transcript-ifverse', 'study/ifverse.txt · faster-whisper', { keys: [[nr, [0, 0, CW, 1100], .95]], hl: [[nr + .5, [0]], [nr + 1.5, [0, 1, 2]], [nr + 2.5, [3, 4]]] }));
+  const rb = A(3, 'came back with a rulebook'), r1 = A(3, 'none of them tell');
+  S.push(page(rb, 'gh-study', gh + 'STUDY-whatif.md', { full: true, keys: [[rb, P('gh-study', 'The rulebook (what all seven share)'), .8], [r1, P('gh-study', 'Line 1 is a concrete everyday moment'), .8]], marks: [[rb + .3, P('gh-study', 'The rulebook (what all seven share)')], [r1 + .3, P('gh-study', 'Line 1 is a concrete everyday moment')]] }));
+  const fl = A(3, 'shows you a fly'), cp = A(3, 'a coffee cup'), t35 = A(3, 'thirty-five seconds');
+  S.push(page(fl, 'yt-ifverse-watch', yt + 'MroF1XmHOZw', { clip: ['ifv-fly', fl], keys: [[fl, iv.player, .98]] }));
+  S.push(page(cp, 'yt-ifverse-watch', yt + 'MroF1XmHOZw', { clip: ['ifv-cup', cp], keys: [[cp, iv.player, .98]] }));
+  S.push(page(t35, 'yt-ifverse-watch', yt + 'MroF1XmHOZw', { clip: ['ifv-title', t35 - 1.2], keys: [[t35, iv.player, .98], [t35 + 2.2, iv.player, .8]] }));
+  const r2 = A(3, 'the second rule'), qt = A(3, 'a quarter of a second');
+  S.push(page(r2, 'gh-study', gh + 'STUDY-whatif.md', { full: true, keys: [[r2, P('gh-study', 'One number contrast'), .8]], marks: [[r2 + .3, P('gh-study', 'One number contrast')]] }));
+  S.push(page(qt, 'yt-ifverse-watch', yt + 'MroF1XmHOZw', { clip: ['ifv-number', qt - .5], keys: [[qt, iv.player, .98], [qt + 1.5, [1100, 102, 1692, 500], .55]] }));
+  const r3 = A(3, 'the third is a friend'), hw = A(3, 'how did you do that');
+  S.push(page(r3, 'gh-study', gh + 'STUDY-whatif.md', { full: true, keys: [[r3, P('gh-study', 'Another character says one short line'), .8]], marks: [[r3 + .3, P('gh-study', 'Another character says one short line')]] }));
+  S.push(page(hw - .3, 'yt-ifverse-watch', yt + 'MroF1XmHOZw', { clip: ['ifv-how', hw - .5], keys: [[hw - .3, iv.player, .98]] }));
+  const r4 = A(3, 'the fourth is the pace'), wp = A(3, 'one and a half words');
+  S.push(text(r4, 'transcript-ifverse', 'study/ifverse.txt · faster-whisper', { keys: [[r4, [0, 0, CW, 1100], .95], [wp, lineRect(0, 6), .85]], hl: [[wp, [0, 1, 2, 3, 4, 5]]] }));
+  // 4 · the look
+  const l0 = A(4, 'the look was'), as = A(4, "i'd assumed"), tb = A(4, 'the two biggest'), rm = A(4, 'rim of sunset light'), r3d = A(4, 'the real 3d character');
+  S.push(page(l0, 'gh-study', gh + 'STUDY-whatif.md', { full: true, keys: [[l0, P('gh-study', 'The top three are 2D that feels 3D'), .8]], marks: [[l0 + .4, P('gh-study', 'The top three are 2D that feels 3D')]] }));
+  S.push(page(as, 'yt-ifology-watch', yt + 'y300HjYnHPw', { clip: ['ifo-3d', as], keys: [[as, ifo.player, .95]] }));
+  S.push(page(tb, 'yt-ifinite-watch', yt + 'u2GyTKhHsTQ', { clip: ['ifi-flip', tb], keys: [[tb, ifi.player, .95]] }));
+  S.push(page(rm, 'yt-ifverse-watch', yt + 'MroF1XmHOZw', { clip: ['ifv-cup', rm], keys: [[rm, iv.player, .98], [rm + 1.3, [300, 250, 1200, 800], .9]] }));
+  S.push(page(r3d, 'yt-fnsf-watch', yt + 'ch7RZklvrjk', { clip: ['fnsf-money', r3d], keys: [[r3d, fn.player, .9], [r3d + 2, fn.views, .3]], marks: [[r3d + 2.3, fn.views]] }));
+  const kn = A(4, 'i knew it was true'), m47 = A(4, 'forty-seven minutes'), f5 = A(4, 'five out of ten');
+  S.push(page(kn, 'gh-short-timings', gh + 'short/TIMINGS.md', { full: true, keys: [[kn, [634, 300, 2200, 1200], .95], [A(4, 'one hour'), [634, 700, 2200, 1500], .9], [A(4, 'it finished one'), [634, 1300, 2200, 2000], .9], [m47 - .2, P('gh-short-timings', '47 min wall'), .4]], marks: [[m47, P('gh-short-timings', '47 min wall')]] }));
+  S.push({ t0: f5, kind: 'video', clip: ['short3d', f5], title: 'short/out/stillest-man-alive.mp4 · blind judges 5.17, 5.0', dark: true, keys: [[f5, ALL, 1], [f5 + 3, [600, 300, 1800, 1100], .95]] });
+  const th = A(4, 'so this time');
+  S.push({ t0: th, kind: 'co', co: [9, 1], title: 'localhost:4371/coldopen/film.html · 2D on one canvas', dark: true, keys: [[th, ALL, 1], [th + 3, [400, 200, 2000, 1200], .95]] });
+  // 5 · the idea
+  const id = A(5, 'the idea is where'), rw = A(5, 'rewind ten seconds'), e8 = A(5, 'at least eight times');
+  S.push(page(id, 'yt-s-rewind', 'youtube.com/results?search_query=what+if+you+could+rewind+10+seconds', { full: true, keys: [[id, [420, 60, 2340, 700], .95], [A(5, 'searched every premise'), [420, 160, 2340, 1300], .95], [rw, [420, 160, 1500, 800], .7], [rw + 2.2, [420, 800, 1500, 1500], .7], [e8, [420, 1300, 2340, 2500], .95], [e8 + 2, [420, 2500, 2340, 3700], .95], [A(5, 'thirteen thousand views'), [420, 160, 1500, 800], .7]] }));
+  const wl = A(5, 'a thousand words left for your whole life'), rb2 = A(5, 'a roblox story');
+  S.push(page(wl, 'yt-s-words', 'youtube.com/results?search_query=what+if+you+only+had+a+limited+number+of+words+left', { full: true, keys: [[wl, [420, 60, 2340, 700], .9], [wl + 2, [420, 160, 2340, 1300], .95], [A(5, "hadn't been made"), [420, 1300, 2340, 2500], .95], [rb2, [420, 160, 1500, 900], .7], [A(5, 'nobody had served it'), [420, 160, 2340, 1300], .95]] }));
+  const tr = A(5, "the genre's best trick"), tk = A(5, 'except talking');
+  S.push({ t0: tr, kind: 'co', co: [17.6, .6], title: 'localhost:4371/coldopen/film.html', dark: true, keys: [[tr, ALL, 1], [tr + 1, [700, 75, 1700, 900], .9]] });
+  S.push({ t0: tk, kind: 'co', co: [6.9, 1], title: 'localhost:4371/coldopen/film.html', dark: true, keys: [[tk, [300, 200, 2100, 1300], .95]] });
+  // 6 · the build
+  const sc = A(6, 'the script came next'), w41 = A(6, 'you have forty-one words left');
+  S.push(page(sc, 'gh-co-script', gh + 'coldopen/script.md', { full: true, keys: [[sc, [634, 300, 2200, 1100], .95], [A(6, 'in the second person'), [634, 500, 2200, 1000], .8], [w41, P('gh-co-script', 'You have forty-one words left'), .6], [A(6, 'his best man'), [850, 1100, 1558, 1300], .55], [A(6, 'the whole café'), P('gh-co-script', 'Come on. Just one word.'), .55]], marks: [[w41 + .2, P('gh-co-script', 'You have forty-one words left')], [A(6, 'the whole café'), P('gh-co-script', 'Come on. Just one word.')]] }));
+  const vc = A(6, 'the voices came from'), ln = A(6, 'lined up every word'), dr = A(6, 'the counter drops');
+  S.push(page(vc, 'fish-ethan', 'fish.audio/m/536d3a5e000945adb7038665781a4aca', { keys: [[vc, [400, 150, 2000, 1000], .9], [vc + 1.5, [520, 470, 1900, 760], .75]], marks: [[vc + 1.8, [683, 640, 1680, 720]]] }));
+  S.push(text(ln, 'timing-always', 'coldopen/timing.js · every word to a hundredth of a second', { keys: [[ln, [0, 0, CW, 1600], .95], [ln + 2, lineRect(9, 15), .85]], hl: [[ln + 2.2, [13]]] }));
+  S.push({ t0: dr, kind: 'co', co: [16.8, 1], title: 'localhost:4371/coldopen/film.html', dark: true, keys: [[dr, ALL, 1], [dr + 1.2, [900, 75, 1600, 700], .7]] });
+  const cd = A(6, 'the pictures are all code'), px = A(6, 'three and a half thousand pixels'), s21 = A(6, 'twenty-one shots');
+  S.push(page(cd, 'gh-film', gh + 'coldopen/film.html', { full: false, keys: [[cd, [600, 200, 2300, 1300], .95]] }));
+  S.push({ t0: px, kind: 'co', co: [8.2, .3], title: 'localhost:4371/coldopen/film.html', dark: true, keys: [[px, ALL, 1]] });
+  S.push({ t0: s21, kind: 'co', co: [0, 6], title: 'localhost:4371/coldopen/film.html · 21 shots', dark: true, keys: [[s21, ALL, 1]] });
+  // 7 · the fall
+  const jg = A(7, 'hand it to a judge'), nn = A(7, 'with no names on them'), ml = A(7, 'mine came last');
+  S.push(page(jg, 'gh-brief', gh + 'coldopen/JUDGE-brief.md', { keys: [[jg, [634, 300, 2200, 1300], .95], [nn, P('gh-brief', 'You know nothing about how any of them were made'), .75]], marks: [[nn + .2, P('gh-brief', 'You know nothing about how any of them were made')], [A(7, 'told it to be strict'), P('gh-brief', 'Be strict')]] }));
+  S.push(page(ml, 'gh-judges', gh + 'coldopen/JUDGE-results.md', { keys: [[ml, [683, 720, 1476, 900], .6]], marks: [[ml + .3, P('gh-judges', '4.3')]] }));
+  const nf = A(7, 'with no face'), wa = A(7, 'the wedding ask'), ol = A(7, 'muddy olive light'), fu = A(7, 'like furniture');
+  S.push({ t0: A(7, 'the notes were brutal'), kind: 'page', key: 'gh-judges', title: gh + 'coldopen/JUDGE-results.md', dark: true, keys: [[A(7, 'the notes were brutal'), [683, 960, 2200, 1160], .85]], marks: [[nf - .6, P('gh-judges', 'featureless black hump')]] });
+  S.push({ t0: nf, kind: 'img', key: 'v1-1', title: 'coldopen v1 · 0:01', dark: true, keys: [[nf, ALL, 1], [nf + 1.2, [600, 300, 1800, 1300], .9]] });
+  S.push({ t0: wa, kind: 'img', key: 'v1-5.5', title: 'coldopen v1 · 0:05', dark: true, keys: [[wa, ALL, 1]] });
+  S.push({ t0: ol, kind: 'img', key: 'v1-11', title: 'coldopen v1 · 0:11', dark: true, keys: [[ol, ALL, 1], [fu, [200, 500, 1900, 1300], .9]] });
+  S.push(page(A(7, 'the judge was right'), 'gh-judges', gh + 'coldopen/JUDGE-results.md', { keys: [[A(7, 'the judge was right'), [634, 960, 2200, 1200], .9]], marks: [[A(7, 'the judge was right') + .3, P('gh-judges', 'muddy olive grade')]] }));
+  // 8 · the climb
+  const fx = A(8, 'so we fixed exactly'), rg = A(8, 'the ring box sits'), br = A(8, 'the room got brighter');
+  S.push({ t0: fx, kind: 'pair', a: 'v1-1', b: 'v2-0001.00', label: '0:01' });
+  S.push({ t0: rg, kind: 'pair', a: 'v1-5.5', b: 'v2-0005.50', label: '0:05' });
+  S.push({ t0: br, kind: 'pair', a: 'v1-11', b: 'v2-0011.00', label: '0:11' });
+  S.push({ t0: A(8, 'one person who gasps') - .3, kind: 'co', co: [10.2, 1], title: 'localhost:4371/coldopen/film.html · v2', dark: true, keys: [[A(8, 'one person who gasps') - .3, ALL, 1]] });
+  const j2 = A(8, 'a second judge'), f55 = A(8, 'scored it five and a half'), ab = A(8, 'which put it above');
+  S.push(page(j2, 'gh-judges', gh + 'coldopen/JUDGE-results.md', { keys: [[j2, [683, 720, 1476, 900], .6]], marks: [[f55 + .2, P('gh-judges', '5.5')], [ab + .4, P('gh-judges', '4.83')], [A(8, 'still behind ifinite'), [1110, 830, 1290, 885]]] }));
+  // 9 · what I got wrong
+  const tw = A(9, 'two corrections'), gs = A(9, 'a game show');
+  S.push(page(tw, 'gh-plan1', gh + 'PLAN.md', { full: true, keys: [[tw, [634, 300, 2200, 1100], .95], [A(9, 'my first plan') + .5, P('gh-plan1', 'Three concepts, ranked'), .8], [gs, P('gh-plan1', 'MrBeast-style game show'), .6]], marks: [[gs + .2, P('gh-plan1', 'MrBeast-style game show')]] }));
+  S.push({ t0: A(9, 'the whole point was'), kind: 'side', clip: 'ifv-cup', from: 3 });
+  const m15 = A(9, 'fifteen minutes'), fr = A(9, 'only ever needed the frames');
+  S.push(page(m15, 'gh-co-timings', gh + 'coldopen/TIMINGS.md', { full: true, keys: [[m15, P('gh-co-timings', '895 s'), .8]], marks: [[m15 + .4, P('gh-co-timings', '895 s')]] }));
+  S.push(page(fr, 'gh-grab', 'github.com/Ishaan-Gpt/moovi/blob/main/docs/agents/speed/grab.mjs', { keys: [[fr, [600, 300, 2300, 1100], .95], [A(9, 'exported once'), P('gh-grab', 'only one final export'), .7]], marks: [[A(9, 'exported once') + .2, P('gh-grab', 'only one final export')]] }));
+  // 10 · free, and next
+  const us = A(10, 'everything i used'), pd = A(10, 'which is a paid plan'), ct = A(10, 'cost nothing'), ep = A(10, 'the full episode');
+  S.push(page(us, 'gh-coldopen', 'github.com/Ishaan-Gpt/moovi/tree/main/docs/agents/story/build-in-public', { keys: [[us, ALL, 1], [A(10, 'the rulebook from'), [0, 380, 700, 1100], .45], [A(10, 'the 2d stickman kit'), [0, 800, 700, 1500], .45], [A(10, 'the voice and timing tools'), [506, 560, 2380, 900], .8], [A(10, 'the blind judge'), P('gh-coldopen', 'film.html'), .5], [A(10, 'the speed checks'), [506, 560, 2380, 1180], .95]] }));
+  S.push(page(pd, 'claude-pricing', 'claude.com/pricing', { keys: [[pd, ALL, 1], [pd + 1.2, [300, 300, 2100, 1300], .95]] }));
+  S.push(page(ct, 'fish-ethan', 'fish.audio/m/536d3a5e000945adb7038665781a4aca', { keys: [[ct, [400, 150, 2000, 1100], .9]], marks: [[ct + .4, [1700, 0, 1960, 100]]] }));
+  S.push({ t0: ep, kind: 'co', co: [0, 1], title: 'next · What If You Only Had 1,000 Words Left?', dark: true, keys: [[ep, ALL, 1], [ep + 4, [300, 150, 2100, 1350], .97]] });
+  SHOTS = S.sort((a, b) => a.t0 - b.t0);
 }
-function text(s, x, y, size, o = {}) { cx.font = `${o.w || 800} ${size}px ${o.f || FD}`; cx.fillStyle = o.c || P.ivory; cx.textAlign = o.a || 'left'; cx.textBaseline = o.b || 'alphabetic'; const a0 = cx.globalAlpha; cx.globalAlpha = a0 * (o.alpha ?? 1); if (o.max) { let s2 = s; while (cx.measureText(s2).width > o.max && size > 10) { size -= 2; cx.font = `${o.w || 800} ${size}px ${o.f || FD}`; } } cx.fillText(s, x, y); cx.globalAlpha = a0; }
-function chip(s, x, y, o = {}) { cx.font = `700 ${o.size || 26}px ${FM}`; const w = cx.measureText(s).width + 36, h = (o.size || 26) + 24; const k = o.k ?? 1; cx.save(); cx.globalAlpha *= k; cx.translate(x, y + (1 - k) * 18); cx.fillStyle = o.bg || P.ivory; rr(o.a === 'c' ? -w / 2 : 0, -h / 2, w, h, h / 2); cx.fill(); cx.fillStyle = o.c || P.ink; cx.textAlign = o.a === 'c' ? 'center' : 'left'; cx.textBaseline = 'middle'; cx.fillText(s, o.a === 'c' ? 0 : 18, 2); cx.restore(); return w; }
-function card(x, y, w, h, k = 1, fill = P.paper) { cx.save(); cx.globalAlpha = k; cx.shadowColor = 'rgba(0,0,0,.35)'; cx.shadowBlur = 40; cx.shadowOffsetY = 14; cx.fillStyle = fill; rr(x, y + (1 - k) * 30, w, h, 22); cx.fill(); cx.restore(); }
-function count(t, t0, d, to, from = 0) { return lerp(from, to, eout((t - t0) / d)); }
-function title(s, t, t0, o = {}) { const k = eout(since(t, t0, .45)); text(s, o.x ?? 120, (o.y ?? 170) + (1 - k) * 24, o.size || 64, { alpha: k, c: o.c || P.ivory, max: o.max || 1680 }); }
-function kicker(s, t, t0, o = {}) { const k = eout(since(t, t0, .4)); text(s.toUpperCase(), o.x ?? 122, o.y ?? 100, 24, { f: FM, w: 700, c: P.lemon, alpha: k }); }
-function cam(s, x = 0, y = 0) { cx.translate(W / 2 + x, H / 2 + y); cx.scale(s, s); cx.translate(-W / 2, -H / 2); }
-function bars(x, y, w, h, rows, t, t0, o = {}) {   // horizontal bars: [label, value, colour]
-  const mx = o.max || Math.max(...rows.map(r => r[1])), rh = h / rows.length;
-  rows.forEach(([lab, v, c], i) => { const k = eout(since(t, t0 + i * (o.stagger ?? .35), .8)); const yy = y + i * rh;
-    text(lab, x, yy + rh * .45, o.ls || 30, { w: 700, f: FM, c: P.ivory, alpha: clamp(k * 2), b: 'middle', max: o.lw || 330 });
-    cx.fillStyle = 'rgba(244,241,226,.08)'; rr(x + (o.lw || 330) + 20, yy + rh * .18, w - (o.lw || 330) - 20, rh * .54, 10); cx.fill();
-    cx.fillStyle = c || P.lemon; rr(x + (o.lw || 330) + 20, yy + rh * .18, Math.max(12, (w - (o.lw || 330) - 20) * v / mx * k), rh * .54, 10); cx.fill();
-    text(o.fmt ? o.fmt(v * k) : fmt(v * k), x + (o.lw || 330) + 34 + Math.max(12, (w - (o.lw || 330) - 20) * v / mx * k), yy + rh * .45, o.vs || 30, { f: FM, w: 700, c: P.ivory, alpha: clamp(k * 2), b: 'middle' }); });
-}
-const M = v => (v / 1e6).toFixed(v >= 1e7 ? 0 : 1) + 'M', K = v => Math.round(v / 1000) + 'K';
 
-// ---------- sections ----------
-const E = {};   // event times, filled once fonts and timing are ready
-function events() {
-  const e = (k, s, p, off) => E[k] = at(s, p, off);
-  e('ours', 1, 'the one playing next to it'); e('claude', 1, 'i made with claude'); e('free', 1, 'every other tool'); e('byend', 1, 'by the end'); e('fell', 1, 'where mine fell apart'); e('home', 1, 'take the whole system'); e('gh', 1, 'on github');
-  e('genre', 2, 'the genre is called'); e('oct7', 2, 'seventh of october'); e('views46', 2, 'watched four point six'); e('mz', 2, 'minute zero'); e('ifi', 2, 'ifinite'); e('miko', 2, 'a channel called miko'); e('quit', 2, 'quit their jobs');
-  e('noticed', 2, 'then everybody noticed'); e('w2', 2, 'fifty-four in the second'); e('w3', 2, 'a hundred and forty-seven'); e('typical', 2, 'the typical new video'); e('leftovers', 2, 'share the leftovers'); e('fifteen', 2, 'and yet fifteen'); e('gap', 2, 'the gap between');
-  e('asked', 3, 'so i asked claude'); e('frame', 3, 'one frame every second'); e('narr', 3, 'narration written out'); e('rulebook', 3, 'came back with a rulebook'); e('r1', 3, 'none of them tell'); e('fly', 3, 'shows you a fly'); e('cup', 3, 'a coffee cup'); e('t35', 3, 'thirty-five seconds');
-  e('r2', 3, 'the second rule'); e('quarter', 3, 'a quarter of a second'); e('r3', 3, 'the third is a friend'); e('how', 3, 'how did you do that'); e('r4', 3, 'the fourth is the pace'); e('wps', 3, 'one and a half words');
-  e('look', 4, 'the look was'); e('assumed', 4, "i'd assumed"); e('two2d', 4, 'the two biggest'); e('rim', 4, 'rim of sunset light'); e('real3d', 4, 'the real 3d character'); e('knew', 4, 'i knew it was true'); e('hour', 4, 'one hour'); e('m47', 4, 'forty-seven minutes'); e('five', 4, 'five out of ten'); e('legs', 4, "the legs couldn't run"); e('thistime', 4, 'so this time'); e('canvas', 4, 'single canvas');
-  e('idea', 5, 'the idea is where'); e('searched', 5, 'searched every premise'); e('rewind', 5, 'rewind ten seconds'); e('eight', 5, 'at least eight times'); e('k13', 5, 'thirteen thousand views'); e('words', 5, 'a thousand words left for your whole life'); e('hadnt', 5, "hadn't been made"); e('roblox', 5, 'a roblox story'); e('trick', 5, 'the genre\'s best trick'); e('talking', 5, 'except talking'); e('cant', 5, "you can't animate");
-  e('script', 6, 'the script came next'); e('second', 6, 'in the second person'); e('w41', 6, 'you have forty-one words left'); e('voices', 6, 'the voices came from'); e('lined', 6, 'lined up every word'); e('drops', 6, 'the counter drops'); e('always', 6, 'always'); e('code', 6, 'the pictures are all code'); e('px', 6, 'three and a half thousand pixels'); e('shots21', 6, 'twenty-one shots'); e('music', 6, 'with music written in code');
-  e('judge', 7, 'hand it to a judge'); e('agent', 7, 'gave a fresh agent'); e('names', 7, 'with no names on them'); e('last', 7, 'mine came last'); e('brutal', 7, 'the notes were brutal'); e('nface', 7, 'with no face'); e('ask', 7, 'the wedding ask'); e('olive', 7, 'muddy olive light'); e('furn', 7, 'like furniture'); e('right', 7, 'the judge was right');
-  e('fixed', 8, 'so we fixed exactly'); e('face', 8, 'your face and the number'); e('ring', 8, 'the ring box sits'); e('bright', 8, 'the room got brighter'); e('gasps', 8, 'one person who gasps'); e('j2', 8, 'a second judge'); e('k55', 8, 'scored it five and a half'); e('bar8', 8, 'my bar is eight');
-  e('two', 9, 'two corrections'); e('plan1', 9, 'my first plan'); e('show', 9, 'a game show'); e('point', 9, 'the whole point was'); e('m15', 9, 'fifteen minutes'); e('frames', 9, 'only ever needed the frames'); e('minute', 9, 'in about a minute'); e('once', 9, 'exported once');
-  e('used', 10, 'everything i used'); e('kit', 10, 'the 2d stickman kit'); e('jt', 10, 'the blind judge'); e('speed', 10, 'the speed checks'); e('paid', 10, 'which is a paid plan'); e('nothing', 10, 'cost nothing'); e('ep', 10, 'the full episode'); e('beat', 10, 'it has to beat'); e('button', 10, 'which button');
-}
-
-// 1 · proof: their 4.6M film beside ours
-function s1(t) {
-  studio(t); const u = t - SEC(1).t, k = eout(since(t, 0, .6)), k2 = eout(since(t, E.ours - .2, .6));
-  const wL = lerp(1680, 860, k2), xL = lerp(120, 80, k2);
-  clip(t < 6 ? 'ifv-fly' : 'ifv-cup', xL, 190, wL, wL * 9 / 16, t, t < 6 ? 0 : 6, { cs: 26 });
-  const v = count(t, .3, 3.2, 4600000, 3800000); chip(`${fmt(v)} views · 4 weeks`, xL + 20, 190 + wL * 9 / 16 + 54, { k, bg: P.lemon, size: 30 });
-  if (k2 > 0) { cx.save(); cx.globalAlpha = k2; ours(980, 190, 860, 484, Math.max(0, t - E.ours + 1.5), { label: 'Made with Claude · today' }); cx.restore(); chip('every other tool: free', 1000, 728, { k: eout(since(t, E.free, .5)), size: 30 }); }
-  title('One got 4.6M views. One I made with Claude.', t, .2, { y: 120, size: 56 });
-  const ps = [['How both were made', E.byend + .4], ['Where mine fell apart', E.fell], ['The whole system, free on GitHub', E.home]];
-  ps.forEach(([s, t0], i) => chip(`${i + 1}  ${s}`, 80 + i * 590, 930, { k: eout(since(t, t0, .4)), size: 28, bg: i === 1 ? P.coral : P.ivory, c: i === 1 ? P.ivory : P.ink }));
-}
-// 2 · the gold rush
-function s2(t) {
-  studio(t, 400);
-  if (t < E.noticed) {
-    kicker('the genre: What If', t, E.genre); title('Four weeks old, and already a gold rush', t, E.genre + .2, { y: 160 });
-    const cards = [['ifv-cup', 'Ifverse', 4600000, 55000, E.oct7], ['mz-speed', 'Minute Zero', 2200000, 19400, E.mz], ['ifi-bus', 'Ifinite', 1700000, 12400, E.ifi], ['miko-love', 'Miko', 690000, 4170, E.miko]];
-    cards.forEach(([c, name, v, s, t0], i) => { const k = eout(since(t, t0 - .15, .55)); if (k <= 0) return; const x = 80 + i * 450, y = 250 + (1 - k) * 40;
-      cx.save(); cx.globalAlpha = k; clip(c, x, y, 420, 236, t, t0, { cs: 20 });
-      text(M(count(t, t0, 1.4, v)), x, y + 330, 76, { c: P.lemon }); text('views', x + 4, y + 372, 24, { f: FM, w: 500, c: P.mute });
-      text(fmt(s) + ' subscribers', x, y + 430, 30, { f: FM, w: 700 }); const ratio = v / s;
-      if (t > t0 + 1.2) chip(`${Math.round(ratio)}× its subscribers`, x, y + 490, { k: eout(since(t, t0 + 1.2, .4)), bg: i === 3 ? P.coral : P.ivory, c: i === 3 ? P.ivory : P.ink, size: 24 }); cx.restore(); });
-    if (t > E.quit - .2) chip('the kind of number that makes people quit their jobs', 1840, 940, { k: eout(since(t, E.quit - .2, .4)), a: 'c', size: 26 }) ;
-  } else {
-    kicker('then everybody noticed', t, E.noticed); title('Supply exploded. Views per video fell.', t, E.noticed + .1, { y: 160 });
-    // uploads per week
-    const wk = [['week 1', 11, E.noticed + .6], ['week 2', 54, E.w2], ['week 3', 147, E.w3]];
-    card(80, 230, 820, 620, eout(since(t, E.noticed + .3, .5)), 'rgba(244,241,226,.06)');
-    text('Uploads a week', 120, 300, 34, { f: FM, w: 700, c: P.mute });
-    wk.forEach(([lab, n, t0], i) => { const k = eout(since(t, t0, .7)), h = 440 * n / 147 * k, x = 160 + i * 240; cx.fillStyle = i === 2 ? P.coral : P.sage; rr(x, 800 - h, 170, h, 12); cx.fill(); text(String(Math.round(n * k)), x + 85, 780 - h, 54, { a: 'center', c: P.ivory, alpha: k }); text(lab, x + 85, 840, 26, { f: FM, w: 500, a: 'center', c: P.mute, alpha: k }); });
-    card(980, 230, 860, 620, eout(since(t, E.typical - .2, .5)), 'rgba(244,241,226,.06)');
-    text('Median views of a new video', 1020, 300, 34, { f: FM, w: 700, c: P.mute, alpha: eout(since(t, E.typical - .2, .5)) });
-    const k3 = eout(since(t, E.typical, 2.2)); const v = lerp(247000, 21000, k3);
-    text(K(v), 1410, 560, 170, { a: 'center', c: k3 > .9 ? P.coral : P.lemon, alpha: eout(since(t, E.typical, .4)) });
-    cx.strokeStyle = P.coral; cx.lineWidth = 8; cx.lineCap = 'round'; cx.globalAlpha = eout(since(t, E.typical, .4)); cx.beginPath(); for (let i = 0; i <= 40; i++) { const q = i / 40 * k3, x = 1040 + q * 740, y = 640 + Math.pow(q, .6) * 160; i ? cx.lineTo(x, y) : cx.moveTo(x, y); } cx.stroke(); cx.globalAlpha = 1;
-    if (t > E.leftovers) chip('copy what you see = share the leftovers', 1410, 900, { k: eout(since(t, E.leftovers, .4)), a: 'c', size: 26 });
-    if (t > E.fifteen) { cx.fillStyle = 'rgba(16,21,18,.82)'; cx.fillRect(0, 0, W, H); const k4 = eout(since(t, E.fifteen, .5)); text('15', 960, 560, 300, { a: 'center', c: P.lemon, alpha: k4 }); text('videos passed 125K views in under a week', 960, 660, 40, { a: 'center', f: FM, w: 700, alpha: k4 });
-      if (t > E.gap) chip('the gap between those and the copies', 960, 800, { k: eout(since(t, E.gap, .4)), a: 'c', bg: P.coral, c: P.ivory, size: 30 }); }
-  }
-}
-// 3 · the study: Claude watches frame by frame and writes the rulebook
-function s3(t) {
-  studio(t);
-  if (t < E.rulebook) {
-    kicker('the study', t, E.asked); title('Claude watched the 7 biggest openings', t, E.asked + .1, { y: 160 });
-    const sheets = ['sheet-ifverse-1', 'sheet-ifinite-howlong-1', 'sheet-miko-liecount-1', 'sheet-ifology-10x-1'];
-    sheets.forEach((s, i) => { const k = eout(since(t, SEC(3).t - .3 + i * .15, .4)); cx.save(); cx.globalAlpha = k; img(s, 80 + (i % 2) * 560, 230 + Math.floor(i / 2) * 330 + (1 - k) * 30, 530, 300, { r: 14 }); cx.restore(); });
-    const sx = 80 + ((t * 260) % 1100); cx.fillStyle = 'rgba(243,231,160,.35)'; cx.fillRect(Math.min(sx, 1170), 230, 6, 630);
-    if (t > E.frame) chip('1 frame every second', 1250, 300, { k: eout(since(t, E.frame, .4)), size: 28 });
-    // transcript typing
-    const lines = ['0.0  A fly buzzes past your face.', '3.8  You don\'t even think.', '5.1  You just catch it.', '11.1 Your friend knocks his coffee…', '27.4 A normal human reacts in…', '34.7 So what if your reaction time…'];
-    const kN = since(t, E.narr, 3.5); cx.fillStyle = 'rgba(244,241,226,.06)'; rr(1250, 360, 590, 500, 18); cx.fill();
-    lines.forEach((l, i) => { const vis = clamp(kN * lines.length - i); if (vis <= 0) return; const n = Math.ceil(l.length * vis); text(l.slice(0, n), 1280, 420 + i * 72, 24, { f: FM, w: 500, c: i === 5 ? P.lemon : P.ivory, max: 540 }); });
-  } else {
-    kicker('the rulebook', t, E.rulebook);
-    const rules = [['1', 'Prove the power before you name it', E.r1], ['2', 'One number: normal vs you', E.r2], ['3', 'A friend says your line', E.r3], ['4', 'A slow, calm read', E.r4]];
-    const cur = rules.filter(r => t >= r[2] - .1).length - 1;
-    rules.forEach(([n, s, t0], i) => { const k = eout(since(t, t0 - .1, .4)); const on = i === Math.max(0, cur); cx.save(); cx.globalAlpha = Math.max(.25, k) * (on ? 1 : .55);
-      cx.fillStyle = on ? P.lemon : 'rgba(244,241,226,.08)'; rr(80, 200 + i * 170, 560, 140, 20); cx.fill(); text(n, 120, 300 + i * 170, 80, { c: on ? P.ink : P.lemon }); text(s, 200, 282 + i * 170, 30, { c: on ? P.ink : P.ivory, max: 420 }); cx.restore(); });
-    const X = 700, Y = 200, Wc = 1140, Hc = 641;
-    if (cur <= 0) { clip(t < E.cup ? 'ifv-fly' : 'ifv-cup', X, Y, Wc, Hc, t, t < E.cup ? E.fly - .3 : E.cup - .2);
-      const tl = eout(since(t, E.t35 - .2, .5)); if (tl > 0) { cx.fillStyle = 'rgba(16,21,18,.85)'; rr(X, Y + Hc + 30, Wc, 110, 18); cx.fill(); cx.fillStyle = P.sage2; rr(X + 30, Y + Hc + 100, (Wc - 60) * tl, 12, 6); cx.fill(); cx.fillStyle = P.lemon; cx.beginPath(); cx.arc(X + 30 + (Wc - 60) * .58 * tl, Y + Hc + 106, 16, 0, 7); cx.fill(); text('the title lands at 0:35', X + 30, Y + Hc + 75, 30, { f: FM, w: 700, alpha: tl }); } }
-    else if (cur === 1) { clip('ifv-number', X, Y, Wc, Hc, t, E.r2 - .2); const k = eout(since(t, E.quarter, .5)); if (k > 0) { chip('normal  0.25 s', X + 40, Y + Hc + 80, { k, size: 36 }); chip('you  0.025 s', X + 460, Y + Hc + 80, { k: eout(since(t, E.quarter + .6, .5)), size: 36, bg: P.lemon }); } }
-    else if (cur === 2) { clip('ifv-how', X, Y, Wc, Hc, t, E.r3 - .2); if (t > E.how) chip('"How did you do that?"', X + Wc / 2, Y + Hc + 80, { k: eout(since(t, E.how, .4)), a: 'c', size: 40 }); }
-    else { clip('ifv-title', X, Y, Wc, Hc, t, E.r4 - .2); const k = eout(since(t, E.wps, .5)); if (k > 0) { text('1.6', X + 40, Y + Hc + 130, 120, { c: P.lemon, alpha: k }); text('words a second · silence does half the work', X + 260, Y + Hc + 100, 32, { f: FM, w: 700, alpha: k, max: 860 }); } }
-  }
-}
-// 4 · the look: 2D that feels 3D wins; our 3D try scored 5
-function s4(t) {
-  studio(t, 300);
-  if (t < E.knew) {
-    kicker('the look', t, E.look); title('The hits are 2D dressed up as 3D', t, E.look + .1, { y: 160 });
-    const k2 = eout(since(t, E.look - .1, .5)), k3 = eout(since(t, E.real3d - .1, .5));
-    cx.save(); cx.globalAlpha = k2; clip('ifi-flip', 80, 230, 540, 304, t, E.look); clip('ifv-cup', 80, 560, 540, 304, t, E.look + .5); text('2D · 4.6M and 1.7M', 80, 930, 36, { c: P.lemon }); cx.restore();
-    cx.save(); cx.globalAlpha = k3; clip('ifo-3d', 700, 230, 540, 304, t, E.real3d); clip('fnsf-money', 700, 560, 540, 304, t, E.real3d + .3); text('real 3D · 889K and 985K', 700, 930, 36, { c: P.mute }); cx.restore();
-    const kr = eout(since(t, E.rim, .5)); if (kr > 0) { ['rim of light on every head', 'blurred foreground', 'soft city behind'].forEach((s, i) => chip(s, 1320, 300 + i * 110, { k: eout(since(t, E.rim + i * .45, .4)), size: 28, bg: i === 0 ? P.lemon : P.ivory })); }
-  } else if (t < E.thistime) {
-    kicker('what I tried first', t, E.knew); title('One hour of 3D: finished, and 5 out of 10', t, E.knew + .1, { y: 160 });
-    img('short3d-b', 80, 230, 1100, 619, { zoom: 1 + (t - E.knew) * .01 });
-    const st = [['47 min', 'to a finished 3D short', E.m47], ['5.17 → 5.0', 'two blind judges', E.five], ['✗', 'legs can\'t run · hand can\'t reach the face', E.legs]];
-    st.forEach(([a, b, t0], i) => { const k = eout(since(t, t0, .45)); cx.save(); cx.globalAlpha = k; cx.fillStyle = 'rgba(244,241,226,.07)'; rr(1240, 230 + i * 210, 600, 180, 20); cx.fill(); text(a, 1280, 330 + i * 210, 70, { c: i === 1 ? P.coral : P.lemon }); text(b, 1280, 380 + i * 210, 26, { f: FM, w: 500, max: 520 }); cx.restore(); });
-  } else {
-    kicker('so this time', t, E.thistime); title('2D on a single canvas, like the hits', t, E.thistime + .1, { y: 160 });
-    ours(80, 230, 1100, 619, 10 + (t - E.thistime), { label: 'one canvas · 2D with depth' });
-    [['nothing has to run or bend', E.canvas + .8], ['every shape exactly where you want it', E.canvas + 2.2], ['judged 5.5 vs 5.0 for the 3D try', E.canvas + 3.6]].forEach(([s, t0], i) => chip(s, 1240, 330 + i * 120, { k: eout(since(t, t0, .4)), size: 26, bg: i === 2 ? P.lemon : P.ivory }));
-  }
-}
-// 5 · the idea: search first; rewind is crowded, words-left is open
-function s5(t) {
-  studio(t);
-  kicker('the idea', t, E.idea); title(t < E.words ? 'Search before you write a word' : '"1,000 words left": nobody has made it', t, t < E.words ? E.idea + .1 : E.words, { y: 160 });
-  const L = [['ifictional · What If You Could Rewind 10 Seconds?', 13015], ['Price of If · What IF You Could Rewind 10 Seconds?', 11439], ['Last Second · …Rewind 10 Seconds?!', 235], ['Somanifs · …Rewind Time… But Only 5 Seconds?', 110], ['Broke Doodle · …Rewind Time 5 Seconds!!?', 96], ['Odd Gift · …Rewind 10 Seconds?', 88], ['Altverse · …Just 5 Seconds?', 26], ['Beyond Possible · …REWIND 10 Seconds', 3]];
-  if (t < E.words) {
-    cx.fillStyle = 'rgba(244,241,226,.07)'; rr(80, 230, 1760, 80, 40); cx.fill(); text('🔍  what if you could rewind ten seconds', 130, 283, 32, { f: FM, w: 500 });
-    L.forEach(([s, v], i) => { const k = eout(since(t, E.rewind + .2 + i * .18, .35)); cx.save(); cx.globalAlpha = k; const y = 350 + i * 80; cx.fillStyle = 'rgba(244,241,226,.05)'; rr(80, y, 1760, 66, 12); cx.fill(); text(s, 110, y + 43, 28, { f: FM, w: 500, max: 1300 }); text(fmt(v) + ' views', 1810, y + 43, 28, { f: FM, w: 700, a: 'right', c: v > 10000 ? P.lemon : P.mute }); cx.restore(); });
-    if (t > E.eight) { const k = eout(since(t, E.eight, .4)); cx.save(); cx.globalAlpha = k * .9; cx.strokeStyle = P.coral; cx.lineWidth = 10; cx.beginPath(); cx.moveTo(90, 270); cx.lineTo(90 + 1740 * eout(since(t, E.eight, .6)), 270); cx.stroke(); cx.restore(); chip('8 copies · the best: 13K', 1840, 1000, { k, bg: P.coral, c: P.ivory, a: 'c', size: 30 }); }
-  } else {
-    cx.fillStyle = 'rgba(244,241,226,.07)'; rr(80, 230, 1760, 80, 40); cx.fill(); text('🔍  what if you only had 1,000 words left', 130, 283, 32, { f: FM, w: 500 });
-    const k = eout(since(t, E.hadnt, .4)); text('0', 300, 560, 220, { a: 'center', c: P.lemon, alpha: k }); text('in the genre', 300, 620, 30, { f: FM, w: 700, a: 'center', alpha: k });
-    const k2 = eout(since(t, E.roblox, .4)); text('89K', 860, 560, 220, { a: 'center', c: P.ivory, alpha: k2 }); text('one Roblox story: people want it', 860, 620, 30, { f: FM, w: 700, a: 'center', alpha: k2 });
-    const k3 = eout(since(t, E.trick, .5)); if (k3 > 0) { cx.save(); cx.globalAlpha = k3; ours(1240, 360, 600, 338, 18.5, { label: 'the number over the head', r: 16 }); cx.restore(); }
-    const acts = [['talk ✓', 1], ['look ✓', 1], ['go quiet ✓', 1], ['run ✗', 0], ['fly ✗', 0]]; acts.forEach(([s, ok], i) => chip(s, 120 + i * 260, 820, { k: eout(since(t, E.talking + i * .3, .35)), bg: ok ? P.sage : P.coral, c: ok ? P.ink : P.ivory, size: 30 }));
-    if (t > E.cant) chip("every action you can't animate well is a scene you'll cut", 960, 960, { k: eout(since(t, E.cant, .4)), a: 'c', size: 28 });
-  }
-}
-// 6 · the build
-function s6(t) {
-  studio(t, 600);
-  if (t < E.voices) {
-    kicker('the script', t, E.script); title('Second person, power proven before it is named', t, E.script + .1, { y: 160, size: 56 });
-    const lines = ['You have forty-one words left for the rest of your life,', 'and your best friend has just asked you', 'to be the best man at his wedding.', 'FRIEND: Come on. Just one word.', 'Everyone in the café has turned to look', 'at the number over your head…'];
-    card(80, 230, 1000, 640, eout(since(t, E.script, .5))); lines.forEach((l, i) => { const vis = clamp(since(t, E.second, 4) * lines.length - i); if (vis <= 0) return; text(l.slice(0, Math.ceil(l.length * vis)), 130, 320 + i * 86, 34, { c: i === 3 ? P.aub2 : P.ink, w: i === 3 ? 800 : 500, max: 900 }); });
-    ours(1140, 230, 700, 394, Math.max(0, t - E.w41) % 9, { label: 'the cold open' });
-  } else if (t < E.code) {
-    kicker('the voices · Fish Audio, free model', t, E.voices); title('Every word timed to a hundredth of a second', t, E.voices + .1, { y: 160, size: 56 });
-    // a waveform with word ticks; "Always." in lemon
-    cx.fillStyle = 'rgba(244,241,226,.06)'; rr(80, 240, 1760, 260, 20); cx.fill(); const off = (t - E.voices) * 120;
-    for (let i = 0; i < 300; i++) { const x = 100 + i * 5.8, a = (Math.sin(i * .37 + off * .01) * .5 + .5) * (Math.sin(i * .11) * .3 + .7) * 90; cx.fillStyle = i > 196 && i < 206 ? P.lemon : P.sage; cx.fillRect(x, 370 - a, 3, a * 2); }
-    ['Everyone', 'knows', 'exactly', 'what', 'a', 'word', 'from', 'you', 'costs.', 'Always.'].forEach((w, i) => { const x = 140 + i * 172; text(w, x, 470, 24, { f: FM, w: 700, c: w === 'Always.' ? P.lemon : P.mute }); text((14.24 + i * .2 + (i === 9 ? 1.4 : 0)).toFixed(2), x, 230 + 40, 18, { f: FM, w: 500, c: P.mute }); });
-    if (t > E.drops - .3) { const k = eout(since(t, E.drops - .3, .5)); cx.save(); cx.globalAlpha = k; ours(560, 540, 800, 450, 17.2 + clamp((t - E.always) / 2.5) * 2.4, { label: '41 → 40 on "always"' }); cx.restore(); }
-  } else {
-    kicker('the pictures are all code', t, E.code); title('No images, no 3D: one canvas', t, E.code + .1, { y: 160 });
-    const code = ['function cafeInterior(t, blurPx, cam) {', '  // a real room 3,400 px wide; cam picks the part seen', '  sky(); window(sunset); lamps(4); shelves(jars);', '}', 'function pill(x, y, s, val, o) {   // the counter', '  if (o.pulse) ring(1 - o.pulse);', '  fillText(val.toLocaleString(), 0, 4);', '}', "shot('I', WT(61) - .25, (u, t) => {   // \"Always.\"", '  pill(920, 250, .9, said ? 40 : 41, { pulse });', '});'];
-    cx.fillStyle = '#0E1310'; rr(80, 230, 900, 640, 20); cx.fill(); const n = Math.floor(since(t, E.code, 6) * code.length * 1.0);
-    code.forEach((l, i) => { if (i > n) return; text(l, 110, 290 + i * 52, 22, { f: FM, w: 500, c: l.trim().startsWith('//') || l.includes('//') && l.indexOf('//') < 4 ? P.mute : i % 4 === 0 ? P.lemon : P.ivory, max: 840 }); });
-    ours(1040, 230, 800, 450, 3 + (t - E.code) * .9, { label: '21 shots · cut every 2-3 s' });
-    const st = [['3,400 px', 'one café, many angles', E.px], ['21', 'shots', E.shots21], ['0', 'licences: music in code', E.music]];
-    st.forEach(([a, b, t0], i) => { const k = eout(since(t, t0, .4)); cx.save(); cx.globalAlpha = k; text(a, 1040 + i * 280, 790, 64, { c: P.lemon }); text(b, 1040 + i * 280, 840, 22, { f: FM, w: 500, max: 260 }); cx.restore(); });
-  }
-}
-// 7 · the fall: a blind judge puts ours last
-function s7(t) {
-  studio(t, 1600);
-  kicker('the blind judge', t, E.judge); title(t < E.last ? 'Three openings, no names, a strict judge' : 'Mine came last', t, t < E.last ? E.judge + .1 : E.last, { y: 160, c: t < E.last ? P.ivory : P.coral });
-  const films = [['X', 'v1-1', null, 4.3, true], ['Y', null, 'ifv-fly', 5.8], ['Z', null, 'ifi-bus', 6.7]];
-  films.forEach(([lab, im, cl, sc, mine], i) => { const k = eout(since(t, E.agent + i * .3, .5)), x = 80 + i * 600, y = 240;
-    cx.save(); cx.globalAlpha = k; if (im) img(im, x, y, 560, 315); else clip(cl, x, y, 560, 315, t, E.agent, { credit: t > E.last + 1.5 });
-    text(lab, x + 28, y + 70, 54, { c: P.ivory }); const ks = eout(since(t, E.last - (mine ? 0 : .8) + i * .1, .6));
-    text(ks > 0 ? (sc * ks).toFixed(1) : '?', x + 280, y + 470, 120, { a: 'center', c: mine ? P.coral : P.lemon });
-    if (mine && t > E.last + .3) chip('mine', x + 280, y + 530, { k: eout(since(t, E.last + .3, .4)), a: 'c', bg: P.coral, c: P.ivory, size: 26 });
-    cx.restore(); });
-  const notes = [['opened on a black head with no face', E.nface], ['the wedding ask was never shown', E.ask], ['muddy olive light', E.olive], ['the crowd stood around like furniture', E.furn]];
-  if (t > E.brutal) { cx.fillStyle = 'rgba(16,21,18,.9)'; cx.fillRect(0, 0, W, H); img('v1-1', 80, 200, 860, 484); notes.forEach(([s, t0], i) => chip('✗  ' + s, 1000, 260 + i * 120, { k: eout(since(t, t0, .4)), bg: P.coral, c: P.ivory, size: 28 })); if (t > E.right) text('The judge was right about every one.', 1000, 820, 40, { alpha: eout(since(t, E.right, .5)), max: 840 }); }
-}
-// 8 · the climb: fix exactly what was named; a second judge, 5.5
-function s8(t) {
-  studio(t);
-  if (t < E.j2) {
-    kicker('fix exactly what the judge named', t, E.fixed); title('Before and after', t, E.fixed + .1, { y: 160 });
-    const pairs = [['v1-1', 'v2-0001.00', 'your face and the number first', E.face], ['v1-5.5', 'v2-0005.50', 'the ring box shows the ask', E.ring], ['v1-11', 'v2-0011.00', 'brighter, and a crowd that reacts', E.bright]];
-    const cur = Math.max(0, pairs.filter(p => t >= p[3] - .2).length - 1), [a, b, s] = pairs[cur];
-    img(a, 80, 250, 860, 484); img(b, 980, 250, 860, 484); chip('before', 100, 290, { size: 24, bg: P.coral, c: P.ivory }); chip('after', 1000, 290, { size: 24, bg: P.lemon });
-    chip(s, 960, 840, { a: 'c', size: 34, k: eout(since(t, pairs[cur][3] - .2, .4)) });
-  } else {
-    kicker('a second judge, fresh eyes', t, E.j2); title('5.5, above the 4.6M opening. Still not 8.', t, E.k55, { y: 160 });
-    bars(120, 260, 1600, 520, [['Ifinite', 6.67, P.mute], ['ours', 5.5, P.lemon], ['Ifverse', 4.83, P.mute]], t, E.j2 + .4, { lw: 240, max: 10, fmt: v => v.toFixed(1), ls: 40, vs: 40, stagger: .5 });
-    const k = eout(since(t, E.bar8, .5)); const x8 = 120 + 240 + 20 + (1600 - 260) * .8; cx.save(); cx.globalAlpha = k; cx.strokeStyle = P.coral; cx.setLineDash([14, 10]); cx.lineWidth = 5; cx.beginPath(); cx.moveTo(x8, 240); cx.lineTo(x8, 800); cx.stroke(); cx.setLineDash([]); chip('my bar: 8', x8, 860, { a: 'c', bg: P.coral, c: P.ivory, size: 30 }); cx.restore();
-  }
-}
-// 9 · what I got wrong
-function s9(t) {
-  studio(t, 400);
-  kicker('two corrections of my own', t, E.two);
-  if (t < E.m15) {
-    title('My first plan missed the point', t, E.plan1, { y: 160 });
-    img('short3d-b', 80, 240, 900, 506); const k = eout(since(t, E.show, .4)); if (k > 0) { cx.save(); cx.globalAlpha = k; cx.strokeStyle = P.coral; cx.lineWidth = 16; cx.lineCap = 'round'; cx.beginPath(); cx.moveTo(110, 270); cx.lineTo(110 + 840 * k, 270 + 446 * k); cx.stroke(); cx.restore(); chip('a game show of my own', 100, 800, { k, bg: P.coral, c: P.ivory, size: 28 }); }
-    const k2 = eout(since(t, E.point, .5)); if (k2 > 0) { cx.save(); cx.globalAlpha = k2; clip('ifv-cup', 1040, 240, 800, 450, t, E.point); cx.restore(); chip('the famous clips, and yours beside them', 1040, 760, { k: k2, bg: P.lemon, size: 28 }); }
-  } else {
-    title('Never export to judge. Export once.', t, E.m15, { y: 160 });
-    bars(120, 300, 1650, 360, [['export to judge', 895, P.coral], ['frames from the page', 64, P.lemon]], t, E.m15 + .3, { lw: 430, max: 900, fmt: v => Math.round(v) + ' s', stagger: E.frames - E.m15 - .3, ls: 34, vs: 36 });
-    if (t > E.once) chip('one export, at the very end', 960, 820, { a: 'c', k: eout(since(t, E.once, .4)), size: 36 });
-  }
-}
-// 10 · free, and next
-function s10(t) {
-  studio(t);
-  if (t < E.ep) {
-    kicker('free on GitHub', t, E.used); title('Everything I used, in one skill', t, E.used + .1, { y: 160 });
-    cx.fillStyle = '#0E1310'; rr(80, 230, 1000, 640, 20); cx.fill(); text('ishaan-stickmen /', 120, 300, 34, { f: FM, w: 700, c: P.lemon });
-    const files = [['rulebook.md', 'the 7 hits, measured', E.used + .6], ['kit/', 'the 2D stickman kit', E.kit], ['tools/fish.mjs · align.py', 'voice and word timing', E.kit + 1], ['judge/', 'the blind judge', E.jt], ['speed/', 'checks that stop a wasted hour', E.speed]];
-    files.forEach(([f, d, t0], i) => { const k = eout(since(t, t0, .35)); text(f, 140, 380 + i * 92, 30, { f: FM, w: 700, alpha: k, c: P.ivory }); text(d, 600, 380 + i * 92, 24, { f: FM, w: 500, alpha: k, c: P.mute, max: 440 }); });
-    const k = eout(since(t, E.paid, .4)); chip('Claude: a paid plan', 1140, 400, { k, size: 30, bg: P.coral, c: P.ivory }); chip('everything else: free', 1140, 500, { k: eout(since(t, E.nothing, .4)), size: 30, bg: P.lemon });
-    ['Fish Audio free model', 'canvas + code', 'ffmpeg', 'music in code'].forEach((s, i) => chip(s, 1140, 600 + i * 70, { k: eout(since(t, E.nothing + .3 + i * .2, .35)), size: 22 }));
-  } else {
-    ours(0, 0, W, H, 4 + (t - E.ep), { credit: false, r: 0 }); cx.fillStyle = 'rgba(16,21,18,.55)'; cx.fillRect(0, 0, W, H);
-    const k = eout(since(t, E.ep, .5)); text('NEXT', 960, 380, 34, { a: 'center', f: FM, w: 700, c: P.lemon, alpha: k }); text('A Thousand Words Left', 960, 500, 110, { a: 'center', alpha: k }); text('the full episode', 960, 570, 34, { a: 'center', f: FM, w: 500, alpha: k });
-    if (t > E.beat) chip('to beat: Ifinite 6.7 · Ifverse 5.8', 960, 700, { a: 'c', k: eout(since(t, E.beat, .4)), size: 30, bg: P.lemon });
-  }
-}
-const SECS = [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10];
-
-// ---------- the frame ----------
 function render(t) {
-  WANT = []; let n = 0; for (let i = 0; i < LF.secs.length; i++) if (t >= LF.secs[i].t - .3) n = i;
-  cx.save(); cx.setTransform(1, 0, 0, 1, 0, 0); cx.globalAlpha = 1; cx.filter = 'none';
-  SECS[n](t); cx.restore();
-  // section dip: a 6-frame soft dip at each section start
-  const d = t - (LF.secs[n].t - .3); if (n > 0 && d < .2) { cx.fillStyle = `rgba(16,21,18,${(.6 * (1 - d / .2)).toFixed(3)})`; cx.fillRect(0, 0, W, H); }
-  const v = cx.createRadialGradient(W / 2, H / 2, H * .4, W / 2, H / 2, H * 1.05); v.addColorStop(0, 'rgba(16,21,18,0)'); v.addColorStop(1, 'rgba(16,21,18,.35)'); cx.fillStyle = v; cx.fillRect(0, 0, W, H);
+  WANT = []; let s = SHOTS[0]; for (const x of SHOTS) if (t >= x.t0 - .02) s = x;
+  cx.setTransform(1, 0, 0, 1, 0, 0); cx.globalAlpha = 1; drawShot(s, t);
+  const d = t - s.t0; if (s !== SHOTS[0] && d < .1) { cx.fillStyle = `rgba(20,26,22,${(.3 * (1 - d / .1)).toFixed(3)})`; cx.fillRect(0, 0, W, H); }
 }
-// seek for the exporter: wait for every clip it needs, then draw
 async function seekClips() { await Promise.all(WANT.map(([n, ct]) => new Promise(async res => { const v = VID[n];
   if (v.readyState < 2) await new Promise(r => { v.addEventListener('loadeddata', r, { once: true }); v.load(); setTimeout(r, 6000); });
-  if (Math.abs(v.currentTime - ct) < .02 && v.readyState >= 2) return res(); const done = () => { v.removeEventListener('seeked', done); res(); }; v.addEventListener('seeked', done); v.currentTime = ct; setTimeout(res, 3000); }))); }
-window.frameB64 = async t => { render(t); await seekClips(); render(t); return cv.toDataURL('image/jpeg', .92).slice(23); };
-window.seek = t => render(t); window.DUR = DUR;
+  const c = Math.max(0, Math.min((v.duration || 6) - .05, ct)); if (Math.abs(v.currentTime - c) < .02) return res(); const done = () => { v.removeEventListener('seeked', done); res(); }; v.addEventListener('seeked', done); v.currentTime = c; setTimeout(res, 3000); }))); }
+window.frameB64 = async t => { render(t); await seekClips(); render(t); return cv.toDataURL('image/jpeg', .9).slice(23); };
+window.seek = render; window.DUR = DUR;
 
-// ---------- live preview with sound ----------
+// live preview with sound
 const au = document.getElementById('au'), pp = document.getElementById('pp'), fill = document.getElementById('fill'), tc = document.getElementById('tc'), bar = document.getElementById('bar');
 const mmss = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
-function syncClips(t) { const live = new Set(WANT.map(w => w[0])); for (const n in VID) { const v = VID[n]; const w = WANT.find(x => x[0] === n); if (w && !au.paused) { if (Math.abs(v.currentTime - w[1]) > .25) v.currentTime = w[1]; if (v.paused && w[1] < CLIPS[n] - .1) v.play().catch(() => {}); } else if (!v.paused) v.pause(); } }
-function loop() { const t = au.currentTime; render(t); syncClips(t); fill.style.width = (100 * t / DUR) + '%'; tc.textContent = mmss(t); if (!au.paused && !au.ended) requestAnimationFrame(loop); else { pp.textContent = 'Play'; } }
-pp.onclick = () => { if (au.paused) { au.play(); pp.textContent = 'Pause'; loop(); } else { au.pause(); pp.textContent = 'Play'; } };
+function syncClips() { for (const n in VID) { const w = WANT.find(x => x[0] === n), v = VID[n]; if (w && !au.paused) { const c = Math.min((v.duration || 6) - .05, Math.max(0, w[1])); if (Math.abs(v.currentTime - c) > .25) v.currentTime = c; if (v.paused && c < (v.duration || 6) - .1) v.play().catch(() => {}); } else if (!v.paused) v.pause(); } }
+function loop() { const t = au.currentTime; render(t); syncClips(); fill.style.width = (100 * t / DUR) + '%'; tc.textContent = mmss(t); if (!au.paused && !au.ended) requestAnimationFrame(loop); else pp.textContent = 'Play'; }
+pp.onclick = () => { if (au.paused) { au.play(); pp.textContent = 'Pause'; loop(); } else { au.pause(); } };
 bar.onclick = e => { const r = bar.getBoundingClientRect(); au.currentTime = DUR * (e.clientX - r.left) / r.width; render(au.currentTime); seekClips().then(() => render(au.currentTime)); };
 document.getElementById('td').textContent = mmss(DUR);
-Promise.all([document.fonts.load(`800 64px "Bricolage Grotesque"`), document.fonts.load(`700 24px "JetBrains Mono"`), document.fonts.load(`500 24px "JetBrains Mono"`)]).catch(() => {}).then(() => {
-  events(); render(0); window.__ready = true;
+Promise.all(Object.values(IMG).map(i => i.decode().catch(() => {}))).then(() => Promise.all([document.fonts.load('500 15px Inter'), document.fonts.load('500 40px "JetBrains Mono"')])).catch(() => {}).then(() => {
+  build(); render(0); window.__ready = true;
   if (!navigator.webdriver && !/embed=1/.test(location.search)) { const b = document.getElementById('play'); b.hidden = false; b.onclick = () => { b.hidden = true; au.currentTime = 0; au.play(); pp.textContent = 'Pause'; loop(); }; }
 });
 </script></body></html>
