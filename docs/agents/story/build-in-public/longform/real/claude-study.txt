@@ -1,0 +1,14 @@
+PS> # Claude, studying the seven biggest What If openings (the real commands, 2026-11-03)
+PS> yt-dlp --flat-playlist --print "%(view_count)s|%(title)s" "https://www.youtube.com/@IfverseTales/videos"
+4600000|What If Your Reaction Time Was 10x Faster?
+1400000|What If You Had 500 IQ?
+PS> yt-dlp --download-sections "*0-90" -o "ifverse-reaction.mp4" "https://www.youtube.com/watch?v=MroF1XmHOZw"
+[download] 100% of 3.84MiB in 00:00:48
+PS> ffmpeg -i clips/ifverse-reaction.mp4 -vf "fps=1,scale=384:-2,tile=6x5" study/ifverse-%d.jpg
+PS> python tx.py clips/ifverse-reaction.mp4 study/ifverse.txt      # faster-whisper, every word
+   0.0 A fly buzzes past your face.
+   3.8 You don't even think.
+   5.1 You just catch it.
+  34.7 So what if your reaction time was ten times faster?
+PS> # x7 channels: Ifverse, Minute Zero, Ifinite, FunNotSoFun, IFOLOGY, Miko, Ifverse 500 IQ
+PS> code STUDY-whatif.md      # the rulebook: what all seven share

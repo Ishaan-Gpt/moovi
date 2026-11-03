@@ -44,6 +44,7 @@ const IMG = {}, img = (k, src) => { if (IMG[k]) return IMG[k]; const i = new Ima
 const CLIPS = ['ifv-fly', 'ifv-cup', 'ifv-number', 'ifv-title', 'ifv-how', 'mz-speed', 'ifi-bus', 'ifi-flip', 'miko-love', 'ifo-3d', 'fnsf-money', 'ifv-iq', 'short3d'], VID = {};
 CLIPS.forEach(n => { const v = document.createElement('video'); v.src = 'clips/' + n + '.mp4'; v.muted = true; v.preload = 'auto'; v.playsInline = true; VID[n] = v; });
 const co = document.createElement('iframe'); co.id = 'co'; co.src = COS; document.body.appendChild(co);
+const CO_URL = 'localhost:4371/coldopen/film.html';
 const coReady = () => { try { return co.contentWindow.__ready === true; } catch { return false; } };
 let WANT = [];
 
@@ -119,10 +120,14 @@ function drawPair(s, t) {   // before | after, two image windows
 function drawCoFull(s, t) {   // our film full frame, a slow push
   cx.save(); const z = lerp(1, 1.05, clamp((t - s.t0) / 12)); cx.translate(W / 2, H / 2); cx.scale(z, z); cx.translate(-W / 2, -H / 2);
   cx.fillStyle = '#000'; cx.fillRect(0, 0, W, H); if (coReady()) { co.contentWindow.seek(Math.max(0, s.from + t - s.t0)); cx.drawImage(co.contentWindow.document.getElementById('cv'), 0, 0, W, H); } cx.restore(); }
-function drawSide(s, t) {   // a reference film beside ours
-  cx.save(); const z = lerp(1, 1.06, clamp((t - s.t0) / 5)); cx.translate(W / 2, H / 2); cx.scale(z, z); cx.translate(-W / 2, -H / 2); wallpaper();
-  windowAt(40, 170, 920, 'youtube.com/watch?v=MroF1XmHOZw · Ifverse · 4.6M views', false, 0, () => playerClip(s.clip, t - s.t0, [0, 75, CW, 1425]));
-  windowAt(980, 170, 900, 'localhost:4371/coldopen/film.html · made with Claude', true, 0, () => coFrame(s.from + t - s.t0)); cx.restore(); }
+function drawSide(s, t) {   // a reference film beside ours; with the blind judge's numbers when the beat is about them
+  cx.save(); const z = lerp(1, 1.05, clamp((t - s.t0) / 8)); cx.translate(W / 2, H / 2); cx.scale(z, z); cx.translate(-W / 2, -H / 2); wallpaper();
+  windowAt(40, 190, 920, 'youtube.com/watch?v=MroF1XmHOZw, Ifverse, 4.6M views', false, 0, () => playerClip(s.clip, t - s.t0, [0, 75, CW, 1425]));
+  windowAt(980, 190, 900, CO_URL + ', made with Claude', true, 0, () => coFrame(s.from + t - s.t0));
+  const lab = s.scores ? ['blind judge 2: 4.83', 'blind judge 2: 5.5'] : s.mineLost ? ['blind judge 1: 5.8', 'blind judge 1: 4.3'] : null;
+  if (lab) { const k = clamp((t - s.t0 - .4) / .4); cx.globalAlpha = k; cx.font = '600 34px Inter'; cx.textAlign = 'center'; cx.textBaseline = 'middle';
+    [[500, lab[0], '#F4F1E2'], [1430, lab[1], s.scores ? '#F3E7A0' : '#E06B52']].forEach(([x, s2, c]) => { const w = cx.measureText(s2).width + 44; cx.fillStyle = 'rgba(20,26,22,.85)'; rr(x - w / 2, 120, w, 54, 27); cx.fill(); cx.fillStyle = c; cx.fillText(s2, x, 148); }); cx.globalAlpha = 1; }
+  cx.restore(); }
 
 // ---------- the cut, keyed to the voice ----------
 let SHOTS = [];
@@ -132,115 +137,101 @@ function build() {
   const page = (t0, key, title, o = {}) => ({ t0, kind: 'page', key, title, dark: key.startsWith('gh-'), ...o });
   const text = (t0, name, title, o = {}) => ({ t0, kind: 'text', lines: REAL[name], title, dark: true, ...o });
   const iv = WATCH('yt-ifverse-watch'), mz = WATCH('yt-mz-watch'), ifi = WATCH('yt-ifinite-watch'), mk = WATCH('yt-miko-watch'), ifo = WATCH('yt-ifology-watch'), fn = WATCH('yt-fnsf-watch');
-  const yt = 'youtube.com/watch?v=', gh = 'github.com/Ishaan-Gpt/moovi/blob/main/docs/agents/story/build-in-public/';
-  const S = [];
-  // 0 · the hook: our film, full frame, with its own sound
-  for (const c of LF.cos || []) S.push({ t0: c.t, kind: 'cofull', from: c.from });
-  // 1 · proof
-  const p0 = LF.secs.find(s => s.n === 1).t, m46 = A(1, 'four point six million'), on = A(1, 'and this one'), mc = A(1, 'i made with claude'), nf1 = A(1, 'using nothing else'), j43 = A(1, 'the first blind judge'), cb = A(1, "you'll see exactly how"), gh1 = A(1, 'take the whole system');
+  const yt = 'youtube.com/watch?v=', gh = 'github.com/Ishaan-Gpt/moovi/blob/main/docs/agents/story/build-in-public/', CO = 'localhost:4371/coldopen/film.html';
+  const S = [], co = (t0, from, title, keys, rate = 1) => S.push({ t0, kind: 'co', co: [from, rate], title: title || CO, dark: true, keys: keys || [[t0, ALL, 1]] });
+  // 0 · the hook: our film with its own sound; the payoff: ours beside theirs, with the scores
+  S.push({ t0: LF.cos[0].t, kind: 'cofull', from: LF.cos[0].from });
+  S.push({ t0: LF.cos[1].t, kind: 'side', clip: 'ifv-cup', from: LF.cos[1].from, scores: true, coSound: true });
+  // 1 · proof and the stake
+  const p0 = LF.secs.find(s => s.n === 1).t, m46 = A(1, 'four point six million'), on = A(1, 'and this one'), bj = A(1, 'a blind judge said'), be = A(1, 'but by the end'), wh = A(1, 'and the whole system');
   S.push(page(p0, 'yt-ifverse-watch', yt + 'MroF1XmHOZw', { clip: ['ifv-cup', p0], keys: [[p0, iv.player, .95], [m46 - .2, iv.views, .3]], marks: [[m46 + .2, iv.views]] }));
-  S.push({ t0: on, kind: 'side', clip: 'ifv-cup', from: 1.5 });
-  S.push(page(mc, 'gh-coldopen', 'github.com/Ishaan-Gpt/moovi/tree/main/docs/agents/story/build-in-public/coldopen', { keys: [[mc, [520, 340, 1700, 420], .7], [A(1, 'this morning'), [506, 560, 2380, 1180], .95]], marks: [[mc + .3, P('gh-coldopen', 'Ishaan-Gpt')], [A(1, 'this morning') + .4, [2200, 560, 2380, 1180]]] }));
-  S.push(page(nf1, 'fish-ethan', 'fish.audio/m/536d3a5e000945adb7038665781a4aca', { keys: [[nf1, [520, 470, 1900, 760], .75]], marks: [[nf1 + .5, [683, 640, 1680, 720]]] }));
-  S.push(page(j43, 'gh-judges', gh + 'coldopen/JUDGE-results.md', { keys: [[j43, [683, 600, 1476, 900], .7], [A(1, 'four point three') - .2, P('gh-judges', '4.3'), .25]], marks: [[A(1, 'four point three'), P('gh-judges', '4.3')]] }));
-  S.push({ t0: cb, kind: 'pair', a: 'v1-1', b: 'v2-0001.00', label: '0:01' });
-  S.push(page(gh1, 'gh-skill', 'github.com/Ishaan-Gpt/ishaan-stickmen', { full: true, keys: [[gh1, [0, 0, CW, CH], 1], [gh1 + 1.4, P('gh-skill', 'git clone https://github.com/Ishaan-Gpt/ishaan-stickmen'), .55]], marks: [[gh1 + 1.6, P('gh-skill', 'git clone https://github.com/Ishaan-Gpt/ishaan-stickmen')]] }));
-  // 2 · the gold rush
-  const g0 = A(2, 'the genre is called');
-  S.push(page(g0, 'yt-search', 'youtube.com/results?search_query=what+if+stickman', { full: true, keys: [[g0, [420, 160, 2340, 1300], .95], [g0 + 2.6, [420, 1500, 2340, 2700], .95]] }));
-  const o7 = A(2, 'seventh of october'), w46 = A(2, 'watched four point six');
-  const hd = A(2, 'a kid in a red hoodie');
-  S.push(page(o7, 'yt-ifverse-watch', yt + 'MroF1XmHOZw', { clip: ['ifv-cup', o7], keys: [[o7, [24, 1080, 1692, 1300], .7], [o7 + 1.6, iv.player, .95], [hd, [500, 250, 1400, 900], .9], [A(2, 'ten times faster than yours'), iv.player, .95], [w46 - .3, iv.views, .32]], marks: [[o7 + .4, [24, 1080, 1100, 1140]], [w46, iv.views]] }));
-  const m0 = A(2, 'minute zero'), m1 = A(2, 'got two point two million');
-  S.push(page(m0, 'yt-mz-watch', yt + 'gpLC_ELulyg', { clip: ['mz-speed', m0], keys: [[m0, mz.player, .9], [m0 + 1, P('yt-mz-watch', '21.3K subscribers'), .3], [m1, mz.views, .3]], marks: [[m0 + 1.3, P('yt-mz-watch', '21.3K subscribers')], [m1 + .3, mz.views]] }));
-  const i0 = A(2, 'ifinite'), i1 = A(2, 'got one point seven million');
-  S.push(page(i0, 'yt-ifinite-watch', yt + 'u2GyTKhHsTQ', { clip: ['ifi-bus', i0], keys: [[i0, ifi.player, .9], [i0 + .8, P('yt-ifinite-watch', '16.3K subscribers'), .3], [i1, ifi.views, .3]], marks: [[i0 + 1, P('yt-ifinite-watch', '16.3K subscribers')], [i1 + .3, ifi.views]] }));
-  const k0 = A(2, 'a channel called miko'), k1 = A(2, 'almost seven hundred thousand'), k2 = A(2, 'only seven thousand');
-  S.push(page(k0, 'yt-miko-watch', yt + 'MGZdDZyQUGg', { clip: ['miko-love', k0], keys: [[k0, mk.player, .9], [k1, mk.views, .3], [k2, P('yt-miko-watch', '7.1K subscribers'), .3], [A(2, 'quit their jobs'), [24, 1100, 1700, 1260], .8]], marks: [[k1 + .3, mk.views], [k2 + .3, P('yt-miko-watch', '7.1K subscribers')]] }));
-  const n0 = A(2, 'then everybody noticed'), mkt = 'C:/.../stick-games/MARKET.md, 288 videos measured';
-  const e11 = A(2, 'eleven of these'), e147 = A(2, 'a hundred and forty-seven'), tyv = A(2, 'the typical new video'), lo = A(2, 'copy what you see'), f15 = A(2, 'and yet fifteen');
-  S.push(page(n0, 'yt-search', 'youtube.com/results?search_query=what+if+stickman', { full: true, keys: [[n0, [420, 2600, 2340, 3800], .95], [n0 + 1.2, [420, 4200, 2340, 5400], .95]] }));
-  S.push(text(e11, 'market', mkt, { keys: [[e11, [150, 280, 1500, 420], .55], [e147, [150, 280, 1500, 540], .6], [tyv, lineRect(3, 5), .8], [tyv + 1.4, lineRect(9, 10), .85]], hl: [[e11, [3]], [e147, [3, 4, 5]], [tyv, [3, 5]], [tyv + 1.4, [9, 10]]] }));
-  S.push(page(lo, 'yt-search', 'youtube.com/results?search_query=what+if+stickman', { full: true, keys: [[lo, [420, 6000, 2340, 7200], .95], [lo + 1.3, [420, 7400, 2340, 8600], .95], [lo + 2.6, [420, 8600, 2340, 9800], .95]] }));
-  S.push(text(f15, 'market', mkt, { keys: [[f15, lineRect(11), .6]], hl: [[f15, [11]]] }));
-  S.push(page(A(2, 'the gap between'), 'yt-search', 'youtube.com/results?search_query=what+if+stickman', { full: true, keys: [[A(2, 'the gap between'), [420, 160, 2340, 1300], .95], [A(2, 'the gap between') + 2, [420, 160, 1400, 900], .7]] }));
-  // 3 · the study
-  const s0 = A(3, 'so i asked claude');
-  S.push(text(s0, 'folder', 'PowerShell · data/refs/stickman-whatif', { keys: [[s0, [0, 0, CW, 1300], .95], [s0 + 2, lineRect(1, 8), .85]], hl: [[s0 + 1.5, [1, 2, 3, 4, 5, 6, 7]]] }));
-  const f0 = A(3, 'one frame every second');
-  S.push({ t0: f0, kind: 'img', key: 'sheet', title: 'study/ifverse-1.jpg · 1 frame a second', dark: true, keys: [[f0, ALL, 1], [f0 + 1.5, [0, 0, 1200, 750], .95]] });
-  const nr = A(3, 'narration written out');
-  S.push(text(nr, 'transcript-ifverse', 'study/ifverse.txt · faster-whisper', { keys: [[nr, [0, 0, CW, 1100], .95]], hl: [[nr + .5, [0]], [nr + 1.5, [0, 1, 2]], [nr + 2.5, [3, 4]]] }));
+  S.push({ t0: on, kind: 'side', clip: 'ifv-cup', from: .3 });
+  S.push({ t0: bj, kind: 'side', clip: 'ifv-fly', from: 2.5, mineLost: true });
+  S.push({ t0: be, kind: 'side', clip: 'ifv-cup', from: 4.6 });
+  S.push(page(wh, 'gh-skill', 'github.com/Ishaan-Gpt/ishaan-stickmen', { full: true, keys: [[wh, [0, 0, CW, CH], 1], [wh + 1.2, P('gh-skill', 'git clone https://github.com/Ishaan-Gpt/ishaan-stickmen'), .55]], marks: [[wh + 1.4, P('gh-skill', 'git clone https://github.com/Ishaan-Gpt/ishaan-stickmen')]] }));
+  // 11 · the first failure, inside minute one
+  const f0 = LF.secs.find(s => s.n === 11).t, gh1 = A(11, 'i gave claude one hour'), m47 = A(11, 'forty-seven minutes'), f5 = A(11, 'two blind judges'), lg = A(11, "the legs couldn't run"), st = A(11, 'so i went back');
+  S.push({ t0: f0, kind: 'video', clip: ['short3d', f0], title: 'short/out/stillest-man-alive.mp4, my first try, in 3D', dark: true, keys: [[f0, ALL, 1]] });
+  S.push(page(m47 - .2, 'gh-short-timings', gh + 'short/TIMINGS.md', { full: true, keys: [[m47 - .2, P('gh-short-timings', '47 min wall'), .45]], marks: [[m47 + .1, P('gh-short-timings', '47 min wall')]] }));
+  S.push({ t0: f5, kind: 'video', clip: ['short3d', f5, 2], title: 'blind judges: 5.17, then 5.0', dark: true, keys: [[f5, ALL, 1], [lg, [700, 300, 1700, 1100], .95]] });
+  S.push(page(st, 'yt-search', 'youtube.com/results?search_query=what+if+stickman', { full: true, keys: [[st, [420, 160, 2340, 1300], .95]] }));
+  // 2 · the gold rush, short
+  const g0 = A(2, 'the genre is called'), o7 = A(2, 'seventh of october'), w46 = A(2, 'watched four point six');
+  S.push(page(g0, 'yt-search', 'youtube.com/results?search_query=what+if+stickman', { full: true, keys: [[g0, [420, 1500, 2340, 2700], .95]] }));
+  S.push(page(A(2, 'ifverse posted'), 'yt-ifverse-watch', yt + 'MroF1XmHOZw', { clip: ['ifv-cup', A(2, 'ifverse posted')], keys: [[A(2, 'ifverse posted'), iv.player, .95], [o7, [24, 1080, 1692, 1300], .7], [w46 - .2, iv.views, .32]], marks: [[w46, iv.views]] }));
+  const tw = A(2, 'within three weeks'), mzt = A(2, 'minute zero got'), mk0 = A(2, 'and miko got'), k2 = A(2, 'only seven thousand');
+  S.push(page(tw, 'yt-search', 'youtube.com/results?search_query=what+if+stickman', { full: true, keys: [[tw, [420, 2600, 2340, 3800], .95]] }));
+  S.push(page(mzt, 'yt-mz-watch', yt + 'gpLC_ELulyg', { clip: ['mz-speed', mzt], keys: [[mzt, mz.player, .9], [mzt + 1.2, mz.views, .3]], marks: [[mzt + 1.4, mz.views]] }));
+  S.push(page(mk0, 'yt-miko-watch', yt + 'MGZdDZyQUGg', { clip: ['miko-love', mk0], keys: [[mk0, mk.player, .9], [A(2, 'almost seven hundred thousand'), mk.views, .3], [k2, P('yt-miko-watch', '7.1K subscribers'), .3]], marks: [[A(2, 'almost seven hundred thousand') + .2, mk.views], [k2 + .2, P('yt-miko-watch', '7.1K subscribers')]] }));
+  const tk = A(2, 'by the third week'), e147 = A(2, 'a hundred and forty-seven'), tyv = A(2, 'the typical new video'), lo = A(2, 'copy what you see'), fr = A(2, 'and yet fresh ideas');
+  const mkt = 'C:/.../stick-games/MARKET.md, 288 videos measured';
+  S.push(text(tk, 'market', mkt, { keys: [[tk, [150, 280, 1500, 540], .6], [tyv, lineRect(3, 5), .8]], hl: [[e147, [5]], [tyv, [3, 5]]] }));
+  S.push(page(lo, 'yt-search', 'youtube.com/results?search_query=what+if+stickman', { full: true, keys: [[lo, [420, 4200, 2340, 5400], .95], [lo + 1.2, [420, 6000, 2340, 7200], .95], [lo + 2.4, [420, 8000, 2340, 9200], .95]] }));
+  S.push(page(fr, 'yt-ifinite-watch', yt + 'u2GyTKhHsTQ', { clip: ['ifi-bus', fr], keys: [[fr, ifi.player, .9], [fr + 2, ifi.views, .3]], marks: [[fr + 2.2, ifi.views]] }));
+  // 3 · the study: Claude at work, then the rulebook on the real clips
+  const s0 = A(3, 'so i asked claude'), ff = A(3, 'one frame every second'), wo = A(3, 'wrote out every word');
+  S.push(text(s0, 'claude-study', 'Claude Code: studying the seven openings', { keys: [[s0, [0, 0, CW, 900], .95], [s0 + 2, lineRect(1, 4), .85]], hl: [[s0 + .4, [0]], [s0 + 1.4, [1, 2, 3]], [s0 + 2.8, [4, 5]]] }));
+  S.push(text(ff - .2, 'claude-study', 'Claude Code: studying the seven openings', { keys: [[ff - .2, lineRect(6, 6), .7]], hl: [[ff - .2, [6]]] }));
+  S.push({ t0: ff + 1, kind: 'img', key: 'sheet', title: 'study/ifverse-1.jpg, one frame a second', dark: true, keys: [[ff + 1, ALL, 1], [ff + 2.2, [0, 0, 1200, 750], .95]] });
+  S.push(text(wo, 'claude-study', 'Claude Code: studying the seven openings', { keys: [[wo, lineRect(7, 11), .85]], hl: [[wo, [7, 8, 9, 10, 11]]] }));
   const rb = A(3, 'came back with a rulebook'), r1 = A(3, 'none of them tell');
-  S.push(page(rb, 'gh-study', gh + 'STUDY-whatif.md', { full: true, keys: [[rb, P('gh-study', 'The rulebook (what all seven share)'), .8], [r1, P('gh-study', 'Line 1 is a concrete everyday moment'), .8]], marks: [[rb + .3, P('gh-study', 'The rulebook (what all seven share)')], [r1 + .3, P('gh-study', 'Line 1 is a concrete everyday moment')]] }));
+  S.push(page(rb, 'gh-study', gh + 'STUDY-whatif.md', { full: true, keys: [[rb, P('gh-study', 'The rulebook (what all seven share)'), .8], [r1, P('gh-study', 'Line 1 is a concrete everyday moment'), .8]], marks: [[rb + .3, P('gh-study', 'The rulebook (what all seven share)')], [r1 + .2, P('gh-study', 'Line 1 is a concrete everyday moment')]] }));
   const fl = A(3, 'shows you a fly'), cp = A(3, 'a coffee cup'), t35 = A(3, 'thirty-five seconds');
   S.push(page(fl, 'yt-ifverse-watch', yt + 'MroF1XmHOZw', { clip: ['ifv-fly', fl], keys: [[fl, iv.player, .98]] }));
   S.push(page(cp, 'yt-ifverse-watch', yt + 'MroF1XmHOZw', { clip: ['ifv-cup', cp], keys: [[cp, iv.player, .98]] }));
-  S.push(page(t35, 'yt-ifverse-watch', yt + 'MroF1XmHOZw', { clip: ['ifv-title', t35 - 1.2], keys: [[t35, iv.player, .98], [t35 + 2.2, iv.player, .8]] }));
-  const r2 = A(3, 'the second rule'), qt = A(3, 'a quarter of a second');
-  S.push(page(r2, 'gh-study', gh + 'STUDY-whatif.md', { full: true, keys: [[r2, P('gh-study', 'One number contrast'), .8]], marks: [[r2 + .3, P('gh-study', 'One number contrast')]] }));
-  S.push(page(qt, 'yt-ifverse-watch', yt + 'MroF1XmHOZw', { clip: ['ifv-number', qt - .5], keys: [[qt, iv.player, .98], [qt + 1.5, [1100, 102, 1692, 500], .55]] }));
-  const r3 = A(3, 'the third is a friend'), hw = A(3, 'how did you do that');
-  S.push(page(r3, 'gh-study', gh + 'STUDY-whatif.md', { full: true, keys: [[r3, P('gh-study', 'Another character says one short line'), .8]], marks: [[r3 + .3, P('gh-study', 'Another character says one short line')]] }));
-  S.push(page(hw - .3, 'yt-ifverse-watch', yt + 'MroF1XmHOZw', { clip: ['ifv-how', hw - .5], keys: [[hw - .3, iv.player, .98]] }));
-  const r4 = A(3, 'the fourth is the pace'), wp = A(3, 'one and a half words');
-  S.push(text(r4, 'transcript-ifverse', 'study/ifverse.txt · faster-whisper', { keys: [[r4, [0, 0, CW, 1100], .95], [wp, lineRect(0, 6), .85]], hl: [[wp, [0, 1, 2, 3, 4, 5]]] }));
+  S.push(page(t35, 'yt-ifverse-watch', yt + 'MroF1XmHOZw', { clip: ['ifv-title', t35 - 1.2], keys: [[t35, iv.player, .98]] }));
+  const r2 = A(3, 'the second rule'), qt = A(3, 'a quarter of a second'), r3 = A(3, 'the third is a friend'), hw = A(3, 'how did you do that'), r4 = A(3, 'the fourth is the pace');
+  S.push(page(r2, 'yt-ifverse-watch', yt + 'MroF1XmHOZw', { clip: ['ifv-number', r2], keys: [[r2, iv.player, .98], [qt + .3, [1100, 102, 1692, 500], .55]] }));
+  S.push(page(r3, 'yt-ifverse-watch', yt + 'MroF1XmHOZw', { clip: ['ifv-how', r3], keys: [[r3, iv.player, .98]] }));
+  S.push(page(r4, 'yt-ifverse-watch', yt + 'MroF1XmHOZw', { clip: ['ifv-fly', r4], keys: [[r4, iv.player, .98], [r4 + 2.5, iv.player, .8]] }));
   // 4 · the look
-  const l0 = A(4, 'the look was'), as = A(4, "i'd assumed"), tb = A(4, 'the two biggest'), rm = A(4, 'rim of sunset light'), r3d = A(4, 'the real 3d character');
-  S.push(page(l0, 'gh-study', gh + 'STUDY-whatif.md', { full: true, keys: [[l0, P('gh-study', 'The top three are 2D that feels 3D'), .8]], marks: [[l0 + .4, P('gh-study', 'The top three are 2D that feels 3D')]] }));
+  const l0 = A(4, 'the look was'), as = A(4, "i'd assumed"), tb = A(4, 'the two biggest'), rm = A(4, 'rim of sunset light'), r3d = A(4, 'the real 3d channels'), th = A(4, 'so this time');
+  S.push(page(l0, 'gh-study', gh + 'STUDY-whatif.md', { full: true, keys: [[l0, P('gh-study', 'The top three are 2D that feels 3D'), .8]], marks: [[l0 + .3, P('gh-study', 'The top three are 2D that feels 3D')]] }));
   S.push(page(as, 'yt-ifology-watch', yt + 'y300HjYnHPw', { clip: ['ifo-3d', as], keys: [[as, ifo.player, .95]] }));
   S.push(page(tb, 'yt-ifinite-watch', yt + 'u2GyTKhHsTQ', { clip: ['ifi-flip', tb], keys: [[tb, ifi.player, .95]] }));
   S.push(page(rm, 'yt-ifverse-watch', yt + 'MroF1XmHOZw', { clip: ['ifv-cup', rm], keys: [[rm, iv.player, .98], [rm + 1.3, [300, 250, 1200, 800], .9]] }));
-  S.push(page(r3d, 'yt-fnsf-watch', yt + 'ch7RZklvrjk', { clip: ['fnsf-money', r3d], keys: [[r3d, fn.player, .9], [r3d + 2, fn.views, .3]], marks: [[r3d + 2.3, fn.views]] }));
-  const kn = A(4, 'i knew it was true'), m47 = A(4, 'forty-seven minutes'), f5 = A(4, 'five out of ten');
-  S.push({ t0: kn, kind: 'video', clip: ['short3d', kn], title: 'short/out/stillest-man-alive.mp4, made in 3D in one hour', dark: true, keys: [[kn, ALL, 1], [kn + 2.5, [500, 250, 1900, 1200], .95]] });
-  S.push(page(m47 - .3, 'gh-short-timings', gh + 'short/TIMINGS.md', { full: true, keys: [[m47 - .3, P('gh-short-timings', '47 min wall'), .45]], marks: [[m47, P('gh-short-timings', '47 min wall')]] }));
-  S.push({ t0: f5, kind: 'video', clip: ['short3d', f5, 2], title: 'short/out/stillest-man-alive.mp4, blind judges 5.17 and 5.0', dark: true, keys: [[f5, ALL, 1], [A(4, "the legs couldn't run"), [700, 300, 1700, 1100], .95]] });
-  const th = A(4, 'so this time');
-  S.push({ t0: th, kind: 'co', co: [9, 1], title: 'localhost:4371/coldopen/film.html · 2D on one canvas', dark: true, keys: [[th, ALL, 1], [th + 3, [400, 200, 2000, 1200], .95]] });
+  S.push(page(r3d, 'yt-fnsf-watch', yt + 'ch7RZklvrjk', { clip: ['fnsf-money', r3d], keys: [[r3d, fn.player, .9], [r3d + 2, fn.views, .3]], marks: [[r3d + 2.2, fn.views]] }));
+  co(th, 9, CO + ', 2D on one canvas', [[th, ALL, 1], [th + 3, [400, 200, 2000, 1200], .95]]);
   // 5 · the idea
-  const id = A(5, 'the idea is where'), rw = A(5, 'rewind ten seconds'), e8 = A(5, 'at least eight times');
-  S.push(page(id, 'yt-s-rewind', 'youtube.com/results?search_query=what+if+you+could+rewind+10+seconds', { full: true, keys: [[id, [420, 60, 2340, 700], .95], [A(5, 'searched every premise'), [420, 160, 2340, 1300], .95], [rw, [420, 160, 1500, 800], .7], [rw + 2.2, [420, 800, 1500, 1500], .7], [e8, [420, 1300, 2340, 2500], .95], [e8 + 2, [420, 2500, 2340, 3700], .95], [A(5, 'thirteen thousand views'), [420, 160, 1500, 800], .7]] }));
+  const id = A(5, 'the idea is where'), rw = A(5, 'rewind ten seconds'), e8 = A(5, 'at least eight times'), k13 = A(5, 'thirteen thousand views');
+  S.push(page(id, 'yt-s-rewind', 'youtube.com/results?search_query=what+if+you+could+rewind+10+seconds', { full: true, keys: [[id, [420, 60, 2340, 700], .95], [rw, [420, 160, 1500, 800], .7], [e8, [420, 1300, 2340, 2500], .95], [e8 + 1.6, [420, 2500, 2340, 3700], .95], [k13, [420, 160, 1500, 800], .7]] }));
   const wl = A(5, 'a thousand words left for your whole life'), rb2 = A(5, 'a roblox story');
-  S.push(page(wl, 'yt-s-words', 'youtube.com/results?search_query=what+if+you+only+had+a+limited+number+of+words+left', { full: true, keys: [[wl, [420, 60, 2340, 700], .9], [wl + 2, [420, 160, 2340, 1300], .95], [A(5, "hadn't been made"), [420, 1300, 2340, 2500], .95], [rb2, [420, 160, 1500, 900], .7], [A(5, 'nobody had served it'), [420, 160, 2340, 1300], .95]] }));
-  const tr = A(5, "the genre's best trick"), tk = A(5, 'except talking');
-  S.push({ t0: tr, kind: 'co', co: [17.6, .6], title: 'localhost:4371/coldopen/film.html', dark: true, keys: [[tr, ALL, 1], [tr + 1, [700, 75, 1700, 900], .9]] });
-  S.push({ t0: tk, kind: 'co', co: [6.9, 1], title: 'localhost:4371/coldopen/film.html', dark: true, keys: [[tk, [300, 200, 2100, 1300], .95]] });
+  S.push(page(wl, 'yt-s-words', 'youtube.com/results?search_query=what+if+you+only+had+a+limited+number+of+words+left', { full: true, keys: [[wl, [420, 60, 2340, 700], .9], [A(5, "hadn't been made"), [420, 1300, 2340, 2500], .95], [rb2, [420, 160, 1500, 900], .7]] }));
+  const tr = A(5, "the genre's best trick"), tl = A(5, 'but talking'), ca = A(5, "you can't animate");
+  co(tr, 17.6, CO, [[tr, ALL, 1], [tr + 1, [700, 75, 1700, 900], .9]], .6);
+  co(tl, 6.9, CO, [[tl, [300, 200, 2100, 1300], .95]]);
+  S.push({ t0: ca, kind: 'video', clip: ['short3d', ca, 3], title: 'what we cut: the 3D run', dark: true, keys: [[ca, ALL, 1]] });
   // 6 · the build
   const sc = A(6, 'the script came next'), w41 = A(6, 'you have forty-one words left');
-  S.push(page(sc, 'gh-co-script', gh + 'coldopen/script.md', { full: true, keys: [[sc, [634, 300, 2200, 1100], .95], [A(6, 'in the second person'), [634, 500, 2200, 1000], .8], [w41, P('gh-co-script', 'You have forty-one words left'), .6], [A(6, 'his best man'), [850, 1100, 1558, 1300], .55], [A(6, 'the whole café'), P('gh-co-script', 'Come on. Just one word.'), .55]], marks: [[w41 + .2, P('gh-co-script', 'You have forty-one words left')], [A(6, 'the whole café'), P('gh-co-script', 'Come on. Just one word.')]] }));
+  S.push(page(sc, 'gh-co-script', gh + 'coldopen/script.md', { full: true, keys: [[sc, [634, 300, 2200, 1100], .95], [w41, P('gh-co-script', 'You have forty-one words left'), .6], [A(6, 'the whole café'), P('gh-co-script', 'Come on. Just one word.'), .55]], marks: [[w41 + .2, P('gh-co-script', 'You have forty-one words left')], [A(6, 'the whole café'), P('gh-co-script', 'Come on. Just one word.')]] }));
   const vc = A(6, 'the voices came from'), ln = A(6, 'lined up every word'), dr = A(6, 'the counter drops');
-  S.push(page(vc, 'fish-ethan', 'fish.audio/m/536d3a5e000945adb7038665781a4aca', { keys: [[vc, [400, 150, 2000, 1000], .9], [vc + 1.5, [520, 470, 1900, 760], .75]], marks: [[vc + 1.8, [683, 640, 1680, 720]]] }));
-  S.push(text(ln, 'timing-always', 'coldopen/timing.js · every word to a hundredth of a second', { keys: [[ln, [0, 0, CW, 1600], .95], [ln + 2, lineRect(9, 15), .85]], hl: [[ln + 2.2, [13]]] }));
-  S.push({ t0: dr, kind: 'co', co: [16.8, 1], title: 'localhost:4371/coldopen/film.html', dark: true, keys: [[dr, ALL, 1], [dr + 1.2, [900, 75, 1600, 700], .7]] });
+  S.push(page(vc, 'fish-ethan', 'fish.audio/m/536d3a5e000945adb7038665781a4aca', { keys: [[vc, [520, 470, 1900, 760], .75]], marks: [[vc + .5, [683, 640, 1680, 720]]] }));
+  S.push(text(ln, 'timing-always', 'coldopen/timing.js, every word to a hundredth of a second', { keys: [[ln, lineRect(9, 15), .85]], hl: [[ln + .6, [13]]] }));
+  co(dr, 16.8, CO, [[dr, ALL, 1], [dr + 1.2, [900, 75, 1600, 700], .7]]);
   const cd = A(6, 'the pictures are all code'), px = A(6, 'three and a half thousand pixels'), s21 = A(6, 'twenty-one shots');
-  S.push(page(cd, 'gh-film', gh + 'coldopen/film.html', { full: false, keys: [[cd, [600, 200, 2300, 1300], .95]] }));
-  S.push({ t0: px, kind: 'co', co: [8.2, .3], title: 'localhost:4371/coldopen/film.html', dark: true, keys: [[px, ALL, 1]] });
-  S.push({ t0: s21, kind: 'co', co: [0, 6], title: 'localhost:4371/coldopen/film.html · 21 shots', dark: true, keys: [[s21, ALL, 1]] });
-  // 7 · the fall
-  const jg = A(7, 'hand it to a judge'), nn = A(7, 'with no names on them'), ml = A(7, 'mine came last');
-  S.push(page(jg, 'gh-brief', gh + 'coldopen/JUDGE-brief.md', { keys: [[jg, [634, 300, 2200, 1300], .95], [nn, P('gh-brief', 'You know nothing about how any of them were made'), .75]], marks: [[nn + .2, P('gh-brief', 'You know nothing about how any of them were made')], [A(7, 'told it to be strict'), P('gh-brief', 'Be strict')]] }));
-  S.push(page(ml, 'gh-judges', gh + 'coldopen/JUDGE-results.md', { keys: [[ml, [683, 720, 1476, 900], .6]], marks: [[ml + .3, P('gh-judges', '4.3')]] }));
-  const nf = A(7, 'with no face'), wa = A(7, 'the wedding ask'), ol = A(7, 'muddy olive light'), fu = A(7, 'like furniture');
-  S.push({ t0: A(7, 'the notes were brutal'), kind: 'page', key: 'gh-judges', title: gh + 'coldopen/JUDGE-results.md', dark: true, keys: [[A(7, 'the notes were brutal'), [683, 960, 2200, 1160], .85]], marks: [[nf - .6, P('gh-judges', 'featureless black hump')]] });
-  S.push({ t0: nf, kind: 'pair', a: 'v1-1', b: 'v2-0001.00', label: '0:01, "a black hump, no face"' });
-  S.push({ t0: wa, kind: 'pair', a: 'v1-5.5', b: 'v2-0005.50', label: '0:05, "the ask never shown"' });
-  S.push({ t0: ol, kind: 'pair', a: 'v1-11', b: 'v2-0011.00', label: '0:11, "muddy light, a frozen crowd"' });
-  S.push(page(A(7, 'the judge was right'), 'gh-judges', gh + 'coldopen/JUDGE-results.md', { keys: [[A(7, 'the judge was right'), [634, 960, 2200, 1200], .9]], marks: [[A(7, 'the judge was right') + .3, P('gh-judges', 'muddy olive grade')]] }));
-  // 8 · the climb: the fixed film itself
-  const fx = A(8, 'so we fixed exactly'), fc = A(8, 'your face and the number'), rg = A(8, 'the ring box sits'), br = A(8, 'the room got brighter');
-  S.push({ t0: fx, kind: 'co', co: [0, 1], title: 'localhost:4371/coldopen/film.html, v2', dark: true, keys: [[fx, ALL, 1]] });
-  S.push({ t0: fc, kind: 'co', co: [.3, 1], title: 'v2: your face and the 41 first', dark: true, keys: [[fc, [300, 100, 2100, 1300], .95]] });
-  S.push({ t0: rg, kind: 'co', co: [4.6, 1], title: 'v2: the ring box between you', dark: true, keys: [[rg, ALL, 1]] });
-  S.push({ t0: br, kind: 'co', co: [9.4, 1], title: 'v2: brighter, a crowd that reacts', dark: true, keys: [[br, ALL, 1]] });
-  const j2 = A(8, 'a second judge'), f55 = A(8, 'scored it five and a half'), ab = A(8, 'which put it above'), b8 = A(8, 'my bar is eight');
-  S.push(page(j2, 'gh-judges', gh + 'coldopen/JUDGE-results.md', { keys: [[j2, [683, 720, 1476, 900], .6]], marks: [[f55 + .2, P('gh-judges', '5.5')], [ab + .4, P('gh-judges', '4.83')]] }));
-  S.push({ t0: b8, kind: 'co', co: [14, 1], title: 'localhost:4371/coldopen/film.html, where it stands now', dark: true, keys: [[b8, ALL, 1], [b8 + 2.5, [500, 150, 1900, 1100], .95]] });
-  // 10 · free, and next
+  S.push(page(cd, 'gh-film', gh + 'coldopen/film.html', { keys: [[cd, [600, 200, 2300, 1300], .95]] }));
+  co(px, 8.2, CO, null, .3);
+  co(s21, 0, CO + ', 21 shots', null, 6);
+  // 7 · the fall: the real judge prompt, then each note on its picture
+  const jg = A(7, 'handed it to a judge'), ml = A(7, 'mine came last');
+  S.push(text(jg, 'claude-judge', 'Claude Code: a fresh agent, the blind judge', { keys: [[jg, [0, 0, CW, 1000], .95], [A(7, 'with no names on them'), lineRect(6, 8), .85]], hl: [[A(7, 'with no names on them'), [6, 7, 8]], [ml - .4, [16]]] }));
+  S.push(page(ml, 'gh-judges', gh + 'coldopen/JUDGE-results.md', { keys: [[ml, P('gh-judges', '4.3'), .25]], marks: [[ml + .2, P('gh-judges', '4.3')]] }));
+  const nf = A(7, 'with no face'), wa = A(7, 'the wedding ask'), ol = A(7, 'muddy olive'), jr = A(7, 'the judge was right');
+  S.push({ t0: nf - .6, kind: 'img', key: 'v1-1', title: 'coldopen v1, 0:01: "a black hump, no face"', dark: true, keys: [[nf - .6, ALL, 1]] });
+  S.push({ t0: wa, kind: 'img', key: 'v1-5.5', title: 'coldopen v1, 0:05: "the ask never shown"', dark: true, keys: [[wa, ALL, 1]] });
+  S.push({ t0: ol, kind: 'img', key: 'v1-11', title: 'coldopen v1, 0:11: "muddy light, a frozen crowd"', dark: true, keys: [[ol, ALL, 1], [ol + 1.6, [200, 500, 1900, 1300], .9]] });
+  S.push(page(jr, 'gh-judges', gh + 'coldopen/JUDGE-results.md', { keys: [[jr, [634, 960, 2200, 1200], .9]], marks: [[jr + .2, P('gh-judges', 'featureless black hump')]] }));
+  // 8 · the climb: each fix as before and after, then the win
+  const fx = A(8, 'so we fixed exactly'), fc = A(8, 'your face and the number'), rg = A(8, 'the ring box sits'), br = A(8, 'the room got brighter'), j2 = A(8, 'then a second judge'), f55 = A(8, 'five and a half'), f48 = A(8, 'four point eight'), mw = A(8, 'mine won');
+  S.push({ t0: fx, kind: 'pair', a: 'v1-1', b: 'v2-0001.00', label: '0:01' });
+  S.push({ t0: rg, kind: 'pair', a: 'v1-5.5', b: 'v2-0005.50', label: '0:05' });
+  S.push({ t0: br, kind: 'pair', a: 'v1-11', b: 'v2-0011.00', label: '0:11' });
+  S.push(page(j2, 'gh-judges', gh + 'coldopen/JUDGE-results.md', { keys: [[j2, [683, 720, 1476, 900], .6]], marks: [[f55, P('gh-judges', '5.5')], [f48, P('gh-judges', '4.83')]] }));
+  // 10 · free for personal use, and next
   const us = A(10, 'everything i used'), oc = A(10, 'one command puts it'), pd = A(10, 'which is a paid plan'), ct = A(10, 'cost nothing'), ep = A(10, 'the full episode');
-  S.push(page(us, 'gh-skill', 'github.com/Ishaan-Gpt/ishaan-stickmen', { full: true, keys: [[us, [0, 0, CW, CH], 1], [A(10, 'the rulebook from'), [0, 200, 2400, 1400], .95], [oc, P('gh-skill', 'git clone https://github.com/Ishaan-Gpt/ishaan-stickmen'), .55]], marks: [[oc + .2, P('gh-skill', 'git clone https://github.com/Ishaan-Gpt/ishaan-stickmen')]] }));
+  S.push(page(us, 'gh-skill', 'github.com/Ishaan-Gpt/ishaan-stickmen', { full: true, keys: [[us, [0, 0, CW, CH], 1], [A(10, 'free for personal use'), P('gh-skill', 'PolyForm Noncommercial 1.0.0'), .45], [A(10, 'the rulebook from'), [0, 200, 2400, 1400], .95], [oc, P('gh-skill', 'git clone https://github.com/Ishaan-Gpt/ishaan-stickmen'), .55]], marks: [[A(10, 'free for personal use') + .2, P('gh-skill', 'PolyForm Noncommercial 1.0.0')], [oc + .2, P('gh-skill', 'git clone https://github.com/Ishaan-Gpt/ishaan-stickmen')]] }));
   S.push(page(pd, 'claude-pricing', 'claude.com/pricing', { keys: [[pd, [300, 150, 2100, 1100], .95]] }));
-  S.push(page(ct, 'gh-skill', 'github.com/Ishaan-Gpt/ishaan-stickmen', { full: true, keys: [[ct, P('gh-skill', 'PolyForm Noncommercial 1.0.0'), .45]], marks: [[ct + .3, P('gh-skill', 'PolyForm Noncommercial 1.0.0')]] }));
+  S.push(page(ct, 'fish-ethan', 'fish.audio/m/536d3a5e000945adb7038665781a4aca', { keys: [[ct, [400, 150, 2000, 1100], .9]] }));
   S.push({ t0: ep, kind: 'cofull', from: 0 });
   SHOTS = S.sort((a, b) => a.t0 - b.t0);
 }

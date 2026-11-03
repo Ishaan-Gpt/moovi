@@ -1,0 +1,15 @@
+Claude Code  >  Agent (general-purpose): "Blind judge of three cold opens"
+
+You are a blind, strict judge of animation. Read the brief and follow it exactly.
+
+The three films are in the folders X, Y and Z. Each has sheet-1.jpg to sheet-5.jpg
+(contact sheets: one frame every 0.5 s) and transcript.txt.
+Look at every sheet of every film and read every transcript.
+Do not open any other file on the machine,
+and do not search for how these films were made.
+
+Score each film 1-10: hook, story, composition, look, acting, premium.
+Then the mean, a numbered list of defects with a time and a fix,
+and the final ranking. Be strict and concrete.
+
+  Agent finished.  X 4.3   Y 5.8   Z 6.7
