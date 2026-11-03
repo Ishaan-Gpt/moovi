@@ -222,3 +222,7 @@ video and it doesn't feel repetitive." And: "animation is shitty 3/10, so many e
   about the viral genre the viewer wants to make. Rule: write the reference's essence in one line first (why-not-what.md); a how-to film
   shows the genre's famous channels' clips as the target (Ifverse 4.6M, Minute Zero 2.2M, Ifinite 1.7M, IFOLOGY 889K, Miko 690K from
   4K subs), measures why they work, and makes ours in that genre beside them. Our own runs are only the method and the fall.
+- **2026-11-03 · build-in-public, the stickman What If genre · match the reference's medium.** Ishaan: "maybe u dont need to show 3d if
+  the reference is not [3d].. maybe the reference might be 2d but feels like 3d thing.. so u also do that. It takes less time but has got
+  higher quality". The genre's top video (Ifverse, 4.6M) is 2D silhouettes with layered light and depth; I had planned real 3D by habit.
+  Rule: the medium follows the reference (look.md, "Medium"); 2D-with-depth when the reference is 2D-with-depth.

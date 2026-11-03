@@ -1,5 +1,12 @@
 # Look
 
+## Medium: match the reference's (Ishaan, 2026-11-03)
+Pick the medium from the reference, not from habit. When the reference is 2D that feels 3D (Ifverse's silhouette stickmen:
+flat shapes, but layered planes, rim and sunset light, haze, depth of field, letterbox), build ours as 2D with depth: canvas or SVG
+layers on parallax planes, light as gradients and rims, blur by depth, a camera that moves the planes at different speeds. It
+renders in a fraction of the 3D time on this PC and reaches a higher finish, because every shape is drawn exactly. Use real 3D only
+when the reference's depth needs it (turning objects, a camera orbiting a character).
+
 ## Colour
 - **Palette: `palette.md` first.** Never the AI-default colours; run the five-palette drill, build OKLCH ramps, design contrast from them. The brand's real colours (site CSS, logo) are kept as the brand mark; keep every colour as a token (ramps + roles).
 - **Colour events**: switch light/dark every 1–3 shots so cuts read at speed (the light and dark ends of the same ramps).
@@ -30,3 +37,9 @@ grid · dots · rings · giant type (the headline's accent word, huge and faint)
 - **Icons**: thin-stroke line icons on blurred, glowing frosted squares; outlined pill chips with a gradient-filled active state;
   connecting lines to imply a workflow.
 - Glow means big soft blooms and blurred glass behind things, never a stroke glow on text.
+
+- Figure-ground (2026-10-25): never a black character on a black ground; a separation light behind every head (showreel-youtube-automation.md).
+
+- **2026-10-26, Ishaan: "improve the color grading a lil."** A rendered 3D film still gets a finishing grade in the encode, small and
+  measured: contrast ~1.07, saturation ~1.10, gamma ~0.97, cool shadows (+blue ~0.03), warm highlights (+red ~0.035, -blue ~0.025), a
+  soft vignette (PI/5). Compare it with at least one other grade (a lifted-black curve lost: flatter) on 4 stills before rendering.
