@@ -81,3 +81,6 @@ from inside Ifology's own formula: "What IF You Lived One Second in the Future?"
    nobody has made it.
 3. Keep the structural why (cold-open gag, a rule of the world, setup/payoff, numbers, turn, two questions); change everything a
    viewer would recognise: premise shape, title formula, hero's situation, set pieces.
+
+## Craft vs content (Ishaan, 2026-11-11)
+The craft of a reference (light model, grade, character design language, camera grammar, finish) is the WHY's bar and is matched at its level; its content (scenes, compositions, metaphors, lines, beats, title words) is the WHAT and never reused. See lessons.md, "Same style = the reference's craft".

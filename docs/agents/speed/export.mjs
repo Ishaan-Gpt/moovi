@@ -4,6 +4,7 @@
 //   node docs/agents/speed/export.mjs page=<film>/long.html [audio=<film>/audio/mix.wav] [out=<film>/out/film.mp4]
 //        [from=0] [to=<end>] [fps=30] [tabs=auto|1|3] [chunk=6] [preview=1] [force=1] [film=<dir>] [scenes=<scenes.json>]
 //        [http=http://localhost:4351 root=docs/agents/story]   (for pages that must be served)
+//        [q=nocap=1]   (extra page query, appended after ?embed=1)
 //
 // - The page sets window.__ready and exposes window.frameB64(t) (a JPEG) or window.seek(t) plus a #cv canvas (both patterns in the repo).
 // - The film is cut into chunks: the entries of scenes.json ([{id, from, to, page?}]) or fixed `chunk`-second pieces (default 10).
@@ -62,10 +63,10 @@ function srcHash(page) {
 // ---- chunks ----
 const pw = (() => { const r = createRequire(resolve('package.json')); try { return r('playwright-core'); } catch { return r(join(process.cwd(), 'node_modules/.pnpm/playwright-core@1.56.1/node_modules/playwright-core')); } })();
 const browser = await pw.chromium.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe',
-  args: ['--enable-gpu', '--ignore-gpu-blocklist', '--use-angle=d3d11', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows'] });
+  args: ['--enable-gpu', '--ignore-gpu-blocklist', '--use-angle=' + (kv.angle || 'd3d11'), '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows'] });
 // http=<base url> root=<dir>: pages that must be served (the Stickman pages on tools/serve.cjs 4351) map file path -> url
 const HTTP = kv.http, ROOT = resolve(kv.root || 'docs/agents/story');
-const url = p => (HTTP ? HTTP.replace(/\/$/, '') + '/' + relative(ROOT, p).split('\\').join('/') : pathToFileURL(p).href) + '?embed=1';
+const url = p => (HTTP ? HTTP.replace(/\/$/, '') + '/' + relative(ROOT, p).split('\\').join('/') : pathToFileURL(p).href) + '?embed=1' + (kv.q ? '&' + kv.q : '');   // q=nocap=1 etc.: extra page query (teaser cuts, 2026-11-03)
 const grab = (p, t) => p.evaluate(t => window.frameB64 ? window.frameB64(t) : (window.seek(t), document.getElementById('cv').toDataURL('image/jpeg', 0.94).slice(23)), t);
 async function openPage(page) {
   const p = await (await browser.newContext({ viewport: { width: 1000, height: 600 }, deviceScaleFactor: 2 })).newPage();
@@ -86,7 +87,7 @@ const FROM = +(kv.from || 0);
 const chunks = [];
 if (scenesIn) for (const s of scenesIn) chunks.push({ id: s.id, page: resolve(dirname(scenesFile), s.page || basename(PAGE0)), a: Math.round(s.from * FPS), b: Math.round(s.to * FPS) });
 else for (let a = Math.round(FROM * FPS), E = Math.round(END * FPS), i = 0; a < E; a += CH * FPS, i++) chunks.push({ id: 'c' + String(i).padStart(3, '0'), page: PAGE0, a, b: Math.min(E, a + CH * FPS) });
-for (const c of chunks) { c.key = `${c.id}_${c.a}_${c.b}_${FPS}_${MODE}_pre${PRE}`; c.file = join(CACHE, c.key + '.mp4'); c.src = srcHash(c.page); }
+for (const c of chunks) { c.key = `${c.id}_${c.a}_${c.b}_${FPS}_${MODE}_pre${PRE}${kv.q ? '_' + kv.q.replace(/[^\w]+/g, '-') : ''}`; c.file = join(CACHE, c.key + '.mp4'); c.src = srcHash(c.page); }
 
 // stage 1: free reuse (no source change)
 const todo = chunks.filter(c => !(man[c.key] && man[c.key].src === c.src && existsSync(c.file)));

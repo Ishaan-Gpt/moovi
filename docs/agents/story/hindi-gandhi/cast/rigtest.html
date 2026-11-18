@@ -1,0 +1,82 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Hero Rig Test</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- Range-of-motion test for the hero rig. rigtest.html?c=A2 (new) | A (old) | S2 | N2 ...   &t=3.2   &one=1 (a single front view)
+     Timeline (window.SEQ): idle, arms overhead, across the chest, moustache twirl, hand on hip, squat, sit on a 43 cm
+     platform, walk, pistol in the right fist, turntable. Left: front 3/4. Right: rear 3/4. window.seek(t), window.DUR. -->
+<style>html,body{margin:0;background:#8f8a84}#cv{display:block;width:900px;height:800px}</style>
+</head><body><canvas id="cv" width="1440" height="1280"></canvas>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="family.js"></script>
+<script src="bhagat.js"></script><script src="gent.js"></script><script src="azad.js"></script>
+<script src="herorig.js"></script><script src="azad2.js"></script><script src="cast2.js"></script>
+<script src="acting2.js"></script>
+<script>
+const Q = new URLSearchParams(location.search), CID = Q.get('c') || 'A2', ONE = Q.has('one');
+const C = window.CHARACTERS[CID], W = 1440, H = 1280;
+const R = new THREE.WebGLRenderer({ canvas: document.getElementById('cv'), antialias: true, preserveDrawingBuffer: true });
+R.setPixelRatio(1); R.setSize(W, H, false); R.outputEncoding = THREE.sRGBEncoding; R.toneMapping = THREE.ACESFilmicToneMapping; R.toneMappingExposure = 1.0;
+R.shadowMap.enabled = true; R.shadowMap.type = THREE.PCFSoftShadowMap; R.setScissorTest(true); R.autoClear = false;
+const lin = h => new THREE.Color(h).convertSRGBToLinear(), ok = window.CASTKIT.oklch;
+const BG = ok(0.7, 0.03, 150), FLOOR = ok(0.82, 0.035, 95);
+const env = new THREE.Scene(); env.add(new THREE.Mesh(new THREE.SphereGeometry(50, 32, 16), new THREE.MeshBasicMaterial({ color: lin(BG).multiplyScalar(0.7), side: THREE.BackSide })));
+const pane = (w, h, col, k, p) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: lin(col).multiplyScalar(k), side: THREE.DoubleSide })); m.position.set(...p); m.lookAt(0, 0, 0); env.add(m); };
+pane(30, 20, '#ffe6c8', 2.6, [-16, 26, 24]); pane(8, 34, ok(0.9, 0.04, 220), 1.8, [30, 8, -10]); pane(34, 10, FLOOR, 0.9, [0, -28, 16]);
+const S = new THREE.Scene(); S.environment = new THREE.PMREMGenerator(R).fromScene(env, 0.04).texture;
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(4000, 4000), new THREE.MeshStandardMaterial({ color: lin(FLOOR), roughness: .9 })); floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; S.add(floor);
+const key = new THREE.SpotLight(lin('#ffe9d2'), 2.4, 0, .5, .9, 0); key.position.set(-160, 260, 230); key.target.position.set(0, 70, 0);
+key.castShadow = true; key.shadow.mapSize.set(2048, 2048); key.shadow.radius = 5; key.shadow.bias = -.0003; key.shadow.normalBias = .02; S.add(key, key.target);
+const rim = new THREE.SpotLight(lin(ok(0.95, 0.03, 85)), 1.1, 0, .5, .8, 0);   // a soft warm rim, as in the films' sun-and-sky light rim.position.set(170, 200, -240); rim.target.position.set(0, 80, 0); S.add(rim, rim.target);
+S.add(new THREE.HemisphereLight(lin('#f2ece6'), lin(FLOOR), .45)); { const fill = new THREE.DirectionalLight(lin('#e8eefc'), 0.9); fill.position.set(120, 160, -260); S.add(fill); }
+const V = (x, y, z) => new THREE.Vector3(x, y, z), { BAPU, attach, sm, cl, lerp } = window.ACT;
+const rig = C.make(THREE, { lin }); rig.root.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } }); S.add(rig.root); window.rig = rig; if (Q.get('hide') && rig.meshes) Q.get('hide').split(',').forEach(i => { rig.meshes[+i].visible = false; }); if (Q.has('noshadow')) key.castShadow = false; if (Q.has('norim')) rim.intensity = 0;
+// props: the 43 cm platform and a pistol
+const PLAT = 43, plat = new THREE.Mesh(new THREE.CylinderGeometry(60, 62, PLAT, 64), new THREE.MeshStandardMaterial({ color: lin(ok(0.86, 0.03, 80)), roughness: .85 })); plat.position.set(0, PLAT / 2, -74); plat.castShadow = plat.receiveShadow = true; S.add(plat);
+const gun = new THREE.Group(); { const m = new THREE.MeshStandardMaterial({ color: lin(ok(0.3, 0.01, 250)), roughness: .4, metalness: .7 }), w = new THREE.MeshStandardMaterial({ color: lin(ok(0.4, 0.06, 50)), roughness: .6 });
+  const slide = new THREE.Mesh(new THREE.BoxGeometry(2.0, 2.6, 11), m); slide.position.set(0, 1.0, 3.6); const grip = new THREE.Mesh(new THREE.BoxGeometry(1.9, 6.4, 3.0), w); grip.position.set(0, -3.0, -0.4); grip.rotation.x = 0.2;
+  const guard = new THREE.Mesh(new THREE.TorusGeometry(1.2, 0.22, 8, 20), m); guard.rotation.y = Math.PI / 2; guard.position.set(0, -1.2, 2.2); gun.add(slide, grip, guard); gun.traverse(o => { o.castShadow = true; }); S.add(gun); }
+function holdGun(side) { rig.root.updateMatrixWorld(true); const s = side === 'L' ? 1 : -1, h = rig.joints['hand' + side], f = rig.joints['foreArm' + side]; gun.visible = true;
+  const z = V(0, -1, 0).transformDirection(f.matrixWorld), y = V(0, 1, 0); y.addScaledVector(z, -y.dot(z)).normalize(); const x = new THREE.Vector3().crossVectors(y, z);   // barrel down the forearm, grip hanging
+  gun.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, z)); gun.position.copy(rig.sockets['hand' + side].getWorldPosition(V(0, 0, 0))).addScaledVector(y, 2.6).addScaledVector(z, 0.5); gun.scale.setScalar(rig.root.scale.x); }
+const SEQ = [['idle', 2], ['overhead', 2.5], ['across', 2.5], ['twirl', 2.5], ['hip', 2], ['squat', 3], ['sit', 3], ['walk', 3], ['pistol', 2.5], ['turn', 4]];
+let acc = 0; SEQ.forEach(s => { s[2] = acc; acc += s[1]; }); window.SEQ = SEQ; window.DUR = acc;
+const fk = (b, x, y, z, k) => { b.rotation.set(lerp(b.rotation.x, x, k), lerp(b.rotation.y, y, k), lerp(b.rotation.z, z, k)); };
+function act(name, t, u, dur) {
+  const J = rig.joints, k = sm(0, 0.7, u) * (1 - sm(dur - 0.45, dur, u)), ez = k * k * (3 - 2 * k);
+  rig.root.position.set(0, 0, 0); rig.root.rotation.set(0, 0, 0); gun.visible = false; if (rig.setGround) rig.setGround(null);
+  rig.setExpression(name === 'pistol' ? 'stern' : name === 'twirl' ? 'smile' : 'neutral', 1);
+  if (name === 'walk') { rig.pose('walk', t); return; }
+  if (name === 'sit') { rig.root.position.set(0, 0, -22); BAPU.seat(rig, t, { seatY: PLAT, pitch: 0.02 * Math.sin(t) });
+    ['L', 'R'].forEach(S => { rig.root.updateMatrixWorld(true); const hip = J['leg' + S].getWorldPosition(V(0, 0, 0)), knee = J['shin' + S].getWorldPosition(V(0, 0, 0)), o = { curl: 0.3, pole: [S === 'L' ? 0.6 : -0.6, -1, -0.2] };
+      if (rig.hero) { o.up = [0, -1, 0]; o.fwd = [S === 'L' ? -1 : 1, 0.1, 0.25]; o.k = 0.9; } BAPU.hand(rig, S, hip.lerp(knee, 0.6).add(V(0, 4.5, 0)), o); });
+    return; }
+  rig.pose('idle', t);
+  if (name === 'overhead') { ['L', 'R'].forEach((S, i) => { const s = i ? -1 : 1; fk(J['arm' + S], -0.15, 0, s * 2.85, ez); fk(J['foreArm' + S], -0.3, 0, 0, ez); rig.hands[S].curl(lerp(0.35, 0.05, ez), 0.5 * ez); }); fk(J.head, -0.3, 0, 0, ez); fk(J.torso, -0.1, 0, 0, ez); fk(J.neck, -0.1, 0, 0, ez); if (rig.bones) rig.bones.chestH.scale.set(1.02, 1.05, 1.06); }
+  if (name === 'across') { rig.update(); rig.root.updateMatrixWorld(true); const a = J.torso.localToWorld(V(8.5, 23, 13.5)), b = J.torso.localToWorld(V(-8.5, 18.5, 15.5));
+    const r0 = J.handR.getWorldPosition(V(0, 0, 0)), l0 = J.handL.getWorldPosition(V(0, 0, 0)); BAPU.hand(rig, 'R', r0.lerp(a, ez), { curl: 0.3, pole: [-0.7, -1, -0.2] }); BAPU.hand(rig, 'L', l0.lerp(b, ez), { curl: 0.3, pole: [0.7, -1, -0.2] }); }
+  if (name === 'twirl') { rig.update(); rig.root.updateMatrixWorld(true); const h = rig.root.getObjectByName('headShape'), ph = t * 5.2, tip = h.localToWorld(V(-16.5 + 0.6 * Math.sin(ph), -7.5 + 0.8 * Math.cos(ph), 9.5));
+    const r0 = J.handR.getWorldPosition(V(0, 0, 0)); if (rig.hero) { BAPU.hand(rig, 'R', r0.lerp(h.localToWorld(V(-17.5 + 0.5 * Math.sin(ph), -9.5 + 0.5 * Math.cos(ph), 13.5)), ez), { curl: 0.5, pole: [-0.9, -0.6, -0.3] }); rig.pinch('R', sm(0.2, 0.8, ez)); window.ACT.pinchTo(rig, 'R', h.localToWorld(V(-7.6 + 0.35 * Math.sin(ph), -5.9 + 0.5 * Math.cos(ph), 14.7)), h.localToWorld(V(-2, -5, 4)), sm(0.4, 1, ez)); }
+    else BAPU.hand(rig, 'R', r0.lerp(tip, ez), { curl: 0.62, spread: 0.1, thumb: 0.8, pole: [-0.9, -0.6, -0.3] });
+    fk(J.head, -0.02, 0.12, 0, ez); }
+  if (name === 'hip') { rig.update(); rig.root.updateMatrixWorld(true); const l0 = J.handL.getWorldPosition(V(0, 0, 0)), tg = J.hips.localToWorld(V(13.4, 6.5, 0.5)); BAPU.hand(rig, 'L', l0.lerp(tg, ez), { curl: 0.3, thumb: 0.1, pole: [1, 0.1, -0.9], up: [-0.7, -0.6, 0.2], fwd: [0, 0.6, -0.5], k: 0.6 * ez });
+    J.hips.position.x += 1.6 * ez; fk(J.hips, 0, 0.1, -0.09, ez); fk(J.torso, 0.05, -0.16, 0.1, ez); fk(J.head, -0.05, 0.2, -0.05, ez); if (rig.hero) ['L', 'R'].forEach((S, i) => { const s = i ? -1 : 1; rig.legIK(S, V(s * 5.8 + (i ? -1.5 : 0.5), 6.4, i ? 2.5 : -0.5), null, new THREE.Quaternion().setFromEuler(new THREE.Euler(0, s * (i ? 0.35 : 0.1), 0))); }); }
+  if (name === 'squat') { const hy = lerp(55, 34, ez); J.hips.position.set(0, hy, lerp(0, -5, ez)); fk(J.torso, 0.55, 0, 0, ez); fk(J.neck, -0.2, 0, 0, ez); fk(J.head, -0.3, 0, 0, ez);
+    if (rig.hero) ['L', 'R'].forEach((S, i) => { const s = i ? -1 : 1; rig.legIK(S, V(s * 7.5, 6.4, 1), V(s * 0.45, 0, 1), new THREE.Quaternion().setFromEuler(new THREE.Euler(0, s * 0.3, 0))); });
+    else ['L', 'R'].forEach((S, i) => { const s = i ? -1 : 1; fk(J['leg' + S], -0.925, 0, s * 0.1, ez); fk(J['shin' + S], 2.09, 0, 0, ez); fk(J['foot' + S], -1.165, 0, 0, ez); });
+    ['L', 'R'].forEach((S, i) => { const s = i ? -1 : 1; fk(J['arm' + S], -1.25, 0, s * 0.12, ez); fk(J['foreArm' + S], -0.35, 0, 0, ez); }); }
+  if (name === 'pistol') { rig.update(); rig.root.updateMatrixWorld(true); const sh = J.armR.getWorldPosition(V(0, 0, 0)), out = sh.clone().add(V(-0.35, 0.02, 1).normalize().multiplyScalar(27.5)), r0 = J.handR.getWorldPosition(V(0, 0, 0));
+    BAPU.hand(rig, 'R', r0.lerp(out, ez), { curl: 0.88, pole: [-0.5, -1, -0.2], up: [1, 0, 0.35], fwd: [0, 1, 0], k: ez }); fk(J.torso, 0.1, 0.3, 0, ez); fk(J.head, -0.08, -0.3, 0, ez); fk(J.hips, 0, 0.12, 0, ez); fk(J.armL, 0.1, 0, 0.3, ez); fk(J.foreArmL, -0.6, 0, 0, ez); rig.hands.L.curl(0.7); if (rig.hero) ['L', 'R'].forEach((S, i) => { const s = i ? -1 : 1; rig.legIK(S, V(s * 6.6, 6.4, i ? 5 : -4), null, new THREE.Quaternion().setFromEuler(new THREE.Euler(0, s * 0.25 + 0.12, 0))); }); holdGun('R'); }
+  if (name === 'turn') { rig.root.rotation.y = u / dur * Math.PI * 2; }
+  rig.update();
+}
+const camA = new THREE.PerspectiveCamera(20, (ONE ? W : W / 2) / H, 1, 5000), camB = new THREE.PerspectiveCamera(20, W / 2 / H, 1, 5000);
+const draw = (x, y, w, h, cam) => { R.setViewport(x, y, w, h); R.setScissor(x, y, w, h); R.setClearColor(lin(BG), 1); R.clear(); R.render(S, cam); };
+window.seek = function (t) { t = Math.max(0, Math.min(window.DUR - 0.001, +t || 0)); let s = SEQ[0]; SEQ.forEach(q => { if (t >= q[2]) s = q; });
+  const t0 = performance.now(); act(s[0], t, t - s[2], s[1]); const tAct = performance.now() - t0;
+  plat.visible = s[0] === 'sit'; S.updateMatrixWorld(true);
+  const c = rig.joints.hips.getWorldPosition(V(0, 0, 0)), ty = lerp(62, c.y + 8, 0.6) + +(Q.get('cy') || 0), D = +(Q.get('d') || 400), az = +(Q.get('az') || 0.55);
+  camA.position.set(c.x + Math.sin(az) * D, ty + 40, c.z + Math.cos(az) * D); camA.lookAt(c.x, ty, c.z); camB.position.set(c.x - Math.sin(+(Q.get('azb') || 0.75)) * D, ty + 40, c.z - Math.cos(+(Q.get('azb') || 0.75)) * D); camB.lookAt(c.x, ty, c.z);
+  if (ONE) draw(0, 0, W, H, camA); else { draw(0, 0, W / 2, H, camA); draw(W / 2, 0, W / 2, H, camB); }
+  window.__info = { t, seg: s[0], actMs: +tAct.toFixed(2) }; return window.__info; };
+window.seek(+(Q.get('t') || 0.5)); window.__ready = true;
+</script></body></html>

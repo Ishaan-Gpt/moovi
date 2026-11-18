@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ek Din Azad</title>
+<!-- The Gandhi-for-a-day Short (Hindi, 9:16, 1080x1920). One page, every set and shot, word-keyed (cues.js + timing.js).
+     short.html?t=12.3 seeks; ?embed=1 for capture/export (no UI, no autoplay). Audio: audio/voice.mp3 when it exists.
+     window.sceneRange, window.seek(t) (pure, synchronous), window.__ready, window.frameB64(t) (composited JPEG). -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Rozha+One&family=Ultra&family=Special+Elite&family=Alfa+Slab+One&family=Playfair+Display:wght@700;900&family=Abril+Fatface&family=IM+Fell+English+SC&family=IM+Fell+English:ital@1&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
+<style>
+:root{--page:#e9e2d4;--ink:#3a3026;--mute:#7b6d5c;--panel:#f6f1e7;--line:#d6cbb8}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--page:#231d17;--ink:#efe6d8;--mute:#a7987f;--panel:#2e2720;--line:#4a3f33}}
+:root[data-theme="dark"]{--page:#231d17;--ink:#efe6d8;--mute:#a7987f;--panel:#2e2720;--line:#4a3f33}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--page);color:var(--ink);font:15px/1.4 'Baloo 2',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px;overflow-x:hidden}
+#ph{position:relative;width:min(540px,calc(100vw - 32px),calc((100vh - 120px) * .5625));aspect-ratio:9/16;overflow:hidden;background:#d9cdb8;border-radius:10px}
+#ph canvas{position:absolute;left:0;top:0;width:100%;height:100%;display:block}
+.embed body{padding:0;gap:0;display:block}
+.embed #ph{width:540px;height:960px;border-radius:0}
+#bar{display:flex;gap:10px;align-items:center;width:min(540px,calc(100vw - 32px))}
+#bar button{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:6px 16px;font:700 14px 'Baloo 2';cursor:pointer}
+#bar input{flex:1}
+#tm{font:600 13px 'Baloo 2';color:var(--mute);min-width:92px;text-align:right}
+.embed #bar{display:none}
+</style>
+<script>if (new URLSearchParams(location.search).has('embed')) document.documentElement.classList.add('embed');</script>
+</head>
+<body>
+<div id="ph"><canvas id="cv" width="1080" height="1920"></canvas><canvas id="ov" width="1080" height="1920"></canvas></div>
+<div id="bar"><button id="pp">Play</button><input id="sc" type="range" min="0" max="70" step="0.01" value="0"><span id="tm">0.00</span></div>
+<audio id="au" preload="auto"></audio>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="palette.js"></script>
+<script src="timing.js"></script>
+<script src="script.js"></script>
+<script src="cues.js"></script>
+<script src="kit.js"></script>
+<script src="post.js"></script>
+<script>if (location.search.includes('nosss')) window.__NOSSS = 1;</script>
+<script src="../../hindi-gandhi/cast/family.js"></script>
+<script src="../../hindi-gandhi/cast/bhagat.js"></script>
+<script src="../../hindi-gandhi/cast/gent.js"></script>
+<script src="../../hindi-gandhi/cast/azad.js"></script>
+<script src="props.js"></script>
+<script src="gprops.js"></script>
+<script src="sets.js"></script>
+<script src="acting.js"></script>
+<script src="shots.js"></script>
+<script src="captions.js"></script>
+<script src="titles-vintage.js"></script>
+<script src="overlay.js"></script>
+<script>
+'use strict';
+(function boot() {
+  const Q = new URLSearchParams(location.search), EMBED = Q.has('embed');
+  const stage = makeStage(THREE, document.getElementById('cv'));
+  const K = DKIT(THREE, stage.lin), PR = DPROPS(THREE, K, stage.lin);
+  const X = { cam: new THREE.PerspectiveCamera(30, 1080 / 1920, 2, 60000), K, PR, stage };
+  Object.assign(X, DSETS(THREE, stage.R, K, PR, stage.lin)); window.__X = X;
+  const SH = window.SHOTS.slice();
+  const starts = SH.map(s => s.at());
+  for (let i = 1; i < starts.length; i++) if (starts[i] <= starts[i - 1]) console.warn('shot order', SH[i].id);
+  const DUR = filmDuration();
+  window.sceneRange = [0, DUR];
+  const ov = document.getElementById('ov'), og = ov.getContext('2d');
+  const v = new THREE.Vector3();
+  function faceRects(cam, set) { const out = [];
+    [set.hero].forEach((rig, i) => { if (!rig || !rig.root.visible) return; let vis = true; rig.root.traverseAncestors(a => { if (a.visible === false) vis = false; }); if (!vis) return;
+      const hp = rig.root.getObjectByName('headShape').getWorldPosition(new THREE.Vector3()); const r = 19;
+      const c = hp.clone().project(cam); if (c.z > 1 || c.z < -1 || Math.abs(c.x) > 1.05 || Math.abs(c.y) > 1.05) return;
+      const right = new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld, 0).multiplyScalar(r), up = new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld, 1).multiplyScalar(r * 1.08);
+      const a = hp.clone().add(right).add(up).project(cam), b = hp.clone().sub(right).sub(up).project(cam);
+      const xs = [a.x, b.x].map(x => (x * 0.5 + 0.5) * 1080), ys = [a.y, b.y].map(y => (0.5 - y * 0.5) * 1920);
+      const rc = { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys), who: 'S' };
+      if (rc.x1 > 0 && rc.x0 < 1080 && rc.y1 > 0 && rc.y0 < 1920) out.push(rc); });
+    return out; }
+  function renderShot(i, t, out) {
+    const s = SH[i], set = X[s.set]; const lt = t - starts[i];
+    if (set.update) set.update(t);
+    const look = s.run(t, lt, X) || {};
+    set.scene.updateMatrixWorld(true);
+    stage.shot(set.scene, X.cam, look, out, t);
+    const faces = faceRects(X.cam, set);
+    if (s.after) s.after(X);
+    return { faces, look, id: s.id };
+  }
+  function idxAt(t) { let i = 0; for (let k = 0; k < starts.length; k++) if (t >= starts[k]) i = k; return i; }
+  window.seek = function (t) {
+    t = Math.max(0, Math.min(DUR + 4, +t || 0));   // the picture may run on under the music tail
+    const i = idxAt(t), s = SH[i], lt = t - starts[i], dur = s.trDur || 0;
+    let k = 1, type = 'cut', infoA = null;
+    if (i > 0 && s.tr && s.tr !== 'cut' && lt < dur) { k = lt / dur; type = s.tr; infoA = renderShot(i - 1, t, stage.outA); }
+    const info = renderShot(i, t, stage.outB);
+    stage.present(k, type, s.irisC ? s.irisC[0] : 0.5, s.irisC ? s.irisC[1] : 0.5);
+    og.clearRect(0, 0, 1080, 1920);
+    const faces = k < 0.5 && infoA ? infoA.faces : info.faces;
+    const odraw = window.DANDI_OVERLAY && !Q.has('clean') ? DANDI_OVERLAY.draw(og, t, faces) : null;
+    window.__info = { t: +t.toFixed(3), shot: s.id, tr: k < 1 ? type : null, faces, overlay: odraw };
+    return window.__info;
+  };
+  // composited frame (WebGL + overlay) for export
+  const cvE = document.getElementById('cv'), comp = document.createElement('canvas'); comp.width = cvE.width; comp.height = cvE.height; const cg = comp.getContext('2d'); cg.imageSmoothingQuality = 'high';
+  window.frameB64 = function (t) { window.seek(t); cg.drawImage(cvE, 0, 0); cg.drawImage(ov, 0, 0, comp.width, comp.height); return comp.toDataURL('image/jpeg', 0.94).slice(23); };
+  const go = () => { window.seek(+Q.get('t') || 0); window.__ready = true; };
+  (document.fonts && document.fonts.load ? Promise.all(['800 80px "Baloo 2"', '600 80px "Baloo 2"', '400 80px "Rozha One"', '400 80px "Tiro Devanagari Hindi"'].concat(window.DANDI_TITLE_FONTS || []).map(f => document.fonts.load(f).catch(() => {}))) : Promise.resolve()).then(go, go);
+  if (EMBED) return;
+  // player: play/pause, scrub, voice when audio/voice.mp3 exists
+  const au = document.getElementById('au'), pp = document.getElementById('pp'), sc = document.getElementById('sc'), tm = document.getElementById('tm');
+  let hasAudio = false; const srcs = ['audio/mix.wav', 'audio/voice.mp3']; let si = 0; au.src = srcs[0]; au.addEventListener('canplay', () => { hasAudio = true; }); au.addEventListener('error', () => { hasAudio = false; if (++si < srcs.length) au.src = srcs[si]; });
+  sc.max = DUR; let playing = false, t0 = 0, base = +Q.get('t') || 0;
+  function tick() { if (!playing) return; const t = hasAudio ? au.currentTime : base + (performance.now() - t0) / 1000; if (t >= DUR) { playing = false; pp.textContent = 'Play'; return; }
+    window.seek(t); sc.value = t; tm.textContent = t.toFixed(2) + ' s'; requestAnimationFrame(tick); }
+  pp.onclick = () => { playing = !playing; pp.textContent = playing ? 'Pause' : 'Play'; if (playing) { base = +sc.value; t0 = performance.now(); if (hasAudio) { au.currentTime = base; au.play().catch(() => {}); } tick(); } else { au.pause(); } };
+  sc.oninput = () => { const t = +sc.value; base = t; t0 = performance.now(); if (hasAudio) au.currentTime = t; if (!playing) window.seek(t); tm.textContent = t.toFixed(2) + ' s'; };
+})();
+</script>
+</body>
+</html>

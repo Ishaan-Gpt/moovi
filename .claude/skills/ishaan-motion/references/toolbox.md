@@ -51,3 +51,20 @@ Measured on this PC (Ryzen 5 7520U, 512 MB iGPU) on the robed figure, a 10 s cli
 - **Only the cloth that moves is simulated.** Undergarments in a standing clip are skinned (no cloth): the 27k-vertex tunic sim is gone.
 - **Render-time subdivision was 80% of the frame.** Eevee at 540x960: 15-22 s a frame with subdiv render levels 1-2, 3 s with body 1 and garments 0. Ray tracing off and light shadows on black cloth cost little to the eye.
 - **Time one frame before any batch** (and log every stage with tlog.mjs, preflight + GPU lease first). Never start a bake or render without a measured per-frame cost and a total.
+
+## Remotion Studio live preview in real time (Edit Easy demo v2, 2026-11-05)
+Measured with headless Chrome playing the Studio for 12 s and reading the timecode, against a known-good film in the
+same Studio (the cinetic intro: 28.6 fps). The new 2:16 film started at 12 fps; each fix, measured:
+- **One baked soundtrack, never one `<Audio>` per effect.** ~120 short audio sequences (voice lines, effects, bed
+  parts) were the main cost: removing them took 12 to 21.7 fps. Keep the cue list as data (one module both the film and
+  the mixer import), bake it with ffmpeg (adelay + volume per cue, the bed with fades and a volume expression for the
+  swell, two-pass loudnorm to -14 LUFS), and play one `<Audio>`. The clips with their own sound go into the bake too.
+- **Html5Video in preview, OffthreadVideo in the render** (`getRemotionEnvironment().isRendering`): OffthreadVideo in
+  the Studio fetched frames with "Retrying failed fetch" errors.
+- **Move and resize by transform only:** a phone drawn once at a base size and placed with translate + scale (its blur
+  divided by the scale), the background glows as fixed gradient layers moved by transform, the grain an oversized layer
+  moved by transform. Animating left/top/width/height or gradient strings repaints the frame: 16.6 to 21.6 fps.
+- **Bake static looks into the clips** (a 55 % grey on six wall clips via ffmpeg `hue=s=0.45`): 21.6 to 23.9 fps on the
+  seven-video wall; the light sections ran 26.5.
+- One stills bundle folder in the project (`bundle({ outDir })`), never a fresh Temp copy per run: four runs of a
+  126 MB public folder filled the last of a full disk.

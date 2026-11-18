@@ -226,3 +226,9 @@ The fast-pacing rule (3.2-3.8 words a second, a change every 1.2-2 s) is for cha
 paced like a keynote: a calm read (Andrew at about -6%, about 2.7-3 words a second), natural breaths between sentences kept (up to
 about 0.6 s, never cut to 0.2 s), every move slower with long soft settles, springs damped (no visible bounce), no elastic caption
 gestures, a softer bed. Every event still lands on its word; only the speed drops. Length 40-45 s is fine for the master.
+
+
+## Prompt before build (Ishaan, 2026-11-05, Edit Easy demo: "before building, which I feel you are building terribly")
+When Ishaan gives a reference prompt, the first deliverable is OUR prompt in that prompt's exact structure (role and pipeline line, "First: the scene plan", product line, STYLE with numbered scenes, MOTION RULES, AUDIO, QC), carrying its why and every relevant Ishaan skill, for the stretch he names. Build only after he approves that prompt; a scene plan table is not a substitute.
+- Ishaan, 2026-11-05: his own 12 s keynote prompt scored 10/10 and my build without it 0/10 (dark, thin primitives, no voice). Build from his prompt's structure, with a real voice (Fish Audio via Moovi's fish tool, key in Moovi .env.local) timed into the timeline, in his product's own light world.
+- Ishaan, 2026-11-05: 0/10 on my kinetic UI-morph minute (film/kinetic.html). For code-made launch/demo films, build with Leon Lin's open skills: cinetic (github.com/Leonxlnx/cinetic, picture: Remotion launch-simple, dealt house scenes, one element carried scene to scene, words centred, real product UI, licensed music, the gates) and earshot (github.com/Leonxlnx/earshot, sound: real recorded effects judged by listening, -14 LUFS, sync within 1 frame). Hand-rolled GSAP pages are no longer the default.

@@ -1,0 +1,39 @@
+{
+ "stages": [
+  {
+   "stage": "kit: hero + cell look (kit day)",
+   "est": 60,
+   "start": 1793646766413,
+   "end": 1793647393940,
+   "note": "hero face needed 4 rounds and is not at 8 yet; cell not started"
+  },
+  {
+   "stage": "voice: take in, aligned",
+   "est": 5,
+   "start": 1793649719399,
+   "end": 1793649719568,
+   "note": ""
+  },
+  {
+   "stage": "build: set + 37 shots, round 1-3",
+   "est": 25,
+   "start": 1793650374051,
+   "end": 1793650374196,
+   "note": "first pass had systemic faults (facing, washed light, Diwali thali); 3 rounds, still about 5/10"
+  },
+  {
+   "stage": "fix rounds 4-7 + sound + 2 blind judges",
+   "est": 60,
+   "start": 1793669325401,
+   "end": 1793669325577,
+   "note": "judge 3.5 then 5; hidden faces, DOF focus bug, a NaN camera, bars over faces"
+  },
+  {
+   "stage": "export",
+   "est": 25,
+   "start": 1793674961634,
+   "end": 1793675840624,
+   "note": ""
+  }
+ ]
+}

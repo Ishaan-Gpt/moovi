@@ -1,0 +1,59 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Gandhi Cast Sheet</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- Cast sheet for the Diwali Short: sheet.html?c=H|D&expr=neutral&blink=0&clip=idle&t=1.2&yaw=0.3
+     Left: full body 3/4 at full size. Right top: face close-up. Right bottom: the figure at 120 px tall (three poses). -->
+<style>html,body{margin:0;background:#b9a99a}#cv{display:block;width:800px;height:500px}</style>
+</head><body><canvas id="cv" width="1600" height="1000"></canvas>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="family.js"></script>
+<script src="gandhi.js"></script><script src="bacchi.js"></script><script src="bakri.js"></script><script src="bhola.js"></script><script src="mukhiya.js"></script><script src="bhagat.js"></script><script src="ramanujan.js"></script><script src="azad.js"></script><script src="gent.js"></script><script src="herorig.js"></script><script src="azad2.js"></script>
+
+<script>
+const Q = new URLSearchParams(location.search), CID = Q.get('c') || 'G';
+const C = window.CHARACTERS[CID], W = 1600, H = 1000;
+const R = new THREE.WebGLRenderer({ canvas: document.getElementById('cv'), antialias: true, preserveDrawingBuffer: true });
+R.setPixelRatio(1); R.setSize(W, H, false); R.outputEncoding = THREE.sRGBEncoding; R.toneMapping = THREE.ACESFilmicToneMapping; R.toneMappingExposure = 1.0;
+R.shadowMap.enabled = true; R.shadowMap.type = THREE.PCFSoftShadowMap; R.setScissorTest(true); R.autoClear = false;
+const lin = h => new THREE.Color(h).convertSRGBToLinear();
+const ok = window.CASTKIT.oklch;
+const BG = ok(0.74, 0.035, 300), FLOOR = ok(0.8, 0.04, 70);
+const env = new THREE.Scene(); env.add(new THREE.Mesh(new THREE.SphereGeometry(50, 32, 16), new THREE.MeshBasicMaterial({ color: lin(BG).multiplyScalar(0.7), side: THREE.BackSide })));
+const pane = (w, h, col, k, p) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: lin(col).multiplyScalar(k), side: THREE.DoubleSide })); m.position.set(...p); m.lookAt(0, 0, 0); env.add(m); };
+pane(30, 20, '#ffe6c8', 2.6, [-16, 26, 24]); pane(8, 34, ok(0.9, 0.04, 300), 1.8, [30, 8, -10]); pane(34, 10, FLOOR, 0.9, [0, -28, 16]);
+const ENV = new THREE.PMREMGenerator(R).fromScene(env, 0.04).texture;
+const S = new THREE.Scene(); S.environment = ENV;
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(4000, 4000), new THREE.MeshStandardMaterial({ color: lin(FLOOR), roughness: .9 })); floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; S.add(floor);
+const sw = new THREE.Mesh(new THREE.CylinderGeometry(500, 500, 900, 48, 1, true), new THREE.MeshStandardMaterial({ color: lin(BG), roughness: .95, side: THREE.BackSide, envMapIntensity: .3 })); sw.position.y = 449; S.add(sw);
+const key = new THREE.SpotLight(lin('#ffe9d2'), 2.4, 0, .5, .9, 0); key.position.set(-160, 260, 230); key.target.position.set(0, 70, 0);
+key.castShadow = true; key.shadow.mapSize.set(2048, 2048); key.shadow.radius = 5; key.shadow.bias = -.0003; key.shadow.normalBias = .02; S.add(key, key.target);
+const rim = new THREE.SpotLight(lin(ok(0.92, 0.05, 300)), 2.6, 0, .5, .8, 0); rim.position.set(170, 200, -240); rim.target.position.set(0, 80, 0); S.add(rim, rim.target);
+const warm = new THREE.PointLight(lin('#ffb36b'), 0.6, 400, 2); warm.position.set(80, 40, 120); S.add(warm);
+S.add(new THREE.HemisphereLight(lin('#f2ece6'), lin(FLOOR), .4));
+function mk() { const r = C.make(THREE, { lin }); r.root.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } }); S.add(r.root); return r; }
+const main = mk(); main.root.rotation.y = +(Q.get('ry') || 0.35);
+const small = [mk(), mk(), mk()]; small.forEach((r, i) => { r.root.position.set(1200 + i * 120, 0, 0); r.root.rotation.y = [0.5, 0, -0.9][i]; });
+const camA = new THREE.PerspectiveCamera(22, 800 / 1000, 1, 5000);
+const camB = new THREE.PerspectiveCamera(20, 800 / 680, 1, 5000);
+const camC = new THREE.PerspectiveCamera(20, 800 / 320, 1, 5000);
+const draw = (x, y, w, h, cam) => { R.setViewport(x, y, w, h); R.setScissor(x, y, w, h); R.setClearColor(lin(BG), 1); R.clear(); R.render(S, cam); };
+window.seek = function (t) {
+  const clip = Q.get('clip') || 'idle', expr = Q.get('expr') || 'neutral', blink = +(Q.get('blink') || 0);
+  main.pose(clip, t); main.setExpression && main.setExpression(expr, 1); main.setBlink(blink); if (Q.get('yaw')) { main.joints.head.rotation.y += +Q.get('yaw'); }
+  const sc = [['walk', 'shocked'], ['idle', 'smile'], ['react', 'shocked']];
+  if (CID === 'K') { sc[0] = ['idle']; sc[1] = ['stare']; sc[2] = ['bleat']; }
+  if (CID === 'B') { sc[0] = ['idle', 'cry']; sc[1] = ['idle', 'sniff']; sc[2] = ['idle', 'laugh']; }
+  if (CID === 'G') { sc[0] = ['walk', 'smile']; sc[1] = ['idle', 'press']; sc[2] = ['idle', 'grin']; }
+  small.forEach((r, i) => { r.pose(sc[i][0], i === 2 ? 0.4 : t); r.setExpression && r.setExpression(sc[i][1], 1); r.setBlink(0); });
+  if (main.update) main.update();
+  S.updateMatrixWorld(true);
+  const Hh = C.meta.height_cm;
+  camA.position.set(70, Hh * 0.62, Hh * 3.1); camA.lookAt(0, Hh * 0.5, 0);
+  const hp = main.joints.head.getWorldPosition(new THREE.Vector3()); const fy = hp.y + (C.meta.faceY || 12);
+  camB.position.set(hp.x + 26, fy + 2, hp.z + 115); camB.lookAt(hp.x + 1, fy - 1, hp.z);
+  camC.position.set(1320, Hh * 0.55, Hh * 7.6); camC.lookAt(1320, Hh * 0.5, 0);
+  draw(0, 0, 800, 1000, camA); draw(800, 320, 800, 680, camB); draw(800, 0, 800, 320, camC);
+  window.__info = { t };
+};
+window.seek(+(Q.get('t') || 0.5)); window.__ready = true;
+</script></body></html>

@@ -7,6 +7,19 @@ layers on parallax planes, light as gradients and rims, blur by depth, a camera 
 renders in a fraction of the 3D time on this PC and reaches a higher finish, because every shape is drawn exactly. Use real 3D only
 when the reference's depth needs it (turning objects, a camera orbiting a character).
 
+**Pseudo-3D is volume, never cutouts** (Ishaan, 2026-11-06, 3/10 on the Lincoln Short: "glitchy errory.. hands with no human..
+I told to make it pseudo 3d u made it cutout 2d"). Flat shapes on parallax planes are cutout 2D, however many planes there are.
+Pseudo-3D means every form reads as a solid under one light: a core shadow and terminator on every figure, face, hand and prop, a
+bounce and a rim, contact shadows and cast shadows on the floor and desk, floors, desks and walls drawn in perspective toward one
+vanishing point (tops foreshortened, edges with thickness), and atmosphere by depth. If a human figure drawn in canvas code can't
+carry that volume, don't ship primitives: render the figure from the best rig with painterly or toon shading and use it as a
+layer, or pick a story where the people stay small and lit. **A hand is never on screen without its owner**: a hand close-up
+keeps the sleeve to the shoulder or the body in frame, and hands from off-screen guests are never cut off at the wrist.
+**Story Shorts cut to the scene each line names** (Ishaan, 2026-11-06, 0/10): no continuous-take rule for stories.
+**Never an "only hands" shot** (Ishaan, 2026-11-06): a hand is framed with its owner's face or head. **Vibrant means lit contrast**: the subject in a key pool, the room darker and falling off, a rim separating figures from the background, never a flat overall brighten.
+**Glitches are a fail on their own**: set switches, plane edges, popping layers and empty walls in a camera move are checked
+on a grab every 0.25 s of each move before any judge sees it.
+
 ## Colour
 - **Palette: `palette.md` first.** Never the AI-default colours; run the five-palette drill, build OKLCH ramps, design contrast from them. The brand's real colours (site CSS, logo) are kept as the brand mark; keep every colour as a token (ramps + roles).
 - **Colour events**: switch light/dark every 1–3 shots so cuts read at speed (the light and dark ends of the same ramps).

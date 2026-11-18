@@ -95,3 +95,7 @@ captions, a fast flat read). So the sound got none of the craft the picture got,
   Moovi code: `docs/agents/story/hindi-dandi/short/audio/align.mjs`.
 - The world's own instruments in code for an Indian story: tanpura drone and sitar (Karplus-Strong with a jawari buzz), santoor
   plucks, keherwa theka on modal tabla (dayan/bayan with the bayan's pitch glide), not tone generators.
+
+## English launch voices are ElevenLabs (Ishaan, 2026-11-05, on the Edit Easy minute: "use eleven lab voice")
+- After the 4/10 on a Fish Audio read, launch and demo narration uses ElevenLabs. The free plan calls the premade voices through the API (eleven_multilingual_v2, mp3_44100_128; 192 kbps needs the Creator tier, and library voices such as Viraj need a paid plan) with about 10k characters a month, so render one line in two or three voices for him to pick, then the full read once, and time it with faster-whisper or `/v1/forced-alignment`.
+- Ishaan, 2026-11-05 (after hating Brian, Daniel and Eric): English launch narration is Viraj too (ElevenLabs library voice, so it is generated on the website from a paste-ready text file Claude writes, then timed by forced alignment). A real before/after in a demo plays in full with its own sound, never cut short.

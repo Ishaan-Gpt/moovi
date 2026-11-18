@@ -85,3 +85,6 @@ Ishaan: "bad purple background". A low-chroma dominant (OKLCH C about 0.03-0.05)
 
 ## Per video, not per channel (Ishaan, 2026-10-22)
 A channel's films do not share one palette or texture: each video derives its own from its subject. The brand kit stays neutral so it sits beside any video's look.
+
+## Ishaan's own product wears its own palette (Ishaan, 2026-11-05, Edit Easy demo: "use my palette icy blue")
+When the film is for Ishaan's own product, its site palette (Edit Easy: the studio's LIGHT world, ice-white `#F7FAFD` ground, white glass, frost-ink `#3F6E9F` type, an aurora of ice `#CFE6F7`, mint `#D2F5EC` and lilac `#E3DEFF`, hero words `#5394DA`→`#2B67C6`; Ishaan 2026-11-05: "by icy blue I mean proper whitish icy blue as in our studio", never the dark navy version) is the whole film's world, even when it sits on the banned list: it is the brand, already chosen. Offer a rare alternative only as option B, never as the default.

@@ -63,3 +63,4 @@
 - [ ] The hero's close-ups (every expression the script needs) and actions (hands to every prop) score 8/10 in the film's own grabbed frames (no separate kit day: Ishaan, 2026-11-03).
 - [ ] A historical hero keeps his icon (hat, glasses, silhouette) in the hook and the thumbnail.
 - [ ] Shots pre-vized as a still contact sheet and judged (face readable, eyes on the upper third, no bar across a face, no camera inside a wall) before animating.
+- Kya Ho Agar Shorts: the Gandhi/Bhagat formula (85-100 s, one day, one rule, a choice, the comment dare, cut film, face first); no loop endings (reverted 2026-11-06, lessons.md).
