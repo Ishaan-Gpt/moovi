@@ -85,3 +85,18 @@ Nothing below was approved; all of it is a first proposal so there was a film to
 `overlay.js` HUD · `captions.js` both caption tracks · `post.js` the series' post stack (DOF, bloom, ACES, grade, whip)
 · `timing.js` word times · `script.js` the three scripts · `cues.js`, `palette.js` from the series ·
 `audio/` voice, alignment, score, mix · `tools/` grab, render, measure · `casttest.html` the cast sheet page.
+
+## Measured (2026-11-18, cloud session, 4 CPU cores, no GPU)
+
+- Render: 1,574 frames at 720x1280, 30 fps, in 62 min (2.16 s a frame to draw, 0.012 s to encode); `preview/buddha-hi-720.render.json`.
+- Changes per second (`MEASURE.json`): 40 cuts (a shot every 1.29 s), 74 caption cards, 29 HUD beats, 27 in-shot beats.
+  Picture and captions together: mean 3.24 a second, lowest 2 s window 1.5 a second (at 6.5 s). Picture alone: mean
+  1.78, but it falls to 0 in the held shots around 30 to 37 s (his eyes closing, the dolly zoom), where only captions change.
+- First 1.5 s: 10 picture events (spawn bar, cut to the landing at 0.3, title at 0.56 and 0.7, the jolt at 0.6, whip to the orbit at 1.0).
+- No black frame in the render. Master -14.4 LUFS, true peak -1.4.
+
+## Known gaps
+
+See the session report; the main ones: nobody has heard the mix or the 1.4x voice, the word timing is a local
+alignment (about 0.1 s inside phrases), the far pedestrians and the cars are simple, the sit-down move passes through
+an awkward skirt shape, and the choice plate crosses his hair in one close-up.

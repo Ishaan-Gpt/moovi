@@ -1,0 +1,12 @@
+{
+ "out": "/home/user/moovi/docs/agents/story/hindi-buddha-gta/hi/out/buddha-hi-720.mp4",
+ "frames": 1574,
+ "fps": 30,
+ "seconds": 52.47,
+ "workers": 1,
+ "chunks": 14,
+ "wallSeconds": 3741.5,
+ "renderMsPerFrame": 2162.5,
+ "encodeMsPerFrame": 11.6,
+ "wallSecondsPerFilmSecond": 71.31
+}

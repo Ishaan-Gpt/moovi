@@ -10,8 +10,8 @@ This file is the project's memory. Read it at the start of every render-easy ses
 | 1. World-space cache (as the hybrid pipeline) | Designed, see `hybrid.md` | – |
 | 2. Exact motion vectors | Not started | – |
 | 3. Predict, verify, redraw | Not started | – |
-| 4. Code straight to MP4 | Not started | – |
-| 5. Split across machines | Not started | – |
+| 4. Code straight to MP4 | Working (first real film) | Encode 11.6 ms/frame (WebCodecs H.264 + mp4-muxer in the page); the draw was 2,162 ms/frame, so it removed the screenshot cost but not the bottleneck |
+| 5. Split across machines | Chunking and stream-copy join working on one machine; separate sessions not tried | 3 workers on one 4-core machine: 8.1 s/frame each vs 1.7 s alone (slower) |
 
 ## Next milestone
 
@@ -36,6 +36,12 @@ Add newest entries at the top, in this format:
 - Decision or finding:
 - Next:
 ```
+
+### 2026-11-18: First real film through layer 4 ("GTA 6 Mein Buddha", three.js r128, 720x1280)
+- What was done: `docs/agents/story/hindi-buddha-gta/hi/tools/render.mjs` encodes each frame from the page canvas with WebCodecs H.264 (`avc1.640028`, 6 Mbps) into mp4-muxer inside headless Chromium, in 4 s chunks with an 8-frame pre-roll, joined with an ffmpeg stream copy and muxed with the mix.
+- Measured (cloud container, 4 CPU cores, no GPU, software WebGL via SwiftShader): 1,574 frames in 3,741 s; draw 2,162 ms/frame, encode 11.6 ms/frame. Supersampling 1.5x / 1.25x / 1.0x drew a frame in 2.51 / 1.89 / 1.45 s (5 sample frames). The JPEG-per-frame path (`frameB64`) on the same page ran about 2.5 s/frame at 1.5x, so layer 4 saved little here. Three parallel workers on the same machine took 8.1 s/frame each against 1.7 s alone.
+- Decision or finding: on a CPU-only machine the rasteriser is the whole cost (Amdahl); layer 4 and same-machine chunks cannot help. A GPU, or layer 5 on separate sessions, is what moves it. Layers 1 to 3 were not used: the camera moves in every frame of this film.
+- Next: run the same page on a GPU machine and record ms/frame; add a session split to render.mjs and measure wall time.
 
 ### 2026-11-15: Hybrid pipeline chosen for heavy video
 - What was done: Decided, from the showcase results, to combine engines rather than pick one. Wrote `hybrid.md`.

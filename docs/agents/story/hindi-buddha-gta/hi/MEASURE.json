@@ -1,0 +1,432 @@
+{
+ "lang": "hi",
+ "duration": 52.461,
+ "cuts": 40,
+ "avgShotSeconds": 1.29,
+ "captionCards": 74,
+ "hudBeats": 29,
+ "inShotBeats": 27,
+ "perSecond": {
+  "picture": {
+   "min": 0,
+   "minAt": 35.5,
+   "mean": 1.78
+  },
+  "pictureAndCaptions": {
+   "min": 1.5,
+   "minAt": 6.5,
+   "mean": 3.24
+  }
+ },
+ "first1_5s": 11,
+ "first1_5sWhat": [
+  "0 cut A0-spawn-face",
+  "0 spawn bar",
+  "0.3 cut A1-land",
+  "0.3 flash",
+  "0.56 title 1",
+  "0.6 landing flash",
+  "0.6 landing jolt",
+  "0.7 title 2",
+  "1 cut A2-orbit",
+  "1.474 cut A3-chase"
+ ],
+ "render": {
+  "file": "preview/buddha-hi-720.mp4",
+  "frames": 1574,
+  "meanFrameDiff": 8.58,
+  "stillFrames": 13,
+  "pictureJumps": 62,
+  "jumpsPerSecond": {
+   "min": 0,
+   "minAt": 30,
+   "mean": 1.22
+  }
+ },
+ "events": [
+  {
+   "t": 0,
+   "what": "cut A0-spawn-face"
+  },
+  {
+   "t": 0,
+   "what": "spawn bar"
+  },
+  {
+   "t": 0.3,
+   "what": "cut A1-land"
+  },
+  {
+   "t": 0.3,
+   "what": "flash"
+  },
+  {
+   "t": 0.56,
+   "what": "title 1"
+  },
+  {
+   "t": 0.6,
+   "what": "landing flash"
+  },
+  {
+   "t": 0.6,
+   "what": "landing jolt"
+  },
+  {
+   "t": 0.7,
+   "what": "title 2"
+  },
+  {
+   "t": 1,
+   "what": "cut A2-orbit"
+  },
+  {
+   "t": 1.474,
+   "what": "cut A3-chase"
+  },
+  {
+   "t": 1.6,
+   "what": "mini-map"
+  },
+  {
+   "t": 1.72,
+   "what": "car passes"
+  },
+  {
+   "t": 1.95,
+   "what": "car passes"
+  },
+  {
+   "t": 2.2,
+   "what": "cut A4-away"
+  },
+  {
+   "t": 2.912,
+   "what": "cut A5-vow"
+  },
+  {
+   "t": 4,
+   "what": "the open hand is up"
+  },
+  {
+   "t": 4.361,
+   "what": "cut A6-hand"
+  },
+  {
+   "t": 4.65,
+   "what": "weapon wheel"
+  },
+  {
+   "t": 5.09,
+   "what": "punch-in"
+  },
+  {
+   "t": 5.68,
+   "what": "wheel lands on the open hand"
+  },
+  {
+   "t": 6.379,
+   "what": "cut B1-street"
+  },
+  {
+   "t": 7.427,
+   "what": "cut B2-neon"
+  },
+  {
+   "t": 8.668,
+   "what": "cut B3-mission"
+  },
+  {
+   "t": 9.32,
+   "what": "mission plate"
+  },
+  {
+   "t": 9.36,
+   "what": "marker drops"
+  },
+  {
+   "t": 9.61,
+   "what": "order typed"
+  },
+  {
+   "t": 10.214,
+   "what": "cut B4-car"
+  },
+  {
+   "t": 11.198,
+   "what": "cut C1-walk"
+  },
+  {
+   "t": 12.439,
+   "what": "cut C2-owner"
+  },
+  {
+   "t": 12.67,
+   "what": "owner startles"
+  },
+  {
+   "t": 13.493,
+   "what": "cut C3-eyes"
+  },
+  {
+   "t": 14.253,
+   "what": "cut C4-owner-soft"
+  },
+  {
+   "t": 15.069,
+   "what": "cut C5-keys"
+  },
+  {
+   "t": 15.84,
+   "what": "punch-in"
+  },
+  {
+   "t": 16.31,
+   "what": "mission plate back"
+  },
+  {
+   "t": 16.54,
+   "what": "order struck out"
+  },
+  {
+   "t": 16.54,
+   "what": "keys land"
+  },
+  {
+   "t": 17.105,
+   "what": "cut D1-star"
+  },
+  {
+   "t": 17.18,
+   "what": "red star"
+  },
+  {
+   "t": 18.63,
+   "what": "gold star"
+  },
+  {
+   "t": 18.63,
+   "what": "punch-in"
+  },
+  {
+   "t": 19.12,
+   "what": "flash"
+  },
+  {
+   "t": 19.798,
+   "what": "cut D2-owner-stunned"
+  },
+  {
+   "t": 20.837,
+   "what": "cut D3-follow"
+  },
+  {
+   "t": 22.1,
+   "what": "danger edge"
+  },
+  {
+   "t": 22.103,
+   "what": "cut E1-headlights"
+  },
+  {
+   "t": 22.5,
+   "what": "red blips"
+  },
+  {
+   "t": 22.5,
+   "what": "cars pull up"
+  },
+  {
+   "t": 22.647,
+   "what": "cut E2-ring"
+  },
+  {
+   "t": 23.774,
+   "what": "cut E3-guns"
+  },
+  {
+   "t": 24.03,
+   "what": "gun up"
+  },
+  {
+   "t": 24.29,
+   "what": "gun up"
+  },
+  {
+   "t": 24.32,
+   "what": "other shoulder"
+  },
+  {
+   "t": 24.803,
+   "what": "cut E4-crane"
+  },
+  {
+   "t": 25.56,
+   "what": "pick-up appears"
+  },
+  {
+   "t": 26.166,
+   "what": "cut E5-pick"
+  },
+  {
+   "t": 26.21,
+   "what": "weapon order"
+  },
+  {
+   "t": 26.96,
+   "what": "cut F1-choice"
+  },
+  {
+   "t": 27.01,
+   "what": "choice plate"
+  },
+  {
+   "t": 28.038,
+   "what": "cut F2-run"
+  },
+  {
+   "t": 28.5,
+   "what": "option run"
+  },
+  {
+   "t": 28.724,
+   "what": "cut F3-fight"
+  },
+  {
+   "t": 29.44,
+   "what": "option fight"
+  },
+  {
+   "t": 30.054,
+   "what": "cut F4-neither"
+  },
+  {
+   "t": 31.05,
+   "what": "options struck"
+  },
+  {
+   "t": 31.05,
+   "what": "eyes closing"
+  },
+  {
+   "t": 31.57,
+   "what": "clock out"
+  },
+  {
+   "t": 32.38,
+   "what": "cut G1-sit"
+  },
+  {
+   "t": 33.24,
+   "what": "he sits"
+  },
+  {
+   "t": 34.478,
+   "what": "cut G2-eyes"
+  },
+  {
+   "t": 34.75,
+   "what": "eyes shut"
+  },
+  {
+   "t": 35.486,
+   "what": "cut G3-dollyzoom"
+  },
+  {
+   "t": 37.695,
+   "what": "cut H1-leader"
+  },
+  {
+   "t": 38.968,
+   "what": "cut H2-gunpoint"
+  },
+  {
+   "t": 39.78,
+   "what": "gun at his face"
+  },
+  {
+   "t": 40.55,
+   "what": "cut H3-leader-face"
+  },
+  {
+   "t": 40.63,
+   "what": "trigger prompt"
+  },
+  {
+   "t": 41.717,
+   "what": "cut H4-nobody"
+  },
+  {
+   "t": 42.26,
+   "what": "trigger dead"
+  },
+  {
+   "t": 42.26,
+   "what": "gun dips"
+  },
+  {
+   "t": 42.854,
+   "what": "cut I1-down"
+  },
+  {
+   "t": 43.25,
+   "what": "gun down"
+  },
+  {
+   "t": 43.59,
+   "what": "gun down"
+  },
+  {
+   "t": 43.86,
+   "what": "gun down"
+  },
+  {
+   "t": 44,
+   "what": "blips grey"
+  },
+  {
+   "t": 44.3,
+   "what": "gun down"
+  },
+  {
+   "t": 44.6,
+   "what": "gun down"
+  },
+  {
+   "t": 44.886,
+   "what": "cut I2-city"
+  },
+  {
+   "t": 45.82,
+   "what": "the city stops"
+  },
+  {
+   "t": 46.97,
+   "what": "stars cascade"
+  },
+  {
+   "t": 47.27,
+   "what": "five gold"
+  },
+  {
+   "t": 48.106,
+   "what": "cut J1-face"
+  },
+  {
+   "t": 49.536,
+   "what": "cut J2-eyes"
+  },
+  {
+   "t": 49.7,
+   "what": "eyes open"
+  },
+  {
+   "t": 50.678,
+   "what": "cut J3-dare"
+  },
+  {
+   "t": 50.73,
+   "what": "comment bubble"
+  }
+ ]
+}
