@@ -1,0 +1,23 @@
+<!doctype html><meta charset="utf-8"><title>Buddha cast sheet</title>
+<body style="margin:0;background:#15121c"><canvas id="cv" width="1600" height="900"></canvas>
+<script src="vendor/three.r128.min.js"></script>
+<script src="../../hindi-gandhi/cast/family.js"></script>
+<script src="buddha.js"></script>
+<script src="../../hindi-gandhi/cast/herorig.js"></script>
+<script src="../../hindi-gandhi/cast/acting2.js"></script>
+<script src="cast.js"></script>
+<script>
+const R = new THREE.WebGLRenderer({ canvas: cv, antialias: true, preserveDrawingBuffer: true }); R.outputEncoding = THREE.sRGBEncoding; R.toneMapping = THREE.ACESFilmicToneMapping; R.shadowMap.enabled = true;
+const lin = h => new THREE.Color(h).convertSRGBToLinear(), S = new THREE.Scene(); S.background = lin('#2a2436');
+S.add(new THREE.HemisphereLight(lin('#c8d0ff'), lin('#40354a'), 0.9)); const d = new THREE.DirectionalLight(lin('#ffe6c4'), 2.6); d.position.set(-200, 400, 500); d.castShadow = true; d.shadow.bias = -0.0004; d.shadow.normalBias = 0.8; d.shadow.mapSize.set(2048, 2048); const sc = d.shadow.camera; sc.left = -500; sc.right = 500; sc.top = 400; sc.bottom = -100; sc.far = 1500; S.add(d);
+const fl = new THREE.Mesh(new THREE.PlaneGeometry(3000, 3000).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: lin('#3a3344') })); fl.receiveShadow = true; S.add(fl);
+const t0 = performance.now(), B = BCAST(THREE, lin), times = {};
+const put = (id, x, ry) => { const a = performance.now(); const r = B.make(id); times[id + '@' + x] = Math.round(performance.now() - a); r.root.position.set(x, 0, 0); r.root.rotation.y = ry || 0; S.add(r.root); return r; };
+const bu = put('BU', -300, 0.3), bs = put('BU', -150, -0.2), ow = put('OW', 0, 0), gl = put('GL', 130, 0), ga = put('GA', 260, -0.3), gb = put('GB', 390, -0.4);
+B.shades(gl); B.beanie(ga, '#1c1a22'); B.bandana(ga, '#c02a6a'); B.bandana(gb, '#1f8f9a'); B.beanie(gb, '#3a2a55');
+const A = window.ACT; [bu, ow, gl, ga, gb].forEach(r => { A.BAPU.stand(r, 1.2); }); bu.setExpression('serene', 1); A.BAPU.sit(bs, 1); bs.setExpression('serene', 1); bs.setBlink(1); ow.setExpression('shocked', 1); gl.setExpression('stern', 1);
+const g = B.pistol(); S.add(g); A.BAPU.hand(gb, 'R', gb.joints.armR.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(-10, -2, 34)), { curl: 0.88, pole: [-0.5, -1, -0.2] }); A.attach(g, gb, 'R', [0, 0, 0], 1.15); g.rotateZ(-Math.PI / 2); g.translateX(4.1); g.translateY(3.0);
+const cam = new THREE.PerspectiveCamera(24, 16 / 9, 5, 5000); const q = new URLSearchParams(location.search);
+window.shot = (x, y, z, tx, ty, tz, fov) => { cam.fov = fov || 24; cam.updateProjectionMatrix(); cam.position.set(x, y, z); cam.lookAt(tx, ty, tz); S.updateMatrixWorld(true); R.render(S, cam); return cv.toDataURL('image/jpeg', 0.9).slice(23); };
+window.__times = times; window.__total = Math.round(performance.now() - t0); shot(40, 110, 1150, 40, 75, 0); window.__ready = true;
+</script>
