@@ -199,16 +199,16 @@ shot('E5-pick', () => W('hathiyaar', 4) - 0.08, (t, lt, X, C, r) => { gangScene(
   cam(X, 0, 1, [PICK.x + lerp(110, 36, u), lerp(96, 30, u) + 30 * v, PICK.z + lerp(330, 150, u) + 60 * v], [0, 0, 0], [PICK.x, lerp(50, 46, u) + 50 * v, PICK.z - 60 * v], [0, 0, 0], lerp(40, 34, u), 0.04, null, V(GC.x, 100, GC.z)); shake(X, t, W('hathiyaar', 4), 2.4, 0.3); return look(X, { aperture: 0.05 }); });
 // ===================== LINE 5: the choice =====================
 const still = { k: 1, guns: [1, 1, 1, 1, 1] };
-shot('F1-choice', () => LS(5) - 0.1, (t, lt, X, C, r) => { gangScene(C, t, still); pickGun(C, t, 1); face(r, 'serene', t, 11); mcu(X, r, lt, 1.2, [-34, -4, 190], [-22, -2, 128], 0.36, 30, 90); halo(C, r, 0.3, X.cam); return look(X, { aperture: 0.06 }); });
+shot('F1-choice', () => LS(5) - 0.1, (t, lt, X, C, r) => { gangScene(C, t, still); pickGun(C, t, 1); face(r, 'serene', t, 11); mcu(X, r, lt, 1.2, [-44, -4, 250], [-34, -2, 200], 0.36, 30, 200); halo(C, r, 0.3, X.cam); return look(X, { aperture: 0.06 }); });
 // bhaago: the one gap in the ring, and the open road beyond it
 shot('F2-run', () => W('jaan', 5) - 0.08, (t, lt, X, C, r) => { gangScene(C, t, still); pickGun(C, t, 1); const u = expoOut(lt / 0.6), a = 1.82; markerFx(C, V(GC.x + Math.sin(a) * 620, 0, GC.z + Math.cos(a) * 620), t, sm(0.05, 0.3, lt), 120);
-  cam(X, 0, 1, [GC.x - Math.sin(a) * lerp(150, 60, u) + 30, lerp(120, 100, u), GC.z - Math.cos(a) * lerp(150, 60, u)], [0, 0, 0], [GC.x + Math.sin(a) * 600, 70, GC.z + Math.cos(a) * 600], [0, 0, 0], lerp(40, 52, u), -0.05, null, V(GC.x, 100, GC.z)); return look(X, { aperture: 0.02 }); }, 'whip', 0.16);
+  cam(X, 0, 1, [GC.x - Math.sin(a) * lerp(170, 110, u) + 30 + 70 * Math.cos(a), lerp(170, 150, u), GC.z - Math.cos(a) * lerp(170, 110, u) - 70 * Math.sin(a)], [0, 0, 0], [GC.x + Math.sin(a) * 600, 70, GC.z + Math.cos(a) * 600], [0, 0, 0], lerp(40, 52, u), -0.05, null, V(GC.x, 100, GC.z)); return look(X, { aperture: 0.02 }); }, 'whip', 0.16);
 // lado: the pistol the game holds out
 shot('F3-fight', () => W('ya', 5) - 0.06, (t, lt, X, C, r) => { gangScene(C, t, still); pickGun(C, t, 1); const u = expoOut(lt / 0.45), w = sine(lt / 1.4);
   cam(X, 0, 1, [PICK.x - lerp(190, 96, u) - 14 * w, lerp(90, 52, u), PICK.z + lerp(280, 160, u)], [0, 0, 0], [PICK.x, 48, PICK.z], [0, 0, 0], 36, 0.06, null, V(GC.x, 100, GC.z)); shake(X, t, W('lado,', 5), 2.2, 0.3); return look(X, { aperture: 0.09 }); }, 'whip', 0.16);
 // neither: his eyes close
 shot('F4-neither', () => W('par', 5) - 0.1, (t, lt, X, C, r) => { const cls = sm(W('kuch', 5), W('karte.', 5) + 0.1, t); gangScene(C, t, still); pickGun(C, t, 1 - sm(W('nahi', 5), W('karte.', 5) + 0.2, t)); face(r, 'serene', t, 11, 1, 0.75 * cls);
-  mcu(X, r, lt, 2.3, [20, -2, 150], [10, -1, 96], 0.4, 28, 80); halo(C, r, 0.3 + 0.4 * cls, X.cam); return look(X, { aperture: 0.07 }); });
+  mcu(X, r, lt, 2.3, [44, -2, 250], [30, -1, 205], 0.4, 28, 205); halo(C, r, 0.3 + 0.4 * cls, X.cam); return look(X, { aperture: 0.07 }); });
 // ===================== LINE 6: he sits =====================
 const sitK = t => sm(W('paalthi', 6) - 0.25, W('jaate', 6) + 0.05, t);
 function sitScene(C, t, o = {}) { const k = o.k == null ? 1 : o.k, r = sitDown(C, t, k); face(r, 'serene', t, 12, 1, o.shut == null ? 1 : o.shut); gangScene(C, t, Object.assign({ keepHero: true, k: 1, guns: [1, 1, 1, 1, 1], aimY: lerp(108, 60, k), cars: 1 }, o)); return r; }

@@ -8,7 +8,8 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const HERE = dirname(fileURLToPath(import.meta.url)), OUT = join(HERE, 'stems'), SR = 48000;
 mkdirSync(OUT, { recursive: true });
-globalThis.window = {}; new Function('window', readFileSync(join(HERE, '..', 'timing.js'), 'utf8'))(globalThis.window);
+const DUB = process.env.DUB === 'en', SUF = DUB ? '-en' : '';   // DUB=en scores the English dub (timing-en.js)
+globalThis.window = {}; new Function('window', readFileSync(join(HERE, '..', DUB ? 'timing-en.js' : 'timing.js'), 'utf8'))(globalThis.window);
 const T = globalThis.window.TIMING, DUR = T.duration + 1.0, N = Math.ceil(DUR * SR);
 const clean = (w) => w.replace(/[^a-z0-9]/gi, '').toLowerCase();
 const W = (word, line, nth = 0) => { const hits = T.lines[line].filter((w) => clean(w.word) === clean(word)); if (!hits[nth]) throw new Error('no word ' + word + ' in line ' + line); return hits[nth].t; };
@@ -105,5 +106,5 @@ add(SFX, sweep(1.1, 3000, 180, 0.7, 1, (u) => Math.sin(Math.PI * u) ** 0.7), W('
 add(SFX, blip(86, 0.8), W('Comment', 9), 0.4); add(SFX, blip(91, 0.8), W('Comment', 9) + 0.1, 0.4);
 
 function write(B, f) { const x = new Float32Array(N * 2); for (let i = 0; i < N; i++) { x[2 * i] = B[0][i]; x[2 * i + 1] = B[1][i]; } const raw = f + '.f32'; writeFileSync(raw, Buffer.from(x.buffer)); execFileSync('ffmpeg', ['-v', 'error', '-y', '-f', 'f32le', '-ar', String(SR), '-ac', '2', '-i', raw, '-c:a', 'pcm_f32le', f]); unlinkSync(raw); }
-write(MUS, join(OUT, 'score.wav')); write(SFX, join(OUT, 'sfx.wav'));
+write(MUS, join(OUT, `score${SUF}.wav`)); write(SFX, join(OUT, `sfx${SUF}.wav`));
 console.log('score + sfx written,', DUR.toFixed(2), 's');

@@ -79,9 +79,9 @@
     if (o.blink) { g.globalAlpha = e * (0.5 + 0.5 * Math.sin(t * 13)); plate(g, 0, 22, w + 16, 140, edge, 0.6); }
     g.restore(); rep.push(Object.assign({ g: o.name || 'order' }, p.r, { clash: p.clash })); }
   // the choice: two options and a clock that runs out; he takes neither
-  function choice(g, t, rep, faces) { const a0 = LS(5) - 0.05, b0 = LE(5) + 0.25, e = env(t, a0, b0, 0.18, 0.2); if (!e) return; const p = place([[CX, 400], [CX, 1290], [CX, 1250], [CX, 1140]], 800, 300, faces), s = tx('choice');
+  function choice(g, t, rep, faces) { const a0 = LS(5) - 0.05, b0 = LE(5) + 0.25, e = env(t, a0, b0, 0.18, 0.2); if (!e) return; const p = place([[CX, 400], [CX, 1215], [CX, 1250], [CX, 1140]], 760, 256, faces), s = tx('choice'), low = p.y > 1000 ? 0.86 : 1;
     const tA = W('bhaago', 5), tB = W('lado,', 5), tN = W('kuch', 5), tEnd = W('karte.', 5), left = 1 - cl((t - a0) / (tEnd - a0)), dead = sm(tN, tEnd, t);
-    g.save(); g.globalAlpha = e; g.translate(p.x, p.y); const sl = back((t - a0) / 0.22); g.scale(lerp(0.7, 1, sl), lerp(0.7, 1, sl));
+    g.save(); g.globalAlpha = e; g.translate(p.x, p.y); const sl = back((t - a0) / 0.22); g.scale(lerp(0.7, 1, sl) * low, lerp(0.7, 1, sl) * low);
     plate(g, 0, -96, tw(g, s, 54) + 90, 74, COL.yel); text(g, s, 0, -93, 54, COL.yel);
     g.fillStyle = 'rgba(255,255,255,.16)'; g.fillRect(-330, -42, 660, 10); g.fillStyle = left < 0.25 ? COL.red : COL.yel; g.fillRect(-330, -42, 660 * left, 10);
     [[tx('run'), -182, tA, COL.cyan], [tx('fight'), 182, tB, COL.mag]].forEach(([w, x, tk, c], i) => { const on = sm(tk - 0.05, tk + 0.08, t), pop = 1 + 0.16 * Math.exp(-Math.max(0, t - tk) * 8) * on, col = dead > 0.5 ? COL.grey : c;
@@ -104,7 +104,7 @@
     order(g, t, W('hathiyaar', 4) - 0.04, LS(5) - 0.14, '!', tx('weapon'), COL.red, rep, faces, { name: 'weapon', type: 0.3, blink: true });
     choice(g, t, rep, faces); trigger(g, t, rep, faces); dare(g, t, rep, faces); flashes(g, t);
     const noCap = !!new URLSearchParams(location.search).get('nocap');
-    const cap = window.BCAPS && !noCap ? BCAPS.draw(g, t, faces.concat(rep.map(r => ({ x0: r.x0, x1: r.x1, y0: r.y0, y1: r.y1 }))), W('duniya', 0) - 0.02) : null;   // the title carries the first four words
+    const cap = window.BCAPS && !noCap ? BCAPS.draw(g, t, faces.concat(rep.map(r => ({ x0: r.x0, x1: r.x1, y0: r.y0, y1: r.y1, hud: true }))), W('duniya', 0) - 0.02) : null;   // the title carries the first four words
     const clash = rep.filter(r => r.clash).map(r => r.g).concat(cap && faces.some(f => hit(cap.rect, f, 0)) ? ['caption'] : []);
     return { cap: cap && cap.text, capY: cap && Math.round(cap.rect.y0), hud: rep.map(r => r.g), clash };
   }

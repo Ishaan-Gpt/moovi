@@ -8,7 +8,7 @@
    Home: centred at y 1330 (safe area y 230-1480, x 70-905); when a face or a HUD card sits there the card moves below
    or above it with 40 px clear. BCAPS.draw(g, t, faces) -> { rect, text } */
 (function () {
-  const P = window.DANDI_PAL, LANG = (new URLSearchParams(location.search).get('cap') || 'hi').toLowerCase() === 'en' ? 'en' : 'hi'; window.CAP_LANG = LANG;
+  const QS = new URLSearchParams(location.search), DUB = QS.get('dub') === 'en', P = window.DANDI_PAL, LANG = (QS.get('cap') || (DUB ? 'en' : 'hi')).toLowerCase() === 'en' ? 'en' : 'hi'; /* the English dub shows English captions */ window.CAP_LANG = LANG;
   const FAM = '"Baloo 2"', SIZE = 84, HOME = 1330, MAXW = 820, CX = 487;   // centre of the safe area x 70-905
   const KEYS = LANG === 'en'
     ? { 0: ['buddha', 'gta', 'violent', 'never', 'hurt'], 1: ['neon', 'mission', 'steal'], 2: ['owner', 'calmly', 'keys'], 3: ['wanted', 'golden', 'following'], 4: ['gang', 'guns', 'weapon'], 5: ['choice', 'run', 'fight', 'neither'], 6: ['crosslegged', 'eyes', 'breathing'], 7: ['leader', 'gun', 'nobody', 'trigger'], 8: ['guns', 'city', 'quietly'], 9: ['gta', 'buddha', 'comments'] }
@@ -27,7 +27,7 @@
       return out; }); }
   let CARDS = null, LINES = null;
   function build() {
-    const cards = []; LINES = LANG === 'en' ? enLines() : TIMING.lines; window.CAP_TIMING = LINES;
+    const cards = []; LINES = LANG === 'en' ? (window.TIMING_CAP_EN || enLines()) : TIMING.lines; /* with the dub, the English words carry their own times */ window.CAP_TIMING = LINES;
     LINES.forEach((L, li) => {
       const toks = L.map((w, i) => ({ text: clean(w.word), n: norm(w.word), t: w.t, e: w.end, punct: /[,.:;?!]$/.test(w.word), line: li }));
       const n = toks.length, best = [0], from = [];
@@ -50,7 +50,8 @@
     let ws = c.toks.map(k => g.measureText(k.text).width), tw = ws.reduce((a, b) => a + b, 0) + sp * (ws.length - 1);
     if (tw > MAXW) { const k = MAXW / tw; sz *= k; g.font = font(sz); ws = ws.map(w => w * k); tw = MAXW; }
     let y = HOME; const rectAt = y => ({ x0: CX - tw / 2 - 10, x1: CX + tw / 2 + 10, y0: y - sz * 0.78, y1: y + sz * 0.3 });
-    if ((faces || []).some(f => hit(rectAt(y), f))) { let best = null; for (let yy = 1466 - sz * 0.3; yy >= 236 + sz * 0.78; yy -= 22) { if ((faces || []).some(f => hit(rectAt(yy), f))) continue; const d = Math.abs(yy - HOME) * (yy < 700 ? 1.6 : 1); if (!best || d < best[0]) best = [d, yy]; } y = best ? best[1] : 1466 - sz * 0.3; }   // the free line nearest home
+    const blocked = yy => (faces || []).some(f => hit(rectAt(yy), f, f.hud ? 10 : 40));   /* 40 px clear of a face, 10 px of a HUD plate */
+    if (blocked(y)) { let best = null; for (let yy = 1466 - sz * 0.3; yy >= 236 + sz * 0.78; yy -= 22) { if (blocked(yy)) continue; const d = Math.abs(yy - HOME) * (yy < 700 ? 1.6 : 1); if (!best || d < best[0]) best = [d, yy]; } y = best ? best[1] : 1466 - sz * 0.3; }   // the free line nearest home
     const alpha = Math.min(ease3((t - c.t0) / 0.12), ease3((c.t1 - t) / 0.14));
     let x = CX - tw / 2;
     g.save(); g.textBaseline = 'alphabetic'; g.lineJoin = 'round';

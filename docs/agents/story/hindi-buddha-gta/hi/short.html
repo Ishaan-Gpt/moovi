@@ -6,7 +6,7 @@
 <title>GTA 6 Mein Buddha</title>
 <!-- "GTA 6 Mein Buddha" (Hindi Short, 9:16). One page, every shot word-keyed (cues.js + timing.js), three.js r128 (vendored).
      short.html?t=12.3 seeks; ?cap=en shows the English caption track on the same picture (HUD words follow); ?nocap=1 hides captions;
-     ?clean=1 hides the whole overlay; ?embed=1 for capture/export (no UI, no autoplay); ?res=720 (default) is the 3D render width.
+     ?dub=en is the English dub (English voice, the shots re-timed to it, English captions and HUD); ?clean=1 hides the whole overlay; ?embed=1 for capture/export (no UI, no autoplay); ?res=720 (default) is the 3D render width.
      window.sceneRange, window.seek(t) (pure, synchronous), window.__ready, window.frameB64(t) (composited JPEG), window.frameTo(t) (composited canvas). -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
@@ -34,6 +34,7 @@ body{background:var(--page);color:var(--ink);font:15px/1.4 'Baloo 2',system-ui,s
 <script src="vendor/three.r128.min.js"></script>
 <script src="palette.js"></script>
 <script src="timing.js"></script>
+<script>if (new URLSearchParams(location.search).get('dub') === 'en') document.write('<script src="timing-en.js"><\/script>');   // the English dub: the same shots on the English voice's clock</script>
 <script src="script.js"></script>
 <script src="cues.js"></script>
 <script src="post.js"></script>
@@ -70,6 +71,7 @@ body{background:var(--page);color:var(--ink);font:15px/1.4 'Baloo 2',system-ui,s
       const a = hp.clone().add(right).add(up).project(cam), b = hp.clone().sub(right).sub(up).project(cam);
       const xs = [a.x, b.x].map(x => (x * 0.5 + 0.5) * 1080), ys = [a.y, b.y].map(y => (0.5 - y * 0.5) * 1920);
       const rc = { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys), who: rig.id };
+      if (rig.id === 'BU') rc.y0 -= (rc.y1 - rc.y0) * 0.42;   // his curls and the ushnisha stand above the face: plates keep clear of them too
       if (rc.x1 - rc.x0 < 46) return;   // a far face (under about 46 px wide) is not a face a card can cover
       if (rc.x1 > 0 && rc.x0 < 1080 && rc.y1 > 0 && rc.y0 < 1920) out.push(rc); });
     return out; }
@@ -101,8 +103,8 @@ body{background:var(--page);color:var(--ink);font:15px/1.4 'Baloo 2',system-ui,s
   window.seek(+Q.get('t') || 0); window.__bootMs = Math.round(performance.now() - t00); window.__ready = true;
   if (EMBED) return;
   const au = document.getElementById('au'), pp = document.getElementById('pp'), sc = document.getElementById('sc'), tm = document.getElementById('tm'), lg = document.getElementById('lg');
-  lg.textContent = window.CAP_LANG === 'en' ? 'EN' : 'HI'; lg.onclick = () => { const q = new URLSearchParams(location.search); if (window.CAP_LANG === 'en') q.delete('cap'); else q.set('cap', 'en'); q.set('t', sc.value); location.search = q.toString(); };
-  let hasAudio = false; const srcs = ['audio/mix.wav', 'audio/mix.mp3', 'audio/voice.mp3']; let si = 0; au.src = srcs[0]; au.addEventListener('canplay', () => { hasAudio = true; }); au.addEventListener('error', () => { hasAudio = false; if (++si < srcs.length) au.src = srcs[si]; });
+  lg.textContent = window.CAP_LANG === 'en' ? 'EN' : 'HI'; lg.onclick = () => { const q = new URLSearchParams(location.search); if (window.CAP_LANG === 'en') q.delete('cap'); else q.set('cap', 'en'); q.set('t', sc.value); location.search = q.toString(); }; if (Q.get('dub') === 'en') lg.style.display = 'none';
+  let hasAudio = false; const srcs = Q.get('dub') === 'en' ? ['audio/mix-en.wav', 'audio/mix-en.mp3'] : ['audio/mix.wav', 'audio/mix.mp3', 'audio/voice.mp3']; let si = 0; au.src = srcs[0]; au.addEventListener('canplay', () => { hasAudio = true; }); au.addEventListener('error', () => { hasAudio = false; if (++si < srcs.length) au.src = srcs[si]; });
   sc.max = DUR; sc.value = +Q.get('t') || 0; let playing = false, t0 = 0, base = +Q.get('t') || 0;
   function tick() { if (!playing) return; const t = hasAudio ? au.currentTime : base + (performance.now() - t0) / 1000; if (t >= DUR) { playing = false; pp.textContent = 'Play'; return; }
     window.seek(t); sc.value = t; tm.textContent = t.toFixed(2) + ' s'; requestAnimationFrame(tick); }
