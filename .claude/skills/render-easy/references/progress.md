@@ -11,7 +11,7 @@ This file is the project's memory. Read it at the start of every render-easy ses
 | 2. Exact motion vectors | Not started | – |
 | 3. Predict, verify, redraw | Not started | – |
 | 4. Code straight to MP4 | Working (first real film) | Encode 11.6 ms/frame (WebCodecs H.264 + mp4-muxer in the page); the draw was 2,162 ms/frame, so it removed the screenshot cost but not the bottleneck |
-| 5. Split across machines | Chunking and stream-copy join working on one machine; separate sessions not tried | 3 workers on one 4-core machine: 8.1 s/frame each vs 1.7 s alone (slower) |
+| 5. Split across machines | Working: one cloud session per 4 s chunk, pushed to its own branch, joined with a stream copy | 11 chunks (1,215 frames) back in about 8 min on 11 sessions, against about 42 min on one machine (about 5x wall time) |
 
 ## Next milestone
 
@@ -36,6 +36,12 @@ Add newest entries at the top, in this format:
 - Decision or finding:
 - Next:
 ```
+
+### 2026-11-19: Layer 5 across cloud sessions (the English dub of "GTA 6 Mein Buddha")
+- What was done: 11 child sessions (create_session, same environment, the film branch as source, one outcome branch each) each ran `render.mjs worker=F0-F1` for one 4 s chunk and pushed its MP4; the parent fetched each branch, took the local machine's first 4 chunks, and joined all 15 with an ffmpeg stream copy plus the mix.
+- Measured: sessions created 04:52:26 to 04:53:28 UTC; all 11 chunks fetched by 05:00:35 (about 8 min, including clone and browser boot). The same 1,215 frames at the local rate (about 228 s a chunk) would have taken about 42 min. 1,695 frames, 56.5 s, no black frame, frame count exact.
+- Decision or finding: the split is the lever that works on CPU-only machines; cost is 11 sessions of usage. Pixels could not be reused from the Hindi render: its captions are burned in and the dub runs on a different clock. A clean (no overlay) plate saved at render time would make a same-clock caption variant a cheap composite.
+- Next: build the session split into render.mjs (plan, spawn, collect, join) and add a clean-plate option.
 
 ### 2026-11-18: First real film through layer 4 ("GTA 6 Mein Buddha", three.js r128, 720x1280)
 - What was done: `docs/agents/story/hindi-buddha-gta/hi/tools/render.mjs` encodes each frame from the page canvas with WebCodecs H.264 (`avc1.640028`, 6 Mbps) into mp4-muxer inside headless Chromium, in 4 s chunks with an 8-frame pre-roll, joined with an ffmpeg stream copy and muxed with the mix.
